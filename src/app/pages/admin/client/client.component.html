@@ -1,0 +1,176 @@
+<p-toast></p-toast>
+
+<div class="p-8 flex flex-col gap-8 animate-fade-in">
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+    <div class="flex flex-col gap-2">
+      <h1 class="text-4xl font-extrabold text-slate-800 tracking-tight">Gestión de Clientes</h1>
+      <p class="text-slate-500 font-medium">Administra los propietarios de mascotas y sus datos de contacto</p>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-4">
+      <div *ngIf="authStore.roles().includes('ROLE_SUPER_ADMIN')" class="flex flex-col gap-2">
+        <p-dropdown [options]="companies()" [(ngModel)]="filterCompanyId" (onChange)="onFilterCompanyChange($event.value)"
+          placeholder="Filtrar por Veterinaria"
+          styleClass="w-72 h-10 bg-white !border-slate-200 !rounded-lg !px-4 !flex !items-center !text-sm !font-medium !text-slate-800 focus:!ring-2 focus:!ring-[#0066AA]/20 transition-all shadow-sm"
+          panelStyleClass="!rounded-xl !border-none !shadow-xl"></p-dropdown>
+      </div>
+      <button (click)="openNew()"
+        class="flex items-center gap-2 bg-[#0066AA] hover:bg-[#005a96] text-white text-sm font-medium px-5 h-10 rounded-lg transition-colors">
+        <i class="pi pi-plus text-xs"></i>
+        Registrar cliente
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="!authStore.roles().includes('ROLE_SUPER_ADMIN') || filterCompanyId" class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-none">
+    <p-table [value]="clients()" [lazy]="true" (onLazyLoad)="loadClients($event)" [paginator]="true" [rows]="10"
+      [totalRecords]="totalRecords()" [loading]="loading()" responsiveLayout="stack" breakpoint="960px" [rowHover]="true"
+      styleClass="p-datatable-borderless">
+      <ng-template pTemplate="header">
+        <tr class="border-b border-slate-100">
+          <th class="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider">Cliente</th>
+          <th class="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider">Contacto</th>
+          <th class="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider">Documento</th>
+          <th class="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider">Estado</th>
+          <th class="px-6 py-4 w-20"></th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-client>
+        <tr class="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors">
+          <td class="px-6 py-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600 font-bold text-base overflow-hidden flex-shrink-0">
+                <span>{{ client.nombre.charAt(0) }}</span>
+              </div>
+              <div>
+                <p class="text-sm font-medium text-slate-800 leading-tight">{{ client.nombre }} {{ client.apellido }}</p>
+                <p class="text-xs text-slate-400 mt-0.5">Cliente registrado</p>
+              </div>
+            </div>
+          </td>
+          <td class="px-6 py-4">
+            <p class="text-sm text-slate-700 leading-tight">{{ client.email }}</p>
+            <p class="text-xs text-slate-400 mt-0.5">{{ client.telefono }}</p>
+          </td>
+          <td class="px-6 py-4">
+            <span class="px-2 py-0.5 rounded text-[10px] bg-slate-100 text-slate-500 font-bold uppercase tracking-wider">
+              {{ client.tipoDocumento }}: {{ client.numeroDocumento }}
+            </span>
+          </td>
+          <td class="px-6 py-4">
+            <button (click)="toggleStatus(client)"
+              [class]="client.activo ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-500'"
+              class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-all active:scale-95">
+              <span [class]="client.activo ? 'bg-green-500' : 'bg-red-400'" class="w-1.5 h-1.5 rounded-full"></span>
+              {{ client.activo ? 'Activo' : 'Inactivo' }}
+            </button>
+          </td>
+          <td class="px-6 py-4 text-right">
+            <button (click)="editClient(client)"
+              class="p-2 rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-90">
+              <i class="pi pi-pencil text-sm"></i>
+            </button>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="5" class="py-20 text-center">
+            <i class="pi pi-id-card text-3xl text-slate-200 block mb-3"></i>
+            <p class="text-sm text-slate-400 font-medium">No se encontraron clientes registrados</p>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <div *ngIf="authStore.roles().includes('ROLE_SUPER_ADMIN') && !filterCompanyId" class="flex items-center justify-center py-20">
+    <i class="pi pi-spin pi-spinner text-2xl text-slate-300"></i>
+  </div>
+</div>
+
+<p-dialog [(visible)]="displayModal" [header]="isEdit() ? 'Actualizar Datos' : 'Registrar Nuevo Cliente'" [modal]="true"
+  [draggable]="false" [resizable]="false" [breakpoints]="{'960px': '90vw', '640px': '95vw'}" [style]="{width: '700px'}"
+  styleClass="!rounded-2xl !border-none !shadow-none !overflow-hidden !bg-white">
+  
+  <form [formGroup]="clientForm" (ngSubmit)="saveClient()" class="flex flex-col gap-8 mt-6 pb-4">
+    
+    <div *ngIf="authStore.roles().includes('ROLE_SUPER_ADMIN')" class="flex flex-col gap-2">
+      <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Asignar a Empresa</label>
+      <p-dropdown [options]="companies()" formControlName="companyId" placeholder="Selecciona la empresa"
+        styleClass="w-full h-14 bg-slate-50 !border-none !rounded-xl !px-4 !flex !items-center !text-sm !font-bold !text-slate-800 focus:!ring-2 focus:!ring-[#0066AA]/20 transition-all"
+        panelStyleClass="!rounded-xl !border-none !shadow-xl"></p-dropdown>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="flex flex-col gap-2">
+        <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Nombre</label>
+        <input pInputText formControlName="nombre" placeholder="Ej. Ana"
+          class="w-full h-14 bg-slate-50 !border-none !rounded-xl !px-6 !text-sm !font-bold !text-slate-800 placeholder:text-slate-300 focus:!ring-2 focus:!ring-[#0066AA]/20 transition-all shadow-none" />
+      </div>
+      <div class="flex flex-col gap-2">
+        <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Apellido</label>
+        <input pInputText formControlName="apellido" placeholder="Ej. López"
+          class="w-full h-14 bg-slate-50 !border-none !rounded-xl !px-6 !text-sm !font-bold !text-slate-800 placeholder:text-slate-300 focus:!ring-2 focus:!ring-[#0066AA]/20 transition-all shadow-none" />
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="flex flex-col gap-2">
+        <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Tipo Doc.</label>
+        <p-dropdown [options]="tipoDocumentos" formControlName="tipoDocumento"
+          styleClass="w-full h-14 bg-slate-50 !border-none !rounded-xl !px-4 !flex !items-center !text-sm !font-bold !text-slate-800 focus:!ring-2 focus:!ring-[#0066AA]/20 transition-all"></p-dropdown>
+      </div>
+      <div class="md:col-span-2 flex flex-col gap-2">
+        <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Número Documento</label>
+        <input pInputText formControlName="numeroDocumento" placeholder="Nro de documento"
+          class="w-full h-14 bg-slate-50 !border-none !rounded-xl !px-6 !text-sm !font-bold !text-slate-800 focus:!ring-2 focus:!ring-[#0066AA]/20 transition-all shadow-none" />
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Email</label>
+      <input pInputText formControlName="email" placeholder="correo@ejemplo.com"
+        class="w-full h-14 bg-slate-50 !border-none !rounded-xl !px-6 !text-sm !font-bold !text-slate-800 focus:!ring-2 focus:!ring-[#0066AA]/20 transition-all shadow-none" />
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="flex flex-col gap-2">
+        <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Teléfono</label>
+        <input pInputText formControlName="telefono" placeholder="Ej. 987654321"
+          class="w-full h-14 bg-slate-50 !border-none !rounded-xl !px-6 !text-sm !font-bold !text-slate-800 focus:!ring-2 focus:!ring-[#0066AA]/20 transition-all shadow-none" />
+      </div>
+      <div class="flex flex-col gap-2">
+        <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Género</label>
+        <p-dropdown [options]="generos" formControlName="genero"
+          styleClass="w-full h-14 bg-slate-50 !border-none !rounded-xl !px-4 !flex !items-center !text-sm !font-bold !text-slate-800 focus:!ring-2 focus:!ring-[#0066AA]/20 transition-all"></p-dropdown>
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Dirección</label>
+      <input pInputText formControlName="direccion" placeholder="Av. Principal 123"
+        class="w-full h-14 bg-slate-50 !border-none !rounded-xl !px-6 !text-sm !font-bold !text-slate-800 focus:!ring-2 focus:!ring-[#0066AA]/20 transition-all shadow-none" />
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Referencias</label>
+      <input pInputText formControlName="referencias" placeholder="Ej. Cerca al parque central"
+        class="w-full h-14 bg-slate-50 !border-none !rounded-xl !px-6 !text-sm !font-bold !text-slate-800 focus:!ring-2 focus:!ring-[#0066AA]/20 transition-all shadow-none" />
+    </div>
+
+    <div class="flex justify-end gap-4 pt-6 border-t border-slate-50">
+      <button type="button" (click)="displayModal.set(false)"
+        class="px-8 h-10 rounded-lg text-sm font-semibold text-slate-500 hover:bg-slate-50 transition-colors">
+        Cancelar
+      </button>
+      <button type="submit" [disabled]="loadingStore.isLoading()"
+        class="flex items-center gap-2 bg-[#0066AA] hover:bg-[#005a96] disabled:opacity-50 text-white text-sm font-medium px-6 h-10 rounded-lg transition-colors active:scale-95">
+        <i class="pi pi-check text-xs"></i>
+        {{ isEdit() ? 'Guardar Cambios' : 'Registrar Cliente' }}
+      </button>
+    </div>
+  </form>
+</p-dialog>
