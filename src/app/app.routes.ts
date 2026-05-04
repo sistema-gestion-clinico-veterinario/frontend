@@ -8,15 +8,17 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/auth/login/login.component').then((m) => m.LoginComponent)
   },
   {
-    path: 'dashboard',
+    path: '',
+    loadComponent: () => import('./layouts/main-layout/main-layout.component').then((m) => m.MainLayoutComponent),
     canActivate: [AuthGuard],
-    loadComponent: () => import('./pages/dashboard/dashboard.component').then((m) => m.DashboardComponent)
-  },
-  {
-    path: 'admin',
-    data: { roles: ['ROLE_ADMIN'] },
-    canActivate: [AuthGuard],
-    loadComponent: () => import('./pages/admin/admin.component').then((m) => m.AdminComponent)
+    canActivateChild: [AuthGuard],
+    children: [
+      {
+        path: 'dashboard',
+        data: { roles: ['ROLE_ADMIN', 'ROLE_VETERINARIO'] },
+        loadComponent: () => import('./pages/dashboard/dashboard.component').then((m) => m.DashboardComponent)
+      }
+    ]
   },
   { path: '**', redirectTo: 'login' }
 ];
