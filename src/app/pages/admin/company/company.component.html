@@ -1,0 +1,178 @@
+<div class="p-8 min-h-screen bg-slate-50">
+
+  <div class="flex items-start justify-between mb-8">
+    <div>
+      <h1 class="text-2xl font-semibold text-slate-800">Administración de empresas</h1>
+      <p class="text-sm text-slate-400 mt-1">Gestiona y supervisa todas las sedes registradas en el sistema</p>
+    </div>
+    <button (click)="openNew()"
+      class="flex items-center gap-2 bg-[#0066AA] hover:bg-[#005a96] text-white text-sm font-medium px-5 h-10 rounded-lg transition-colors">
+      <i class="pi pi-plus text-xs"></i>
+      Registrar empresa
+    </button>
+  </div>
+
+  <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+
+    <div *ngIf="loading" class="flex items-center justify-center py-20">
+      <i class="pi pi-spin pi-spinner text-2xl text-slate-300"></i>
+    </div>
+
+    <table *ngIf="!loading" class="w-full">
+      <thead>
+        <tr class="border-b border-slate-100">
+          <th class="text-left px-6 py-3 text-xs font-medium text-slate-400 uppercase tracking-wider">Empresa</th>
+          <th class="text-left px-6 py-3 text-xs font-medium text-slate-400 uppercase tracking-wider">RUC</th>
+          <th class="text-left px-6 py-3 text-xs font-medium text-slate-400 uppercase tracking-wider">Contacto</th>
+          <th class="text-left px-6 py-3 text-xs font-medium text-slate-400 uppercase tracking-wider">Estado</th>
+          <th class="px-6 py-3"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let company of companies"
+          class="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors">
+          <td class="px-6 py-4">
+            <div class="flex items-center gap-3">
+              <div
+                class="w-9 h-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-sm font-semibold flex-shrink-0">
+                {{ company.name.charAt(0) }}
+              </div>
+              <div>
+                <p class="text-sm font-medium text-slate-800">{{ company.name }}</p>
+                <p class="text-xs text-slate-400 truncate max-w-[220px]">{{ company.address }}</p>
+              </div>
+            </div>
+          </td>
+          <td class="px-6 py-4 text-sm font-medium text-slate-600 tracking-wide">
+            {{ company.ruc }}
+          </td>
+          <td class="px-6 py-4">
+            <p class="text-sm text-slate-700">{{ company.email }}</p>
+            <p class="text-xs text-slate-400 mt-0.5">{{ company.phone }}</p>
+          </td>
+          <td class="px-6 py-4">
+            <span [ngClass]="company.activo ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-500'"
+              class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium">
+              <span [ngClass]="company.activo ? 'bg-green-500' : 'bg-red-400'" class="w-1.5 h-1.5 rounded-full"></span>
+              {{ company.activo ? 'Activo' : 'Inactivo' }}
+            </span>
+          </td>
+          <td class="px-6 py-4 text-right">
+            <button (click)="editCompany(company)"
+              class="p-2 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-all">
+              <i class="pi pi-pencil text-sm"></i>
+            </button>
+          </td>
+        </tr>
+
+        <tr *ngIf="companies.length === 0">
+          <td colspan="5" class="py-20 text-center">
+            <i class="pi pi-building text-3xl text-slate-200 block mb-3"></i>
+            <p class="text-sm text-slate-400">No hay empresas registradas</p>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="flex items-center justify-between px-6 py-3 border-t border-slate-100">
+      <p class="text-xs text-slate-400">Mostrando {{ companies.length }} de {{ totalRecords }} empresas</p>
+      <div class="flex items-center gap-1">
+        <button
+          class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 text-xs transition-colors">
+          <i class="pi pi-angle-double-left"></i>
+        </button>
+        <button
+          class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 text-xs transition-colors">
+          <i class="pi pi-angle-left"></i>
+        </button>
+        <button
+          class="w-8 h-8 flex items-center justify-center rounded-lg bg-[#0066AA] text-white text-xs font-medium">1</button>
+        <button
+          class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 text-xs transition-colors">
+          <i class="pi pi-angle-right"></i>
+        </button>
+        <button
+          class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 text-xs transition-colors">
+          <i class="pi pi-angle-double-right"></i>
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<p-dialog [(visible)]="displayModal" [header]="isEdit ? 'Editar empresa' : 'Registrar empresa'" [modal]="true"
+  [draggable]="false" [resizable]="false" [breakpoints]="{'960px': '85vw', '640px': '95vw'}" [style]="{width: '560px'}">
+  <form [formGroup]="companyForm" (ngSubmit)="saveCompany()" class="flex flex-col gap-5 mt-2">
+
+    <div class="flex flex-col gap-1.5">
+      <label class="text-xs font-medium text-slate-400 uppercase tracking-wider">Nombre comercial</label>
+      <input pInputText formControlName="name" placeholder="Ej. Clínica Veterinaria San José"
+        class="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-4 text-sm text-slate-800 outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/10 transition-all" />
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs font-medium text-slate-400 uppercase tracking-wider">RUC fiscal</label>
+        <input pInputText formControlName="ruc" placeholder="11 dígitos" maxlength="11"
+          class="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-4 text-sm text-slate-800 outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/10 transition-all" />
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs font-medium text-slate-400 uppercase tracking-wider">Teléfono</label>
+        <input pInputText formControlName="phone" placeholder="Ej. 987 654 321"
+          class="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-4 text-sm text-slate-800 outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/10 transition-all" />
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-1.5">
+      <label class="text-xs font-medium text-slate-400 uppercase tracking-wider">Email institucional</label>
+      <input pInputText formControlName="email" placeholder="contacto@empresa.com"
+        class="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-4 text-sm text-slate-800 outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/10 transition-all" />
+    </div>
+
+    <div class="flex flex-col gap-1.5">
+      <label class="text-xs font-medium text-slate-400 uppercase tracking-wider">Dirección</label>
+      <input pInputText formControlName="address" placeholder="Av. Las Camelias 456, Lima"
+        class="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-4 text-sm text-slate-800 outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/10 transition-all" />
+    </div>
+
+    <div class="flex items-center gap-3 py-2">
+      <input type="checkbox" formControlName="hasWebsite" id="hasWebsite"
+        class="w-5 h-5 rounded border-slate-300 accent-[#0066AA] cursor-pointer transition-all">
+      <label for="hasWebsite" class="text-sm font-semibold text-slate-700 cursor-pointer select-none">¿Tiene página web?</label>
+    </div>
+
+    <div *ngIf="companyForm.get('hasWebsite')?.value" class="flex flex-col gap-1.5">
+      <label class="text-xs font-medium text-slate-400 uppercase tracking-wider">Sitio web</label>
+      <input pInputText formControlName="website" placeholder="https://www.ejemplo.com"
+        class="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-4 text-sm text-slate-800 outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/10 transition-all" />
+    </div>
+
+    <div class="flex flex-col gap-1.5">
+      <label class="text-xs font-medium text-slate-400 uppercase tracking-wider">Horario de atención</label>
+      <input pInputText formControlName="businessHours" placeholder="Lunes a Sábado: 08:00 – 20:00"
+        class="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-4 text-sm text-slate-800 outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/10 transition-all" />
+    </div>
+
+    <div class="flex flex-col gap-1.5">
+      <label class="text-xs font-medium text-slate-400 uppercase tracking-wider">Descripción</label>
+      <textarea formControlName="description" rows="3"
+        class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-sm text-slate-800 outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/10 transition-all resize-none"></textarea>
+    </div>
+
+    <div class="flex justify-end gap-3 pt-3 border-t border-slate-100">
+      <button type="button" (click)="displayModal = false"
+        class="px-5 h-10 rounded-lg text-sm font-medium text-slate-500 hover:bg-slate-100 transition-colors">
+        Cancelar
+      </button>
+      <button type="submit" [disabled]="loading"
+        class="flex items-center gap-2 bg-[#0066AA] hover:bg-[#005a96] disabled:opacity-50 text-white text-sm font-medium px-6 h-10 rounded-lg transition-colors">
+        <i class="pi pi-check text-xs"></i>
+        {{ isEdit ? 'Guardar cambios' : 'Crear empresa' }}
+      </button>
+    </div>
+
+  </form>
+</p-dialog>
+
+<p-toast position="bottom-right"></p-toast>

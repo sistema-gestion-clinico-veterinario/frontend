@@ -18,6 +18,11 @@ export const routes: Routes = [
         path: 'dashboard',
         data: { roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.VETERINARIO, Role.RECEPCIONISTA] },
         loadComponent: () => import('./pages/dashboard/dashboard.component').then((m) => m.DashboardComponent)
+      },
+      {
+        path: 'admin/company',
+        data: { roles: [Role.SUPER_ADMIN] },
+        loadComponent: () => import('./pages/admin/company/company.component').then((m) => m.CompanyComponent)
       }
     ]
   },

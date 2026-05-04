@@ -59,7 +59,12 @@ export class LoginComponent {
           needsCompanySelection: data.needsCompanySelection,
           selectedEnterprise: null
         });
-        this.router.navigateByUrl('/dashboard');
+        const roles = data.roles;
+        if (roles.includes('ROLE_SUPER_ADMIN')) {
+          this.router.navigateByUrl('/admin/company');
+        } else {
+          this.router.navigateByUrl('/dashboard');
+        }
       },
       error: () => {
         this.authError = 'Correo o contraseña incorrectos.';
