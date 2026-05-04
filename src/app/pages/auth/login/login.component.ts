@@ -26,14 +26,14 @@ export class LoginComponent {
     password: ['', [Validators.required, Validators.minLength(6)]]
   });
 
-  constructor() {}
+  get email() { return this.loginForm.get('email'); }
+  get password() { return this.loginForm.get('password'); }
 
-  get email() {
-    return this.loginForm.get('email');
-  }
-
-  get password() {
-    return this.loginForm.get('password');
+  get greeting(): string {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Buenos días';
+    if (hour < 19) return 'Buenas tardes';
+    return 'Buenas noches';
   }
 
   submit() {
@@ -59,23 +59,15 @@ export class LoginComponent {
           needsCompanySelection: data.needsCompanySelection,
           selectedEnterprise: null
         });
-
-        this.router.navigateByUrl(this.getInitialRoute(data.roles));
+        this.router.navigateByUrl('/dashboard');
       },
       error: () => {
-        this.authError = 'Error al iniciar sesión. Verifica tus credenciales o intenta de nuevo más tarde.';
+        this.authError = 'Correo o contraseña incorrectos.';
         this.isSubmitting = false;
       },
       complete: () => {
         this.isSubmitting = false;
       }
     });
-  }
-
-  private getInitialRoute(roles: string[]): string {
-    if (roles.includes('ROLE_ADMIN') || roles.includes('ROLE_VETERINARIO')) {
-      return '/dashboard';
-    }
-    return '/dashboard';
   }
 }
