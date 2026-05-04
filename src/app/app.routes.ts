@@ -16,7 +16,7 @@ export const routes: Routes = [
     children: [
       {
         path: 'dashboard',
-        data: { roles: [Role.ADMIN, Role.VETERINARIO] },
+        data: { roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.VETERINARIO, Role.RECEPCIONISTA] },
         loadComponent: () => import('./pages/dashboard/dashboard.component').then((m) => m.DashboardComponent)
       }
     ]
