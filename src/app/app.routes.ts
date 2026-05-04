@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { AuthGuard } from './core/guards/auth.guard';
+import { Role } from './core/enums/role.enum';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -15,7 +16,7 @@ export const routes: Routes = [
     children: [
       {
         path: 'dashboard',
-        data: { roles: ['ROLE_ADMIN', 'ROLE_VETERINARIO'] },
+        data: { roles: [Role.ADMIN, Role.VETERINARIO] },
         loadComponent: () => import('./pages/dashboard/dashboard.component').then((m) => m.DashboardComponent)
       }
     ]
