@@ -11,9 +11,11 @@ export const routes: Routes = [
     path: '',
     loadComponent: () => import('./layouts/main-layout/main-layout.component').then((m) => m.MainLayoutComponent),
     canActivate: [AuthGuard],
+    canActivateChild: [AuthGuard],
     children: [
       {
         path: 'dashboard',
+        data: { roles: ['ROLE_ADMIN', 'ROLE_VETERINARIO'] },
         loadComponent: () => import('./pages/dashboard/dashboard.component').then((m) => m.DashboardComponent)
       }
     ]
