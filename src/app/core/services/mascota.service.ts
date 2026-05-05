@@ -1,9 +1,9 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { environment } from '../../environments/environment';
-import { MascotaResponse } from '../models/response/mascota-response';
-import { Page } from '../models/response/page';
-import { ApiResponse } from '../models/response/api-response';
+import { environment } from '../../../environments/environment';
+import { MascotaResponse } from '../../models/response/mascota-response';
+import { Page } from '../../models/response/page';
+import { ApiResponse } from '../../models/response/api-response';
 
 @Injectable({
   providedIn: 'root'

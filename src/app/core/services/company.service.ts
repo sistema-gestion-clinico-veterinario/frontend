@@ -1,10 +1,10 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { environment } from '../../environments/environment';
-import { CompanyDTO } from '../models/request/company-dto';
-import { CompanyListResponse } from '../models/response/company-list-response';
-import { Page } from '../models/response/page';
-import { ApiResponse } from '../models/response/api-response';
+import { environment } from '../../../environments/environment';
+import { CompanyDTO } from '../../models/request/company-dto';
+import { CompanyListResponse } from '../../models/response/company-list-response';
+import { Page } from '../../models/response/page';
+import { ApiResponse } from '../../models/response/api-response';
 
 @Injectable({
   providedIn: 'root'

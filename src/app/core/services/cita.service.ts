@@ -1,11 +1,11 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { environment } from '../../environments/environment';
-import { CitaRequest } from '../models/request/cita-request';
-import { CitaResponse } from '../models/response/cita-response';
-import { Page } from '../models/response/page';
-import { ApiResponse } from '../models/response/api-response';
-import { EstadoCita } from '../core/enums/estado-cita.enum';
+import { environment } from '../../../environments/environment';
+import { CitaRequest } from '../../models/request/cita-request';
+import { CitaResponse } from '../../models/response/cita-response';
+import { Page } from '../../models/response/page';
+import { ApiResponse } from '../../models/response/api-response';
+import { EstadoCita } from '../enums/estado-cita.enum';
 
 @Injectable({
   providedIn: 'root'
