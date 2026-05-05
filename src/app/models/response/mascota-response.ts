@@ -5,8 +5,11 @@ export interface MascotaResponse {
   raza: string;
   sexo: string;
   fechaNacimiento: string;
-  peso: number;
+  color?: string;
+  peso?: number;
   activo: boolean;
   apoderadoId: number;
   apoderadoNombreCompleto: string;
+  ultimoDiagnostico?: string;
+  tieneHistoriaClinica?: boolean;
 }

@@ -35,6 +35,11 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/admin/client/client.component').then((m) => m.ClientComponent)
       },
       {
+        path: 'mascotas',
+        data: { roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.VETERINARIO, Role.RECEPCIONISTA] },
+        loadComponent: () => import('./pages/mascotas/lista-mascotas/lista-mascotas.component').then((m) => m.ListaMascotasComponent)
+      },
+      {
         path: 'citas',
         data: { roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.VETERINARIO, Role.RECEPCIONISTA] },
         children: [
