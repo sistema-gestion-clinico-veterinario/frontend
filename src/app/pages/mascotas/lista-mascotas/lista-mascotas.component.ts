@@ -213,7 +213,7 @@ export class ListaMascotasComponent implements OnInit {
     }
     const v = this.mascotaForm.value;
     const request: MascotaRequest = {
-      nombre:          v.nombre,
+      nombreCompleto:  v.nombre,
       especie:         v.especie,
       raza:            v.raza,
       sexo:            v.sexo,
