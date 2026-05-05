@@ -38,7 +38,6 @@ import { Router } from '@angular/router';
     InputTextModule,
     DropdownModule,
     CalendarModule,
-    InputTextarea,
     ToastModule
   ],
   providers: [MessageService],
@@ -89,6 +88,14 @@ export class AgendaComponent implements OnInit {
     { label: 'Otro',           value: EstadoCita.OTRO           },
   ];
 
+  // Validador personalizado para el horario
+  horariosValidator = (control: AbstractControl): ValidationErrors | null => {
+    if (!control.value) return null;
+    
+    const fecha = control.value as Date;
+    return this.isTimeInHorario(fecha) ? null : { 'fuera-de-horario': true };
+  };
+
   citaForm: FormGroup = this.fb.group({
     mascotaId:       [null, [Validators.required]],
     veterinarioId:   [null, [Validators.required]],
@@ -121,7 +128,14 @@ export class AgendaComponent implements OnInit {
   }
 
   onEmpresaChange() {
+    const companyId = this.selectedCompanyId ?? undefined;
     this.loadCitas();
+    this.loadVeterinarios(companyId);
+    this.loadClientes(companyId);
+    this.loadAllMascotas(companyId);
+    // Limpiar selecciones previas
+    this.citaForm.reset();
+    this.filteredMascotas.set([]);
   }
 
   loadCitas(event: any = { first: 0, rows: 10 }) {
@@ -134,13 +148,19 @@ export class AgendaComponent implements OnInit {
     const page      = Math.floor(event.first / event.rows);
     const fechaStr  = this.filterFecha || undefined;
     const companyId = this.isSuperAdmin() ? (this.selectedCompanyId ?? undefined) : undefined;
+    
+    // Si es veterinario y no es SuperAdmin, filtrar por su propio ID de empleado
+    let veterinarioId = this.filterVeterinarioId || undefined;
+    if (this.authStore.roles().includes('ROLE_VETERINARIO') && !this.isSuperAdmin()) {
+      veterinarioId = this.authStore.empleadoId() ?? undefined;
+    }
 
     this.loadingStore.show();
     this.citaService.listar(
       companyId,
       fechaStr,
       this.filterEstado    || undefined,
-      this.filterVeterinarioId || undefined,
+      veterinarioId,
       page,
       event.rows
     ).subscribe({
@@ -156,20 +176,24 @@ export class AgendaComponent implements OnInit {
     });
   }
 
-  loadVeterinarios() {
-    this.empleadoService.listar(undefined, undefined, 0, 100).subscribe({
+  loadVeterinarios(companyId?: number) {
+    const targetCompanyId = companyId || (this.isSuperAdmin() ? (this.selectedCompanyId ?? undefined) : undefined);
+    this.empleadoService.listar(targetCompanyId, undefined, 0, 100).subscribe({
       next: (res) => {
         this.veterinarios.set(
           res.data.content
-            .filter(e => e.tiposEmpleado.includes('VETERINARIO'))
-            .map(e => ({ label: `${e.nombre} ${e.apellido}`, value: e.id }))
+            .filter((e: any) => e.tiposEmpleado && e.tiposEmpleado.some((t: any) => 
+              (typeof t === 'string' ? t : t.nombre).toUpperCase() === 'VETERINARIO'
+            ))
+            .map((e: any) => ({ label: `${e.nombre} ${e.apellido}`, value: e.id }))
         );
       }
     });
   }
 
-  loadClientes() {
-    this.apoderadoService.listar(undefined, undefined, undefined, 0, 100).subscribe({
+  loadClientes(companyId?: number) {
+    const targetCompanyId = companyId || (this.isSuperAdmin() ? (this.selectedCompanyId ?? undefined) : undefined);
+    this.apoderadoService.listar(targetCompanyId, undefined, undefined, 0, 100).subscribe({
       next: (res) => {
         this.clientes.set(
           res.data.content.map(c => ({ label: `${c.nombre} ${c.apellido}`, value: c.id }))
@@ -178,8 +202,9 @@ export class AgendaComponent implements OnInit {
     });
   }
 
-  loadAllMascotas() {
-    this.mascotaService.listar(undefined, undefined, undefined, 0, 500).subscribe({
+  loadAllMascotas(companyId?: number) {
+    const targetCompanyId = companyId || (this.isSuperAdmin() ? (this.selectedCompanyId ?? undefined) : undefined);
+    this.mascotaService.listar(targetCompanyId, undefined, undefined, 0, 500).subscribe({
       next: (res) => this.allMascotas.set(res.data.content)
     });
   }
@@ -202,7 +227,9 @@ export class AgendaComponent implements OnInit {
 
     this.empleadoService.getHorario(veterinarioId).subscribe({
       next: (res) => {
-        this.horariosVeterinario.set(res.data);
+        const order = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO', 'DOMINGO'];
+        const sorted = res.data.sort((a, b) => order.indexOf(a.diaSemana) - order.indexOf(b.diaSemana));
+        this.horariosVeterinario.set(sorted);
         // Actualizar validadores de fecha cuando cambia el horario
         this.citaForm.get('fechaHoraInicio')?.updateValueAndValidity();
       },
@@ -220,31 +247,18 @@ export class AgendaComponent implements OnInit {
     const horarios = this.horariosVeterinario();
     if (horarios.length === 0) return false;
 
-    // Obtener día de la semana (0 = domingo, 1 = lunes, etc.)
     const dayOfWeek = fecha.getDay();
     const diasSemana = ['DOMINGO', 'LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES', 'SÁBADO'];
     const diaActual = diasSemana[dayOfWeek];
-
-    // Encontrar horario para el día seleccionado
     const horarioDelDia = horarios.find(h => h.diaSemana === diaActual);
     if (!horarioDelDia) return false;
 
-    // Obtener hora de la fecha seleccionada
     const horas = fecha.getHours().toString().padStart(2, '0');
     const minutos = fecha.getMinutes().toString().padStart(2, '0');
     const timeSeleccionada = `${horas}:${minutos}`;
 
-    // Comparar que esté dentro del rango de horario
     return timeSeleccionada >= horarioDelDia.horaInicio && timeSeleccionada < horarioDelDia.horaFin;
   }
-
-  // Validador personalizado para el horario
-  horariosValidator = (control: AbstractControl): ValidationErrors | null => {
-    if (!control.value) return null;
-    
-    const fecha = control.value as Date;
-    return this.isTimeInHorario(fecha) ? null : { 'fuera-de-horario': true };
-  };
 
   openNew() {
     this.citaForm.reset();
@@ -258,9 +272,20 @@ export class AgendaComponent implements OnInit {
       return;
     }
     const formValue = this.citaForm.value;
+    const date = formValue.fechaHoraInicio as Date;
+    // Formatear a ISO local (YYYY-MM-DDTHH:mm:ss) para preservar la hora seleccionada
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    
+    const localIsoString = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+
     const request: CitaRequest = {
       ...formValue,
-      fechaHoraInicio: (formValue.fechaHoraInicio as Date).toISOString()
+      fechaHoraInicio: localIsoString
     };
     this.loadingStore.show();
     this.citaService.crear(request).subscribe({

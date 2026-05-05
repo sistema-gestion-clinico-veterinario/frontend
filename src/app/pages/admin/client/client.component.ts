@@ -86,17 +86,16 @@ export class ClientComponent implements OnInit {
   }
 
   loadClients(event: any = { first: 0, rows: 10 }) {
-    if (this.authStore.roles().includes(Role.SUPER_ADMIN) && !this.filterCompanyId) {
+    const isSuperAdmin = this.authStore.roles().includes(Role.SUPER_ADMIN);
+    if (isSuperAdmin && !this.filterCompanyId) {
       return;
     }
 
-    const page = event.first / event.rows;
+    const page = Math.floor(event.first / event.rows);
     this.loading.set(true);
     this.loadingStore.show();
-    
-    const companyId = this.authStore.roles().includes(Role.SUPER_ADMIN) 
-      ? (this.filterCompanyId ?? undefined)
-      : undefined;
+
+    const companyId = isSuperAdmin ? (this.filterCompanyId ?? undefined) : undefined;
 
     this.apoderadoService.listar(companyId, undefined, undefined, page, event.rows).subscribe({
       next: (res) => {
@@ -119,9 +118,11 @@ export class ClientComponent implements OnInit {
       next: (res) => {
         const companyList = res.data.content.map(c => ({ label: c.name, value: c.id }));
         this.companies.set(companyList);
-        
+
         if (companyList.length > 0 && !this.filterCompanyId) {
+          // Asignar antes de llamar loadClients para evitar la condición de carrera
           this.filterCompanyId = companyList[0].value;
+          this.clientForm.get('companyId')?.setValue(this.filterCompanyId);
           this.loadClients();
         }
         this.loadingStore.hide();

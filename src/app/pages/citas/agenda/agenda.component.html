@@ -357,8 +357,9 @@
         (onChange)="onClienteChange($event.value)"
         placeholder="Buscar dueño..."
         [filter]="true"
+        appendTo="body"
         styleClass="w-full h-14 bg-slate-50 !border-none !rounded-xl !px-4 !flex !items-center !text-sm !font-bold !text-slate-800"
-        panelStyleClass="!rounded-xl !border-none !shadow-xl"
+        panelStyleClass="!rounded-xl !border-none !shadow-xl !min-w-full"
       ></p-dropdown>
     </div>
 
@@ -368,8 +369,9 @@
         [options]="filteredMascotas()"
         formControlName="mascotaId"
         placeholder="Seleccionar mascota"
+        appendTo="body"
         styleClass="w-full h-14 bg-slate-50 !border-none !rounded-xl !px-4 !flex !items-center !text-sm !font-bold !text-slate-800"
-        panelStyleClass="!rounded-xl !border-none !shadow-xl"
+        panelStyleClass="!rounded-xl !border-none !shadow-xl !min-w-full"
       ></p-dropdown>
       <p *ngIf="citaForm.get('mascotaId')?.touched && citaForm.get('mascotaId')?.invalid"
         class="text-xs text-rose-500 font-medium ml-1">Campo requerido.</p>
@@ -382,8 +384,9 @@
         formControlName="veterinarioId"
         (onChange)="onVeterinarioChange($event.value)"
         placeholder="Asignar veterinario"
+        appendTo="body"
         styleClass="w-full h-14 bg-slate-50 !border-none !rounded-xl !px-4 !flex !items-center !text-sm !font-bold !text-slate-800"
-        panelStyleClass="!rounded-xl !border-none !shadow-xl"
+        panelStyleClass="!rounded-xl !border-none !shadow-xl !min-w-full"
       ></p-dropdown>
       <p *ngIf="citaForm.get('veterinarioId')?.touched && citaForm.get('veterinarioId')?.invalid"
         class="text-xs text-rose-500 font-medium ml-1">Campo requerido.</p>
@@ -415,6 +418,7 @@
         [showIcon]="true"
         hourFormat="24"
         [stepMinute]="15"
+        appendTo="body"
         styleClass="w-full h-14 bg-slate-50 !border-none !rounded-xl !text-sm !font-bold !text-slate-800"
       ></p-calendar>
       <p *ngIf="citaForm.get('fechaHoraInicio')?.touched && citaForm.get('fechaHoraInicio')?.hasError('required')"

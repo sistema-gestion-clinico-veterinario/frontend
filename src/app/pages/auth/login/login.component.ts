@@ -55,6 +55,7 @@ export class LoginComponent {
           companyName: data.companyName,
           nombreCompleto: data.nombreCompleto,
           userType: data.userType,
+          empleadoId: data.empleadoId ?? null,
           passwordChanged: data.passwordChanged,
           needsCompanySelection: data.needsCompanySelection,
           selectedEnterprise: null

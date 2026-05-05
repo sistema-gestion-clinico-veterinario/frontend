@@ -2,25 +2,27 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../../models/response/api-response';
-import { Page } from '../../models/response/page';
 
 @Injectable({
   providedIn: 'root'
 })
-export class EspecialidadService {
+export class RoleService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = `${environment.apiUrl}/admin/especialidades`;
+  private readonly apiUrl = `${environment.apiUrl}/admin/roles`;
 
-  listar(companyId?: number) {
-    const params = companyId ? `?companyId=${companyId}&size=1000` : '?size=1000';
-    return this.http.get<ApiResponse<Page<any>>>(`${this.apiUrl}${params}`);
+  listar() {
+    return this.http.get<ApiResponse<any[]>>(this.apiUrl);
   }
 
-  crear(data: { nombre: string; descripcion?: string; company?: { id: number } }) {
+  listarPermisos() {
+    return this.http.get<ApiResponse<any[]>>(`${this.apiUrl}/permissions`);
+  }
+
+  crear(data: { name: string; permissionIds: number[] }) {
     return this.http.post<ApiResponse<any>>(this.apiUrl, data);
   }
 
-  actualizar(id: number, data: { nombre: string; descripcion?: string }) {
+  actualizar(id: number, data: { name: string; permissionIds: number[] }) {
     return this.http.put<ApiResponse<any>>(`${this.apiUrl}/${id}`, data);
   }
 
@@ -28,4 +30,3 @@ export class EspecialidadService {
     return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`);
   }
 }
-

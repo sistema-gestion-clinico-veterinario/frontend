@@ -113,9 +113,12 @@ export class EmployeeComponent implements OnInit {
       this.loadCompanies();
       this.employeeForm.get('companyId')?.setValidators([Validators.required]);
     } else {
+      const companyId = this.authStore.companyId() ?? undefined;
+      this.filterCompanyId = companyId ?? null;
       this.loadEmployees();
-      this.loadEspecialidades();
-      this.loadTypesEmpleado();
+      this.loadEspecialidades(companyId);
+      this.loadTypesEmpleado(companyId);
+      this.employeeForm.get('companyId')?.setValue(companyId);
     }
 
     this.employeeForm.get('roles')?.valueChanges.subscribe(roles => {
@@ -127,6 +130,16 @@ export class EmployeeComponent implements OnInit {
         collegiatura?.clearValidators();
       }
       collegiatura?.updateValueAndValidity();
+    });
+
+    this.employeeForm.get('companyId')?.valueChanges.subscribe(companyId => {
+      if (!companyId) {
+        this.especialidadesList.set([]);
+        this.tiposEmpleadoList.set([]);
+        return;
+      }
+      this.loadEspecialidades(companyId);
+      this.loadTypesEmpleado(companyId);
     });
   }
 
@@ -141,7 +154,7 @@ export class EmployeeComponent implements OnInit {
 
     const companyId = this.authStore.roles().includes(Role.SUPER_ADMIN)
       ? (this.filterCompanyId ?? undefined)
-      : undefined;
+      : (this.authStore.companyId() ?? undefined);
 
     this.empleadoService.listar(companyId, undefined, page, event.rows).subscribe({
       next: (res) => {
@@ -225,6 +238,10 @@ export class EmployeeComponent implements OnInit {
     this.empleadoService.getById(employee.id).subscribe({
       next: (res) => {
         this.employeeForm.patchValue(res.data);
+        if (res.data.companyId) {
+          this.loadEspecialidades(res.data.companyId);
+          this.loadTypesEmpleado(res.data.companyId);
+        }
         this.empleadoService.getHorario(employee.id).subscribe({
           next: (hRes) => {
             this.horarios = this.diasSemana.map(d => {

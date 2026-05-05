@@ -15,4 +15,12 @@ export class TipoEmpleadoService {
     const params = companyId ? `?companyId=${companyId}&size=1000` : '?size=1000';
     return this.http.get<ApiResponse<Page<any>>>(`${this.apiUrl}${params}`);
   }
+
+  crear(data: { nombre: string; descripcion?: string; permiteEspecialidades?: boolean; company?: { id: number } }) {
+    return this.http.post<ApiResponse<any>>(this.apiUrl, data);
+  }
+
+  eliminar(id: number) {
+    return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`);
+  }
 }

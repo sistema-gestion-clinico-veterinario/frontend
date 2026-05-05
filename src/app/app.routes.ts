@@ -25,6 +25,11 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/admin/company/company.component').then((m) => m.CompanyComponent)
       },
       {
+        path: 'admin/complementario',
+        data: { roles: [Role.SUPER_ADMIN] },
+        loadComponent: () => import('./pages/admin/complementario/complementario.component').then((m) => m.ComplementarioComponent)
+      },
+      {
         path: 'admin/empleados',
         data: { roles: [Role.SUPER_ADMIN, Role.ADMIN] },
         loadComponent: () => import('./pages/admin/employee/employee.component').then((m) => m.EmployeeComponent)
