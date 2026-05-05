@@ -97,6 +97,22 @@ export class ListaMascotasComponent implements OnInit {
     apoderadoId:     [null, [Validators.required]],
   });
 
+  // ── Modal Motivo Baja ─────────────────────────────────────
+  displayMotivoModal  = signal<boolean>(false);
+  pendingDeactivation = signal<MascotaResponse | null>(null);
+
+  readonly motivoBajaOpciones = [
+    { label: 'Fallecimiento',        value: 'FALLECIMIENTO' },
+    { label: 'Deja de asistir',      value: 'DEJA_ASISTIR' },
+    { label: 'Cambio de propietario',value: 'CAMBIO_PROPIETARIO' },
+    { label: 'Otro',                 value: 'OTRO' }
+  ];
+
+  motivoForm: FormGroup = this.fb.group({
+    motivoBaja: [null, [Validators.required]],
+    otroMotivo: ['']
+  });
+
   // ── Lifecycle ─────────────────────────────────────────────
   ngOnInit() {
     if (this.isSuperAdmin()) {
@@ -243,7 +259,38 @@ export class ListaMascotasComponent implements OnInit {
 
   toggleEstado(mascota: MascotaResponse) {
     const nuevoEstado = !mascota.activo;
-    this.mascotaService.cambiarEstado(mascota.id, nuevoEstado).subscribe({
+    
+    if (!nuevoEstado) {
+      this.pendingDeactivation.set(mascota);
+      this.motivoForm.reset();
+      this.displayMotivoModal.set(true);
+      return;
+    }
+
+    this.executeCambiarEstado(mascota, true);
+  }
+
+  confirmDeactivation() {
+    if (this.motivoForm.invalid) {
+      this.motivoForm.markAllAsTouched();
+      return;
+    }
+    const mascota = this.pendingDeactivation();
+    if (!mascota) return;
+
+    const val = this.motivoForm.value;
+    if (val.motivoBaja === 'OTRO' && !val.otroMotivo?.trim()) {
+      this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Debe especificar el motivo' });
+      return;
+    }
+
+    this.displayMotivoModal.set(false);
+    this.executeCambiarEstado(mascota, false, val.motivoBaja, val.otroMotivo?.trim() || undefined);
+  }
+
+  private executeCambiarEstado(mascota: MascotaResponse, nuevoEstado: boolean, motivoBaja?: string, otroMotivo?: string) {
+    this.loadingStore.show();
+    this.mascotaService.cambiarEstado(mascota.id, nuevoEstado, motivoBaja, otroMotivo).subscribe({
       next: () => {
         this.loadMascotas(this.currentPage);
         this.messageService.add({
@@ -251,9 +298,11 @@ export class ListaMascotasComponent implements OnInit {
           summary: 'Estado actualizado',
           detail: `Mascota ${nuevoEstado ? 'activada' : 'desactivada'}`
         });
+        this.loadingStore.hide();
       },
-      error: () => {
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cambiar el estado' });
+      error: (err) => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo cambiar el estado' });
+        this.loadingStore.hide();
       }
     });
   }

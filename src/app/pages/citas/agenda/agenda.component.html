@@ -1,27 +1,23 @@
 <div class="p-4 sm:p-6 lg:p-8 min-h-screen bg-slate-50 font-['Barlow']">
 
-  <!-- ── Encabezado ─────────────────────────────────────────── -->
   <div class="mb-5 sm:mb-8">
 
-    <!-- Fila principal: título (izq) + acciones (der) -->
+
     <div class="flex items-center justify-between gap-3 mb-1.5">
       <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight leading-tight">
         Agenda de Citas
       </h1>
 
-      <!-- Acciones: en móvil solo el botón compacto; en sm+ también el dropdown -->
+
       <div class="flex items-center gap-2.5 sm:gap-3 shrink-0">
         <div *ngIf="isSuperAdmin()" class="hidden sm:block w-52 lg:w-64">
-          <p-dropdown
-            [options]="empresas()"
-            [(ngModel)]="selectedCompanyId"
-            (onChange)="onEmpresaChange()"
+          <p-select [options]="empresas()" [(ngModel)]="selectedCompanyId" (onChange)="onEmpresaChange()"
             placeholder="Seleccionar empresa"
+            appendTo="body"
             styleClass="w-full h-10 bg-white !border-slate-200 !rounded-xl !px-3 !flex !items-center !text-sm !font-bold !text-slate-800"
-            panelStyleClass="!rounded-xl !border-none !shadow-xl"
-          ></p-dropdown>
+            panelStyleClass="!rounded-xl !border-none"></p-select>
         </div>
-        <!-- Botón: ícono+texto en sm+, solo ícono en xs -->
+
         <button (click)="openNew()"
           class="flex items-center gap-1.5 bg-[#0066AA] text-white font-medium rounded-lg h-9 sm:h-10">
           <span class="flex items-center gap-1.5 px-3 sm:px-5 text-sm">
@@ -32,40 +28,25 @@
       </div>
     </div>
 
-    <!-- Subtítulo -->
+
     <p class="text-slate-500 font-medium flex items-center gap-2 text-sm">
       <span class="w-2 h-2 rounded-full bg-[#0066AA] shrink-0"></span>
       Programaciones y atenciones del día
     </p>
-
-    <!-- Selector empresa en móvil (SUPER_ADMIN) -->
     <div *ngIf="isSuperAdmin()" class="sm:hidden mt-3">
-      <p-dropdown
-        [options]="empresas()"
-        [(ngModel)]="selectedCompanyId"
-        (onChange)="onEmpresaChange()"
+      <p-select [options]="empresas()" [(ngModel)]="selectedCompanyId" (onChange)="onEmpresaChange()"
         placeholder="Seleccionar empresa"
+        appendTo="body"
         styleClass="w-full h-11 bg-white !border-slate-200 !rounded-xl !px-3 !flex !items-center !text-sm !font-bold !text-slate-800"
-        panelStyleClass="!rounded-xl !border-none !shadow-xl"
-      ></p-dropdown>
+        panelStyleClass="!rounded-xl !border-none"></p-select>
     </div>
   </div>
-
-  <!-- ── Filtros ─────────────────────────────────────────────── -->
-  <div class="mb-5 bg-white border border-slate-200 rounded-xl overflow-hidden">
-
-    <!-- Móvil: siempre visible la fecha + toggle para más filtros -->
+  <div class="mb-5 bg-white border border-slate-200 rounded-xl">
     <div class="sm:hidden">
-
-      <!-- Barra rápida: fecha + toggle -->
       <div class="flex items-center gap-3 px-4 py-3">
         <div class="flex-1">
-          <input
-            type="date"
-            [(ngModel)]="filterFecha"
-            (change)="loadCitas()"
-            class="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm font-bold text-slate-700 focus:outline-none focus:border-[#0066AA] appearance-none"
-          />
+          <input type="date" [(ngModel)]="filterFecha" (change)="loadCitas()"
+            class="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm font-bold text-slate-700 focus:outline-none focus:border-[#0066AA] appearance-none" />
         </div>
         <button (click)="filtersOpen = !filtersOpen"
           [class]="filtersOpen ? 'bg-[#0066AA] text-white border-[#0066AA]' : 'bg-slate-50 text-slate-500 border-slate-200'"
@@ -81,25 +62,17 @@
         <div class="grid grid-cols-2 gap-3">
           <div class="flex flex-col gap-1.5">
             <label class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest ml-1">Estado</label>
-            <p-dropdown
-              [options]="estadoOpciones"
-              [(ngModel)]="filterEstado"
-              (onChange)="loadCitas()"
-              placeholder="Todos"
-              [showClear]="true"
-              styleClass="w-full h-10 bg-slate-50 !border-slate-200 !rounded-lg !px-2 !flex !items-center !text-xs !font-bold !text-slate-800"
-            ></p-dropdown>
+            <p-select [options]="estadoOpciones" [(ngModel)]="filterEstado" (onChange)="loadCitas()"
+              placeholder="Todos" [showClear]="true"
+              appendTo="body"
+              styleClass="w-full h-10 bg-slate-50 !border-slate-200 !rounded-lg !px-2 !flex !items-center !text-xs !font-bold !text-slate-800"></p-select>
           </div>
           <div class="flex flex-col gap-1.5">
             <label class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest ml-1">Veterinario</label>
-            <p-dropdown
-              [options]="veterinarios()"
-              [(ngModel)]="filterVeterinarioId"
-              (onChange)="loadCitas()"
-              placeholder="Todos"
-              [showClear]="true"
-              styleClass="w-full h-10 bg-slate-50 !border-slate-200 !rounded-lg !px-2 !flex !items-center !text-xs !font-bold !text-slate-800"
-            ></p-dropdown>
+            <p-select [options]="veterinarios()" [(ngModel)]="filterVeterinarioId" (onChange)="loadCitas()"
+              placeholder="Todos" [showClear]="true"
+              appendTo="body"
+              styleClass="w-full h-10 bg-slate-50 !border-slate-200 !rounded-lg !px-2 !flex !items-center !text-xs !font-bold !text-slate-800"></p-select>
           </div>
         </div>
         <button (click)="loadCitas()"
@@ -116,34 +89,22 @@
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <div class="flex flex-col gap-1.5">
           <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Fecha</label>
-          <input
-            type="date"
-            [(ngModel)]="filterFecha"
-            (change)="loadCitas()"
-            class="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 text-sm font-bold text-slate-700 focus:outline-none focus:border-[#0066AA] appearance-none"
-          />
+          <input type="date" [(ngModel)]="filterFecha" (change)="loadCitas()"
+            class="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 text-sm font-bold text-slate-700 focus:outline-none focus:border-[#0066AA] appearance-none" />
         </div>
         <div class="flex flex-col gap-1.5">
           <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Estado</label>
-          <p-dropdown
-            [options]="estadoOpciones"
-            [(ngModel)]="filterEstado"
-            (onChange)="loadCitas()"
-            placeholder="Todos"
+          <p-select [options]="estadoOpciones" [(ngModel)]="filterEstado" (onChange)="loadCitas()" placeholder="Todos"
             [showClear]="true"
-            styleClass="w-full h-12 bg-slate-50 !border-slate-200 !rounded-xl !px-3 !flex !items-center !text-sm !font-bold !text-slate-800"
-          ></p-dropdown>
+            appendTo="body"
+            styleClass="w-full h-12 bg-slate-50 !border-slate-200 !rounded-xl !px-3 !flex !items-center !text-sm !font-bold !text-slate-800"></p-select>
         </div>
         <div class="flex flex-col gap-1.5">
           <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Veterinario</label>
-          <p-dropdown
-            [options]="veterinarios()"
-            [(ngModel)]="filterVeterinarioId"
-            (onChange)="loadCitas()"
-            placeholder="Todos"
-            [showClear]="true"
-            styleClass="w-full h-12 bg-slate-50 !border-slate-200 !rounded-xl !px-3 !flex !items-center !text-sm !font-bold !text-slate-800"
-          ></p-dropdown>
+          <p-select [options]="veterinarios()" [(ngModel)]="filterVeterinarioId" (onChange)="loadCitas()"
+            placeholder="Todos" [showClear]="true"
+            appendTo="body"
+            styleClass="w-full h-12 bg-slate-50 !border-slate-200 !rounded-xl !px-3 !flex !items-center !text-sm !font-bold !text-slate-800"></p-select>
         </div>
         <div class="flex flex-col justify-end">
           <button (click)="loadCitas()"
@@ -189,7 +150,8 @@
                 </span>
                 <span class="text-xs text-slate-400 font-medium">{{ cita.duracionMinutos }} min</span>
               </div>
-              <span [class]="'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ' + estadoClass(cita.estado)">
+              <span
+                [class]="'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ' + estadoClass(cita.estado)">
                 <span class="w-1.5 h-1.5 rounded-full bg-current opacity-70"></span>
                 {{ estadoLabel(cita.estado) }}
               </span>
@@ -197,7 +159,8 @@
 
             <!-- Fila 2: mascota + dueño -->
             <div class="flex items-center gap-3 mb-2.5">
-              <div class="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center text-[#0066AA] font-extrabold text-base flex-shrink-0">
+              <div
+                class="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center text-[#0066AA] font-extrabold text-base flex-shrink-0">
                 {{ cita.mascotaNombre.charAt(0) }}
               </div>
               <div class="min-w-0">
@@ -223,10 +186,12 @@
                 <i class="pi pi-play text-[10px]"></i>
                 Iniciar atención
               </button>
-              <button class="flex items-center justify-center gap-1.5 border border-slate-200 text-slate-500 text-xs font-medium px-3 h-9 rounded-lg"
+              <button
+                class="flex items-center justify-center gap-1.5 border border-slate-200 text-slate-500 text-xs font-medium px-3 h-9 rounded-lg"
                 [class.flex-1]="!(cita.estado === 'PROGRAMADA' || cita.estado === 'CONFIRMADA' || cita.estado === 'SALA_DE_ESPERA')">
                 <i class="pi pi-eye text-xs"></i>
-                <span *ngIf="!(cita.estado === 'PROGRAMADA' || cita.estado === 'CONFIRMADA' || cita.estado === 'SALA_DE_ESPERA')">
+                <span
+                  *ngIf="!(cita.estado === 'PROGRAMADA' || cita.estado === 'CONFIRMADA' || cita.estado === 'SALA_DE_ESPERA')">
                   Ver detalle
                 </span>
               </button>
@@ -245,25 +210,26 @@
 
       <!-- ── Vista desktop: tabla ─────────────────────────────── -->
       <div class="hidden sm:block overflow-x-auto">
-        <p-table
-          [value]="citas()"
-          [lazy]="true"
-          (onLazyLoad)="loadCitas($event)"
-          [paginator]="true"
-          [rows]="10"
-          [totalRecords]="totalRecords()"
-          [loading]="loadingStore.isLoading()"
-          responsiveLayout="scroll"
-          [rowHover]="true"
-          styleClass="p-datatable-borderless"
-        >
+        <p-table [value]="citas()" [lazy]="true" (onLazyLoad)="loadCitas($event)" [paginator]="true" [rows]="10"
+          [totalRecords]="totalRecords()" [loading]="loadingStore.isLoading()" responsiveLayout="scroll"
+          [rowHover]="true" styleClass="p-datatable-borderless">
           <ng-template pTemplate="header">
             <tr class="border-b border-slate-100">
-              <th class="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider whitespace-nowrap">Hora</th>
-              <th class="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider whitespace-nowrap">Paciente / Dueño</th>
-              <th class="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider whitespace-nowrap">Veterinario</th>
-              <th class="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider whitespace-nowrap">Motivo</th>
-              <th class="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider whitespace-nowrap">Estado</th>
+              <th
+                class="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider whitespace-nowrap">
+                Hora</th>
+              <th
+                class="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider whitespace-nowrap">
+                Paciente / Dueño</th>
+              <th
+                class="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider whitespace-nowrap">
+                Veterinario</th>
+              <th
+                class="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider whitespace-nowrap">
+                Motivo</th>
+              <th
+                class="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider whitespace-nowrap">
+                Estado</th>
               <th class="px-6 py-4 w-32"></th>
             </tr>
           </ng-template>
@@ -278,11 +244,13 @@
 
               <td class="px-6 py-4">
                 <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-[#0066AA] font-bold text-base flex-shrink-0">
+                  <div
+                    class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-[#0066AA] font-bold text-base flex-shrink-0">
                     {{ cita.mascotaNombre?.charAt(0) }}
                   </div>
                   <div>
-                    <p class="text-sm font-medium text-slate-800 leading-tight whitespace-nowrap">{{ cita.mascotaNombre }}</p>
+                    <p class="text-sm font-medium text-slate-800 leading-tight whitespace-nowrap">{{ cita.mascotaNombre
+                      }}</p>
                     <p class="text-xs text-slate-400 mt-0.5">{{ cita.apoderadoNombre }}</p>
                   </div>
                 </div>
@@ -297,7 +265,8 @@
               </td>
 
               <td class="px-6 py-4 whitespace-nowrap">
-                <span [class]="'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ' + estadoClass(cita.estado)">
+                <span
+                  [class]="'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ' + estadoClass(cita.estado)">
                   <span class="w-1.5 h-1.5 rounded-full bg-current opacity-70"></span>
                   {{ estadoLabel(cita.estado) }}
                 </span>
@@ -312,7 +281,8 @@
                     <i class="pi pi-play text-[10px]"></i>
                     Iniciar
                   </button>
-                  <button class="p-2 rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50" title="Ver detalle">
+                  <button class="p-2 rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50"
+                    title="Ver detalle">
                     <i class="pi pi-eye text-sm"></i>
                   </button>
                 </div>
@@ -338,66 +308,46 @@
 </div>
 
 <!-- ── Modal nueva cita ────────────────────────────────────── -->
-<p-dialog
-  [(visible)]="displayModal"
-  header="Programar nueva cita"
-  [modal]="true"
-  [draggable]="false"
-  [resizable]="false"
-  [breakpoints]="{'960px': '90vw', '640px': '95vw'}"
-  [style]="{width: '500px'}"
-  styleClass="!rounded-2xl !border-none !shadow-none !overflow-hidden !bg-white"
->
+<p-dialog [(visible)]="displayModal" header="Programar nueva cita" [modal]="true" [draggable]="false"
+  [resizable]="false" [breakpoints]="{'960px': '90vw', '640px': '95vw'}" [style]="{width: '500px'}"
+  styleClass="!rounded-2xl !border-none !bg-white">
   <form [formGroup]="citaForm" (ngSubmit)="saveCita()" class="flex flex-col gap-6 mt-6 pb-4">
 
     <div class="flex flex-col gap-2">
       <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Dueño de la mascota</label>
-      <p-dropdown
-        [options]="clientes()"
-        (onChange)="onClienteChange($event.value)"
-        placeholder="Buscar dueño..."
+      <p-select [options]="clientes()" (onChange)="onClienteChange($event.value)" placeholder="Buscar dueño..."
         [filter]="true"
+        appendTo="body"
         styleClass="w-full h-14 bg-slate-50 !border-none !rounded-xl !px-4 !flex !items-center !text-sm !font-bold !text-slate-800"
-        panelStyleClass="!rounded-xl !border-none !shadow-xl"
-      ></p-dropdown>
+        panelStyleClass="!rounded-xl !border-none"></p-select>
     </div>
 
     <div class="flex flex-col gap-2">
       <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Mascota</label>
-      <p-dropdown
-        [options]="filteredMascotas()"
-        formControlName="mascotaId"
-        placeholder="Seleccionar mascota"
+      <p-select [options]="filteredMascotas()" formControlName="mascotaId" placeholder="Seleccionar mascota"
+        appendTo="body"
         styleClass="w-full h-14 bg-slate-50 !border-none !rounded-xl !px-4 !flex !items-center !text-sm !font-bold !text-slate-800"
-        panelStyleClass="!rounded-xl !border-none !shadow-xl"
-      ></p-dropdown>
+        panelStyleClass="!rounded-xl !border-none"></p-select>
       <p *ngIf="citaForm.get('mascotaId')?.touched && citaForm.get('mascotaId')?.invalid"
         class="text-xs text-rose-500 font-medium ml-1">Campo requerido.</p>
     </div>
 
     <div class="flex flex-col gap-2">
       <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Veterinario</label>
-      <p-dropdown
-        [options]="veterinarios()"
-        formControlName="veterinarioId"
-        placeholder="Asignar veterinario"
+      <p-select [options]="veterinarios()" formControlName="veterinarioId" placeholder="Asignar veterinario"
+        appendTo="body"
         styleClass="w-full h-14 bg-slate-50 !border-none !rounded-xl !px-4 !flex !items-center !text-sm !font-bold !text-slate-800"
-        panelStyleClass="!rounded-xl !border-none !shadow-xl"
-      ></p-dropdown>
+        panelStyleClass="!rounded-xl !border-none"></p-select>
       <p *ngIf="citaForm.get('veterinarioId')?.touched && citaForm.get('veterinarioId')?.invalid"
         class="text-xs text-rose-500 font-medium ml-1">Campo requerido.</p>
     </div>
 
     <div class="flex flex-col gap-2">
       <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Fecha y hora</label>
-      <p-calendar
-        formControlName="fechaHoraInicio"
-        [showTime]="true"
-        [showIcon]="true"
-        hourFormat="24"
+      <p-datepicker formControlName="fechaHoraInicio" [showTime]="true" [showIcon]="true" hourFormat="24"
         [stepMinute]="15"
-        styleClass="w-full h-14 bg-slate-50 !border-none !rounded-xl !text-sm !font-bold !text-slate-800"
-      ></p-calendar>
+        appendTo="body"
+        styleClass="w-full h-14 bg-slate-50 !border-none !rounded-xl !text-sm !font-bold !text-slate-800"></p-datepicker>
       <p *ngIf="citaForm.get('fechaHoraInicio')?.touched && citaForm.get('fechaHoraInicio')?.invalid"
         class="text-xs text-rose-500 font-medium ml-1">Campo requerido.</p>
     </div>
@@ -405,7 +355,7 @@
     <div class="flex flex-col gap-2">
       <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Motivo de la cita</label>
       <input pInputText formControlName="motivoCita" placeholder="Ej: Control de rutina"
-        class="w-full h-14 bg-slate-50 !border-none !rounded-xl !px-6 !text-sm !font-bold !text-slate-800 placeholder:text-slate-300 focus:!ring-2 focus:!ring-[#0066AA]/20 shadow-none" />
+        class="w-full h-14 bg-slate-50 !border-none !rounded-xl !px-6 !text-sm !font-bold !text-slate-800 placeholder:text-slate-300 focus:!ring-2 focus:!ring-[#0066AA]/20" />
       <p *ngIf="citaForm.get('motivoCita')?.touched && citaForm.get('motivoCita')?.invalid"
         class="text-xs text-rose-500 font-medium ml-1">Campo requerido.</p>
     </div>
@@ -415,8 +365,7 @@
         Notas adicionales
         <span class="normal-case tracking-normal font-normal text-slate-300">(opcional)</span>
       </label>
-      <textarea pInputTextarea formControlName="notas" rows="3"
-        placeholder="Observaciones o indicaciones previas..."
+      <textarea pTextarea formControlName="notas" rows="3" placeholder="Observaciones o indicaciones previas..."
         class="w-full bg-slate-50 !border-none !rounded-xl !px-6 !py-4 !text-sm !font-bold !text-slate-800 placeholder:text-slate-300 focus:!ring-2 focus:!ring-[#0066AA]/20 resize-none"></textarea>
     </div>
 

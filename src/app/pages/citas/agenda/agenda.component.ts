@@ -5,9 +5,9 @@ import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
-import { DropdownModule } from 'primeng/dropdown';
-import { CalendarModule } from 'primeng/calendar';
-import { InputTextarea } from 'primeng/inputtextarea';
+import { SelectModule } from 'primeng/select';
+import { DatePickerModule } from 'primeng/datepicker';
+import { TextareaModule } from 'primeng/textarea';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { CitaService } from '../../../core/services/cita.service';
@@ -35,9 +35,9 @@ import { Router } from '@angular/router';
     ButtonModule,
     DialogModule,
     InputTextModule,
-    DropdownModule,
-    CalendarModule,
-    InputTextarea,
+    SelectModule,
+    DatePickerModule,
+    TextareaModule,
     ToastModule
   ],
   providers: [MessageService],
@@ -120,6 +120,9 @@ export class AgendaComponent implements OnInit {
 
   onEmpresaChange() {
     this.loadCitas();
+    this.loadVeterinarios();
+    this.loadClientes();
+    this.loadAllMascotas();
   }
 
   loadCitas(event: any = { first: 0, rows: 10 }) {
@@ -155,11 +158,17 @@ export class AgendaComponent implements OnInit {
   }
 
   loadVeterinarios() {
-    this.empleadoService.listar(undefined, undefined, 0, 100).subscribe({
+    if (this.isSuperAdmin() && !this.selectedCompanyId) {
+      this.veterinarios.set([]);
+      return;
+    }
+    const companyId = this.isSuperAdmin() ? this.selectedCompanyId! : undefined;
+    
+    this.empleadoService.listar(companyId, undefined, 0, 100).subscribe({
       next: (res) => {
         this.veterinarios.set(
           res.data.content
-            .filter(e => e.tiposEmpleado.includes('VETERINARIO'))
+            .filter(e => e.tiposEmpleado.some(tipo => tipo.toUpperCase() === 'VETERINARIO'))
             .map(e => ({ label: `${e.nombre} ${e.apellido}`, value: e.id }))
         );
       }
@@ -167,7 +176,13 @@ export class AgendaComponent implements OnInit {
   }
 
   loadClientes() {
-    this.apoderadoService.listar(undefined, undefined, undefined, 0, 100).subscribe({
+    if (this.isSuperAdmin() && !this.selectedCompanyId) {
+      this.clientes.set([]);
+      return;
+    }
+    const companyId = this.isSuperAdmin() ? this.selectedCompanyId! : undefined;
+
+    this.apoderadoService.listar(companyId, undefined, undefined, 0, 100).subscribe({
       next: (res) => {
         this.clientes.set(
           res.data.content.map(c => ({ label: `${c.nombre} ${c.apellido}`, value: c.id }))
@@ -177,7 +192,13 @@ export class AgendaComponent implements OnInit {
   }
 
   loadAllMascotas() {
-    this.mascotaService.listar(undefined, undefined, undefined, 0, 500).subscribe({
+    if (this.isSuperAdmin() && !this.selectedCompanyId) {
+      this.allMascotas.set([]);
+      return;
+    }
+    const companyId = this.isSuperAdmin() ? this.selectedCompanyId! : undefined;
+
+    this.mascotaService.listar(companyId, undefined, undefined, 0, 500).subscribe({
       next: (res) => this.allMascotas.set(res.data.content)
     });
   }

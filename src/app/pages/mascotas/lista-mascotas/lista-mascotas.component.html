@@ -24,7 +24,7 @@
             (onChange)="onEmpresaChange()"
             placeholder="Seleccionar empresa"
             styleClass="w-full h-10 bg-white !border-slate-200 !rounded-xl !px-3 !flex !items-center !text-sm !font-bold !text-slate-800"
-            panelStyleClass="!rounded-xl !border-none !shadow-xl"
+            panelStyleClass="!rounded-xl !border-none"
           ></p-dropdown>
         </div>
         <!-- Botón: ícono en móvil, texto en desktop -->
@@ -44,7 +44,7 @@
         (onChange)="onEmpresaChange()"
         placeholder="Seleccionar empresa"
         styleClass="w-full h-11 bg-white !border-slate-200 !rounded-xl !px-3 !flex !items-center !text-sm !font-bold !text-slate-800"
-        panelStyleClass="!rounded-xl !border-none !shadow-xl"
+        panelStyleClass="!rounded-xl !border-none"
       ></p-dropdown>
     </div>
   </div>
@@ -274,7 +274,8 @@
   [resizable]="false"
   [breakpoints]="{'960px': '90vw', '640px': '95vw'}"
   [style]="{width: '560px'}"
-  styleClass="!rounded-2xl !border-none !shadow-none !overflow-hidden !bg-white"
+  [contentStyle]="{'overflow': 'visible'}"
+  styleClass="!rounded-2xl !border-none !bg-white"
 >
   <form [formGroup]="mascotaForm" (ngSubmit)="saveMascota()" class="flex flex-col gap-6 mt-6 pb-4">
 
@@ -298,7 +299,7 @@
           formControlName="especie"
           placeholder="Seleccionar"
           styleClass="w-full h-14 bg-slate-50 !border-none !rounded-xl !px-4 !flex !items-center !text-sm !font-bold !text-slate-800"
-          panelStyleClass="!rounded-xl !border-none !shadow-xl"
+          panelStyleClass="!rounded-xl !border-none"
         ></p-dropdown>
         <p *ngIf="mascotaForm.get('especie')?.touched && mascotaForm.get('especie')?.invalid"
           class="text-xs text-rose-500 font-medium ml-1">Requerido.</p>
@@ -321,7 +322,7 @@
           formControlName="sexo"
           placeholder="Seleccionar"
           styleClass="w-full h-14 bg-slate-50 !border-none !rounded-xl !px-4 !flex !items-center !text-sm !font-bold !text-slate-800"
-          panelStyleClass="!rounded-xl !border-none !shadow-xl"
+          panelStyleClass="!rounded-xl !border-none"
         ></p-dropdown>
         <p *ngIf="mascotaForm.get('sexo')?.touched && mascotaForm.get('sexo')?.invalid"
           class="text-xs text-rose-500 font-medium ml-1">Requerido.</p>
@@ -370,7 +371,7 @@
         [filter]="true"
         filterPlaceholder="Escribir nombre..."
         styleClass="w-full h-14 bg-slate-50 !border-none !rounded-xl !px-4 !flex !items-center !text-sm !font-bold !text-slate-800"
-        panelStyleClass="!rounded-xl !border-none !shadow-xl"
+        panelStyleClass="!rounded-xl !border-none"
       ></p-dropdown>
       <p *ngIf="mascotaForm.get('apoderadoId')?.touched && mascotaForm.get('apoderadoId')?.invalid"
         class="text-xs text-rose-500 font-medium ml-1">Selecciona un propietario.</p>
@@ -389,6 +390,59 @@
       </button>
     </div>
 
+  </form>
+</p-dialog>
+
+<!-- ── Modal Motivo Baja ───────────────────────────────────── -->
+<p-dialog
+  [(visible)]="displayMotivoModal"
+  header="Desactivar mascota"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [breakpoints]="{'960px': '90vw', '640px': '95vw'}"
+  [style]="{width: '400px'}"
+  [contentStyle]="{'overflow': 'visible'}"
+  styleClass="!rounded-2xl !border-none !bg-white"
+>
+  <form [formGroup]="motivoForm" (ngSubmit)="confirmDeactivation()" class="flex flex-col gap-5 mt-6 pb-4">
+    <p class="text-sm text-slate-500 mb-2">Por favor, indica el motivo por el cual estás dando de baja a esta mascota.</p>
+
+    <!-- Motivo -->
+    <div class="flex flex-col gap-2">
+      <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Motivo de baja</label>
+      <p-dropdown
+        [options]="motivoBajaOpciones"
+        formControlName="motivoBaja"
+        placeholder="Seleccionar motivo"
+        [style]="{'width': '100%'}"
+        styleClass="w-full h-14 bg-slate-50 !border-none !rounded-xl !px-4 !flex !items-center !text-sm !font-bold !text-slate-800"
+        panelStyleClass="!rounded-xl !border-none"
+      ></p-dropdown>
+      <p *ngIf="motivoForm.get('motivoBaja')?.touched && motivoForm.get('motivoBaja')?.invalid"
+        class="text-xs text-rose-500 font-medium ml-1">Requerido.</p>
+    </div>
+
+    <!-- Otro Motivo (Condicional) -->
+    <div class="flex flex-col gap-2" *ngIf="motivoForm.get('motivoBaja')?.value === 'OTRO'">
+      <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Especificar motivo</label>
+      <input pInputText formControlName="otroMotivo" placeholder="Escribe el motivo aquí..."
+        class="w-full h-14 bg-slate-50 !border-none !rounded-xl !px-6 !text-sm !font-bold !text-slate-800 placeholder:text-slate-300 focus:!ring-2 focus:!ring-[#0066AA]/20 shadow-none" />
+      <p *ngIf="motivoForm.get('motivoBaja')?.value === 'OTRO' && !motivoForm.get('otroMotivo')?.value?.trim() && motivoForm.get('motivoBaja')?.touched"
+        class="text-xs text-rose-500 font-medium ml-1">Requerido.</p>
+    </div>
+
+    <div class="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-4 border-t border-slate-50">
+      <button type="button" (click)="displayMotivoModal.set(false)"
+        class="px-6 h-11 rounded-xl text-sm font-extrabold text-slate-400 hover:bg-slate-100">
+        Cancelar
+      </button>
+      <button type="submit" [disabled]="loadingStore.isLoading()"
+        class="flex items-center justify-center gap-2 bg-rose-500 hover:bg-rose-600 disabled:opacity-50 text-white text-sm font-bold px-6 h-11 rounded-xl transition-colors">
+        <i class="pi pi-check text-xs"></i>
+        Confirmar baja
+      </button>
+    </div>
   </form>
 </p-dialog>
 

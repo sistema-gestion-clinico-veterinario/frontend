@@ -37,7 +37,12 @@ export class MascotaService {
     return this.http.put<ApiResponse<MascotaResponse>>(`${this.apiUrl}/${id}`, data);
   }
 
-  cambiarEstado(id: number, activo: boolean) {
-    return this.http.patch<ApiResponse<void>>(`${this.apiUrl}/${id}/status?activo=${activo}`, {});
+  cambiarEstado(id: number, activo: boolean, motivoBaja?: string, otroMotivoBaja?: string) {
+    const request = {
+      active: activo,
+      motivoBaja: motivoBaja,
+      otroMotivoBaja: otroMotivoBaja
+    };
+    return this.http.patch<ApiResponse<void>>(`${this.apiUrl}/${id}/status`, request);
   }
 }
