@@ -1,0 +1,140 @@
+<div class="p-6 animate-fade-in">
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-800">Agenda de Citas</h1>
+            <p class="text-gray-500">Gestiona las programaciones y atenciones del día</p>
+        </div>
+        <p-button label="Nueva Cita" icon="pi pi-plus" (onClick)="openNew()" styleClass="p-button-primary shadow-md"></p-button>
+    </div>
+
+    <!-- Filtros -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+        <div class="flex flex-col gap-2">
+            <label class="font-semibold text-sm">Fecha</label>
+            <p-calendar [(ngModel)]="filterFecha" (onSelect)="loadCitas()" dateFormat="dd/mm/yy" [showIcon]="true" styleClass="w-full"></p-calendar>
+        </div>
+        <div class="flex flex-col gap-2">
+            <label class="font-semibold text-sm">Estado</label>
+            <p-dropdown [options]="estados" [(ngModel)]="filterEstado" (onChange)="loadCitas()" placeholder="Todos los estados" [showClear]="true" styleClass="w-full"></p-dropdown>
+        </div>
+        <div class="flex flex-col gap-2">
+            <label class="font-semibold text-sm">Veterinario</label>
+            <p-dropdown [options]="veterinarios()" [(ngModel)]="filterVeterinarioId" (onChange)="loadCitas()" placeholder="Cualquier veterinario" [showClear]="true" styleClass="w-full"></p-dropdown>
+        </div>
+        <div class="flex items-end">
+            <p-button icon="pi pi-refresh" (onClick)="loadCitas()" styleClass="p-button-outlined w-full"></p-button>
+        </div>
+    </div>
+
+    <!-- Tabla de Citas -->
+    <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
+        <p-table [value]="citas()" [lazy]="true" (onLazyLoad)="loadCitas($event)" [paginator]="true" [rows]="10" 
+                 [totalRecords]="totalRecords()" [loading]="loadingStore.isLoading()" [responsiveLayout]="'stack'"
+                 styleClass="p-datatable-striped">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th>Hora</th>
+                    <th>Paciente / Dueño</th>
+                    <th>Veterinario</th>
+                    <th>Motivo</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-cita>
+                <tr class="hover:bg-blue-50 transition-colors duration-200">
+                    <td>
+                        <div class="font-bold text-blue-600">
+                            {{ cita.fechaHoraInicio | date: 'HH:mm' }}
+                        </div>
+                        <div class="text-xs text-gray-400">
+                            {{ cita.duracionMinutos }} min
+                        </div>
+                    </td>
+                    <td>
+                        <div class="font-semibold text-gray-800">{{ cita.mascotaNombre }}</div>
+                        <div class="text-sm text-gray-500">{{ cita.apoderadoNombre }}</div>
+                    </td>
+                    <td>
+                        <div class="flex items-center gap-2">
+                            <i class="pi pi-user text-gray-400"></i>
+                            <span>{{ cita.veterinarioNombre }}</span>
+                        </div>
+                    </td>
+                    <td class="max-w-xs truncate">
+                        {{ cita.motivoCita }}
+                    </td>
+                    <td>
+                        <p-tag [value]="cita.estado" [severity]="getEstadoSeverity(cita.estado)"></p-tag>
+                    </td>
+                    <td>
+                        <div class="flex gap-2">
+                            <p-button *ngIf="cita.estado === 'PROGRAMADA' || cita.estado === 'REPROGRAMADA'" 
+                                      icon="pi pi-play" label="Iniciar" severity="success" size="small"
+                                      (onClick)="iniciarCita(cita)"></p-button>
+                            <p-button icon="pi pi-eye" severity="secondary" [rounded]="true" [text]="true"></p-button>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="6" class="text-center p-8 text-gray-500">
+                        No hay citas programadas para este día.
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+</div>
+
+<!-- Modal Nueva Cita -->
+<p-dialog header="Programar Nueva Cita" [(visible)]="displayModal" [modal]="true" [style]="{ width: '500px' }" 
+          [draggable]="false" [resizable]="false" class="animate-slide-up">
+    <form [formGroup]="citaForm" (ngSubmit)="saveCita()" class="flex flex-col gap-4 mt-2">
+        <div class="flex flex-col gap-1">
+            <label class="font-semibold text-sm">Dueño de la Mascota</label>
+            <p-dropdown [options]="clientes()" (onChange)="onClienteChange($event.value)" 
+                        placeholder="Seleccionar cliente" [filter]="true" styleClass="w-full"></p-dropdown>
+        </div>
+
+        <div class="flex flex-col gap-1">
+            <label class="font-semibold text-sm">Mascota</label>
+            <p-dropdown [options]="filteredMascotas()" formControlName="mascotaId" 
+                        placeholder="Seleccionar mascota" styleClass="w-full"></p-dropdown>
+            <small class="text-red-500" *ngIf="citaForm.get('mascotaId')?.touched && citaForm.get('mascotaId')?.invalid">Campo requerido</small>
+        </div>
+
+        <div class="flex flex-col gap-1">
+            <label class="font-semibold text-sm">Veterinario</label>
+            <p-dropdown [options]="veterinarios()" formControlName="veterinarioId" 
+                        placeholder="Asignar veterinario" styleClass="w-full"></p-dropdown>
+            <small class="text-red-500" *ngIf="citaForm.get('veterinarioId')?.touched && citaForm.get('veterinarioId')?.invalid">Campo requerido</small>
+        </div>
+
+        <div class="flex flex-col gap-1">
+            <label class="font-semibold text-sm">Fecha y Hora</label>
+            <p-calendar formControlName="fechaHoraInicio" [showTime]="true" [showIcon]="true" 
+                        hourFormat="24" [stepMinute]="15" styleClass="w-full"></p-calendar>
+            <small class="text-red-500" *ngIf="citaForm.get('fechaHoraInicio')?.touched && citaForm.get('fechaHoraInicio')?.invalid">Campo requerido</small>
+        </div>
+
+        <div class="flex flex-col gap-1">
+            <label class="font-semibold text-sm">Motivo de la Cita</label>
+            <input pInputText formControlName="motivoCita" placeholder="Ej: Control de rutina" />
+            <small class="text-red-500" *ngIf="citaForm.get('motivoCita')?.touched && citaForm.get('motivoCita')?.invalid">Campo requerido</small>
+        </div>
+
+        <div class="flex flex-col gap-1">
+            <label class="font-semibold text-sm">Notas Adicionales</label>
+            <textarea pInputTextarea formControlName="notas" rows="3" placeholder="Observaciones preliminares..."></textarea>
+        </div>
+
+        <div class="flex justify-end gap-2 mt-4">
+            <p-button label="Cancelar" severity="secondary" [text]="true" (onClick)="displayModal.set(false)"></p-button>
+            <p-button label="Programar Cita" type="submit" [loading]="loadingStore.isLoading()"></p-button>
+        </div>
+    </form>
+</p-dialog>
+
+<p-toast></p-toast>

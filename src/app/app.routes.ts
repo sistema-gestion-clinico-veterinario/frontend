@@ -33,6 +33,16 @@ export const routes: Routes = [
         path: 'admin/clientes',
         data: { roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.RECEPCIONISTA] },
         loadComponent: () => import('./pages/admin/client/client.component').then((m) => m.ClientComponent)
+      },
+      {
+        path: 'citas',
+        data: { roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.VETERINARIO, Role.RECEPCIONISTA] },
+        children: [
+          {
+            path: 'agenda',
+            loadComponent: () => import('./pages/citas/agenda/agenda.component').then((m) => m.AgendaComponent)
+          }
+        ]
       }
     ]
   },

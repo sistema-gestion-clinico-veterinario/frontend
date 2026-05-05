@@ -55,7 +55,7 @@ export class EmployeeComponent implements OnInit {
   especialidadesList = signal<any[]>([]);
   tiposEmpleadoList = signal<any[]>([]);
   totalRecords = signal<number>(0);
-  
+
   filterCompanyId: number | null = null;
 
   roles = [
@@ -104,7 +104,7 @@ export class EmployeeComponent implements OnInit {
       this.loadEspecialidades();
       this.loadTypesEmpleado();
     }
-    
+
     this.employeeForm.get('roles')?.valueChanges.subscribe(roles => {
       const isVet = roles?.includes(Role.VETERINARIO);
       const collegiatura = this.employeeForm.get('numeroColegiatura');
@@ -125,8 +125,8 @@ export class EmployeeComponent implements OnInit {
     const page = event.first / event.rows;
     this.loading.set(true);
     this.loadingStore.show();
-    
-    const companyId = this.authStore.roles().includes(Role.SUPER_ADMIN) 
+
+    const companyId = this.authStore.roles().includes(Role.SUPER_ADMIN)
       ? (this.filterCompanyId ?? undefined)
       : undefined;
 
@@ -151,7 +151,7 @@ export class EmployeeComponent implements OnInit {
       next: (res) => {
         const companyList = res.data.content.map(c => ({ label: c.name, value: c.id }));
         this.companies.set(companyList);
-        
+
         if (companyList.length > 0 && !this.filterCompanyId) {
           this.filterCompanyId = companyList[0].value;
           this.loadEmployees();
@@ -228,27 +228,27 @@ export class EmployeeComponent implements OnInit {
     }
 
     const data: EmpleadoRequest = this.employeeForm.value;
-    const request = this.isEdit() 
+    const request = this.isEdit()
       ? this.empleadoService.actualizar(data.id!, data)
       : this.empleadoService.registrar(data);
 
     this.loadingStore.show();
     request.subscribe({
       next: () => {
-        this.messageService.add({ 
-          severity: 'success', 
-          summary: 'Éxito', 
-          detail: this.isEdit() ? 'Empleado actualizado' : 'Empleado registrado' 
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Éxito',
+          detail: this.isEdit() ? 'Empleado actualizado' : 'Empleado registrado'
         });
         this.displayModal.set(false);
         this.loadEmployees();
         this.loadingStore.hide();
       },
       error: (err) => {
-        this.messageService.add({ 
-          severity: 'error', 
-          summary: 'Error', 
-          detail: err.error?.message || 'Ocurrió un error al guardar' 
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: err.error?.message || 'Ocurrió un error al guardar'
         });
         this.loadingStore.hide();
       }
