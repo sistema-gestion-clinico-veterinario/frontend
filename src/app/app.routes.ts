@@ -40,6 +40,16 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/mascotas/lista-mascotas/lista-mascotas.component').then((m) => m.ListaMascotasComponent)
       },
       {
+        path: 'historias-clinicas',
+        data: { roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.VETERINARIO, Role.RECEPCIONISTA] },
+        children: [
+          {
+            path: 'mascota/:mascotaId',
+            loadComponent: () => import('./pages/historias-clinicas/historia-clinica-mascota/historia-clinica-mascota.component').then((m) => m.HistoriaClinicaMascotaComponent)
+          }
+        ]
+      },
+      {
         path: 'citas',
         data: { roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.VETERINARIO, Role.RECEPCIONISTA] },
         children: [

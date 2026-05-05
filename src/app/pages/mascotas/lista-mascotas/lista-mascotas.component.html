@@ -216,7 +216,7 @@
           <!-- Acciones + estado -->
           <div class="flex items-center gap-2 mt-auto">
 
-            <!-- HC: ver o crear -->
+            <!-- HC: ver o sin HC -->
             <button
               *ngIf="mascota.tieneHistoriaClinica"
               (click)="verHistoriaClinica(mascota)"
@@ -224,13 +224,12 @@
               <i class="pi pi-file-edit text-xs"></i>
               Ver HC
             </button>
-            <button
+            <span
               *ngIf="!mascota.tieneHistoriaClinica"
-              (click)="nuevaHistoriaClinica(mascota)"
-              class="flex-1 flex items-center justify-center gap-1.5 border border-slate-200 text-slate-500 text-xs font-bold h-9 rounded-lg">
-              <i class="pi pi-plus text-xs"></i>
-              Crear HC
-            </button>
+              class="flex-1 flex items-center justify-center gap-1.5 bg-slate-50 text-slate-300 text-xs font-bold h-9 rounded-lg cursor-default select-none">
+              <i class="pi pi-file text-xs"></i>
+              Sin HC
+            </span>
 
             <!-- Estado activo/inactivo -->
             <button (click)="toggleEstado(mascota)"

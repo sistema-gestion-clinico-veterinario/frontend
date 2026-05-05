@@ -262,10 +262,6 @@ export class ListaMascotasComponent implements OnInit {
     this.router.navigate(['/historias-clinicas/mascota', mascota.id]);
   }
 
-  nuevaHistoriaClinica(mascota: MascotaResponse) {
-    this.router.navigate(['/historias-clinicas/nueva', mascota.id]);
-  }
-
   // ── Helpers de presentación ───────────────────────────────
   calcularEdad(fechaNacimiento: string): string {
     if (!fechaNacimiento) return '—';

@@ -2,9 +2,9 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
 import { ApiResponse } from '../../models/response/api-response';
-
 import { EmpleadoListResponse } from '../../models/response/empleado-list-response';
 import { EmpleadoRequest } from '../../models/request/empleado-request';
+import { HorarioEmpleadoResponse } from '../../models/response/horario-empleado-response';
 import { UserProfileDTO } from '../../models/response/user-profile-dto';
 import { environment } from '../../../environments/environment';
 import { Page } from '../../models/response/page';
@@ -39,5 +39,9 @@ export class EmpleadoService {
 
   cambiarEstado(id: number, activo: boolean) {
     return this.http.patch<ApiResponse<void>>(`${this.apiUrl}/${id}/status?active=${activo}`, {});
+  }
+
+  getHorario(id: number) {
+    return this.http.get<ApiResponse<HorarioEmpleadoResponse[]>>(`${this.apiUrl}/${id}/horario`);
   }
 }

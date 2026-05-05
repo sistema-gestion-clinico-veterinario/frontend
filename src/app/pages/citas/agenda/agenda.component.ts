@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
@@ -17,6 +17,7 @@ import { MascotaService } from '../../../core/services/mascota.service';
 import { CompanyService } from '../../../core/services/company.service';
 import { CitaResponse } from '../../../models/response/cita-response';
 import { MascotaResponse } from '../../../models/response/mascota-response';
+import { HorarioEmpleadoResponse } from '../../../models/response/horario-empleado-response';
 import { CitaRequest } from '../../../models/request/cita-request';
 import { EstadoCita } from '../../../core/enums/estado-cita.enum';
 import { LoadingStore } from '../../../store/loading.store';
@@ -66,6 +67,7 @@ export class AgendaComponent implements OnInit {
   allMascotas      = signal<MascotaResponse[]>([]);
   filteredMascotas = signal<{ label: string; value: number }[]>([]);
   empresas         = signal<{ label: string; value: number }[]>([]);
+  horariosVeterinario = signal<HorarioEmpleadoResponse[]>([]);
 
   // Filtros
   filterFecha: string             = new Date().toISOString().split('T')[0];
@@ -91,7 +93,7 @@ export class AgendaComponent implements OnInit {
     mascotaId:       [null, [Validators.required]],
     veterinarioId:   [null, [Validators.required]],
     motivoCita:      ['',   [Validators.required]],
-    fechaHoraInicio: [null, [Validators.required]],
+    fechaHoraInicio: [null, [Validators.required, this.horariosValidator]],
     notas:           ['']
   });
 
@@ -190,6 +192,59 @@ export class AgendaComponent implements OnInit {
     );
     this.citaForm.get('mascotaId')?.setValue(null);
   }
+
+  onVeterinarioChange(veterinarioId: number) {
+    if (!veterinarioId) {
+      this.horariosVeterinario.set([]);
+      this.citaForm.get('fechaHoraInicio')?.clearAsyncValidators();
+      return;
+    }
+
+    this.empleadoService.getHorario(veterinarioId).subscribe({
+      next: (res) => {
+        this.horariosVeterinario.set(res.data);
+        // Actualizar validadores de fecha cuando cambia el horario
+        this.citaForm.get('fechaHoraInicio')?.updateValueAndValidity();
+      },
+      error: () => {
+        this.horariosVeterinario.set([]);
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cargar el horario del veterinario' });
+      }
+    });
+  }
+
+  // Validar que la fecha/hora esté dentro del horario disponible
+  isTimeInHorario(fecha: Date): boolean {
+    if (!fecha) return false;
+
+    const horarios = this.horariosVeterinario();
+    if (horarios.length === 0) return false;
+
+    // Obtener día de la semana (0 = domingo, 1 = lunes, etc.)
+    const dayOfWeek = fecha.getDay();
+    const diasSemana = ['DOMINGO', 'LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES', 'SÁBADO'];
+    const diaActual = diasSemana[dayOfWeek];
+
+    // Encontrar horario para el día seleccionado
+    const horarioDelDia = horarios.find(h => h.diaSemana === diaActual);
+    if (!horarioDelDia) return false;
+
+    // Obtener hora de la fecha seleccionada
+    const horas = fecha.getHours().toString().padStart(2, '0');
+    const minutos = fecha.getMinutes().toString().padStart(2, '0');
+    const timeSeleccionada = `${horas}:${minutos}`;
+
+    // Comparar que esté dentro del rango de horario
+    return timeSeleccionada >= horarioDelDia.horaInicio && timeSeleccionada < horarioDelDia.horaFin;
+  }
+
+  // Validador personalizado para el horario
+  horariosValidator = (control: AbstractControl): ValidationErrors | null => {
+    if (!control.value) return null;
+    
+    const fecha = control.value as Date;
+    return this.isTimeInHorario(fecha) ? null : { 'fuera-de-horario': true };
+  };
 
   openNew() {
     this.citaForm.reset();
