@@ -1,9 +1,8 @@
 <div class="p-4 sm:p-6 lg:p-8 min-h-screen bg-slate-50 font-['Barlow']">
 
-  <!-- ── Encabezado ─────────────────────────────────────────── -->
+
   <div class="mb-5 sm:mb-8">
 
-    <!-- Fila: título + acciones -->
     <div class="flex items-center justify-between gap-3 mb-1.5">
       <div class="min-w-0">
         <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight leading-tight">
@@ -16,7 +15,7 @@
       </div>
 
       <div class="flex items-center gap-2.5 sm:gap-3 shrink-0">
-        <!-- Selector empresa desktop (SUPER_ADMIN) -->
+
         <div *ngIf="isSuperAdmin()" class="hidden sm:block w-52 lg:w-64">
           <p-dropdown
             [options]="empresas()"
@@ -27,7 +26,6 @@
             panelStyleClass="!rounded-xl !border-none"
           ></p-dropdown>
         </div>
-        <!-- Botón: ícono en móvil, texto en desktop -->
         <button (click)="openNew()"
           class="flex items-center gap-1.5 bg-[#0066AA] text-white font-medium rounded-lg h-9 sm:h-10 px-3 sm:px-5 text-sm">
           <i class="pi pi-plus text-xs"></i>
@@ -36,7 +34,7 @@
       </div>
     </div>
 
-    <!-- Selector empresa móvil (SUPER_ADMIN) -->
+
     <div *ngIf="isSuperAdmin()" class="sm:hidden mt-3">
       <p-dropdown
         [options]="empresas()"
@@ -49,11 +47,10 @@
     </div>
   </div>
 
-  <!-- ── Buscador + filtros ─────────────────────────────────── -->
+
   <div class="mb-5 bg-white border border-slate-200 rounded-xl p-4">
     <div class="flex flex-col sm:flex-row gap-3">
 
-      <!-- Búsqueda por nombre -->
       <div class="flex-1 relative">
         <i class="pi pi-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300 text-sm pointer-events-none"></i>
         <input
@@ -64,8 +61,6 @@
           class="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 text-sm font-medium text-slate-700 placeholder:text-slate-400 focus:outline-none focus:border-[#0066AA]"
         />
       </div>
-
-      <!-- Especie -->
       <div class="sm:w-44">
         <p-dropdown
           [options]="especieOpciones"
@@ -76,8 +71,6 @@
           styleClass="w-full h-11 bg-slate-50 !border-slate-200 !rounded-xl !px-3 !flex !items-center !text-sm !font-bold !text-slate-800"
         ></p-dropdown>
       </div>
-
-      <!-- Estado -->
       <div class="sm:w-44">
         <p-dropdown
           [options]="activoOpciones"
@@ -89,7 +82,6 @@
         ></p-dropdown>
       </div>
 
-      <!-- Botón buscar -->
       <button (click)="onFilterChange()"
         class="flex items-center justify-center gap-2 border border-slate-200 bg-slate-50 text-slate-500 text-sm font-medium px-4 h-11 rounded-xl sm:w-auto w-full">
         <i class="pi pi-refresh text-xs"></i>
@@ -97,18 +89,12 @@
       </button>
 
     </div>
-
-    <!-- Contador de resultados -->
     <div *ngIf="(!isSuperAdmin() || selectedCompanyId) && totalRecords() > 0"
       class="mt-3 pt-3 border-t border-slate-100 flex items-center gap-1.5 text-xs text-slate-400 font-medium">
       <i class="pi pi-info-circle text-slate-300"></i>
       <span>{{ totalRecords() }} mascota{{ totalRecords() !== 1 ? 's' : '' }} encontrada{{ totalRecords() !== 1 ? 's' : '' }}</span>
     </div>
   </div>
-
-  <!-- ── Contenido ──────────────────────────────────────────── -->
-
-  <!-- SUPER_ADMIN sin empresa -->
   <div *ngIf="isSuperAdmin() && !selectedCompanyId"
     class="bg-white border border-slate-200 rounded-xl py-16 text-center px-6">
     <div class="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
@@ -120,10 +106,10 @@
     </p>
   </div>
 
-  <!-- Grid de tarjetas -->
+
   <ng-container *ngIf="!isSuperAdmin() || selectedCompanyId">
 
-    <!-- Sin resultados -->
+
     <div *ngIf="mascotas().length === 0 && !loadingStore.isLoading()"
       class="bg-white border border-slate-200 rounded-xl py-16 text-center px-6">
       <i class="pi pi-heart text-3xl text-slate-200 block mb-3"></i>
@@ -131,18 +117,15 @@
       <p class="text-xs text-slate-300">Prueba ajustando los filtros o registra una nueva mascota.</p>
     </div>
 
-    <!-- Tarjetas -->
+
     <div *ngIf="mascotas().length > 0"
       class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 mb-6">
 
       <div *ngFor="let mascota of mascotas()"
         class="bg-white border border-slate-200 rounded-xl overflow-hidden flex flex-col">
 
-        <!-- Cabecera de la tarjeta -->
         <div class="p-4 pb-3">
           <div class="flex items-start justify-between gap-3">
-
-            <!-- Avatar + nombre + badges -->
             <div class="flex items-center gap-3 min-w-0">
               <div [class]="'w-12 h-12 rounded-xl flex items-center justify-center text-xl font-extrabold flex-shrink-0 ' + especieAvatarClass(mascota.especie)">
                 {{ mascota.nombreCompleto.charAt(0).toUpperCase() }}
@@ -161,8 +144,6 @@
                 </div>
               </div>
             </div>
-
-            <!-- Botón editar -->
             <button (click)="editMascota(mascota)"
               class="p-2 rounded-lg text-slate-300 hover:text-[#0066AA] hover:bg-blue-50 flex-shrink-0">
               <i class="pi pi-pencil text-sm"></i>
@@ -170,13 +151,8 @@
           </div>
         </div>
 
-        <!-- Separador -->
         <div class="border-t border-slate-100 mx-4"></div>
-
-        <!-- Cuerpo de la tarjeta -->
         <div class="p-4 pt-3 flex flex-col flex-1 gap-3">
-
-          <!-- Métricas: Edad · Peso · Raza -->
           <div class="grid grid-cols-3 gap-2">
             <div class="text-center">
               <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Edad</p>
@@ -195,14 +171,10 @@
               </p>
             </div>
           </div>
-
-          <!-- Propietario -->
           <div class="flex items-center gap-2 text-xs text-slate-500">
             <i class="pi pi-user text-slate-300 shrink-0"></i>
             <span class="font-medium truncate">{{ mascota.apoderadoNombreCompleto }}</span>
           </div>
-
-          <!-- Último diagnóstico -->
           <div class="bg-slate-50 rounded-lg px-3 py-2.5">
             <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">
               Último diagnóstico
@@ -212,11 +184,8 @@
               {{ mascota.ultimoDiagnostico || 'Sin diagnóstico registrado' }}
             </p>
           </div>
-
-          <!-- Acciones + estado -->
           <div class="flex items-center gap-2 mt-auto">
 
-            <!-- HC: ver o crear -->
             <button
               *ngIf="mascota.tieneHistoriaClinica"
               (click)="verHistoriaClinica(mascota)"
@@ -224,15 +193,12 @@
               <i class="pi pi-file-edit text-xs"></i>
               Ver HC
             </button>
-            <button
+            <span
               *ngIf="!mascota.tieneHistoriaClinica"
-              (click)="nuevaHistoriaClinica(mascota)"
-              class="flex-1 flex items-center justify-center gap-1.5 border border-slate-200 text-slate-500 text-xs font-bold h-9 rounded-lg">
-              <i class="pi pi-plus text-xs"></i>
-              Crear HC
-            </button>
-
-            <!-- Estado activo/inactivo -->
+              class="flex-1 flex items-center justify-center gap-1.5 bg-slate-50 text-slate-300 text-xs font-bold h-9 rounded-lg cursor-default select-none">
+              <i class="pi pi-file text-xs"></i>
+              Sin HC
+            </span>
             <button (click)="toggleEstado(mascota)"
               [class]="mascota.activo
                 ? 'bg-emerald-50 text-emerald-700'
@@ -250,7 +216,6 @@
 
     </div>
 
-    <!-- Paginador -->
     <div *ngIf="totalRecords() > pageSize" class="bg-white border border-slate-200 rounded-xl overflow-hidden">
       <p-paginator
         [rows]="pageSize"
@@ -265,7 +230,6 @@
 
 </div>
 
-<!-- ── Modal: registrar / editar mascota ──────────────────── -->
 <p-dialog
   [(visible)]="displayModal"
   [header]="isEdit() ? 'Editar mascota' : 'Registrar nueva mascota'"
@@ -278,8 +242,6 @@
   styleClass="!rounded-2xl !border-none !bg-white"
 >
   <form [formGroup]="mascotaForm" (ngSubmit)="saveMascota()" class="flex flex-col gap-6 mt-6 pb-4">
-
-    <!-- Nombre -->
     <div class="flex flex-col gap-2">
       <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">
         Nombre de la mascota
@@ -289,8 +251,6 @@
       <p *ngIf="mascotaForm.get('nombre')?.touched && mascotaForm.get('nombre')?.invalid"
         class="text-xs text-rose-500 font-medium ml-1">El nombre es requerido.</p>
     </div>
-
-    <!-- Especie + Raza -->
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <div class="flex flex-col gap-2">
         <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Especie</label>
@@ -313,7 +273,6 @@
       </div>
     </div>
 
-    <!-- Sexo + Fecha de nacimiento -->
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <div class="flex flex-col gap-2">
         <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Sexo</label>
@@ -340,8 +299,6 @@
           class="text-xs text-rose-500 font-medium ml-1">Requerido.</p>
       </div>
     </div>
-
-    <!-- Color/Pelaje + Peso -->
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <div class="flex flex-col gap-2">
         <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">
@@ -360,8 +317,6 @@
           class="w-full h-14 bg-slate-50 !border-none !rounded-xl !px-6 !text-sm !font-bold !text-slate-800 placeholder:text-slate-300 focus:!ring-2 focus:!ring-[#0066AA]/20 shadow-none" />
       </div>
     </div>
-
-    <!-- Propietario -->
     <div class="flex flex-col gap-2">
       <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Propietario</label>
       <p-dropdown
@@ -376,8 +331,6 @@
       <p *ngIf="mascotaForm.get('apoderadoId')?.touched && mascotaForm.get('apoderadoId')?.invalid"
         class="text-xs text-rose-500 font-medium ml-1">Selecciona un propietario.</p>
     </div>
-
-    <!-- Botones -->
     <div class="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-6 border-t border-slate-100">
       <button type="button" (click)="displayModal.set(false)"
         class="px-8 h-12 rounded-2xl text-sm font-extrabold text-slate-400 hover:bg-slate-100">

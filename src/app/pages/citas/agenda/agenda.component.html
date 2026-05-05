@@ -1,293 +1,200 @@
 <div class="p-4 sm:p-6 lg:p-8 min-h-screen bg-slate-50 font-['Barlow']">
 
-  <div class="mb-5 sm:mb-8">
-
-
-    <div class="flex items-center justify-between gap-3 mb-1.5">
-      <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight leading-tight">
-        Agenda de Citas
-      </h1>
-
-
-      <div class="flex items-center gap-2.5 sm:gap-3 shrink-0">
-        <div *ngIf="isSuperAdmin()" class="hidden sm:block w-52 lg:w-64">
-          <p-select [options]="empresas()" [(ngModel)]="selectedCompanyId" (onChange)="onEmpresaChange()"
-            placeholder="Seleccionar empresa"
-            appendTo="body"
-            styleClass="w-full h-10 bg-white !border-slate-200 !rounded-xl !px-3 !flex !items-center !text-sm !font-bold !text-slate-800"
-            panelStyleClass="!rounded-xl !border-none"></p-select>
-        </div>
-
-        <button (click)="openNew()"
-          class="flex items-center gap-1.5 bg-[#0066AA] text-white font-medium rounded-lg h-9 sm:h-10">
-          <span class="flex items-center gap-1.5 px-3 sm:px-5 text-sm">
-            <i class="pi pi-plus text-xs"></i>
-            <span class="hidden sm:inline">Nueva cita</span>
-          </span>
-        </button>
-      </div>
-    </div>
-
-
-    <p class="text-slate-500 font-medium flex items-center gap-2 text-sm">
-      <span class="w-2 h-2 rounded-full bg-[#0066AA] shrink-0"></span>
-      Programaciones y atenciones del día
-    </p>
-    <div *ngIf="isSuperAdmin()" class="sm:hidden mt-3">
-      <p-select [options]="empresas()" [(ngModel)]="selectedCompanyId" (onChange)="onEmpresaChange()"
-        placeholder="Seleccionar empresa"
-        appendTo="body"
-        styleClass="w-full h-11 bg-white !border-slate-200 !rounded-xl !px-3 !flex !items-center !text-sm !font-bold !text-slate-800"
-        panelStyleClass="!rounded-xl !border-none"></p-select>
-    </div>
-  </div>
-  <div class="mb-5 bg-white border border-slate-200 rounded-xl">
-    <div class="sm:hidden">
-      <div class="flex items-center gap-3 px-4 py-3">
-        <div class="flex-1">
-          <input type="date" [(ngModel)]="filterFecha" (change)="loadCitas()"
-            class="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm font-bold text-slate-700 focus:outline-none focus:border-[#0066AA] appearance-none" />
-        </div>
-        <button (click)="filtersOpen = !filtersOpen"
-          [class]="filtersOpen ? 'bg-[#0066AA] text-white border-[#0066AA]' : 'bg-slate-50 text-slate-500 border-slate-200'"
-          class="flex items-center gap-1.5 px-3 h-10 rounded-lg border text-xs font-bold shrink-0">
-          <i class="pi pi-sliders-h text-xs"></i>
-          Filtros
-          <i [class]="(filtersOpen ? 'pi-chevron-up' : 'pi-chevron-down') + ' pi text-[10px] ml-0.5'"></i>
-        </button>
-      </div>
-
-      <!-- Filtros extra: colapsables -->
-      <div *ngIf="filtersOpen" class="px-4 pb-4 pt-1 border-t border-slate-100">
-        <div class="grid grid-cols-2 gap-3">
-          <div class="flex flex-col gap-1.5">
-            <label class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest ml-1">Estado</label>
-            <p-select [options]="estadoOpciones" [(ngModel)]="filterEstado" (onChange)="loadCitas()"
-              placeholder="Todos" [showClear]="true"
-              appendTo="body"
-              styleClass="w-full h-10 bg-slate-50 !border-slate-200 !rounded-lg !px-2 !flex !items-center !text-xs !font-bold !text-slate-800"></p-select>
-          </div>
-          <div class="flex flex-col gap-1.5">
-            <label class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest ml-1">Veterinario</label>
-            <p-select [options]="veterinarios()" [(ngModel)]="filterVeterinarioId" (onChange)="loadCitas()"
-              placeholder="Todos" [showClear]="true"
-              appendTo="body"
-              styleClass="w-full h-10 bg-slate-50 !border-slate-200 !rounded-lg !px-2 !flex !items-center !text-xs !font-bold !text-slate-800"></p-select>
-          </div>
-        </div>
-        <button (click)="loadCitas()"
-          class="mt-3 w-full flex items-center justify-center gap-2 border border-slate-200 bg-slate-50 text-slate-500 text-xs font-bold h-9 rounded-lg">
-          <i class="pi pi-refresh text-xs"></i>
-          Actualizar
-        </button>
-      </div>
-
-    </div>
-
-    <!-- Desktop: todos los filtros en fila -->
-    <div class="hidden sm:block px-4 py-4">
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <div class="flex flex-col gap-1.5">
-          <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Fecha</label>
-          <input type="date" [(ngModel)]="filterFecha" (change)="loadCitas()"
-            class="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 text-sm font-bold text-slate-700 focus:outline-none focus:border-[#0066AA] appearance-none" />
-        </div>
-        <div class="flex flex-col gap-1.5">
-          <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Estado</label>
-          <p-select [options]="estadoOpciones" [(ngModel)]="filterEstado" (onChange)="loadCitas()" placeholder="Todos"
-            [showClear]="true"
-            appendTo="body"
-            styleClass="w-full h-12 bg-slate-50 !border-slate-200 !rounded-xl !px-3 !flex !items-center !text-sm !font-bold !text-slate-800"></p-select>
-        </div>
-        <div class="flex flex-col gap-1.5">
-          <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Veterinario</label>
-          <p-select [options]="veterinarios()" [(ngModel)]="filterVeterinarioId" (onChange)="loadCitas()"
-            placeholder="Todos" [showClear]="true"
-            appendTo="body"
-            styleClass="w-full h-12 bg-slate-50 !border-slate-200 !rounded-xl !px-3 !flex !items-center !text-sm !font-bold !text-slate-800"></p-select>
-        </div>
-        <div class="flex flex-col justify-end">
-          <button (click)="loadCitas()"
-            class="flex items-center justify-center gap-2 border border-slate-200 bg-slate-50 text-slate-500 text-sm font-medium px-4 h-12 rounded-xl w-full">
-            <i class="pi pi-refresh text-xs"></i>
-            Actualizar
-          </button>
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- ── Contenido ──────────────────────────────────────────── -->
-  <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-
-    <!-- Estado: SUPER_ADMIN sin empresa -->
-    <div *ngIf="isSuperAdmin() && !selectedCompanyId" class="py-12 sm:py-20 text-center px-6">
-      <div class="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
-        <i class="pi pi-building text-2xl text-slate-300"></i>
-      </div>
-      <p class="text-sm font-bold text-slate-500 mb-1">Selecciona una empresa</p>
-      <p class="text-xs text-slate-400 max-w-[220px] mx-auto">
-        Elige una empresa del selector para ver su agenda de citas.
+  <!-- ── Encabezado ─────────────────────────────────────────────── -->
+  <div class="mb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <div>
+      <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight leading-tight">Agenda de Citas</h1>
+      <p class="text-slate-500 font-medium flex items-center gap-2 text-sm mt-1">
+        <span class="w-2 h-2 rounded-full bg-[#0066AA] shrink-0"></span>
+        Programaciones y atenciones
       </p>
     </div>
 
-    <!-- Contenido con datos -->
-    <ng-container *ngIf="!isSuperAdmin() || selectedCompanyId">
-
-      <!-- ── Vista móvil: tarjetas ────────────────────────────── -->
-      <div class="sm:hidden">
-
-        <!-- Tarjetas de citas -->
-        <div *ngIf="citas().length > 0" class="divide-y divide-slate-100">
-          <div *ngFor="let cita of citas()" class="p-4">
-
-            <!-- Fila 1: hora + estado -->
-            <div class="flex items-start justify-between gap-2 mb-3">
-              <div class="flex items-baseline gap-2">
-                <span class="text-xl font-extrabold text-[#0066AA] leading-none">
-                  {{ cita.fechaHoraInicio | date: 'HH:mm' }}
-                </span>
-                <span class="text-xs text-slate-400 font-medium">{{ cita.duracionMinutos }} min</span>
-              </div>
-              <span
-                [class]="'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ' + estadoClass(cita.estado)">
-                <span class="w-1.5 h-1.5 rounded-full bg-current opacity-70"></span>
-                {{ estadoLabel(cita.estado) }}
-              </span>
-            </div>
-
-            <!-- Fila 2: mascota + dueño -->
-            <div class="flex items-center gap-3 mb-2.5">
-              <div
-                class="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center text-[#0066AA] font-extrabold text-base flex-shrink-0">
-                {{ cita.mascotaNombre.charAt(0) }}
-              </div>
-              <div class="min-w-0">
-                <p class="text-sm font-bold text-slate-800 leading-tight truncate">{{ cita.mascotaNombre }}</p>
-                <p class="text-xs text-slate-400 truncate">{{ cita.apoderadoNombre }}</p>
-              </div>
-            </div>
-
-            <!-- Fila 3: veterinario + motivo -->
-            <div class="flex items-center gap-1.5 mb-3 text-xs text-slate-500">
-              <i class="pi pi-user text-slate-300 shrink-0"></i>
-              <span class="font-medium truncate">{{ cita.veterinarioNombre }}</span>
-              <span class="text-slate-300 shrink-0">·</span>
-              <span class="truncate text-slate-400">{{ cita.motivoCita }}</span>
-            </div>
-
-            <!-- Fila 4: acciones -->
-            <div class="flex items-center gap-2">
-              <button
-                *ngIf="cita.estado === 'PROGRAMADA' || cita.estado === 'CONFIRMADA' || cita.estado === 'SALA_DE_ESPERA'"
-                (click)="iniciarCita(cita)"
-                class="flex-1 flex items-center justify-center gap-1.5 bg-emerald-50 text-emerald-700 text-xs font-bold h-9 rounded-lg">
-                <i class="pi pi-play text-[10px]"></i>
-                Iniciar atención
-              </button>
-              <button
-                class="flex items-center justify-center gap-1.5 border border-slate-200 text-slate-500 text-xs font-medium px-3 h-9 rounded-lg"
-                [class.flex-1]="!(cita.estado === 'PROGRAMADA' || cita.estado === 'CONFIRMADA' || cita.estado === 'SALA_DE_ESPERA')">
-                <i class="pi pi-eye text-xs"></i>
-                <span
-                  *ngIf="!(cita.estado === 'PROGRAMADA' || cita.estado === 'CONFIRMADA' || cita.estado === 'SALA_DE_ESPERA')">
-                  Ver detalle
-                </span>
-              </button>
-            </div>
-
-          </div>
-        </div>
-
-        <!-- Estado vacío (móvil) -->
-        <div *ngIf="citas().length === 0" class="py-14 text-center px-4">
-          <i class="pi pi-calendar text-3xl text-slate-200 block mb-3"></i>
-          <p class="text-sm text-slate-400 font-medium">Sin citas para este día</p>
-        </div>
-
+    <div class="flex items-center gap-2 flex-wrap">
+      <!-- Selector empresa (SUPER_ADMIN) -->
+      <div *ngIf="isSuperAdmin()" class="w-52">
+        <p-dropdown [options]="empresas()" [(ngModel)]="selectedCompanyId"
+          (onChange)="onEmpresaChange()" placeholder="Seleccionar empresa"
+          appendTo="body" styleClass="w-full">
+        </p-dropdown>
       </div>
 
-      <!-- ── Vista desktop: tabla ─────────────────────────────── -->
-      <div class="hidden sm:block overflow-x-auto">
-        <p-table [value]="citas()" [lazy]="true" (onLazyLoad)="loadCitas($event)" [paginator]="true" [rows]="10"
-          [totalRecords]="totalRecords()" [loading]="loadingStore.isLoading()" responsiveLayout="scroll"
-          [rowHover]="true" styleClass="p-datatable-borderless">
+      <!-- Toggle Vista -->
+      <div class="flex items-center bg-white border border-slate-200 rounded-xl p-1 gap-0.5">
+        <button (click)="cambiarVista('lista')"
+          [class]="vistaActual()==='lista' ? 'bg-[#0066AA] text-white' : 'text-slate-400 hover:text-slate-700'"
+          class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all">
+          <i class="pi pi-list text-xs"></i>
+          <span class="hidden sm:inline">Lista</span>
+        </button>
+        <button (click)="cambiarVista('dia')"
+          [class]="vistaActual()==='dia' ? 'bg-[#0066AA] text-white' : 'text-slate-400 hover:text-slate-700'"
+          class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all">
+          <i class="pi pi-calendar text-xs"></i>
+          <span class="hidden sm:inline">Día</span>
+        </button>
+        <button (click)="cambiarVista('semana')"
+          [class]="vistaActual()==='semana' ? 'bg-[#0066AA] text-white' : 'text-slate-400 hover:text-slate-700'"
+          class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all">
+          <i class="pi pi-calendar-times text-xs"></i>
+          <span class="hidden sm:inline">Semana</span>
+        </button>
+        <button (click)="cambiarVista('mes')"
+          [class]="vistaActual()==='mes' ? 'bg-[#0066AA] text-white' : 'text-slate-400 hover:text-slate-700'"
+          class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all">
+          <i class="pi pi-calendar-plus text-xs"></i>
+          <span class="hidden sm:inline">Mes</span>
+        </button>
+      </div>
+
+      <button (click)="openNew()"
+        class="flex items-center gap-1.5 bg-[#0066AA] text-white font-medium rounded-xl px-4 py-2 text-sm">
+        <i class="pi pi-plus text-xs"></i>
+        <span class="hidden sm:inline">Nueva cita</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Barra navegación calendario ─────────────────────────────── -->
+  <div *ngIf="vistaActual() !== 'lista'"
+    class="mb-4 flex items-center justify-between gap-3 bg-white border border-slate-200 rounded-xl px-4 py-3">
+    <button (click)="navegarCalendario(-1)"
+      class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:border-[#0066AA] hover:text-[#0066AA]">
+      <i class="pi pi-chevron-left text-xs"></i>
+    </button>
+    <div class="flex items-center gap-3">
+      <p class="text-sm font-extrabold text-slate-800 capitalize">{{ tituloCalendario() }}</p>
+      <button (click)="irAHoy()"
+        class="text-xs font-bold text-[#0066AA] border border-[#0066AA]/30 bg-blue-50 px-2.5 py-1 rounded-lg hover:bg-[#0066AA] hover:text-white transition-all">
+        Hoy
+      </button>
+    </div>
+    <button (click)="navegarCalendario(1)"
+      class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:border-[#0066AA] hover:text-[#0066AA]">
+      <i class="pi pi-chevron-right text-xs"></i>
+    </button>
+  </div>
+
+  <!-- ── Filtros (solo en vista lista / día) ────────────────────── -->
+  <div *ngIf="vistaActual() === 'lista' || vistaActual() === 'dia'"
+    class="mb-5 bg-white border border-slate-200 rounded-xl px-4 py-4">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest">Fecha</label>
+        <input type="date" [(ngModel)]="filterFecha" (change)="loadCitas()"
+          class="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl px-4 text-sm font-bold text-slate-700 focus:outline-none focus:border-[#0066AA]" />
+      </div>
+
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest">Estado</label>
+        <div style="display:block;width:100%">
+          <p-dropdown
+            [options]="estadoOpciones" [(ngModel)]="filterEstado"
+            (onChange)="loadCitas()" placeholder="Todos" [showClear]="true"
+            appendTo="body" [style]="{'width':'100%'}" [virtualScroll]="false"
+            panelStyleClass="!w-full !min-w-fit">
+          </p-dropdown>
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest">Veterinario</label>
+        <div style="display:block;width:100%">
+          <p-dropdown
+            [options]="veterinarios()" [(ngModel)]="filterVeterinarioId"
+            (onChange)="loadCitas()" placeholder="Todos" [showClear]="true"
+            appendTo="body" [style]="{'width':'100%'}" [virtualScroll]="false"
+            panelStyleClass="!w-full !min-w-fit">
+          </p-dropdown>
+        </div>
+      </div>
+
+      <div class="flex flex-col justify-end">
+        <button (click)="loadCitas()"
+          class="flex items-center justify-center gap-2 border border-slate-200 bg-slate-50 text-slate-500 text-sm font-medium px-4 h-11 rounded-xl w-full hover:bg-slate-100">
+          <i class="pi pi-refresh text-xs"></i> Actualizar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <!-- VISTA: LISTA                                                 -->
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <ng-container *ngIf="vistaActual() === 'lista'">
+    <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+
+      <!-- Sin empresa (SUPER_ADMIN) -->
+      <div *ngIf="isSuperAdmin() && !selectedCompanyId" class="py-16 text-center px-6">
+        <div class="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
+          <i class="pi pi-building text-2xl text-slate-300"></i>
+        </div>
+        <p class="text-sm font-bold text-slate-500 mb-1">Selecciona una empresa</p>
+      </div>
+
+      <ng-container *ngIf="!isSuperAdmin() || selectedCompanyId">
+        <p-table [value]="citas()" [lazy]="true" (onLazyLoad)="loadCitas($event)"
+          [paginator]="true" [rows]="10" [totalRecords]="totalRecords()"
+          [loading]="loadingStore.isLoading()" [rowHover]="true"
+          styleClass="p-datatable-borderless" responsiveLayout="scroll">
+
           <ng-template pTemplate="header">
             <tr class="border-b border-slate-100">
-              <th
-                class="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider whitespace-nowrap">
-                Hora</th>
-              <th
-                class="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider whitespace-nowrap">
-                Paciente / Dueño</th>
-              <th
-                class="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider whitespace-nowrap">
-                Veterinario</th>
-              <th
-                class="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider whitespace-nowrap">
-                Motivo</th>
-              <th
-                class="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider whitespace-nowrap">
-                Estado</th>
-              <th class="px-6 py-4 w-32"></th>
+              <th class="text-left px-5 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Hora</th>
+              <th class="text-left px-5 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Paciente / Dueño</th>
+              <th class="text-left px-5 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Veterinario</th>
+              <th class="text-left px-5 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Motivo</th>
+              <th class="text-left px-5 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Estado</th>
+              <th class="px-5 py-4 w-32"></th>
             </tr>
           </ng-template>
 
           <ng-template pTemplate="body" let-cita>
             <tr class="border-b border-slate-100 last:border-0 hover:bg-slate-50">
-
-              <td class="px-6 py-4 whitespace-nowrap">
-                <p class="text-sm font-bold text-[#0066AA] leading-tight">{{ cita.fechaHoraInicio | date: 'HH:mm' }}</p>
+              <td class="px-5 py-4 whitespace-nowrap">
+                <p class="text-sm font-bold text-[#0066AA]">{{ cita.fechaHoraInicio | date:'HH:mm' }}</p>
                 <p class="text-xs text-slate-400 mt-0.5">{{ cita.duracionMinutos }} min</p>
               </td>
-
-              <td class="px-6 py-4">
+              <td class="px-5 py-4">
                 <div class="flex items-center gap-3">
-                  <div
-                    class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-[#0066AA] font-bold text-base flex-shrink-0">
+                  <div class="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center text-[#0066AA] font-bold shrink-0">
                     {{ cita.mascotaNombre?.charAt(0) }}
                   </div>
                   <div>
-                    <p class="text-sm font-medium text-slate-800 leading-tight whitespace-nowrap">{{ cita.mascotaNombre
-                      }}</p>
-                    <p class="text-xs text-slate-400 mt-0.5">{{ cita.apoderadoNombre }}</p>
+                    <p class="text-sm font-bold text-slate-800 whitespace-nowrap">{{ cita.mascotaNombre }}</p>
+                    <p class="text-xs text-slate-400">{{ cita.apoderadoNombre }}</p>
                   </div>
                 </div>
               </td>
-
-              <td class="px-6 py-4 whitespace-nowrap">
-                <p class="text-sm font-medium text-slate-800 leading-tight">{{ cita.veterinarioNombre }}</p>
+              <td class="px-5 py-4 whitespace-nowrap">
+                <p class="text-sm text-slate-700">{{ cita.veterinarioNombre }}</p>
               </td>
-
-              <td class="px-6 py-4 max-w-[160px]">
+              <td class="px-5 py-4 max-w-[160px]">
                 <p class="text-sm text-slate-600 truncate">{{ cita.motivoCita }}</p>
               </td>
-
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span
-                  [class]="'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ' + estadoClass(cita.estado)">
+              <td class="px-5 py-4 whitespace-nowrap">
+                <span [class]="'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ' + estadoClass(cita.estado)">
                   <span class="w-1.5 h-1.5 rounded-full bg-current opacity-70"></span>
                   {{ estadoLabel(cita.estado) }}
                 </span>
               </td>
-
-              <td class="px-6 py-4 text-right whitespace-nowrap">
-                <div class="flex items-center justify-end gap-1">
-                  <button
-                    *ngIf="cita.estado === 'PROGRAMADA' || cita.estado === 'CONFIRMADA' || cita.estado === 'SALA_DE_ESPERA'"
-                    (click)="iniciarCita(cita)"
-                    class="flex items-center gap-1.5 bg-emerald-50 text-emerald-700 text-xs font-medium px-3 h-8 rounded-lg hover:bg-emerald-100">
-                    <i class="pi pi-play text-[10px]"></i>
-                    Iniciar
-                  </button>
-                  <button class="p-2 rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50"
-                    title="Ver detalle">
-                    <i class="pi pi-eye text-sm"></i>
-                  </button>
-                </div>
+              <td class="px-5 py-4 text-right whitespace-nowrap">
+                <button *ngIf="cita.estado === 'PROGRAMADA' || cita.estado === 'CONFIRMADA' || cita.estado === 'SALA_DE_ESPERA'"
+                  (click)="iniciarCita(cita)"
+                  class="flex items-center gap-1.5 bg-emerald-50 text-emerald-700 text-xs font-bold px-3 h-8 rounded-lg hover:bg-emerald-100">
+                  <i class="pi pi-play text-[10px]"></i> Iniciar
+                </button>
+                <button *ngIf="cita.estado === 'EN_PROCESO'"
+                  (click)="continuarConsulta(cita)"
+                  class="flex items-center gap-1.5 bg-amber-50 text-amber-700 text-xs font-bold px-3 h-8 rounded-lg hover:bg-amber-100">
+                  <i class="pi pi-external-link text-[10px]"></i> Continuar
+                </button>
+                <button *ngIf="(cita.estado === 'COMPLETADA' || cita.consultaId) && cita.estado !== 'EN_PROCESO'"
+                  (click)="continuarConsulta(cita)"
+                  class="flex items-center gap-1.5 bg-slate-50 text-slate-700 text-xs font-bold px-3 h-8 rounded-lg hover:bg-slate-100">
+                  <i class="pi pi-eye text-[10px]"></i> Ver
+                </button>
               </td>
-
             </tr>
           </ng-template>
 
@@ -295,89 +202,298 @@
             <tr>
               <td colspan="6" class="py-20 text-center">
                 <i class="pi pi-calendar text-3xl text-slate-200 block mb-3"></i>
-                <p class="text-sm text-slate-400 font-medium">No hay citas programadas para este día</p>
+                <p class="text-sm text-slate-400 font-medium">No hay citas para este día</p>
               </td>
             </tr>
           </ng-template>
         </p-table>
+      </ng-container>
+    </div>
+  </ng-container>
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <!-- VISTA: DÍA (timeline)                                        -->
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <ng-container *ngIf="vistaActual() === 'dia'">
+    <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+
+      <div *ngIf="isSuperAdmin() && !selectedCompanyId" class="py-16 text-center">
+        <i class="pi pi-building text-2xl text-slate-200 block mb-3"></i>
+        <p class="text-sm text-slate-400">Selecciona una empresa</p>
       </div>
 
-    </ng-container>
-  </div>
+      <ng-container *ngIf="!isSuperAdmin() || selectedCompanyId">
+        <div *ngIf="loadingStore.isLoading()" class="py-16 flex items-center justify-center gap-3 text-slate-400">
+          <i class="pi pi-spin pi-spinner text-xl"></i>
+          <span class="text-sm font-medium">Cargando citas…</span>
+        </div>
+
+        <div *ngIf="!loadingStore.isLoading()" class="overflow-y-auto max-h-[680px]">
+          <div *ngFor="let hora of HORAS_DIA" class="flex border-b border-slate-50 last:border-0 min-h-[56px]">
+            <!-- Etiqueta hora -->
+            <div class="w-16 shrink-0 px-3 pt-3">
+              <span class="text-xs font-bold text-slate-400">{{ hora }}:00</span>
+            </div>
+            <!-- Citas de esa hora -->
+            <div class="flex-1 px-2 py-2 flex flex-wrap gap-2">
+              <div *ngFor="let cita of getCitasHora(fechaBase(), hora)"
+                class="flex items-start gap-2 rounded-xl px-3 py-2 border text-xs max-w-[300px] cursor-pointer hover:shadow-sm"
+                [class]="estadoClass(cita.estado).replace('bg-','border-').replace('text-','') + ' ' + estadoClass(cita.estado)">
+                <div>
+                  <p class="font-bold leading-tight">{{ cita.mascotaNombre }}</p>
+                  <p class="opacity-70 leading-snug">{{ cita.motivoCita }}</p>
+                  <p class="opacity-60 mt-0.5">{{ cita.veterinarioNombre }}</p>
+                </div>
+                <button *ngIf="cita.estado === 'PROGRAMADA' || cita.estado === 'CONFIRMADA' || cita.estado === 'SALA_DE_ESPERA'"
+                  (click)="iniciarCita(cita)"
+                  class="ml-auto shrink-0 bg-emerald-600 text-white rounded-lg px-2 py-1 font-bold text-[10px] hover:bg-emerald-700">
+                  Iniciar
+                </button>
+                <button *ngIf="cita.estado === 'EN_PROCESO'"
+                  (click)="continuarConsulta(cita)"
+                  class="ml-auto shrink-0 bg-amber-600 text-white rounded-lg px-2 py-1 font-bold text-[10px] hover:bg-amber-700">
+                  Continuar
+                </button>
+                <button *ngIf="(cita.estado === 'COMPLETADA' || cita.consultaId) && cita.estado !== 'EN_PROCESO'"
+                  (click)="continuarConsulta(cita)"
+                  class="ml-auto shrink-0 bg-slate-600 text-white rounded-lg px-2 py-1 font-bold text-[10px] hover:bg-slate-700">
+                  Ver
+                </button>
+              </div>
+              <div *ngIf="getCitasHora(fechaBase(), hora).length === 0" class="h-3"></div>
+            </div>
+          </div>
+
+          <div *ngIf="citas().length === 0" class="py-16 text-center">
+            <i class="pi pi-calendar text-3xl text-slate-200 block mb-3"></i>
+            <p class="text-sm text-slate-400 font-medium">Sin citas para este día</p>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </ng-container>
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <!-- VISTA: SEMANA                                                -->
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <ng-container *ngIf="vistaActual() === 'semana'">
+    <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+
+      <div *ngIf="isSuperAdmin() && !selectedCompanyId" class="py-16 text-center">
+        <i class="pi pi-building text-2xl text-slate-200 block mb-3"></i>
+        <p class="text-sm text-slate-400">Selecciona una empresa</p>
+      </div>
+
+      <ng-container *ngIf="!isSuperAdmin() || selectedCompanyId">
+        <div *ngIf="cargandoCal()" class="py-16 flex items-center justify-center gap-3 text-slate-400">
+          <i class="pi pi-spin pi-spinner text-xl"></i>
+          <span class="text-sm font-medium">Cargando semana…</span>
+        </div>
+
+        <div *ngIf="!cargandoCal()" class="overflow-x-auto">
+          <!-- Header días -->
+          <div class="grid grid-cols-7 border-b border-slate-100 min-w-[700px]">
+            <div *ngFor="let dia of diasSemanaActual()" class="px-3 py-3 text-center">
+              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                {{ dia.toLocaleDateString('es-PE', { weekday: 'short' }) }}
+              </p>
+              <div [class]="'mx-auto mt-1 w-8 h-8 flex items-center justify-center rounded-full text-sm font-extrabold ' +
+                (esHoy(dia) ? 'bg-[#0066AA] text-white' : 'text-slate-700')">
+                {{ dia.getDate() }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Cuerpo semana -->
+          <div class="grid grid-cols-7 min-w-[700px] divide-x divide-slate-100" style="min-height: 480px;">
+            <div *ngFor="let dia of diasSemanaActual()"
+              [class]="'px-2 py-3 flex flex-col gap-1.5 overflow-hidden' + (esHoy(dia) ? ' bg-blue-50' : '')">
+              <div *ngFor="let cita of getCitasDia(dia)"
+                class="rounded-lg px-2.5 py-2 text-xs cursor-pointer hover:opacity-90 transition-opacity border"
+                [class]="estadoClass(cita.estado)">
+                <p class="font-extrabold leading-tight truncate">
+                  {{ cita.fechaHoraInicio | date:'HH:mm' }} {{ cita.mascotaNombre }}
+                </p>
+                <p class="opacity-70 truncate leading-snug">{{ cita.motivoCita }}</p>
+                <button *ngIf="cita.estado === 'PROGRAMADA' || cita.estado === 'CONFIRMADA' || cita.estado === 'SALA_DE_ESPERA'"
+                  (click)="iniciarCita(cita)"
+                  class="mt-1.5 w-full bg-emerald-600 text-white rounded px-1.5 py-0.5 font-bold text-[10px] hover:bg-emerald-700">
+                  Iniciar
+                </button>
+              </div>
+              <div *ngIf="getCitasDia(dia).length === 0"
+                class="flex-1 flex items-center justify-center">
+                <span class="text-[10px] text-slate-300 font-medium">Sin citas</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </ng-container>
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <!-- VISTA: MES                                                   -->
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <ng-container *ngIf="vistaActual() === 'mes'">
+    <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+
+      <div *ngIf="isSuperAdmin() && !selectedCompanyId" class="py-16 text-center">
+        <i class="pi pi-building text-2xl text-slate-200 block mb-3"></i>
+        <p class="text-sm text-slate-400">Selecciona una empresa</p>
+      </div>
+
+      <ng-container *ngIf="!isSuperAdmin() || selectedCompanyId">
+        <div *ngIf="cargandoCal()" class="py-16 flex items-center justify-center gap-3 text-slate-400">
+          <i class="pi pi-spin pi-spinner text-xl"></i>
+          <span class="text-sm font-medium">Cargando mes…</span>
+        </div>
+
+        <div *ngIf="!cargandoCal()">
+          <!-- Header días de la semana -->
+          <div class="grid grid-cols-7 border-b border-slate-100 bg-slate-50">
+            <div *ngFor="let d of ['Lu','Ma','Mi','Ju','Vi','Sá','Do']"
+              class="py-2.5 text-center text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">
+              {{ d }}
+            </div>
+          </div>
+
+          <!-- Grid del mes -->
+          <div class="grid grid-cols-7" style="min-height: 480px;">
+            <div *ngFor="let dia of diasMesActual()"
+              (click)="clickDiaMes(dia)"
+              class="border-b border-r border-slate-100 last:border-r-0 p-2 min-h-[100px] cursor-pointer transition-colors hover:bg-slate-50"
+              [class.opacity-40]="!esMesActual(dia)"
+              [class.bg-blue-50]="esHoy(dia)">
+
+              <!-- Número del día -->
+              <div class="flex items-center justify-between mb-1.5">
+                <span [class]="'text-xs font-extrabold ' + (esHoy(dia) ? 'w-6 h-6 bg-[#0066AA] text-white rounded-full flex items-center justify-center' : 'text-slate-600')">
+                  {{ dia.getDate() }}
+                </span>
+                <span *ngIf="getCitasDia(dia).length > 0"
+                  class="text-[10px] font-bold text-[#0066AA] bg-blue-50 px-1.5 py-0.5 rounded-full">
+                  {{ getCitasDia(dia).length }}
+                </span>
+              </div>
+
+              <!-- Primeras 3 citas del día -->
+              <div class="flex flex-col gap-1">
+                <div *ngFor="let cita of getCitasDia(dia).slice(0, 3)"
+                  class="rounded px-1.5 py-0.5 text-[10px] font-bold truncate"
+                  [class]="estadoClass(cita.estado)">
+                  {{ cita.fechaHoraInicio | date:'HH:mm' }} {{ cita.mascotaNombre }}
+                </div>
+                <span *ngIf="getCitasDia(dia).length > 3"
+                  class="text-[10px] text-slate-400 font-medium pl-1">
+                  +{{ getCitasDia(dia).length - 3 }} más
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </ng-container>
 
 </div>
 
-<!-- ── Modal nueva cita ────────────────────────────────────── -->
-<p-dialog [(visible)]="displayModal" header="Programar nueva cita" [modal]="true" [draggable]="false"
-  [resizable]="false" [breakpoints]="{'960px': '90vw', '640px': '95vw'}" [style]="{width: '500px'}"
-  styleClass="!rounded-2xl !border-none !bg-white">
-  <form [formGroup]="citaForm" (ngSubmit)="saveCita()" class="flex flex-col gap-6 mt-6 pb-4">
+<!-- ── Modal nueva cita ───────────────────────────────────────── -->
+<p-dialog [(visible)]="displayModal" header="Programar nueva cita"
+  [modal]="true" [draggable]="false" [resizable]="false"
+  [breakpoints]="{'960px': '90vw', '640px': '95vw'}"
+  [style]="{width: '500px'}"
+  styleClass="!rounded-2xl">
 
-    <div class="flex flex-col gap-2">
-      <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Dueño de la mascota</label>
-      <p-select [options]="clientes()" (onChange)="onClienteChange($event.value)" placeholder="Buscar dueño..."
-        [filter]="true"
-        appendTo="body"
-        styleClass="w-full h-14 bg-slate-50 !border-none !rounded-xl !px-4 !flex !items-center !text-sm !font-bold !text-slate-800"
-        panelStyleClass="!rounded-xl !border-none"></p-select>
+  <form [formGroup]="citaForm" (ngSubmit)="saveCita()" class="flex flex-col gap-5 mt-4 pb-2">
+
+    <div class="flex flex-col gap-1.5">
+      <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest">Dueño de la mascota</label>
+      <p-dropdown [options]="clientes()" (onChange)="onClienteChange($event.value)"
+        placeholder="Buscar dueño..." [filter]="true" appendTo="body" styleClass="w-full">
+      </p-dropdown>
     </div>
 
-    <div class="flex flex-col gap-2">
-      <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Mascota</label>
-      <p-select [options]="filteredMascotas()" formControlName="mascotaId" placeholder="Seleccionar mascota"
-        appendTo="body"
-        styleClass="w-full h-14 bg-slate-50 !border-none !rounded-xl !px-4 !flex !items-center !text-sm !font-bold !text-slate-800"
-        panelStyleClass="!rounded-xl !border-none"></p-select>
+    <div class="flex flex-col gap-1.5">
+      <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest">Mascota</label>
+      <p-dropdown [options]="filteredMascotas()" formControlName="mascotaId"
+        placeholder="Seleccionar mascota" appendTo="body" styleClass="w-full">
+      </p-dropdown>
       <p *ngIf="citaForm.get('mascotaId')?.touched && citaForm.get('mascotaId')?.invalid"
-        class="text-xs text-rose-500 font-medium ml-1">Campo requerido.</p>
+        class="text-xs text-rose-500 font-medium">Campo requerido.</p>
     </div>
 
-    <div class="flex flex-col gap-2">
-      <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Veterinario</label>
-      <p-select [options]="veterinarios()" formControlName="veterinarioId" placeholder="Asignar veterinario"
-        appendTo="body"
-        styleClass="w-full h-14 bg-slate-50 !border-none !rounded-xl !px-4 !flex !items-center !text-sm !font-bold !text-slate-800"
-        panelStyleClass="!rounded-xl !border-none"></p-select>
+    <div class="flex flex-col gap-1.5">
+      <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest">Veterinario</label>
+      <p-dropdown [options]="veterinarios()" formControlName="veterinarioId"
+        (onChange)="onVeterinarioChange($event.value)"
+        placeholder="Asignar veterinario" appendTo="body" styleClass="w-full">
+      </p-dropdown>
       <p *ngIf="citaForm.get('veterinarioId')?.touched && citaForm.get('veterinarioId')?.invalid"
-        class="text-xs text-rose-500 font-medium ml-1">Campo requerido.</p>
+        class="text-xs text-rose-500 font-medium">Campo requerido.</p>
     </div>
 
-    <div class="flex flex-col gap-2">
-      <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Fecha y hora</label>
-      <p-datepicker formControlName="fechaHoraInicio" [showTime]="true" [showIcon]="true" hourFormat="24"
-        [stepMinute]="15"
-        appendTo="body"
-        styleClass="w-full h-14 bg-slate-50 !border-none !rounded-xl !text-sm !font-bold !text-slate-800"></p-datepicker>
+    <!-- Horarios del veterinario -->
+    <div *ngIf="horariosVeterinario().length > 0"
+      class="p-4 rounded-xl bg-blue-50 border border-blue-100 flex flex-col gap-3">
+      <p class="text-xs font-extrabold text-blue-700 uppercase tracking-widest">Horarios disponibles</p>
+      <div class="grid grid-cols-2 gap-2">
+        <div *ngFor="let h of horariosVeterinario()"
+          class="bg-white border border-blue-200 rounded-lg px-3 py-2">
+          <p class="text-xs font-extrabold text-[#0066AA]">{{ h.diaSemana }}</p>
+          <p class="text-xs text-slate-600">{{ h.horaInicio }} – {{ h.horaFin }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-1.5">
+      <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest">Fecha y hora</label>
+      <p-calendar formControlName="fechaHoraInicio" [showTime]="true" [showIcon]="true"
+        hourFormat="24" [stepMinute]="15" appendTo="body" styleClass="w-full">
+      </p-calendar>
       <p *ngIf="citaForm.get('fechaHoraInicio')?.touched && citaForm.get('fechaHoraInicio')?.invalid"
-        class="text-xs text-rose-500 font-medium ml-1">Campo requerido.</p>
+        class="text-xs text-rose-500 font-medium">Campo requerido.</p>
     </div>
 
-    <div class="flex flex-col gap-2">
-      <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Motivo de la cita</label>
-      <input pInputText formControlName="motivoCita" placeholder="Ej: Control de rutina"
-        class="w-full h-14 bg-slate-50 !border-none !rounded-xl !px-6 !text-sm !font-bold !text-slate-800 placeholder:text-slate-300 focus:!ring-2 focus:!ring-[#0066AA]/20" />
-      <p *ngIf="citaForm.get('motivoCita')?.touched && citaForm.get('motivoCita')?.invalid"
-        class="text-xs text-rose-500 font-medium ml-1">Campo requerido.</p>
-    </div>
-
-    <div class="flex flex-col gap-2">
-      <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">
-        Notas adicionales
-        <span class="normal-case tracking-normal font-normal text-slate-300">(opcional)</span>
+    <div class="flex flex-col gap-1.5">
+      <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest">
+        Servicio <span class="normal-case font-normal text-slate-300">(opcional)</span>
       </label>
-      <textarea pTextarea formControlName="notas" rows="3" placeholder="Observaciones o indicaciones previas..."
-        class="w-full bg-slate-50 !border-none !rounded-xl !px-6 !py-4 !text-sm !font-bold !text-slate-800 placeholder:text-slate-300 focus:!ring-2 focus:!ring-[#0066AA]/20 resize-none"></textarea>
+      <div style="display:block;width:100%">
+        <p-dropdown formControlName="servicioId"
+          [options]="servicios()" placeholder="Sin servicio asignado"
+          [showClear]="true" appendTo="body" [style]="{'width':'100%'}">
+        </p-dropdown>
+      </div>
+      <p *ngIf="citaForm.get('servicioId')?.value" class="text-xs text-emerald-600 font-medium">
+        El precio se asignará automáticamente al seleccionar el servicio.
+      </p>
     </div>
 
-    <div class="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-6 border-t border-slate-50">
+    <div class="flex flex-col gap-1.5">
+      <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest">Motivo</label>
+      <input pInputText formControlName="motivoCita" placeholder="Ej: Control de rutina" class="w-full" />
+      <p *ngIf="citaForm.get('motivoCita')?.touched && citaForm.get('motivoCita')?.invalid"
+        class="text-xs text-rose-500 font-medium">Campo requerido.</p>
+    </div>
+
+    <div class="flex flex-col gap-1.5">
+      <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest">
+        Notas <span class="normal-case font-normal text-slate-300">(opcional)</span>
+      </label>
+      <textarea pInputTextarea formControlName="notas" rows="3"
+        placeholder="Observaciones previas..." class="w-full resize-none"></textarea>
+    </div>
+
+    <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
       <button type="button" (click)="displayModal.set(false)"
-        class="px-8 h-12 rounded-2xl text-sm font-extrabold text-slate-400 hover:bg-slate-100">
+        class="px-5 h-10 rounded-xl text-sm font-bold text-slate-400 hover:bg-slate-100">
         Cancelar
       </button>
       <button type="submit" [disabled]="loadingStore.isLoading()"
-        class="flex items-center justify-center gap-2 bg-[#0066AA] disabled:opacity-50 text-white text-sm font-medium px-6 h-10 rounded-lg">
+        class="flex items-center gap-2 bg-[#0066AA] disabled:opacity-50 text-white text-sm font-bold px-6 h-10 rounded-xl">
         <i class="pi pi-check text-xs"></i>
-        {{ loadingStore.isLoading() ? 'Guardando...' : 'Programar cita' }}
+        {{ loadingStore.isLoading() ? 'Guardando…' : 'Programar cita' }}
       </button>
     </div>
   </form>

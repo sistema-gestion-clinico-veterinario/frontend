@@ -14,7 +14,7 @@ import { CompanyService } from '../../../core/services/company.service';
 import { EspecialidadService } from '../../../core/services/especialidad.service';
 import { TipoEmpleadoService } from '../../../core/services/tipo-empleado.service';
 import { EmpleadoListResponse } from '../../../models/response/empleado-list-response';
-import { EmpleadoRequest } from '../../../models/request/empleado-request';
+import { EmpleadoRequest, HorarioEmpleadoRequest } from '../../../models/request/empleado-request';
 import { LoadingStore } from '../../../store/loading.store';
 import { AuthStore } from '../../../store/auth.store';
 import { Role } from '../../../core/enums/role.enum';
@@ -75,6 +75,19 @@ export class EmployeeComponent implements OnInit {
     { label: 'Femenino', value: 'FEMENINO' }
   ];
 
+  readonly diasSemana = [
+    { key: 'LUNES',     label: 'Lunes'     },
+    { key: 'MARTES',    label: 'Martes'    },
+    { key: 'MIERCOLES', label: 'Miércoles' },
+    { key: 'JUEVES',    label: 'Jueves'    },
+    { key: 'VIERNES',   label: 'Viernes'   },
+    { key: 'SABADO',    label: 'Sábado'    },
+    { key: 'DOMINGO',   label: 'Domingo'   },
+  ];
+
+  horarios: { diaSemana: string; activo: boolean; horaInicio: string; horaFin: string }[] =
+    this.diasSemana.map(d => ({ diaSemana: d.key, activo: false, horaInicio: '08:00', horaFin: '17:00' }));
+
 
   employeeForm: FormGroup = this.fb.group({
     id: [null],
@@ -100,9 +113,12 @@ export class EmployeeComponent implements OnInit {
       this.loadCompanies();
       this.employeeForm.get('companyId')?.setValidators([Validators.required]);
     } else {
+      const companyId = this.authStore.companyId() ?? undefined;
+      this.filterCompanyId = companyId ?? null;
       this.loadEmployees();
-      this.loadEspecialidades();
-      this.loadTypesEmpleado();
+      this.loadEspecialidades(companyId);
+      this.loadTypesEmpleado(companyId);
+      this.employeeForm.get('companyId')?.setValue(companyId);
     }
 
     this.employeeForm.get('roles')?.valueChanges.subscribe(roles => {
@@ -114,6 +130,16 @@ export class EmployeeComponent implements OnInit {
         collegiatura?.clearValidators();
       }
       collegiatura?.updateValueAndValidity();
+    });
+
+    this.employeeForm.get('companyId')?.valueChanges.subscribe(companyId => {
+      if (!companyId) {
+        this.especialidadesList.set([]);
+        this.tiposEmpleadoList.set([]);
+        return;
+      }
+      this.loadEspecialidades(companyId);
+      this.loadTypesEmpleado(companyId);
     });
   }
 
@@ -128,7 +154,7 @@ export class EmployeeComponent implements OnInit {
 
     const companyId = this.authStore.roles().includes(Role.SUPER_ADMIN)
       ? (this.filterCompanyId ?? undefined)
-      : undefined;
+      : (this.authStore.companyId() ?? undefined);
 
     this.empleadoService.listar(companyId, undefined, page, event.rows).subscribe({
       next: (res) => {
@@ -201,6 +227,7 @@ export class EmployeeComponent implements OnInit {
       tiposEmpleado: [],
       companyId: this.filterCompanyId
     });
+    this.horarios = this.diasSemana.map(d => ({ diaSemana: d.key, activo: false, horaInicio: '08:00', horaFin: '17:00' }));
     this.isEdit.set(false);
     this.displayModal.set(true);
   }
@@ -211,6 +238,23 @@ export class EmployeeComponent implements OnInit {
     this.empleadoService.getById(employee.id).subscribe({
       next: (res) => {
         this.employeeForm.patchValue(res.data);
+        if (res.data.companyId) {
+          this.loadEspecialidades(res.data.companyId);
+          this.loadTypesEmpleado(res.data.companyId);
+        }
+        this.empleadoService.getHorario(employee.id).subscribe({
+          next: (hRes) => {
+            this.horarios = this.diasSemana.map(d => {
+              const existente = hRes.data.find(h => h.diaSemana === d.key);
+              return {
+                diaSemana: d.key,
+                activo: existente?.activo ?? false,
+                horaInicio: existente?.horaInicio ?? '08:00',
+                horaFin: existente?.horaFin ?? '17:00'
+              };
+            });
+          }
+        });
         this.displayModal.set(true);
         this.loadingStore.hide();
       },
@@ -227,7 +271,11 @@ export class EmployeeComponent implements OnInit {
       return;
     }
 
-    const data: EmpleadoRequest = this.employeeForm.value;
+    const horariosActivos: HorarioEmpleadoRequest[] = this.horarios
+      .filter(h => h.activo)
+      .map(h => ({ diaSemana: h.diaSemana, horaInicio: h.horaInicio, horaFin: h.horaFin, activo: true }));
+
+    const data: EmpleadoRequest = { ...this.employeeForm.value, horarios: horariosActivos };
     const request = this.isEdit()
       ? this.empleadoService.actualizar(data.id!, data)
       : this.empleadoService.registrar(data);

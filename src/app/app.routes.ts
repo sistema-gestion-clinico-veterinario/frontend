@@ -9,6 +9,10 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/auth/login/login.component').then((m) => m.LoginComponent)
   },
   {
+    path: 'auth/verify/:token',
+    loadComponent: () => import('./pages/auth/verify-email/verify-email.component').then((m) => m.VerifyEmailComponent)
+  },
+  {
     path: '',
     loadComponent: () => import('./layouts/main-layout/main-layout.component').then((m) => m.MainLayoutComponent),
     canActivate: [AuthGuard],
@@ -25,6 +29,11 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/admin/company/company.component').then((m) => m.CompanyComponent)
       },
       {
+        path: 'admin/complementario',
+        data: { roles: [Role.SUPER_ADMIN] },
+        loadComponent: () => import('./pages/admin/complementario/complementario.component').then((m) => m.ComplementarioComponent)
+      },
+      {
         path: 'admin/empleados',
         data: { roles: [Role.SUPER_ADMIN, Role.ADMIN] },
         loadComponent: () => import('./pages/admin/employee/employee.component').then((m) => m.EmployeeComponent)
@@ -38,6 +47,24 @@ export const routes: Routes = [
         path: 'mascotas',
         data: { roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.VETERINARIO, Role.RECEPCIONISTA] },
         loadComponent: () => import('./pages/mascotas/lista-mascotas/lista-mascotas.component').then((m) => m.ListaMascotasComponent)
+      },
+      {
+        path: 'historias-clinicas',
+        data: { roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.VETERINARIO, Role.RECEPCIONISTA] },
+        children: [
+          {
+            path: '',
+            loadComponent: () => import('./pages/historias-clinicas/lista-hc/lista-hc.component').then((m) => m.ListaHcComponent)
+          },
+          {
+            path: 'mascota/:mascotaId',
+            loadComponent: () => import('./pages/historias-clinicas/historia-clinica-mascota/historia-clinica-mascota.component').then((m) => m.HistoriaClinicaMascotaComponent)
+          },
+          {
+            path: 'consulta/:consultaId',
+            loadComponent: () => import('./pages/historias-clinicas/form-hc/consulta-form.component').then((m) => m.ConsultaFormComponent)
+          }
+        ]
       },
       {
         path: 'citas',

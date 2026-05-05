@@ -2,6 +2,7 @@ import { EstadoCita } from "../../core/enums/estado-cita.enum";
 
 export interface CitaResponse {
   id: number;
+  version: number;
   mascotaId: number;
   mascotaNombre: string;
   apoderadoId: number;
@@ -16,4 +17,5 @@ export interface CitaResponse {
   duracionMinutos: number;
   estado: EstadoCita;
   notas?: string;
+  consultaId?: number;
 }

@@ -137,7 +137,13 @@ export class ListaMascotasComponent implements OnInit {
   }
 
   loadApoderados() {
-    this.apoderadoService.listar(undefined, undefined, undefined, 0, 200).subscribe({
+    if (this.isSuperAdmin() && !this.selectedCompanyId) {
+      this.apoderados.set([]);
+      return;
+    }
+
+    const companyId = this.isSuperAdmin() ? (this.selectedCompanyId ?? undefined) : undefined;
+    this.apoderadoService.listar(companyId, undefined, undefined, 0, 200).subscribe({
       next: (res) => {
         this.apoderados.set(
           res.data.content.map(c => ({
@@ -181,7 +187,10 @@ export class ListaMascotasComponent implements OnInit {
   }
 
   // ── Eventos ───────────────────────────────────────────────
-  onEmpresaChange() { this.loadMascotas(0); }
+  onEmpresaChange() {
+    this.loadMascotas(0);
+    this.loadApoderados();
+  }
   onFilterChange()  { this.loadMascotas(0); }
   onPageChange(e: any) { this.loadMascotas(e.page); }
 
@@ -309,10 +318,6 @@ export class ListaMascotasComponent implements OnInit {
 
   verHistoriaClinica(mascota: MascotaResponse) {
     this.router.navigate(['/historias-clinicas/mascota', mascota.id]);
-  }
-
-  nuevaHistoriaClinica(mascota: MascotaResponse) {
-    this.router.navigate(['/historias-clinicas/nueva', mascota.id]);
   }
 
   // ── Helpers de presentación ───────────────────────────────

@@ -13,6 +13,7 @@ interface AuthState {
   companyName: string | null;
   nombreCompleto: string | null;
   userType: string | null;
+  empleadoId: number | null;
   passwordChanged: boolean;
   needsCompanySelection: boolean;
   selectedEnterprise: Enterprise | null;
@@ -38,6 +39,7 @@ const createInitialState = (): AuthState => {
     companyName: null,
     nombreCompleto: null,
     userType: null,
+    empleadoId: null,
     passwordChanged: false,
     needsCompanySelection: false,
     selectedEnterprise: null,
@@ -67,6 +69,7 @@ export const AuthStore = signalStore(
           companyName: store.companyName(),
           nombreCompleto: store.nombreCompleto(),
           userType: store.userType(),
+          empleadoId: store.empleadoId(),
           passwordChanged: store.passwordChanged(),
           needsCompanySelection: store.needsCompanySelection(),
           selectedEnterprise: store.selectedEnterprise(),
@@ -85,6 +88,7 @@ export const AuthStore = signalStore(
           companyName: store.companyName(),
           nombreCompleto: store.nombreCompleto(),
           userType: store.userType(),
+          empleadoId: store.empleadoId(),
           passwordChanged: store.passwordChanged(),
           needsCompanySelection: store.needsCompanySelection(),
           selectedEnterprise: enterprise,

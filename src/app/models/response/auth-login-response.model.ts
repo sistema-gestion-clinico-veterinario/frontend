@@ -6,6 +6,7 @@ export interface AuthLoginData {
   permissions: string[];
   nombreCompleto: string;
   userType: string;
+  empleadoId?: number;
   passwordChanged: boolean;
   needsCompanySelection: boolean;
 }

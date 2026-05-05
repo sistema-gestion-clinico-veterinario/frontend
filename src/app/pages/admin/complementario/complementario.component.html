@@ -1,0 +1,470 @@
+<p-toast></p-toast>
+
+<div class="p-6 md:p-10 flex flex-col gap-6 bg-slate-50/30 min-h-screen">
+
+  <!-- Clean Header -->
+  <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-2">
+    <div class="flex flex-col gap-1">
+      <h1 class="text-3xl font-bold text-slate-800 tracking-tight">Configuración Complementaria</h1>
+      <p class="text-slate-400 text-sm font-medium">Define especialidades, tipos de contrato y roles de seguridad</p>
+    </div>
+
+    <!-- Company Filter (SuperAdmin) -->
+    <div *ngIf="isSuperAdmin" class="flex flex-col gap-1.5">
+      <label class="text-[10px] font-bold  uppercase tracking-widest ml-1 text-slate-400">Filtrar por Veterinaria</label>
+      <p-dropdown
+        [options]="companies()"
+        [ngModel]="selectedCompanyId()"
+        (onChange)="onCompanyChange($event.value)"
+        placeholder="Seleccionar empresa"
+        styleClass="w-full md:w-72 h-11 bg-white !border-slate-200 !rounded-xl !px-4 !flex !items-center !text-sm !font-semibold !text-slate-700 hover:border-[#0066AA]"
+        panelStyleClass="!rounded-xl !border-slate-100">
+      </p-dropdown>
+    </div>
+  </div>
+
+  <!-- Manual Tailwind Tabs -->
+  <div class="flex items-center gap-8 border-b border-slate-100 mb-2">
+    <button (click)="activeTab.set(0)" 
+      [class]="activeTab() === 0 ? 'text-[#0066AA] border-[#0066AA]' : 'text-slate-400 border-transparent hover:text-slate-600'"
+      class="pb-4 px-1 text-sm font-bold border-b-2 outline-none">
+      Especialidades
+    </button>
+    <button (click)="activeTab.set(1)" 
+      [class]="activeTab() === 1 ? 'text-[#0066AA] border-[#0066AA]' : 'text-slate-400 border-transparent hover:text-slate-600'"
+      class="pb-4 px-1 text-sm font-bold border-b-2 outline-none">
+      Tipos de Empleado
+    </button>
+    <button (click)="activeTab.set(2)"
+      [class]="activeTab() === 2 ? 'text-[#0066AA] border-[#0066AA]' : 'text-slate-400 border-transparent hover:text-slate-600'"
+      class="pb-4 px-1 text-sm font-bold border-b-2 outline-none">
+      Roles & Permisos
+    </button>
+    <button (click)="activeTab.set(3)"
+      [class]="activeTab() === 3 ? 'text-[#0066AA] border-[#0066AA]' : 'text-slate-400 border-transparent hover:text-slate-600'"
+      class="pb-4 px-1 text-sm font-bold border-b-2 outline-none">
+      Servicios
+    </button>
+  </div>
+
+  <!-- Content Container -->
+  <div>
+    
+    <!-- Empty State: Select Company Prompt -->
+    <div *ngIf="isSuperAdmin && !selectedCompanyId()" class="flex flex-col items-center justify-center py-32 bg-white border border-slate-100 rounded-2xl">
+      <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
+        <i class="pi pi-building text-slate-300 text-2xl"></i>
+      </div>
+      <h3 class="text-lg font-bold text-slate-700">Selecciona una empresa</h3>
+      <p class="text-sm text-slate-400 mt-1">Debe elegir una veterinaria para gestionar su configuración complementaria</p>
+    </div>
+
+    <ng-container *ngIf="!isSuperAdmin || selectedCompanyId()">
+      
+      <!-- ═══════════════ ESPECIALIDADES (Tab 0) ═══════════════ -->
+      <div *ngIf="activeTab() === 0" class="bg-white border border-slate-100 rounded-2xl overflow-hidden">
+        <div class="flex items-center justify-between px-8 py-5 bg-white border-b border-slate-50">
+          <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wider">Catálogo</h2>
+          <button (click)="openEspModal()"
+            class="flex items-center gap-2 bg-[#0066AA] hover:bg-[#005a96] text-white text-xs font-bold px-5 py-2.5 rounded-xl">
+            <i class="pi pi-plus text-[10px]"></i> Registrar Especialidad
+          </button>
+        </div>
+
+        <p-table [value]="especialidades()" [rowHover]="true" styleClass="p-datatable-sm">
+          <ng-template pTemplate="header">
+            <tr>
+              <th class="bg-transparent text-left px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest w-1/3">Nombre</th>
+              <th class="bg-transparent text-left px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Descripción</th>
+              <th class="bg-transparent px-8 py-4 w-28"></th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-item>
+            <tr class="border-b border-slate-50 last:border-0 hover:bg-slate-50/50">
+              <td class="px-8 py-5">
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center text-[#0066AA] text-xs font-black">
+                    {{ item.nombre.substring(0,2).toUpperCase() }}
+                  </div>
+                  <span class="text-sm font-semibold text-slate-700">{{ item.nombre }}</span>
+                </div>
+              </td>
+              <td class="px-8 py-5 text-sm text-slate-400 leading-relaxed">{{ item.descripcion || '—' }}</td>
+              <td class="px-8 py-5 text-right">
+                <div class="flex items-center justify-end gap-1">
+                  <button (click)="openEspModal(item)" class="p-2.5 rounded-lg text-slate-300 hover:text-[#0066AA] hover:bg-blue-50">
+                    <i class="pi pi-pencil text-sm"></i>
+                  </button>
+                  <button (click)="eliminarEspecialidad(item.id)" class="p-2.5 rounded-lg text-slate-300 hover:text-rose-500 hover:bg-rose-50">
+                    <i class="pi pi-trash text-sm"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="3" class="py-20 text-center text-slate-300 font-medium italic">
+                No se han registrado especialidades aún
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+
+      <!-- ═══════════════ TIPOS DE EMPLEADO (Tab 1) ═══════════════ -->
+      <div *ngIf="activeTab() === 1" class="bg-white border border-slate-100 rounded-2xl overflow-hidden">
+        <div class="flex items-center justify-between px-8 py-5 bg-white border-b border-slate-50">
+          <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wider">Estructura</h2>
+          <button (click)="openTipoModal()"
+            class="flex items-center gap-2 bg-[#0066AA] hover:bg-[#005a96] text-white text-xs font-bold px-5 py-2.5 rounded-xl">
+            <i class="pi pi-plus text-[10px]"></i> Registrar Tipo
+          </button>
+        </div>
+
+        <p-table [value]="tiposEmpleado()" [rowHover]="true" styleClass="p-datatable-sm">
+          <ng-template pTemplate="header">
+            <tr>
+              <th class="bg-transparent text-left px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest w-1/3">Denominación</th>
+              <th class="bg-transparent text-left px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Descripción</th>
+              <th class="bg-transparent text-left px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Especialidades</th>
+              <th class="bg-transparent px-8 py-4 w-20"></th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-item>
+            <tr class="border-b border-slate-50 last:border-0 hover:bg-slate-50/50">
+              <td class="px-8 py-5">
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 text-xs font-black">
+                    {{ item.nombre.substring(0,1).toUpperCase() }}
+                  </div>
+                  <span class="text-sm font-semibold text-slate-700">{{ item.nombre }}</span>
+                </div>
+              </td>
+              <td class="px-8 py-5 text-sm text-slate-400">{{ item.descripcion || '—' }}</td>
+              <td class="px-8 py-5">
+                <span [class]="item.permiteEspecialidades ? 'text-emerald-600 bg-emerald-50' : 'text-slate-300 bg-slate-50'"
+                  class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter">
+                  {{ item.permiteEspecialidades ? 'Habilitado' : 'Desactivado' }}
+                </span>
+              </td>
+              <td class="px-8 py-5 text-right">
+                <button (click)="eliminarTipoEmpleado(item.id)" class="p-2 rounded-lg text-slate-300 hover:text-rose-500 hover:bg-rose-50">
+                  <i class="pi pi-trash text-sm"></i>
+                </button>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+
+      <!-- ═══════════════ ROLES (Tab 2) ═══════════════ -->
+      <div *ngIf="activeTab() === 2" class="bg-white border border-slate-100 rounded-2xl overflow-hidden">
+        <div class="flex items-center justify-between px-8 py-5 bg-white border-b border-slate-50">
+          <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wider">Seguridad</h2>
+          <button (click)="openRolModal()"
+            class="flex items-center gap-2 bg-[#0066AA] hover:bg-[#005a96] text-white text-xs font-bold px-5 py-2.5 rounded-xl">
+            <i class="pi pi-plus text-[10px]"></i> Registrar Rol
+          </button>
+        </div>
+
+        <p-table [value]="roles()" [rowHover]="true" styleClass="p-datatable-sm">
+          <ng-template pTemplate="header">
+            <tr>
+              <th class="bg-transparent text-left px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest w-1/3">Identificador</th>
+              <th class="bg-transparent text-left px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Permisos</th>
+              <th class="bg-transparent px-8 py-4 w-28"></th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-rol>
+            <tr class="border-b border-slate-50 last:border-0 hover:bg-slate-50/50">
+              <td class="px-8 py-5">
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600 text-xs font-black">
+                    <i class="pi pi-shield"></i>
+                  </div>
+                  <span class="text-sm font-bold text-slate-700">{{ rol.name }}</span>
+                </div>
+              </td>
+              <td class="px-8 py-5">
+                <div class="flex flex-wrap gap-1">
+                  <span *ngFor="let p of rol.permissions.slice(0, 3)"
+                    class="bg-white text-slate-500 text-[9px] font-bold px-2 py-0.5 rounded border border-slate-100 uppercase tracking-tight">
+                    {{ p.name }}
+                  </span>
+                  <span *ngIf="rol.permissions?.length > 3" class="text-[9px] font-bold text-slate-300 ml-1">+{{ rol.permissions.length - 3 }}</span>
+                </div>
+              </td>
+              <td class="px-8 py-5 text-right">
+                <div class="flex items-center justify-end gap-1">
+                  <button (click)="openRolModal(rol)" class="p-2 rounded-lg text-slate-300 hover:text-[#0066AA]">
+                    <i class="pi pi-pencil text-sm"></i>
+                  </button>
+                  <button (click)="eliminarRol(rol.id)" class="p-2 rounded-lg text-slate-300 hover:text-rose-500">
+                    <i class="pi pi-trash text-sm"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+
+      <!-- ═══════════════ SERVICIOS (Tab 3) ═══════════════ -->
+      <div *ngIf="activeTab() === 3" class="bg-white border border-slate-100 rounded-2xl overflow-hidden">
+        <div class="flex items-center justify-between px-8 py-5 bg-white border-b border-slate-50">
+          <div>
+            <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wider">Catálogo de Servicios</h2>
+            <p class="text-xs text-slate-400 mt-0.5">Servicios ofrecidos por la clínica</p>
+          </div>
+          <button (click)="openServicioModal()"
+            class="flex items-center gap-2 bg-[#0066AA] hover:bg-[#005a96] text-white text-xs font-bold px-5 py-2.5 rounded-xl">
+            <i class="pi pi-plus text-[10px]"></i> Nuevo Servicio
+          </button>
+        </div>
+
+        <p-table [value]="servicios()" [rowHover]="true" styleClass="p-datatable-sm">
+          <ng-template pTemplate="header">
+            <tr>
+              <th class="bg-transparent text-left px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest w-2/5">Servicio</th>
+              <th class="bg-transparent text-left px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Descripción</th>
+              <th class="bg-transparent text-right px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest w-28">Precio</th>
+              <th class="bg-transparent text-center px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest w-28">Disponible</th>
+              <th class="bg-transparent px-8 py-4 w-28"></th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-item>
+            <tr class="border-b border-slate-50 last:border-0 hover:bg-slate-50/50"
+              [class.opacity-50]="!item.activo">
+              <td class="px-8 py-5">
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 text-xs font-black shrink-0">
+                    {{ item.nombre.substring(0,2).toUpperCase() }}
+                  </div>
+                  <span class="text-sm font-semibold text-slate-700">{{ item.nombre }}</span>
+                </div>
+              </td>
+              <td class="px-8 py-5 text-sm text-slate-400 max-w-[200px]">
+                <p class="truncate">{{ item.descripcion || '—' }}</p>
+              </td>
+              <td class="px-8 py-5 text-right">
+                <span class="text-sm font-extrabold text-slate-800">S/ {{ item.precio | number:'1.2-2' }}</span>
+              </td>
+              <td class="px-8 py-5 text-center">
+                <button (click)="toggleServicioDisponible(item)"
+                  [class]="item.disponible ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'"
+                  class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter transition-colors">
+                  {{ item.disponible ? 'Activo' : 'Inactivo' }}
+                </button>
+              </td>
+              <td class="px-8 py-5 text-right">
+                <div class="flex items-center justify-end gap-1">
+                  <button (click)="openServicioModal(item)"
+                    class="p-2.5 rounded-lg text-slate-300 hover:text-[#0066AA] hover:bg-blue-50">
+                    <i class="pi pi-pencil text-sm"></i>
+                  </button>
+                  <button (click)="eliminarServicio(item.id)"
+                    class="p-2.5 rounded-lg text-slate-300 hover:text-rose-500 hover:bg-rose-50">
+                    <i class="pi pi-trash text-sm"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="5" class="py-20 text-center">
+                <div class="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center mx-auto mb-4">
+                  <i class="pi pi-briefcase text-2xl text-slate-200"></i>
+                </div>
+                <p class="text-sm text-slate-300 font-medium italic">No se han registrado servicios aún</p>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+
+    </ng-container>
+  </div>
+</div>
+
+<!-- ═══════════ MODALS ═══════════ -->
+
+<p-dialog [(visible)]="showEspModal" [header]="editingEsp() ? 'Editar Especialidad' : 'Registrar especialidad'"
+  [modal]="true" [draggable]="false" [resizable]="false" [style]="{width: '450px'}"
+  styleClass="!rounded-2xl !border-none">
+  
+  <form [formGroup]="espForm" (ngSubmit)="saveEspecialidad()" class="flex flex-col gap-5 mt-4">
+    <div class="flex flex-col gap-1.5">
+      <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nombre</label>
+      <input pInputText formControlName="nombre" placeholder="Nombre de la especialidad"
+        class="w-full h-12 bg-slate-50 !border-slate-100 !rounded-xl !px-5 !text-sm font-medium focus:!border-[#0066AA]" />
+    </div>
+
+    <div class="flex flex-col gap-1.5">
+      <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Descripción</label>
+      <textarea pInputTextarea formControlName="descripcion" placeholder="Opcional..."
+        rows="3"
+        class="w-full bg-slate-50 !border-slate-100 !rounded-xl !px-5 !py-4 !text-sm font-medium focus:!border-[#0066AA] resize-none"></textarea>
+    </div>
+
+    <div class="flex items-center justify-end gap-3 mt-4 pt-4 border-t border-slate-50">
+      <button type="button" (click)="showEspModal.set(false)"
+        class="px-6 h-11 rounded-xl text-sm font-bold text-slate-400 hover:bg-slate-50">
+        Cancelar
+      </button>
+      <button type="submit" [disabled]="loadingStore.isLoading()"
+        class="bg-[#0066AA] hover:bg-[#005a96] text-white text-sm font-black px-8 h-11 rounded-xl">
+        {{ editingEsp() ? 'Guardar' : 'Registrar' }}
+      </button>
+    </div>
+  </form>
+</p-dialog>
+
+<p-dialog [(visible)]="showRolModal" [header]="editingRol() ? 'Editar Rol' : 'Registrar rol'"
+  [modal]="true" [draggable]="false" [resizable]="false" [style]="{width: '550px'}"
+  styleClass="!rounded-2xl !border-none">
+  
+  <form [formGroup]="rolForm" (ngSubmit)="saveRol()" class="flex flex-col gap-5 mt-4">
+    <div class="flex flex-col gap-1.5">
+      <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Identificador del Rol</label>
+      <input pInputText formControlName="name" placeholder="Ej. ROLE_ADMIN"
+        class="w-full h-12 bg-slate-50 !border-slate-100 !rounded-xl !px-5 !text-sm font-bold focus:!border-[#0066AA]" />
+    </div>
+
+    <!-- Permission Management Section -->
+    <div class="flex flex-col gap-3">
+      <div class="flex items-center justify-between px-1">
+        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Matriz de Permisos</label>
+        <div class="flex items-center gap-3">
+          <button type="button" (click)="selectAllPermissions()" class="text-[9px] font-bold text-[#0066AA] uppercase hover:underline">Seleccionar todo</button>
+          <button type="button" (click)="deselectAllPermissions()" class="text-[9px] font-bold text-slate-400 uppercase hover:underline">Limpiar</button>
+        </div>
+      </div>
+
+      <!-- Custom Searchable List -->
+      <div class="border border-slate-100 rounded-2xl overflow-hidden bg-white">
+        <!-- Search bar inside list -->
+        <div class="flex items-center px-4 py-3 bg-slate-50/50 border-b border-slate-100">
+          <i class="pi pi-search text-slate-300 text-xs mr-3"></i>
+          <input type="text" [ngModel]="permissionSearch()" (ngModelChange)="permissionSearch.set($event)" [ngModelOptions]="{standalone: true}"
+            placeholder="Buscar permisos..." 
+            class="bg-transparent border-none outline-none text-xs font-semibold text-slate-600 w-full placeholder:text-slate-300" />
+          <span class="text-[9px] font-black text-slate-300 bg-white px-2 py-0.5 rounded-full border border-slate-100">
+            {{ rolForm.get('permissionIds')?.value?.length || 0 }}
+          </span>
+        </div>
+
+        <!-- Scrollable content with Grouping & Grid -->
+        <div class="max-h-72 overflow-y-auto custom-scrollbar bg-slate-50/30">
+          <div *ngFor="let group of groupedPermisos()" class="mb-4 last:mb-0">
+            <!-- Category Header -->
+            <div class="px-5 py-2 bg-slate-100/50 border-y border-slate-100 flex items-center justify-between">
+              <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">{{ group.name }}</span>
+              <span class="text-[9px] font-bold text-slate-300">{{ group.items.length }} items</span>
+            </div>
+            
+            <!-- Grid of items -->
+            <div class="grid grid-cols-2 gap-px bg-slate-50">
+              <div *ngFor="let p of group.items" 
+                (click)="togglePermission(p.value)"
+                class="flex items-center gap-3 px-5 py-3 bg-white hover:bg-slate-50 cursor-pointer transition-colors group">
+                <div [class]="isPermissionSelected(p.value) ? 'bg-[#0066AA] border-[#0066AA]' : 'bg-white border-slate-200'"
+                  class="w-4 h-4 rounded border flex items-center justify-center shrink-0">
+                  <i *ngIf="isPermissionSelected(p.value)" class="pi pi-check text-[8px] text-white"></i>
+                </div>
+                <span [class]="isPermissionSelected(p.value) ? 'text-slate-800 font-bold' : 'text-slate-500 font-medium'"
+                  class="text-[11px] truncate">{{ p.label }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Empty search state -->
+          <div *ngIf="groupedPermisos().length === 0" class="py-12 text-center bg-white">
+            <p class="text-xs text-slate-300 font-medium italic">No se encontraron permisos</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex items-center justify-end gap-3 mt-2 pt-4 border-t border-slate-50">
+      <button type="button" (click)="showRolModal.set(false)"
+        class="px-6 h-11 rounded-xl text-sm font-bold text-slate-400 hover:bg-slate-50">
+        Cancelar
+      </button>
+      <button type="submit" [disabled]="loadingStore.isLoading()"
+        class="bg-[#0066AA] hover:bg-[#005a96] text-white text-sm font-black px-8 h-11 rounded-xl">
+        {{ editingRol() ? 'Guardar cambios' : 'Registrar rol' }}
+      </button>
+    </div>
+  </form>
+</p-dialog>
+
+<!-- Modal Servicio -->
+<p-dialog [(visible)]="showServicioModal"
+  [header]="editingServicio() ? 'Editar Servicio' : 'Nuevo Servicio'"
+  [modal]="true" [draggable]="false" [resizable]="false" [style]="{width: '480px'}"
+  styleClass="!rounded-2xl !border-none">
+
+  <form [formGroup]="servicioForm" (ngSubmit)="saveServicio()" class="flex flex-col gap-5 mt-4">
+
+    <div class="flex flex-col gap-1.5">
+      <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+        Nombre <span class="text-rose-400">*</span>
+      </label>
+      <input pInputText formControlName="nombre" placeholder="Ej: Consulta general, Vacunación..."
+        class="w-full h-12 bg-slate-50 !border-slate-100 !rounded-xl !px-5 !text-sm font-medium focus:!border-[#0066AA]" />
+      <span *ngIf="servicioForm.get('nombre')?.invalid && servicioForm.get('nombre')?.touched"
+        class="text-xs text-rose-500 font-medium ml-1">Requerido (mínimo 2 caracteres)</span>
+    </div>
+
+    <div class="flex flex-col gap-1.5">
+      <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+        Descripción <span class="text-rose-400">*</span>
+      </label>
+      <textarea pInputTextarea formControlName="descripcion"
+        placeholder="Detalle del servicio ofrecido..." rows="3"
+        class="w-full bg-slate-50 !border-slate-100 !rounded-xl !px-5 !py-4 !text-sm font-medium focus:!border-[#0066AA] resize-none">
+      </textarea>
+      <span *ngIf="servicioForm.get('descripcion')?.invalid && servicioForm.get('descripcion')?.touched"
+        class="text-xs text-rose-500 font-medium ml-1">Requerido</span>
+    </div>
+
+    <div class="flex gap-4 items-start">
+      <div class="flex flex-col gap-1.5 flex-1">
+        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+          Precio (S/) <span class="text-rose-400">*</span>
+        </label>
+        <p-inputNumber formControlName="precio"
+          [minFractionDigits]="2" [maxFractionDigits]="2" [min]="0.01"
+          placeholder="0.00" styleClass="w-full"
+          [ngClass]="{'ng-invalid ng-dirty': servicioForm.get('precio')?.invalid && servicioForm.get('precio')?.touched}">
+        </p-inputNumber>
+        <span *ngIf="servicioForm.get('precio')?.invalid && servicioForm.get('precio')?.touched"
+          class="text-xs text-rose-500 font-medium ml-1">Precio requerido (mayor a 0)</span>
+      </div>
+
+      <div class="flex flex-col gap-1.5 pt-6">
+        <label class="flex items-center gap-2.5 cursor-pointer select-none">
+          <input type="checkbox" formControlName="disponible"
+            class="w-4 h-4 rounded accent-[#0066AA]" />
+          <span class="text-sm font-semibold text-slate-700">Disponible</span>
+        </label>
+        <p class="text-[10px] text-slate-400 font-medium leading-tight max-w-[140px]">
+          Visible al agendar citas
+        </p>
+      </div>
+    </div>
+
+    <div class="flex items-center justify-end gap-3 mt-2 pt-4 border-t border-slate-50">
+      <button type="button" (click)="showServicioModal.set(false)"
+        class="px-6 h-11 rounded-xl text-sm font-bold text-slate-400 hover:bg-slate-50">
+        Cancelar
+      </button>
+      <button type="submit" [disabled]="loadingStore.isLoading()"
+        class="bg-[#0066AA] hover:bg-[#005a96] disabled:opacity-50 text-white text-sm font-black px-8 h-11 rounded-xl">
+        {{ editingServicio() ? 'Guardar cambios' : 'Registrar servicio' }}
+      </button>
+    </div>
+  </form>
+</p-dialog>

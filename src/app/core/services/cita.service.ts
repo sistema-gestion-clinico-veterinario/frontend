@@ -28,6 +28,10 @@ export class CitaService {
     return this.http.post<ApiResponse<CitaResponse>>(this.apiUrl, data);
   }
 
+  actualizar(id: number, data: CitaRequest) {
+    return this.http.put<ApiResponse<CitaResponse>>(`${this.apiUrl}/${id}`, data);
+  }
+
   iniciarAtencion(id: number) {
     return this.http.patch<ApiResponse<number>>(`${this.apiUrl}/${id}/iniciar`, {});
   }

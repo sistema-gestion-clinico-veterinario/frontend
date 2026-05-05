@@ -1,3 +1,10 @@
+export interface HorarioEmpleadoRequest {
+  diaSemana: string;
+  horaInicio: string;
+  horaFin: string;
+  activo: boolean;
+}
+
 export interface EmpleadoRequest {
   id?: number;
   nombre: string;
@@ -16,4 +23,5 @@ export interface EmpleadoRequest {
   especialidades?: string[];
   tiposEmpleado?: string[];
   estado?: boolean;
+  horarios?: HorarioEmpleadoRequest[];
 }
