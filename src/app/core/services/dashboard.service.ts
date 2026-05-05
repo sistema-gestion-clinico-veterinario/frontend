@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { environment } from '../../environments/environment';
-import { ApiResponse } from '../models/response/api-response';
+import { environment } from '../../../environments/environment';
+import { ApiResponse } from '../../models/response/api-response';
 
 export interface DashboardStats {
   totalPacientes: number;

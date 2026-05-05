@@ -1,15 +1,15 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { environment } from '../../environments/environment';
-import { ApiResponse } from '../models/response/api-response';
-import { Page } from '../models/response/page';
+import { environment } from '../../../environments/environment';
+import { ApiResponse } from '../../models/response/api-response';
+import { Page } from '../../models/response/page';
 
 @Injectable({
   providedIn: 'root'
 })
-export class EspecialidadService {
+export class TipoEmpleadoService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = `${environment.apiUrl}/admin/especialidades`;
+  private readonly apiUrl = `${environment.apiUrl}/admin/tipos-empleado`;
 
   listar(companyId?: number) {
     const params = companyId ? `?companyId=${companyId}&size=1000` : '?size=1000';

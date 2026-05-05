@@ -1,10 +1,10 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { ApiResponse } from '../models/response/api-response';
-import { Page } from '../models/response/page';
-import { ApoderadoListResponse } from '../models/response/apoderado-list-response';
-import { ApoderadoRequest } from '../models/request/apoderado-request';
-import { UserProfileDTO } from '../models/response/user-profile-dto';
+import { ApiResponse } from '../../models/response/api-response';
+import { Page } from '../../models/response/page';
+import { ApoderadoListResponse } from '../../models/response/apoderado-list-response';
+import { ApoderadoRequest } from '../../models/request/apoderado-request';
+import { UserProfileDTO } from '../../models/response/user-profile-dto';
 
 @Injectable({
   providedIn: 'root'

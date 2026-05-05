@@ -1,13 +1,13 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
-import { ApiResponse } from '../models/response/api-response';
+import { ApiResponse } from '../../models/response/api-response';
 
-import { EmpleadoListResponse } from '../models/response/empleado-list-response';
-import { EmpleadoRequest } from '../models/request/empleado-request';
-import { UserProfileDTO } from '../models/response/user-profile-dto';
-import { environment } from '../../environments/environment';
-import { Page } from '../models/response/page';
+import { EmpleadoListResponse } from '../../models/response/empleado-list-response';
+import { EmpleadoRequest } from '../../models/request/empleado-request';
+import { UserProfileDTO } from '../../models/response/user-profile-dto';
+import { environment } from '../../../environments/environment';
+import { Page } from '../../models/response/page';
 
 @Injectable({
   providedIn: 'root'

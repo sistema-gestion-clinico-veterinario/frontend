@@ -9,7 +9,7 @@ import { InputTextarea } from 'primeng/inputtextarea';
 import { ToastModule } from 'primeng/toast';
 import { CheckboxModule } from 'primeng/checkbox';
 import { MessageService } from 'primeng/api';
-import { CompanyService } from '../../../services/company.service';
+import { CompanyService } from '../../../core/services/company.service';
 import { CompanyListResponse } from '../../../models/response/company-list-response';
 import { CompanyDTO } from '../../../models/request/company-dto';
 
