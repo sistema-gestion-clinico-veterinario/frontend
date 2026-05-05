@@ -9,6 +9,10 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/auth/login/login.component').then((m) => m.LoginComponent)
   },
   {
+    path: 'auth/verify/:token',
+    loadComponent: () => import('./pages/auth/verify-email/verify-email.component').then((m) => m.VerifyEmailComponent)
+  },
+  {
     path: '',
     loadComponent: () => import('./layouts/main-layout/main-layout.component').then((m) => m.MainLayoutComponent),
     canActivate: [AuthGuard],
@@ -51,6 +55,10 @@ export const routes: Routes = [
           {
             path: 'mascota/:mascotaId',
             loadComponent: () => import('./pages/historias-clinicas/historia-clinica-mascota/historia-clinica-mascota.component').then((m) => m.HistoriaClinicaMascotaComponent)
+          },
+          {
+            path: 'consulta/:consultaId',
+            loadComponent: () => import('./pages/historias-clinicas/form-hc/consulta-form.component').then((m) => m.ConsultaFormComponent)
           }
         ]
       },

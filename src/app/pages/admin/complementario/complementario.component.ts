@@ -12,6 +12,8 @@ import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
+import { InputNumberModule } from 'primeng/inputnumber';
+import { InputTextarea } from 'primeng/inputtextarea';
 import { DropdownModule } from 'primeng/dropdown';
 import { ToastModule } from 'primeng/toast';
 import { CheckboxModule } from 'primeng/checkbox';
@@ -21,6 +23,8 @@ import { EspecialidadService } from '../../../core/services/especialidad.service
 import { TipoEmpleadoService } from '../../../core/services/tipo-empleado.service';
 import { RoleService } from '../../../core/services/role.service';
 import { CompanyService } from '../../../core/services/company.service';
+import { ServicioService } from '../../../core/services/servicio.service';
+import { ServicioResponse } from '../../../models/response/servicio-response';
 import { LoadingStore } from '../../../store/loading.store';
 import { AuthStore } from '../../../store/auth.store';
 import { Role } from '../../../core/enums/role.enum';
@@ -48,6 +52,8 @@ interface RoleItem {
     ButtonModule,
     DialogModule,
     InputTextModule,
+    InputNumberModule,
+    InputTextarea,
     DropdownModule,
     ToastModule,
     CheckboxModule,
@@ -62,6 +68,7 @@ export class ComplementarioComponent implements OnInit {
   private readonly tipoEmpleadoService = inject(TipoEmpleadoService);
   private readonly roleService = inject(RoleService);
   private readonly companyService = inject(CompanyService);
+  private readonly servicioService = inject(ServicioService);
   private readonly messageService = inject(MessageService);
   readonly authStore = inject(AuthStore);
   readonly loadingStore = inject(LoadingStore);
@@ -92,6 +99,17 @@ export class ComplementarioComponent implements OnInit {
     nombre: ['', [Validators.required, Validators.minLength(2)]],
     descripcion: [''],
     permiteEspecialidades: [false]
+  });
+
+  // Servicios veterinarios
+  servicios           = signal<ServicioResponse[]>([]);
+  showServicioModal   = signal(false);
+  editingServicio     = signal<ServicioResponse | null>(null);
+  servicioForm: FormGroup = this.fb.group({
+    nombre:      ['', [Validators.required, Validators.minLength(2)]],
+    descripcion: ['', [Validators.required]],
+    precio:      [null, [Validators.required, Validators.min(0.01)]],
+    disponible:  [true]
   });
 
   // Roles
@@ -181,6 +199,7 @@ export class ComplementarioComponent implements OnInit {
     this.loadEspecialidades();
     this.loadTiposEmpleado();
     this.loadRoles();
+    this.loadServicios();
   }
 
   // ─── ESPECIALIDADES ───────────────────────────────────────
@@ -290,6 +309,75 @@ export class ComplementarioComponent implements OnInit {
         this.loadingStore.hide();
       },
       error: () => { this.loadingStore.hide(); }
+    });
+  }
+
+  // ─── SERVICIOS VETERINARIOS ───────────────────────────────
+  loadServicios() {
+    const cid = this.selectedCompanyId() ?? undefined;
+    this.servicioService.listar(cid, 0, 100).subscribe({
+      next: (res) => this.servicios.set(res.data.content),
+      error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar los servicios' })
+    });
+  }
+
+  openServicioModal(item?: ServicioResponse) {
+    this.editingServicio.set(item ?? null);
+    this.servicioForm.reset({
+      nombre:      item?.nombre      ?? '',
+      descripcion: item?.descripcion ?? '',
+      precio:      item?.precio      ?? null,
+      disponible:  item?.disponible  ?? true
+    });
+    this.showServicioModal.set(true);
+  }
+
+  saveServicio() {
+    if (this.servicioForm.invalid) { this.servicioForm.markAllAsTouched(); return; }
+    const val = this.servicioForm.value;
+    const companyId = this.selectedCompanyId();
+    const payload = { ...val, ...(companyId ? { companyId } : {}) };
+
+    const editing = this.editingServicio();
+    const req = editing
+      ? this.servicioService.actualizar(editing.id, payload)
+      : this.servicioService.crear(payload);
+
+    this.loadingStore.show();
+    req.subscribe({
+      next: () => {
+        this.messageService.add({ severity: 'success', summary: 'Éxito', detail: editing ? 'Servicio actualizado' : 'Servicio creado' });
+        this.showServicioModal.set(false);
+        this.loadServicios();
+        this.loadingStore.hide();
+      },
+      error: (err) => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error al guardar' });
+        this.loadingStore.hide();
+      }
+    });
+  }
+
+  toggleServicioDisponible(item: ServicioResponse) {
+    this.loadingStore.show();
+    this.servicioService.toggleDisponible(item.id).subscribe({
+      next: () => { this.loadServicios(); this.loadingStore.hide(); },
+      error: () => this.loadingStore.hide()
+    });
+  }
+
+  eliminarServicio(id: number) {
+    this.loadingStore.show();
+    this.servicioService.eliminar(id).subscribe({
+      next: () => {
+        this.messageService.add({ severity: 'success', summary: 'Desactivado', detail: 'Servicio desactivado correctamente' });
+        this.loadServicios();
+        this.loadingStore.hide();
+      },
+      error: (err) => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo desactivar' });
+        this.loadingStore.hide();
+      }
     });
   }
 

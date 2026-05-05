@@ -15,6 +15,8 @@ import { EmpleadoService } from '../../../core/services/empleado.service';
 import { ApoderadoService } from '../../../core/services/apoderado.service';
 import { MascotaService } from '../../../core/services/mascota.service';
 import { CompanyService } from '../../../core/services/company.service';
+import { ServicioService } from '../../../core/services/servicio.service';
+import { ServicioResponse } from '../../../models/response/servicio-response';
 import { CitaResponse } from '../../../models/response/cita-response';
 import { MascotaResponse } from '../../../models/response/mascota-response';
 import { HorarioEmpleadoResponse } from '../../../models/response/horario-empleado-response';
@@ -24,6 +26,10 @@ import { LoadingStore } from '../../../store/loading.store';
 import { AuthStore } from '../../../store/auth.store';
 import { Role } from '../../../core/enums/role.enum';
 import { Router } from '@angular/router';
+import { forkJoin, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
+
+export type Vista = 'lista' | 'dia' | 'semana' | 'mes';
 
 @Component({
   selector: 'app-agenda',
@@ -38,6 +44,7 @@ import { Router } from '@angular/router';
     InputTextModule,
     DropdownModule,
     CalendarModule,
+
     ToastModule
   ],
   providers: [MessageService],
@@ -50,6 +57,7 @@ export class AgendaComponent implements OnInit {
   private readonly apoderadoService  = inject(ApoderadoService);
   private readonly mascotaService    = inject(MascotaService);
   private readonly companyService    = inject(CompanyService);
+  private readonly servicioService   = inject(ServicioService);
   private readonly messageService    = inject(MessageService);
   private readonly router            = inject(Router);
   readonly authStore                 = inject(AuthStore);
@@ -67,6 +75,7 @@ export class AgendaComponent implements OnInit {
   filteredMascotas = signal<{ label: string; value: number }[]>([]);
   empresas         = signal<{ label: string; value: number }[]>([]);
   horariosVeterinario = signal<HorarioEmpleadoResponse[]>([]);
+  servicios           = signal<{ label: string; value: number; precio: number }[]>([]);
 
   // Filtros
   filterFecha: string             = new Date().toISOString().split('T')[0];
@@ -74,6 +83,34 @@ export class AgendaComponent implements OnInit {
   filterVeterinarioId: number | null = null;
   selectedCompanyId: number | null   = null;
   filtersOpen                        = false;
+
+  // ── Vista calendario ───────────────────────────────────────────
+  vistaActual  = signal<Vista>('lista');
+  fechaBase    = signal<Date>(new Date());
+  citasPorDia  = signal<Record<string, CitaResponse[]>>({});
+  cargandoCal  = signal<boolean>(false);
+
+  readonly HORAS_DIA = Array.from({ length: 15 }, (_, i) => i + 7);
+
+  readonly diasSemanaActual = computed<Date[]>(() => {
+    const base = new Date(this.fechaBase());
+    const dow  = base.getDay();
+    const lunes = new Date(base);
+    lunes.setDate(base.getDate() - (dow === 0 ? 6 : dow - 1));
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(lunes); d.setDate(lunes.getDate() + i); return d;
+    });
+  });
+
+  readonly diasMesActual = computed<Date[]>(() => {
+    const base  = this.fechaBase();
+    const first = new Date(base.getFullYear(), base.getMonth(), 1);
+    const off   = first.getDay() === 0 ? 6 : first.getDay() - 1;
+    const start = new Date(first); start.setDate(1 - off);
+    return Array.from({ length: 42 }, (_, i) => {
+      const d = new Date(start); d.setDate(start.getDate() + i); return d;
+    });
+  });
 
   readonly estadoOpciones = [
     { label: 'Programada',     value: EstadoCita.PROGRAMADA     },
@@ -101,6 +138,7 @@ export class AgendaComponent implements OnInit {
     veterinarioId:   [null, [Validators.required]],
     motivoCita:      ['',   [Validators.required]],
     fechaHoraInicio: [null, [Validators.required, this.horariosValidator]],
+    servicioId:      [null],
     notas:           ['']
   });
 
@@ -109,6 +147,7 @@ export class AgendaComponent implements OnInit {
       this.loadEmpresas();
     } else {
       this.loadCitas();
+      this.loadServicios();
     }
     this.loadVeterinarios();
     this.loadClientes();
@@ -133,7 +172,7 @@ export class AgendaComponent implements OnInit {
     this.loadVeterinarios(companyId);
     this.loadClientes(companyId);
     this.loadAllMascotas(companyId);
-    // Limpiar selecciones previas
+    this.loadServicios(companyId);
     this.citaForm.reset();
     this.filteredMascotas.set([]);
   }
@@ -206,6 +245,22 @@ export class AgendaComponent implements OnInit {
     const targetCompanyId = companyId || (this.isSuperAdmin() ? (this.selectedCompanyId ?? undefined) : undefined);
     this.mascotaService.listar(targetCompanyId, undefined, undefined, 0, 500).subscribe({
       next: (res) => this.allMascotas.set(res.data.content)
+    });
+  }
+
+  loadServicios(companyId?: number) {
+    const targetCompanyId = companyId ?? (this.isSuperAdmin() ? (this.selectedCompanyId ?? undefined) : undefined);
+    this.servicioService.listarDisponibles(targetCompanyId).subscribe({
+      next: (res) => {
+        this.servicios.set(
+          res.data.map((s: ServicioResponse) => ({
+            label: `${s.nombre} — S/ ${s.precio.toFixed(2)}`,
+            value: s.id,
+            precio: s.precio
+          }))
+        );
+      },
+      error: () => this.servicios.set([])
     });
   }
 
@@ -346,5 +401,105 @@ export class AgendaComponent implements OnInit {
       case EstadoCita.CANCELADA:      return 'bg-rose-50 text-rose-700';
       default:                        return 'bg-slate-100 text-slate-500';
     }
+  }
+
+  estadoColor(estado: EstadoCita): string {
+    switch (estado) {
+      case EstadoCita.PROGRAMADA:     return 'bg-sky-400';
+      case EstadoCita.CONFIRMADA:     return 'bg-blue-500';
+      case EstadoCita.SALA_DE_ESPERA: return 'bg-violet-500';
+      case EstadoCita.EN_PROCESO:     return 'bg-amber-500';
+      case EstadoCita.COMPLETADA:     return 'bg-emerald-500';
+      case EstadoCita.CANCELADA:      return 'bg-rose-400';
+      default:                        return 'bg-slate-400';
+    }
+  }
+
+  // ── Métodos calendario ─────────────────────────────────────────
+  cambiarVista(vista: Vista) {
+    this.vistaActual.set(vista);
+    if (vista === 'lista' || vista === 'dia') {
+      this.loadCitas();
+    } else {
+      this.loadCitasCalendario();
+    }
+  }
+
+  navegarCalendario(dir: -1 | 1) {
+    const base = new Date(this.fechaBase());
+    const v = this.vistaActual();
+    if (v === 'dia') {
+      base.setDate(base.getDate() + dir);
+      this.filterFecha = this.toDateStr(base);
+      this.loadCitas();
+    } else if (v === 'semana') {
+      base.setDate(base.getDate() + dir * 7);
+      this.loadCitasCalendario();
+    } else {
+      base.setMonth(base.getMonth() + dir);
+      this.loadCitasCalendario();
+    }
+    this.fechaBase.set(base);
+  }
+
+  irAHoy() {
+    const hoy = new Date();
+    this.fechaBase.set(hoy);
+    this.filterFecha = this.toDateStr(hoy);
+    if (this.vistaActual() === 'lista' || this.vistaActual() === 'dia') {
+      this.loadCitas();
+    } else {
+      this.loadCitasCalendario();
+    }
+  }
+
+  loadCitasCalendario() {
+    if (this.isSuperAdmin() && !this.selectedCompanyId) { this.citasPorDia.set({}); return; }
+    const companyId = this.isSuperAdmin() ? (this.selectedCompanyId ?? undefined) : undefined;
+    const dias = this.vistaActual() === 'semana' ? this.diasSemanaActual() : this.diasMesActual();
+    const fechas = [...new Set(dias.map(d => this.toDateStr(d)))];
+
+    this.cargandoCal.set(true);
+    forkJoin(
+      fechas.map(fecha =>
+        this.citaService.listar(companyId, fecha, undefined, undefined, 0, 50).pipe(
+          map(res => ({ fecha, citas: res.data.content })),
+          catchError(() => of({ fecha, citas: [] as CitaResponse[] }))
+        )
+      )
+    ).subscribe(results => {
+      const mapa: Record<string, CitaResponse[]> = {};
+      results.forEach(r => (mapa[r.fecha] = r.citas));
+      this.citasPorDia.set(mapa);
+      this.cargandoCal.set(false);
+    });
+  }
+
+  toDateStr(d: Date): string { return d.toISOString().split('T')[0]; }
+  getCitasDia(d: Date): CitaResponse[] { return this.citasPorDia()[this.toDateStr(d)] ?? []; }
+  getCitasHora(d: Date, h: number): CitaResponse[] {
+    return this.getCitasDia(d).filter(c => new Date(c.fechaHoraInicio).getHours() === h);
+  }
+  esHoy(d: Date): boolean { return this.toDateStr(d) === this.toDateStr(new Date()); }
+  esMesActual(d: Date): boolean {
+    const b = this.fechaBase();
+    return d.getMonth() === b.getMonth() && d.getFullYear() === b.getFullYear();
+  }
+
+  tituloCalendario(): string {
+    const base = this.fechaBase();
+    const v = this.vistaActual();
+    if (v === 'dia') return base.toLocaleDateString('es-PE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    if (v === 'semana') {
+      const dias = this.diasSemanaActual();
+      return `${dias[0].toLocaleDateString('es-PE', { day: 'numeric', month: 'short' })} – ${dias[6].toLocaleDateString('es-PE', { day: 'numeric', month: 'short', year: 'numeric' })}`;
+    }
+    return base.toLocaleDateString('es-PE', { month: 'long', year: 'numeric' });
+  }
+
+  clickDiaMes(d: Date) {
+    this.fechaBase.set(d);
+    this.filterFecha = this.toDateStr(d);
+    this.cambiarVista('dia');
   }
 }
