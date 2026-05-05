@@ -1,0 +1,97 @@
+<div class="p-6">
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-extrabold text-slate-900">Historias Clínicas</h1>
+      <p class="text-sm text-slate-500">Consulta y gestiona los expedientes clínicos de los pacientes</p>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <div class="bg-white border border-slate-200 rounded-2xl p-5 mb-6 shadow-sm">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs font-bold text-slate-600">Número de HC</label>
+        <span class="p-input-icon-left w-full">
+          <i class="pi pi-search"></i>
+          <input pInputText type="text" [(ngModel)]="filters.numeroHc" 
+            (keyup.enter)="cargarHistorias()" placeholder="Buscar por código..." class="w-full" />
+        </span>
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs font-bold text-slate-600">Mascota</label>
+        <span class="p-input-icon-left w-full">
+          <i class="pi pi-search"></i>
+          <input pInputText type="text" [(ngModel)]="filters.nombrePaciente" 
+            (keyup.enter)="cargarHistorias()" placeholder="Nombre del paciente..." class="w-full" />
+        </span>
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs font-bold text-slate-600">Propietario</label>
+        <div class="flex gap-2">
+          <span class="p-input-icon-left flex-1">
+            <i class="pi pi-user"></i>
+            <input pInputText type="text" [(ngModel)]="filters.nombrePropietario" 
+              (keyup.enter)="cargarHistorias()" placeholder="Nombre del dueño..." class="w-full" />
+          </span>
+          <button pButton icon="pi pi-filter" class="p-button-outlined" (click)="cargarHistorias()"></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla -->
+  <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+    <p-table [value]="historias()" [lazy]="true" (onLazyLoad)="cargarHistorias($event)"
+      [paginator]="true" [rows]="10" [totalRecords]="totalRecords()"
+      [responsiveLayout]="'scroll'" class="p-datatable-sm">
+      
+      <ng-template pTemplate="header">
+        <tr>
+          <th class="bg-slate-50 text-slate-600 font-bold px-5 py-4">CÓDIGO HC</th>
+          <th class="bg-slate-50 text-slate-600 font-bold px-5 py-4">PACIENTE</th>
+          <th class="bg-slate-50 text-slate-600 font-bold px-5 py-4">PROPIETARIO</th>
+          <th class="bg-slate-50 text-slate-600 font-bold px-5 py-4">ÚLTIMA ATENCIÓN</th>
+          <th class="bg-slate-50 text-slate-600 font-bold px-5 py-4 text-center">ESTADO</th>
+          <th class="bg-slate-50 text-slate-600 font-bold px-5 py-4"></th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-hc>
+        <tr class="hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-0">
+          <td class="px-5 py-4">
+            <span class="font-mono text-xs font-bold text-[#0066AA]">{{ hc.numeroHc }}</span>
+          </td>
+          <td class="px-5 py-4">
+            <div class="flex flex-col">
+              <span class="text-sm font-bold text-slate-800">{{ hc.mascotaNombre }}</span>
+              <span class="text-[10px] text-slate-400 uppercase font-medium">{{ hc.especie }} · {{ hc.raza }}</span>
+            </div>
+          </td>
+          <td class="px-5 py-4">
+            <span class="text-sm text-slate-600">{{ hc.propietarioNombre }}</span>
+          </td>
+          <td class="px-5 py-4">
+            <span class="text-xs text-slate-500">{{ hc.fechaUltimaConsulta ? (hc.fechaUltimaConsulta | date:'dd MMM yyyy') : 'Sin consultas' }}</span>
+          </td>
+          <td class="px-5 py-4 text-center">
+            <p-tag [value]="hc.activa ? 'ACTIVA' : 'INACTIVA'" 
+              [severity]="hc.activa ? 'success' : 'danger'" [rounded]="true"></p-tag>
+          </td>
+          <td class="px-5 py-4 text-right">
+            <button pButton icon="pi pi-folder-open" label="Ver Historia" 
+              class="p-button-text p-button-sm font-bold" (click)="verDetalle(hc.mascotaId)"></button>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="6" class="py-20 text-center">
+            <i class="pi pi-folder-open text-4xl text-slate-200 block mb-4"></i>
+            <p class="text-slate-400 font-medium">No se encontraron historias clínicas con los filtros aplicados</p>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>

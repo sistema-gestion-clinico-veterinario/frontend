@@ -53,6 +53,10 @@ export const routes: Routes = [
         data: { roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.VETERINARIO, Role.RECEPCIONISTA] },
         children: [
           {
+            path: '',
+            loadComponent: () => import('./pages/historias-clinicas/lista-hc/lista-hc.component').then((m) => m.ListaHcComponent)
+          },
+          {
             path: 'mascota/:mascotaId',
             loadComponent: () => import('./pages/historias-clinicas/historia-clinica-mascota/historia-clinica-mascota.component').then((m) => m.HistoriaClinicaMascotaComponent)
           },

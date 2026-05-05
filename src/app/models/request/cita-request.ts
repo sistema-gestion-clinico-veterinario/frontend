@@ -5,4 +5,5 @@ export interface CitaRequest {
   fechaHoraInicio: string;
   servicioId?: number;
   notas?: string;
+  version?: number;
 }

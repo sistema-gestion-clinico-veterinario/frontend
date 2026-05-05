@@ -134,6 +134,8 @@ export class AgendaComponent implements OnInit {
   };
 
   citaForm: FormGroup = this.fb.group({
+    id:              [null],
+    version:         [null],
     mascotaId:       [null, [Validators.required]],
     veterinarioId:   [null, [Validators.required]],
     motivoCita:      ['',   [Validators.required]],
@@ -321,6 +323,20 @@ export class AgendaComponent implements OnInit {
     this.displayModal.set(true);
   }
 
+  editarCita(cita: CitaResponse) {
+    this.citaForm.patchValue({
+      id: cita.id,
+      version: cita.version,
+      mascotaId: cita.mascotaId,
+      veterinarioId: cita.veterinarioId,
+      motivoCita: cita.motivoCita,
+      fechaHoraInicio: new Date(cita.fechaHoraInicio),
+      servicioId: cita.servicioId,
+      notas: cita.notas
+    });
+    this.displayModal.set(true);
+  }
+
   saveCita() {
     if (this.citaForm.invalid) {
       this.citaForm.markAllAsTouched();
@@ -342,19 +358,35 @@ export class AgendaComponent implements OnInit {
       ...formValue,
       fechaHoraInicio: localIsoString
     };
-    this.loadingStore.show();
-    this.citaService.crear(request).subscribe({
+    
+    const id = this.citaForm.get('id')?.value;
+    const observer = {
       next: () => {
-        this.messageService.add({ severity: 'success', summary: 'Listo', detail: 'Cita programada correctamente' });
+        this.messageService.add({ 
+          severity: 'success', 
+          summary: 'Listo', 
+          detail: id ? 'Cita actualizada' : 'Cita programada' 
+        });
         this.displayModal.set(false);
         this.loadCitas();
         this.loadingStore.hide();
       },
-      error: (err) => {
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error al programar la cita' });
+      error: (err: any) => {
+        this.messageService.add({ 
+          severity: 'error', 
+          summary: 'Error', 
+          detail: err.error?.message || 'Error al procesar la cita' 
+        });
         this.loadingStore.hide();
       }
-    });
+    };
+
+    this.loadingStore.show();
+    if (id) {
+      this.citaService.actualizar(id, request).subscribe(observer);
+    } else {
+      this.citaService.crear(request).subscribe(observer);
+    }
   }
 
   iniciarCita(cita: CitaResponse) {
@@ -363,6 +395,7 @@ export class AgendaComponent implements OnInit {
       next: (res) => {
         this.messageService.add({ severity: 'success', summary: 'Listo', detail: 'Atención iniciada' });
         this.loadingStore.hide();
+        // Navegar usando la ruta absoluta completa
         this.router.navigate(['/historias-clinicas/consulta', res.data]);
       },
       error: (err) => {
@@ -370,6 +403,25 @@ export class AgendaComponent implements OnInit {
         this.loadingStore.hide();
       }
     });
+  }
+
+  continuarConsulta(cita: CitaResponse) {
+    if (cita.consultaId) {
+      this.router.navigate(['/historias-clinicas/consulta', cita.consultaId]);
+    } else {
+      // Fallback: si no tiene el ID en la lista, intentamos recuperarlo del servidor
+      this.loadingStore.show();
+      this.citaService.iniciarAtencion(cita.id).subscribe({
+        next: (res) => {
+          this.loadingStore.hide();
+          this.router.navigate(['/historias-clinicas/consulta', res.data]);
+        },
+        error: (err) => {
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo recuperar la consulta activa' });
+          this.loadingStore.hide();
+        }
+      });
+    }
   }
 
   estadoLabel(estado: EstadoCita): string {

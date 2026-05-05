@@ -9,6 +9,8 @@ import { DropdownModule } from 'primeng/dropdown';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextarea } from 'primeng/inputtextarea';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { TimelineModule } from 'primeng/timeline';
+import { CardModule } from 'primeng/card';
 import { MessageService, ConfirmationService } from 'primeng/api';
 
 import { HistoriaClinicaService } from '../../../core/services/historia-clinica.service';
@@ -27,7 +29,9 @@ import { ConsultaResponse } from '../../../models/response/consulta-response';
     DropdownModule,
     InputNumberModule,
     InputTextarea,
-    ConfirmDialogModule
+    ConfirmDialogModule,
+    TimelineModule,
+    CardModule
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './consulta-form.component.html'
@@ -42,20 +46,24 @@ export class ConsultaFormComponent implements OnInit {
   readonly loadingStore        = inject(LoadingStore);
 
   consulta   = signal<ConsultaResponse | null>(null);
-  tabActiva  = signal<'signos' | 'clinico' | 'antecedentes'>('signos');
+  historia   = signal<any | null>(null); // Para ver antecedentes y consultas previas
+  tabActiva  = signal<'signos' | 'clinico' | 'antecedentes' | 'historial'>('signos');
   isCerrada  = signal<boolean>(false);
   consultaId = 0;
 
   readonly tiposConsulta = [
-    { label: 'Consulta general', value: 'CONSULTA_GENERAL' },
-    { label: 'Urgencia',         value: 'URGENCIA'          },
-    { label: 'Control',          value: 'CONTROL'           },
-    { label: 'Cirugía',          value: 'CIRUGIA'           },
-    { label: 'Vacunación',       value: 'VACUNACION'        },
+    { label: 'Primera vez',      value: 'PRIMERA_VEZ'      },
+    { label: 'Seguimiento',      value: 'SEGUIMIENTO'      },
+    { label: 'Control rutina',   value: 'CONTROL_RUTINA'   },
+    { label: 'Emergencia',       value: 'EMERGENCIA'       },
+    { label: 'Cirugía',          value: 'CIRUGIA'          },
+    { label: 'Vacunación',       value: 'VACUNACION'       },
     { label: 'Desparasitación',  value: 'DESPARASITACION'   },
+    { label: 'Otro',             value: 'OTRO'             },
   ];
 
   form: FormGroup = this.fb.group({
+    version:                 [null, Validators.required],
     tipoConsulta:            [null, Validators.required],
     motivoConsulta:          ['',   Validators.required],
     pesoEnConsulta:          [null, Validators.required],
@@ -77,8 +85,15 @@ export class ConsultaFormComponent implements OnInit {
   });
 
   ngOnInit() {
-    this.consultaId = Number(this.route.snapshot.paramMap.get('consultaId'));
-    this.loadConsulta();
+    this.route.params.subscribe(params => {
+      this.consultaId = Number(params['consultaId']);
+      if (!this.consultaId) {
+        this.msgService.add({ severity: 'error', summary: 'Error', detail: 'ID de consulta no válido' });
+        this.router.navigate(['/citas/agenda']);
+        return;
+      }
+      this.loadConsulta();
+    });
   }
 
   loadConsulta() {
@@ -87,6 +102,12 @@ export class ConsultaFormComponent implements OnInit {
       next: (res) => {
         this.consulta.set(res.data);
         this.isCerrada.set(res.data.estado === 'CERRADA');
+        
+        // Cargar historia clínica de la mascota
+        if (res.data.mascotaId) {
+          this.loadHistoria(res.data.mascotaId);
+        }
+
         this.form.patchValue({
           tipoConsulta:            res.data.tipoConsulta           ?? null,
           motivoConsulta:          res.data.motivoConsulta         ?? '',
@@ -106,6 +127,7 @@ export class ConsultaFormComponent implements OnInit {
           antecedentesPersonales:      res.data.antecedentesPersonales      ?? '',
           antecedentesFamiliares:      res.data.antecedentesFamiliares      ?? '',
           grupoSanguineo:              res.data.grupoSanguineo              ?? '',
+          version:                     res.data.version,
         });
         if (this.isCerrada()) this.form.disable();
         this.loadingStore.hide();
@@ -114,6 +136,12 @@ export class ConsultaFormComponent implements OnInit {
         this.msgService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cargar la consulta' });
         this.loadingStore.hide();
       }
+    });
+  }
+
+  loadHistoria(mascotaId: number) {
+    this.hcService.getPorMascota(mascotaId).subscribe({
+      next: (res) => this.historia.set(res.data)
     });
   }
 
@@ -126,7 +154,8 @@ export class ConsultaFormComponent implements OnInit {
     if (version === undefined) return;
 
     this.loadingStore.show();
-    this.hcService.updateConsulta(this.consultaId, { version, ...this.form.value }).subscribe({
+    const payload = { ...this.form.value, version: this.consulta()?.version };
+    this.hcService.updateConsulta(this.consultaId, payload).subscribe({
       next: (res) => {
         this.consulta.set(res.data);
         this.msgService.add({ severity: 'success', summary: 'Guardado', detail: 'Consulta actualizada correctamente' });
@@ -166,6 +195,10 @@ export class ConsultaFormComponent implements OnInit {
         this.loadingStore.hide();
       }
     });
+  }
+
+  verConsulta(id: number) {
+    this.router.navigate(['/historias-clinicas/consulta', id]);
   }
 
   volver() {

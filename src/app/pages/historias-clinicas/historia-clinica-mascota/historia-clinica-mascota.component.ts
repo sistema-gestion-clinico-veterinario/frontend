@@ -11,6 +11,8 @@ import {
   ConsultaResumen
 } from '../../../models/response/historia-clinica-response';
 
+import { Location } from '@angular/common';
+
 @Component({
   selector: 'app-historia-clinica-mascota',
   standalone: true,
@@ -21,6 +23,7 @@ import {
 export class HistoriaClinicaMascotaComponent implements OnInit {
   private readonly route      = inject(ActivatedRoute);
   private readonly router     = inject(Router);
+  private readonly location   = inject(Location);
   private readonly hcService  = inject(HistoriaClinicaService);
   private readonly msgService = inject(MessageService);
   readonly loadingStore       = inject(LoadingStore);
@@ -31,7 +34,13 @@ export class HistoriaClinicaMascotaComponent implements OnInit {
   noTieneHc        = signal<boolean>(false);
 
   ngOnInit() {
-    const mascotaId = Number(this.route.snapshot.paramMap.get('mascotaId'));
+    this.route.params.subscribe(params => {
+      const mascotaId = Number(params['mascotaId']);
+      this.cargarHistoria(mascotaId);
+    });
+  }
+
+  cargarHistoria(mascotaId: number) {
     this.loadingStore.show();
     this.hcService.getPorMascota(mascotaId).subscribe({
       next: (res) => {
@@ -58,7 +67,7 @@ export class HistoriaClinicaMascotaComponent implements OnInit {
   }
 
   volver() {
-    this.router.navigate(['/mascotas']);
+    this.location.back();
   }
 
   formatFecha(fecha: string): string {

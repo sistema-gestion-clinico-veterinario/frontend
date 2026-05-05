@@ -184,6 +184,16 @@
                   class="flex items-center gap-1.5 bg-emerald-50 text-emerald-700 text-xs font-bold px-3 h-8 rounded-lg hover:bg-emerald-100">
                   <i class="pi pi-play text-[10px]"></i> Iniciar
                 </button>
+                <button *ngIf="cita.estado === 'EN_PROCESO'"
+                  (click)="continuarConsulta(cita)"
+                  class="flex items-center gap-1.5 bg-amber-50 text-amber-700 text-xs font-bold px-3 h-8 rounded-lg hover:bg-amber-100">
+                  <i class="pi pi-external-link text-[10px]"></i> Continuar
+                </button>
+                <button *ngIf="(cita.estado === 'COMPLETADA' || cita.consultaId) && cita.estado !== 'EN_PROCESO'"
+                  (click)="continuarConsulta(cita)"
+                  class="flex items-center gap-1.5 bg-slate-50 text-slate-700 text-xs font-bold px-3 h-8 rounded-lg hover:bg-slate-100">
+                  <i class="pi pi-eye text-[10px]"></i> Ver
+                </button>
               </td>
             </tr>
           </ng-template>
@@ -238,6 +248,16 @@
                   (click)="iniciarCita(cita)"
                   class="ml-auto shrink-0 bg-emerald-600 text-white rounded-lg px-2 py-1 font-bold text-[10px] hover:bg-emerald-700">
                   Iniciar
+                </button>
+                <button *ngIf="cita.estado === 'EN_PROCESO'"
+                  (click)="continuarConsulta(cita)"
+                  class="ml-auto shrink-0 bg-amber-600 text-white rounded-lg px-2 py-1 font-bold text-[10px] hover:bg-amber-700">
+                  Continuar
+                </button>
+                <button *ngIf="(cita.estado === 'COMPLETADA' || cita.consultaId) && cita.estado !== 'EN_PROCESO'"
+                  (click)="continuarConsulta(cita)"
+                  class="ml-auto shrink-0 bg-slate-600 text-white rounded-lg px-2 py-1 font-bold text-[10px] hover:bg-slate-700">
+                  Ver
                 </button>
               </div>
               <div *ngIf="getCitasHora(fechaBase(), hora).length === 0" class="h-3"></div>
