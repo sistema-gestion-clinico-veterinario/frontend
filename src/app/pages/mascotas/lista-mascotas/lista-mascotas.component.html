@@ -145,7 +145,7 @@
             <!-- Avatar + nombre + badges -->
             <div class="flex items-center gap-3 min-w-0">
               <div [class]="'w-12 h-12 rounded-xl flex items-center justify-center text-xl font-extrabold flex-shrink-0 ' + especieAvatarClass(mascota.especie)">
-                {{ mascota.nombreCompleto?.charAt(0)?.toUpperCase() }}
+                {{ mascota.nombreCompleto.charAt(0).toUpperCase() }}
               </div>
               <div class="min-w-0">
                 <p class="text-base font-extrabold text-slate-900 leading-tight truncate">
