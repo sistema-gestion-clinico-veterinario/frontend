@@ -42,13 +42,14 @@ export class ClientComponent implements OnInit {
   readonly loadingStore = inject(LoadingStore);
 
   clients = signal<ApoderadoListResponse[]>([]);
-  companies = signal<any[]>([]);
   loading = signal<boolean>(false);
   displayModal = signal<boolean>(false);
   isEdit = signal<boolean>(false);
   totalRecords = signal<number>(0);
   
-  filterCompanyId: number | null = null;
+  get activeCompanyId(): number | null {
+    return this.authStore.selectedEnterprise()?.establishmentId ?? this.authStore.companyId();
+  }
 
   tipoDocumentos = [
     { label: 'DNI', value: 'DNI' },
@@ -77,25 +78,16 @@ export class ClientComponent implements OnInit {
   });
 
   ngOnInit() {
-    if (this.authStore.roles().includes(Role.SUPER_ADMIN)) {
-      this.loadCompanies();
-      this.clientForm.get('companyId')?.setValidators([Validators.required]);
-    } else {
-      this.loadClients();
-    }
+    this.loadClients();
   }
 
   loadClients(event: any = { first: 0, rows: 10 }) {
-    const isSuperAdmin = this.authStore.roles().includes(Role.SUPER_ADMIN);
-    if (isSuperAdmin && !this.filterCompanyId) {
-      return;
-    }
+    const companyId = this.activeCompanyId;
+    if (!companyId) return;
 
     const page = Math.floor(event.first / event.rows);
     this.loading.set(true);
     this.loadingStore.show();
-
-    const companyId = isSuperAdmin ? (this.filterCompanyId ?? undefined) : undefined;
 
     this.apoderadoService.listar(companyId, undefined, undefined, page, event.rows).subscribe({
       next: (res) => {
@@ -112,38 +104,13 @@ export class ClientComponent implements OnInit {
     });
   }
 
-  loadCompanies() {
-    this.loadingStore.show();
-    this.companyService.listar(0, 1000).subscribe({
-      next: (res) => {
-        const companyList = res.data.content.map(c => ({ label: c.name, value: c.id }));
-        this.companies.set(companyList);
 
-        if (companyList.length > 0 && !this.filterCompanyId) {
-          // Asignar antes de llamar loadClients para evitar la condición de carrera
-          this.filterCompanyId = companyList[0].value;
-          this.clientForm.get('companyId')?.setValue(this.filterCompanyId);
-          this.loadClients();
-        }
-        this.loadingStore.hide();
-      },
-      error: () => {
-        this.loadingStore.hide();
-      }
-    });
-  }
-
-  onFilterCompanyChange(value: number) {
-    this.filterCompanyId = value;
-    this.loadClients();
-    this.clientForm.get('companyId')?.setValue(value);
-  }
 
   openNew() {
     this.clientForm.reset({
       tipoDocumento: 'DNI',
       genero: 'MASCULINO',
-      companyId: this.filterCompanyId
+      companyId: this.activeCompanyId
     });
     this.isEdit.set(false);
     this.displayModal.set(true);

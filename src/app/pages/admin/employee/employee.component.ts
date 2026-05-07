@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { TableModule } from 'primeng/table';
@@ -48,15 +48,52 @@ export class EmployeeComponent implements OnInit {
   readonly loadingStore = inject(LoadingStore);
 
   employees = signal<EmpleadoListResponse[]>([]);
-  companies = signal<any[]>([]);
   loading = signal<boolean>(false);
   displayModal = signal<boolean>(false);
   isEdit = signal<boolean>(false);
   especialidadesList = signal<any[]>([]);
   tiposEmpleadoList = signal<any[]>([]);
   totalRecords = signal<number>(0);
+  openDropdown = signal<string | null>(null);
+  searchFilter = signal<string>('');
 
-  filterCompanyId: number | null = null;
+  public toggleDropdown(name: string, event?: Event) {
+    if (event) event.stopPropagation();
+    if (this.openDropdown() === name) {
+      this.openDropdown.set(null);
+    } else {
+      this.openDropdown.set(name);
+      this.searchFilter.set('');
+    }
+  }
+
+  public getFilteredOptions(list: any[]): any[] {
+    if (!this.searchFilter()) return list;
+    const filter = this.searchFilter().toLowerCase();
+    return list.filter(item => item.label.toLowerCase().includes(filter));
+  }
+
+  public toggleSelection(controlName: string, value: any) {
+    const control = this.employeeForm.get(controlName);
+    if (!control) return;
+    const currentValues = [...(control.value || [])];
+    const index = currentValues.indexOf(value);
+    if (index > -1) {
+      currentValues.splice(index, 1);
+    } else {
+      currentValues.push(value);
+    }
+    control.setValue(currentValues);
+    control.markAsTouched();
+  }
+
+  public isSelected(controlName: string, value: any): boolean {
+    return this.employeeForm.get(controlName)?.value?.includes(value) ?? false;
+  }
+
+  get activeCompanyId(): number | null {
+    return this.authStore.selectedEnterprise()?.establishmentId ?? this.authStore.companyId();
+  }
 
   roles = [
     { label: 'Administrador', value: 'ROLE_ADMIN' },
@@ -76,13 +113,13 @@ export class EmployeeComponent implements OnInit {
   ];
 
   readonly diasSemana = [
-    { key: 'LUNES',     label: 'Lunes'     },
-    { key: 'MARTES',    label: 'Martes'    },
+    { key: 'LUNES', label: 'Lunes' },
+    { key: 'MARTES', label: 'Martes' },
     { key: 'MIERCOLES', label: 'Miércoles' },
-    { key: 'JUEVES',    label: 'Jueves'    },
-    { key: 'VIERNES',   label: 'Viernes'   },
-    { key: 'SABADO',    label: 'Sábado'    },
-    { key: 'DOMINGO',   label: 'Domingo'   },
+    { key: 'JUEVES', label: 'Jueves' },
+    { key: 'VIERNES', label: 'Viernes' },
+    { key: 'SABADO', label: 'Sábado' },
+    { key: 'DOMINGO', label: 'Domingo' },
   ];
 
   horarios: { diaSemana: string; activo: boolean; horaInicio: string; horaFin: string }[] =
@@ -109,12 +146,8 @@ export class EmployeeComponent implements OnInit {
   });
 
   ngOnInit() {
-    if (this.authStore.roles().includes(Role.SUPER_ADMIN)) {
-      this.loadCompanies();
-      this.employeeForm.get('companyId')?.setValidators([Validators.required]);
-    } else {
-      const companyId = this.authStore.companyId() ?? undefined;
-      this.filterCompanyId = companyId ?? null;
+    const companyId = this.activeCompanyId;
+    if (companyId) {
       this.loadEmployees();
       this.loadEspecialidades(companyId);
       this.loadTypesEmpleado(companyId);
@@ -143,18 +176,20 @@ export class EmployeeComponent implements OnInit {
     });
   }
 
-  loadEmployees(event: any = { first: 0, rows: 10 }) {
-    if (this.authStore.roles().includes(Role.SUPER_ADMIN) && !this.filterCompanyId) {
-      return;
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    if (this.openDropdown()) {
+      this.openDropdown.set(null);
     }
+  }
+
+  loadEmployees(event: any = { first: 0, rows: 10 }) {
+    const companyId = this.activeCompanyId ?? undefined;
+    if (!companyId) return;
 
     const page = event.first / event.rows;
     this.loading.set(true);
     this.loadingStore.show();
-
-    const companyId = this.authStore.roles().includes(Role.SUPER_ADMIN)
-      ? (this.filterCompanyId ?? undefined)
-      : (this.authStore.companyId() ?? undefined);
 
     this.empleadoService.listar(companyId, undefined, page, event.rows).subscribe({
       next: (res) => {
@@ -171,26 +206,6 @@ export class EmployeeComponent implements OnInit {
     });
   }
 
-  loadCompanies() {
-    this.loadingStore.show();
-    this.companyService.listar(0, 1000).subscribe({
-      next: (res) => {
-        const companyList = res.data.content.map(c => ({ label: c.name, value: c.id }));
-        this.companies.set(companyList);
-
-        if (companyList.length > 0 && !this.filterCompanyId) {
-          this.filterCompanyId = companyList[0].value;
-          this.loadEmployees();
-          this.loadEspecialidades(this.filterCompanyId!);
-          this.loadTypesEmpleado(this.filterCompanyId!);
-        }
-        this.loadingStore.hide();
-      },
-      error: () => {
-        this.loadingStore.hide();
-      }
-    });
-  }
 
   loadEspecialidades(companyId?: number) {
     this.especialidadService.listar(companyId).subscribe({
@@ -199,14 +214,6 @@ export class EmployeeComponent implements OnInit {
         this.especialidadesList.set(list);
       }
     });
-  }
-
-  onFilterCompanyChange(value: number) {
-    this.filterCompanyId = value;
-    this.loadEmployees();
-    this.loadEspecialidades(value);
-    this.loadTypesEmpleado(value);
-    this.employeeForm.get('companyId')?.setValue(value);
   }
 
   loadTypesEmpleado(companyId?: number) {
@@ -218,6 +225,7 @@ export class EmployeeComponent implements OnInit {
     });
   }
 
+
   openNew() {
     this.employeeForm.reset({
       tipoDocumento: 'DNI',
@@ -225,7 +233,7 @@ export class EmployeeComponent implements OnInit {
       roles: [],
       especialidades: [],
       tiposEmpleado: [],
-      companyId: this.filterCompanyId
+      companyId: this.activeCompanyId
     });
     this.horarios = this.diasSemana.map(d => ({ diaSemana: d.key, activo: false, horaInicio: '08:00', horaFin: '17:00' }));
     this.isEdit.set(false);

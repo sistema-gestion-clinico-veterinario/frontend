@@ -1,10 +1,17 @@
 <div class="min-h-screen w-full flex items-center justify-center relative overflow-hidden bg-[#0066AA]">
   <!-- Orbs decorativos -->
-  <div class="absolute top-[10%] left-[15%] w-[450px] h-[450px] rounded-full bg-white/10 blur-[100px] pointer-events-none"></div>
-  <div class="absolute bottom-[10%] right-[10%] w-[500px] h-[500px] rounded-full bg-white/10 blur-[120px] pointer-events-none"></div>
-  <div class="absolute top-[40%] right-[30%] w-[300px] h-[300px] rounded-full bg-white/5 blur-[80px] pointer-events-none"></div>
+  <div
+    class="absolute top-[10%] left-[15%] w-[450px] h-[450px] rounded-full bg-white/10 blur-[100px] pointer-events-none">
+  </div>
+  <div
+    class="absolute bottom-[10%] right-[10%] w-[500px] h-[500px] rounded-full bg-white/10 blur-[120px] pointer-events-none">
+  </div>
+  <div
+    class="absolute top-[40%] right-[30%] w-[300px] h-[300px] rounded-full bg-white/5 blur-[80px] pointer-events-none">
+  </div>
 
-  <div class="relative z-10 w-full max-w-[1020px] px-6 flex flex-col md:flex-row items-center justify-between gap-12 lg:gap-20 py-12">
+  <div
+    class="relative z-10 w-full max-w-[1020px] px-6 flex flex-col md:flex-row items-center justify-between gap-12 lg:gap-20 py-12">
 
     <!-- Panel izquierdo: bienvenida -->
     <div class="flex-1 text-white text-center md:text-left">
@@ -78,14 +85,8 @@
         <!-- Correo -->
         <div class="space-y-1.5">
           <label for="email" class="text-sm font-semibold text-slate-700">Correo electrónico</label>
-          <input
-            id="email"
-            type="email"
-            formControlName="email"
-            placeholder="tu@vargasvet.pe"
-            autocomplete="email"
-            class="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 text-slate-800 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0066AA]/30 focus:border-[#0066AA]"
-          />
+          <input id="email" type="email" formControlName="email" placeholder="tu@vargasvet.pe" autocomplete="email"
+            class="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 text-slate-800 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0066AA]/30 focus:border-[#0066AA]" />
           <div *ngIf="email?.touched && email?.invalid" class="text-xs text-rose-500 font-medium">
             <span *ngIf="email?.errors?.['required']">El correo es obligatorio.</span>
             <span *ngIf="email?.errors?.['email']">Ingresa un correo válido.</span>
@@ -96,20 +97,12 @@
         <div class="space-y-1.5">
           <label for="password" class="text-sm font-semibold text-slate-700">Contraseña</label>
           <div class="relative">
-            <input
-              id="password"
-              [type]="showPassword ? 'text' : 'password'"
-              formControlName="password"
-              placeholder="••••••••"
-              autocomplete="current-password"
-              class="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 pr-11 text-slate-800 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0066AA]/30 focus:border-[#0066AA]"
-            />
-            <button
-              type="button"
-              (click)="showPassword = !showPassword"
+            <input id="password" [type]="showPassword ? 'text' : 'password'" formControlName="password"
+              placeholder="••••••••" autocomplete="current-password"
+              class="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 pr-11 text-slate-800 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0066AA]/30 focus:border-[#0066AA]" />
+            <button type="button" (click)="showPassword = !showPassword"
               class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-              [title]="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
-            >
+              [title]="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'">
               <svg *ngIf="!showPassword" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                   d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -129,17 +122,15 @@
         </div>
 
         <!-- Botón -->
-        <button
-          type="submit"
-          [disabled]="isSubmitting"
-          class="w-full h-12 bg-[#0066AA] hover:bg-[#005599] disabled:opacity-60 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-xl flex items-center justify-center gap-2"
-        >
+        <button type="submit" [disabled]="isSubmitting"
+          class="w-full h-12 bg-[#0066AA] hover:bg-[#005599] disabled:opacity-60 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-xl flex items-center justify-center gap-2">
           {{ isSubmitting ? 'Verificando...' : 'Ingresar' }}
         </button>
       </form>
 
       <!-- Error de login -->
-      <div *ngIf="authError" class="mt-5 flex items-center gap-2.5 p-3.5 bg-rose-50 border border-rose-100 rounded-xl text-rose-600 text-sm font-medium">
+      <div *ngIf="authError"
+        class="mt-5 flex items-center gap-2.5 p-3.5 bg-rose-50 border border-rose-100 rounded-xl text-rose-600 text-sm font-medium">
         <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />

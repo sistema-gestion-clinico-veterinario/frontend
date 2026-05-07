@@ -7,4 +7,5 @@ export interface ServicioResponse {
   precio: number;
   disponible: boolean;
   activo: boolean;
+  duracionEstimada?: Date;
 }

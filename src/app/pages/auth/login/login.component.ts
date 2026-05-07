@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
@@ -12,7 +12,7 @@ import { AuthStore } from '../../../store/auth.store';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   private authStore = inject(AuthStore);
   private router = inject(Router);
   private authService = inject(AuthService);
@@ -20,6 +20,17 @@ export class LoginComponent {
   authError: string | null = null;
   isSubmitting = false;
   showPassword = false;
+
+  ngOnInit() {
+    if (this.authStore.token()) {
+      const roles = this.authStore.roles();
+      if (roles.includes('ROLE_SUPER_ADMIN')) {
+        this.router.navigateByUrl('/admin/company');
+      } else {
+        this.router.navigateByUrl('/dashboard');
+      }
+    }
+  }
 
   loginForm = inject(FormBuilder).group({
     email: ['', [Validators.required, Validators.email]],
@@ -60,6 +71,7 @@ export class LoginComponent {
           needsCompanySelection: data.needsCompanySelection,
           selectedEnterprise: null
         });
+        sessionStorage.removeItem('pw_modal_dismissed');
         const roles = data.roles;
         if (roles.includes('ROLE_SUPER_ADMIN')) {
           this.router.navigateByUrl('/admin/company');

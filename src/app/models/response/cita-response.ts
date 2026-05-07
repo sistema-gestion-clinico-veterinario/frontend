@@ -18,4 +18,5 @@ export interface CitaResponse {
   estado: EstadoCita;
   notas?: string;
   consultaId?: number;
+  esEmergencia: boolean;
 }

@@ -3,53 +3,45 @@
   <!-- ── Encabezado ─────────────────────────────────────────────── -->
   <div class="mb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
     <div>
-      <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight leading-tight">Agenda de Citas</h1>
-      <p class="text-slate-500 font-medium flex items-center gap-2 text-sm mt-1">
-        <span class="w-2 h-2 rounded-full bg-[#0066AA] shrink-0"></span>
-        Programaciones y atenciones
-      </p>
+      <h1
+        class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight leading-tight flex items-center gap-3">
+        <i class="pi pi-calendar text-3xl text-[#0066AA]"></i>
+        Agenda de Citas
+      </h1>
     </div>
 
     <div class="flex items-center gap-2 flex-wrap">
-      <!-- Selector empresa (SUPER_ADMIN) -->
-      <div *ngIf="isSuperAdmin()" class="w-52">
-        <p-dropdown [options]="empresas()" [(ngModel)]="selectedCompanyId"
-          (onChange)="onEmpresaChange()" placeholder="Seleccionar empresa"
-          appendTo="body" styleClass="w-full">
-        </p-dropdown>
-      </div>
-
       <!-- Toggle Vista -->
       <div class="flex items-center bg-white border border-slate-200 rounded-xl p-1 gap-0.5">
         <button (click)="cambiarVista('lista')"
           [class]="vistaActual()==='lista' ? 'bg-[#0066AA] text-white' : 'text-slate-400 hover:text-slate-700'"
           class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all">
-          <i class="pi pi-list text-xs"></i>
+          <i class="pi pi-list text-sm"></i>
           <span class="hidden sm:inline">Lista</span>
         </button>
         <button (click)="cambiarVista('dia')"
           [class]="vistaActual()==='dia' ? 'bg-[#0066AA] text-white' : 'text-slate-400 hover:text-slate-700'"
           class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all">
-          <i class="pi pi-calendar text-xs"></i>
+          <i class="pi pi-calendar text-sm"></i>
           <span class="hidden sm:inline">Día</span>
         </button>
         <button (click)="cambiarVista('semana')"
           [class]="vistaActual()==='semana' ? 'bg-[#0066AA] text-white' : 'text-slate-400 hover:text-slate-700'"
           class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all">
-          <i class="pi pi-calendar-times text-xs"></i>
+          <i class="pi pi-chart-bar text-sm"></i>
           <span class="hidden sm:inline">Semana</span>
         </button>
         <button (click)="cambiarVista('mes')"
           [class]="vistaActual()==='mes' ? 'bg-[#0066AA] text-white' : 'text-slate-400 hover:text-slate-700'"
           class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all">
-          <i class="pi pi-calendar-plus text-xs"></i>
+          <i class="pi pi-calendar text-sm"></i>
           <span class="hidden sm:inline">Mes</span>
         </button>
       </div>
 
       <button (click)="openNew()"
         class="flex items-center gap-1.5 bg-[#0066AA] text-white font-medium rounded-xl px-4 py-2 text-sm">
-        <i class="pi pi-plus text-xs"></i>
+        <i class="pi pi-plus text-sm"></i>
         <span class="hidden sm:inline">Nueva cita</span>
       </button>
     </div>
@@ -60,7 +52,7 @@
     class="mb-4 flex items-center justify-between gap-3 bg-white border border-slate-200 rounded-xl px-4 py-3">
     <button (click)="navegarCalendario(-1)"
       class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:border-[#0066AA] hover:text-[#0066AA]">
-      <i class="pi pi-chevron-left text-xs"></i>
+      <span class="text-sm">‹</span>
     </button>
     <div class="flex items-center gap-3">
       <p class="text-sm font-extrabold text-slate-800 capitalize">{{ tituloCalendario() }}</p>
@@ -71,7 +63,7 @@
     </div>
     <button (click)="navegarCalendario(1)"
       class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:border-[#0066AA] hover:text-[#0066AA]">
-      <i class="pi pi-chevron-right text-xs"></i>
+      <span class="text-sm">›</span>
     </button>
   </div>
 
@@ -87,32 +79,50 @@
 
       <div class="flex flex-col gap-1.5">
         <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest">Estado</label>
-        <div style="display:block;width:100%">
-          <p-dropdown
-            [options]="estadoOpciones" [(ngModel)]="filterEstado"
-            (onChange)="loadCitas()" placeholder="Todos" [showClear]="true"
-            appendTo="body" [style]="{'width':'100%'}" [virtualScroll]="false"
-            panelStyleClass="!w-full !min-w-fit">
-          </p-dropdown>
+        <div class="relative">
+          <button type="button" (click)="showEstadoFilter.set(!showEstadoFilter())"
+            class="w-full text-left px-3 py-2 bg-white border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none flex justify-between items-center h-10 transition-all">
+            <span class="truncate">{{ getEstadoLabel() }}</span>
+            <i class="pi pi-chevron-down text-[10px] text-slate-400"></i>
+          </button>
+          <div *ngIf="showEstadoFilter()"
+            class="absolute z-50 mt-1 w-full bg-white border border-slate-300 shadow-xl rounded-md max-h-48 overflow-y-auto">
+            <button (click)="setEstadoFilter(null)" type="button"
+              class="w-full text-left px-4 py-2.5 text-sm text-slate-400 italic hover:bg-slate-50 transition-colors">Todos</button>
+            <button *ngFor="let estado of estadoOpciones" (click)="setEstadoFilter(estado.value)" type="button"
+              class="w-full text-left px-4 py-2.5 text-sm hover:bg-blue-50 hover:text-blue-700 transition-colors border-b border-slate-50 last:border-0">
+              {{ estado.label }}
+            </button>
+          </div>
         </div>
       </div>
 
       <div class="flex flex-col gap-1.5">
         <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest">Veterinario</label>
-        <div style="display:block;width:100%">
-          <p-dropdown
-            [options]="veterinarios()" [(ngModel)]="filterVeterinarioId"
-            (onChange)="loadCitas()" placeholder="Todos" [showClear]="true"
-            appendTo="body" [style]="{'width':'100%'}" [virtualScroll]="false"
-            panelStyleClass="!w-full !min-w-fit">
-          </p-dropdown>
+        <div class="relative">
+          <button type="button" (click)="showVeterinarioFilter.set(!showVeterinarioFilter())"
+            class="w-full text-left px-3 py-2 bg-white border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none flex justify-between items-center h-10 transition-all">
+            <span class="truncate">{{ getVeterinarioFilterLabel() }}</span>
+            <i class="pi pi-chevron-down text-[10px] text-slate-400"></i>
+          </button>
+          <div *ngIf="showVeterinarioFilter()"
+            class="absolute z-50 mt-1 w-full bg-white border border-slate-300 shadow-xl rounded-md max-h-48 overflow-y-auto">
+            <button (click)="setVeterinarioFilter(null)" type="button"
+              class="w-full text-left px-4 py-2.5 text-sm text-slate-400 italic hover:bg-slate-50 transition-colors">Todos</button>
+            <button *ngFor="let vet of veterinarios()" (click)="setVeterinarioFilter(vet.value)" type="button"
+              class="w-full text-left px-4 py-2.5 text-sm hover:bg-blue-50 hover:text-blue-700 transition-colors border-b border-slate-50 last:border-0">
+              {{ vet.label }}
+            </button>
+          </div>
         </div>
       </div>
 
       <div class="flex flex-col justify-end">
         <button (click)="loadCitas()"
           class="flex items-center justify-center gap-2 border border-slate-200 bg-slate-50 text-slate-500 text-sm font-medium px-4 h-11 rounded-xl w-full hover:bg-slate-100">
-          <i class="pi pi-refresh text-xs"></i> Actualizar
+          <i class="pi pi-refresh text-lg leading-none" [class.pi-spin]="loadingStore.isLoading()"></i>
+          <span *ngIf="!loadingStore.isLoading()">Actualizar</span>
+          <span *ngIf="loadingStore.isLoading()">Cargando...</span>
         </button>
       </div>
     </div>
@@ -124,24 +134,16 @@
   <ng-container *ngIf="vistaActual() === 'lista'">
     <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
 
-      <!-- Sin empresa (SUPER_ADMIN) -->
-      <div *ngIf="isSuperAdmin() && !selectedCompanyId" class="py-16 text-center px-6">
-        <div class="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
-          <i class="pi pi-building text-2xl text-slate-300"></i>
-        </div>
-        <p class="text-sm font-bold text-slate-500 mb-1">Selecciona una empresa</p>
-      </div>
-
-      <ng-container *ngIf="!isSuperAdmin() || selectedCompanyId">
-        <p-table [value]="citas()" [lazy]="true" (onLazyLoad)="loadCitas($event)"
-          [paginator]="true" [rows]="10" [totalRecords]="totalRecords()"
-          [loading]="loadingStore.isLoading()" [rowHover]="true"
+      <ng-container>
+        <p-table [value]="citas()" [lazy]="true" (onLazyLoad)="loadCitas($event)" [paginator]="true" [rows]="10"
+          [totalRecords]="totalRecords()" [loading]="loadingStore.isLoading()" [rowHover]="true"
           styleClass="p-datatable-borderless" responsiveLayout="scroll">
 
           <ng-template pTemplate="header">
             <tr class="border-b border-slate-100">
               <th class="text-left px-5 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Hora</th>
-              <th class="text-left px-5 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Paciente / Dueño</th>
+              <th class="text-left px-5 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Paciente / Dueño
+              </th>
               <th class="text-left px-5 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Veterinario</th>
               <th class="text-left px-5 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Motivo</th>
               <th class="text-left px-5 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Estado</th>
@@ -157,11 +159,18 @@
               </td>
               <td class="px-5 py-4">
                 <div class="flex items-center gap-3">
-                  <div class="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center text-[#0066AA] font-bold shrink-0">
+                  <div
+                    class="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center text-[#0066AA] font-bold shrink-0">
                     {{ cita.mascotaNombre?.charAt(0) }}
                   </div>
                   <div>
-                    <p class="text-sm font-bold text-slate-800 whitespace-nowrap">{{ cita.mascotaNombre }}</p>
+                    <div class="flex items-center gap-2">
+                      <p class="text-sm font-bold text-slate-800 whitespace-nowrap">{{ cita.mascotaNombre }}</p>
+                      <span *ngIf="cita.esEmergencia"
+                        class="bg-rose-100 text-rose-600 text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-tighter">
+                        Emergencia
+                      </span>
+                    </div>
                     <p class="text-xs text-slate-400">{{ cita.apoderadoNombre }}</p>
                   </div>
                 </div>
@@ -173,26 +182,52 @@
                 <p class="text-sm text-slate-600 truncate">{{ cita.motivoCita }}</p>
               </td>
               <td class="px-5 py-4 whitespace-nowrap">
-                <span [class]="'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ' + estadoClass(cita.estado)">
+                <span
+                  [class]="'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ' + estadoClass(cita.estado)">
                   <span class="w-1.5 h-1.5 rounded-full bg-current opacity-70"></span>
                   {{ estadoLabel(cita.estado) }}
                 </span>
               </td>
               <td class="px-5 py-4 text-right whitespace-nowrap">
-                <button *ngIf="cita.estado === 'PROGRAMADA' || cita.estado === 'CONFIRMADA' || cita.estado === 'SALA_DE_ESPERA'"
+                <!-- Botón Editar -->
+                <button *ngIf="canEdit(cita)" (click)="editarCita(cita)"
+                  class="flex items-center gap-1.5 bg-slate-50 text-slate-700 text-xs font-bold px-3 h-8 rounded-lg hover:bg-slate-100">
+                  <i class="pi pi-pencil text-sm"></i>
+                </button>
+
+                <!-- Botón Reprogramar -->
+                <button *ngIf="canReprogram(cita)" (click)="reprogramarCita(cita)" pTooltip="Reprogramar cita"
+                  class="flex items-center gap-1.5 bg-sky-50 text-sky-700 text-xs font-bold px-3 h-8 rounded-lg hover:bg-sky-100">
+                  <i class="pi pi-calendar-plus text-sm"></i>
+                </button>
+
+                <button
+                  *ngIf="cita.estado === 'PROGRAMADA' || cita.estado === 'CONFIRMADA' || cita.estado === 'SALA_DE_ESPERA' || cita.estado === 'REPROGRAMADA'"
                   (click)="iniciarCita(cita)"
                   class="flex items-center gap-1.5 bg-emerald-50 text-emerald-700 text-xs font-bold px-3 h-8 rounded-lg hover:bg-emerald-100">
-                  <i class="pi pi-play text-[10px]"></i> Iniciar
+                  <i class="pi pi-play text-sm"></i> Iniciar
                 </button>
-                <button *ngIf="cita.estado === 'EN_PROCESO'"
-                  (click)="continuarConsulta(cita)"
+                <button *ngIf="cita.estado === 'EN_PROCESO'" (click)="continuarConsulta(cita)"
                   class="flex items-center gap-1.5 bg-amber-50 text-amber-700 text-xs font-bold px-3 h-8 rounded-lg hover:bg-amber-100">
-                  <i class="pi pi-external-link text-[10px]"></i> Continuar
+                  <i class="pi pi-eye text-sm"></i> Continuar
                 </button>
                 <button *ngIf="(cita.estado === 'COMPLETADA' || cita.consultaId) && cita.estado !== 'EN_PROCESO'"
                   (click)="continuarConsulta(cita)"
                   class="flex items-center gap-1.5 bg-slate-50 text-slate-700 text-xs font-bold px-3 h-8 rounded-lg hover:bg-slate-100">
-                  <i class="pi pi-eye text-[10px]"></i> Ver
+                  <i class="pi pi-file text-sm"></i> Ver
+                </button>
+
+                <!-- Botón Cancelar (con restricción de 1h) -->
+                <button *ngIf="canCancel(cita)" (click)="cancelarCita(cita)"
+                  class="flex items-center gap-1.5 bg-rose-50 text-rose-700 text-xs font-bold px-3 h-8 rounded-lg hover:bg-rose-100">
+                  <i class="pi pi-times text-sm"></i> Cancelar
+                </button>
+
+                <!-- Botón Eliminar (Solo Admin y estado Cancelada) -->
+                <button *ngIf="cita.estado === 'CANCELADA' && canManage()" (click)="eliminarCita(cita)"
+                  pTooltip="Eliminar permanentemente"
+                  class="flex items-center gap-1.5 bg-slate-900 text-white text-xs font-bold px-3 h-8 rounded-lg hover:bg-black">
+                  <i class="pi pi-trash text-sm"></i>
                 </button>
               </td>
             </tr>
@@ -217,14 +252,9 @@
   <ng-container *ngIf="vistaActual() === 'dia'">
     <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
 
-      <div *ngIf="isSuperAdmin() && !selectedCompanyId" class="py-16 text-center">
-        <i class="pi pi-building text-2xl text-slate-200 block mb-3"></i>
-        <p class="text-sm text-slate-400">Selecciona una empresa</p>
-      </div>
-
-      <ng-container *ngIf="!isSuperAdmin() || selectedCompanyId">
+      <ng-container>
         <div *ngIf="loadingStore.isLoading()" class="py-16 flex items-center justify-center gap-3 text-slate-400">
-          <i class="pi pi-spin pi-spinner text-xl"></i>
+          <i class="pi pi-refresh pi-spin text-xl"></i>
           <span class="text-sm font-medium">Cargando citas…</span>
         </div>
 
@@ -239,18 +269,21 @@
               <div *ngFor="let cita of getCitasHora(fechaBase(), hora)"
                 class="flex items-start gap-2 rounded-xl px-3 py-2 border text-xs max-w-[300px] cursor-pointer hover:shadow-sm"
                 [class]="estadoClass(cita.estado).replace('bg-','border-').replace('text-','') + ' ' + estadoClass(cita.estado)">
-                <div>
-                  <p class="font-bold leading-tight">{{ cita.mascotaNombre }}</p>
+                <div [class.border-rose-300]="cita.esEmergencia" [class.bg-rose-50]="cita.esEmergencia">
+                  <p class="font-bold leading-tight">
+                    <span *ngIf="cita.esEmergencia" class="text-rose-500 mr-1">⚠</span>
+                    {{ cita.mascotaNombre }}
+                  </p>
                   <p class="opacity-70 leading-snug">{{ cita.motivoCita }}</p>
                   <p class="opacity-60 mt-0.5">{{ cita.veterinarioNombre }}</p>
                 </div>
-                <button *ngIf="cita.estado === 'PROGRAMADA' || cita.estado === 'CONFIRMADA' || cita.estado === 'SALA_DE_ESPERA'"
+                <button
+                  *ngIf="cita.estado === 'PROGRAMADA' || cita.estado === 'CONFIRMADA' || cita.estado === 'SALA_DE_ESPERA' || cita.estado === 'REPROGRAMADA'"
                   (click)="iniciarCita(cita)"
                   class="ml-auto shrink-0 bg-emerald-600 text-white rounded-lg px-2 py-1 font-bold text-[10px] hover:bg-emerald-700">
                   Iniciar
                 </button>
-                <button *ngIf="cita.estado === 'EN_PROCESO'"
-                  (click)="continuarConsulta(cita)"
+                <button *ngIf="cita.estado === 'EN_PROCESO'" (click)="continuarConsulta(cita)"
                   class="ml-auto shrink-0 bg-amber-600 text-white rounded-lg px-2 py-1 font-bold text-[10px] hover:bg-amber-700">
                   Continuar
                 </button>
@@ -259,13 +292,22 @@
                   class="ml-auto shrink-0 bg-slate-600 text-white rounded-lg px-2 py-1 font-bold text-[10px] hover:bg-slate-700">
                   Ver
                 </button>
+                <button *ngIf="canCancel(cita)" (click)="cancelarCita(cita)"
+                  class="ml-auto shrink-0 bg-rose-600 text-white rounded-lg px-2 py-1 font-bold text-[10px] hover:bg-rose-700">
+                  Cance.
+                </button>
+                <!-- Botón Eliminar en Timeline -->
+                <button *ngIf="cita.estado === 'CANCELADA' && canManage()" (click)="eliminarCita(cita)"
+                  class="ml-auto shrink-0 bg-slate-900 text-white rounded-lg px-2 py-1 font-bold text-[10px] hover:bg-black">
+                  <i class="pi pi-trash"></i>
+                </button>
               </div>
               <div *ngIf="getCitasHora(fechaBase(), hora).length === 0" class="h-3"></div>
             </div>
           </div>
 
           <div *ngIf="citas().length === 0" class="py-16 text-center">
-            <i class="pi pi-calendar text-3xl text-slate-200 block mb-3"></i>
+            <i class="pi pi-calendar text-4xl text-slate-200 block mb-3"></i>
             <p class="text-sm text-slate-400 font-medium">Sin citas para este día</p>
           </div>
         </div>
@@ -279,14 +321,9 @@
   <ng-container *ngIf="vistaActual() === 'semana'">
     <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
 
-      <div *ngIf="isSuperAdmin() && !selectedCompanyId" class="py-16 text-center">
-        <i class="pi pi-building text-2xl text-slate-200 block mb-3"></i>
-        <p class="text-sm text-slate-400">Selecciona una empresa</p>
-      </div>
-
-      <ng-container *ngIf="!isSuperAdmin() || selectedCompanyId">
+      <ng-container>
         <div *ngIf="cargandoCal()" class="py-16 flex items-center justify-center gap-3 text-slate-400">
-          <i class="pi pi-spin pi-spinner text-xl"></i>
+          <i class="pi pi-refresh pi-spin text-xl"></i>
           <span class="text-sm font-medium">Cargando semana…</span>
         </div>
 
@@ -315,14 +352,23 @@
                   {{ cita.fechaHoraInicio | date:'HH:mm' }} {{ cita.mascotaNombre }}
                 </p>
                 <p class="opacity-70 truncate leading-snug">{{ cita.motivoCita }}</p>
-                <button *ngIf="cita.estado === 'PROGRAMADA' || cita.estado === 'CONFIRMADA' || cita.estado === 'SALA_DE_ESPERA'"
+                <button
+                  *ngIf="cita.estado === 'PROGRAMADA' || cita.estado === 'CONFIRMADA' || cita.estado === 'SALA_DE_ESPERA' || cita.estado === 'REPROGRAMADA'"
                   (click)="iniciarCita(cita)"
                   class="mt-1.5 w-full bg-emerald-600 text-white rounded px-1.5 py-0.5 font-bold text-[10px] hover:bg-emerald-700">
                   Iniciar
                 </button>
+                <button *ngIf="canCancel(cita)" (click)="cancelarCita(cita)"
+                  class="mt-1 w-full bg-rose-600 text-white rounded px-1.5 py-0.5 font-bold text-[10px] hover:bg-rose-700">
+                  Cancelar
+                </button>
+                <!-- Botón Eliminar en Semana -->
+                <button *ngIf="cita.estado === 'CANCELADA' && canManage()" (click)="eliminarCita(cita)"
+                  class="mt-1 w-full bg-slate-900 text-white rounded px-1.5 py-0.5 font-bold text-[10px] hover:bg-black">
+                  Eliminar
+                </button>
               </div>
-              <div *ngIf="getCitasDia(dia).length === 0"
-                class="flex-1 flex items-center justify-center">
+              <div *ngIf="getCitasDia(dia).length === 0" class="flex-1 flex items-center justify-center">
                 <span class="text-[10px] text-slate-300 font-medium">Sin citas</span>
               </div>
             </div>
@@ -338,14 +384,9 @@
   <ng-container *ngIf="vistaActual() === 'mes'">
     <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
 
-      <div *ngIf="isSuperAdmin() && !selectedCompanyId" class="py-16 text-center">
-        <i class="pi pi-building text-2xl text-slate-200 block mb-3"></i>
-        <p class="text-sm text-slate-400">Selecciona una empresa</p>
-      </div>
-
-      <ng-container *ngIf="!isSuperAdmin() || selectedCompanyId">
+      <ng-container>
         <div *ngIf="cargandoCal()" class="py-16 flex items-center justify-center gap-3 text-slate-400">
-          <i class="pi pi-spin pi-spinner text-xl"></i>
+          <i class="pi pi-refresh pi-spin text-xl"></i>
           <span class="text-sm font-medium">Cargando mes…</span>
         </div>
 
@@ -360,15 +401,14 @@
 
           <!-- Grid del mes -->
           <div class="grid grid-cols-7" style="min-height: 480px;">
-            <div *ngFor="let dia of diasMesActual()"
-              (click)="clickDiaMes(dia)"
+            <div *ngFor="let dia of diasMesActual()" (click)="clickDiaMes(dia)"
               class="border-b border-r border-slate-100 last:border-r-0 p-2 min-h-[100px] cursor-pointer transition-colors hover:bg-slate-50"
-              [class.opacity-40]="!esMesActual(dia)"
-              [class.bg-blue-50]="esHoy(dia)">
+              [class.opacity-40]="!esMesActual(dia)" [class.bg-blue-50]="esHoy(dia)">
 
               <!-- Número del día -->
               <div class="flex items-center justify-between mb-1.5">
-                <span [class]="'text-xs font-extrabold ' + (esHoy(dia) ? 'w-6 h-6 bg-[#0066AA] text-white rounded-full flex items-center justify-center' : 'text-slate-600')">
+                <span
+                  [class]="'text-xs font-extrabold ' + (esHoy(dia) ? 'w-6 h-6 bg-[#0066AA] text-white rounded-full flex items-center justify-center' : 'text-slate-600')">
                   {{ dia.getDate() }}
                 </span>
                 <span *ngIf="getCitasDia(dia).length > 0"
@@ -380,12 +420,10 @@
               <!-- Primeras 3 citas del día -->
               <div class="flex flex-col gap-1">
                 <div *ngFor="let cita of getCitasDia(dia).slice(0, 3)"
-                  class="rounded px-1.5 py-0.5 text-[10px] font-bold truncate"
-                  [class]="estadoClass(cita.estado)">
+                  class="rounded px-1.5 py-0.5 text-[10px] font-bold truncate" [class]="estadoClass(cita.estado)">
                   {{ cita.fechaHoraInicio | date:'HH:mm' }} {{ cita.mascotaNombre }}
                 </div>
-                <span *ngIf="getCitasDia(dia).length > 3"
-                  class="text-[10px] text-slate-400 font-medium pl-1">
+                <span *ngIf="getCitasDia(dia).length > 3" class="text-[10px] text-slate-400 font-medium pl-1">
                   +{{ getCitasDia(dia).length - 3 }} más
                 </span>
               </div>
@@ -398,105 +436,340 @@
 
 </div>
 
-<!-- ── Modal nueva cita ───────────────────────────────────────── -->
-<p-dialog [(visible)]="displayModal" header="Programar nueva cita"
-  [modal]="true" [draggable]="false" [resizable]="false"
-  [breakpoints]="{'960px': '90vw', '640px': '95vw'}"
-  [style]="{width: '500px'}"
-  styleClass="!rounded-2xl">
+<!-- Modal Principal: Estructura Formal y Ordenada -->
+<div *ngIf="displayModal()"
+  class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+  <div class="bg-white w-full max-w-2xl rounded-lg shadow-2xl flex flex-col max-h-[95vh]">
 
-  <form [formGroup]="citaForm" (ngSubmit)="saveCita()" class="flex flex-col gap-5 mt-4 pb-2">
-
-    <div class="flex flex-col gap-1.5">
-      <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest">Dueño de la mascota</label>
-      <p-dropdown [options]="clientes()" (onChange)="onClienteChange($event.value)"
-        placeholder="Buscar dueño..." [filter]="true" appendTo="body" styleClass="w-full">
-      </p-dropdown>
+    <!-- Header: Sobrio y Directo -->
+    <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50 rounded-t-lg">
+      <h2 class="text-lg font-bold text-slate-800">
+        {{ isReprogramando() ? 'Reprogramar Cita Médica' : (citaForm.get('id')?.value ? 'Modificar Registro de Cita' :
+        'Programación de Nueva Cita') }}
+      </h2>
+      <button (click)="displayModal.set(false)"
+        class="text-slate-400 hover:text-slate-600 transition-colors p-2 text-xl leading-none">
+        <i class="pi pi-times"></i>
+      </button>
     </div>
 
-    <div class="flex flex-col gap-1.5">
-      <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest">Mascota</label>
-      <p-dropdown [options]="filteredMascotas()" formControlName="mascotaId"
-        placeholder="Seleccionar mascota" appendTo="body" styleClass="w-full">
-      </p-dropdown>
-      <p *ngIf="citaForm.get('mascotaId')?.touched && citaForm.get('mascotaId')?.invalid"
-        class="text-xs text-rose-500 font-medium">Campo requerido.</p>
-    </div>
+    <!-- Body: Formulario Organizado -->
+    <div class="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-slate-200">
+      <form [formGroup]="citaForm" (ngSubmit)="saveCita()" class="space-y-6">
 
-    <div class="flex flex-col gap-1.5">
-      <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest">Veterinario</label>
-      <p-dropdown [options]="veterinarios()" formControlName="veterinarioId"
-        (onChange)="onVeterinarioChange($event.value)"
-        placeholder="Asignar veterinario" appendTo="body" styleClass="w-full">
-      </p-dropdown>
-      <p *ngIf="citaForm.get('veterinarioId')?.touched && citaForm.get('veterinarioId')?.invalid"
-        class="text-xs text-rose-500 font-medium">Campo requerido.</p>
-    </div>
+        <!-- Sección 1: Datos de Identificación -->
+        <div class="space-y-4">
+          <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
+            <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
+            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">1. Identificación del Paciente</h3>
+          </div>
 
-    <!-- Horarios del veterinario -->
-    <div *ngIf="horariosVeterinario().length > 0"
-      class="p-4 rounded-xl bg-blue-50 border border-blue-100 flex flex-col gap-3">
-      <p class="text-xs font-extrabold text-blue-700 uppercase tracking-widest">Horarios disponibles</p>
-      <div class="grid grid-cols-2 gap-2">
-        <div *ngFor="let h of horariosVeterinario()"
-          class="bg-white border border-blue-200 rounded-lg px-3 py-2">
-          <p class="text-xs font-extrabold text-[#0066AA]">{{ h.diaSemana }}</p>
-          <p class="text-xs text-slate-600">{{ h.horaInicio }} – {{ h.horaFin }}</p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-semibold text-slate-700 ml-0.5">Dueño de la Mascota</label>
+              <div class="relative">
+                <button type="button" (click)="showClienteSelector.set(!showClienteSelector())"
+                  class="w-full text-left px-3 py-2 bg-white border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none flex justify-between items-center h-10 transition-all">
+                  <span class="truncate">{{ selectedClienteLabel() }}</span>
+                  <i class="pi pi-chevron-down text-[10px] text-slate-400"></i>
+                </button>
+                <!-- Dropdown -->
+                <div *ngIf="showClienteSelector()"
+                  class="absolute z-50 mt-1 w-full bg-white border border-slate-300 shadow-xl rounded-md overflow-hidden">
+                  <div class="p-2 bg-slate-50">
+                    <input type="text" [(ngModel)]="clienteSearch" [ngModelOptions]="{standalone: true}"
+                      placeholder="Buscar propietario..."
+                      class="w-full px-3 py-1.5 text-xs border border-slate-200 rounded outline-none focus:border-blue-500 bg-white placeholder:text-slate-400">
+                  </div>
+                  <div class="max-h-48 overflow-y-auto">
+                    <button *ngFor="let c of filteredClientes()" (click)="onClienteChange(c)" type="button"
+                      class="w-full text-left px-4 py-2.5 text-sm hover:bg-blue-50 hover:text-blue-700 transition-colors border-b border-slate-50 last:border-0">
+                      {{ c.label }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-semibold text-slate-700 ml-0.5">Mascota Asignada <span
+                  class="text-rose-500">*</span></label>
+              <div class="relative">
+                <button type="button" (click)="showMascotaSelector.set(!showMascotaSelector())"
+                  class="w-full text-left px-3 py-2 bg-white border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none flex justify-between items-center h-10 transition-all">
+                  <span class="truncate">{{ selectedMascotaLabel() }}</span>
+                  <i class="pi pi-chevron-down text-[10px] text-slate-400"></i>
+                </button>
+                <div *ngIf="showMascotaSelector()"
+                  class="absolute z-50 mt-1 w-full bg-white border border-slate-300 shadow-xl rounded-md max-h-48 overflow-y-auto">
+                  <button *ngFor="let m of filteredMascotas()" (click)="selectMascota(m)" type="button"
+                    class="w-full text-left px-4 py-2.5 text-sm hover:bg-blue-50 hover:text-blue-700 transition-colors border-b border-slate-50 last:border-0">
+                    {{ m.label }}
+                  </button>
+                  <div *ngIf="filteredMascotas().length === 0" class="p-4 text-center text-xs text-slate-400 italic">
+                    Primero seleccione un propietario
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sección 2: Programación -->
+        <div class="space-y-4">
+          <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
+            <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
+            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">2. Detalles de la Atención</h3>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-semibold text-slate-700 ml-0.5">Médico Veterinario <span
+                  class="text-rose-500">*</span></label>
+              <div class="relative">
+                <button type="button" (click)="showVeterinarioSelector.set(!showVeterinarioSelector())"
+                  class="w-full text-left px-3 py-2 bg-white border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none flex justify-between items-center h-10 transition-all">
+                  <span class="truncate">{{ getVeterinarioLabel() }}</span>
+                  <i class="pi pi-chevron-down text-[10px] text-slate-400"></i>
+                </button>
+                <div *ngIf="showVeterinarioSelector()"
+                  class="absolute z-50 mt-1 w-full bg-white border border-slate-300 shadow-xl rounded-md max-h-48 overflow-y-auto">
+                  <button *ngFor="let v of veterinarios()" (click)="selectVeterinario(v)" type="button"
+                    class="w-full text-left px-4 py-2.5 text-sm hover:bg-blue-50 hover:text-blue-700 transition-colors border-b border-slate-50 last:border-0">
+                    {{ v.label }}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-semibold text-slate-700 ml-0.5">Tipo de Servicio</label>
+              <div class="relative">
+                <button type="button" (click)="showServicioSelector.set(!showServicioSelector())"
+                  class="w-full text-left px-3 py-2 bg-white border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none flex justify-between items-center h-10 transition-all">
+                  <span class="truncate">{{ getServicioLabel() }}</span>
+                  <i class="pi pi-chevron-down text-[10px] text-slate-400"></i>
+                </button>
+                <div *ngIf="showServicioSelector()"
+                  class="absolute z-50 mt-1 w-full bg-white border border-slate-300 shadow-xl rounded-md max-h-48 overflow-y-auto">
+                  <button (click)="selectServicio(null)" type="button"
+                    class="w-full text-left px-4 py-2.5 text-sm text-slate-400 italic hover:bg-slate-50 transition-colors">Sin
+                    servicio asignado</button>
+                  <button *ngFor="let s of servicios()" (click)="selectServicio(s)" type="button"
+                    class="w-full text-left px-4 py-2.5 text-sm hover:bg-blue-50 hover:text-blue-700 transition-colors border-b border-slate-50 last:border-0">
+                    {{ s.label }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Disponibilidad Informativa (Visualización Formal) -->
+          <div *ngIf="horariosVeterinario().length > 0" class="bg-blue-50/50 border border-blue-100 rounded-md p-3">
+            <span class="text-[10px] font-bold text-blue-800 uppercase block mb-2 tracking-tight">Horario de
+              disponibilidad del Facultativo:</span>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <div *ngFor="let h of horariosVeterinario()"
+                class="bg-white border border-blue-200 px-2 py-1.5 rounded text-center shadow-sm">
+                <span class="text-[9px] font-bold text-blue-600 block uppercase leading-none">{{
+                  h.diaSemana.substring(0,3) }}</span>
+                <span class="text-[10px] font-semibold text-slate-700">{{ h.horaInicio }} - {{ h.horaFin }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sección 3: Justificación y Horario -->
+        <div class="space-y-4">
+          <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
+            <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
+            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">3. Tiempo y Justificación</h3>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-semibold text-slate-700 ml-0.5">Fecha y Hora de la Cita <span
+                  class="text-rose-500">*</span></label>
+              <input type="datetime-local" formControlName="fechaHoraInicio"
+                class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+              <p *ngIf="citaForm.get('fechaHoraInicio')?.hasError('fuera-de-horario')"
+                class="text-[10px] text-rose-600 font-bold mt-1 uppercase italic">Aviso: Fuera del horario de atención
+                establecido.</p>
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-semibold text-slate-700 ml-0.5">Motivo de la Atención <span
+                  class="text-rose-500">*</span></label>
+              <input type="text" formControlName="motivoCita" placeholder="Ej: Control post-operatorio"
+                class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all placeholder:text-slate-400" />
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-semibold text-slate-700 ml-0.5">Observaciones Adicionales</label>
+            <textarea formControlName="notas" rows="3" placeholder="Indique cualquier observación clínica relevante..."
+              class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none resize-none transition-all placeholder:text-slate-400"></textarea>
+          </div>
+        </div>
+
+        <!-- Notificación de Emergencia (Diseño Formal) -->
+        <div class="flex items-start gap-4 p-4 bg-orange-50 border border-orange-200 rounded-md">
+          <div class="flex items-center h-5 pt-0.5">
+            <input type="checkbox" formControlName="esEmergencia" id="chkEmergencia"
+              class="w-4 h-4 text-orange-600 border-slate-300 rounded focus:ring-orange-500">
+          </div>
+          <label for="chkEmergencia" class="flex flex-col">
+            <span class="text-sm font-bold text-orange-900">Flag de Emergencia Médica</span>
+            <span class="text-xs text-orange-700 mt-1">Habilitar esta opción permite procesar la cita ignorando las
+              restricciones horarias habituales del centro médico y facultativo asignado.</span>
+          </label>
+        </div>
+
+        <!-- Footer / Acciones Finales -->
+        <div class="flex justify-end gap-3 pt-6 border-t border-slate-200">
+          <button type="button" (click)="displayModal.set(false)"
+            class="px-5 py-2.5 text-sm font-semibold text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded transition-all">
+            Descartar cambios
+          </button>
+          <button type="submit" [disabled]="loadingStore.isLoading()"
+            class="px-8 py-2.5 text-sm font-bold text-white bg-[#0066AA] hover:bg-[#004488] rounded shadow-sm disabled:opacity-50 transition-all flex items-center justify-center gap-2 min-w-[160px]">
+            <i *ngIf="loadingStore.isLoading()" class="pi pi-refresh pi-spin"></i>
+            {{ loadingStore.isLoading() ? 'Guardando...' : (isReprogramando() ? 'Confirmar Reprogramación' :
+            (citaForm.get('id')?.value ? 'Actualizar Cita' : 'Confirmar Agenda')) }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Cancelación -->
+<div *ngIf="displayCancelModal()"
+  class="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm">
+  <div class="bg-white w-full max-w-md rounded-xl shadow-xl overflow-hidden border border-slate-200">
+
+    <!-- Header -->
+    <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-600">
+          <span class="text-lg">ℹ</span>
+        </div>
+        <div>
+          <h2 class="text-lg font-bold text-slate-900">Cancelar Cita</h2>
+          <p class="text-xs text-slate-500">Ingrese el motivo de la cancelación</p>
         </div>
       </div>
+      <button (click)="displayCancelModal.set(false)"
+        class="text-slate-400 hover:text-slate-600 p-1 text-xl leading-none">
+        <i class="pi pi-times"></i>
+      </button>
     </div>
 
-    <div class="flex flex-col gap-1.5">
-      <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest">Fecha y hora</label>
-      <p-calendar formControlName="fechaHoraInicio" [showTime]="true" [showIcon]="true"
-        hourFormat="24" [stepMinute]="15" appendTo="body" styleClass="w-full">
-      </p-calendar>
-      <p *ngIf="citaForm.get('fechaHoraInicio')?.touched && citaForm.get('fechaHoraInicio')?.invalid"
-        class="text-xs text-rose-500 font-medium">Campo requerido.</p>
-    </div>
-
-    <div class="flex flex-col gap-1.5">
-      <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest">
-        Servicio <span class="normal-case font-normal text-slate-300">(opcional)</span>
-      </label>
-      <div style="display:block;width:100%">
-        <p-dropdown formControlName="servicioId"
-          [options]="servicios()" placeholder="Sin servicio asignado"
-          [showClear]="true" appendTo="body" [style]="{'width':'100%'}">
-        </p-dropdown>
+    <!-- Contenido -->
+    <div class="p-6">
+      <div class="mb-4 p-3 bg-slate-50 rounded-lg border border-slate-200">
+        <p class="text-xs font-semibold text-slate-500 uppercase mb-2">Detalles de la cita</p>
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded bg-slate-100 flex items-center justify-center text-slate-700 font-bold text-xs">
+            {{ selectedCita()?.mascotaNombre?.charAt(0) }}
+          </div>
+          <div>
+            <p class="text-sm font-semibold text-slate-800">{{ selectedCita()?.mascotaNombre }}</p>
+            <p class="text-xs text-slate-500">{{ selectedCita()?.fechaHoraInicio | date:'dd/MM/yyyy HH:mm' }}</p>
+          </div>
+        </div>
       </div>
-      <p *ngIf="citaForm.get('servicioId')?.value" class="text-xs text-emerald-600 font-medium">
-        El precio se asignará automáticamente al seleccionar el servicio.
+
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-slate-700 mb-2">
+          Motivo de cancelación <span class="text-slate-800">*</span>
+        </label>
+        <textarea [(ngModel)]="cancelMotivo" [ngModelOptions]="{standalone: true}" rows="3"
+          placeholder="Ej: El cliente no puede asistir..."
+          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200 resize-none"
+          [class.border-red-300]="!cancelMotivo().trim() && cancelMotivoAttempted()"></textarea>
+        <p *ngIf="!cancelMotivo().trim() && cancelMotivoAttempted()" class="text-xs text-rose-600 mt-1">
+          Debe ingresar un motivo
+        </p>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex gap-3">
+      <button (click)="displayCancelModal.set(false)"
+        class="flex-1 px-4 py-2 text-sm font-medium text-slate-700 bg-slate-300 hover:bg-slate-400 rounded-lg transition-colors">
+        Cerrar
+      </button>
+      <button (click)="confirmarCancelacion()" [disabled]="loadingStore.isLoading() || !cancelMotivo().trim()"
+        style="background-color: #0066aa"
+        class="flex-1 px-4 py-2 text-sm font-medium text-white hover:opacity-90 rounded-lg disabled:opacity-50 flex items-center justify-center gap-2 transition-colors">
+        <i *ngIf="loadingStore.isLoading()" class="pi pi-refresh pi-spin"></i>
+        {{ loadingStore.isLoading() ? 'Procesando...' : 'Confirmar cancelación' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Eliminar Cita -->
+<div *ngIf="displayDeleteModal()"
+  class="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm">
+  <div class="bg-white w-full max-w-md rounded-xl shadow-xl overflow-hidden border border-slate-200">
+
+    <!-- Header -->
+    <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-full bg-red-100 flex items-center justify-center text-red-600">
+          <i class="pi pi-trash text-lg"></i>
+        </div>
+        <div>
+          <h2 class="text-lg font-bold text-slate-900">Eliminar Cita</h2>
+          <p class="text-xs text-slate-500">Esta acción es irreversible</p>
+        </div>
+      </div>
+      <button (click)="displayDeleteModal.set(false)"
+        class="text-slate-400 hover:text-slate-600 p-1 text-xl leading-none">
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+
+    <!-- Contenido -->
+    <div class="p-6">
+      <div class="mb-4 p-3 bg-red-50 rounded-lg border border-red-200">
+        <p class="text-xs font-semibold text-red-600 uppercase mb-2">Detalles de la cita</p>
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded bg-red-100 flex items-center justify-center text-red-700 font-bold text-xs">
+            {{ selectedCitaToDelete()?.mascotaNombre?.charAt(0) }}
+          </div>
+          <div>
+            <p class="text-sm font-semibold text-slate-800">{{ selectedCitaToDelete()?.mascotaNombre }}</p>
+            <p class="text-xs text-slate-500">{{ selectedCitaToDelete()?.fechaHoraInicio | date:'dd/MM/yyyy HH:mm' }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <p class="text-sm text-slate-700">
+        ¿Está seguro de que desea <span class="font-bold text-red-600">eliminar permanentemente</span> esta cita de la
+        agenda? Esta acción no se puede deshacer.
       </p>
     </div>
 
-    <div class="flex flex-col gap-1.5">
-      <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest">Motivo</label>
-      <input pInputText formControlName="motivoCita" placeholder="Ej: Control de rutina" class="w-full" />
-      <p *ngIf="citaForm.get('motivoCita')?.touched && citaForm.get('motivoCita')?.invalid"
-        class="text-xs text-rose-500 font-medium">Campo requerido.</p>
-    </div>
-
-    <div class="flex flex-col gap-1.5">
-      <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest">
-        Notas <span class="normal-case font-normal text-slate-300">(opcional)</span>
-      </label>
-      <textarea pInputTextarea formControlName="notas" rows="3"
-        placeholder="Observaciones previas..." class="w-full resize-none"></textarea>
-    </div>
-
-    <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
-      <button type="button" (click)="displayModal.set(false)"
-        class="px-5 h-10 rounded-xl text-sm font-bold text-slate-400 hover:bg-slate-100">
+    <!-- Footer -->
+    <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex gap-3">
+      <button (click)="displayDeleteModal.set(false)"
+        class="flex-1 px-4 py-2 text-sm font-medium text-slate-700 bg-slate-300 hover:bg-slate-400 rounded-lg transition-colors">
         Cancelar
       </button>
-      <button type="submit" [disabled]="loadingStore.isLoading()"
-        class="flex items-center gap-2 bg-[#0066AA] disabled:opacity-50 text-white text-sm font-bold px-6 h-10 rounded-xl">
-        <i class="pi pi-check text-xs"></i>
-        {{ loadingStore.isLoading() ? 'Guardando…' : 'Programar cita' }}
+      <button (click)="confirmarEliminar()" [disabled]="loadingStore.isLoading()" style="background-color: #dc2626"
+        class="flex-1 px-4 py-2 text-sm font-medium text-white hover:opacity-90 rounded-lg disabled:opacity-50 flex items-center justify-center gap-2 transition-colors">
+        <i *ngIf="loadingStore.isLoading()" class="pi pi-refresh pi-spin"></i>
+        {{ loadingStore.isLoading() ? 'Eliminando...' : 'Eliminar' }}
       </button>
     </div>
-  </form>
-</p-dialog>
+  </div>
+</div>
 
 <p-toast position="bottom-right"></p-toast>
+
+<p-toast position="bottom-right"></p-toast>
+<p-confirmDialog></p-confirmDialog>

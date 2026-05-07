@@ -101,78 +101,138 @@
   </div>
 </div>
 
-<p-dialog [(visible)]="displayModal" [header]="isEdit ? 'Editar empresa' : 'Registrar empresa'" [modal]="true"
-  [draggable]="false" [resizable]="false" [breakpoints]="{'960px': '85vw', '640px': '95vw'}" [style]="{width: '560px'}">
-  <form [formGroup]="companyForm" (ngSubmit)="saveCompany()" class="flex flex-col gap-5 mt-2">
-
-    <div class="flex flex-col gap-1.5">
-      <label class="text-xs font-medium text-slate-400 uppercase tracking-wider">Nombre comercial</label>
-      <input pInputText formControlName="name" placeholder="Ej. Clínica Veterinaria San José"
-        class="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-4 text-sm text-slate-800 outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/10 transition-all" />
-    </div>
-
-    <div class="grid grid-cols-2 gap-4">
-      <div class="flex flex-col gap-1.5">
-        <label class="text-xs font-medium text-slate-400 uppercase tracking-wider">RUC fiscal</label>
-        <input pInputText formControlName="ruc" placeholder="11 dígitos" maxlength="11"
-          class="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-4 text-sm text-slate-800 outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/10 transition-all" />
-      </div>
-      <div class="flex flex-col gap-1.5">
-        <label class="text-xs font-medium text-slate-400 uppercase tracking-wider">Teléfono</label>
-        <input pInputText formControlName="phone" placeholder="Ej. 987 654 321"
-          class="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-4 text-sm text-slate-800 outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/10 transition-all" />
-      </div>
-    </div>
-
-    <div class="flex flex-col gap-1.5">
-      <label class="text-xs font-medium text-slate-400 uppercase tracking-wider">Email institucional</label>
-      <input pInputText formControlName="email" placeholder="contacto@empresa.com"
-        class="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-4 text-sm text-slate-800 outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/10 transition-all" />
-    </div>
-
-    <div class="flex flex-col gap-1.5">
-      <label class="text-xs font-medium text-slate-400 uppercase tracking-wider">Dirección</label>
-      <input pInputText formControlName="address" placeholder="Av. Las Camelias 456, Lima"
-        class="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-4 text-sm text-slate-800 outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/10 transition-all" />
-    </div>
-
-    <div class="flex items-center gap-3 py-2">
-      <input type="checkbox" formControlName="hasWebsite" id="hasWebsite"
-        class="w-5 h-5 rounded border-slate-300 accent-[#0066AA] cursor-pointer transition-all">
-      <label for="hasWebsite" class="text-sm font-semibold text-slate-700 cursor-pointer select-none">¿Tiene página web?</label>
-    </div>
-
-    <div *ngIf="companyForm.get('hasWebsite')?.value" class="flex flex-col gap-1.5">
-      <label class="text-xs font-medium text-slate-400 uppercase tracking-wider">Sitio web</label>
-      <input pInputText formControlName="website" placeholder="https://www.ejemplo.com"
-        class="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-4 text-sm text-slate-800 outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/10 transition-all" />
-    </div>
-
-    <div class="flex flex-col gap-1.5">
-      <label class="text-xs font-medium text-slate-400 uppercase tracking-wider">Horario de atención</label>
-      <input pInputText formControlName="businessHours" placeholder="Lunes a Sábado: 08:00 – 20:00"
-        class="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-4 text-sm text-slate-800 outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/10 transition-all" />
-    </div>
-
-    <div class="flex flex-col gap-1.5">
-      <label class="text-xs font-medium text-slate-400 uppercase tracking-wider">Descripción</label>
-      <textarea formControlName="description" rows="3"
-        class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-sm text-slate-800 outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/10 transition-all resize-none"></textarea>
-    </div>
-
-    <div class="flex justify-end gap-3 pt-3 border-t border-slate-100">
-      <button type="button" (click)="displayModal = false"
-        class="px-5 h-10 rounded-lg text-sm font-medium text-slate-500 hover:bg-slate-100 transition-colors">
-        Cancelar
-      </button>
-      <button type="submit" [disabled]="loading"
-        class="flex items-center gap-2 bg-[#0066AA] hover:bg-[#005a96] disabled:opacity-50 text-white text-sm font-medium px-6 h-10 rounded-lg transition-colors">
-        <i class="pi pi-check text-xs"></i>
-        {{ isEdit ? 'Guardar cambios' : 'Crear empresa' }}
+<!-- Modal de Gestión de Empresa: Estructura Formal -->
+<div *ngIf="displayModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+  <div class="bg-white w-full max-w-2xl rounded-lg shadow-2xl flex flex-col max-h-[95vh]">
+    
+    <!-- Header -->
+    <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50 rounded-t-lg">
+      <h2 class="text-lg font-bold text-slate-800">
+        {{ isEdit ? 'Modificar Registro de Empresa' : 'Registro de Nueva Entidad' }}
+      </h2>
+      <button (click)="displayModal = false" class="text-slate-400 hover:text-slate-600 transition-colors p-2">
+        <i class="pi pi-times"></i>
       </button>
     </div>
 
-  </form>
-</p-dialog>
+    <!-- Body -->
+    <div class="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-slate-200">
+      <form [formGroup]="companyForm" (ngSubmit)="saveCompany()" class="space-y-6">
+        
+        <!-- Sección 1: Información Corporativa -->
+        <div class="space-y-4">
+          <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
+            <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
+            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">1. Información Corporativa</h3>
+          </div>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1 sm:col-span-2">
+              <label class="text-xs font-semibold text-slate-700 ml-0.5">Nombre o Razón Social <span class="text-rose-500">*</span></label>
+              <input type="text" formControlName="name" placeholder="Ej: Corporación Veterinaria S.A.C."
+                class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-semibold text-slate-700 ml-0.5">RUC (Registro Único) <span class="text-rose-500">*</span></label>
+              <input type="text" formControlName="ruc" placeholder="11 dígitos" maxlength="11"
+                class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-semibold text-slate-700 ml-0.5">Teléfono de Contacto <span class="text-rose-500">*</span></label>
+              <input type="text" formControlName="phone" placeholder="Ej: 01 4455667"
+                class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Sección 2: Ubicación y Digital -->
+        <div class="space-y-4">
+          <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
+            <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
+            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">2. Ubicación y Presencia Digital</h3>
+          </div>
+          
+          <div class="grid grid-cols-1 gap-4">
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-semibold text-slate-700 ml-0.5">Correo Electrónico Institucional <span class="text-rose-500">*</span></label>
+              <input type="email" formControlName="email" placeholder="administracion@empresa.com"
+                class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-semibold text-slate-700 ml-0.5">Dirección Fiscal / Sede Principal <span class="text-rose-500">*</span></label>
+              <input type="text" formControlName="address" placeholder="Av. Principal 123, Distrito, Provincia"
+                class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+            </div>
+
+            <div class="flex items-start gap-3 p-3 bg-slate-50 border border-slate-200 rounded">
+              <input type="checkbox" formControlName="hasWebsite" id="chkWebsite" class="w-4 h-4 text-blue-600 border-slate-300 rounded mt-0.5 focus:ring-blue-500">
+              <div class="flex flex-col">
+                <label for="chkWebsite" class="text-sm font-bold text-slate-700 leading-none">Presencia en Web</label>
+                <p class="text-[11px] text-slate-500 mt-1">Habilite si la empresa cuenta con un portal informativo o transaccional.</p>
+              </div>
+            </div>
+
+            <div *ngIf="companyForm.get('hasWebsite')?.value" class="flex flex-col gap-1 animate-in slide-in-from-top-2 duration-200">
+              <label class="text-xs font-semibold text-slate-700 ml-0.5">URL del Sitio Web</label>
+              <input type="text" formControlName="website" placeholder="https://www.ejemplo.com"
+                class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Sección 3: Operatividad -->
+        <div class="space-y-4">
+          <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
+            <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
+            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">3. Parámetros de Operación</h3>
+          </div>
+
+          <div class="grid grid-cols-1 gap-4">
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-semibold text-slate-700 ml-0.5">Régimen Horario (Informativo)</label>
+              <input type="text" formControlName="businessHours" placeholder="Lunes a Viernes de 09:00 a 18:00"
+                class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div class="flex flex-col gap-1">
+                <label class="text-xs font-semibold text-slate-700 ml-0.5">Apertura (Sistema)</label>
+                <input type="time" formControlName="openingTime"
+                  class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="text-xs font-semibold text-slate-700 ml-0.5">Cierre (Sistema)</label>
+                <input type="time" formControlName="closingTime"
+                  class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+              </div>
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-semibold text-slate-700 ml-0.5">Reseña o Descripción Institucional</label>
+              <textarea formControlName="description" rows="3" placeholder="Indique una breve descripción de las actividades de la sede..."
+                class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none resize-none transition-all"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer / Acciones Finales -->
+        <div class="flex justify-end gap-3 pt-6 border-t border-slate-200">
+          <button type="button" (click)="displayModal = false"
+            class="px-5 py-2.5 text-sm font-semibold text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded transition-all">
+            Descartar cambios
+          </button>
+          <button type="submit" [disabled]="loading"
+            class="px-8 py-2.5 text-sm font-bold text-white bg-[#0066AA] hover:bg-[#004488] rounded shadow-sm disabled:opacity-50 transition-all flex items-center justify-center gap-2 min-w-[160px]">
+            <i *ngIf="loading" class="pi pi-spin pi-spinner text-xs"></i>
+            {{ loading ? 'Procesando...' : (isEdit ? 'Actualizar Sede' : 'Confirmar Registro') }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 
 <p-toast position="bottom-right"></p-toast>

@@ -8,12 +8,6 @@
     </div>
 
     <div class="flex flex-wrap items-center gap-4">
-      <div *ngIf="authStore.roles().includes('ROLE_SUPER_ADMIN')" class="flex flex-col gap-2">
-        <p-dropdown [options]="companies()" [(ngModel)]="filterCompanyId" (onChange)="onFilterCompanyChange($event.value)"
-          placeholder="Filtrar por Veterinaria"
-          styleClass="w-72 h-10 bg-white !border-slate-200 !rounded-lg !px-4 !flex !items-center !text-sm !font-medium !text-slate-800 focus:!ring-2 focus:!ring-[#0066AA]/20 transition-all shadow-sm"
-          panelStyleClass="!rounded-xl !border-none !shadow-xl"></p-dropdown>
-      </div>
       <button (click)="openNew()"
         class="flex items-center gap-2 bg-[#0066AA] hover:bg-[#005a96] text-white text-sm font-medium px-5 h-10 rounded-lg transition-colors">
         <i class="pi pi-plus text-xs"></i>
@@ -22,7 +16,7 @@
     </div>
   </div>
 
-  <div *ngIf="!authStore.roles().includes('ROLE_SUPER_ADMIN') || filterCompanyId" class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-none">
+  <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-none">
     <p-table [value]="clients()" [lazy]="true" (onLazyLoad)="loadClients($event)" [paginator]="true" [rows]="10"
       [totalRecords]="totalRecords()" [loading]="loading()" responsiveLayout="stack" breakpoint="960px" [rowHover]="true"
       styleClass="p-datatable-borderless">
@@ -86,91 +80,116 @@
     </p-table>
   </div>
 
-  <div *ngIf="authStore.roles().includes('ROLE_SUPER_ADMIN') && !filterCompanyId" class="flex items-center justify-center py-20">
-    <i class="pi pi-spin pi-spinner text-2xl text-slate-300"></i>
-  </div>
+
 </div>
 
-<p-dialog [(visible)]="displayModal" [header]="isEdit() ? 'Actualizar Datos' : 'Registrar Nuevo Cliente'" [modal]="true"
-  [draggable]="false" [resizable]="false" [breakpoints]="{'960px': '90vw', '640px': '95vw'}" [style]="{width: '700px'}"
-  styleClass="!rounded-2xl !border-none !shadow-none !overflow-hidden !bg-white">
-  
-  <form [formGroup]="clientForm" (ngSubmit)="saveClient()" class="flex flex-col gap-8 mt-6 pb-4">
+<!-- Modal de Gestión de Clientes: Estructura Formal -->
+<div *ngIf="displayModal()" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+  <div class="bg-white w-full max-w-2xl rounded-lg shadow-2xl flex flex-col max-h-[95vh]">
     
-    <div *ngIf="authStore.roles().includes('ROLE_SUPER_ADMIN')" class="flex flex-col gap-2">
-      <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Asignar a Empresa</label>
-      <p-dropdown [options]="companies()" formControlName="companyId" placeholder="Selecciona la empresa"
-        styleClass="w-full h-14 bg-slate-50 !border-none !rounded-xl !px-4 !flex !items-center !text-sm !font-bold !text-slate-800 focus:!ring-2 focus:!ring-[#0066AA]/20 transition-all"
-        panelStyleClass="!rounded-xl !border-none !shadow-xl"></p-dropdown>
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div class="flex flex-col gap-2">
-        <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Nombre</label>
-        <input pInputText formControlName="nombre" placeholder="Ej. Ana"
-          class="w-full h-14 bg-slate-50 !border-none !rounded-xl !px-6 !text-sm !font-bold !text-slate-800 placeholder:text-slate-300 focus:!ring-2 focus:!ring-[#0066AA]/20 transition-all shadow-none" />
-      </div>
-      <div class="flex flex-col gap-2">
-        <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Apellido</label>
-        <input pInputText formControlName="apellido" placeholder="Ej. López"
-          class="w-full h-14 bg-slate-50 !border-none !rounded-xl !px-6 !text-sm !font-bold !text-slate-800 placeholder:text-slate-300 focus:!ring-2 focus:!ring-[#0066AA]/20 transition-all shadow-none" />
-      </div>
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div class="flex flex-col gap-2">
-        <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Tipo Doc.</label>
-        <p-dropdown [options]="tipoDocumentos" formControlName="tipoDocumento"
-          styleClass="w-full h-14 bg-slate-50 !border-none !rounded-xl !px-4 !flex !items-center !text-sm !font-bold !text-slate-800 focus:!ring-2 focus:!ring-[#0066AA]/20 transition-all"></p-dropdown>
-      </div>
-      <div class="md:col-span-2 flex flex-col gap-2">
-        <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Número Documento</label>
-        <input pInputText formControlName="numeroDocumento" placeholder="Nro de documento"
-          class="w-full h-14 bg-slate-50 !border-none !rounded-xl !px-6 !text-sm !font-bold !text-slate-800 focus:!ring-2 focus:!ring-[#0066AA]/20 transition-all shadow-none" />
-      </div>
-    </div>
-
-    <div class="flex flex-col gap-2">
-      <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Email</label>
-      <input pInputText formControlName="email" placeholder="correo@ejemplo.com"
-        class="w-full h-14 bg-slate-50 !border-none !rounded-xl !px-6 !text-sm !font-bold !text-slate-800 focus:!ring-2 focus:!ring-[#0066AA]/20 transition-all shadow-none" />
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div class="flex flex-col gap-2">
-        <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Teléfono</label>
-        <input pInputText formControlName="telefono" placeholder="Ej. 987654321"
-          class="w-full h-14 bg-slate-50 !border-none !rounded-xl !px-6 !text-sm !font-bold !text-slate-800 focus:!ring-2 focus:!ring-[#0066AA]/20 transition-all shadow-none" />
-      </div>
-      <div class="flex flex-col gap-2">
-        <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Género</label>
-        <p-dropdown [options]="generos" formControlName="genero"
-          styleClass="w-full h-14 bg-slate-50 !border-none !rounded-xl !px-4 !flex !items-center !text-sm !font-bold !text-slate-800 focus:!ring-2 focus:!ring-[#0066AA]/20 transition-all"></p-dropdown>
-      </div>
-    </div>
-
-    <div class="flex flex-col gap-2">
-      <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Dirección</label>
-      <input pInputText formControlName="direccion" placeholder="Av. Principal 123"
-        class="w-full h-14 bg-slate-50 !border-none !rounded-xl !px-6 !text-sm !font-bold !text-slate-800 focus:!ring-2 focus:!ring-[#0066AA]/20 transition-all shadow-none" />
-    </div>
-
-    <div class="flex flex-col gap-2">
-      <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Referencias</label>
-      <input pInputText formControlName="referencias" placeholder="Ej. Cerca al parque central"
-        class="w-full h-14 bg-slate-50 !border-none !rounded-xl !px-6 !text-sm !font-bold !text-slate-800 focus:!ring-2 focus:!ring-[#0066AA]/20 transition-all shadow-none" />
-    </div>
-
-    <div class="flex justify-end gap-4 pt-6 border-t border-slate-50">
-      <button type="button" (click)="displayModal.set(false)"
-        class="px-8 h-10 rounded-lg text-sm font-semibold text-slate-500 hover:bg-slate-50 transition-colors">
-        Cancelar
-      </button>
-      <button type="submit" [disabled]="loadingStore.isLoading()"
-        class="flex items-center gap-2 bg-[#0066AA] hover:bg-[#005a96] disabled:opacity-50 text-white text-sm font-medium px-6 h-10 rounded-lg transition-colors active:scale-95">
-        <i class="pi pi-check text-xs"></i>
-        {{ isEdit() ? 'Guardar Cambios' : 'Registrar Cliente' }}
+    <!-- Header -->
+    <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50 rounded-t-lg">
+      <h2 class="text-lg font-bold text-slate-800">
+        {{ isEdit() ? 'Modificar Registro de Cliente' : 'Registro de Nuevo Propietario' }}
+      </h2>
+      <button (click)="displayModal.set(false)" class="text-slate-400 hover:text-slate-600 transition-colors p-2">
+        <i class="pi pi-times"></i>
       </button>
     </div>
-  </form>
-</p-dialog>
+
+    <!-- Body -->
+    <div class="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-slate-200">
+      <form [formGroup]="clientForm" (ngSubmit)="saveClient()" class="space-y-6">
+        
+        <!-- Sección 1: Datos Personales -->
+        <div class="space-y-4">
+          <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
+            <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
+            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">1. Información Personal</h3>
+          </div>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-semibold text-slate-700 ml-0.5">Nombres <span class="text-rose-500">*</span></label>
+              <input type="text" formControlName="nombre" placeholder="Ej: Roberto"
+                class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-semibold text-slate-700 ml-0.5">Apellidos <span class="text-rose-500">*</span></label>
+              <input type="text" formControlName="apellido" placeholder="Ej: García Pérez"
+                class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-semibold text-slate-700 ml-0.5">Género</label>
+              <select formControlName="genero" 
+                class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 bg-white transition-all">
+                <option *ngFor="let g of generos" [value]="g.value">{{ g.label }}</option>
+              </select>
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-semibold text-slate-700 ml-0.5">Documento de Identidad <span class="text-rose-500">*</span></label>
+              <div class="flex gap-2">
+                <select formControlName="tipoDocumento" 
+                  class="w-32 px-2 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 bg-white transition-all font-bold">
+                  <option *ngFor="let t of tipoDocumentos" [value]="t.value">{{ t.label }}</option>
+                </select>
+                <input type="text" formControlName="numeroDocumento" placeholder="Número"
+                  class="flex-1 px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sección 3: Contacto y Ubicación -->
+        <div class="space-y-4">
+          <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
+            <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
+            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">{{ authStore.roles().includes('ROLE_SUPER_ADMIN') ? '3' : '2' }}. Contacto y Ubicación</h3>
+          </div>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-semibold text-slate-700 ml-0.5">Correo Electrónico <span class="text-rose-500">*</span></label>
+              <input type="email" formControlName="email" placeholder="cliente@correo.com"
+                class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-semibold text-slate-700 ml-0.5">Teléfono Principal <span class="text-rose-500">*</span></label>
+              <input type="text" formControlName="telefono" placeholder="Ej: 987654321"
+                class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+            </div>
+
+            <div class="flex flex-col gap-1 sm:col-span-2">
+              <label class="text-xs font-semibold text-slate-700 ml-0.5">Dirección Domiciliaria <span class="text-rose-500">*</span></label>
+              <input type="text" formControlName="direccion" placeholder="Calle, Número, Distrito, Provincia"
+                class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+            </div>
+
+            <div class="flex flex-col gap-1 sm:col-span-2">
+              <label class="text-xs font-semibold text-slate-700 ml-0.5">Referencias Adicionales</label>
+              <input type="text" formControlName="referencias" placeholder="Ej: Frente al parque, edificio color crema"
+                class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer / Acciones Finales -->
+        <div class="flex justify-end gap-3 pt-6 border-t border-slate-200">
+          <button type="button" (click)="displayModal.set(false)"
+            class="px-5 py-2.5 text-sm font-semibold text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded transition-all">
+            Descartar cambios
+          </button>
+          <button type="submit" [disabled]="loadingStore.isLoading()"
+            class="px-8 py-2.5 text-sm font-bold text-white bg-[#0066AA] hover:bg-[#004488] rounded shadow-sm disabled:opacity-50 transition-all flex items-center justify-center gap-2 min-w-[160px]">
+            <i *ngIf="loadingStore.isLoading()" class="pi pi-spin pi-spinner text-xs"></i>
+            {{ loadingStore.isLoading() ? 'Procesando...' : (isEdit() ? 'Actualizar Cliente' : 'Confirmar Registro') }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

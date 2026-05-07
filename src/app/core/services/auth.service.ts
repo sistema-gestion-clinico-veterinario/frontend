@@ -23,4 +23,9 @@ export class AuthService {
   resendVerification(email: string): Observable<ApiResponse<void>> {
     return this.http.post<ApiResponse<void>>(`${this.baseUrl}/resend-verification?email=${encodeURIComponent(email)}`, {});
   }
+
+  changePassword(payload: { oldPassword: string; newPassword: string }): Observable<ApiResponse<void>> {
+    return this.http.post<ApiResponse<void>>(`${this.baseUrl}/change-password`, payload);
+  }
 }
+

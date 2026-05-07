@@ -28,29 +28,18 @@
       </span>
 
       <!-- Versión (para bloqueo optimista) -->
-      <span *ngIf="consulta()" 
+      <span *ngIf="consulta()"
         class="text-[10px] font-bold px-2 py-1 rounded bg-slate-100 text-slate-500 border border-slate-200">
         V{{ consulta()!.version }}
       </span>
-
-      <button *ngIf="!isCerrada()" (click)="guardar()"
-        class="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#0066AA] text-white text-sm font-bold hover:bg-[#0055aa]">
-        <i class="pi pi-save"></i>
-        Guardar
-      </button>
-
-      <button *ngIf="!isCerrada()" (click)="confirmarCerrar()"
-        class="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 text-white text-sm font-bold hover:bg-emerald-700">
-        <i class="pi pi-check"></i>
-        Cerrar consulta
-      </button>
     </div>
   </div>
 
   <ng-container *ngIf="consulta()">
 
     <!-- ── Info mascota ────────────────────────────────────────── -->
-    <div class="bg-white border border-slate-200 rounded-xl p-4 mb-5 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
+    <div
+      class="bg-white border border-slate-200 rounded-xl p-4 mb-5 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
       <div>
         <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-0.5">Mascota</p>
         <p class="text-sm font-bold text-slate-800">{{ consulta()!.mascotaNombre || '—' }}</p>
@@ -79,7 +68,7 @@
 
     <!-- ── Formulario ──────────────────────────────────────────── -->
     <form [formGroup]="form" class="flex flex-col gap-5">
-      
+
       <!-- Campo version oculto -->
       <input type="hidden" formControlName="version">
 
@@ -89,22 +78,29 @@
         <div class="grid sm:grid-cols-2 gap-4">
 
           <div class="flex flex-col gap-1">
-            <label class="text-xs font-bold text-slate-600">Tipo de consulta <span class="text-rose-500">*</span></label>
-            <p-dropdown formControlName="tipoConsulta"
-              [options]="tiposConsulta"
-              placeholder="Seleccionar tipo"
-              styleClass="w-full"
-              [ngClass]="{'ng-invalid ng-dirty': form.get('tipoConsulta')?.invalid && form.get('tipoConsulta')?.touched}">
-            </p-dropdown>
+            <label class="text-xs font-bold text-slate-600">Tipo de consulta <span
+                class="text-rose-500">*</span></label>
+            <div class="relative">
+              <select formControlName="tipoConsulta"
+                class="w-full appearance-none rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20 pr-10"
+                [ngClass]="{'border-rose-500': form.get('tipoConsulta')?.invalid && form.get('tipoConsulta')?.touched, 'border-slate-200': !(form.get('tipoConsulta')?.invalid && form.get('tipoConsulta')?.touched)}">
+                <option value="" disabled selected>Seleccionar tipo</option>
+                <option *ngFor="let tipo of tiposConsulta" [value]="tipo.value">{{ tipo.label }}</option>
+              </select>
+              <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <i class="pi pi-chevron-down text-[10px] text-slate-400"></i>
+              </div>
+            </div>
             <span *ngIf="form.get('tipoConsulta')?.invalid && form.get('tipoConsulta')?.touched"
               class="text-xs text-rose-500">Requerido</span>
           </div>
 
           <div class="flex flex-col gap-1">
-            <label class="text-xs font-bold text-slate-600">Motivo de consulta <span class="text-rose-500">*</span></label>
-            <input pInputText formControlName="motivoConsulta" placeholder="Motivo principal..."
-              class="w-full"
-              [ngClass]="{'ng-invalid ng-dirty': form.get('motivoConsulta')?.invalid && form.get('motivoConsulta')?.touched}" />
+            <label class="text-xs font-bold text-slate-600">Motivo de consulta <span
+                class="text-rose-500">*</span></label>
+            <input type="text" formControlName="motivoConsulta" placeholder="Motivo principal..."
+              class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
+              [ngClass]="{'border-rose-500': form.get('motivoConsulta')?.invalid && form.get('motivoConsulta')?.touched, 'border-slate-200': !(form.get('motivoConsulta')?.invalid && form.get('motivoConsulta')?.touched)}" />
             <span *ngIf="form.get('motivoConsulta')?.invalid && form.get('motivoConsulta')?.touched"
               class="text-xs text-rose-500">Requerido</span>
           </div>
@@ -147,62 +143,52 @@
 
             <div class="flex flex-col gap-1">
               <label class="text-xs font-bold text-slate-600">Peso (kg) <span class="text-rose-500">*</span></label>
-              <p-inputNumber formControlName="pesoEnConsulta"
-                [minFractionDigits]="1" [maxFractionDigits]="2"
-                placeholder="0.0"
-                styleClass="w-full"
-                [ngClass]="{'ng-invalid ng-dirty': form.get('pesoEnConsulta')?.invalid && form.get('pesoEnConsulta')?.touched}">
-              </p-inputNumber>
+              <input type="number" min="0" inputmode="decimal" formControlName="pesoEnConsulta" step="0.01" placeholder="0.0"
+                class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
+                [ngClass]="{'border-rose-500': form.get('pesoEnConsulta')?.invalid && form.get('pesoEnConsulta')?.touched, 'border-slate-200': !(form.get('pesoEnConsulta')?.invalid && form.get('pesoEnConsulta')?.touched)}" />
               <span *ngIf="form.get('pesoEnConsulta')?.invalid && form.get('pesoEnConsulta')?.touched"
                 class="text-xs text-rose-500">Requerido</span>
             </div>
 
             <div class="flex flex-col gap-1">
               <label class="text-xs font-bold text-slate-600">Temperatura (°C)</label>
-              <p-inputNumber formControlName="temperatura"
-                [minFractionDigits]="1" [maxFractionDigits]="1"
-                placeholder="0.0"
-                styleClass="w-full">
-              </p-inputNumber>
+              <input type="number" min="0" inputmode="decimal" formControlName="temperatura" step="0.1" placeholder="0.0"
+                class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20" />
             </div>
 
             <div class="flex flex-col gap-1">
               <label class="text-xs font-bold text-slate-600">F. Cardíaca (lpm)</label>
-              <p-inputNumber formControlName="frecuenciaCardiaca"
-                placeholder="0"
-                styleClass="w-full">
-              </p-inputNumber>
+              <input type="number" min="0" inputmode="numeric" formControlName="frecuenciaCardiaca" placeholder="0"
+                class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20" />
             </div>
 
             <div class="flex flex-col gap-1">
               <label class="text-xs font-bold text-slate-600">F. Respiratoria (rpm)</label>
-              <p-inputNumber formControlName="frecuenciaRespiratoria"
-                placeholder="0"
-                styleClass="w-full">
-              </p-inputNumber>
+              <input type="number" min="0" inputmode="numeric" formControlName="frecuenciaRespiratoria" placeholder="0"
+                class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20" />
             </div>
           </div>
 
           <div class="grid sm:grid-cols-2 gap-4 mb-5">
             <div class="flex flex-col gap-1">
               <label class="text-xs font-bold text-slate-600">Mucosas</label>
-              <input pInputText formControlName="mucosas" placeholder="Ej: húmedas, rosadas..." class="w-full" />
+              <input type="text" formControlName="mucosas" placeholder="Ej: húmedas, rosadas..."
+                class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20" />
             </div>
             <div class="flex flex-col gap-1">
               <label class="text-xs font-bold text-slate-600">Turgencia de piel</label>
-              <input pInputText formControlName="turgenciaPiel" placeholder="Ej: normal, disminuida..." class="w-full" />
+              <input type="text" formControlName="turgenciaPiel" placeholder="Ej: normal, disminuida..."
+                class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20" />
             </div>
           </div>
 
           <div class="flex gap-6">
             <label class="flex items-center gap-2 cursor-pointer select-none">
-              <input type="checkbox" formControlName="vacunacionAlDia"
-                class="w-4 h-4 rounded accent-[#0066AA]" />
+              <input type="checkbox" formControlName="vacunacionAlDia" class="w-4 h-4 rounded accent-[#0066AA]" />
               <span class="text-sm font-medium text-slate-700">Vacunación al día</span>
             </label>
             <label class="flex items-center gap-2 cursor-pointer select-none">
-              <input type="checkbox" formControlName="desparasitacionAlDia"
-                class="w-4 h-4 rounded accent-[#0066AA]" />
+              <input type="checkbox" formControlName="desparasitacionAlDia" class="w-4 h-4 rounded accent-[#0066AA]" />
               <span class="text-sm font-medium text-slate-700">Desparasitación al día</span>
             </label>
           </div>
@@ -213,10 +199,10 @@
 
           <div class="flex flex-col gap-1">
             <label class="text-xs font-bold text-slate-600">Anamnesis <span class="text-rose-500">*</span></label>
-            <textarea pInputTextarea formControlName="anamnesis"
-              rows="4" placeholder="Historia del problema actual, síntomas, evolución..."
-              class="w-full resize-none"
-              [ngClass]="{'ng-invalid ng-dirty': form.get('anamnesis')?.invalid && form.get('anamnesis')?.touched}">
+            <textarea formControlName="anamnesis" rows="4"
+              placeholder="Historia del problema actual, síntomas, evolución..."
+              class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
+              [ngClass]="{'border-rose-500': form.get('anamnesis')?.invalid && form.get('anamnesis')?.touched, 'border-slate-200': !(form.get('anamnesis')?.invalid && form.get('anamnesis')?.touched)}">
             </textarea>
             <span *ngIf="form.get('anamnesis')?.invalid && form.get('anamnesis')?.touched"
               class="text-xs text-rose-500">Requerido para cerrar la consulta</span>
@@ -224,17 +210,15 @@
 
           <div class="flex flex-col gap-1">
             <label class="text-xs font-bold text-slate-600">Examen físico</label>
-            <textarea pInputTextarea formControlName="examenFisico"
-              rows="4" placeholder="Hallazgos del examen físico..."
-              class="w-full resize-none">
+            <textarea formControlName="examenFisico" rows="4" placeholder="Hallazgos del examen físico..."
+              class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20">
             </textarea>
           </div>
 
           <div class="flex flex-col gap-1">
             <label class="text-xs font-bold text-slate-600">Observaciones</label>
-            <textarea pInputTextarea formControlName="observaciones"
-              rows="3" placeholder="Notas adicionales..."
-              class="w-full resize-none">
+            <textarea formControlName="observaciones" rows="3" placeholder="Notas adicionales..."
+              class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20">
             </textarea>
           </div>
 
@@ -246,37 +230,36 @@
           <div class="grid sm:grid-cols-2 gap-4">
             <div class="flex flex-col gap-1">
               <label class="text-xs font-bold text-slate-600">Enfermedades previas</label>
-              <textarea pInputTextarea formControlName="antecedentesEnfermedades"
-                rows="3" placeholder="Enfermedades anteriores..."
-                class="w-full resize-none">
+              <textarea formControlName="antecedentesEnfermedades" rows="3" placeholder="Enfermedades anteriores..."
+                class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20">
               </textarea>
             </div>
             <div class="flex flex-col gap-1">
               <label class="text-xs font-bold text-slate-600">Procedimientos previos</label>
-              <textarea pInputTextarea formControlName="antecedentesProcedimientos"
-                rows="3" placeholder="Cirugías, tratamientos anteriores..."
-                class="w-full resize-none">
+              <textarea formControlName="antecedentesProcedimientos" rows="3"
+                placeholder="Cirugías, tratamientos anteriores..."
+                class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20">
               </textarea>
             </div>
             <div class="flex flex-col gap-1">
               <label class="text-xs font-bold text-slate-600">Antecedentes personales</label>
-              <textarea pInputTextarea formControlName="antecedentesPersonales"
-                rows="3" placeholder="Alergias, condiciones crónicas..."
-                class="w-full resize-none">
+              <textarea formControlName="antecedentesPersonales" rows="3"
+                placeholder="Alergias, condiciones crónicas..."
+                class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20">
               </textarea>
             </div>
             <div class="flex flex-col gap-1">
               <label class="text-xs font-bold text-slate-600">Antecedentes familiares</label>
-              <textarea pInputTextarea formControlName="antecedentesFamiliares"
-                rows="3" placeholder="Enfermedades hereditarias..."
-                class="w-full resize-none">
+              <textarea formControlName="antecedentesFamiliares" rows="3" placeholder="Enfermedades hereditarias..."
+                class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20">
               </textarea>
             </div>
           </div>
 
           <div class="flex flex-col gap-1">
             <label class="text-xs font-bold text-slate-600">Grupo sanguíneo</label>
-            <input pInputText formControlName="grupoSanguineo" placeholder="Ej: DEA 1.1+" class="w-full sm:w-48" />
+            <input type="text" formControlName="grupoSanguineo" placeholder="Ej: DEA 1.1+"
+              class="w-full sm:w-48 rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20" />
           </div>
 
         </div>
@@ -288,11 +271,14 @@
               <ng-template pTemplate="content" let-item>
                 <div class="mb-6 bg-slate-50 border border-slate-100 rounded-xl p-4 ml-2 shadow-sm">
                   <div class="flex items-center justify-between mb-2">
-                    <span class="text-xs font-extrabold text-[#0066AA]">{{ formatFecha(item.fechaConsulta) }}</span>
-                    <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-white border border-slate-200 text-slate-400 uppercase">{{ item.tipoConsulta }}</span>
+                    <span class="text-xs font-extrabold text-[#0066AA]">{{ formatFechaHora(item.fechaConsulta) }}</span>
+                    <span
+                      class="text-[10px] font-bold px-2 py-0.5 rounded bg-white border border-slate-200 text-slate-400 uppercase">{{
+                      item.tipoConsulta }}</span>
                   </div>
                   <h4 class="text-sm font-bold text-slate-800 mb-1">{{ item.motivoConsulta }}</h4>
-                  <p class="text-xs text-slate-500 line-clamp-2 italic">{{ item.anamnesis || 'Sin anamnesis registrada' }}</p>
+                  <p class="text-xs text-slate-500 line-clamp-2 italic">{{ item.anamnesis || 'Sin anamnesis registrada'
+                    }}</p>
                   <div class="mt-3 flex items-center gap-3 pt-3 border-t border-slate-200/50">
                     <span class="text-[10px] text-slate-400 flex items-center gap-1">
                       <i class="pi pi-user text-[9px]"></i> {{ item.veterinarioNombre }}
@@ -300,7 +286,7 @@
                     <span *ngIf="item.pesoEnConsulta" class="text-[10px] text-slate-400 flex items-center gap-1">
                       <i class="pi pi-info-circle text-[9px]"></i> {{ item.pesoEnConsulta }} kg
                     </span>
-                    <button type="button" (click)="verConsulta(item.id)" 
+                    <button type="button" (click)="verConsulta(item.id)"
                       class="ml-auto text-[10px] font-bold text-[#0066AA] hover:underline flex items-center gap-1">
                       <i class="pi pi-external-link text-[9px]"></i> Ver detalle
                     </button>
@@ -331,18 +317,19 @@
         </div>
       </div>
 
-      <!-- Botones inferiores -->
-      <div *ngIf="!isCerrada()" class="flex justify-end gap-3 pb-8">
-        <button type="button" (click)="guardar()"
-          class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#0066AA] text-white text-sm font-bold hover:bg-[#0055aa]">
-          <i class="pi pi-save"></i>
-          Guardar cambios
-        </button>
-        <button type="button" (click)="confirmarCerrar()"
-          class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 text-white text-sm font-bold hover:bg-emerald-700">
-          <i class="pi pi-check-circle"></i>
-          Cerrar consulta
-        </button>
+      <div *ngIf="!isCerrada()" class="flex flex-col gap-3 mt-4 items-end">
+        <div class="flex flex-col sm:flex-row gap-3 justify-end w-full">
+          <button type="button" (click)="confirmarGuardar()" [disabled]="form.invalid"
+            class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-[#0066AA] text-white text-sm font-bold hover:bg-[#0055aa] disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+            <i class="pi pi-save"></i>
+            Guardar cambios
+          </button>
+          <button type="button" (click)="confirmarCerrar()" [disabled]="form.invalid"
+            class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 text-white text-sm font-bold hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+            <i class="pi pi-check-circle"></i>
+            Cerrar consulta
+          </button>
+        </div>
       </div>
 
     </form>
@@ -352,3 +339,174 @@
 
 <p-confirmDialog></p-confirmDialog>
 <p-toast position="bottom-right"></p-toast>
+
+<!-- Sidebar de Detalle de Consulta del Historial -->
+<p-drawer [visible]="displayDetalleHistorial()" (visibleChange)="displayDetalleHistorial.set($event)" position="right"
+  styleClass="w-full md:w-[500px] lg:w-[600px] border-l border-slate-200 shadow-none overflow-hidden">
+
+  <ng-template pTemplate="header">
+    <div class="flex items-center gap-4 py-1">
+      <div class="w-10 h-10 rounded-xl bg-blue-50 text-[#0066AA] flex items-center justify-center">
+        <i class="pi pi-calendar-plus text-lg"></i>
+      </div>
+      <div class="flex flex-col">
+        <h2 class="text-lg font-bold text-slate-800 tracking-tight leading-none">Resumen de Visita</h2>
+        <p *ngIf="detalleSeleccionado()" class="text-xs text-slate-400 font-medium mt-1">
+          {{ formatFechaHora(detalleSeleccionado()!.fechaConsulta) }}
+        </p>
+      </div>
+    </div>
+  </ng-template>
+
+  <div *ngIf="detalleSeleccionado()" class="h-full flex flex-col font-['Barlow'] bg-white">
+    <div class="flex-1 overflow-y-auto p-8 space-y-10">
+
+      <!-- Bloque Título -->
+      <section>
+        <div
+          class="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-[#0066AA]/10 text-[#0066AA] text-[10px] font-bold uppercase tracking-widest mb-4">
+          <i class="pi pi-tag text-[9px]"></i>
+          {{ detalleSeleccionado()!.tipoConsulta }}
+        </div>
+        <h3 class="text-2xl font-bold text-slate-900 leading-tight mb-2">
+          {{ detalleSeleccionado()!.motivoConsulta }}
+        </h3>
+        <p class="text-sm text-slate-500">
+          Evaluado por <span class="text-[#0066AA] font-bold">{{ detalleSeleccionado()!.veterinarioNombre }}</span>
+        </p>
+      </section>
+
+      <!-- Constantes -->
+      <section class="bg-blue-50/40 rounded-2xl p-6 border border-blue-50">
+        <div class="flex items-center gap-2 mb-5">
+          <i class="pi pi-heart text-[#0066AA] text-xs"></i>
+          <h4 class="text-[10px] font-black text-[#0066AA] uppercase tracking-[0.2em]">Signos Vitales</h4>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-6">
+          <div>
+            <p class="text-[10px] text-slate-400 font-bold uppercase mb-1">Peso</p>
+            <p class="text-base font-bold text-slate-800">{{ detalleSeleccionado()!.pesoEnConsulta || '—' }} <span
+                class="text-[10px] text-slate-400 font-medium">kg</span></p>
+          </div>
+          <div>
+            <p class="text-[10px] text-slate-400 font-bold uppercase mb-1">Temperatura</p>
+            <p class="text-base font-bold text-slate-800">{{ detalleSeleccionado()!.temperatura || '—' }} <span
+                class="text-[10px] text-slate-400 font-medium">°C</span></p>
+          </div>
+          <div>
+            <p class="text-[10px] text-slate-400 font-bold uppercase mb-1">F. Cardíaca</p>
+            <p class="text-base font-bold text-slate-800">{{ detalleSeleccionado()!.frecuenciaCardiaca || '—' }} <span
+                class="text-slate-400 font-medium text-[8px]">lpm</span></p>
+          </div>
+          <div>
+            <p class="text-[10px] text-slate-400 font-bold uppercase mb-1">F. Resp</p>
+            <p class="text-base font-bold text-slate-800">{{ detalleSeleccionado()!.frecuenciaRespiratoria || '—' }}
+              <span class=" text-slate-400 font-medium text-[8px]">rpm</span>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Hallazgos -->
+      <section class="space-y-6">
+        <h4
+          class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] mb-4 border-b border-slate-100 pb-2">
+          Hallazgos Clínicos</h4>
+
+        <div *ngIf="detalleSeleccionado()!.anamnesis" class="flex gap-4">
+          <div class="mt-1 w-1 h-10 rounded-full bg-blue-400/30"></div>
+          <div>
+            <p class="text-[11px] font-bold text-slate-700 mb-1">Anamnesis</p>
+            <p class="text-sm text-slate-600 leading-relaxed">{{ detalleSeleccionado()!.anamnesis }}</p>
+          </div>
+        </div>
+
+        <div *ngIf="detalleSeleccionado()!.examenFisico" class="flex gap-4">
+          <div class="mt-1 w-1 h-10 rounded-full bg-violet-400/30"></div>
+          <div>
+            <p class="text-[11px] font-bold text-slate-700 mb-1">Examen Físico</p>
+            <p class="text-sm text-slate-600 leading-relaxed">{{ detalleSeleccionado()!.examenFisico }}</p>
+          </div>
+        </div>
+
+        <div *ngIf="detalleSeleccionado()!.observaciones"
+          class="bg-amber-50/50 p-4 rounded-xl border-l-4 border-amber-200">
+          <p class="text-[11px] font-bold text-amber-700 mb-1">Observaciones</p>
+          <p class="text-sm text-slate-600 italic leading-relaxed">{{ detalleSeleccionado()!.observaciones }}</p>
+        </div>
+      </section>
+
+      <!-- Diagnóstico y Tratamiento -->
+      <div class="grid sm:grid-cols-2 gap-8">
+        <section *ngIf="detalleSeleccionado()!.diagnosticos?.length > 0">
+          <h4
+            class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] mb-4 border-b border-slate-100 pb-2">
+            Diagnósticos</h4>
+          <div class="space-y-3">
+            <div *ngFor="let d of detalleSeleccionado()!.diagnosticos" class="flex items-center gap-2">
+              <i class="pi pi-check-circle text-rose-400 text-[10px]"></i>
+              <div class="flex flex-col">
+                <span class="text-sm font-bold text-slate-800 leading-none">{{ d.nombre }}</span>
+                <span class="text-[9px] text-slate-400 uppercase mt-0.5 font-bold">{{ d.tipo }}</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section *ngIf="detalleSeleccionado()!.tratamientos?.length > 0">
+          <h4
+            class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] mb-4 border-b border-slate-100 pb-2">
+            Tratamientos</h4>
+          <div class="space-y-3">
+            <div *ngFor="let t of detalleSeleccionado()!.tratamientos" class="flex items-center gap-2">
+              <i class="pi pi-play-circle text-emerald-400 text-[10px]"></i>
+              <div class="flex flex-col">
+                <span class="text-sm font-bold text-slate-800 leading-none">{{ t.nombre }}</span>
+                <span class="text-[9px] text-slate-400 mt-0.5">{{ t.descripcion }}</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Recetario -->
+      <section *ngIf="detalleSeleccionado()!.prescripciones?.length > 0">
+        <h4
+          class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] mb-4 border-b border-slate-100 pb-2">
+          Receta Médica</h4>
+        <div class="grid gap-3">
+          <div *ngFor="let p of detalleSeleccionado()!.prescripciones"
+            class="p-4 rounded-2xl border border-blue-50 bg-blue-50/20">
+            <div class="flex items-center justify-between mb-3">
+              <p class="text-sm font-bold text-slate-900">{{ p.medicamento }}</p>
+              <span
+                class="px-2 py-0.5 rounded bg-white text-[#0066AA] text-[9px] font-bold border border-blue-100 uppercase tracking-widest">
+                {{ p.viaAdministracion }}
+              </span>
+            </div>
+            <div class="flex items-start gap-6">
+              <div>
+                <p class="text-[9px] font-bold text-slate-400 uppercase mb-0.5">Dosis y Freq</p>
+                <p class="text-xs text-slate-700 font-bold">{{ p.dosis }} <span
+                    class="text-slate-300 font-normal">cada</span> {{ p.frecuencia }}</p>
+              </div>
+              <div *ngIf="p.instrucciones">
+                <p class="text-[9px] font-bold text-slate-400 uppercase mb-0.5">Indicaciones</p>
+                <p class="text-xs text-slate-500 leading-tight">{{ p.instrucciones }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="p-8 border-t border-slate-100 bg-slate-50/30 flex justify-end">
+      <button (click)="displayDetalleHistorial.set(false)"
+        class="px-10 py-3 rounded-xl bg-[#0066AA] text-white text-sm font-bold shadow-lg shadow-blue-900/10 hover:bg-[#0055aa] transition-all">
+        Entendido
+      </button>
+    </div>
+  </div>
+</p-drawer>

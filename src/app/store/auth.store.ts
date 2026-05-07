@@ -19,8 +19,8 @@ interface AuthState {
   selectedEnterprise: Enterprise | null;
 }
 
-const createInitialState = (): AuthState => {
-  if (typeof window !== 'undefined') {
+const createInitialState = (useStorage = true): AuthState => {
+  if (useStorage && typeof window !== 'undefined') {
     const stored = window.localStorage.getItem('auth');
     if (stored) {
       try {
@@ -97,7 +97,7 @@ export const AuthStore = signalStore(
       }
     },
     logout() {
-      patchState(store, createInitialState());
+      patchState(store, createInitialState(false));
       if (typeof window !== 'undefined') {
         window.localStorage.removeItem('auth');
       }

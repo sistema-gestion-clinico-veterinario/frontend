@@ -93,6 +93,6 @@ export class SidebarComponent {
 
   logout() {
     this.authStore.logout();
-    this.router.navigate(['/login']);
+    this.router.navigateByUrl('/login', { replaceUrl: true });
   }
 }
