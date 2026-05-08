@@ -83,11 +83,9 @@
 
 </div>
 
-<!-- Modal de Gestión de Clientes: Estructura Formal -->
 <div *ngIf="displayModal()" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
   <div class="bg-white w-full max-w-2xl rounded-lg shadow-2xl flex flex-col max-h-[95vh]">
-    
-    <!-- Header -->
+  
     <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50 rounded-t-lg">
       <h2 class="text-lg font-bold text-slate-800">
         {{ isEdit() ? 'Modificar Registro de Cliente' : 'Registro de Nuevo Propietario' }}
@@ -97,11 +95,10 @@
       </button>
     </div>
 
-    <!-- Body -->
     <div class="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-slate-200">
       <form [formGroup]="clientForm" (ngSubmit)="saveClient()" class="space-y-6">
         
-        <!-- Sección 1: Datos Personales -->
+      
         <div class="space-y-4">
           <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
             <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
@@ -143,7 +140,6 @@
           </div>
         </div>
 
-        <!-- Sección 3: Contacto y Ubicación -->
         <div class="space-y-4">
           <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
             <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
@@ -177,7 +173,6 @@
           </div>
         </div>
 
-        <!-- Footer / Acciones Finales -->
         <div class="flex justify-end gap-3 pt-6 border-t border-slate-200">
           <button type="button" (click)="displayModal.set(false)"
             class="px-5 py-2.5 text-sm font-semibold text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded transition-all">

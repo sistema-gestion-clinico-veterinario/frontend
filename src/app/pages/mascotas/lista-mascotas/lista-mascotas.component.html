@@ -202,11 +202,9 @@
 
 </div>
 
-<!-- Modal de Registro/Edición de Mascota: Estructura Formal -->
 <div *ngIf="displayModal()" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
   <div class="bg-white w-full max-w-xl rounded-lg shadow-2xl flex flex-col max-h-[95vh]">
-    
-    <!-- Header -->
+  
     <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50 rounded-t-lg">
       <h2 class="text-lg font-bold text-slate-800">
         {{ isEdit() ? 'Actualizar Ficha del Paciente' : 'Apertura de Expediente de Mascota' }}
@@ -216,11 +214,9 @@
       </button>
     </div>
 
-    <!-- Body -->
     <div class="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-slate-200">
       <form [formGroup]="mascotaForm" (ngSubmit)="saveMascota()" class="space-y-6">
-        
-        <!-- Sección 1: Identificación del Paciente -->
+      
         <div class="space-y-4">
           <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
             <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
@@ -265,8 +261,6 @@
             </div>
           </div>
         </div>
-
-        <!-- Sección 2: Detalles Físicos -->
         <div class="space-y-4">
           <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
             <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
@@ -286,8 +280,6 @@
             </div>
           </div>
         </div>
-
-        <!-- Sección 3: Vinculación -->
         <div class="space-y-4">
           <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
             <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
@@ -304,7 +296,7 @@
           </div>
         </div>
 
-        <!-- Footer / Acciones Finales -->
+      
         <div class="flex justify-end gap-3 pt-6 border-t border-slate-200">
           <button type="button" (click)="displayModal.set(false)"
             class="px-5 py-2.5 text-sm font-semibold text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded transition-all">
@@ -321,7 +313,6 @@
   </div>
 </div>
 
-<!-- Modal de Motivo de Baja -->
 <div *ngIf="displayMotivoModal()" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
   <div class="bg-white w-full max-w-sm rounded-lg shadow-2xl flex flex-col">
     <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-rose-50 rounded-t-lg">

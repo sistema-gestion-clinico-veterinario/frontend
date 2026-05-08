@@ -1,5 +1,4 @@
 <header class="flex h-16 shrink-0 items-center gap-4 border-b border-slate-100 bg-white px-4">
-  <!-- Toggle sidebar -->
   <button
     (click)="toggleSidebar.emit()"
     class="rounded-xl p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors duration-150"
@@ -11,7 +10,6 @@
   </button>
 
   <div class="flex-1 flex items-center px-4 sm:px-8">
-    <!-- Global Context Switcher para Super Admin -->
     <div *ngIf="isSuperAdmin" class="flex items-center gap-2">
       <span class="text-xs font-bold text-slate-400 uppercase tracking-wider hidden sm:inline-block">Administrando:</span>
       <select [ngModel]="activeCompanyId" (change)="onCompanyChange($event)"
@@ -21,7 +19,6 @@
     </div>
   </div>
 
-  <!-- Info del usuario -->
   <div class="flex items-center gap-3 shrink-0">
     <div class="hidden text-right sm:block">
       <p class="text-sm font-semibold text-slate-800 leading-tight">{{ userName }}</p>

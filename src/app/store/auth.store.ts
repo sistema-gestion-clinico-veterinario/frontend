@@ -26,7 +26,6 @@ const createInitialState = (useStorage = true): AuthState => {
       try {
         return JSON.parse(stored) as AuthState;
       } catch {
-        // ignore parse errors
       }
     }
   }

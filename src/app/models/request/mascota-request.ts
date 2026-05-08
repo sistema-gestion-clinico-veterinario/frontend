@@ -3,7 +3,7 @@ export interface MascotaRequest {
   especie: string;
   raza: string;
   sexo: string;
-  fechaNacimiento: string; // formato YYYY-MM-DD
+  fechaNacimiento: string; 
   color?: string;
   peso?: number;
   apoderadoId: number;

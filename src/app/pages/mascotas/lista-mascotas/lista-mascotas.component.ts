@@ -49,25 +49,18 @@ export class ListaMascotasComponent implements OnInit {
 
   readonly isSuperAdmin = computed(() => this.authStore.roles().includes(Role.SUPER_ADMIN));
 
-  // ── Data ──────────────────────────────────────────────────
   mascotas     = signal<MascotaResponse[]>([]);
   totalRecords = signal<number>(0);
   displayModal = signal<boolean>(false);
   isEdit       = signal<boolean>(false);
   editingId    = signal<number | null>(null);
-
-  // ── Options ───────────────────────────────────────────────
   apoderados = signal<{ label: string; value: number }[]>([]);
-
-  // ── Filtros ───────────────────────────────────────────────
   searchNombre      = '';
   filterEspecie: string | null   = null;
   filterActivo:  boolean | null  = null;
   filtersOpen       = false;
   currentPage       = 0;
   readonly pageSize = 12;
-
-  // ── Constantes ────────────────────────────────────────────
   readonly especieOpciones = [
     { label: 'Perro',   value: 'PERRO'   },
     { label: 'Gato',    value: 'GATO'    },
@@ -83,7 +76,6 @@ export class ListaMascotasComponent implements OnInit {
     { label: 'Inactivos', value: false },
   ];
 
-  // ── Formulario ────────────────────────────────────────────
   mascotaForm: FormGroup = this.fb.group({
     nombre:          ['',   [Validators.required]],
     especie:         [null, [Validators.required]],
@@ -94,8 +86,6 @@ export class ListaMascotasComponent implements OnInit {
     peso:            [null],
     apoderadoId:     [null, [Validators.required]],
   });
-
-  // ── Modal Motivo Baja ─────────────────────────────────────
   displayMotivoModal  = signal<boolean>(false);
   pendingDeactivation = signal<MascotaResponse | null>(null);
 
@@ -115,13 +105,11 @@ export class ListaMascotasComponent implements OnInit {
     return this.authStore.selectedEnterprise()?.establishmentId ?? this.authStore.companyId();
   }
 
-  // ── Lifecycle ─────────────────────────────────────────────
   ngOnInit() {
     this.loadMascotas();
     this.loadApoderados();
   }
 
-  // ── Carga de datos ────────────────────────────────────────
   loadApoderados() {
     const companyId = this.activeCompanyId;
     if (!companyId) {
@@ -171,7 +159,6 @@ export class ListaMascotasComponent implements OnInit {
     });
   }
 
-  // ── Eventos ───────────────────────────────────────────────
   onFilterChange()  { this.loadMascotas(0); }
   onPageChange(e: any) { this.loadMascotas(e.page); }
 
@@ -179,7 +166,6 @@ export class ListaMascotasComponent implements OnInit {
     if (event.key === 'Enter') this.loadMascotas(0);
   }
 
-  // ── CRUD ──────────────────────────────────────────────────
   openNew() {
     this.isEdit.set(false);
     this.editingId.set(null);
@@ -301,7 +287,6 @@ export class ListaMascotasComponent implements OnInit {
     this.router.navigate(['/historias-clinicas/mascota', mascota.id]);
   }
 
-  // ── Helpers de presentación ───────────────────────────────
   calcularEdad(fechaNacimiento: string): string {
     if (!fechaNacimiento) return '—';
     const hoy  = new Date();
