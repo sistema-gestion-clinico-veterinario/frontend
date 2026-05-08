@@ -1,0 +1,22 @@
+export const PRIME_ICONS = [
+  'pi pi-home', 'pi pi-user', 'pi pi-users', 'pi pi-cog', 'pi pi-calendar',
+  'pi pi-calendar-plus', 'pi pi-calendar-minus', 'pi pi-search', 'pi pi-check',
+  'pi pi-times', 'pi pi-plus', 'pi pi-minus', 'pi pi-info-circle', 'pi pi-exclamation-triangle',
+  'pi pi-exclamation-circle', 'pi pi-question-circle', 'pi pi-heart', 'pi pi-heart-fill',
+  'pi pi-star', 'pi pi-star-fill', 'pi pi-trash', 'pi pi-pencil', 'pi pi-copy',
+  'pi pi-file', 'pi pi-file-pdf', 'pi pi-file-excel', 'pi pi-folder', 'pi pi-folder-open',
+  'pi pi-image', 'pi pi-images', 'pi pi-video', 'pi pi-camera', 'pi pi-map-marker',
+  'pi pi-map', 'pi pi-compass', 'pi pi-directions', 'pi pi-clock', 'pi pi-history',
+  'pi pi-refresh', 'pi pi-sync', 'pi pi-download', 'pi pi-upload', 'pi pi-cloud',
+  'pi pi-cloud-download', 'pi pi-cloud-upload', 'pi pi-envelope', 'pi pi-send',
+  'pi pi-inbox', 'pi pi-reply', 'pi pi-share-alt', 'pi pi-link', 'pi pi-external-link',
+  'pi pi-eye', 'pi pi-eye-slash', 'pi pi-lock', 'pi pi-lock-open', 'pi pi-key',
+  'pi pi-sign-in', 'pi pi-sign-out', 'pi pi-bell', 'pi pi-shopping-cart', 'pi pi-tag',
+  'pi pi-tags', 'pi pi-wallet', 'pi pi-credit-card', 'pi pi-money-bill', 'pi pi-chart-bar',
+  'pi pi-chart-line', 'pi pi-chart-pie', 'pi pi-table', 'pi pi-list', 'pi pi-grid',
+  'pi pi-filter', 'pi pi-sort', 'pi pi-sort-alpha-down', 'pi pi-sort-numeric-down',
+  'pi pi-briefcase', 'pi pi-building', 'pi pi-globe', 'pi pi-book', 'pi pi-bookmark',
+  'pi pi-print', 'pi pi-mobile', 'pi pi-tablet', 'pi pi-desktop', 'pi pi-save',
+  'pi pi-database', 'pi pi-server', 'pi pi-shield', 'pi pi-flag', 'pi pi-box',
+  'pi pi-ticket', 'pi pi-gift', 'pi pi-lightbulb', 'pi pi-bolt', 'pi pi-power-off'
+];

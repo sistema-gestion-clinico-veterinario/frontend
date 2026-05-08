@@ -69,7 +69,8 @@ export class LoginComponent implements OnInit {
           empleadoId: data.empleadoId ?? null,
           passwordChanged: data.passwordChanged,
           needsCompanySelection: data.needsCompanySelection,
-          selectedEnterprise: null
+          selectedEnterprise: null,
+          menu: data.menu
         });
         sessionStorage.removeItem('pw_modal_dismissed');
         const roles = data.roles;

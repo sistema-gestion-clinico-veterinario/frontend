@@ -1,5 +1,5 @@
 <div class="flex h-screen overflow-hidden bg-slate-50">
-  <app-sidebar [collapsed]="sidebarCollapsed()" />
+  <app-sidebar [collapsed]="sidebarCollapsed()" (toggleSidebar)="toggleSidebar()" />
 
   <div class="flex flex-1 flex-col overflow-hidden min-w-0">
     <app-navbar (toggleSidebar)="toggleSidebar()" />
