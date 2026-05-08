@@ -42,12 +42,10 @@ export class ConsultaFormComponent implements OnInit {
   readonly loadingStore        = inject(LoadingStore);
 
   consulta   = signal<ConsultaResponse | null>(null);
-  historia   = signal<any | null>(null); // Para ver antecedentes y consultas previas
+  historia   = signal<any | null>(null); 
   tabActiva  = signal<'signos' | 'clinico' | 'antecedentes' | 'historial'>('signos');
   isCerrada  = signal<boolean>(false);
   consultaId = 0;
-
-  // Sidebar para historial
   displayDetalleHistorial = signal<boolean>(false);
   detalleSeleccionado      = signal<any | null>(null);
 
@@ -102,8 +100,6 @@ export class ConsultaFormComponent implements OnInit {
       next: (res) => {
         this.consulta.set(res.data);
         this.isCerrada.set(res.data.estado === 'CERRADA');
-        
-        // Cargar historia clínica de la mascota
         if (res.data.mascotaId) {
           this.loadHistoria(res.data.mascotaId);
         }
@@ -211,7 +207,6 @@ export class ConsultaFormComponent implements OnInit {
   }
 
   verConsulta(id: number) {
-    // Buscar la consulta en el historial cargado
     const item = this.historia()?.consultas.find((c: any) => c.id === id);
     if (item) {
       this.detalleSeleccionado.set(item);

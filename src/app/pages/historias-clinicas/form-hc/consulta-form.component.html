@@ -1,6 +1,5 @@
 <div class="p-4 sm:p-6 lg:p-8 min-h-screen bg-slate-50 font-['Barlow']">
 
-  <!-- ── Header ─────────────────────────────────────────────── -->
   <div class="mb-5 flex items-center justify-between gap-3 flex-wrap">
     <div class="flex items-center gap-3">
       <button (click)="volver()"
@@ -17,7 +16,6 @@
     </div>
 
     <div class="flex items-center gap-2">
-      <!-- Estado badge -->
       <span *ngIf="isCerrada()"
         class="text-xs font-extrabold px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 uppercase tracking-wide">
         <i class="pi pi-lock mr-1"></i>Cerrada
@@ -26,8 +24,6 @@
         class="text-xs font-extrabold px-3 py-1.5 rounded-full bg-amber-50 text-amber-700 uppercase tracking-wide">
         <i class="pi pi-pencil mr-1"></i>En proceso
       </span>
-
-      <!-- Versión (para bloqueo optimista) -->
       <span *ngIf="consulta()"
         class="text-[10px] font-bold px-2 py-1 rounded bg-slate-100 text-slate-500 border border-slate-200">
         V{{ consulta()!.version }}
@@ -37,7 +33,6 @@
 
   <ng-container *ngIf="consulta()">
 
-    <!-- ── Info mascota ────────────────────────────────────────── -->
     <div
       class="bg-white border border-slate-200 rounded-xl p-4 mb-5 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
       <div>
@@ -66,13 +61,8 @@
       </div>
     </div>
 
-    <!-- ── Formulario ──────────────────────────────────────────── -->
     <form [formGroup]="form" class="flex flex-col gap-5">
-
-      <!-- Campo version oculto -->
       <input type="hidden" formControlName="version">
-
-      <!-- Tipo y Motivo -->
       <div class="bg-white border border-slate-200 rounded-xl p-5">
         <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-4">Información general</p>
         <div class="grid sm:grid-cols-2 gap-4">
@@ -107,8 +97,6 @@
 
         </div>
       </div>
-
-      <!-- Tabs -->
       <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
         <div class="flex border-b border-slate-100 px-5 overflow-x-auto">
           <button type="button" (click)="tabActiva.set('signos')"
@@ -136,8 +124,6 @@
             Historial de Consultas
           </button>
         </div>
-
-        <!-- Tab: Signos vitales -->
         <div *ngIf="tabActiva() === 'signos'" class="p-5">
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-5">
 
@@ -193,8 +179,6 @@
             </label>
           </div>
         </div>
-
-        <!-- Tab: Datos clínicos -->
         <div *ngIf="tabActiva() === 'clinico'" class="p-5 flex flex-col gap-4">
 
           <div class="flex flex-col gap-1">
@@ -223,8 +207,6 @@
           </div>
 
         </div>
-
-        <!-- Tab: Antecedentes -->
         <div *ngIf="tabActiva() === 'antecedentes'" class="p-5 flex flex-col gap-4">
 
           <div class="grid sm:grid-cols-2 gap-4">
@@ -263,8 +245,6 @@
           </div>
 
         </div>
-
-        <!-- Tab: Historial -->
         <div *ngIf="tabActiva() === 'historial'" class="p-5">
           <div *ngIf="historia() && historia().consultas.length > 0; else noHistory" class="flex flex-col gap-6">
             <p-timeline [value]="historia().consultas" align="left">
@@ -305,7 +285,6 @@
 
       </div>
 
-      <!-- Info cierre -->
       <div *ngIf="isCerrada()" class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-center gap-3">
         <i class="pi pi-lock text-emerald-600"></i>
         <div>
@@ -339,8 +318,6 @@
 
 <p-confirmDialog></p-confirmDialog>
 <p-toast position="bottom-right"></p-toast>
-
-<!-- Sidebar de Detalle de Consulta del Historial -->
 <p-drawer [visible]="displayDetalleHistorial()" (visibleChange)="displayDetalleHistorial.set($event)" position="right"
   styleClass="w-full md:w-[500px] lg:w-[600px] border-l border-slate-200 shadow-none overflow-hidden">
 
@@ -360,8 +337,6 @@
 
   <div *ngIf="detalleSeleccionado()" class="h-full flex flex-col font-['Barlow'] bg-white">
     <div class="flex-1 overflow-y-auto p-8 space-y-10">
-
-      <!-- Bloque Título -->
       <section>
         <div
           class="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-[#0066AA]/10 text-[#0066AA] text-[10px] font-bold uppercase tracking-widest mb-4">
@@ -375,8 +350,6 @@
           Evaluado por <span class="text-[#0066AA] font-bold">{{ detalleSeleccionado()!.veterinarioNombre }}</span>
         </p>
       </section>
-
-      <!-- Constantes -->
       <section class="bg-blue-50/40 rounded-2xl p-6 border border-blue-50">
         <div class="flex items-center gap-2 mb-5">
           <i class="pi pi-heart text-[#0066AA] text-xs"></i>
@@ -406,8 +379,6 @@
           </div>
         </div>
       </section>
-
-      <!-- Hallazgos -->
       <section class="space-y-6">
         <h4
           class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] mb-4 border-b border-slate-100 pb-2">
@@ -435,8 +406,6 @@
           <p class="text-sm text-slate-600 italic leading-relaxed">{{ detalleSeleccionado()!.observaciones }}</p>
         </div>
       </section>
-
-      <!-- Diagnóstico y Tratamiento -->
       <div class="grid sm:grid-cols-2 gap-8">
         <section *ngIf="detalleSeleccionado()!.diagnosticos?.length > 0">
           <h4
@@ -468,8 +437,6 @@
           </div>
         </section>
       </div>
-
-      <!-- Recetario -->
       <section *ngIf="detalleSeleccionado()!.prescripciones?.length > 0">
         <h4
           class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] mb-4 border-b border-slate-100 pb-2">
@@ -501,7 +468,6 @@
 
     </div>
 
-    <!-- Footer -->
     <div class="p-8 border-t border-slate-100 bg-slate-50/30 flex justify-end">
       <button (click)="displayDetalleHistorial.set(false)"
         class="px-10 py-3 rounded-xl bg-[#0066AA] text-white text-sm font-bold shadow-lg shadow-blue-900/10 hover:bg-[#0055aa] transition-all">

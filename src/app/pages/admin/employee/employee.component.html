@@ -94,12 +94,8 @@
 
 
 </div>
-
-<!-- Modal de Gestión de Personal: Estructura Formal -->
 <div *ngIf="displayModal()" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
   <div class="bg-white w-full max-w-2xl rounded-lg shadow-2xl flex flex-col max-h-[95vh]">
-    
-    <!-- Header -->
     <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50 rounded-t-lg">
       <h2 class="text-lg font-bold text-slate-800">
         {{ isEdit() ? 'Modificar Registro de Personal' : 'Registro de Nuevo Empleado' }}
@@ -108,12 +104,9 @@
         <i class="pi pi-times"></i>
       </button>
     </div>
-
-    <!-- Body -->
     <div class="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-slate-200">
       <form [formGroup]="employeeForm" (ngSubmit)="saveEmployee()" class="space-y-8">
         
-        <!-- Sección 1: Identificación -->
         <div class="space-y-4">
           <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
             <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
@@ -156,8 +149,6 @@
             </div>
           </div>
         </div>
-
-        <!-- Sección 3: Perfil Profesional -->
         <div class="space-y-4">
           <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
             <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
@@ -165,7 +156,6 @@
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <!-- Selector de Roles -->
             <div class="flex flex-col gap-1.5 relative">
               <label class="text-xs font-semibold text-slate-700 ml-0.5">Roles de Acceso al Sistema <span class="text-rose-500">*</span></label>
               <button type="button" (click)="toggleDropdown('roles', $event)"
@@ -175,8 +165,6 @@
                 </span>
                 <i class="pi pi-chevron-down text-[10px] text-slate-400"></i>
               </button>
-              
-              <!-- Dropdown Panel: Roles -->
               <div *ngIf="openDropdown() === 'roles'" 
                 class="absolute z-[110] top-full left-0 w-full mt-1 bg-white border border-slate-200 shadow-xl rounded-lg overflow-hidden animate-in fade-in zoom-in-95 duration-100">
                 <div class="p-2 border-b border-slate-100 bg-slate-50">
@@ -197,8 +185,6 @@
                 </div>
               </div>
             </div>
-
-            <!-- Selector de Tipos de Empleado -->
             <div class="flex flex-col gap-1.5 relative">
               <label class="text-xs font-semibold text-slate-700 ml-0.5">Cargos / Tipos de Empleado <span class="text-rose-500">*</span></label>
               <button type="button" (click)="toggleDropdown('tipos', $event)"
@@ -208,8 +194,6 @@
                 </span>
                 <i class="pi pi-chevron-down text-[10px] text-slate-400"></i>
               </button>
-
-              <!-- Dropdown Panel: Tipos -->
               <div *ngIf="openDropdown() === 'tipos'" 
                 class="absolute z-[110] top-full left-0 w-full mt-1 bg-white border border-slate-200 shadow-xl rounded-lg overflow-hidden animate-in fade-in zoom-in-95 duration-100">
                 <div class="p-2 border-b border-slate-100 bg-slate-50">
@@ -243,8 +227,6 @@
                 class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all font-bold" />
             </div>
           </div>
-
-          <!-- Campos Médicos Condicionales -->
           <div *ngIf="employeeForm.get('roles')?.value?.includes('ROLE_VETERINARIO')" class="grid grid-cols-1 sm:grid-cols-2 gap-6 animate-in slide-in-from-top-2 pt-2">
             <div class="flex flex-col gap-1">
               <label class="text-xs font-semibold text-slate-700 ml-0.5">Registro de Colegiatura <span class="text-rose-500">*</span></label>
@@ -261,8 +243,6 @@
                 </span>
                 <i class="pi pi-chevron-down text-[10px] text-slate-400"></i>
               </button>
-
-              <!-- Dropdown Panel: Especialidades -->
               <div *ngIf="openDropdown() === 'especialidades'" 
                 class="absolute z-[110] top-full left-0 w-full mt-1 bg-white border border-slate-200 shadow-xl rounded-lg overflow-hidden animate-in fade-in zoom-in-95 duration-100">
                 <div class="p-2 border-b border-slate-100 bg-slate-50">
@@ -285,8 +265,6 @@
             </div>
           </div>
         </div>
-
-        <!-- Sección 4: Régimen Horario -->
         <div class="space-y-4">
           <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
             <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
@@ -313,7 +291,6 @@
           </div>
         </div>
 
-        <!-- Footer / Acciones Finales -->
         <div class="flex justify-end gap-3 pt-6 border-t border-slate-200">
           <button type="button" (click)="displayModal.set(false)"
             class="px-5 py-2.5 text-sm font-semibold text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded transition-all">

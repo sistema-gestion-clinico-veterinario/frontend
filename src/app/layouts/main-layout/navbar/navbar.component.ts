@@ -35,7 +35,6 @@ export class NavbarComponent implements OnInit {
           const list = res.data.content.map(c => ({ label: c.name, value: c.id }));
           this.companies.set(list);
           
-          // Auto-select the first company if none is selected
           if (!this.authStore.selectedEnterprise() && list.length > 0) {
             this.authStore.setSelectedEnterprise({ establishmentId: list[0].value, name: list[0].label });
           }
@@ -50,7 +49,6 @@ export class NavbarComponent implements OnInit {
     
     if (selectedCompany) {
       this.authStore.setSelectedEnterprise({ establishmentId: selectedCompany.value, name: selectedCompany.label });
-      // Reload current route to apply new context
       const currentUrl = this.router.url;
       this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
         this.router.navigate([currentUrl]);

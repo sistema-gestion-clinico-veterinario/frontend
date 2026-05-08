@@ -1,3 +1,15 @@
+export interface Menu {
+  id: number;
+  label: string;
+  icon: string;
+  path: string;
+  sortOrder: number;
+  parentId?: number;
+  requiredPermission?: string;
+  active: boolean;
+  children?: Menu[];
+}
+
 export interface AuthLoginData {
   token: string;
   roles: string[];
@@ -9,6 +21,7 @@ export interface AuthLoginData {
   empleadoId?: number;
   passwordChanged: boolean;
   needsCompanySelection: boolean;
+  menu: Menu[];
 }
 
 export interface AuthLoginResponse {

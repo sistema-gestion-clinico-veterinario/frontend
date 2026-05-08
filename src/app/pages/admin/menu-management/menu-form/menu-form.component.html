@@ -1,0 +1,142 @@
+<div class="bg-white rounded-lg max-w-2xl w-full mx-auto font-['Barlow'] animate-fade-in border border-[#F1F5F9] relative">
+  <!-- Header -->
+  <div class="px-6 py-5 flex items-center justify-between sticky top-0 z-20 bg-white rounded-t-lg border-b border-[#F8FAFC]">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-lg bg-[#F1F5F9] border border-[#E2E8F0] flex items-center justify-center">
+        <i class="pi pi-cog text-[#0066AA]"></i>
+      </div>
+      <div>
+        <h2 class="text-[16px] font-bold text-[#334155]">{{ isEdit ? 'Editar' : 'Nuevo' }} Configuración</h2>
+        <p class="text-[12px] text-[#94A3B8] font-medium">Define propiedades y accesos</p>
+      </div>
+    </div>
+    <button (click)="close()" class="w-7 h-7 rounded-full hover:bg-[#F1F5F9] flex items-center justify-center transition-colors border-none bg-transparent cursor-pointer">
+      <i class="pi pi-times text-[#94A3B8] text-[10px]"></i>
+    </button>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="submit()" class="px-6 pb-20 space-y-6 relative">
+    
+    <div class="space-y-6 pt-6">
+      <!-- Etiqueta Visual -->
+      <div class="space-y-1.5">
+        <label class="text-[11px] font-bold text-[#94A3B8] uppercase tracking-wider">Etiqueta Visual *</label>
+        <input formControlName="label" type="text" 
+          class="w-full rounded-lg px-4 py-2.5 text-[14px] font-medium outline-none transition-all"
+          [class.bg-[#F8FAFC]]="!labelHasError"
+          [class.border]="true"
+          [class.border-[#F1F5F9]]="!labelHasError"
+          [class.border-rose-300]="labelHasError"
+          [class.bg-rose-50]="labelHasError"
+          [class.focus:bg-[#EFF6FF]]="!labelHasError"
+          placeholder="Ej: Historial Clínico">
+        <p *ngIf="labelHasError" class="text-[11px] text-rose-500 font-medium flex items-center gap-1">
+          <i class="pi pi-exclamation-circle text-[10px]"></i>
+          El nombre del menú es obligatorio.
+        </p>
+      </div>
+
+      <!-- Icono y Orden -->
+      <div class="grid grid-cols-2 gap-4">
+        <div class="space-y-1.5">
+          <label class="text-[11px] font-bold text-[#94A3B8] uppercase tracking-wider">Icono</label>
+          <div class="relative">
+            <div (click)="togglePicker($event)" class="relative">
+              <div class="absolute left-3 top-1/2 -translate-y-1/2 flex items-center pr-2 border-r border-[#F1F5F9]">
+                <i [class]="form.get('icon')?.value || 'pi pi-circle'" class="text-[#0066AA] text-sm"></i>
+              </div>
+              <input type="text" readonly
+                class="w-full rounded-lg pl-12 pr-3 py-2.5 text-[13px] font-medium outline-none bg-[#F8FAFC] border border-[#F1F5F9] cursor-pointer" 
+                [value]="form.get('icon')?.value?.replace('pi-', '') || 'Buscar...'">
+            </div>
+            
+            <!-- Picker de Iconos (Overlay Flotante) -->
+            <div *ngIf="showPicker()" 
+                 class="absolute top-full left-0 w-[200%] mt-1.5 p-4 rounded-lg bg-white border border-[#F1F5F9] grid grid-cols-6 gap-3 max-h-48 overflow-y-auto custom-scrollbar z-50 shadow-2xl shadow-slate-300/50 animate-fade-in">
+              <i *ngFor="let icon of allIcons" (click)="selectIcon(icon)"
+                [class]="icon" class="text-center p-2 text-[#64748B] hover:text-[#0066AA] hover:bg-[#F1F5F9] rounded-md cursor-pointer transition-all text-base border border-transparent hover:border-[#F1F5F9]"></i>
+            </div>
+          </div>
+          <p class="text-[10px] text-[#94A3B8] font-medium mt-1">Elige un icono visual</p>
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="text-[11px] font-bold text-[#94A3B8] uppercase tracking-wider">Orden</label>
+          <input formControlName="sortOrder" type="number" 
+            class="w-full rounded-lg px-4 py-2.5 text-[13px] font-bold outline-none bg-[#F8FAFC] border border-[#F1F5F9]">
+        </div>
+      </div>
+
+      <!-- Ruta y Permiso -->
+      <div class="grid grid-cols-2 gap-4">
+        <div class="space-y-1.5">
+          <label class="text-[11px] font-bold text-[#94A3B8] uppercase tracking-wider">Ruta (Path)</label>
+          <input formControlName="path" type="text" 
+            class="w-full rounded-lg px-4 py-2.5 text-[13px] font-medium font-mono outline-none bg-[#F8FAFC] border border-[#F1F5F9]" 
+            placeholder="/...">
+        </div>
+        
+        <div class="space-y-1.5">
+          <label class="text-[11px] font-bold text-[#94A3B8] uppercase tracking-wider">Permiso *</label>
+          <div class="relative">
+            <div (click)="togglePerms($event)"
+                 class="w-full rounded-lg px-4 py-2.5 text-[13px] font-bold bg-[#F8FAFC] border border-[#F1F5F9] cursor-pointer flex justify-between items-center group hover:bg-[#EFF6FF] transition-all">
+              <span class="truncate text-[#334155]">{{ currentPermLabel }}</span>
+              <i class="pi pi-chevron-down text-[10px] text-[#94A3B8] group-hover:text-[#0066AA]"></i>
+            </div>
+
+            <!-- Lista de Permisos (Overlay Flotante) -->
+            <div *ngIf="showPerms()" 
+                 class="absolute top-full left-[-100%] right-0 mt-1.5 bg-white border border-[#F1F5F9] rounded-lg z-50 shadow-2xl shadow-slate-300/50 animate-fade-in max-h-64 overflow-y-auto custom-scrollbar">
+              <div (click)="selectPerm(undefined)" class="px-4 py-2.5 text-[13px] font-medium text-[#64748B] hover:bg-[#F8FAFC] hover:text-[#0066AA] cursor-pointer border-b border-[#F8FAFC]">
+                Acceso Público (Ninguno)
+              </div>
+              <div *ngFor="let p of permissions" (click)="selectPerm(p.name)"
+                   class="px-4 py-2.5 text-[13px] font-medium text-[#334155] hover:bg-[#F8FAFC] hover:text-[#0066AA] cursor-pointer flex items-center justify-between group border-b border-[#F8FAFC] last:border-none">
+                <span>{{ p.label }}</span>
+                <span class="text-[9px] text-[#94A3B8] group-hover:text-[#0066AA]/50">{{ p.name }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Menú Superior -->
+      <div class="space-y-1.5">
+        <label class="text-[11px] font-bold text-[#94A3B8] uppercase tracking-wider">Menú Superior (Padre)</label>
+        <div class="relative">
+          <div (click)="toggleParents($event)"
+               class="w-full rounded-lg px-4 py-2.5 text-[13px] font-bold bg-[#F8FAFC] border border-[#F1F5F9] cursor-pointer flex justify-between items-center group hover:bg-[#EFF6FF] transition-all">
+            <span class="truncate text-[#334155]">{{ currentParentLabel }}</span>
+            <i class="pi pi-chevron-down text-[10px] text-[#94A3B8] group-hover:text-[#0066AA]"></i>
+          </div>
+
+          <!-- Lista de Padres (Overlay Flotante) -->
+          <div *ngIf="showParents()" 
+               class="absolute top-full left-0 right-0 mt-1.5 bg-white border border-[#F1F5F9] rounded-lg z-50 shadow-2xl shadow-slate-300/50 animate-fade-in max-h-64 overflow-y-auto custom-scrollbar">
+            <div (click)="selectParent(undefined)" class="px-4 py-2.5 text-[13px] font-medium text-[#64748B] hover:bg-[#F8FAFC] hover:text-[#0066AA] cursor-pointer border-b border-[#F8FAFC]">
+              Nivel Principal (Raíz)
+            </div>
+            <div *ngFor="let m of menuOptions" (click)="selectParent(m.id)"
+                 class="px-4 py-2.5 text-[13px] font-medium text-[#334155] hover:bg-[#F8FAFC] hover:text-[#0066AA] cursor-pointer border-b border-[#F8FAFC] last:border-none whitespace-pre">
+              {{ m.label }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Botones de Acción -->
+    <div class="pt-8 pb-4 flex items-center justify-end gap-3 border-t border-[#F1F5F9]">
+      <button (click)="onClose.emit()" type="button" 
+        class="px-4 py-2 text-[13px] font-bold text-[#64748B] hover:text-[#334155] rounded-md hover:bg-[#F1F5F9] transition-all border-none bg-transparent cursor-pointer">
+        Cancelar
+      </button>
+      <button [disabled]="form.invalid" type="submit"
+        class="flex items-center gap-2 bg-[#0066AA] text-white font-medium rounded-lg px-5 py-2 text-[13px] border-none transition-all active:scale-[0.95] disabled:opacity-50 cursor-pointer shadow-sm shadow-[#0066AA]/10">
+        <i class="pi pi-check text-[10px]"></i>
+        <span>{{ isEdit ? 'Actualizar' : 'Guardar' }}</span>
+      </button>
+    </div>
+  </form>
+</div>

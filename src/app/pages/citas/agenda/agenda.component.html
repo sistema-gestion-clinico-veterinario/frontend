@@ -1,6 +1,5 @@
 <div class="p-4 sm:p-6 lg:p-8 min-h-screen bg-slate-50 font-['Barlow']">
 
-  <!-- ── Encabezado ─────────────────────────────────────────────── -->
   <div class="mb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
     <div>
       <h1
@@ -11,7 +10,6 @@
     </div>
 
     <div class="flex items-center gap-2 flex-wrap">
-      <!-- Toggle Vista -->
       <div class="flex items-center bg-white border border-slate-200 rounded-xl p-1 gap-0.5">
         <button (click)="cambiarVista('lista')"
           [class]="vistaActual()==='lista' ? 'bg-[#0066AA] text-white' : 'text-slate-400 hover:text-slate-700'"
@@ -46,8 +44,6 @@
       </button>
     </div>
   </div>
-
-  <!-- ── Barra navegación calendario ─────────────────────────────── -->
   <div *ngIf="vistaActual() !== 'lista'"
     class="mb-4 flex items-center justify-between gap-3 bg-white border border-slate-200 rounded-xl px-4 py-3">
     <button (click)="navegarCalendario(-1)"
@@ -66,8 +62,6 @@
       <span class="text-sm">›</span>
     </button>
   </div>
-
-  <!-- ── Filtros (solo en vista lista / día) ────────────────────── -->
   <div *ngIf="vistaActual() === 'lista' || vistaActual() === 'dia'"
     class="mb-5 bg-white border border-slate-200 rounded-xl px-4 py-4">
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -127,10 +121,6 @@
       </div>
     </div>
   </div>
-
-  <!-- ════════════════════════════════════════════════════════════ -->
-  <!-- VISTA: LISTA                                                 -->
-  <!-- ════════════════════════════════════════════════════════════ -->
   <ng-container *ngIf="vistaActual() === 'lista'">
     <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
 
@@ -147,7 +137,7 @@
               <th class="text-left px-5 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Veterinario</th>
               <th class="text-left px-5 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Motivo</th>
               <th class="text-left px-5 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Estado</th>
-              <th class="px-5 py-4 w-32"></th>
+              <th class="text-center px-5 py-4 w-48 text-xs font-bold text-slate-400 uppercase tracking-wider">Acciones</th>
             </tr>
           </ng-template>
 
@@ -188,47 +178,57 @@
                   {{ estadoLabel(cita.estado) }}
                 </span>
               </td>
-              <td class="px-5 py-4 text-right whitespace-nowrap">
-                <!-- Botón Editar -->
-                <button *ngIf="canEdit(cita)" (click)="editarCita(cita)"
-                  class="flex items-center gap-1.5 bg-slate-50 text-slate-700 text-xs font-bold px-3 h-8 rounded-lg hover:bg-slate-100">
-                  <i class="pi pi-pencil text-sm"></i>
-                </button>
+              <td class="px-5 py-4">
+                <div class="flex items-center justify-center gap-1.5 flex-wrap">
+                  <ng-container *ngIf="canEdit(cita)">
+                    <button (click)="editarCita(cita)" pTooltip="Editar cita"
+                      class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 text-slate-600 hover:bg-blue-50 hover:text-blue-600 transition-colors">
+                      <i class="pi pi-pencil text-xs"></i>
+                    </button>
+                  </ng-container>
 
-                <!-- Botón Reprogramar -->
-                <button *ngIf="canReprogram(cita)" (click)="reprogramarCita(cita)" pTooltip="Reprogramar cita"
-                  class="flex items-center gap-1.5 bg-sky-50 text-sky-700 text-xs font-bold px-3 h-8 rounded-lg hover:bg-sky-100">
-                  <i class="pi pi-calendar-plus text-sm"></i>
-                </button>
+                  <ng-container *ngIf="canReprogram(cita)">
+                    <button (click)="reprogramarCita(cita)" pTooltip="Reprogramar cita"
+                      class="w-8 h-8 flex items-center justify-center rounded-lg bg-sky-50 text-sky-600 hover:bg-sky-100 hover:text-sky-700 transition-colors">
+                      <i class="pi pi-calendar-plus text-xs"></i>
+                    </button>
+                  </ng-container>
 
-                <button
-                  *ngIf="cita.estado === 'PROGRAMADA' || cita.estado === 'CONFIRMADA' || cita.estado === 'SALA_DE_ESPERA' || cita.estado === 'REPROGRAMADA'"
-                  (click)="iniciarCita(cita)"
-                  class="flex items-center gap-1.5 bg-emerald-50 text-emerald-700 text-xs font-bold px-3 h-8 rounded-lg hover:bg-emerald-100">
-                  <i class="pi pi-play text-sm"></i> Iniciar
-                </button>
-                <button *ngIf="cita.estado === 'EN_PROCESO'" (click)="continuarConsulta(cita)"
-                  class="flex items-center gap-1.5 bg-amber-50 text-amber-700 text-xs font-bold px-3 h-8 rounded-lg hover:bg-amber-100">
-                  <i class="pi pi-eye text-sm"></i> Continuar
-                </button>
-                <button *ngIf="(cita.estado === 'COMPLETADA' || cita.consultaId) && cita.estado !== 'EN_PROCESO'"
-                  (click)="continuarConsulta(cita)"
-                  class="flex items-center gap-1.5 bg-slate-50 text-slate-700 text-xs font-bold px-3 h-8 rounded-lg hover:bg-slate-100">
-                  <i class="pi pi-file text-sm"></i> Ver
-                </button>
+                  <ng-container *ngIf="cita.estado === 'PROGRAMADA' || cita.estado === 'CONFIRMADA' || cita.estado === 'SALA_DE_ESPERA' || cita.estado === 'REPROGRAMADA'">
+                    <button (click)="iniciarCita(cita)" pTooltip="Iniciar consulta"
+                      class="w-8 h-8 flex items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 hover:text-emerald-700 transition-colors">
+                      <i class="pi pi-play text-xs"></i>
+                    </button>
+                  </ng-container>
 
-                <!-- Botón Cancelar (con restricción de 1h) -->
-                <button *ngIf="canCancel(cita)" (click)="cancelarCita(cita)"
-                  class="flex items-center gap-1.5 bg-rose-50 text-rose-700 text-xs font-bold px-3 h-8 rounded-lg hover:bg-rose-100">
-                  <i class="pi pi-times text-sm"></i> Cancelar
-                </button>
+                  <ng-container *ngIf="cita.estado === 'EN_PROCESO'">
+                    <button (click)="continuarConsulta(cita)" pTooltip="Continuar consulta"
+                      class="w-8 h-8 flex items-center justify-center rounded-lg bg-amber-50 text-amber-600 hover:bg-amber-100 hover:text-amber-700 transition-colors">
+                      <i class="pi pi-eye text-xs"></i>
+                    </button>
+                  </ng-container>
 
-                <!-- Botón Eliminar (Solo Admin y estado Cancelada) -->
-                <button *ngIf="cita.estado === 'CANCELADA' && canManage()" (click)="eliminarCita(cita)"
-                  pTooltip="Eliminar permanentemente"
-                  class="flex items-center gap-1.5 bg-slate-900 text-white text-xs font-bold px-3 h-8 rounded-lg hover:bg-black">
-                  <i class="pi pi-trash text-sm"></i>
-                </button>
+                  <ng-container *ngIf="(cita.estado === 'COMPLETADA' || cita.consultaId) && cita.estado !== 'EN_PROCESO'">
+                    <button (click)="continuarConsulta(cita)" pTooltip="Ver consulta"
+                      class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-700 transition-colors">
+                      <i class="pi pi-file text-xs"></i>
+                    </button>
+                  </ng-container>
+
+                  <ng-container *ngIf="canCancel(cita)">
+                    <button (click)="cancelarCita(cita)" pTooltip="Cancelar cita"
+                      class="w-8 h-8 flex items-center justify-center rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 hover:text-rose-700 transition-colors">
+                      <i class="pi pi-times text-xs"></i>
+                    </button>
+                  </ng-container>
+
+                  <ng-container *ngIf="cita.estado === 'CANCELADA' && canManage()">
+                    <button (click)="eliminarCita(cita)" pTooltip="Eliminar permanentemente"
+                      class="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 transition-colors">
+                      <i class="pi pi-trash text-xs"></i>
+                    </button>
+                  </ng-container>
+                </div>
               </td>
             </tr>
           </ng-template>
@@ -245,10 +245,6 @@
       </ng-container>
     </div>
   </ng-container>
-
-  <!-- ════════════════════════════════════════════════════════════ -->
-  <!-- VISTA: DÍA (timeline)                                        -->
-  <!-- ════════════════════════════════════════════════════════════ -->
   <ng-container *ngIf="vistaActual() === 'dia'">
     <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
 
@@ -260,14 +256,12 @@
 
         <div *ngIf="!loadingStore.isLoading()" class="overflow-y-auto max-h-[680px]">
           <div *ngFor="let hora of HORAS_DIA" class="flex border-b border-slate-50 last:border-0 min-h-[56px]">
-            <!-- Etiqueta hora -->
             <div class="w-16 shrink-0 px-3 pt-3">
               <span class="text-xs font-bold text-slate-400">{{ hora }}:00</span>
             </div>
-            <!-- Citas de esa hora -->
             <div class="flex-1 px-2 py-2 flex flex-wrap gap-2">
               <div *ngFor="let cita of getCitasHora(fechaBase(), hora)"
-                class="flex items-start gap-2 rounded-xl px-3 py-2 border text-xs max-w-[300px] cursor-pointer hover:shadow-sm"
+                class="flex items-start gap-2 rounded-xl px-3 py-2 border text-xs max-w-[300px] cursor-pointer hover:shadow-sm group relative"
                 [class]="estadoClass(cita.estado).replace('bg-','border-').replace('text-','') + ' ' + estadoClass(cita.estado)">
                 <div [class.border-rose-300]="cita.esEmergencia" [class.bg-rose-50]="cita.esEmergencia">
                   <p class="font-bold leading-tight">
@@ -277,30 +271,38 @@
                   <p class="opacity-70 leading-snug">{{ cita.motivoCita }}</p>
                   <p class="opacity-60 mt-0.5">{{ cita.veterinarioNombre }}</p>
                 </div>
-                <button
-                  *ngIf="cita.estado === 'PROGRAMADA' || cita.estado === 'CONFIRMADA' || cita.estado === 'SALA_DE_ESPERA' || cita.estado === 'REPROGRAMADA'"
-                  (click)="iniciarCita(cita)"
-                  class="ml-auto shrink-0 bg-emerald-600 text-white rounded-lg px-2 py-1 font-bold text-[10px] hover:bg-emerald-700">
-                  Iniciar
-                </button>
-                <button *ngIf="cita.estado === 'EN_PROCESO'" (click)="continuarConsulta(cita)"
-                  class="ml-auto shrink-0 bg-amber-600 text-white rounded-lg px-2 py-1 font-bold text-[10px] hover:bg-amber-700">
-                  Continuar
-                </button>
-                <button *ngIf="(cita.estado === 'COMPLETADA' || cita.consultaId) && cita.estado !== 'EN_PROCESO'"
-                  (click)="continuarConsulta(cita)"
-                  class="ml-auto shrink-0 bg-slate-600 text-white rounded-lg px-2 py-1 font-bold text-[10px] hover:bg-slate-700">
-                  Ver
-                </button>
-                <button *ngIf="canCancel(cita)" (click)="cancelarCita(cita)"
-                  class="ml-auto shrink-0 bg-rose-600 text-white rounded-lg px-2 py-1 font-bold text-[10px] hover:bg-rose-700">
-                  Cance.
-                </button>
-                <!-- Botón Eliminar en Timeline -->
-                <button *ngIf="cita.estado === 'CANCELADA' && canManage()" (click)="eliminarCita(cita)"
-                  class="ml-auto shrink-0 bg-slate-900 text-white rounded-lg px-2 py-1 font-bold text-[10px] hover:bg-black">
-                  <i class="pi pi-trash"></i>
-                </button>
+                <div class="ml-auto flex items-center gap-1 shrink-0">
+                  <ng-container *ngIf="cita.estado === 'PROGRAMADA' || cita.estado === 'CONFIRMADA' || cita.estado === 'SALA_DE_ESPERA' || cita.estado === 'REPROGRAMADA'">
+                    <button (click)="iniciarCita(cita)" pTooltip="Iniciar consulta"
+                      class="w-7 h-7 flex items-center justify-center rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition-colors">
+                      <i class="pi pi-play text-[10px]"></i>
+                    </button>
+                  </ng-container>
+                  <ng-container *ngIf="cita.estado === 'EN_PROCESO'">
+                    <button (click)="continuarConsulta(cita)" pTooltip="Continuar consulta"
+                      class="w-7 h-7 flex items-center justify-center rounded-lg bg-amber-600 text-white hover:bg-amber-700 transition-colors">
+                      <i class="pi pi-eye text-[10px]"></i>
+                    </button>
+                  </ng-container>
+                  <ng-container *ngIf="(cita.estado === 'COMPLETADA' || cita.consultaId) && cita.estado !== 'EN_PROCESO'">
+                    <button (click)="continuarConsulta(cita)" pTooltip="Ver consulta"
+                      class="w-7 h-7 flex items-center justify-center rounded-lg bg-slate-600 text-white hover:bg-slate-700 transition-colors">
+                      <i class="pi pi-file text-[10px]"></i>
+                    </button>
+                  </ng-container>
+                  <ng-container *ngIf="canCancel(cita)">
+                    <button (click)="cancelarCita(cita)" pTooltip="Cancelar cita"
+                      class="w-7 h-7 flex items-center justify-center rounded-lg bg-rose-600 text-white hover:bg-rose-700 transition-colors">
+                      <i class="pi pi-times text-[10px]"></i>
+                    </button>
+                  </ng-container>
+                  <ng-container *ngIf="cita.estado === 'CANCELADA' && canManage()">
+                    <button (click)="eliminarCita(cita)" pTooltip="Eliminar permanentemente"
+                      class="w-7 h-7 flex items-center justify-center rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors">
+                      <i class="pi pi-trash text-[10px]"></i>
+                    </button>
+                  </ng-container>
+                </div>
               </div>
               <div *ngIf="getCitasHora(fechaBase(), hora).length === 0" class="h-3"></div>
             </div>
@@ -315,9 +317,6 @@
     </div>
   </ng-container>
 
-  <!-- ════════════════════════════════════════════════════════════ -->
-  <!-- VISTA: SEMANA                                                -->
-  <!-- ════════════════════════════════════════════════════════════ -->
   <ng-container *ngIf="vistaActual() === 'semana'">
     <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
 
@@ -328,7 +327,7 @@
         </div>
 
         <div *ngIf="!cargandoCal()" class="overflow-x-auto">
-          <!-- Header días -->
+  
           <div class="grid grid-cols-7 border-b border-slate-100 min-w-[700px]">
             <div *ngFor="let dia of diasSemanaActual()" class="px-3 py-3 text-center">
               <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
@@ -341,7 +340,6 @@
             </div>
           </div>
 
-          <!-- Cuerpo semana -->
           <div class="grid grid-cols-7 min-w-[700px] divide-x divide-slate-100" style="min-height: 480px;">
             <div *ngFor="let dia of diasSemanaActual()"
               [class]="'px-2 py-3 flex flex-col gap-1.5 overflow-hidden' + (esHoy(dia) ? ' bg-blue-50' : '')">
@@ -352,21 +350,26 @@
                   {{ cita.fechaHoraInicio | date:'HH:mm' }} {{ cita.mascotaNombre }}
                 </p>
                 <p class="opacity-70 truncate leading-snug">{{ cita.motivoCita }}</p>
-                <button
-                  *ngIf="cita.estado === 'PROGRAMADA' || cita.estado === 'CONFIRMADA' || cita.estado === 'SALA_DE_ESPERA' || cita.estado === 'REPROGRAMADA'"
-                  (click)="iniciarCita(cita)"
-                  class="mt-1.5 w-full bg-emerald-600 text-white rounded px-1.5 py-0.5 font-bold text-[10px] hover:bg-emerald-700">
-                  Iniciar
-                </button>
-                <button *ngIf="canCancel(cita)" (click)="cancelarCita(cita)"
-                  class="mt-1 w-full bg-rose-600 text-white rounded px-1.5 py-0.5 font-bold text-[10px] hover:bg-rose-700">
-                  Cancelar
-                </button>
-                <!-- Botón Eliminar en Semana -->
-                <button *ngIf="cita.estado === 'CANCELADA' && canManage()" (click)="eliminarCita(cita)"
-                  class="mt-1 w-full bg-slate-900 text-white rounded px-1.5 py-0.5 font-bold text-[10px] hover:bg-black">
-                  Eliminar
-                </button>
+                <div class="flex items-center gap-1 mt-1.5 flex-wrap">
+                  <ng-container *ngIf="cita.estado === 'PROGRAMADA' || cita.estado === 'CONFIRMADA' || cita.estado === 'SALA_DE_ESPERA' || cita.estado === 'REPROGRAMADA'">
+                    <button (click)="iniciarCita(cita)"
+                      class="flex-1 min-w-[60px] bg-emerald-600 text-white rounded px-1.5 py-0.5 font-bold text-[10px] hover:bg-emerald-700 transition-colors">
+                      Iniciar
+                    </button>
+                  </ng-container>
+                  <ng-container *ngIf="canCancel(cita)">
+                    <button (click)="cancelarCita(cita)"
+                      class="flex-1 min-w-[60px] bg-rose-600 text-white rounded px-1.5 py-0.5 font-bold text-[10px] hover:bg-rose-700 transition-colors">
+                      Cancelar
+                    </button>
+                  </ng-container>
+                  <ng-container *ngIf="cita.estado === 'CANCELADA' && canManage()">
+                    <button (click)="eliminarCita(cita)"
+                      class="flex-1 min-w-[60px] bg-red-600 text-white rounded px-1.5 py-0.5 font-bold text-[10px] hover:bg-red-700 transition-colors">
+                      Eliminar
+                    </button>
+                  </ng-container>
+                </div>
               </div>
               <div *ngIf="getCitasDia(dia).length === 0" class="flex-1 flex items-center justify-center">
                 <span class="text-[10px] text-slate-300 font-medium">Sin citas</span>
@@ -377,10 +380,6 @@
       </ng-container>
     </div>
   </ng-container>
-
-  <!-- ════════════════════════════════════════════════════════════ -->
-  <!-- VISTA: MES                                                   -->
-  <!-- ════════════════════════════════════════════════════════════ -->
   <ng-container *ngIf="vistaActual() === 'mes'">
     <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
 
@@ -391,7 +390,6 @@
         </div>
 
         <div *ngIf="!cargandoCal()">
-          <!-- Header días de la semana -->
           <div class="grid grid-cols-7 border-b border-slate-100 bg-slate-50">
             <div *ngFor="let d of ['Lu','Ma','Mi','Ju','Vi','Sá','Do']"
               class="py-2.5 text-center text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">
@@ -399,13 +397,10 @@
             </div>
           </div>
 
-          <!-- Grid del mes -->
           <div class="grid grid-cols-7" style="min-height: 480px;">
             <div *ngFor="let dia of diasMesActual()" (click)="clickDiaMes(dia)"
               class="border-b border-r border-slate-100 last:border-r-0 p-2 min-h-[100px] cursor-pointer transition-colors hover:bg-slate-50"
               [class.opacity-40]="!esMesActual(dia)" [class.bg-blue-50]="esHoy(dia)">
-
-              <!-- Número del día -->
               <div class="flex items-center justify-between mb-1.5">
                 <span
                   [class]="'text-xs font-extrabold ' + (esHoy(dia) ? 'w-6 h-6 bg-[#0066AA] text-white rounded-full flex items-center justify-center' : 'text-slate-600')">
@@ -417,7 +412,6 @@
                 </span>
               </div>
 
-              <!-- Primeras 3 citas del día -->
               <div class="flex flex-col gap-1">
                 <div *ngFor="let cita of getCitasDia(dia).slice(0, 3)"
                   class="rounded px-1.5 py-0.5 text-[10px] font-bold truncate" [class]="estadoClass(cita.estado)">
@@ -436,12 +430,9 @@
 
 </div>
 
-<!-- Modal Principal: Estructura Formal y Ordenada -->
 <div *ngIf="displayModal()"
   class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
   <div class="bg-white w-full max-w-2xl rounded-lg shadow-2xl flex flex-col max-h-[95vh]">
-
-    <!-- Header: Sobrio y Directo -->
     <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50 rounded-t-lg">
       <h2 class="text-lg font-bold text-slate-800">
         {{ isReprogramando() ? 'Reprogramar Cita Médica' : (citaForm.get('id')?.value ? 'Modificar Registro de Cita' :
@@ -452,12 +443,8 @@
         <i class="pi pi-times"></i>
       </button>
     </div>
-
-    <!-- Body: Formulario Organizado -->
     <div class="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-slate-200">
       <form [formGroup]="citaForm" (ngSubmit)="saveCita()" class="space-y-6">
-
-        <!-- Sección 1: Datos de Identificación -->
         <div class="space-y-4">
           <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
             <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
@@ -473,7 +460,6 @@
                   <span class="truncate">{{ selectedClienteLabel() }}</span>
                   <i class="pi pi-chevron-down text-[10px] text-slate-400"></i>
                 </button>
-                <!-- Dropdown -->
                 <div *ngIf="showClienteSelector()"
                   class="absolute z-50 mt-1 w-full bg-white border border-slate-300 shadow-xl rounded-md overflow-hidden">
                   <div class="p-2 bg-slate-50">
@@ -514,8 +500,6 @@
             </div>
           </div>
         </div>
-
-        <!-- Sección 2: Programación -->
         <div class="space-y-4">
           <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
             <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
@@ -563,8 +547,6 @@
               </div>
             </div>
           </div>
-
-          <!-- Disponibilidad Informativa (Visualización Formal) -->
           <div *ngIf="horariosVeterinario().length > 0" class="bg-blue-50/50 border border-blue-100 rounded-md p-3">
             <span class="text-[10px] font-bold text-blue-800 uppercase block mb-2 tracking-tight">Horario de
               disponibilidad del Facultativo:</span>
@@ -578,8 +560,6 @@
             </div>
           </div>
         </div>
-
-        <!-- Sección 3: Justificación y Horario -->
         <div class="space-y-4">
           <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
             <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
@@ -611,8 +591,6 @@
               class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none resize-none transition-all placeholder:text-slate-400"></textarea>
           </div>
         </div>
-
-        <!-- Notificación de Emergencia (Diseño Formal) -->
         <div class="flex items-start gap-4 p-4 bg-orange-50 border border-orange-200 rounded-md">
           <div class="flex items-center h-5 pt-0.5">
             <input type="checkbox" formControlName="esEmergencia" id="chkEmergencia"
@@ -624,8 +602,6 @@
               restricciones horarias habituales del centro médico y facultativo asignado.</span>
           </label>
         </div>
-
-        <!-- Footer / Acciones Finales -->
         <div class="flex justify-end gap-3 pt-6 border-t border-slate-200">
           <button type="button" (click)="displayModal.set(false)"
             class="px-5 py-2.5 text-sm font-semibold text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded transition-all">
@@ -642,13 +618,9 @@
     </div>
   </div>
 </div>
-
-<!-- Modal de Cancelación -->
 <div *ngIf="displayCancelModal()"
   class="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm">
   <div class="bg-white w-full max-w-md rounded-xl shadow-xl overflow-hidden border border-slate-200">
-
-    <!-- Header -->
     <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
       <div class="flex items-center gap-3">
         <div class="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-600">
@@ -664,8 +636,6 @@
         <i class="pi pi-times"></i>
       </button>
     </div>
-
-    <!-- Contenido -->
     <div class="p-6">
       <div class="mb-4 p-3 bg-slate-50 rounded-lg border border-slate-200">
         <p class="text-xs font-semibold text-slate-500 uppercase mb-2">Detalles de la cita</p>
@@ -693,8 +663,6 @@
         </p>
       </div>
     </div>
-
-    <!-- Footer -->
     <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex gap-3">
       <button (click)="displayCancelModal.set(false)"
         class="flex-1 px-4 py-2 text-sm font-medium text-slate-700 bg-slate-300 hover:bg-slate-400 rounded-lg transition-colors">
@@ -709,13 +677,9 @@
     </div>
   </div>
 </div>
-
-<!-- Modal Eliminar Cita -->
 <div *ngIf="displayDeleteModal()"
   class="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm">
   <div class="bg-white w-full max-w-md rounded-xl shadow-xl overflow-hidden border border-slate-200">
-
-    <!-- Header -->
     <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
       <div class="flex items-center gap-3">
         <div class="w-9 h-9 rounded-full bg-red-100 flex items-center justify-center text-red-600">
@@ -731,8 +695,6 @@
         <i class="pi pi-times"></i>
       </button>
     </div>
-
-    <!-- Contenido -->
     <div class="p-6">
       <div class="mb-4 p-3 bg-red-50 rounded-lg border border-red-200">
         <p class="text-xs font-semibold text-red-600 uppercase mb-2">Detalles de la cita</p>
@@ -753,8 +715,6 @@
         agenda? Esta acción no se puede deshacer.
       </p>
     </div>
-
-    <!-- Footer -->
     <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex gap-3">
       <button (click)="displayDeleteModal.set(false)"
         class="flex-1 px-4 py-2 text-sm font-medium text-slate-700 bg-slate-300 hover:bg-slate-400 rounded-lg transition-colors">

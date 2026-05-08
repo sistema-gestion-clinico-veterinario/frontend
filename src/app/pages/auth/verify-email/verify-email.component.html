@@ -1,13 +1,9 @@
 <div class="min-h-screen w-full flex items-center justify-center relative overflow-hidden bg-[#0066AA]">
-
-  <!-- Orbs decorativos -->
   <div class="absolute top-[10%] left-[15%] w-[450px] h-[450px] rounded-full bg-white/10 blur-[100px] pointer-events-none"></div>
   <div class="absolute bottom-[10%] right-[10%] w-[500px] h-[500px] rounded-full bg-white/10 blur-[120px] pointer-events-none"></div>
   <div class="absolute top-[40%] right-[30%] w-[300px] h-[300px] rounded-full bg-white/5 blur-[80px] pointer-events-none"></div>
 
   <div class="relative z-10 w-full max-w-[1020px] px-6 flex flex-col md:flex-row items-center justify-between gap-12 lg:gap-20 py-12">
-
-    <!-- Panel izquierdo -->
     <div class="flex-1 text-white text-center md:text-left">
       <div class="flex flex-col md:flex-row items-center gap-4 mb-10">
         <div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center">
@@ -56,11 +52,7 @@
         </li>
       </ul>
     </div>
-
-    <!-- Panel derecho: tarjeta de estado -->
     <div class="w-full max-w-[420px] bg-white rounded-3xl p-8 lg:p-10">
-
-      <!-- ── Estado: cargando ─────────────────────────────────── -->
       <div *ngIf="estado() === 'cargando'" class="flex flex-col items-center py-6">
         <div class="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mb-5 animate-pulse">
           <svg class="w-8 h-8 text-slate-400 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -71,8 +63,6 @@
         <h3 class="text-xl font-bold text-slate-800 mb-2">Verificando tu cuenta…</h3>
         <p class="text-sm text-slate-400 text-center">Estamos procesando tu solicitud, por favor espera.</p>
       </div>
-
-      <!-- ── Estado: éxito ────────────────────────────────────── -->
       <div *ngIf="estado() === 'exito'" class="flex flex-col items-center py-4">
         <div class="w-16 h-16 rounded-2xl bg-emerald-50 flex items-center justify-center mb-5">
           <svg class="w-9 h-9 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -84,8 +74,6 @@
         <p class="text-sm text-slate-400 text-center leading-relaxed mb-7">
           Tu correo fue verificado correctamente. Ya puedes iniciar sesión con tu número de documento como contraseña.
         </p>
-
-        <!-- Info contraseña inicial -->
         <div class="w-full bg-blue-50 border border-blue-100 rounded-2xl p-4 mb-7">
           <div class="flex items-start gap-3">
             <div class="w-8 h-8 rounded-lg bg-[#0066AA] flex items-center justify-center shrink-0 mt-0.5">
@@ -112,7 +100,6 @@
         </button>
       </div>
 
-      <!-- ── Estado: error ────────────────────────────────────── -->
       <div *ngIf="estado() === 'error' || estado() === 'reenviando'">
         <div class="flex flex-col items-center py-4 mb-6">
           <div class="w-16 h-16 rounded-2xl bg-rose-50 flex items-center justify-center mb-5">
@@ -123,15 +110,11 @@
           <h3 class="text-xl font-bold text-slate-800 mb-2 text-center">Enlace no válido</h3>
           <p class="text-sm text-slate-400 text-center leading-relaxed">{{ errorMsg() }}</p>
         </div>
-
-        <!-- Separador -->
         <div class="flex items-center gap-3 mb-6">
           <div class="flex-1 h-px bg-slate-100"></div>
           <span class="text-xs font-semibold text-slate-300 uppercase tracking-wider">Reenviar enlace</span>
           <div class="flex-1 h-px bg-slate-100"></div>
         </div>
-
-        <!-- Formulario reenvío -->
         <form [formGroup]="resendForm" (ngSubmit)="reenviar()" class="space-y-4">
           <div class="space-y-1.5">
             <label class="text-sm font-semibold text-slate-700">Correo electrónico</label>
@@ -146,8 +129,6 @@
               Ingresa un correo electrónico válido.
             </div>
           </div>
-
-          <!-- Error reenvío -->
           <div *ngIf="resendError()"
             class="flex items-center gap-2.5 p-3.5 bg-rose-50 border border-rose-100 rounded-xl text-rose-600 text-sm font-medium">
             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -176,8 +157,6 @@
           <a routerLink="/login" class="text-[#0066AA] font-semibold hover:underline">Inicia sesión aquí</a>
         </p>
       </div>
-
-      <!-- ── Estado: reenviado ────────────────────────────────── -->
       <div *ngIf="estado() === 'reenviado'" class="flex flex-col items-center py-4">
         <div class="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center mb-5">
           <svg class="w-9 h-9 text-[#0066AA]" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -1,4 +1,6 @@
 import { signalStore, withState, withMethods, patchState } from '@ngrx/signals';
+import { Menu } from '../models/response/auth-login-response.model';
+
 
 interface Enterprise {
   establishmentId: number;
@@ -17,6 +19,7 @@ interface AuthState {
   passwordChanged: boolean;
   needsCompanySelection: boolean;
   selectedEnterprise: Enterprise | null;
+  menu: Menu[];
 }
 
 const createInitialState = (useStorage = true): AuthState => {
@@ -26,7 +29,6 @@ const createInitialState = (useStorage = true): AuthState => {
       try {
         return JSON.parse(stored) as AuthState;
       } catch {
-        // ignore parse errors
       }
     }
   }
@@ -43,6 +45,7 @@ const createInitialState = (useStorage = true): AuthState => {
     passwordChanged: false,
     needsCompanySelection: false,
     selectedEnterprise: null,
+    menu: [],
   };
 };
 
@@ -73,6 +76,7 @@ export const AuthStore = signalStore(
           passwordChanged: store.passwordChanged(),
           needsCompanySelection: store.needsCompanySelection(),
           selectedEnterprise: store.selectedEnterprise(),
+          menu: store.menu(),
         } as AuthState;
         window.localStorage.setItem('auth', JSON.stringify(current));
       }
@@ -92,6 +96,7 @@ export const AuthStore = signalStore(
           passwordChanged: store.passwordChanged(),
           needsCompanySelection: store.needsCompanySelection(),
           selectedEnterprise: enterprise,
+          menu: store.menu(),
         } as AuthState;
         window.localStorage.setItem('auth', JSON.stringify(current));
       }

@@ -73,8 +73,6 @@ export class AgendaComponent implements OnInit {
   readonly isSuperAdmin = computed(() => this.authStore.roles().includes(Role.SUPER_ADMIN));
   readonly isAdmin      = computed(() => this.authStore.roles().includes(Role.ADMIN));
   readonly canManage    = computed(() => this.isAdmin() || this.isSuperAdmin());
-
-  // Data
   citas            = signal<CitaResponse[]>([]);
   totalRecords     = signal<number>(0);
   displayModal     = signal<boolean>(false);
@@ -93,8 +91,6 @@ export class AgendaComponent implements OnInit {
   empresas         = signal<{ label: string; value: number }[]>([]);
   horariosVeterinario = signal<HorarioEmpleadoResponse[]>([]);
   servicios           = signal<{ label: string; value: number; precio: number }[]>([]);
-
-  // UI States para Selectores Custom
   showClienteSelector = signal<boolean>(false);
   clienteSearch       = signal<string>('');
   filteredClientes    = computed(() => {
@@ -107,8 +103,6 @@ export class AgendaComponent implements OnInit {
   showMascotaSelector  = signal<boolean>(false);
   showVeterinarioSelector = signal<boolean>(false);
   showServicioSelector = signal<boolean>(false);
-
-  // Filtros
   showEstadoFilter = signal<boolean>(false);
   showVeterinarioFilter = signal<boolean>(false);
   filterFecha: string             = new Date().toISOString().split('T')[0];
@@ -119,8 +113,6 @@ export class AgendaComponent implements OnInit {
   get activeCompanyId(): number | null {
     return this.authStore.selectedEnterprise()?.establishmentId ?? this.authStore.companyId();
   }
-
-  // ── Vista calendario ───────────────────────────────────────────
   vistaActual  = signal<Vista>('lista');
   fechaBase    = signal<Date>(new Date());
   citasPorDia  = signal<Record<string, CitaResponse[]>>({});
@@ -193,7 +185,6 @@ export class AgendaComponent implements OnInit {
     { label: 'Otro',           value: EstadoCita.OTRO           },
   ];
 
-  // Validador personalizado para el horario
   horariosValidator = (control: AbstractControl): ValidationErrors | null => {
     if (!control.value) return null;
     const esEmergencia = control.parent?.get('esEmergencia')?.value;
@@ -221,8 +212,6 @@ export class AgendaComponent implements OnInit {
     this.loadVeterinarios();
     this.loadClientes();
     this.loadAllMascotas();
-
-    // Re-validar la fecha cuando cambie el flag de emergencia
     this.citaForm.get('esEmergencia')?.valueChanges.subscribe(() => {
       this.citaForm.get('fechaHoraInicio')?.updateValueAndValidity();
     });
@@ -238,8 +227,6 @@ export class AgendaComponent implements OnInit {
 
     const page      = Math.floor(event.first / event.rows);
     const fechaStr  = this.filterFecha || undefined;
-    
-    // Si es veterinario y no es SuperAdmin, filtrar por su propio ID de empleado
     let veterinarioId = this.filterVeterinarioId || undefined;
     if (this.authStore.roles().includes('ROLE_VETERINARIO') && !this.isSuperAdmin()) {
       veterinarioId = this.authStore.empleadoId() ?? undefined;
@@ -356,7 +343,6 @@ export class AgendaComponent implements OnInit {
         const order = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO', 'DOMINGO'];
         const sorted = res.data.sort((a, b) => order.indexOf(a.diaSemana) - order.indexOf(b.diaSemana));
         this.horariosVeterinario.set(sorted);
-        // Actualizar validadores de fecha cuando cambia el horario
         this.citaForm.get('fechaHoraInicio')?.updateValueAndValidity();
       },
       error: () => {
@@ -365,12 +351,8 @@ export class AgendaComponent implements OnInit {
       }
     });
   }
-
-  // Validar que la fecha/hora esté dentro del horario disponible
   isTimeInHorario(fecha: Date): boolean {
     if (!fecha) return false;
-    
-    // Si es emergencia, siempre es válido (bypass)
     if (this.citaForm.get('esEmergencia')?.value) return true;
 
     const horarios = this.horariosVeterinario();
@@ -404,8 +386,6 @@ export class AgendaComponent implements OnInit {
         cita.estado !== EstadoCita.REPROGRAMADA) {
       return false;
     }
-
-    // Regla: 1 hora antes si está programada o reprogramada
     if (cita.estado === EstadoCita.PROGRAMADA || cita.estado === EstadoCita.REPROGRAMADA) {
       const fechaInicio = new Date(cita.fechaHoraInicio);
       const ahora = new Date();
@@ -414,7 +394,7 @@ export class AgendaComponent implements OnInit {
       return diferenciaHoras >= 1;
     }
 
-    return true; // Si es CANCELADA, siempre se puede reprogramar
+    return true; 
   }
 
   reprogramarCita(cita: CitaResponse) {
@@ -425,8 +405,6 @@ export class AgendaComponent implements OnInit {
   editarCita(cita: CitaResponse) {
     this.selectedClienteLabel.set(cita.apoderadoNombre);
     this.selectedMascotaLabel.set(cita.mascotaNombre);
-    
-    // Cargar mascotas del cliente para el selector
     this.filteredMascotas.set(
       this.allMascotas()
         .filter(m => m.apoderadoId === cita.apoderadoId)
@@ -439,7 +417,7 @@ export class AgendaComponent implements OnInit {
       mascotaId: cita.mascotaId,
       veterinarioId: cita.veterinarioId,
       motivoCita: cita.motivoCita,
-      fechaHoraInicio: cita.fechaHoraInicio.substring(0, 16), // Format for datetime-local
+      fechaHoraInicio: cita.fechaHoraInicio.substring(0, 16),
       servicioId: cita.servicioId,
       notas: cita.notas,
       esEmergencia: cita.esEmergencia
@@ -454,8 +432,6 @@ export class AgendaComponent implements OnInit {
     }
     const formValue = this.citaForm.value;
     let localIsoString = formValue.fechaHoraInicio;
-    
-    // Si es un objeto Date (no debería pasar con input nativo pero por seguridad)
     if (formValue.fechaHoraInicio instanceof Date) {
       const date = formValue.fechaHoraInicio;
       const year = date.getFullYear();
@@ -505,7 +481,6 @@ export class AgendaComponent implements OnInit {
           this.citaService.reprogramar(id, request).subscribe(observer);
         },
         reject: () => {
-          // No hacemos nada si rechaza
         }
       });
     } else if (id) {
@@ -521,7 +496,6 @@ export class AgendaComponent implements OnInit {
     if (cita.estado === EstadoCita.COMPLETADA || cita.estado === EstadoCita.CANCELADA || cita.estado === EstadoCita.EN_PROCESO) {
       return false;
     }
-    // Regla: No se puede cancelar faltando menos de 1 hora
     const fechaInicio = new Date(cita.fechaHoraInicio);
     const ahora = new Date();
     const diferenciaMs = fechaInicio.getTime() - ahora.getTime();
@@ -643,7 +617,6 @@ export class AgendaComponent implements OnInit {
     if (cita.consultaId) {
       this.router.navigate(['/historias-clinicas/consulta', cita.consultaId]);
     } else {
-      // Fallback: si no tiene el ID en la lista, intentamos recuperarlo del servidor
       this.loadingStore.show();
       this.citaService.iniciarAtencion(cita.id).subscribe({
         next: (res) => {
@@ -701,7 +674,6 @@ export class AgendaComponent implements OnInit {
     }
   }
 
-  // ── Métodos calendario ─────────────────────────────────────────
   cambiarVista(vista: Vista) {
     this.vistaActual.set(vista);
     if (vista === 'lista' || vista === 'dia') {

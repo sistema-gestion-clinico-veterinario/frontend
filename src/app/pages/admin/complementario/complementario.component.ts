@@ -77,11 +77,8 @@ export class ComplementarioComponent implements OnInit {
   get activeCompanyId(): number | null {
     return this.authStore.selectedEnterprise()?.establishmentId ?? this.authStore.companyId();
   }
-
-  // Tabs
   activeTab = signal<number>(0);
 
-  // Especialidades
   especialidades = signal<any[]>([]);
   showEspModal = signal(false);
   editingEsp = signal<any | null>(null);
@@ -89,8 +86,6 @@ export class ComplementarioComponent implements OnInit {
     nombre: ['', [Validators.required, Validators.minLength(2)]],
     descripcion: ['']
   });
-
-  // Tipos de Empleado
   tiposEmpleado = signal<any[]>([]);
   showTipoModal = signal(false);
   editingTipo = signal<any | null>(null);
@@ -100,7 +95,7 @@ export class ComplementarioComponent implements OnInit {
     permiteEspecialidades: [false]
   });
 
-  // Servicios veterinarios
+
   servicios           = signal<ServicioResponse[]>([]);
   showServicioModal   = signal(false);
   editingServicio     = signal<ServicioResponse | null>(null);
@@ -112,7 +107,6 @@ export class ComplementarioComponent implements OnInit {
     disponible:  [true]
   });
 
-  // Roles
   roles = signal<RoleItem[]>([]);
   permisos = signal<Permission[]>([]);
   permisosOptions = signal<{ label: string; value: number }[]>([]);
@@ -183,7 +177,6 @@ export class ComplementarioComponent implements OnInit {
     this.loadServicios();
   }
 
-  // ─── ESPECIALIDADES ───────────────────────────────────────
   loadEspecialidades() {
     const cid = this.activeCompanyId ?? undefined;
     this.especialidadService.listar(cid).subscribe({
@@ -237,8 +230,6 @@ export class ComplementarioComponent implements OnInit {
       error: () => { this.loadingStore.hide(); }
     });
   }
-
-  // ─── TIPOS DE EMPLEADO ────────────────────────────────────
   loadTiposEmpleado() {
     const cid = this.activeCompanyId ?? undefined;
     this.tipoEmpleadoService.listar(cid).subscribe({
@@ -293,7 +284,6 @@ export class ComplementarioComponent implements OnInit {
     });
   }
 
-  // ─── SERVICIOS VETERINARIOS ───────────────────────────────
   loadServicios() {
     const cid = this.activeCompanyId ?? undefined;
     this.servicioService.listar(cid, 0, 100).subscribe({
@@ -363,7 +353,6 @@ export class ComplementarioComponent implements OnInit {
     });
   }
 
-  // ─── ROLES ────────────────────────────────────────────────
   loadRoles() {
     this.roleService.listar().subscribe({
       next: (res) => this.roles.set((res.data ?? []) as RoleItem[]),
