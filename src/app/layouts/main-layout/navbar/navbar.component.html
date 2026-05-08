@@ -10,13 +10,23 @@
     </svg>
   </button>
 
-  <div class="flex-1"></div>
+  <div class="flex-1 flex items-center px-4 sm:px-8">
+    <!-- Global Context Switcher para Super Admin -->
+    <div *ngIf="isSuperAdmin" class="flex items-center gap-2">
+      <span class="text-xs font-bold text-slate-400 uppercase tracking-wider hidden sm:inline-block">Administrando:</span>
+      <select [ngModel]="activeCompanyId" (change)="onCompanyChange($event)"
+        class="h-9 px-3 py-1 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold text-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20 focus:border-[#0066AA] outline-none cursor-pointer transition-all hover:bg-slate-100">
+        <option *ngFor="let c of companies()" [value]="c.value">{{ c.label }}</option>
+      </select>
+    </div>
+  </div>
 
   <!-- Info del usuario -->
-  <div class="flex items-center gap-3">
+  <div class="flex items-center gap-3 shrink-0">
     <div class="hidden text-right sm:block">
       <p class="text-sm font-semibold text-slate-800 leading-tight">{{ userName }}</p>
-      <p class="text-xs text-slate-400 leading-tight">{{ companyName }}</p>
+      <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5" *ngIf="!isSuperAdmin">{{ companyName }}</p>
+      <p class="text-[10px] font-bold text-rose-500 uppercase tracking-widest mt-0.5" *ngIf="isSuperAdmin">Super Admin</p>
     </div>
     <div
       class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#0066AA] text-sm font-bold text-white"

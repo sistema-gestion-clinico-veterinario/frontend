@@ -35,4 +35,16 @@ export class CitaService {
   iniciarAtencion(id: number) {
     return this.http.patch<ApiResponse<number>>(`${this.apiUrl}/${id}/iniciar`, {});
   }
+
+  cancelarCita(id: number, motivo: string) {
+    return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}/cancelar?motivo=${encodeURIComponent(motivo)}`);
+  }
+
+  eliminarCita(id: number) {
+    return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`);
+  }
+
+  reprogramar(id: number, data: CitaRequest) {
+    return this.http.put<ApiResponse<CitaResponse>>(`${this.apiUrl}/${id}/reprogramar`, data);
+  }
 }

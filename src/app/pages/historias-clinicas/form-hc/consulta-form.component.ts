@@ -4,14 +4,12 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 import { ActivatedRoute, Router } from '@angular/router';
 import { ToastModule } from 'primeng/toast';
 import { ButtonModule } from 'primeng/button';
-import { InputTextModule } from 'primeng/inputtext';
-import { DropdownModule } from 'primeng/dropdown';
-import { InputNumberModule } from 'primeng/inputnumber';
-import { InputTextarea } from 'primeng/inputtextarea';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { TimelineModule } from 'primeng/timeline';
 import { CardModule } from 'primeng/card';
 import { MessageService, ConfirmationService } from 'primeng/api';
+import { DrawerModule } from 'primeng/drawer';
+import { BadgeModule } from 'primeng/badge';
 
 import { HistoriaClinicaService } from '../../../core/services/historia-clinica.service';
 import { LoadingStore } from '../../../store/loading.store';
@@ -25,13 +23,11 @@ import { ConsultaResponse } from '../../../models/response/consulta-response';
     ReactiveFormsModule,
     ToastModule,
     ButtonModule,
-    InputTextModule,
-    DropdownModule,
-    InputNumberModule,
-    InputTextarea,
     ConfirmDialogModule,
     TimelineModule,
-    CardModule
+    CardModule,
+    DrawerModule,
+    BadgeModule
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './consulta-form.component.html'
@@ -51,6 +47,10 @@ export class ConsultaFormComponent implements OnInit {
   isCerrada  = signal<boolean>(false);
   consultaId = 0;
 
+  // Sidebar para historial
+  displayDetalleHistorial = signal<boolean>(false);
+  detalleSeleccionado      = signal<any | null>(null);
+
   readonly tiposConsulta = [
     { label: 'Primera vez',      value: 'PRIMERA_VEZ'      },
     { label: 'Seguimiento',      value: 'SEGUIMIENTO'      },
@@ -66,10 +66,10 @@ export class ConsultaFormComponent implements OnInit {
     version:                 [null, Validators.required],
     tipoConsulta:            [null, Validators.required],
     motivoConsulta:          ['',   Validators.required],
-    pesoEnConsulta:          [null, Validators.required],
-    temperatura:             [null],
-    frecuenciaCardiaca:      [null],
-    frecuenciaRespiratoria:  [null],
+    pesoEnConsulta:          [null, [Validators.required, Validators.min(0)]],
+    temperatura:             [null, Validators.min(0)],
+    frecuenciaCardiaca:      [null, Validators.min(0)],
+    frecuenciaRespiratoria:  [null, Validators.min(0)],
     mucosas:                 [''],
     turgenciaPiel:           [''],
     vacunacionAlDia:         [false],
@@ -145,6 +145,17 @@ export class ConsultaFormComponent implements OnInit {
     });
   }
 
+  confirmarGuardar() {
+    this.confirmSvc.confirm({
+      message: '¿Deseas guardar los cambios realizados en la consulta?',
+      header: 'Guardar cambios',
+      icon: 'pi pi-save',
+      acceptLabel: 'Sí, guardar',
+      rejectLabel: 'No',
+      accept: () => this.guardar()
+    });
+  }
+
   guardar() {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -175,6 +186,8 @@ export class ConsultaFormComponent implements OnInit {
       icon: 'pi pi-exclamation-triangle',
       acceptLabel: 'Sí, cerrar',
       rejectLabel: 'Cancelar',
+      acceptButtonProps: { style: 'background-color: #0066aa; color: white; border: none; font-weight: bold; padding: 0.5rem 1rem; border-radius: 0.375rem;' },
+      rejectButtonStyleClass: 'bg-slate-300 hover:bg-slate-400 text-slate-700 font-bold',
       accept: () => this.cerrar()
     });
   }
@@ -198,7 +211,12 @@ export class ConsultaFormComponent implements OnInit {
   }
 
   verConsulta(id: number) {
-    this.router.navigate(['/historias-clinicas/consulta', id]);
+    // Buscar la consulta en el historial cargado
+    const item = this.historia()?.consultas.find((c: any) => c.id === id);
+    if (item) {
+      this.detalleSeleccionado.set(item);
+      this.displayDetalleHistorial.set(true);
+    }
   }
 
   volver() {
@@ -206,6 +224,11 @@ export class ConsultaFormComponent implements OnInit {
   }
 
   formatFecha(fecha: string | undefined): string {
+    if (!fecha) return '—';
+    return new Date(fecha).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' });
+  }
+
+  formatFechaHora(fecha: string | undefined): string {
     if (!fecha) return '—';
     return new Date(fecha).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
   }

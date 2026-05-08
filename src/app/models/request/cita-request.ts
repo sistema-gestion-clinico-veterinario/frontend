@@ -6,4 +6,5 @@ export interface CitaRequest {
   servicioId?: number;
   notas?: string;
   version?: number;
+  esEmergencia?: boolean;
 }

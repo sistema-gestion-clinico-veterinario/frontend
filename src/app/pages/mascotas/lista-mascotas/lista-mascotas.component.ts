@@ -58,13 +58,11 @@ export class ListaMascotasComponent implements OnInit {
 
   // ── Options ───────────────────────────────────────────────
   apoderados = signal<{ label: string; value: number }[]>([]);
-  empresas   = signal<{ label: string; value: number }[]>([]);
 
   // ── Filtros ───────────────────────────────────────────────
   searchNombre      = '';
   filterEspecie: string | null   = null;
   filterActivo:  boolean | null  = null;
-  selectedCompanyId: number | null = null;
   filtersOpen       = false;
   currentPage       = 0;
   readonly pageSize = 12;
@@ -113,36 +111,23 @@ export class ListaMascotasComponent implements OnInit {
     otroMotivo: ['']
   });
 
+  get activeCompanyId(): number | null {
+    return this.authStore.selectedEnterprise()?.establishmentId ?? this.authStore.companyId();
+  }
+
   // ── Lifecycle ─────────────────────────────────────────────
   ngOnInit() {
-    if (this.isSuperAdmin()) {
-      this.loadEmpresas();
-    } else {
-      this.loadMascotas();
-    }
+    this.loadMascotas();
     this.loadApoderados();
   }
 
   // ── Carga de datos ────────────────────────────────────────
-  loadEmpresas() {
-    this.companyService.listar(0, 100).subscribe({
-      next: (res) => {
-        this.empresas.set(
-          res.data.content
-            .filter(c => c.activo)
-            .map(c => ({ label: c.name, value: c.id }))
-        );
-      }
-    });
-  }
-
   loadApoderados() {
-    if (this.isSuperAdmin() && !this.selectedCompanyId) {
+    const companyId = this.activeCompanyId;
+    if (!companyId) {
       this.apoderados.set([]);
       return;
     }
-
-    const companyId = this.isSuperAdmin() ? (this.selectedCompanyId ?? undefined) : undefined;
     this.apoderadoService.listar(companyId, undefined, undefined, 0, 200).subscribe({
       next: (res) => {
         this.apoderados.set(
@@ -156,14 +141,14 @@ export class ListaMascotasComponent implements OnInit {
   }
 
   loadMascotas(page: number = 0) {
-    if (this.isSuperAdmin() && !this.selectedCompanyId) {
+    const companyId = this.activeCompanyId;
+    if (!companyId) {
       this.mascotas.set([]);
       this.totalRecords.set(0);
       return;
     }
 
     this.currentPage = page;
-    const companyId  = this.isSuperAdmin() ? (this.selectedCompanyId ?? undefined) : undefined;
 
     this.loadingStore.show();
     this.mascotaService.listar(
@@ -187,10 +172,6 @@ export class ListaMascotasComponent implements OnInit {
   }
 
   // ── Eventos ───────────────────────────────────────────────
-  onEmpresaChange() {
-    this.loadMascotas(0);
-    this.loadApoderados();
-  }
   onFilterChange()  { this.loadMascotas(0); }
   onPageChange(e: any) { this.loadMascotas(e.page); }
 
@@ -229,7 +210,7 @@ export class ListaMascotasComponent implements OnInit {
     }
     const v = this.mascotaForm.value;
     const request: MascotaRequest = {
-      nombre:          v.nombre,
+      nombreCompleto:  v.nombre,
       especie:         v.especie,
       raza:            v.raza,
       sexo:            v.sexo,

@@ -52,6 +52,8 @@ export class CompanyComponent implements OnInit {
     website: [''],
     description: [''],
     businessHours: [''],
+    openingTime: [''],
+    closingTime: [''],
     logoUrl: ['']
   });
 

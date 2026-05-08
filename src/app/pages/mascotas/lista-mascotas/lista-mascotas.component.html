@@ -16,16 +16,7 @@
 
       <div class="flex items-center gap-2.5 sm:gap-3 shrink-0">
 
-        <div *ngIf="isSuperAdmin()" class="hidden sm:block w-52 lg:w-64">
-          <p-dropdown
-            [options]="empresas()"
-            [(ngModel)]="selectedCompanyId"
-            (onChange)="onEmpresaChange()"
-            placeholder="Seleccionar empresa"
-            styleClass="w-full h-10 bg-white !border-slate-200 !rounded-xl !px-3 !flex !items-center !text-sm !font-bold !text-slate-800"
-            panelStyleClass="!rounded-xl !border-none"
-          ></p-dropdown>
-        </div>
+
         <button (click)="openNew()"
           class="flex items-center gap-1.5 bg-[#0066AA] text-white font-medium rounded-lg h-9 sm:h-10 px-3 sm:px-5 text-sm">
           <i class="pi pi-plus text-xs"></i>
@@ -35,16 +26,6 @@
     </div>
 
 
-    <div *ngIf="isSuperAdmin()" class="sm:hidden mt-3">
-      <p-dropdown
-        [options]="empresas()"
-        [(ngModel)]="selectedCompanyId"
-        (onChange)="onEmpresaChange()"
-        placeholder="Seleccionar empresa"
-        styleClass="w-full h-11 bg-white !border-slate-200 !rounded-xl !px-3 !flex !items-center !text-sm !font-bold !text-slate-800"
-        panelStyleClass="!rounded-xl !border-none"
-      ></p-dropdown>
-    </div>
   </div>
 
 
@@ -89,25 +70,16 @@
       </button>
 
     </div>
-    <div *ngIf="(!isSuperAdmin() || selectedCompanyId) && totalRecords() > 0"
+    <div *ngIf="totalRecords() > 0"
       class="mt-3 pt-3 border-t border-slate-100 flex items-center gap-1.5 text-xs text-slate-400 font-medium">
       <i class="pi pi-info-circle text-slate-300"></i>
       <span>{{ totalRecords() }} mascota{{ totalRecords() !== 1 ? 's' : '' }} encontrada{{ totalRecords() !== 1 ? 's' : '' }}</span>
     </div>
   </div>
-  <div *ngIf="isSuperAdmin() && !selectedCompanyId"
-    class="bg-white border border-slate-200 rounded-xl py-16 text-center px-6">
-    <div class="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
-      <i class="pi pi-building text-2xl text-slate-300"></i>
-    </div>
-    <p class="text-sm font-bold text-slate-500 mb-1">Selecciona una empresa</p>
-    <p class="text-xs text-slate-400 max-w-[220px] mx-auto">
-      Elige una empresa del selector para ver sus mascotas registradas.
-    </p>
-  </div>
 
 
-  <ng-container *ngIf="!isSuperAdmin() || selectedCompanyId">
+
+  <ng-container>
 
 
     <div *ngIf="mascotas().length === 0 && !loadingStore.isLoading()"
@@ -230,173 +202,167 @@
 
 </div>
 
-<p-dialog
-  [(visible)]="displayModal"
-  [header]="isEdit() ? 'Editar mascota' : 'Registrar nueva mascota'"
-  [modal]="true"
-  [draggable]="false"
-  [resizable]="false"
-  [breakpoints]="{'960px': '90vw', '640px': '95vw'}"
-  [style]="{width: '560px'}"
-  [contentStyle]="{'overflow': 'visible'}"
-  styleClass="!rounded-2xl !border-none !bg-white"
->
-  <form [formGroup]="mascotaForm" (ngSubmit)="saveMascota()" class="flex flex-col gap-6 mt-6 pb-4">
-    <div class="flex flex-col gap-2">
-      <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">
-        Nombre de la mascota
-      </label>
-      <input pInputText formControlName="nombre" placeholder="Ej. Max, Luna, Tobby..."
-        class="w-full h-14 bg-slate-50 !border-none !rounded-xl !px-6 !text-sm !font-bold !text-slate-800 placeholder:text-slate-300 focus:!ring-2 focus:!ring-[#0066AA]/20 shadow-none" />
-      <p *ngIf="mascotaForm.get('nombre')?.touched && mascotaForm.get('nombre')?.invalid"
-        class="text-xs text-rose-500 font-medium ml-1">El nombre es requerido.</p>
-    </div>
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <div class="flex flex-col gap-2">
-        <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Especie</label>
-        <p-dropdown
-          [options]="especieOpciones"
-          formControlName="especie"
-          placeholder="Seleccionar"
-          styleClass="w-full h-14 bg-slate-50 !border-none !rounded-xl !px-4 !flex !items-center !text-sm !font-bold !text-slate-800"
-          panelStyleClass="!rounded-xl !border-none"
-        ></p-dropdown>
-        <p *ngIf="mascotaForm.get('especie')?.touched && mascotaForm.get('especie')?.invalid"
-          class="text-xs text-rose-500 font-medium ml-1">Requerido.</p>
-      </div>
-      <div class="flex flex-col gap-2">
-        <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Raza</label>
-        <input pInputText formControlName="raza" placeholder="Ej. Labrador, Siamés..."
-          class="w-full h-14 bg-slate-50 !border-none !rounded-xl !px-6 !text-sm !font-bold !text-slate-800 placeholder:text-slate-300 focus:!ring-2 focus:!ring-[#0066AA]/20 shadow-none" />
-        <p *ngIf="mascotaForm.get('raza')?.touched && mascotaForm.get('raza')?.invalid"
-          class="text-xs text-rose-500 font-medium ml-1">Requerido.</p>
-      </div>
-    </div>
-
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <div class="flex flex-col gap-2">
-        <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Sexo</label>
-        <p-dropdown
-          [options]="sexoOpciones"
-          formControlName="sexo"
-          placeholder="Seleccionar"
-          styleClass="w-full h-14 bg-slate-50 !border-none !rounded-xl !px-4 !flex !items-center !text-sm !font-bold !text-slate-800"
-          panelStyleClass="!rounded-xl !border-none"
-        ></p-dropdown>
-        <p *ngIf="mascotaForm.get('sexo')?.touched && mascotaForm.get('sexo')?.invalid"
-          class="text-xs text-rose-500 font-medium ml-1">Requerido.</p>
-      </div>
-      <div class="flex flex-col gap-2">
-        <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">
-          Fecha de nacimiento
-        </label>
-        <input
-          type="date"
-          formControlName="fechaNacimiento"
-          class="w-full h-14 bg-slate-50 border-0 rounded-xl px-6 text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0066AA]/20 appearance-none"
-        />
-        <p *ngIf="mascotaForm.get('fechaNacimiento')?.touched && mascotaForm.get('fechaNacimiento')?.invalid"
-          class="text-xs text-rose-500 font-medium ml-1">Requerido.</p>
-      </div>
-    </div>
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <div class="flex flex-col gap-2">
-        <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">
-          Color / Pelaje
-          <span class="normal-case tracking-normal font-normal text-slate-300 ml-1">(opcional)</span>
-        </label>
-        <input pInputText formControlName="color" placeholder="Ej. Dorado, Blanco y negro..."
-          class="w-full h-14 bg-slate-50 !border-none !rounded-xl !px-6 !text-sm !font-bold !text-slate-800 placeholder:text-slate-300 focus:!ring-2 focus:!ring-[#0066AA]/20 shadow-none" />
-      </div>
-      <div class="flex flex-col gap-2">
-        <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">
-          Peso (kg)
-          <span class="normal-case tracking-normal font-normal text-slate-300 ml-1">(opcional)</span>
-        </label>
-        <input pInputText type="number" min="0" step="0.1" formControlName="peso" placeholder="Ej. 12.5"
-          class="w-full h-14 bg-slate-50 !border-none !rounded-xl !px-6 !text-sm !font-bold !text-slate-800 placeholder:text-slate-300 focus:!ring-2 focus:!ring-[#0066AA]/20 shadow-none" />
-      </div>
-    </div>
-    <div class="flex flex-col gap-2">
-      <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Propietario</label>
-      <p-dropdown
-        [options]="apoderados()"
-        formControlName="apoderadoId"
-        placeholder="Buscar propietario..."
-        [filter]="true"
-        filterPlaceholder="Escribir nombre..."
-        styleClass="w-full h-14 bg-slate-50 !border-none !rounded-xl !px-4 !flex !items-center !text-sm !font-bold !text-slate-800"
-        panelStyleClass="!rounded-xl !border-none"
-      ></p-dropdown>
-      <p *ngIf="mascotaForm.get('apoderadoId')?.touched && mascotaForm.get('apoderadoId')?.invalid"
-        class="text-xs text-rose-500 font-medium ml-1">Selecciona un propietario.</p>
-    </div>
-    <div class="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-6 border-t border-slate-100">
-      <button type="button" (click)="displayModal.set(false)"
-        class="px-8 h-12 rounded-2xl text-sm font-extrabold text-slate-400 hover:bg-slate-100">
-        Cancelar
-      </button>
-      <button type="submit" [disabled]="loadingStore.isLoading()"
-        class="flex items-center justify-center gap-2 bg-[#0066AA] disabled:opacity-50 text-white text-sm font-bold px-6 h-12 rounded-xl">
-        <i class="pi pi-check text-xs"></i>
-        {{ loadingStore.isLoading() ? 'Guardando...' : (isEdit() ? 'Guardar cambios' : 'Registrar mascota') }}
+<!-- Modal de Registro/Edición de Mascota: Estructura Formal -->
+<div *ngIf="displayModal()" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+  <div class="bg-white w-full max-w-xl rounded-lg shadow-2xl flex flex-col max-h-[95vh]">
+    
+    <!-- Header -->
+    <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50 rounded-t-lg">
+      <h2 class="text-lg font-bold text-slate-800">
+        {{ isEdit() ? 'Actualizar Ficha del Paciente' : 'Apertura de Expediente de Mascota' }}
+      </h2>
+      <button (click)="displayModal.set(false)" class="text-slate-400 hover:text-slate-600 transition-colors p-2">
+        <i class="pi pi-times"></i>
       </button>
     </div>
 
-  </form>
-</p-dialog>
+    <!-- Body -->
+    <div class="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-slate-200">
+      <form [formGroup]="mascotaForm" (ngSubmit)="saveMascota()" class="space-y-6">
+        
+        <!-- Sección 1: Identificación del Paciente -->
+        <div class="space-y-4">
+          <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
+            <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
+            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">1. Identificación del Paciente</h3>
+          </div>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1 sm:col-span-2">
+              <label class="text-xs font-semibold text-slate-700 ml-0.5">Nombre del Paciente <span class="text-rose-500">*</span></label>
+              <input type="text" formControlName="nombre" placeholder="Ej: Max, Luna..."
+                class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all font-bold" />
+            </div>
 
-<!-- ── Modal Motivo Baja ───────────────────────────────────── -->
-<p-dialog
-  [(visible)]="displayMotivoModal"
-  header="Desactivar mascota"
-  [modal]="true"
-  [draggable]="false"
-  [resizable]="false"
-  [breakpoints]="{'960px': '90vw', '640px': '95vw'}"
-  [style]="{width: '400px'}"
-  [contentStyle]="{'overflow': 'visible'}"
-  styleClass="!rounded-2xl !border-none !bg-white"
->
-  <form [formGroup]="motivoForm" (ngSubmit)="confirmDeactivation()" class="flex flex-col gap-5 mt-6 pb-4">
-    <p class="text-sm text-slate-500 mb-2">Por favor, indica el motivo por el cual estás dando de baja a esta mascota.</p>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-semibold text-slate-700 ml-0.5">Especie <span class="text-rose-500">*</span></label>
+              <select formControlName="especie" 
+                class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 bg-white transition-all">
+                <option [ngValue]="null" disabled>Seleccione especie</option>
+                <option *ngFor="let opt of especieOpciones" [value]="opt.value">{{ opt.label }}</option>
+              </select>
+            </div>
 
-    <!-- Motivo -->
-    <div class="flex flex-col gap-2">
-      <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Motivo de baja</label>
-      <p-dropdown
-        [options]="motivoBajaOpciones"
-        formControlName="motivoBaja"
-        placeholder="Seleccionar motivo"
-        [style]="{'width': '100%'}"
-        styleClass="w-full h-14 bg-slate-50 !border-none !rounded-xl !px-4 !flex !items-center !text-sm !font-bold !text-slate-800"
-        panelStyleClass="!rounded-xl !border-none"
-      ></p-dropdown>
-      <p *ngIf="motivoForm.get('motivoBaja')?.touched && motivoForm.get('motivoBaja')?.invalid"
-        class="text-xs text-rose-500 font-medium ml-1">Requerido.</p>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-semibold text-slate-700 ml-0.5">Raza <span class="text-rose-500">*</span></label>
+              <input type="text" formControlName="raza" placeholder="Ej: Labrador, Criollo..."
+                class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-semibold text-slate-700 ml-0.5">Sexo <span class="text-rose-500">*</span></label>
+              <select formControlName="sexo" 
+                class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 bg-white transition-all">
+                <option [ngValue]="null" disabled>Seleccione sexo</option>
+                <option *ngFor="let opt of sexoOpciones" [value]="opt.value">{{ opt.label }}</option>
+              </select>
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-semibold text-slate-700 ml-0.5">Fecha de Nacimiento <span class="text-rose-500">*</span></label>
+              <input type="date" formControlName="fechaNacimiento"
+                class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 bg-white transition-all" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Sección 2: Detalles Físicos -->
+        <div class="space-y-4">
+          <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
+            <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
+            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">2. Atributos Físicos</h3>
+          </div>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-semibold text-slate-700 ml-0.5">Peso Actual (kg)</label>
+              <input type="number" step="0.1" formControlName="peso" placeholder="0.0"
+                class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all font-mono" />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-semibold text-slate-700 ml-0.5">Color / Manto</label>
+              <input type="text" formControlName="color" placeholder="Ej: Atigrado, Negro..."
+                class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Sección 3: Vinculación -->
+        <div class="space-y-4">
+          <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
+            <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
+            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">3. Propietario Responsable</h3>
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-semibold text-slate-700 ml-0.5">Vincular a Propietario <span class="text-rose-500">*</span></label>
+            <select formControlName="apoderadoId" 
+              class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 bg-white transition-all font-bold">
+              <option [ngValue]="null" disabled>Seleccione el propietario responsable</option>
+              <option *ngFor="let opt of apoderados()" [ngValue]="opt.value">{{ opt.label }}</option>
+            </select>
+            <p class="text-[10px] text-slate-400 mt-1 italic">Asegúrese de que el propietario esté registrado previamente.</p>
+          </div>
+        </div>
+
+        <!-- Footer / Acciones Finales -->
+        <div class="flex justify-end gap-3 pt-6 border-t border-slate-200">
+          <button type="button" (click)="displayModal.set(false)"
+            class="px-5 py-2.5 text-sm font-semibold text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded transition-all">
+            Descartar cambios
+          </button>
+          <button type="submit" [disabled]="loadingStore.isLoading()"
+            class="px-8 py-2.5 text-sm font-bold text-white bg-[#0066AA] hover:bg-[#004488] rounded shadow-sm disabled:opacity-50 transition-all flex items-center justify-center gap-2 min-w-[160px]">
+            <i *ngIf="loadingStore.isLoading()" class="pi pi-spin pi-spinner text-xs"></i>
+            {{ loadingStore.isLoading() ? 'Procesando...' : (isEdit() ? 'Actualizar Ficha' : 'Generar Expediente') }}
+          </button>
+        </div>
+      </form>
     </div>
+  </div>
+</div>
 
-    <!-- Otro Motivo (Condicional) -->
-    <div class="flex flex-col gap-2" *ngIf="motivoForm.get('motivoBaja')?.value === 'OTRO'">
-      <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Especificar motivo</label>
-      <input pInputText formControlName="otroMotivo" placeholder="Escribe el motivo aquí..."
-        class="w-full h-14 bg-slate-50 !border-none !rounded-xl !px-6 !text-sm !font-bold !text-slate-800 placeholder:text-slate-300 focus:!ring-2 focus:!ring-[#0066AA]/20 shadow-none" />
-      <p *ngIf="motivoForm.get('motivoBaja')?.value === 'OTRO' && !motivoForm.get('otroMotivo')?.value?.trim() && motivoForm.get('motivoBaja')?.touched"
-        class="text-xs text-rose-500 font-medium ml-1">Requerido.</p>
+<!-- Modal de Motivo de Baja -->
+<div *ngIf="displayMotivoModal()" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+  <div class="bg-white w-full max-w-sm rounded-lg shadow-2xl flex flex-col">
+    <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-rose-50 rounded-t-lg">
+      <h2 class="text-lg font-bold text-rose-800 italic">Desactivación de Paciente</h2>
+      <button (click)="displayMotivoModal.set(false)" class="text-rose-300 hover:text-rose-600 p-2"><i class="pi pi-times"></i></button>
     </div>
+    <div class="p-6">
+      <form [formGroup]="motivoForm" (ngSubmit)="confirmDeactivation()" class="space-y-5">
+        <p class="text-xs font-medium text-slate-600 leading-relaxed">
+          Usted está a punto de desactivar la ficha clínica de este paciente. Por favor, seleccione la justificación administrativa o clínica correspondiente.
+        </p>
 
-    <div class="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-4 border-t border-slate-50">
-      <button type="button" (click)="displayMotivoModal.set(false)"
-        class="px-6 h-11 rounded-xl text-sm font-extrabold text-slate-400 hover:bg-slate-100">
-        Cancelar
-      </button>
-      <button type="submit" [disabled]="loadingStore.isLoading()"
-        class="flex items-center justify-center gap-2 bg-rose-500 hover:bg-rose-600 disabled:opacity-50 text-white text-sm font-bold px-6 h-11 rounded-xl transition-colors">
-        <i class="pi pi-check text-xs"></i>
-        Confirmar baja
-      </button>
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-bold text-slate-700 ml-0.5">Causal de Baja <span class="text-rose-500">*</span></label>
+          <select formControlName="motivoBaja" 
+            class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 outline-none h-10 bg-white transition-all">
+            <option [ngValue]="null" disabled>Seleccione una causal</option>
+            <option *ngFor="let opt of motivoBajaOpciones" [value]="opt.value">{{ opt.label }}</option>
+          </select>
+        </div>
+
+        <div *ngIf="motivoForm.get('motivoBaja')?.value === 'OTRO'" class="flex flex-col gap-1 animate-in slide-in-from-top-1">
+          <label class="text-xs font-bold text-slate-700 ml-0.5">Especificar Detalles</label>
+          <textarea formControlName="otroMotivo" rows="2" placeholder="Describa el motivo detalladamente..."
+            class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 outline-none resize-none transition-all"></textarea>
+        </div>
+
+        <div class="flex flex-col gap-3 pt-4">
+          <button type="submit" [disabled]="loadingStore.isLoading()"
+            class="w-full py-2.5 text-sm font-bold text-white bg-rose-600 hover:bg-rose-700 rounded shadow-sm disabled:opacity-50 transition-all flex items-center justify-center gap-2">
+            <i class="pi pi-exclamation-triangle text-xs"></i>
+            {{ loadingStore.isLoading() ? 'Procesando...' : 'Confirmar Cese de Registro' }}
+          </button>
+          <button type="button" (click)="displayMotivoModal.set(false)"
+            class="w-full py-2 text-xs font-bold text-slate-400 hover:text-slate-600 transition-all">
+            Cancelar Operación
+          </button>
+        </div>
+      </form>
     </div>
-  </form>
-</p-dialog>
+  </div>
+</div>
 
 <p-toast position="bottom-right"></p-toast>

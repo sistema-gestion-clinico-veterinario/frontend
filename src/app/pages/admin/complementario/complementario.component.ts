@@ -53,7 +53,6 @@ interface RoleItem {
     DialogModule,
     InputTextModule,
     InputNumberModule,
-    InputTextarea,
     DropdownModule,
     ToastModule,
     CheckboxModule,
@@ -75,9 +74,9 @@ export class ComplementarioComponent implements OnInit {
 
   readonly isSuperAdmin = this.authStore.roles().includes(Role.SUPER_ADMIN);
 
-  // Empresa seleccionada
-  companies = signal<any[]>([]);
-  selectedCompanyId = signal<number | null>(null);
+  get activeCompanyId(): number | null {
+    return this.authStore.selectedEnterprise()?.establishmentId ?? this.authStore.companyId();
+  }
 
   // Tabs
   activeTab = signal<number>(0);
@@ -109,6 +108,7 @@ export class ComplementarioComponent implements OnInit {
     nombre:      ['', [Validators.required, Validators.minLength(2)]],
     descripcion: ['', [Validators.required]],
     precio:      [null, [Validators.required, Validators.min(0.01)]],
+    duracionEstimada: [20, [Validators.required, Validators.min(1)]],
     disponible:  [true]
   });
 
@@ -148,28 +148,9 @@ export class ComplementarioComponent implements OnInit {
   });
 
   ngOnInit() {
-    if (this.isSuperAdmin) {
-      this.loadCompanies();
-    } else {
-      this.loadAll();
-    }
+    this.loadAll();
     this.loadRoles();
     this.loadPermisos();
-  }
-
-  loadCompanies() {
-    this.companyService.listar(0, 1000).subscribe({
-      next: (res) => {
-        const list = res.data.content.map((c: any) => ({ label: c.name, value: c.id }));
-        this.companies.set(list);
-        // Eliminado auto-selección del primer elemento
-      }
-    });
-  }
-
-  onCompanyChange(companyId: number) {
-    this.selectedCompanyId.set(companyId);
-    this.loadAll();
   }
 
   isPermissionSelected(id: number): boolean {
@@ -204,7 +185,7 @@ export class ComplementarioComponent implements OnInit {
 
   // ─── ESPECIALIDADES ───────────────────────────────────────
   loadEspecialidades() {
-    const cid = this.selectedCompanyId() ?? undefined;
+    const cid = this.activeCompanyId ?? undefined;
     this.especialidadService.listar(cid).subscribe({
       next: (res) => this.especialidades.set(res.data.content ?? res.data),
       error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar las especialidades' })
@@ -220,7 +201,7 @@ export class ComplementarioComponent implements OnInit {
   saveEspecialidad() {
     if (this.espForm.invalid) { this.espForm.markAllAsTouched(); return; }
     const val = this.espForm.value;
-    const companyId = this.selectedCompanyId();
+    const companyId = this.activeCompanyId;
     const payload = {
       ...val,
       ...(companyId && !this.editingEsp() ? { company: { id: companyId } } : {})
@@ -259,7 +240,7 @@ export class ComplementarioComponent implements OnInit {
 
   // ─── TIPOS DE EMPLEADO ────────────────────────────────────
   loadTiposEmpleado() {
-    const cid = this.selectedCompanyId() ?? undefined;
+    const cid = this.activeCompanyId ?? undefined;
     this.tipoEmpleadoService.listar(cid).subscribe({
       next: (res) => this.tiposEmpleado.set(res.data.content ?? res.data),
       error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar los tipos de empleado' })
@@ -279,7 +260,7 @@ export class ComplementarioComponent implements OnInit {
   saveTipoEmpleado() {
     if (this.tipoForm.invalid) { this.tipoForm.markAllAsTouched(); return; }
     const val = this.tipoForm.value;
-    const companyId = this.selectedCompanyId();
+    const companyId = this.activeCompanyId;
     const payload = {
       ...val,
       ...(companyId ? { company: { id: companyId } } : {})
@@ -314,7 +295,7 @@ export class ComplementarioComponent implements OnInit {
 
   // ─── SERVICIOS VETERINARIOS ───────────────────────────────
   loadServicios() {
-    const cid = this.selectedCompanyId() ?? undefined;
+    const cid = this.activeCompanyId ?? undefined;
     this.servicioService.listar(cid, 0, 100).subscribe({
       next: (res) => this.servicios.set(res.data.content),
       error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar los servicios' })
@@ -327,6 +308,7 @@ export class ComplementarioComponent implements OnInit {
       nombre:      item?.nombre      ?? '',
       descripcion: item?.descripcion ?? '',
       precio:      item?.precio      ?? null,
+      duracionEstimada: item?.duracionEstimada ?? 20,
       disponible:  item?.disponible  ?? true
     });
     this.showServicioModal.set(true);
@@ -335,7 +317,7 @@ export class ComplementarioComponent implements OnInit {
   saveServicio() {
     if (this.servicioForm.invalid) { this.servicioForm.markAllAsTouched(); return; }
     const val = this.servicioForm.value;
-    const companyId = this.selectedCompanyId();
+    const companyId = this.activeCompanyId;
     const payload = { ...val, ...(companyId ? { companyId } : {}) };
 
     const editing = this.editingServicio();

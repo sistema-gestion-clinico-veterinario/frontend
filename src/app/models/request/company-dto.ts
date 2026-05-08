@@ -9,4 +9,6 @@ export interface CompanyDTO {
   website?: string;
   description?: string;
   businessHours?: string;
+  openingTime?: string;
+  closingTime?: string;
 }
