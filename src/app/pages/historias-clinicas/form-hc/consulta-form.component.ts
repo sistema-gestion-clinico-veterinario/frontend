@@ -100,6 +100,7 @@ export class ConsultaFormComponent implements OnInit {
     antecedentesPersonales:      [''],
     antecedentesFamiliares:      [''],
     grupoSanguineo:              [''],
+    indicacionesReceta:          [''],
   });
 
   ngOnInit() {
@@ -144,6 +145,7 @@ export class ConsultaFormComponent implements OnInit {
           antecedentesPersonales:      res.data.antecedentesPersonales      ?? '',
           antecedentesFamiliares:      res.data.antecedentesFamiliares      ?? '',
           grupoSanguineo:              res.data.grupoSanguineo              ?? '',
+          indicacionesReceta:          res.data.indicacionesReceta          ?? '',
           version:                     res.data.version,
         });
         if (this.isCerrada()) this.form.disable();
@@ -242,6 +244,7 @@ export class ConsultaFormComponent implements OnInit {
     const consulta = this.consulta();
     const recetas = this.recetas();
     if (!consulta || recetas.length === 0) return;
+    const indicacionesGenerales = this.form.get('indicacionesReceta')?.value || consulta.indicacionesReceta || '';
 
     const hoy = new Date().toLocaleDateString('es-PE', { day: '2-digit', month: 'long', year: 'numeric' });
     const vetNombre = recetas[0].veterinarioNombre ?? consulta.veterinarioNombre ?? 'Médico Veterinario';
@@ -310,9 +313,10 @@ export class ConsultaFormComponent implements OnInit {
     </div>
   </div>
   <div class="section">
-    <div class="section-title">Prescripciones (${recetas.length})</div>
+    <div class="section-title">Medicamentos prescritos (${recetas.length})</div>
     ${medicamentosHtml}
   </div>
+  ${indicacionesGenerales ? `<div class="section"><div class="section-title">Indicaciones generales</div><div style="background:#f8fafc;border-radius:6px;padding:12px;font-size:12px;color:#334155;line-height:1.6;">${indicacionesGenerales}</div></div>` : ''}
   <div class="firma">
     <div class="line"></div><br>
     <p><strong>${vetNombre}</strong></p>

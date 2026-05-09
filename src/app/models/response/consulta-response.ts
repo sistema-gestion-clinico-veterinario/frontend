@@ -42,5 +42,6 @@ export interface ConsultaResponse {
   grupoSanguineo?: string;
   fechaCierre?: string;
   cerradoPor?: string;
+  indicacionesReceta?: string;
   prescripciones?: PrescripcionResponse[];
 }
