@@ -106,49 +106,70 @@
     </div>
     <div class="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-slate-200">
       <form [formGroup]="employeeForm" (ngSubmit)="saveEmployee()" class="space-y-8">
-        
+
+        <!-- 1. Identidad -->
         <div class="space-y-4">
           <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
             <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
             <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">1. Información de Identidad</h3>
           </div>
-          
+
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
             <div class="flex flex-col gap-1">
               <label class="text-xs font-semibold text-slate-700 ml-0.5">Nombres <span class="text-rose-500">*</span></label>
               <input type="text" formControlName="nombre" placeholder="Ej: Juan Antonio"
-                class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+                [ngClass]="employeeForm.get('nombre')?.invalid && employeeForm.get('nombre')?.touched ? 'border-rose-400' : 'border-slate-300'"
+                class="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+              <p *ngIf="employeeForm.get('nombre')?.invalid && employeeForm.get('nombre')?.touched" class="text-[11px] text-rose-500 ml-0.5">
+                <ng-container *ngIf="employeeForm.get('nombre')?.errors?.['required']">El nombre es requerido</ng-container>
+                <ng-container *ngIf="employeeForm.get('nombre')?.errors?.['pattern']">Solo se permiten letras y espacios</ng-container>
+              </p>
             </div>
+
             <div class="flex flex-col gap-1">
               <label class="text-xs font-semibold text-slate-700 ml-0.5">Apellidos <span class="text-rose-500">*</span></label>
               <input type="text" formControlName="apellido" placeholder="Ej: Morales Ruiz"
-                class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+                [ngClass]="employeeForm.get('apellido')?.invalid && employeeForm.get('apellido')?.touched ? 'border-rose-400' : 'border-slate-300'"
+                class="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+              <p *ngIf="employeeForm.get('apellido')?.invalid && employeeForm.get('apellido')?.touched" class="text-[11px] text-rose-500 ml-0.5">
+                <ng-container *ngIf="employeeForm.get('apellido')?.errors?.['required']">Los apellidos son requeridos</ng-container>
+                <ng-container *ngIf="employeeForm.get('apellido')?.errors?.['pattern']">Solo se permiten letras y espacios</ng-container>
+              </p>
             </div>
 
             <div class="flex flex-col gap-1">
               <label class="text-xs font-semibold text-slate-700 ml-0.5">Documento de Identidad <span class="text-rose-500">*</span></label>
               <div class="flex items-stretch">
-                <select formControlName="tipoDocumento" 
+                <select formControlName="tipoDocumento"
                   class="w-24 px-2 py-2 border border-slate-300 rounded-l border-r-0 text-[11px] font-extrabold uppercase bg-slate-50 text-slate-600 focus:ring-0 outline-none h-10 transition-all cursor-pointer">
                   <option *ngFor="let t of tipoDocumentos" [value]="t.value">{{ t.label }}</option>
                 </select>
                 <input type="text" formControlName="numeroDocumento" placeholder="Número de documento"
-                  class="flex-1 px-3 py-2 border border-slate-300 rounded-r text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all font-bold" />
+                  [ngClass]="employeeForm.get('numeroDocumento')?.invalid && employeeForm.get('numeroDocumento')?.touched ? 'border-rose-400' : 'border-slate-300'"
+                  class="flex-1 px-3 py-2 border rounded-r text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all font-bold" />
               </div>
+              <p *ngIf="employeeForm.get('numeroDocumento')?.invalid && employeeForm.get('numeroDocumento')?.touched" class="text-[11px] text-rose-500 ml-0.5">
+                <ng-container *ngIf="employeeForm.get('numeroDocumento')?.errors?.['required']">El número de documento es requerido</ng-container>
+                <ng-container *ngIf="employeeForm.get('numeroDocumento')?.errors?.['pattern']">{{ documentoErrorMsg }}</ng-container>
+              </p>
             </div>
 
             <div class="flex flex-col gap-1">
               <label class="text-xs font-semibold text-slate-700 ml-0.5">Género / Sexo <span class="text-rose-500">*</span></label>
               <div class="relative">
-                <select formControlName="genero" 
+                <select formControlName="genero"
                   class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 bg-white transition-all appearance-none font-bold">
                   <option *ngFor="let g of generos" [value]="g.value">{{ g.label }}</option>
                 </select>
                 <i class="pi pi-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 pointer-events-none"></i>
               </div>
             </div>
+
           </div>
         </div>
+
+        <!-- 2. Perfil Profesional -->
         <div class="space-y-4">
           <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
             <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
@@ -156,16 +177,18 @@
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+
             <div class="flex flex-col gap-1.5 relative">
               <label class="text-xs font-semibold text-slate-700 ml-0.5">Roles de Acceso al Sistema <span class="text-rose-500">*</span></label>
               <button type="button" (click)="toggleDropdown('roles', $event)"
-                class="w-full h-10 px-3 flex items-center justify-between border border-slate-300 rounded bg-white text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all">
+                [ngClass]="employeeForm.get('roles')?.invalid && employeeForm.get('roles')?.touched ? 'border-rose-400' : 'border-slate-300'"
+                class="w-full h-10 px-3 flex items-center justify-between border rounded bg-white text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all">
                 <span [class.text-slate-400]="!employeeForm.get('roles')?.value?.length" class="truncate">
                   {{ employeeForm.get('roles')?.value?.length ? employeeForm.get('roles')?.value?.length + ' seleccionados' : 'Seleccionar roles' }}
                 </span>
                 <i class="pi pi-chevron-down text-[10px] text-slate-400"></i>
               </button>
-              <div *ngIf="openDropdown() === 'roles'" 
+              <div *ngIf="openDropdown() === 'roles'"
                 class="absolute z-[110] top-full left-0 w-full mt-1 bg-white border border-slate-200 shadow-xl rounded-lg overflow-hidden animate-in fade-in zoom-in-95 duration-100">
                 <div class="p-2 border-b border-slate-100 bg-slate-50">
                   <div class="relative">
@@ -175,7 +198,7 @@
                   </div>
                 </div>
                 <div class="max-h-48 overflow-y-auto p-1">
-                  <label *ngFor="let r of getFilteredOptions(roles)" 
+                  <label *ngFor="let r of getFilteredOptions(roles)"
                     class="flex items-center gap-3 px-3 py-2 hover:bg-blue-50 rounded cursor-pointer transition-colors group">
                     <input type="checkbox" [checked]="isSelected('roles', r.value)" (change)="toggleSelection('roles', r.value)"
                       class="w-3.5 h-3.5 text-blue-600 border-slate-300 rounded focus:ring-blue-500">
@@ -184,9 +207,13 @@
                   <p *ngIf="!getFilteredOptions(roles).length" class="text-[10px] text-slate-400 italic text-center py-4">Sin resultados</p>
                 </div>
               </div>
+              <p *ngIf="employeeForm.get('roles')?.invalid && employeeForm.get('roles')?.touched" class="text-[11px] text-rose-500 ml-0.5">
+                Selecciona al menos un rol de acceso
+              </p>
             </div>
+
             <div class="flex flex-col gap-1.5 relative">
-              <label class="text-xs font-semibold text-slate-700 ml-0.5">Cargos / Tipos de Empleado <span class="text-rose-500">*</span></label>
+              <label class="text-xs font-semibold text-slate-700 ml-0.5">Cargos / Tipos de Empleado</label>
               <button type="button" (click)="toggleDropdown('tipos', $event)"
                 class="w-full h-10 px-3 flex items-center justify-between border border-slate-300 rounded bg-white text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all">
                 <span [class.text-slate-400]="!employeeForm.get('tiposEmpleado')?.value?.length" class="truncate">
@@ -194,7 +221,7 @@
                 </span>
                 <i class="pi pi-chevron-down text-[10px] text-slate-400"></i>
               </button>
-              <div *ngIf="openDropdown() === 'tipos'" 
+              <div *ngIf="openDropdown() === 'tipos'"
                 class="absolute z-[110] top-full left-0 w-full mt-1 bg-white border border-slate-200 shadow-xl rounded-lg overflow-hidden animate-in fade-in zoom-in-95 duration-100">
                 <div class="p-2 border-b border-slate-100 bg-slate-50">
                   <div class="relative">
@@ -204,7 +231,7 @@
                   </div>
                 </div>
                 <div class="max-h-48 overflow-y-auto p-1">
-                  <label *ngFor="let te of getFilteredOptions(tiposEmpleadoList())" 
+                  <label *ngFor="let te of getFilteredOptions(tiposEmpleadoList())"
                     class="flex items-center gap-3 px-3 py-2 hover:bg-blue-50 rounded cursor-pointer transition-colors group">
                     <input type="checkbox" [checked]="isSelected('tiposEmpleado', te.value)" (change)="toggleSelection('tiposEmpleado', te.value)"
                       class="w-3.5 h-3.5 text-blue-600 border-slate-300 rounded focus:ring-blue-500">
@@ -218,22 +245,48 @@
             <div class="flex flex-col gap-1">
               <label class="text-xs font-semibold text-slate-700 ml-0.5">Correo Corporativo <span class="text-rose-500">*</span></label>
               <input type="email" formControlName="email" placeholder="empleado@vargasvet.com"
-                class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all font-bold" />
+                [ngClass]="employeeForm.get('email')?.invalid && employeeForm.get('email')?.touched ? 'border-rose-400' : 'border-slate-300'"
+                class="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all font-bold" />
+              <p *ngIf="employeeForm.get('email')?.invalid && employeeForm.get('email')?.touched" class="text-[11px] text-rose-500 ml-0.5">
+                <ng-container *ngIf="employeeForm.get('email')?.errors?.['required']">El correo es requerido</ng-container>
+                <ng-container *ngIf="employeeForm.get('email')?.errors?.['email']">Ingresa un correo electrónico válido (ej: nombre&#64;dominio.com)</ng-container>
+              </p>
             </div>
 
             <div class="flex flex-col gap-1">
               <label class="text-xs font-semibold text-slate-700 ml-0.5">Teléfono de Contacto <span class="text-rose-500">*</span></label>
               <input type="text" formControlName="telefono" placeholder="Ej: 987654321"
-                class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all font-bold" />
+                [ngClass]="employeeForm.get('telefono')?.invalid && employeeForm.get('telefono')?.touched ? 'border-rose-400' : 'border-slate-300'"
+                class="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all font-bold" />
+              <p *ngIf="employeeForm.get('telefono')?.invalid && employeeForm.get('telefono')?.touched" class="text-[11px] text-rose-500 ml-0.5">
+                <ng-container *ngIf="employeeForm.get('telefono')?.errors?.['required']">El teléfono es requerido</ng-container>
+                <ng-container *ngIf="employeeForm.get('telefono')?.errors?.['pattern']">El teléfono debe tener exactamente 9 dígitos</ng-container>
+              </p>
             </div>
+
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-semibold text-slate-700 ml-0.5">Dirección <span class="text-rose-500">*</span></label>
+              <input type="text" formControlName="direccion" placeholder="Ej: Av. Los Pinos 123"
+                [ngClass]="employeeForm.get('direccion')?.invalid && employeeForm.get('direccion')?.touched ? 'border-rose-400' : 'border-slate-300'"
+                class="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+              <p *ngIf="employeeForm.get('direccion')?.invalid && employeeForm.get('direccion')?.touched" class="text-[11px] text-rose-500 ml-0.5">
+                La dirección es requerida
+              </p>
+            </div>
+
           </div>
+
           <div *ngIf="employeeForm.get('roles')?.value?.includes('ROLE_VETERINARIO')" class="grid grid-cols-1 sm:grid-cols-2 gap-6 animate-in slide-in-from-top-2 pt-2">
             <div class="flex flex-col gap-1">
               <label class="text-xs font-semibold text-slate-700 ml-0.5">Registro de Colegiatura <span class="text-rose-500">*</span></label>
               <input type="text" formControlName="numeroColegiatura" placeholder="Nro de Colegiatura"
-                class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all font-bold" />
+                [ngClass]="employeeForm.get('numeroColegiatura')?.invalid && employeeForm.get('numeroColegiatura')?.touched ? 'border-rose-400' : 'border-slate-300'"
+                class="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all font-bold" />
+              <p *ngIf="employeeForm.get('numeroColegiatura')?.invalid && employeeForm.get('numeroColegiatura')?.touched" class="text-[11px] text-rose-500 ml-0.5">
+                El número de colegiatura es requerido para veterinarios
+              </p>
             </div>
-            
+
             <div class="flex flex-col gap-1.5 relative">
               <label class="text-xs font-semibold text-slate-700 ml-0.5">Especialidades Médicas</label>
               <button type="button" (click)="toggleDropdown('especialidades', $event)"
@@ -243,7 +296,7 @@
                 </span>
                 <i class="pi pi-chevron-down text-[10px] text-slate-400"></i>
               </button>
-              <div *ngIf="openDropdown() === 'especialidades'" 
+              <div *ngIf="openDropdown() === 'especialidades'"
                 class="absolute z-[110] top-full left-0 w-full mt-1 bg-white border border-slate-200 shadow-xl rounded-lg overflow-hidden animate-in fade-in zoom-in-95 duration-100">
                 <div class="p-2 border-b border-slate-100 bg-slate-50">
                   <div class="relative">
@@ -253,7 +306,7 @@
                   </div>
                 </div>
                 <div class="max-h-48 overflow-y-auto p-1">
-                  <label *ngFor="let esp of getFilteredOptions(especialidadesList())" 
+                  <label *ngFor="let esp of getFilteredOptions(especialidadesList())"
                     class="flex items-center gap-3 px-3 py-2 hover:bg-blue-50 rounded cursor-pointer transition-colors group">
                     <input type="checkbox" [checked]="isSelected('especialidades', esp.value)" (change)="toggleSelection('especialidades', esp.value)"
                       class="w-3.5 h-3.5 text-blue-600 border-slate-300 rounded focus:ring-blue-500">
@@ -265,14 +318,16 @@
             </div>
           </div>
         </div>
+
+        <!-- 3. Horario -->
         <div class="space-y-4">
           <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
             <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
             <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">3. Régimen de Disponibilidad Horaria</h3>
           </div>
-          
+
           <div class="grid grid-cols-1 gap-2">
-            <div *ngFor="let h of horarios; let i = index" 
+            <div *ngFor="let h of horarios; let i = index"
               class="grid grid-cols-[1fr_2fr] items-center p-2 rounded border border-transparent transition-colors"
               [class.bg-slate-50]="h.activo" [class.border-slate-100]="h.activo">
               <div class="flex items-center gap-3">

@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators, AbstractControl } from '@angular/forms';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
@@ -123,19 +123,19 @@ export class EmployeeComponent implements OnInit {
   ];
 
   horarios: { diaSemana: string; activo: boolean; horaInicio: string; horaFin: string }[] =
-    this.diasSemana.map(d => ({ diaSemana: d.key, activo: false, horaInicio: '08:00', horaFin: '17:00' }));
+    this.diasSemana.map((d, i) => ({ diaSemana: d.key, activo: false, horaInicio: i % 2 === 0 ? '08:00' : '13:00', horaFin: i % 2 === 0 ? '13:00' : '18:00' }));
 
 
   employeeForm: FormGroup = this.fb.group({
     id: [null],
-    nombre: ['', [Validators.required]],
-    apellido: ['', [Validators.required]],
+    nombre: ['', [Validators.required, Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/)]],
+    apellido: ['', [Validators.required, Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/)]],
     email: ['', [Validators.required, Validators.email]],
-    numeroDocumento: ['', [Validators.required]],
+    numeroDocumento: ['', [Validators.required, Validators.pattern(/^\d{8}$/)]],
     tipoDocumento: ['DNI', [Validators.required]],
-    telefono: ['', [Validators.required]],
+    telefono: ['', [Validators.required, Validators.pattern(/^\d{9}$/)]],
     direccion: ['', [Validators.required]],
-    roles: [[], [Validators.required]],
+    roles: [[], [(c: AbstractControl) => c.value?.length ? null : { required: true }]],
     companyId: [null],
     genero: ['MASCULINO', [Validators.required]],
     observaciones: [''],
@@ -165,6 +165,19 @@ export class EmployeeComponent implements OnInit {
       collegiatura?.updateValueAndValidity();
     });
 
+    this.employeeForm.get('tipoDocumento')?.valueChanges.subscribe(tipo => {
+      const doc = this.employeeForm.get('numeroDocumento');
+      if (tipo === 'DNI') {
+        doc?.setValidators([Validators.required, Validators.pattern(/^\d{8}$/)]);
+      } else if (tipo === 'PASAPORTE') {
+        doc?.setValidators([Validators.required, Validators.pattern(/^[a-zA-Z]\d{8}$/)]);
+      } else {
+        doc?.setValidators([Validators.required, Validators.pattern(/^\d{9}$/)]);
+      }
+      doc?.reset('');
+      doc?.updateValueAndValidity();
+    });
+
     this.employeeForm.get('companyId')?.valueChanges.subscribe(companyId => {
       if (!companyId) {
         this.especialidadesList.set([]);
@@ -181,6 +194,13 @@ export class EmployeeComponent implements OnInit {
     if (this.openDropdown()) {
       this.openDropdown.set(null);
     }
+  }
+
+  get documentoErrorMsg(): string {
+    const tipo = this.employeeForm.get('tipoDocumento')?.value;
+    if (tipo === 'PASAPORTE') return 'El pasaporte debe comenzar con una letra seguida de 8 números (ej: A12345678)';
+    if (tipo === 'CARNET_EXTRANJERIA') return 'El carnet de extranjería debe tener exactamente 9 dígitos';
+    return 'El DNI debe tener exactamente 8 dígitos';
   }
 
   loadEmployees(event: any = { first: 0, rows: 10 }) {
@@ -235,7 +255,7 @@ export class EmployeeComponent implements OnInit {
       tiposEmpleado: [],
       companyId: this.activeCompanyId
     });
-    this.horarios = this.diasSemana.map(d => ({ diaSemana: d.key, activo: false, horaInicio: '08:00', horaFin: '17:00' }));
+    this.horarios = this.diasSemana.map((d, i) => ({ diaSemana: d.key, activo: false, horaInicio: i % 2 === 0 ? '08:00' : '13:00', horaFin: i % 2 === 0 ? '13:00' : '18:00' }));
     this.isEdit.set(false);
     this.displayModal.set(true);
   }

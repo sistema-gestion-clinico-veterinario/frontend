@@ -1,3 +1,5 @@
+import { PrescripcionResponse } from './prescripcion-response';
+
 export interface ConsultaResponse {
   id: number;
   version: number;
@@ -40,4 +42,5 @@ export interface ConsultaResponse {
   grupoSanguineo?: string;
   fechaCierre?: string;
   cerradoPor?: string;
+  prescripciones?: PrescripcionResponse[];
 }

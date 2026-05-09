@@ -222,6 +222,13 @@
                     </button>
                   </ng-container>
 
+                  <ng-container *ngIf="canCobrar(cita)">
+                    <button (click)="abrirCaja(cita)" pTooltip="Cobrar"
+                      class="w-8 h-8 flex items-center justify-center rounded-lg bg-green-50 text-green-600 hover:bg-green-100 hover:text-green-700 transition-colors">
+                      <i class="pi pi-wallet text-xs"></i>
+                    </button>
+                  </ng-container>
+
                   <ng-container *ngIf="cita.estado === 'CANCELADA' && canManage()">
                     <button (click)="eliminarCita(cita)" pTooltip="Eliminar permanentemente"
                       class="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 transition-colors">
@@ -573,8 +580,10 @@
               <input type="datetime-local" formControlName="fechaHoraInicio"
                 class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
               <p *ngIf="citaForm.get('fechaHoraInicio')?.hasError('fuera-de-horario')"
-                class="text-[10px] text-rose-600 font-bold mt-1 uppercase italic">Aviso: Fuera del horario de atención
-                establecido.</p>
+                class="text-[10px] text-rose-600 font-semibold mt-1 flex items-center gap-1">
+                <i class="pi pi-exclamation-circle text-[10px]"></i>
+                {{ mensajeHorario }}
+              </p>
             </div>
 
             <div class="flex flex-col gap-1">
@@ -729,7 +738,136 @@
   </div>
 </div>
 
-<p-toast position="bottom-right"></p-toast>
+<div *ngIf="displayCajaModal()"
+  class="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm">
+  <div class="bg-white w-full max-w-md rounded-xl shadow-xl overflow-hidden border border-slate-200">
+
+    <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+          <i class="pi pi-wallet text-lg"></i>
+        </div>
+        <div>
+          <h2 class="text-lg font-bold text-slate-900">Registrar Cobro</h2>
+          <p class="text-xs text-slate-500">{{ citaParaPago()?.fechaHoraInicio | date:'dd/MM/yyyy — HH:mm' }}</p>
+        </div>
+      </div>
+      <button (click)="displayCajaModal.set(false)"
+        class="text-slate-400 hover:text-slate-600 p-1 text-xl leading-none">
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+
+    <div class="p-6 space-y-4">
+
+      <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-100">
+        <div class="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center text-[#0066AA] font-bold text-sm shrink-0">
+          {{ citaParaPago()?.mascotaNombre?.charAt(0) }}
+        </div>
+        <div class="min-w-0">
+          <p class="text-sm font-bold text-slate-800 truncate">{{ citaParaPago()?.mascotaNombre }}</p>
+          <p class="text-xs text-slate-400 truncate">{{ citaParaPago()?.apoderadoNombre }} · {{ citaParaPago()?.veterinarioNombre }}</p>
+        </div>
+      </div>
+
+      <div class="border border-slate-200 rounded-lg overflow-hidden">
+        <div class="px-4 py-3 flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <p class="text-sm font-semibold text-slate-800">{{ citaParaPago()?.servicioNombre }}</p>
+            <p class="text-xs text-slate-400 mt-0.5 truncate">{{ citaParaPago()?.motivoCita }}</p>
+          </div>
+          <span class="text-sm font-bold text-slate-700 shrink-0 mt-0.5">S/ {{ totalCita() | number:'1.2-2' }}</span>
+        </div>
+        <div class="px-4 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+          <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Total a cobrar</span>
+          <span class="text-2xl font-black text-[#0066AA]">S/ {{ totalCita() | number:'1.2-2' }}</span>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2">
+        <button (click)="metodoPago.set('EFECTIVO')"
+          [class]="metodoPago() === 'EFECTIVO' ? 'border-[#0066AA] bg-blue-50 text-[#0066AA]' : 'border-slate-200 text-slate-400 hover:border-slate-300 hover:text-slate-600'"
+          class="flex items-center justify-center gap-2 py-2.5 border-2 rounded-lg text-sm font-bold transition-all">
+          <i class="pi pi-money-bill text-base"></i>
+          Efectivo
+        </button>
+        <button (click)="metodoPago.set('YAPE')"
+          [class]="metodoPago() === 'YAPE' ? 'border-purple-500 bg-purple-50 text-purple-600' : 'border-slate-200 text-slate-400 hover:border-slate-300 hover:text-slate-600'"
+          class="flex items-center justify-center gap-2 py-2.5 border-2 rounded-lg text-sm font-bold transition-all">
+          <i class="pi pi-mobile text-base"></i>
+          Yape
+        </button>
+      </div>
+
+      <ng-container *ngIf="metodoPago() === 'EFECTIVO'">
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs font-semibold text-slate-500">Monto recibido</label>
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400 pointer-events-none">S/</span>
+            <input type="number" step="0.10" min="0"
+              [ngModel]="montoRecibido()" (ngModelChange)="montoRecibido.set($event)"
+              placeholder="0.00"
+              class="w-full pl-9 pr-3 py-2.5 border border-slate-300 rounded-lg text-sm font-semibold text-slate-800 focus:ring-2 focus:ring-blue-500/20 focus:border-[#0066AA] outline-none transition-all" />
+          </div>
+          <p class="text-[11px] text-slate-400">Mínimo aceptado: S/ {{ (totalCita() / 2) | number:'1.2-2' }} (50% del total)</p>
+        </div>
+
+        <ng-container *ngIf="(montoRecibido() ?? 0) > 0">
+
+          <div *ngIf="(montoRecibido() ?? 0) >= totalCita()"
+            class="flex items-center justify-between px-4 py-3 bg-emerald-50 border border-emerald-100 rounded-lg">
+            <div class="flex items-center gap-2 text-emerald-700">
+              <i class="pi pi-check-circle text-sm"></i>
+              <span class="text-sm font-semibold">Pago completo — Vuelto</span>
+            </div>
+            <span class="text-lg font-black text-emerald-600">S/ {{ cambio() | number:'1.2-2' }}</span>
+          </div>
+
+          <div *ngIf="(montoRecibido() ?? 0) < totalCita() && esPagoValido()"
+            class="flex items-center justify-between px-4 py-3 bg-amber-50 border border-amber-100 rounded-lg">
+            <div class="flex items-center gap-2 text-amber-700">
+              <i class="pi pi-clock text-sm"></i>
+              <span class="text-sm font-semibold">Adelanto — Saldo pendiente</span>
+            </div>
+            <span class="text-lg font-black text-amber-600">S/ {{ saldoPendiente() | number:'1.2-2' }}</span>
+          </div>
+
+          <div *ngIf="!esPagoValido()"
+            class="flex items-start gap-2.5 px-4 py-3 bg-rose-50 border border-rose-100 rounded-lg">
+            <i class="pi pi-exclamation-triangle text-sm text-rose-500 shrink-0 mt-0.5"></i>
+            <p class="text-xs font-semibold text-rose-600 leading-snug">
+              Monto insuficiente. El mínimo aceptado es S/ {{ (totalCita() / 2) | number:'1.2-2' }}
+            </p>
+          </div>
+
+        </ng-container>
+      </ng-container>
+
+      <div *ngIf="metodoPago() === 'YAPE'"
+        class="flex items-center gap-3 p-3 bg-purple-50 border border-purple-100 rounded-lg">
+        <i class="pi pi-mobile text-lg text-purple-500 shrink-0"></i>
+        <div>
+          <p class="text-sm font-semibold text-purple-700">Pago con Yape</p>
+          <p class="text-xs text-purple-400 mt-0.5">Confirmar una vez el cliente haya realizado la transferencia</p>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex gap-3">
+      <button (click)="displayCajaModal.set(false)"
+        class="flex-1 px-4 py-2 text-sm font-medium text-slate-700 bg-slate-300 hover:bg-slate-400 rounded-lg transition-colors">
+        Cancelar
+      </button>
+      <button (click)="confirmarPago()" [disabled]="loadingStore.isLoading()" style="background-color: #0066aa"
+        class="flex-1 px-4 py-2 text-sm font-medium text-white hover:opacity-90 rounded-lg disabled:opacity-50 flex items-center justify-center gap-2 transition-colors">
+        <i *ngIf="loadingStore.isLoading()" class="pi pi-refresh pi-spin"></i>
+        {{ loadingStore.isLoading() ? 'Procesando...' : 'Confirmar pago' }}
+      </button>
+    </div>
+
+  </div>
+</div>
 
 <p-toast position="bottom-right"></p-toast>
 <p-confirmDialog></p-confirmDialog>
