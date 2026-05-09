@@ -1,0 +1,88 @@
+<div *ngIf="previewArchivo"
+  class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+  (click)="cerrar.emit()">
+  <div class="bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+    [style.width]="previewTipo === 'dcm' ? '600px' : 'calc(100vw - 48px)'"
+    [style.height]="previewTipo === 'dcm' ? '600px' : 'calc(100vh - 48px)'"
+    [style.max-width]="'1200px'"
+    (click)="$event.stopPropagation()">
+
+    <div class="flex items-center justify-between px-5 py-3 border-b border-slate-100 bg-slate-50 rounded-t-2xl flex-shrink-0">
+      <div class="flex items-center gap-3 min-w-0">
+        <i class="pi pi-eye text-[#0066AA] text-sm"></i>
+        <p class="text-sm font-bold text-slate-800 truncate">{{ previewArchivo.nombre }}</p>
+        <span class="text-[10px] text-slate-400 flex-shrink-0">{{ formatBytes(previewArchivo.tamanioBytes) }}</span>
+      </div>
+      <div class="flex items-center gap-2 flex-shrink-0 ml-4">
+        <button *ngIf="previewTipo !== 'dcm'" type="button" (click)="descargar.emit(previewArchivo)"
+          class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-bold text-slate-600 hover:text-[#0066AA] hover:border-[#0066AA] transition-all">
+          <i class="pi pi-download text-[10px]"></i> Descargar
+        </button>
+        <button type="button" (click)="cerrar.emit()"
+          class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200 transition-all">
+          <i class="pi pi-times text-sm"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="flex-1 overflow-hidden flex items-center justify-center bg-slate-100 min-h-0">
+
+      <ng-container *ngIf="previewTipo === 'imagen'">
+        <img [src]="previewUrl" [alt]="previewArchivo.nombre"
+          class="max-w-full max-h-full object-contain p-4" />
+      </ng-container>
+
+      <ng-container *ngIf="previewTipo === 'pdf'">
+        <iframe [src]="previewUrl" class="w-full h-full border-none"></iframe>
+      </ng-container>
+
+      <ng-container *ngIf="previewTipo === 'dcm'">
+        <div class="flex flex-col items-center gap-3 px-8 py-8 text-center">
+          <div class="w-12 h-12 rounded-xl bg-violet-100 flex items-center justify-center">
+            <i class="pi pi-eye text-violet-500 text-xl"></i>
+          </div>
+          <p class="text-sm font-bold text-slate-700">Archivo DICOM</p>
+          <p class="text-xs text-slate-500 leading-relaxed">
+            Los archivos <strong>.dcm</strong> requieren un visor especializado
+            como <strong>RadiAnt</strong>, <strong>Horos</strong> u <strong>OsiriX</strong>.
+          </p>
+          <button type="button" (click)="descargar.emit(previewArchivo); cerrar.emit()"
+            class="mt-1 flex items-center gap-2 px-4 py-2 rounded-xl bg-violet-600 text-white text-sm font-bold hover:bg-violet-700 transition-all">
+            <i class="pi pi-download"></i> Descargar archivo
+          </button>
+        </div>
+      </ng-container>
+
+    </div>
+  </div>
+</div>
+
+<div *ngIf="showConfirmEliminar"
+  class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+    <div class="px-6 py-5 border-b border-slate-100 bg-slate-50 rounded-t-2xl flex items-center gap-4">
+      <div class="w-10 h-10 rounded-xl bg-rose-100 flex items-center justify-center">
+        <i class="pi pi-trash text-rose-500 text-lg"></i>
+      </div>
+      <div>
+        <h2 class="text-base font-extrabold text-slate-800">Eliminar examen</h2>
+        <p class="text-xs text-slate-400 mt-0.5">Esta acción eliminará el archivo del servidor</p>
+      </div>
+    </div>
+    <div class="px-6 py-5">
+      <p class="text-sm text-slate-600">
+        ¿Eliminar <strong class="text-slate-900">{{ archivoEliminando?.nombre }}</strong>?
+      </p>
+    </div>
+    <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3 rounded-b-2xl">
+      <button type="button" (click)="cancelarEliminar.emit()"
+        class="px-4 py-2 rounded-xl text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-100 transition-all">
+        Cancelar
+      </button>
+      <button type="button" (click)="confirmarEliminar.emit()"
+        class="px-5 py-2 rounded-xl text-sm font-bold text-white bg-rose-500 hover:bg-rose-600 transition-all">
+        <i class="pi pi-trash mr-1.5"></i> Eliminar
+      </button>
+    </div>
+  </div>
+</div>

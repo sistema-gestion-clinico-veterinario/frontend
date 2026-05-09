@@ -67,7 +67,7 @@ export const routes: Routes = [
           },
           {
             path: 'consulta/:consultaId',
-            loadComponent: () => import('./pages/historias-clinicas/form-hc/consulta-form.component').then((m) => m.ConsultaFormComponent)
+            loadComponent: () => import('./pages/historias-clinicas/consulta/consulta-form.component').then((m) => m.ConsultaFormComponent)
           }
         ]
       },

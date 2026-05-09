@@ -1,94 +1,206 @@
-<div class="p-6">
-  <div class="flex items-center justify-between mb-6">
-    <div>
-      <h1 class="text-2xl font-extrabold text-slate-900">Historias Clínicas</h1>
-      <p class="text-sm text-slate-500">Consulta y gestiona los expedientes clínicos de los pacientes</p>
+<div class="p-4 sm:p-6 lg:p-8 min-h-screen bg-slate-50 font-['Barlow']">
+
+  <!-- Encabezado -->
+  <div class="mb-5 sm:mb-8">
+    <div class="flex items-center justify-between gap-3 mb-1.5">
+      <div class="min-w-0">
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight leading-tight">
+          Historias Clínicas
+        </h1>
+        <p class="text-slate-500 font-medium flex items-center gap-2 text-sm mt-1">
+          <span class="w-2 h-2 rounded-full bg-[#0066AA] shrink-0"></span>
+          Consulta y gestiona los expedientes clínicos de los pacientes
+        </p>
+      </div>
     </div>
   </div>
 
-  <div class="bg-white border border-slate-200 rounded-2xl p-5 mb-6 shadow-sm">
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <div class="flex flex-col gap-1.5">
-        <label class="text-xs font-bold text-slate-600">Número de HC</label>
-        <span class="p-input-icon-left w-full">
-          <i class="pi pi-search"></i>
-          <input pInputText type="text" [(ngModel)]="filters.numeroHc" 
-            (keyup.enter)="cargarHistorias()" placeholder="Buscar por código..." class="w-full" />
-        </span>
+  <!-- Filtros -->
+  <div class="mb-5 bg-white border border-slate-200 rounded-xl p-4">
+
+    <!-- Fila 1: texto -->
+    <div class="flex flex-col sm:flex-row gap-3">
+
+      <div class="flex-1 relative">
+        <i class="pi pi-hashtag absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300 text-sm pointer-events-none"></i>
+        <input
+          type="text"
+          [(ngModel)]="searchNumeroHc"
+          (keyup.enter)="onFilterChange()"
+          placeholder="Código HC..."
+          class="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 text-sm font-medium text-slate-700 placeholder:text-slate-400 focus:outline-none focus:border-[#0066AA]"
+        />
       </div>
-      <div class="flex flex-col gap-1.5">
-        <label class="text-xs font-bold text-slate-600">Mascota</label>
-        <span class="p-input-icon-left w-full">
-          <i class="pi pi-search"></i>
-          <input pInputText type="text" [(ngModel)]="filters.nombrePaciente" 
-            (keyup.enter)="cargarHistorias()" placeholder="Nombre del paciente..." class="w-full" />
-        </span>
+
+      <div class="flex-1 relative">
+        <i class="pi pi-heart absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300 text-sm pointer-events-none"></i>
+        <input
+          type="text"
+          [(ngModel)]="searchNombrePaciente"
+          (keyup.enter)="onFilterChange()"
+          placeholder="Nombre del paciente..."
+          class="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 text-sm font-medium text-slate-700 placeholder:text-slate-400 focus:outline-none focus:border-[#0066AA]"
+        />
       </div>
-      <div class="flex flex-col gap-1.5">
-        <label class="text-xs font-bold text-slate-600">Propietario</label>
-        <div class="flex gap-2">
-          <span class="p-input-icon-left flex-1">
-            <i class="pi pi-user"></i>
-            <input pInputText type="text" [(ngModel)]="filters.nombrePropietario" 
-              (keyup.enter)="cargarHistorias()" placeholder="Nombre del dueño..." class="w-full" />
-          </span>
-          <button pButton icon="pi pi-filter" class="p-button-outlined" (click)="cargarHistorias()"></button>
+
+      <div class="flex-1 relative">
+        <i class="pi pi-user absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300 text-sm pointer-events-none"></i>
+        <input
+          type="text"
+          [(ngModel)]="searchPropietario"
+          (keyup.enter)="onFilterChange()"
+          placeholder="Nombre del propietario..."
+          class="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 text-sm font-medium text-slate-700 placeholder:text-slate-400 focus:outline-none focus:border-[#0066AA]"
+        />
+      </div>
+
+    </div>
+
+    <!-- Fila 2: fechas + acciones -->
+    <div class="flex flex-col sm:flex-row gap-3 mt-3">
+
+      <div class="flex-1 flex flex-col gap-1">
+        <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider pl-1">
+          <i class="pi pi-calendar mr-1"></i>Última atención desde
+        </span>
+        <div class="relative">
+          <input
+            type="date"
+            [(ngModel)]="searchFechaDesde"
+            (change)="onFilterChange()"
+            class="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl px-4 text-sm font-medium text-slate-700 focus:outline-none focus:border-[#0066AA]"
+          />
         </div>
       </div>
-    </div>
-  </div>
-  <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-    <p-table [value]="historias()" [lazy]="true" (onLazyLoad)="cargarHistorias($event)"
-      [paginator]="true" [rows]="10" [totalRecords]="totalRecords()"
-      [responsiveLayout]="'scroll'" class="p-datatable-sm">
-      
-      <ng-template pTemplate="header">
-        <tr>
-          <th class="bg-slate-50 text-slate-600 font-bold px-5 py-4">CÓDIGO HC</th>
-          <th class="bg-slate-50 text-slate-600 font-bold px-5 py-4">PACIENTE</th>
-          <th class="bg-slate-50 text-slate-600 font-bold px-5 py-4">PROPIETARIO</th>
-          <th class="bg-slate-50 text-slate-600 font-bold px-5 py-4">ÚLTIMA ATENCIÓN</th>
-          <th class="bg-slate-50 text-slate-600 font-bold px-5 py-4 text-center">ESTADO</th>
-          <th class="bg-slate-50 text-slate-600 font-bold px-5 py-4"></th>
-        </tr>
-      </ng-template>
 
-      <ng-template pTemplate="body" let-hc>
-        <tr class="hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-0">
+      <div class="flex-1 flex flex-col gap-1">
+        <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider pl-1">
+          <i class="pi pi-calendar mr-1"></i>Última atención hasta
+        </span>
+        <div class="relative">
+          <input
+            type="date"
+            [(ngModel)]="searchFechaHasta"
+            (change)="onFilterChange()"
+            [min]="searchFechaDesde"
+            class="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl px-4 text-sm font-medium text-slate-700 focus:outline-none focus:border-[#0066AA]"
+          />
+        </div>
+      </div>
+
+      <div class="flex gap-3 sm:w-auto self-end">
+        <button (click)="onFilterChange()"
+          class="flex-1 sm:flex-none flex items-center justify-center gap-2 border border-slate-200 bg-slate-50 text-slate-500 text-sm font-medium px-4 h-11 rounded-xl hover:bg-slate-100 transition-colors">
+          <i class="pi pi-search text-xs"></i>
+          <span class="sm:hidden">Buscar</span>
+        </button>
+
+        <button (click)="resetFiltros()"
+          class="flex-1 sm:flex-none flex items-center justify-center gap-2 border border-slate-200 bg-slate-50 text-slate-400 text-sm font-medium px-4 h-11 rounded-xl hover:bg-slate-100 transition-colors"
+          title="Limpiar filtros">
+          <i class="pi pi-filter-slash text-xs"></i>
+          <span class="sm:hidden">Limpiar</span>
+        </button>
+      </div>
+
+    </div>
+
+    <div *ngIf="totalRecords() > 0"
+      class="mt-3 pt-3 border-t border-slate-100 flex items-center gap-1.5 text-xs text-slate-400 font-medium">
+      <i class="pi pi-info-circle text-slate-300"></i>
+      <span>{{ totalRecords() }} historia{{ totalRecords() !== 1 ? 's' : '' }} clínica{{ totalRecords() !== 1 ? 's' : '' }} encontrada{{ totalRecords() !== 1 ? 's' : '' }}</span>
+    </div>
+
+  </div>
+
+  <!-- Estado vacío -->
+  <div *ngIf="historias().length === 0 && !loadingStore.isLoading()"
+    class="bg-white border border-slate-200 rounded-xl py-16 text-center px-6">
+    <i class="pi pi-folder-open text-3xl text-slate-200 block mb-3"></i>
+    <p class="text-sm font-bold text-slate-400 mb-1">No se encontraron historias clínicas</p>
+    <p class="text-xs text-slate-300">Prueba ajustando los filtros o atiende una cita para generar una HC.</p>
+  </div>
+
+  <!-- Tabla -->
+  <div *ngIf="historias().length > 0"
+    class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-slate-100">
+          <th class="bg-slate-50 text-[10px] font-extrabold text-slate-400 uppercase tracking-wider px-5 py-3 text-left">Código HC</th>
+          <th class="bg-slate-50 text-[10px] font-extrabold text-slate-400 uppercase tracking-wider px-5 py-3 text-left">Paciente</th>
+          <th class="bg-slate-50 text-[10px] font-extrabold text-slate-400 uppercase tracking-wider px-5 py-3 text-left hidden md:table-cell">Propietario</th>
+          <th class="bg-slate-50 text-[10px] font-extrabold text-slate-400 uppercase tracking-wider px-5 py-3 text-left hidden lg:table-cell">Última atención</th>
+          <th class="bg-slate-50 text-[10px] font-extrabold text-slate-400 uppercase tracking-wider px-5 py-3 text-center">Estado</th>
+          <th class="bg-slate-50 px-5 py-3"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let hc of historias()"
+          class="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors">
+
           <td class="px-5 py-4">
-            <span class="font-mono text-xs font-bold text-[#0066AA]">{{ hc.numeroHc }}</span>
+            <span class="font-mono text-xs font-extrabold text-[#0066AA] bg-blue-50 px-2.5 py-1 rounded-lg">
+              {{ hc.numeroHc }}
+            </span>
           </td>
+
           <td class="px-5 py-4">
             <div class="flex flex-col">
               <span class="text-sm font-bold text-slate-800">{{ hc.mascotaNombre }}</span>
-              <span class="text-[10px] text-slate-400 uppercase font-medium">{{ hc.especie }} · {{ hc.raza }}</span>
+              <span class="text-[10px] text-slate-400 uppercase font-semibold tracking-wide mt-0.5">
+                {{ hc.especie }} · {{ hc.raza }}
+              </span>
             </div>
           </td>
-          <td class="px-5 py-4">
-            <span class="text-sm text-slate-600">{{ hc.propietarioNombre }}</span>
-          </td>
-          <td class="px-5 py-4">
-            <span class="text-xs text-slate-500">{{ hc.fechaUltimaConsulta ? (hc.fechaUltimaConsulta | date:'dd MMM yyyy') : 'Sin consultas' }}</span>
-          </td>
-          <td class="px-5 py-4 text-center">
-            <p-tag [value]="hc.activa ? 'ACTIVA' : 'INACTIVA'" 
-              [severity]="hc.activa ? 'success' : 'danger'" [rounded]="true"></p-tag>
-          </td>
-          <td class="px-5 py-4 text-right">
-            <button pButton icon="pi pi-folder-open" label="Ver Historia" 
-              class="p-button-text p-button-sm font-bold" (click)="verDetalle(hc.mascotaId)"></button>
-          </td>
-        </tr>
-      </ng-template>
 
-      <ng-template pTemplate="emptymessage">
-        <tr>
-          <td colspan="6" class="py-20 text-center">
-            <i class="pi pi-folder-open text-4xl text-slate-200 block mb-4"></i>
-            <p class="text-slate-400 font-medium">No se encontraron historias clínicas con los filtros aplicados</p>
+          <td class="px-5 py-4 hidden md:table-cell">
+            <div class="flex items-center gap-2">
+              <i class="pi pi-user text-slate-300 text-xs shrink-0"></i>
+              <span class="text-sm text-slate-600 font-medium">{{ hc.propietarioNombre }}</span>
+            </div>
           </td>
+
+          <td class="px-5 py-4 hidden lg:table-cell">
+            <span *ngIf="hc.fechaUltimaConsulta" class="text-xs font-medium text-slate-500">
+              {{ hc.fechaUltimaConsulta | date:'dd MMM yyyy' }}
+            </span>
+            <span *ngIf="!hc.fechaUltimaConsulta"
+              class="text-xs text-slate-300 italic">Sin consultas</span>
+          </td>
+
+          <td class="px-5 py-4 text-center">
+            <span [class]="hc.activa
+                ? 'bg-emerald-50 text-emerald-700'
+                : 'bg-red-50 text-red-500'"
+              class="inline-flex items-center gap-1.5 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider">
+              <span [class]="hc.activa ? 'bg-emerald-500' : 'bg-red-400'"
+                class="w-1.5 h-1.5 rounded-full"></span>
+              {{ hc.activa ? 'Activa' : 'Inactiva' }}
+            </span>
+          </td>
+
+          <td class="px-5 py-4 text-right">
+            <button (click)="verDetalle(hc.mascotaId)"
+              class="flex items-center gap-1.5 px-4 h-8 rounded-lg bg-blue-50 text-[#0066AA] text-xs font-bold hover:bg-blue-100 transition-colors ml-auto">
+              <i class="pi pi-folder-open text-xs"></i>
+              Ver Historia
+            </button>
+          </td>
+
         </tr>
-      </ng-template>
-    </p-table>
+      </tbody>
+    </table>
+
+    <div *ngIf="totalRecords() > pageSize" class="border-t border-slate-100">
+      <p-paginator
+        [rows]="pageSize"
+        [totalRecords]="totalRecords()"
+        [first]="currentPage * pageSize"
+        (onPageChange)="onPageChange($event)"
+        styleClass="!border-none !bg-transparent !py-3">
+      </p-paginator>
+    </div>
   </div>
+
 </div>

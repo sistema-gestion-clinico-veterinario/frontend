@@ -1,4 +1,5 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -16,6 +17,10 @@ import { LoadingStore } from '../../../store/loading.store';
 import { ConsultaResponse } from '../../../models/response/consulta-response';
 import { PrescripcionResponse } from '../../../models/response/prescripcion-response';
 import { PrescripcionRequest } from '../../../models/request/prescripcion-request';
+import { ArchivoClinicoResponse } from '../../../models/response/archivo-clinico-response';
+import { RecetaModalsComponent } from '../form-hc/receta-modals/receta-modals.component';
+import { ArchivoModalsComponent } from '../form-hc/archivo-modals/archivo-modals.component';
+
 
 @Component({
   selector: 'app-consulta-form',
@@ -29,7 +34,9 @@ import { PrescripcionRequest } from '../../../models/request/prescripcion-reques
     TimelineModule,
     CardModule,
     DrawerModule,
-    BadgeModule
+    BadgeModule,
+    RecetaModalsComponent,
+    ArchivoModalsComponent
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './consulta-form.component.html'
@@ -41,15 +48,36 @@ export class ConsultaFormComponent implements OnInit {
   private readonly hcService   = inject(HistoriaClinicaService);
   private readonly msgService  = inject(MessageService);
   private readonly confirmSvc  = inject(ConfirmationService);
+  private readonly sanitizer   = inject(DomSanitizer);
   readonly loadingStore        = inject(LoadingStore);
 
   consulta   = signal<ConsultaResponse | null>(null);
   historia   = signal<any | null>(null); 
-  tabActiva  = signal<'signos' | 'clinico' | 'antecedentes' | 'historial' | 'recetas'>('signos');
+  tabActiva  = signal<'signos' | 'clinico' | 'antecedentes' | 'historial' | 'recetas' | 'examenes'>('signos');
   isCerrada  = signal<boolean>(false);
   consultaId = 0;
   displayDetalleHistorial = signal<boolean>(false);
   detalleSeleccionado      = signal<any | null>(null);
+
+  archivos           = signal<ArchivoClinicoResponse[]>([]);
+  archivoSubiendo    = signal<boolean>(false);
+  archivoPendiente   = signal<File | null>(null);
+  tipoSeleccionado   = signal<string>('LABORATORIO');
+  descripcionArchivo = signal<string>('');
+  archivoEliminando  = signal<ArchivoClinicoResponse | null>(null);
+  showConfirmEliminarArchivo = signal<boolean>(false);
+  previewArchivo     = signal<ArchivoClinicoResponse | null>(null);
+  previewUrl         = signal<SafeResourceUrl | string>('');
+  previewRawUrl      = signal<string>('');
+  previewTipo        = signal<'imagen' | 'pdf' | 'dcm' | null>(null);
+
+  readonly tiposArchivo = [
+    { label: 'Laboratorio',  value: 'LABORATORIO' },
+    { label: 'Radiografía',  value: 'RADIOGRAFIA' },
+    { label: 'Ecografía',    value: 'ECOGRAFIA'   },
+    { label: 'Imagen',       value: 'IMAGEN'      },
+    { label: 'Otro',         value: 'OTRO'        },
+  ];
 
   recetas            = signal<PrescripcionResponse[]>([]);
   showRecetaModal    = signal<boolean>(false);
@@ -125,6 +153,7 @@ export class ConsultaFormComponent implements OnInit {
           this.loadHistoria(res.data.mascotaId);
         }
         this.loadRecetas();
+        this.loadArchivos();
 
         this.form.patchValue({
           tipoConsulta:            res.data.tipoConsulta           ?? null,
@@ -168,6 +197,118 @@ export class ConsultaFormComponent implements OnInit {
     this.hcService.listarRecetas(this.consultaId).subscribe({
       next: (res) => this.recetas.set(res.data ?? [])
     });
+  }
+
+  loadArchivos() {
+    this.hcService.listarArchivos(this.consultaId).subscribe({
+      next: (res) => this.archivos.set(res.data ?? [])
+    });
+  }
+
+  onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files?.[0]) {
+      this.archivoPendiente.set(input.files[0]);
+    }
+    input.value = '';
+  }
+
+  subirArchivo() {
+    const file = this.archivoPendiente();
+    if (!file) return;
+    this.archivoSubiendo.set(true);
+    this.hcService.subirArchivo(this.consultaId, file, this.tipoSeleccionado(), this.descripcionArchivo() || undefined).subscribe({
+      next: () => {
+        this.msgService.add({ severity: 'success', summary: 'Examen', detail: 'Archivo subido correctamente' });
+        this.archivoPendiente.set(null);
+        this.descripcionArchivo.set('');
+        this.archivoSubiendo.set(false);
+        this.loadArchivos();
+      },
+      error: (err) => {
+        this.msgService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo subir el archivo' });
+        this.archivoSubiendo.set(false);
+      }
+    });
+  }
+
+  visualizarArchivo(archivo: ArchivoClinicoResponse) {
+    const ext = archivo.nombre?.split('.').pop()?.toLowerCase() ?? '';
+    if (ext === 'dcm') {
+      this.previewArchivo.set(archivo);
+      this.previewTipo.set('dcm');
+      this.previewUrl.set('');
+      return;
+    }
+    this.hcService.obtenerContenidoArchivo(this.consultaId, archivo.id).subscribe({
+      next: (blob) => {
+        if (this.previewRawUrl()) URL.revokeObjectURL(this.previewRawUrl());
+        const objectUrl = URL.createObjectURL(blob);
+        this.previewRawUrl.set(objectUrl);
+        this.previewUrl.set(ext === 'pdf'
+          ? this.sanitizer.bypassSecurityTrustResourceUrl(objectUrl)
+          : objectUrl);
+        this.previewArchivo.set(archivo);
+        this.previewTipo.set(ext === 'pdf' ? 'pdf' : 'imagen');
+      },
+      error: () => this.msgService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cargar el archivo' })
+    });
+  }
+
+  cerrarPreview() {
+    if (this.previewRawUrl()) URL.revokeObjectURL(this.previewRawUrl());
+    this.previewRawUrl.set('');
+    this.previewUrl.set('');
+    this.previewArchivo.set(null);
+    this.previewTipo.set(null);
+  }
+
+  descargarArchivo(archivo: ArchivoClinicoResponse) {
+    this.hcService.obtenerContenidoArchivo(this.consultaId, archivo.id, true).subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = archivo.nombre;
+        a.click();
+        URL.revokeObjectURL(url);
+      },
+      error: () => this.msgService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo descargar el archivo' })
+    });
+  }
+
+  confirmarEliminarArchivo(archivo: ArchivoClinicoResponse) {
+    this.archivoEliminando.set(archivo);
+    this.showConfirmEliminarArchivo.set(true);
+  }
+
+  eliminarArchivo() {
+    const archivo = this.archivoEliminando();
+    if (!archivo) return;
+    this.hcService.eliminarArchivo(this.consultaId, archivo.id).subscribe({
+      next: () => {
+        this.msgService.add({ severity: 'success', summary: 'Examen', detail: 'Archivo eliminado' });
+        this.showConfirmEliminarArchivo.set(false);
+        this.archivoEliminando.set(null);
+        this.loadArchivos();
+      },
+      error: (err) => this.msgService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo eliminar el archivo' })
+    });
+  }
+
+  formatBytes(bytes?: number): string {
+    if (!bytes) return '—';
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  iconoTipo(tipo: string): string {
+    const map: Record<string, string> = {
+      LABORATORIO: 'pi-microchip', RADIOGRAFIA: 'pi-eye', ECOGRAFIA: 'pi-wave-pulse',
+      IMAGEN: 'pi-image', OTRO: 'pi-file', PDF: 'pi-file-pdf'
+    };
+    return map[tipo] ?? 'pi-file';
   }
 
   abrirNuevaReceta() {
