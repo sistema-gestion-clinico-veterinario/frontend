@@ -63,6 +63,11 @@ export class HistoriaClinicaService {
     return this.http.delete<ApiResponse<void>>(`${this.recetasUrl}/${id}`);
   }
 
+  buscarRecetas(query: string, page: number = 0, size: number = 10) {
+    const params = `?query=${query || ''}&page=${page}&size=${size}`;
+    return this.http.get<ApiResponse<Page<PrescripcionResponse>>>(`${this.recetasUrl}${params}`);
+  }
+
   listarArchivos(consultaId: number) {
     return this.http.get<ApiResponse<ArchivoClinicoResponse[]>>(`${this.citasUrl}/${consultaId}/archivos`);
   }
