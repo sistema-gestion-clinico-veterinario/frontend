@@ -7,6 +7,7 @@ import { TagModule } from 'primeng/tag';
 import { PaginatorModule } from 'primeng/paginator';
 import { HistoriaClinicaService } from '../../../core/services/historia-clinica.service';
 import { LoadingStore } from '../../../store/loading.store';
+import { AuthStore } from '../../../store/auth.store';
 import { FormsModule } from '@angular/forms';
 
 @Component({
@@ -18,6 +19,7 @@ import { FormsModule } from '@angular/forms';
 export class ListaHcComponent implements OnInit {
   private readonly hcService    = inject(HistoriaClinicaService);
   readonly loadingStore         = inject(LoadingStore);
+  readonly authStore            = inject(AuthStore);
   private readonly router       = inject(Router);
 
   historias    = signal<any[]>([]);
@@ -35,6 +37,10 @@ export class ListaHcComponent implements OnInit {
     this.cargarHistorias();
   }
 
+  get activeCompanyId(): number | undefined {
+    return this.authStore.selectedEnterprise()?.establishmentId ?? undefined;
+  }
+
   cargarHistorias(page: number = 0) {
     this.currentPage = page;
     this.loadingStore.show();
@@ -44,6 +50,7 @@ export class ListaHcComponent implements OnInit {
       nombrePropietario: this.searchPropietario    || undefined,
       fechaDesde:        this.searchFechaDesde     || undefined,
       fechaHasta:        this.searchFechaHasta     || undefined,
+      companyId:         this.activeCompanyId,
       page,
       size: this.pageSize
     }).subscribe({

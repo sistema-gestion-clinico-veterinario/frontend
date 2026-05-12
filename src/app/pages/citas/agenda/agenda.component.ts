@@ -307,7 +307,9 @@ export class AgendaComponent implements OnInit {
     this.apoderadoService.listar(targetCompanyId, undefined, undefined, 0, 100).subscribe({
       next: (res) => {
         this.clientes.set(
-          res.data.content.map(c => ({ label: `${c.nombre} ${c.apellido}`, value: c.id }))
+          res.data.content
+            .filter(c => c.activo)
+            .map(c => ({ label: `${c.nombre} ${c.apellido}`, value: c.id }))
         );
       }
     });
@@ -341,7 +343,7 @@ export class AgendaComponent implements OnInit {
     this.showClienteSelector.set(false);
     this.filteredMascotas.set(
       this.allMascotas()
-        .filter(m => m.apoderadoId === cliente.value)
+        .filter(m => m.apoderadoId === cliente.value && m.activo)
         .map(m => ({ label: m.nombreCompleto, value: m.id }))
     );
     this.citaForm.get('mascotaId')?.setValue(null);

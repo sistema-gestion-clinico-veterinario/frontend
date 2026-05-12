@@ -29,6 +29,11 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/admin/company/company.component').then((m) => m.CompanyComponent)
       },
       {
+        path: 'admin/roles',
+        data: { roles: [Role.SUPER_ADMIN, Role.ADMIN] },
+        loadComponent: () => import('./pages/admin/roles/roles.component').then((m) => m.RolesComponent)
+      },
+      {
         path: 'admin/menus',
         data: { roles: [Role.SUPER_ADMIN] },
         loadComponent: () => import('./pages/admin/menu-management/menu-management.component').then((m) => m.MenuManagementComponent)
@@ -85,6 +90,10 @@ export const routes: Routes = [
             loadComponent: () => import('./pages/citas/agenda/agenda.component').then((m) => m.AgendaComponent)
           }
         ]
+      },
+      {
+        path: 'profile',
+        loadComponent: () => import('./pages/profile/profile.component').then((m) => m.ProfileComponent)
       }
     ]
   },

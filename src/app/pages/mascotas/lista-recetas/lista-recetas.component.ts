@@ -8,6 +8,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { FormsModule } from '@angular/forms';
 import { HistoriaClinicaService } from '../../../core/services/historia-clinica.service';
 import { LoadingStore } from '../../../store/loading.store';
+import { AuthStore } from '../../../store/auth.store';
 import { PrescripcionResponse } from '../../../models/response/prescripcion-response';
 
 @Component({
@@ -27,6 +28,7 @@ import { PrescripcionResponse } from '../../../models/response/prescripcion-resp
 export class ListaRecetasComponent implements OnInit {
   private readonly hcService = inject(HistoriaClinicaService);
   readonly loadingStore = inject(LoadingStore);
+  readonly authStore    = inject(AuthStore);
 
   recetas = signal<PrescripcionResponse[]>([]);
   totalRecords = signal(0);
@@ -38,10 +40,14 @@ export class ListaRecetasComponent implements OnInit {
     this.cargarRecetas();
   }
 
+  get activeCompanyId(): number | undefined {
+    return this.authStore.selectedEnterprise()?.establishmentId ?? undefined;
+  }
+
   cargarRecetas(page: number = 0) {
     this.currentPage = page;
     this.loadingStore.show();
-    this.hcService.buscarRecetas(this.searchQuery, page, this.pageSize).subscribe({
+    this.hcService.buscarRecetas(this.searchQuery, page, this.pageSize, this.activeCompanyId).subscribe({
       next: (res) => {
         if (res.data) {
           this.recetas.set(res.data.content);

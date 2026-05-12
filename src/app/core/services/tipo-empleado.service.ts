@@ -20,6 +20,14 @@ export class TipoEmpleadoService {
     return this.http.post<ApiResponse<any>>(this.apiUrl, data);
   }
 
+  actualizar(id: number, data: { nombre: string; descripcion?: string; permiteEspecialidades?: boolean; company?: { id: number } }) {
+    return this.http.put<ApiResponse<any>>(`${this.apiUrl}/${id}`, data);
+  }
+
+  cambiarEstado(id: number, activo: boolean) {
+    return this.http.patch<ApiResponse<void>>(`${this.apiUrl}/${id}/status?active=${activo}`, {});
+  }
+
   eliminar(id: number) {
     return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`);
   }

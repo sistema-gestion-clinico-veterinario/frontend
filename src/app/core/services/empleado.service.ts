@@ -41,6 +41,10 @@ export class EmpleadoService {
     return this.http.patch<ApiResponse<void>>(`${this.apiUrl}/${id}/status?active=${activo}`, {});
   }
 
+  eliminar(id: number) {
+    return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`);
+  }
+
   getHorario(id: number) {
     return this.http.get<ApiResponse<HorarioEmpleadoResponse[]>>(`${this.apiUrl}/${id}/horario`);
   }

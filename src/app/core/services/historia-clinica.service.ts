@@ -20,13 +20,14 @@ export class HistoriaClinicaService {
   private readonly recetasUrl      = `${environment.apiUrl}/prescripciones`;
   private readonly baseUrl         = environment.apiUrl;
 
-  buscar(query: { numeroHc?: string; nombrePaciente?: string; nombrePropietario?: string; fechaDesde?: string; fechaHasta?: string; page?: number; size?: number }) {
+  buscar(query: { numeroHc?: string; nombrePaciente?: string; nombrePropietario?: string; fechaDesde?: string; fechaHasta?: string; companyId?: number; page?: number; size?: number }) {
     let params = `?page=${query.page || 0}&size=${query.size || 10}`;
     if (query.numeroHc)          params += `&numeroHc=${query.numeroHc}`;
     if (query.nombrePaciente)    params += `&nombrePaciente=${query.nombrePaciente}`;
     if (query.nombrePropietario) params += `&nombrePropietario=${query.nombrePropietario}`;
     if (query.fechaDesde)        params += `&fechaDesde=${query.fechaDesde}`;
     if (query.fechaHasta)        params += `&fechaHasta=${query.fechaHasta}`;
+    if (query.companyId != null) params += `&companyId=${query.companyId}`;
 
     return this.http.get<ApiResponse<Page<any>>>(`${this.hcUrl}${params}`);
   }
@@ -63,8 +64,9 @@ export class HistoriaClinicaService {
     return this.http.delete<ApiResponse<void>>(`${this.recetasUrl}/${id}`);
   }
 
-  buscarRecetas(query: string, page: number = 0, size: number = 10) {
-    const params = `?query=${query || ''}&page=${page}&size=${size}`;
+  buscarRecetas(query: string, page: number = 0, size: number = 10, companyId?: number) {
+    let params = `?query=${query || ''}&page=${page}&size=${size}`;
+    if (companyId != null) params += `&companyId=${companyId}`;
     return this.http.get<ApiResponse<Page<PrescripcionResponse>>>(`${this.recetasUrl}${params}`);
   }
 

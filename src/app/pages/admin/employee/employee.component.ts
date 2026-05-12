@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, HostListener } from '@angular/core';
+import { Component, OnInit, inject, signal, HostListener, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators, AbstractControl } from '@angular/forms';
 import { TableModule } from 'primeng/table';
@@ -10,6 +10,7 @@ import { MultiSelectModule } from 'primeng/multiselect';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { EmpleadoService } from '../../../core/services/empleado.service';
+import { MediaService } from '../../../core/services/media.service';
 import { CompanyService } from '../../../core/services/company.service';
 import { EspecialidadService } from '../../../core/services/especialidad.service';
 import { TipoEmpleadoService } from '../../../core/services/tipo-empleado.service';
@@ -18,6 +19,8 @@ import { EmpleadoRequest, HorarioEmpleadoRequest } from '../../../models/request
 import { LoadingStore } from '../../../store/loading.store';
 import { AuthStore } from '../../../store/auth.store';
 import { Role } from '../../../core/enums/role.enum';
+import { Permission } from '../../../core/enums/permission.enum';
+import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 
 @Component({
   selector: 'app-employee',
@@ -32,7 +35,8 @@ import { Role } from '../../../core/enums/role.enum';
     InputTextModule,
     DropdownModule,
     MultiSelectModule,
-    ToastModule
+    ToastModule,
+    HasPermissionDirective
   ],
   providers: [MessageService],
   templateUrl: './employee.component.html'
@@ -40,12 +44,20 @@ import { Role } from '../../../core/enums/role.enum';
 export class EmployeeComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly empleadoService = inject(EmpleadoService);
+  private readonly mediaService = inject(MediaService);
   private readonly companyService = inject(CompanyService);
   private readonly messageService = inject(MessageService);
   private readonly especialidadService = inject(EspecialidadService);
   private readonly tipoEmpleadoService = inject(TipoEmpleadoService);
   readonly authStore = inject(AuthStore);
   readonly loadingStore = inject(LoadingStore);
+
+  @ViewChild('empFileInput') empFileInput!: ElementRef<HTMLInputElement>;
+
+  uploadingPhoto = signal(false);
+  photoPreview = signal<string | null>(null);
+
+  confirmDialog = signal<{ title: string; message: string; onConfirm: () => void } | null>(null);
 
   employees = signal<EmpleadoListResponse[]>([]);
   loading = signal<boolean>(false);
@@ -89,6 +101,25 @@ export class EmployeeComponent implements OnInit {
 
   public isSelected(controlName: string, value: any): boolean {
     return this.employeeForm.get(controlName)?.value?.includes(value) ?? false;
+  }
+
+  resolvePhotoUrl(path: string | null | undefined): string | null {
+    return this.mediaService.resolveUrl(path);
+  }
+
+  readonly Permission = Permission;
+
+  openConfirm(title: string, message: string, onConfirm: () => void) {
+    this.confirmDialog.set({ title, message, onConfirm });
+  }
+
+  confirmAction() {
+    this.confirmDialog()?.onConfirm();
+    this.confirmDialog.set(null);
+  }
+
+  cancelConfirm() {
+    this.confirmDialog.set(null);
   }
 
   get activeCompanyId(): number | null {
@@ -174,7 +205,9 @@ export class EmployeeComponent implements OnInit {
       } else {
         doc?.setValidators([Validators.required, Validators.pattern(/^\d{9}$/)]);
       }
-      doc?.reset('');
+      if (!this.isEdit()) {
+        doc?.reset('');
+      }
       doc?.updateValueAndValidity();
     });
 
@@ -246,7 +279,48 @@ export class EmployeeComponent implements OnInit {
   }
 
 
+  triggerPhotoInput() {
+    this.empFileInput.nativeElement.click();
+  }
+
+  onPhotoSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (!allowed.includes(file.type)) {
+      this.messageService.add({ severity: 'warn', summary: 'Formato no válido', detail: 'Solo JPG, PNG, WEBP o GIF' });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      this.messageService.add({ severity: 'warn', summary: 'Archivo muy grande', detail: 'Máximo 5 MB' });
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => this.photoPreview.set(e.target?.result as string);
+    reader.readAsDataURL(file);
+
+    this.uploadingPhoto.set(true);
+    this.mediaService.upload(file).subscribe({
+      next: (url) => {
+        this.employeeForm.patchValue({ fotoUrl: url });
+        this.uploadingPhoto.set(false);
+        this.messageService.add({ severity: 'success', summary: 'Foto cargada', detail: 'Guarda el formulario para aplicar' });
+      },
+      error: () => {
+        this.photoPreview.set(null);
+        this.uploadingPhoto.set(false);
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo subir la imagen' });
+      }
+    });
+
+    input.value = '';
+  }
+
   openNew() {
+    this.photoPreview.set(null);
     this.employeeForm.reset({
       tipoDocumento: 'DNI',
       genero: 'MASCULINO',
@@ -262,6 +336,7 @@ export class EmployeeComponent implements OnInit {
 
   editEmployee(employee: EmpleadoListResponse) {
     this.isEdit.set(true);
+    this.photoPreview.set(this.mediaService.resolveUrl(employee.fotoUrl));
     this.loadingStore.show();
     this.empleadoService.getById(employee.id).subscribe({
       next: (res) => {
@@ -332,11 +407,42 @@ export class EmployeeComponent implements OnInit {
   }
 
   toggleStatus(employee: EmpleadoListResponse) {
-    this.empleadoService.cambiarEstado(employee.id, !employee.activo).subscribe({
-      next: () => {
-        this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Estado actualizado' });
-        this.loadEmployees();
+    const action = employee.activo ? 'desactivar' : 'activar';
+    this.openConfirm(
+      'Cambiar estado',
+      `¿Confirmas que deseas ${action} a ${employee.nombre} ${employee.apellido}?`,
+      () => {
+        this.empleadoService.cambiarEstado(employee.id, !employee.activo).subscribe({
+          next: () => {
+            this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Estado actualizado' });
+            this.loadEmployees();
+          },
+          error: (err) => {
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo cambiar el estado' });
+          }
+        });
       }
-    });
+    );
+  }
+
+  deleteEmployee(employee: EmpleadoListResponse) {
+    this.openConfirm(
+      'Eliminar empleado',
+      `¿Estás seguro de que deseas eliminar a ${employee.nombre} ${employee.apellido}? Esta acción no se puede deshacer.`,
+      () => {
+        this.loadingStore.show();
+        this.empleadoService.eliminar(employee.id).subscribe({
+          next: () => {
+            this.messageService.add({ severity: 'success', summary: 'Eliminado', detail: 'Empleado eliminado correctamente' });
+            this.loadEmployees();
+            this.loadingStore.hide();
+          },
+          error: (err) => {
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo eliminar el empleado' });
+            this.loadingStore.hide();
+          }
+        });
+      }
+    );
   }
 }
