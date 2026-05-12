@@ -1,0 +1,194 @@
+<div class="min-h-screen w-full flex items-center justify-center relative overflow-hidden bg-[#0066AA]">
+  <div class="absolute top-[10%] left-[15%] w-[450px] h-[450px] rounded-full bg-white/10 blur-[100px] pointer-events-none"></div>
+  <div class="absolute bottom-[10%] right-[10%] w-[500px] h-[500px] rounded-full bg-white/10 blur-[120px] pointer-events-none"></div>
+  <div class="absolute top-[40%] right-[30%] w-[300px] h-[300px] rounded-full bg-white/5 blur-[80px] pointer-events-none"></div>
+
+  <div class="relative z-10 w-full max-w-[1020px] px-6 flex flex-col md:flex-row items-center justify-between gap-12 lg:gap-20 py-12">
+    <div class="flex-1 text-white text-center md:text-left">
+      <div class="flex flex-col md:flex-row items-center gap-4 mb-10">
+        <div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.27 2 8.5C2 5.41 4.41 3 7.5 3C9.24 3 10.91 3.81 12 5.08C13.09 3.81 14.76 3 16.5 3C19.59 3 22 5.41 22 8.5C22 12.27 18.6 15.36 13.45 20.03L12 21.35Z" fill="#0066AA"/>
+            <path d="M12 13C13.6569 13 15 11.6569 15 10C15 8.34315 13.6569 7 12 7C10.3431 7 9 8.34315 9 10C9 11.6569 10.3431 13 12 13Z" fill="white"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-2xl font-bold tracking-tight leading-none">Vargas Vet</h1>
+          <p class="text-sm text-white/70 mt-1">Clínica Veterinaria</p>
+        </div>
+      </div>
+
+      <h2 class="text-4xl lg:text-5xl font-extrabold leading-[1.1] tracking-tight mb-5">
+        Activa tu<br class="hidden md:block"> cuenta.
+      </h2>
+      <p class="text-white/80 text-base leading-relaxed max-w-sm mx-auto md:mx-0 mb-10">
+        Verifica tu correo electrónico para acceder al sistema de gestión de la clínica veterinaria.
+      </p>
+
+      <ul class="space-y-3 text-sm text-white/90 max-w-xs mx-auto md:mx-0">
+        <li class="flex items-center gap-3">
+          <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white/15">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </span>
+          Verificación segura por correo
+        </li>
+        <li class="flex items-center gap-3">
+          <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white/15">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+            </svg>
+          </span>
+          Tu contraseña inicial es tu número de documento
+        </li>
+        <li class="flex items-center gap-3">
+          <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white/15">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+            </svg>
+          </span>
+          Cambia tu contraseña al ingresar por primera vez
+        </li>
+      </ul>
+    </div>
+    <div class="w-full max-w-[420px] bg-white rounded-3xl p-8 lg:p-10">
+      <div *ngIf="estado() === 'cargando'" class="flex flex-col items-center py-6">
+        <div class="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mb-5 animate-pulse">
+          <svg class="w-8 h-8 text-slate-400 animate-spin" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+          </svg>
+        </div>
+        <h3 class="text-xl font-bold text-slate-800 mb-2">Verificando tu cuenta…</h3>
+        <p class="text-sm text-slate-400 text-center">Estamos procesando tu solicitud, por favor espera.</p>
+      </div>
+      <div *ngIf="estado() === 'exito'" class="flex flex-col items-center py-4">
+        <div class="w-16 h-16 rounded-2xl bg-emerald-50 flex items-center justify-center mb-5">
+          <svg class="w-9 h-9 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+
+        <h3 class="text-2xl font-bold text-slate-800 mb-2 text-center">¡Cuenta activada!</h3>
+        <p class="text-sm text-slate-400 text-center leading-relaxed mb-7">
+          Tu correo fue verificado correctamente. Ya puedes iniciar sesión con tu número de documento como contraseña.
+        </p>
+        <div class="w-full bg-blue-50 border border-blue-100 rounded-2xl p-4 mb-7">
+          <div class="flex items-start gap-3">
+            <div class="w-8 h-8 rounded-lg bg-[#0066AA] flex items-center justify-center shrink-0 mt-0.5">
+              <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+              </svg>
+            </div>
+            <div>
+              <p class="text-sm font-bold text-slate-800 mb-0.5">Contraseña inicial</p>
+              <p class="text-xs text-slate-500 leading-relaxed">
+                Tu contraseña es tu <span class="font-bold text-slate-700">número de documento (DNI)</span>.
+                Por seguridad, cámbiala en tu primer inicio de sesión.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <button (click)="irAlLogin()"
+          class="w-full h-12 bg-[#0066AA] hover:bg-[#005599] text-white text-sm font-semibold rounded-xl flex items-center justify-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+          </svg>
+          Ir al inicio de sesión
+        </button>
+      </div>
+
+      <div *ngIf="estado() === 'error' || estado() === 'reenviando'">
+        <div class="flex flex-col items-center py-4 mb-6">
+          <div class="w-16 h-16 rounded-2xl bg-rose-50 flex items-center justify-center mb-5">
+            <svg class="w-9 h-9 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold text-slate-800 mb-2 text-center">Enlace no válido</h3>
+          <p class="text-sm text-slate-400 text-center leading-relaxed">{{ errorMsg() }}</p>
+        </div>
+        <div class="flex items-center gap-3 mb-6">
+          <div class="flex-1 h-px bg-slate-100"></div>
+          <span class="text-xs font-semibold text-slate-300 uppercase tracking-wider">Reenviar enlace</span>
+          <div class="flex-1 h-px bg-slate-100"></div>
+        </div>
+        <form [formGroup]="resendForm" (ngSubmit)="reenviar()" class="space-y-4">
+          <div class="space-y-1.5">
+            <label class="text-sm font-semibold text-slate-700">Correo electrónico</label>
+            <input
+              type="email"
+              formControlName="email"
+              placeholder="tu@correo.com"
+              class="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 text-slate-800 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0066AA]/30 focus:border-[#0066AA]"
+            />
+            <div *ngIf="resendForm.get('email')?.touched && resendForm.get('email')?.invalid"
+              class="text-xs text-rose-500 font-medium">
+              Ingresa un correo electrónico válido.
+            </div>
+          </div>
+          <div *ngIf="resendError()"
+            class="flex items-center gap-2.5 p-3.5 bg-rose-50 border border-rose-100 rounded-xl text-rose-600 text-sm font-medium">
+            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            {{ resendError() }}
+          </div>
+
+          <button
+            type="submit"
+            [disabled]="resendLoading()"
+            class="w-full h-12 bg-[#0066AA] hover:bg-[#005599] disabled:opacity-60 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-xl flex items-center justify-center gap-2">
+            <svg *ngIf="!resendLoading()" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+            </svg>
+            <svg *ngIf="resendLoading()" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+            </svg>
+            {{ resendLoading() ? 'Enviando…' : 'Reenviar correo de verificación' }}
+          </button>
+        </form>
+
+        <p class="mt-5 text-center text-xs text-slate-400">
+          ¿Ya verificaste tu cuenta?
+          <a routerLink="/login" class="text-[#0066AA] font-semibold hover:underline">Inicia sesión aquí</a>
+        </p>
+      </div>
+      <div *ngIf="estado() === 'reenviado'" class="flex flex-col items-center py-4">
+        <div class="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center mb-5">
+          <svg class="w-9 h-9 text-[#0066AA]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+          </svg>
+        </div>
+
+        <h3 class="text-xl font-bold text-slate-800 mb-2 text-center">¡Correo enviado!</h3>
+        <p class="text-sm text-slate-400 text-center leading-relaxed mb-7">
+          Revisa tu bandeja de entrada y haz clic en el nuevo enlace de verificación.
+          Si no lo encuentras, revisa la carpeta de spam.
+        </p>
+
+        <div class="w-full bg-amber-50 border border-amber-100 rounded-2xl p-4 mb-7">
+          <div class="flex items-center gap-3">
+            <div class="w-7 h-7 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
+              <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+              </svg>
+            </div>
+            <p class="text-xs text-amber-700 font-medium leading-snug">
+              El enlace expira en 24 horas. Úsalo antes de que venza.
+            </p>
+          </div>
+        </div>
+
+        <button (click)="irAlLogin()"
+          class="w-full h-12 border border-slate-200 hover:bg-slate-50 text-slate-600 text-sm font-semibold rounded-xl flex items-center justify-center gap-2">
+          Volver al inicio de sesión
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>

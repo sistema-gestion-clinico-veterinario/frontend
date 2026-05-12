@@ -1,0 +1,361 @@
+<div class="p-4 sm:p-6 lg:p-8 min-h-screen bg-slate-50 font-['Barlow']">
+
+
+  <div class="mb-5 sm:mb-8">
+
+    <div class="flex items-center justify-between gap-3 mb-1.5">
+      <div class="min-w-0">
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight leading-tight">
+          Gestión de Mascotas
+        </h1>
+        <p class="text-slate-500 font-medium flex items-center gap-2 text-sm mt-1">
+          <span class="w-2 h-2 rounded-full bg-[#0066AA] shrink-0"></span>
+          Administra el registro y seguimiento de los pacientes
+        </p>
+      </div>
+
+      <div class="flex items-center gap-2.5 sm:gap-3 shrink-0">
+
+
+        <button (click)="openNew()"
+          class="flex items-center gap-1.5 bg-[#0066AA] text-white font-medium rounded-lg h-9 sm:h-10 px-3 sm:px-5 text-sm">
+          <i class="pi pi-plus text-xs"></i>
+          <span class="hidden sm:inline">Registrar mascota</span>
+        </button>
+      </div>
+    </div>
+
+
+  </div>
+
+
+  <div class="mb-5 bg-white border border-slate-200 rounded-xl p-4">
+    <div class="flex flex-col sm:flex-row gap-3">
+
+      <div class="flex-1 relative">
+        <i class="pi pi-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300 text-sm pointer-events-none"></i>
+        <input
+          type="text"
+          [(ngModel)]="searchNombre"
+          (keyup.enter)="onFilterChange()"
+          placeholder="Buscar por nombre..."
+          class="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 text-sm font-medium text-slate-700 placeholder:text-slate-400 focus:outline-none focus:border-[#0066AA]"
+        />
+      </div>
+      <div class="sm:w-44">
+        <p-dropdown
+          [options]="especieOpciones"
+          [(ngModel)]="filterEspecie"
+          (onChange)="onFilterChange()"
+          placeholder="Especie"
+          [showClear]="true"
+          styleClass="w-full h-11 bg-slate-50 !border-slate-200 !rounded-xl !px-3 !flex !items-center !text-sm !font-bold !text-slate-800"
+        ></p-dropdown>
+      </div>
+      <div class="sm:w-44">
+        <p-dropdown
+          [options]="activoOpciones"
+          [(ngModel)]="filterActivo"
+          (onChange)="onFilterChange()"
+          placeholder="Estado"
+          [showClear]="true"
+          styleClass="w-full h-11 bg-slate-50 !border-slate-200 !rounded-xl !px-3 !flex !items-center !text-sm !font-bold !text-slate-800"
+        ></p-dropdown>
+      </div>
+
+      <button (click)="onFilterChange()"
+        class="flex items-center justify-center gap-2 border border-slate-200 bg-slate-50 text-slate-500 text-sm font-medium px-4 h-11 rounded-xl sm:w-auto w-full">
+        <i class="pi pi-refresh text-xs"></i>
+        <span class="sm:hidden">Buscar</span>
+      </button>
+
+    </div>
+    <div *ngIf="totalRecords() > 0"
+      class="mt-3 pt-3 border-t border-slate-100 flex items-center gap-1.5 text-xs text-slate-400 font-medium">
+      <i class="pi pi-info-circle text-slate-300"></i>
+      <span>{{ totalRecords() }} mascota{{ totalRecords() !== 1 ? 's' : '' }} encontrada{{ totalRecords() !== 1 ? 's' : '' }}</span>
+    </div>
+  </div>
+
+
+
+  <ng-container>
+
+
+    <div *ngIf="mascotas().length === 0 && !loadingStore.isLoading()"
+      class="bg-white border border-slate-200 rounded-xl py-16 text-center px-6">
+      <i class="pi pi-heart text-3xl text-slate-200 block mb-3"></i>
+      <p class="text-sm font-bold text-slate-400 mb-1">No se encontraron mascotas</p>
+      <p class="text-xs text-slate-300">Prueba ajustando los filtros o registra una nueva mascota.</p>
+    </div>
+
+
+    <div *ngIf="mascotas().length > 0"
+      class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 mb-6">
+
+      <div *ngFor="let mascota of mascotas()"
+        class="bg-white border border-slate-200 rounded-xl overflow-hidden flex flex-col">
+
+        <div class="p-4 pb-3">
+          <div class="flex items-start justify-between gap-3">
+            <div class="flex items-center gap-3 min-w-0">
+              <div [class]="'w-12 h-12 rounded-xl flex items-center justify-center text-xl font-extrabold flex-shrink-0 ' + especieAvatarClass(mascota.especie)">
+                {{ mascota.nombreCompleto.charAt(0).toUpperCase() }}
+              </div>
+              <div class="min-w-0">
+                <p class="text-base font-extrabold text-slate-900 leading-tight truncate">
+                  {{ mascota.nombreCompleto }}
+                </p>
+                <div class="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                  <span [class]="'text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider ' + especieBadgeClass(mascota.especie)">
+                    {{ especieLabel(mascota.especie) }}
+                  </span>
+                  <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider bg-slate-100 text-slate-500">
+                    {{ sexoLabel(mascota.sexo) }}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <button (click)="editMascota(mascota)"
+              [disabled]="!mascota.activo"
+              [title]="!mascota.activo ? 'La mascota está inactiva' : 'Editar'"
+              class="p-2 rounded-lg text-slate-300 hover:text-[#0066AA] hover:bg-blue-50 flex-shrink-0 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-slate-300">
+              <i class="pi pi-pencil text-sm"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="border-t border-slate-100 mx-4"></div>
+        <div class="p-4 pt-3 flex flex-col flex-1 gap-3">
+          <div class="grid grid-cols-3 gap-2">
+            <div class="text-center">
+              <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Edad</p>
+              <p class="text-sm font-extrabold text-slate-700">{{ calcularEdad(mascota.fechaNacimiento) }}</p>
+            </div>
+            <div class="text-center border-x border-slate-100">
+              <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Peso</p>
+              <p class="text-sm font-extrabold text-slate-700">
+                {{ mascota.peso ? mascota.peso + ' kg' : '—' }}
+              </p>
+            </div>
+            <div class="text-center">
+              <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Raza</p>
+              <p class="text-xs font-extrabold text-slate-700 truncate" [title]="mascota.raza">
+                {{ mascota.raza || '—' }}
+              </p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 text-xs text-slate-500">
+            <i class="pi pi-user text-slate-300 shrink-0"></i>
+            <span class="font-medium truncate">{{ mascota.apoderadoNombreCompleto }}</span>
+          </div>
+          <div class="bg-slate-50 rounded-lg px-3 py-2.5">
+            <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">
+              Último diagnóstico
+            </p>
+            <p class="text-xs font-medium leading-snug"
+              [class]="mascota.ultimoDiagnostico ? 'text-slate-600' : 'text-slate-300 italic'">
+              {{ mascota.ultimoDiagnostico || 'Sin diagnóstico registrado' }}
+            </p>
+          </div>
+          <div class="flex items-center gap-2 mt-auto">
+
+            <button
+              *ngIf="mascota.tieneHistoriaClinica"
+              (click)="verHistoriaClinica(mascota)"
+              class="flex-1 flex items-center justify-center gap-1.5 bg-blue-50 text-[#0066AA] text-xs font-bold h-9 rounded-lg">
+              <i class="pi pi-file-edit text-xs"></i>
+              Ver HC
+            </button>
+            <span
+              *ngIf="!mascota.tieneHistoriaClinica"
+              class="flex-1 flex items-center justify-center gap-1.5 bg-slate-50 text-slate-300 text-xs font-bold h-9 rounded-lg cursor-default select-none">
+              <i class="pi pi-file text-xs"></i>
+              Sin HC
+            </span>
+            <button (click)="toggleEstado(mascota)"
+              [class]="mascota.activo
+                ? 'bg-emerald-50 text-emerald-700'
+                : 'bg-red-50 text-red-500'"
+              class="flex items-center gap-1.5 px-3 h-9 rounded-lg text-xs font-bold flex-shrink-0">
+              <span
+                [class]="mascota.activo ? 'bg-emerald-500' : 'bg-red-400'"
+                class="w-1.5 h-1.5 rounded-full"></span>
+              {{ mascota.activo ? 'Activo' : 'Inactivo' }}
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div *ngIf="totalRecords() > pageSize" class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+      <p-paginator
+        [rows]="pageSize"
+        [totalRecords]="totalRecords()"
+        [first]="currentPage * pageSize"
+        (onPageChange)="onPageChange($event)"
+        styleClass="!border-none !bg-transparent !py-3"
+      ></p-paginator>
+    </div>
+
+  </ng-container>
+
+</div>
+
+<div *ngIf="displayModal()" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+  <div class="bg-white w-full max-w-xl rounded-lg shadow-2xl flex flex-col max-h-[95vh]">
+  
+    <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50 rounded-t-lg">
+      <h2 class="text-lg font-bold text-slate-800">
+        {{ isEdit() ? 'Actualizar Ficha del Paciente' : 'Apertura de Expediente de Mascota' }}
+      </h2>
+      <button (click)="displayModal.set(false)" class="text-slate-400 hover:text-slate-600 transition-colors p-2">
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+
+    <div class="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-slate-200">
+      <form [formGroup]="mascotaForm" (ngSubmit)="saveMascota()" class="space-y-6">
+      
+        <div class="space-y-4">
+          <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
+            <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
+            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">1. Identificación del Paciente</h3>
+          </div>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1 sm:col-span-2">
+              <label class="text-xs font-semibold text-slate-700 ml-0.5">Nombre del Paciente <span class="text-rose-500">*</span></label>
+              <input type="text" formControlName="nombre" placeholder="Ej: Max, Luna..."
+                class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all font-bold" />
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-semibold text-slate-700 ml-0.5">Especie <span class="text-rose-500">*</span></label>
+              <select formControlName="especie" 
+                class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 bg-white transition-all">
+                <option [ngValue]="null" disabled>Seleccione especie</option>
+                <option *ngFor="let opt of especieOpciones" [value]="opt.value">{{ opt.label }}</option>
+              </select>
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-semibold text-slate-700 ml-0.5">Raza <span class="text-rose-500">*</span></label>
+              <input type="text" formControlName="raza" placeholder="Ej: Labrador, Criollo..."
+                class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-semibold text-slate-700 ml-0.5">Sexo <span class="text-rose-500">*</span></label>
+              <select formControlName="sexo" 
+                class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 bg-white transition-all">
+                <option [ngValue]="null" disabled>Seleccione sexo</option>
+                <option *ngFor="let opt of sexoOpciones" [value]="opt.value">{{ opt.label }}</option>
+              </select>
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-semibold text-slate-700 ml-0.5">Fecha de Nacimiento <span class="text-rose-500">*</span></label>
+              <input type="date" formControlName="fechaNacimiento"
+                class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 bg-white transition-all" />
+            </div>
+          </div>
+        </div>
+        <div class="space-y-4">
+          <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
+            <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
+            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">2. Atributos Físicos</h3>
+          </div>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-semibold text-slate-700 ml-0.5">Peso Actual (kg)</label>
+              <input type="number" step="0.1" formControlName="peso" placeholder="0.0"
+                class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all font-mono" />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-semibold text-slate-700 ml-0.5">Color / Manto</label>
+              <input type="text" formControlName="color" placeholder="Ej: Atigrado, Negro..."
+                class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+            </div>
+          </div>
+        </div>
+        <div class="space-y-4">
+          <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
+            <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
+            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">3. Propietario Responsable</h3>
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-semibold text-slate-700 ml-0.5">Vincular a Propietario <span class="text-rose-500">*</span></label>
+            <select formControlName="apoderadoId" 
+              class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 bg-white transition-all font-bold">
+              <option [ngValue]="null" disabled>Seleccione el propietario responsable</option>
+              <option *ngFor="let opt of apoderados()" [ngValue]="opt.value">{{ opt.label }}</option>
+            </select>
+            <p class="text-[10px] text-slate-400 mt-1 italic">Asegúrese de que el propietario esté registrado previamente.</p>
+          </div>
+        </div>
+
+      
+        <div class="flex justify-end gap-3 pt-6 border-t border-slate-200">
+          <button type="button" (click)="displayModal.set(false)"
+            class="px-5 py-2.5 text-sm font-semibold text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded transition-all">
+            Descartar cambios
+          </button>
+          <button type="submit" [disabled]="loadingStore.isLoading()"
+            class="px-8 py-2.5 text-sm font-bold text-white bg-[#0066AA] hover:bg-[#004488] rounded shadow-sm disabled:opacity-50 transition-all flex items-center justify-center gap-2 min-w-[160px]">
+            <i *ngIf="loadingStore.isLoading()" class="pi pi-spin pi-spinner text-xs"></i>
+            {{ loadingStore.isLoading() ? 'Procesando...' : (isEdit() ? 'Actualizar Ficha' : 'Generar Expediente') }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="displayMotivoModal()" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+  <div class="bg-white w-full max-w-sm rounded-lg shadow-2xl flex flex-col">
+    <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-rose-50 rounded-t-lg">
+      <h2 class="text-lg font-bold text-rose-800 italic">Desactivación de Paciente</h2>
+      <button (click)="displayMotivoModal.set(false)" class="text-rose-300 hover:text-rose-600 p-2"><i class="pi pi-times"></i></button>
+    </div>
+    <div class="p-6">
+      <form [formGroup]="motivoForm" (ngSubmit)="confirmDeactivation()" class="space-y-5">
+        <p class="text-xs font-medium text-slate-600 leading-relaxed">
+          Usted está a punto de desactivar la ficha clínica de este paciente. Por favor, seleccione la justificación administrativa o clínica correspondiente.
+        </p>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-bold text-slate-700 ml-0.5">Causal de Baja <span class="text-rose-500">*</span></label>
+          <select formControlName="motivoBaja" 
+            class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 outline-none h-10 bg-white transition-all">
+            <option [ngValue]="null" disabled>Seleccione una causal</option>
+            <option *ngFor="let opt of motivoBajaOpciones" [value]="opt.value">{{ opt.label }}</option>
+          </select>
+        </div>
+
+        <div *ngIf="motivoForm.get('motivoBaja')?.value === 'OTRO'" class="flex flex-col gap-1 animate-in slide-in-from-top-1">
+          <label class="text-xs font-bold text-slate-700 ml-0.5">Especificar Detalles</label>
+          <textarea formControlName="otroMotivo" rows="2" placeholder="Describa el motivo detalladamente..."
+            class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 outline-none resize-none transition-all"></textarea>
+        </div>
+
+        <div class="flex flex-col gap-3 pt-4">
+          <button type="submit" [disabled]="loadingStore.isLoading()"
+            class="w-full py-2.5 text-sm font-bold text-white bg-rose-600 hover:bg-rose-700 rounded shadow-sm disabled:opacity-50 transition-all flex items-center justify-center gap-2">
+            <i class="pi pi-exclamation-triangle text-xs"></i>
+            {{ loadingStore.isLoading() ? 'Procesando...' : 'Confirmar Cese de Registro' }}
+          </button>
+          <button type="button" (click)="displayMotivoModal.set(false)"
+            class="w-full py-2 text-xs font-bold text-slate-400 hover:text-slate-600 transition-all">
+            Cancelar Operación
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<p-toast position="bottom-right"></p-toast>

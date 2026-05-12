@@ -1,0 +1,47 @@
+import { PrescripcionResponse } from './prescripcion-response';
+
+export interface ConsultaResponse {
+  id: number;
+  version: number;
+  estado: string;
+  tipoConsulta?: string;
+  citaId?: number;
+  historiaClinicaId?: number;
+  numeroHc?: string;
+  mascotaId?: number;
+  mascotaNombre?: string;
+  especie?: string;
+  raza?: string;
+  sexo?: string;
+  color?: string;
+  senasParticulares?: string;
+  edadAproximadaMeses?: number;
+  apoderadoId?: number;
+  apoderadoNombre?: string;
+  apoderadoTelefono?: string;
+  apoderadoDireccion?: string;
+  veterinarioId?: number;
+  veterinarioNombre?: string;
+  fechaConsulta?: string;
+  motivoConsulta?: string;
+  anamnesis?: string;
+  examenFisico?: string;
+  pesoEnConsulta?: number;
+  temperatura?: number;
+  frecuenciaCardiaca?: number;
+  frecuenciaRespiratoria?: number;
+  mucosas?: string;
+  turgenciaPiel?: string;
+  vacunacionAlDia?: boolean;
+  desparasitacionAlDia?: boolean;
+  observaciones?: string;
+  antecedentesEnfermedades?: string;
+  antecedentesProcedimientos?: string;
+  antecedentesPersonales?: string;
+  antecedentesFamiliares?: string;
+  grupoSanguineo?: string;
+  fechaCierre?: string;
+  cerradoPor?: string;
+  indicacionesReceta?: string;
+  prescripciones?: PrescripcionResponse[];
+}

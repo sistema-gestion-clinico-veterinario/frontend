@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import "primeicons/primeicons.css";
+
+@layer base {
+  html, body {
+    font-family: 'Barlow', sans-serif;
+  }
+}
+
+@layer utilities {
+}

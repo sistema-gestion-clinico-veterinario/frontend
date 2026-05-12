@@ -1,0 +1,179 @@
+import { Component, inject, signal, Output, EventEmitter } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormBuilder, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
+import { AuthStore } from '../../../store/auth.store';
+import { AuthService } from '../../../core/services/auth.service';
+
+function passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
+  const newPassword = control.get('newPassword')?.value;
+  const confirmPassword = control.get('confirmPassword')?.value;
+  return newPassword === confirmPassword ? null : { mismatch: true };
+}
+
+@Component({
+  selector: 'app-change-password-modal',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule],
+  template: `
+    <div class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+      <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl">
+
+        <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 bg-amber-50 rounded-xl flex items-center justify-center">
+              <i class="pi pi-lock text-amber-500 text-base"></i>
+            </div>
+            <div>
+              <h2 class="text-sm font-bold text-slate-800">Cambiar contraseña</h2>
+              <p class="text-xs text-slate-400">Tu contraseña actual es tu número de DNI</p>
+            </div>
+          </div>
+          <button type="button" (click)="dismissed.emit()"
+            class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
+            <i class="pi pi-times text-xs"></i>
+          </button>
+        </div>
+
+        <form [formGroup]="form" (ngSubmit)="submit()" class="px-6 py-5 space-y-4">
+
+          <div *ngIf="errorMsg()" class="flex items-center gap-2 bg-rose-50 text-rose-600 text-xs font-medium px-3 py-2.5 rounded-lg">
+            <i class="pi pi-exclamation-circle"></i>
+            {{ errorMsg() }}
+          </div>
+
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-semibold text-slate-700">Contraseña actual (tu DNI)</label>
+            <div class="relative">
+              <input [type]="showOld() ? 'text' : 'password'" formControlName="oldPassword"
+                placeholder="Ingresa tu DNI"
+                class="w-full px-3 py-2.5 pr-10 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-[#0066AA]/20 focus:border-[#0066AA] outline-none transition-all" />
+              <button type="button" (click)="showOld.set(!showOld())"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                <i [class]="showOld() ? 'pi pi-eye-slash text-xs' : 'pi pi-eye text-xs'"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-semibold text-slate-700">Nueva contraseña</label>
+            <div class="relative">
+              <input [type]="showNew() ? 'text' : 'password'" formControlName="newPassword"
+                placeholder="Mínimo 6 caracteres"
+                class="w-full px-3 py-2.5 pr-10 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-[#0066AA]/20 focus:border-[#0066AA] outline-none transition-all" />
+              <button type="button" (click)="showNew.set(!showNew())"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                <i [class]="showNew() ? 'pi pi-eye-slash text-xs' : 'pi pi-eye text-xs'"></i>
+              </button>
+            </div>
+            <div *ngIf="form.get('newPassword')?.value" class="flex gap-1 mt-1.5 h-1">
+              <div class="flex-1 rounded-full" [class]="strengthClass(0)"></div>
+              <div class="flex-1 rounded-full" [class]="strengthClass(1)"></div>
+              <div class="flex-1 rounded-full" [class]="strengthClass(2)"></div>
+              <div class="flex-1 rounded-full" [class]="strengthClass(3)"></div>
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-semibold text-slate-700">Confirmar nueva contraseña</label>
+            <div class="relative">
+              <input [type]="showConfirm() ? 'text' : 'password'" formControlName="confirmPassword"
+                placeholder="Repite la nueva contraseña"
+                class="w-full px-3 py-2.5 pr-10 border rounded-lg text-sm outline-none transition-all"
+                [class]="form.errors?.['mismatch'] && form.get('confirmPassword')?.dirty
+                  ? 'border-rose-300 focus:ring-2 focus:ring-rose-300/30 focus:border-rose-400'
+                  : 'border-slate-300 focus:ring-2 focus:ring-[#0066AA]/20 focus:border-[#0066AA]'" />
+              <button type="button" (click)="showConfirm.set(!showConfirm())"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                <i [class]="showConfirm() ? 'pi pi-eye-slash text-xs' : 'pi pi-eye text-xs'"></i>
+              </button>
+            </div>
+            <p *ngIf="form.errors?.['mismatch'] && form.get('confirmPassword')?.dirty"
+              class="text-[10px] text-rose-500 mt-0.5">Las contraseñas no coinciden</p>
+          </div>
+
+          <div class="flex gap-3 pt-1">
+            <button type="button" (click)="dismissed.emit()"
+              class="flex-1 py-2.5 border border-slate-200 rounded-lg text-sm font-semibold text-slate-500 hover:bg-slate-50 transition-colors">
+              Ahora no
+            </button>
+            <button type="submit" [disabled]="isSubmitting()"
+              class="flex-1 bg-[#0066AA] hover:bg-[#005a96] disabled:opacity-60 text-white font-semibold py-2.5 rounded-lg text-sm transition-colors flex items-center justify-center gap-2">
+              <i *ngIf="isSubmitting()" class="pi pi-spin pi-spinner text-xs"></i>
+              {{ isSubmitting() ? 'Guardando...' : 'Guardar' }}
+            </button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  `
+})
+export class ChangePasswordModalComponent {
+  @Output() dismissed = new EventEmitter<void>();
+
+  private readonly fb = inject(FormBuilder);
+  readonly authStore = inject(AuthStore);
+  private readonly authService = inject(AuthService);
+
+  showOld = signal(false);
+  showNew = signal(false);
+  showConfirm = signal(false);
+  isSubmitting = signal(false);
+  errorMsg = signal<string | null>(null);
+
+  form = this.fb.group({
+    oldPassword: ['', Validators.required],
+    newPassword: ['', [Validators.required, Validators.minLength(6)]],
+    confirmPassword: ['', Validators.required]
+  }, { validators: passwordMatchValidator });
+
+  get passwordStrength(): number {
+    const val: string = this.form.get('newPassword')?.value ?? '';
+    let score = 0;
+    if (val.length >= 6) score++;
+    if (val.length >= 10) score++;
+    if (/[A-Z]/.test(val) || /[0-9]/.test(val)) score++;
+    if (/[^a-zA-Z0-9]/.test(val)) score++;
+    return score;
+  }
+
+  strengthClass(index: number): string {
+    const s = this.passwordStrength;
+    if (index >= s) return 'bg-slate-100';
+    if (s <= 1) return 'bg-rose-400';
+    if (s === 2) return 'bg-amber-400';
+    if (s === 3) return 'bg-blue-400';
+    return 'bg-emerald-400';
+  }
+
+  submit() {
+    if (this.form.invalid) { this.form.markAllAsTouched(); return; }
+    this.isSubmitting.set(true);
+    this.errorMsg.set(null);
+    const { oldPassword, newPassword } = this.form.value;
+    this.authService.changePassword({ oldPassword: oldPassword!, newPassword: newPassword! }).subscribe({
+      next: () => {
+        this.authStore.setAuth({
+          token: this.authStore.token()!,
+          roles: this.authStore.roles(),
+          permissions: this.authStore.permissions(),
+          companyId: this.authStore.companyId(),
+          companyName: this.authStore.companyName(),
+          nombreCompleto: this.authStore.nombreCompleto(),
+          userType: this.authStore.userType(),
+          empleadoId: this.authStore.empleadoId(),
+          passwordChanged: true,
+          needsCompanySelection: this.authStore.needsCompanySelection(),
+          selectedEnterprise: this.authStore.selectedEnterprise(),
+          menu: this.authStore.menu()
+        });
+        this.isSubmitting.set(false);
+        this.dismissed.emit();
+      },
+      error: (err) => {
+        this.errorMsg.set(err.error?.message ?? 'La contraseña actual es incorrecta.');
+        this.isSubmitting.set(false);
+      }
+    });
+  }
+}
