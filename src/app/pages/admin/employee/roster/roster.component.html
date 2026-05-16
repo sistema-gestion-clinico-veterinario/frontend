@@ -1,74 +1,158 @@
 <p-toast></p-toast>
+<p-confirmDialog #cd 
+  [style]="{width: '380px'}" 
+  styleClass="rounded-2xl overflow-hidden border border-slate-200 bg-white"
+  maskStyleClass="backdrop-blur-sm bg-slate-900/40"
+  [draggable]="false"
+  [closable]="false">
+  
+  <ng-template pTemplate="message" let-message>
+    <div class="flex items-center gap-4 px-6 pt-6 pb-2">
+      <div class="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center border border-amber-100 flex-shrink-0">
+        <i class="pi pi-exclamation-triangle text-amber-500 text-lg"></i>
+      </div>
+      <div class="flex flex-col">
+        <h3 class="text-sm font-bold text-slate-800 leading-tight">Confirmar acción</h3>
+        <p class="text-[12px] font-medium text-slate-500 leading-snug mt-0.5">{{ message.message }}</p>
+      </div>
+    </div>
+  </ng-template>
 
-<div class="p-8 flex flex-col gap-8 animate-fade-in">
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-2 px-6 pb-6 pt-2">
+      <button type="button" 
+        class="px-4 py-2 text-[11px] font-bold text-slate-400 hover:text-slate-600 transition-all" 
+        (click)="cd.onReject()">
+        Cancelar
+      </button>
+      <button type="button" 
+        class="px-5 py-2 text-[11px] font-bold text-white bg-[#0066AA] hover:bg-[#005588] rounded-lg transition-all active:scale-95" 
+        (click)="cd.onAccept()">
+        Confirmar
+      </button>
+    </div>
+  </ng-template>
+</p-confirmDialog>
 
-  <!-- Cabecera -->
-  <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
-    <div class="flex flex-col gap-2">
-      <h1 class="text-4xl font-extrabold text-slate-800 tracking-tight">Cuadrante de Turnos</h1>
-      <p class="text-slate-500 font-medium">Gestión de horarios y disponibilidad del personal</p>
+<div class="p-4 md:p-6 flex flex-col gap-6 animate-fade-in bg-slate-50/50 min-h-screen print:hidden">
+
+  <!-- Cabecera Compacta -->
+  <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200">
+    <div class="flex flex-col">
+      <h1 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+        <i class="pi pi-calendar-plus text-[#0066AA]"></i>
+        Cuadrante de Turnos
+      </h1>
+      <p class="text-xs text-slate-500 font-medium mt-0.5">Gestión de horarios y disponibilidad del personal</p>
     </div>
 
     <div class="flex flex-wrap items-center gap-3">
 
       <!-- Selector empleado -->
-      <div class="flex flex-col gap-1">
-        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-0.5">Empleado</label>
-        <select [ngModel]="selectedEmployeeId()" (change)="onEmployeeChange($any($event.target).value)"
-          class="h-10 px-3 min-w-[220px] bg-white border border-slate-300 rounded-lg text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500">
-          <option [value]="null">— Seleccionar empleado —</option>
-          <option *ngFor="let emp of employees()" [value]="emp.value">{{ emp.label }}</option>
-        </select>
+      <div class="flex flex-col min-w-[240px]">
+        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Empleado</label>
+        <p-dropdown 
+          [options]="employees()" 
+          [ngModel]="selectedEmployeeId()" 
+          (onChange)="onEmployeeChange($event.value)"
+          placeholder="— Seleccionar empleado —"
+          [filter]="true"
+          filterBy="label"
+          [showClear]="true"
+          styleClass="w-full h-9 flex items-center bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 outline-none transition-none shadow-none"
+          panelStyleClass="text-xs font-medium border-slate-200 shadow-none">
+        </p-dropdown>
       </div>
 
-      <!-- Separador -->
-      <div class="w-px h-10 bg-slate-200 hidden md:block"></div>
+      <div class="w-px h-8 bg-slate-200 hidden lg:block mx-1"></div>
 
       <!-- Modos de vista -->
-      <div class="flex flex-col gap-1">
-        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-0.5">Vista</label>
-        <div class="flex border border-slate-300 rounded-lg overflow-hidden h-10">
+      <div class="flex flex-col">
+        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Vista</label>
+        <div class="flex bg-slate-50 p-1 rounded-lg border border-slate-200 h-9">
           <button *ngFor="let opt of viewOptions"
             (click)="viewMode.set($any(opt.value))"
-            class="px-4 text-xs font-semibold border-r border-slate-300 last:border-r-0"
+            class="px-4 text-[10px] font-bold uppercase tracking-tight rounded-md"
             [class.bg-[#0066AA]]="viewMode() === opt.value"
             [class.text-white]="viewMode() === opt.value"
-            [class.text-slate-500]="viewMode() !== opt.value"
-            [class.hover:bg-slate-50]="viewMode() !== opt.value">
+            [class.text-slate-500]="viewMode() !== opt.value">
             {{ opt.label }}
           </button>
         </div>
       </div>
 
-      <!-- Separador -->
-      <div class="w-px h-10 bg-slate-200 hidden md:block"></div>
+      <div class="w-px h-8 bg-slate-200 hidden lg:block mx-1"></div>
 
       <!-- Navegación de fecha -->
-      <div class="flex flex-col gap-1">
-        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-0.5">Período</label>
-        <div class="flex items-center border border-slate-300 rounded-lg overflow-hidden h-10">
-          <button (click)="prev()" class="px-3 h-full border-r border-slate-300 text-slate-500 hover:bg-slate-50">
-            <i class="pi pi-chevron-left text-xs"></i>
+      <div class="flex flex-col">
+        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Período</label>
+        <div class="flex items-center bg-slate-50 rounded-lg border border-slate-200 h-9 overflow-hidden">
+          <button (click)="prev()" class="px-2.5 h-full text-slate-500 hover:bg-white hover:text-[#0066AA]">
+            <i class="pi pi-chevron-left text-[10px]"></i>
           </button>
-          <span class="px-5 text-xs font-bold text-slate-700 uppercase tracking-wide min-w-[150px] text-center">
+          <span class="px-4 text-[11px] font-bold text-slate-700 uppercase tracking-wider min-w-[130px] text-center">
             {{ currentLabel }}
           </span>
-          <button (click)="next()" class="px-3 h-full border-l border-slate-300 text-slate-500 hover:bg-slate-50">
-            <i class="pi pi-chevron-right text-xs"></i>
+          <button (click)="next()" class="px-2.5 h-full text-slate-500 hover:bg-white hover:text-[#0066AA]">
+            <i class="pi pi-chevron-right text-[10px]"></i>
           </button>
         </div>
       </div>
 
       <!-- Botón asignar -->
-      <div class="flex flex-col gap-1" *ngIf="selectedEmployeeId()">
-        <label class="text-[10px] font-bold text-transparent uppercase tracking-widest ml-0.5">·</label>
-        <button (click)="showSidebar.set(true)"
-          class="flex items-center gap-2 bg-[#0066AA] hover:bg-[#005a96] text-white text-sm font-medium px-5 h-10 rounded-lg">
-          <i class="pi pi-plus text-xs"></i>
-          Asignar Horario
-        </button>
+      <div class="flex flex-col ml-auto lg:ml-2" *ngIf="selectedEmployeeId() && canManage()">
+        <label class="text-[10px] font-bold text-transparent uppercase tracking-widest mb-2">.</label>
+        <div class="flex items-center gap-2">
+          <button (click)="copyLastWeek()" *ngIf="viewMode() === 'week'"
+            class="flex items-center gap-2 bg-slate-50 text-slate-700 text-[10px] font-bold px-4 h-9 rounded-lg border border-slate-200 tracking-wide hover:bg-white transition-all"
+            title="Copiar turnos de la semana pasada">
+            <i class="pi pi-copy text-[10px]"></i>
+            CLONAR SEMANA
+          </button>
+          <button (click)="openAddForm()"
+            class="flex items-center gap-2 bg-[#0066AA] text-white text-[10px] font-bold px-4 h-9 rounded-lg border border-[#0066AA] tracking-wide">
+            <i class="pi pi-plus text-[10px]"></i>
+            ASIGNAR TURNO
+          </button>
+        </div>
       </div>
 
+    </div>
+  </div>
+
+  <!-- Resumen de Horas (Solo cuando hay empleado seleccionado) -->
+  <div *ngIf="selectedEmployeeId()" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div class="bg-white border border-slate-200 p-4 rounded-2xl flex items-center gap-4">
+      <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-[#0066AA]">
+        <i class="pi pi-clock text-xl"></i>
+      </div>
+      <div>
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Horas en {{ viewMode() === 'week' ? 'Semana' : (viewMode() === 'month' ? 'Mes' : 'Día') }}</p>
+        <p class="text-xl font-black text-slate-800">{{ totalWeeklyHours() }}h</p>
+      </div>
+    </div>
+    <div class="bg-white border border-slate-200 p-4 rounded-2xl flex items-center gap-4">
+      <div class="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-500">
+        <i class="pi pi-calendar text-xl"></i>
+      </div>
+      <div>
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Horas del Mes</p>
+        <p class="text-xl font-black text-slate-800">{{ totalMonthlyHours() }}h</p>
+      </div>
+    </div>
+    <div class="bg-white border border-slate-200 p-4 rounded-2xl flex items-center gap-4 md:col-span-2">
+      <div class="flex items-center gap-3 ml-auto">
+        <button (click)="exportPdf()"
+          class="flex items-center gap-2 bg-white text-rose-600 text-[10px] font-bold px-4 h-10 rounded-xl border border-rose-100 tracking-wide hover:bg-rose-50 transition-all">
+          <i class="pi pi-file-pdf text-[14px]"></i>
+          EXPORTAR HORARIO (PDF)
+        </button>
+        <button (click)="exportExcel()"
+          class="flex items-center gap-2 bg-white text-emerald-600 text-[10px] font-bold px-4 h-10 rounded-xl border border-emerald-100 tracking-wide hover:bg-emerald-50 transition-all">
+          <i class="pi pi-file-excel text-[14px]"></i>
+          EXPORTAR HORARIO (EXCEL)
+        </button>
+      </div>
     </div>
   </div>
 
@@ -76,55 +160,76 @@
   <app-schedule-form
     [visible]="showSidebar()"
     [employeeId]="selectedEmployeeId()"
+    [employeeName]="selectedEmployeeName()"
+    [initialData]="selectedShift()"
+    [scheduleRange]="scheduleRange()"
     (close)="showSidebar.set(false)"
     (saved)="loadSchedule(selectedEmployeeId()!)">
   </app-schedule-form>
 
   <!-- Estado vacío -->
-  <div *ngIf="!selectedEmployeeId()" class="bg-white border border-slate-200 rounded-2xl py-24 flex flex-col items-center text-center">
-    <i class="pi pi-calendar text-4xl text-slate-200 block mb-4"></i>
-    <p class="text-sm font-semibold text-slate-500">Selecciona un empleado para ver su cuadrante</p>
-    <p class="text-xs text-slate-400 mt-1 max-w-xs">Usa el selector de la parte superior para elegir un miembro del equipo.</p>
+  <div *ngIf="!selectedEmployeeId()" class="bg-white border border-slate-200 rounded-2xl py-20 flex flex-col items-center text-center">
+    <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4 border border-slate-100">
+      <i class="pi pi-users text-2xl text-slate-300"></i>
+    </div>
+    <p class="text-base font-bold text-slate-800">No hay empleado seleccionado</p>
+    <p class="text-xs text-slate-400 mt-1 max-w-xs">Elige un miembro del equipo en el selector superior para gestionar sus turnos.</p>
   </div>
 
-  <!-- Calendario -->
-  <div *ngIf="selectedEmployeeId()" class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-none">
+  <!-- Calendario Contenedor -->
+  <div *ngIf="selectedEmployeeId()" class="bg-white border border-slate-200 rounded-2xl overflow-hidden">
 
     <!-- ============ VISTA DÍA: Timeline por horas ============ -->
     <ng-container *ngIf="viewMode() === 'day'">
       
       <!-- Cabecera del día -->
-      <div class="flex items-center gap-4 px-6 py-4 border-b border-slate-100 bg-slate-50">
-        <div>
-          <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">
-            {{ dayViewDayName }}
-          </p>
-          <p class="text-2xl font-extrabold text-slate-800">
-            {{ dayViewFullDate }}
-          </p>
+      <div class="flex items-center gap-4 px-6 py-4 border-b border-slate-100 bg-white">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-[#0066AA] rounded-xl flex flex-col items-center justify-center text-white">
+            <span class="text-[10px] uppercase font-bold leading-none">{{ currentDate().getDate() }}</span>
+            <span class="text-[8px] uppercase font-medium opacity-80 leading-none mt-0.5">{{ monthNames[currentDate().getMonth()].substring(0,3) }}</span>
+          </div>
+          <div>
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">
+              {{ dayViewDayName }}
+            </p>
+            <p class="text-lg font-bold text-slate-800 leading-none">
+              {{ dayViewFullDate }}
+            </p>
+          </div>
         </div>
-        <div *ngIf="dayViewHours().length" class="ml-auto flex items-center gap-3">
+        
+        <div *ngIf="dayViewHours().length" class="ml-auto flex items-center gap-2">
           <ng-container *ngFor="let h of dayViewHours()">
             <ng-container *ngIf="h.isShiftStart && h.shift">
-              <span class="px-3 py-1 rounded-full text-xs font-bold text-white bg-[#0066AA]">
+              <span class="px-2.5 py-1 rounded-md text-[10px] font-bold text-[#0066AA] bg-slate-50 border border-slate-200">
                 {{ h.shift.horaInicio?.substring(0,5) }} – {{ h.shift.horaFin?.substring(0,5) }}
               </span>
             </ng-container>
           </ng-container>
-          <span *ngIf="!hasWorkingHours" class="text-xs text-slate-400 italic">Sin turnos asignados</span>
+          <span *ngIf="!hasWorkingHours" class="text-[10px] text-slate-400 font-medium italic">Sin turnos asignados</span>
         </div>
       </div>
 
-      <!-- Timeline -->
-      <div class="overflow-y-auto" style="max-height: 600px;">
+      <!-- Timeline Optimizado -->
+      <div #timelineScroll class="overflow-y-auto relative" style="max-height: 500px;">
+        
+        <!-- Línea de hora actual -->
+        <div *ngIf="currentTimeOffset() > 0" 
+          class="absolute left-0 right-0 z-10 flex items-center pointer-events-none"
+          [style.top.px]="currentTimeOffset()">
+          <div class="w-2 h-2 rounded-full bg-red-500 -ml-1"></div>
+          <div class="flex-1 h-px bg-red-500 opacity-50"></div>
+        </div>
+
         <div *ngFor="let slot of dayViewHours(); let i = index" class="flex group relative"
           [class.border-t]="i > 0"
-          [class.border-slate-100]="!slot.isWorking"
-          [class.border-blue-100]="slot.isWorking">
+          [class.border-slate-50]="!slot.isWorking"
+          [class.border-slate-100]="slot.isWorking">
           
           <!-- Etiqueta de hora -->
-          <div class="w-16 flex-shrink-0 flex items-start justify-end pr-3 pt-2 pb-2">
-            <span class="text-[11px] font-semibold leading-none"
+          <div class="w-14 flex-shrink-0 flex items-start justify-end pr-3 pt-3 pb-3 bg-slate-50/30">
+            <span class="text-[10px] font-bold tracking-tighter"
               [class.text-slate-400]="!slot.isWorking"
               [class.text-[#0066AA]]="slot.isWorking">
               {{ slot.label }}
@@ -132,29 +237,39 @@
           </div>
 
           <!-- Bloque de hora -->
-          <div class="flex-1 relative min-h-[52px] border-l"
-            [style.borderLeftColor]="slot.isWorking ? '#0066AA' : '#E2E8F0'"
-            [style.backgroundColor]="slot.isWorking ? '#EFF6FF' : (slot.hour % 2 === 0 ? '#FFFFFF' : '#FAFAFA')">
+          <div class="flex-1 relative h-[44px] border-l border-slate-100"
+            [ngClass]="{'bg-slate-50/50': slot.isWorking, 'border-l-[#0066AA] border-l-2': slot.isWorking}">
 
-            <!-- Etiqueta del turno (solo en el inicio) -->
-            <div *ngIf="slot.isShiftStart && slot.shift" class="px-3 py-2">
-              <div class="flex items-center gap-2">
-                <span class="w-2 h-2 rounded-full flex-shrink-0" style="background-color: #0066AA;"></span>
-                <span class="text-xs font-bold" style="color: #0066AA;">
-                  Turno: {{ slot.shift.horaInicio?.substring(0,5) }} – {{ slot.shift.horaFin?.substring(0,5) }}
-                </span>
-                <button (click)="deleteShift(slot.shift.id)"
-                  class="ml-auto px-2 py-0.5 rounded text-[10px] font-semibold text-red-500 border border-red-200 hover:bg-red-50 opacity-0 group-hover:opacity-100">
-                  <i class="pi pi-trash mr-1 text-[9px]"></i>Eliminar
-                </button>
+            <!-- Etiqueta del turno -->
+            <div *ngIf="slot.isShiftStart && slot.shift" class="px-4 py-2 flex items-center h-full">
+              <div (click)="editShift(slot.shift); $event.stopPropagation()" 
+                class="bg-white border border-slate-200 rounded-lg py-1 px-3 flex items-center justify-between w-full cursor-pointer hover:border-[#0066AA] transition-all"
+                [class.ring-2]="selectedShift()?.id === slot.shift.id"
+                [class.ring-[#0066AA]]="selectedShift()?.id === slot.shift.id">
+                <div class="flex items-center gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-[#0066AA]"></span>
+                  <span class="text-[11px] font-bold text-[#0066AA]">
+                    Jornada: {{ slot.shift.horaInicio?.substring(0,5) }} – {{ slot.shift.horaFin?.substring(0,5) }}
+                  </span>
+                </div>
+                <div class="flex items-center gap-1">
+                  <button *ngIf="canManage()" (click)="editShift(slot.shift); $event.stopPropagation()"
+                    class="p-1.5 rounded-md text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all"
+                    title="Editar turno">
+                    <i class="pi pi-pencil text-[10px]"></i>
+                  </button>
+                  <button *ngIf="canManage()" (click)="deleteShift(slot.shift); $event.stopPropagation()"
+                    class="p-1.5 rounded-md text-red-400 hover:text-red-600 hover:bg-red-50 transition-all"
+                    title="Eliminar turno">
+                    <i class="pi pi-trash text-[10px]"></i>
+                  </button>
+                </div>
               </div>
             </div>
 
-            <!-- Relleno visual para horas de trabajo sin etiqueta -->
-            <div *ngIf="slot.isWorking && !slot.isShiftStart" class="h-full px-3 flex items-center">
-              <div class="h-px w-full" style="background-color: #BFDBFE;"></div>
+            <div *ngIf="slot.isWorking && !slot.isShiftStart" class="h-full px-4 flex items-center opacity-30">
+              <div class="h-[2px] w-full bg-slate-200 rounded-full"></div>
             </div>
-
           </div>
         </div>
       </div>
@@ -163,59 +278,73 @@
     <!-- ============ VISTA SEMANA / MES ============ -->
     <ng-container *ngIf="viewMode() !== 'day'">
       <!-- Cabecera de días -->
-      <div class="grid grid-cols-7 border-b border-slate-100 bg-slate-50">
-        <div *ngFor="let day of ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']; let i = index"
-          class="py-3 text-center text-xs font-bold uppercase tracking-wider border-r border-slate-100 last:border-r-0"
-          [class.text-rose-400]="i === 0"
-          [class.text-slate-400]="i !== 0">
-          {{ day }}
+      <div class="grid grid-cols-7 border-b border-slate-100 bg-slate-50/50">
+        <div *ngFor="let day of ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']; let i = index"
+          class="py-3 text-center text-[10px] font-bold uppercase tracking-widest border-r border-slate-100 last:border-r-0"
+          [class.text-rose-500]="i === 0"
+          [class.text-slate-500]="i !== 0">
+          <span class="hidden md:inline">{{ day }}</span>
+          <span class="inline md:hidden">{{ day.substring(0,3) }}</span>
         </div>
       </div>
 
       <!-- Grid de celdas -->
-      <div [class.grid]="true" class="grid-cols-7"
-        [class.grid-cols-7]="viewMode() === 'week' || viewMode() === 'month'">
+      <div class="grid grid-cols-7">
 
         <div *ngFor="let item of calendarDays()"
-          class="border-r border-b border-slate-100 last:border-r-0 relative"
-          [class.bg-slate-50]="item.otherMonth"
-          [class.bg-white]="!item.otherMonth"
-          [style.min-height]="viewMode() === 'month' ? '120px' : '260px'">
+          (click)="onDayClick(item)"
+          class="border-r border-b border-slate-100 last:border-r-0 relative group hover:bg-slate-50/50 cursor-pointer transition-all"
+          [ngClass]="{'bg-slate-50/50': item.otherMonth, 'bg-white': !item.otherMonth}"
+          [style.min-height]="viewMode() === 'month' ? '90px' : '200px'">
 
           <!-- Número de día -->
-          <div class="flex items-center justify-between px-3 pt-2.5 pb-1.5">
+          <div class="flex items-center justify-between px-2 pt-2 pb-1">
             <span
-              class="text-sm font-bold w-7 h-7 flex items-center justify-center rounded-full"
+              class="text-xs font-bold w-6 h-6 flex items-center justify-center rounded-lg"
               [class.text-slate-300]="item.otherMonth"
-              [class.text-slate-700]="!item.otherMonth && !item.isToday"
+              [class.text-slate-600]="!item.otherMonth && !item.isToday"
               [class.text-white]="item.isToday"
               [class.bg-[#0066AA]]="item.isToday">
               {{ item.day }}
             </span>
-            <span *ngIf="item.shifts?.length > 0"
-              class="text-[10px] font-bold px-1.5 py-0.5 rounded text-white bg-[#0066AA]">
-              {{ item.shifts.length }}
-            </span>
+            <div *ngIf="item.shifts?.length > 0" class="flex -space-x-1">
+               <span class="w-1.5 h-1.5 rounded-full bg-[#0066AA] border border-white"></span>
+            </div>
           </div>
 
-          <!-- Lista de turnos -->
-          <div class="px-2 pb-2 space-y-1">
-            <div *ngFor="let shift of item.shifts"
-              class="flex items-center justify-between px-2 py-1.5 rounded-lg border border-blue-100 bg-blue-50 group">
+          <!-- Lista de turnos Compacta -->
+          <div class="px-1.5 pb-2 space-y-1">
+            <div *ngFor="let shift of item.shifts" (click)="editShift(shift); $event.stopPropagation()"
+              class="flex items-center justify-between px-2 py-1 rounded-md border border-slate-200 bg-slate-50/50 group/item hover:border-[#0066AA] hover:bg-slate-50 cursor-pointer transition-all"
+              [class.ring-2]="selectedShift()?.id === shift.id"
+              [class.ring-[#0066AA]]="selectedShift()?.id === shift.id"
+              [class.ring-offset-1]="selectedShift()?.id === shift.id"
+              [class.z-20]="selectedShift()?.id === shift.id">
               <div class="flex items-center gap-1.5 min-w-0">
-                <span class="w-1.5 h-1.5 rounded-full bg-[#0066AA] flex-shrink-0"></span>
-                <span class="text-xs font-medium text-slate-700 truncate">
+                <i class="pi pi-clock text-[8px] text-[#0066AA]"></i>
+                <span class="text-[9px] font-bold text-slate-700 truncate">
                   {{ shift.horaInicio }} – {{ shift.horaFin }}
                 </span>
               </div>
-              <button (click)="deleteShift(shift.id); $event.stopPropagation()"
-                class="flex-shrink-0 w-5 h-5 items-center justify-center rounded-full text-white bg-red-500 opacity-0 group-hover:opacity-100 flex">
-                <i class="pi pi-times text-[9px]"></i>
-              </button>
+              <div class="flex items-center gap-0.5">
+                <button *ngIf="canManage()" (click)="editShift(shift); $event.stopPropagation()"
+                  class="flex-shrink-0 w-4 h-4 items-center justify-center rounded-md text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 opacity-0 group-hover/item:opacity-100 transition-all flex"
+                  title="Editar">
+                  <i class="pi pi-pencil text-[8px]"></i>
+                </button>
+                <button *ngIf="canManage()" (click)="deleteShift(shift); $event.stopPropagation()"
+                  class="flex-shrink-0 w-4 h-4 items-center justify-center rounded-md text-red-400 hover:text-red-600 hover:bg-red-50 opacity-0 group-hover/item:opacity-100 transition-all flex"
+                  title="Eliminar">
+                  <i class="pi pi-trash text-[8px]"></i>
+                </button>
+              </div>
             </div>
 
-            <p *ngIf="!item.shifts?.length && !item.otherMonth && viewMode() !== 'month'"
-              class="text-xs text-slate-300 text-center pt-6">Sin turnos</p>
+            <div *ngIf="!item.shifts?.length && !item.otherMonth && viewMode() !== 'month'"
+              class="flex flex-col items-center justify-center pt-8 opacity-20">
+              <i class="pi pi-calendar-minus text-lg"></i>
+              <p class="text-[9px] font-bold mt-1 uppercase tracking-tighter">Libre</p>
+            </div>
           </div>
 
         </div>
@@ -224,4 +353,271 @@
 
   </div>
 
+</div>
+
+<!-- Contenedor Exclusivo de Impresión (Oculto en pantalla, visible al imprimir) -->
+<div id="print-area" class="hidden print:block font-sans p-10 text-[#0f172a] bg-white">
+  <style>
+    @media print {
+      body {
+        background-color: #ffffff !important;
+        color: #0f172a !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .print-header-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 2px solid #0f172a;
+        padding-bottom: 20px;
+        margin-bottom: 30px;
+      }
+      .print-logo-title {
+        display: flex;
+        flex-direction: column;
+      }
+      .print-logo-text {
+        font-size: 26px;
+        font-weight: 800;
+        color: #0f172a;
+        letter-spacing: -0.5px;
+        line-height: 1;
+      }
+      .print-subtitle {
+        font-size: 9px;
+        font-weight: 700;
+        color: #475569;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        margin-top: 4px;
+      }
+      .print-report-info {
+        text-align: right;
+        font-size: 11px;
+        color: #475569;
+        line-height: 1.5;
+      }
+      .print-employee-card {
+        background: #ffffff;
+        border: 1px solid #0f172a;
+        border-radius: 0 !important; /* Totalmente cuadrado */
+        padding: 16px 20px;
+        margin-bottom: 30px;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+      }
+      .print-card-field {
+        display: flex;
+        flex-direction: column;
+      }
+      .print-field-label {
+        font-size: 9px;
+        font-weight: 800;
+        color: #475569;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+      }
+      .print-field-value {
+        font-size: 14px;
+        font-weight: 600;
+        color: #0f172a;
+      }
+      .print-highlight-value {
+        color: #000000;
+        font-size: 16px;
+        font-weight: 800;
+      }
+      .print-matrix-table-container {
+        border: 1px solid #0f172a;
+        border-radius: 0 !important; /* Totalmente cuadrado */
+        overflow: hidden;
+        margin-bottom: 30px;
+        background: #ffffff;
+      }
+      .print-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      .print-table th {
+        background: #f8fafc !important;
+        color: #0f172a !important;
+        font-size: 10px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 12px;
+        text-align: center;
+        border: 1px solid #0f172a;
+        print-color-adjust: exact;
+      }
+      .print-table th:first-child {
+        text-align: left;
+        border-left: none;
+      }
+      .print-table th:last-child {
+        border-right: none;
+      }
+      .print-table td {
+        border: 1px solid #0f172a;
+        padding: 8px;
+        vertical-align: middle;
+        text-align: center;
+        font-size: 11px;
+        border-radius: 0 !important;
+      }
+      .print-table td:first-child {
+        border-left: none;
+      }
+      .print-table td:last-child {
+        border-right: none;
+      }
+      .print-table tr:last-child td {
+        border-bottom: none;
+      }
+      .print-week-cell {
+        background: #f8fafc !important;
+        text-align: left;
+        width: 130px;
+        font-weight: 800;
+        color: #0f172a;
+        padding-left: 12px;
+        print-color-adjust: exact;
+      }
+      .print-week-dates {
+        font-size: 10px;
+        color: #475569;
+        font-weight: 700;
+      }
+      .print-week-dates-sub {
+        font-size: 9px;
+        color: #64748b;
+        font-weight: 600;
+      }
+      .print-shift-cell {
+        background: #ffffff;
+      }
+      .print-empty-cell {
+        color: #cbd5e1;
+        font-size: 12px;
+        font-weight: 500;
+        background: #ffffff !important;
+        print-color-adjust: exact;
+      }
+      .print-matrix-shift-box {
+        background: #ffffff !important;
+        border: 1px solid #0f172a !important;
+        border-radius: 0 !important; /* Totalmente cuadrado */
+        padding: 6px;
+        text-align: center;
+        display: inline-block;
+        width: 100%;
+        box-sizing: border-box;
+        print-color-adjust: exact;
+      }
+      .print-time-range {
+        font-size: 10px;
+        font-weight: 800;
+        color: #000000;
+      }
+      .print-duration-tag {
+        font-size: 8px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #475569;
+        margin-top: 2px;
+      }
+      .print-empty-state-row {
+        padding: 30px;
+        text-align: center;
+        color: #64748b;
+        font-size: 12px;
+        font-weight: 500;
+        background: #ffffff !important;
+        print-color-adjust: exact;
+      }
+      .print-footer-notes {
+        margin-top: 50px;
+        border-top: 1px solid #0f172a;
+        padding-top: 20px;
+        font-size: 10px;
+        color: #64748b;
+        text-align: center;
+        font-weight: 500;
+        line-height: 1.6;
+      }
+    }
+  </style>
+
+  <div class="print-header-container">
+    <div class="print-logo-title">
+      <span class="print-logo-text">VARGASVET</span>
+      <span class="print-subtitle">Cuadrante Consolidado de Trabajo</span>
+    </div>
+    <div class="print-report-info">
+      <span>Reporte de Personal</span><br>
+      <strong>VargasVet S.A.C.</strong><br>
+      <span style="font-size: 9px; color: #94a3b8; margin-top: 4px; display: inline-block;">Emitido: {{ currentDateFormatted() }}</span>
+    </div>
+  </div>
+
+  <div class="print-employee-card">
+    <div class="print-card-field">
+      <span class="print-field-label">Colaborador</span>
+      <span class="print-field-value">{{ selectedEmployeeName() }}</span>
+    </div>
+    <div class="print-card-field">
+      <span class="print-field-label">Cargo / Función</span>
+      <span class="print-field-value">{{ selectedEmployeeCargo() }}</span>
+    </div>
+    <div class="print-card-field">
+      <span class="print-field-label">Total Horas Registradas</span>
+      <span class="print-field-value print-highlight-value">{{ totalShiftsHours() }} hrs</span>
+    </div>
+  </div>
+
+  <div class="print-matrix-table-container">
+    <table class="print-table">
+      <thead>
+        <tr>
+          <th style="width: 140px;">Periodo / Semana</th>
+          <th>Lunes</th>
+          <th>Martes</th>
+          <th>Miércoles</th>
+          <th>Jueves</th>
+          <th>Viernes</th>
+          <th>Sábado</th>
+          <th>Domingo</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let week of printableWeeks()">
+          <td class="print-week-cell">
+            <strong>{{ week.title }}</strong><br>
+            <span class="print-week-dates" [class.print-week-dates-sub]="week.isBase">{{ week.subtitle }}</span>
+          </td>
+          <td *ngFor="let day of week.days" [class.print-shift-cell]="day.shifts.length > 0" [class.print-empty-cell]="day.shifts.length === 0">
+            <div *ngIf="day.shifts.length > 0" class="space-y-1">
+              <div *ngFor="let shift of day.shifts" class="print-matrix-shift-box">
+                <div class="print-time-range">{{ shift.timeRange }}</div>
+                <div class="print-duration-tag">{{ shift.duration }}h Turno</div>
+              </div>
+            </div>
+            <div *ngIf="day.shifts.length === 0">-</div>
+          </td>
+        </tr>
+        <tr *ngIf="printableWeeks().length === 0">
+          <td colspan="8" class="print-empty-state-row">
+            No hay turnos planificados asignados a este colaborador en el sistema.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="print-footer-notes">
+    Este cuadrante representa la planificación de turnos vigente. Toda modificación posterior deberá ser autorizada por la Gerencia de Operaciones de VargasVet S.A.C.
+  </div>
 </div>

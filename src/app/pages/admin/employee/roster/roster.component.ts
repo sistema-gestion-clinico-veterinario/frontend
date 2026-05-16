@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, signal, effect } from '@angular/core';
+import { Component, OnInit, inject, signal, effect, ViewChild, ElementRef, AfterViewChecked, OnDestroy, computed } from '@angular/core';
+import ExcelJS from 'exceljs';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { EmpleadoService } from '../../../../core/services/empleado.service';
@@ -10,22 +11,27 @@ import { AuthStore } from '../../../../store/auth.store';
 import { DropdownModule } from 'primeng/dropdown';
 import { ButtonModule } from 'primeng/button';
 import { ToastModule } from 'primeng/toast';
-import { MessageService } from 'primeng/api';
+import { ConfirmationService, MessageService } from 'primeng/api';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { FormsModule } from '@angular/forms';
 import { ScheduleFormComponent } from './components/schedule-form/schedule-form.component';
 
 @Component({
   selector: 'app-roster',
   standalone: true,
-  imports: [CommonModule, RouterModule, DropdownModule, ButtonModule, ToastModule, FormsModule, ScheduleFormComponent],
-  providers: [MessageService],
+  imports: [CommonModule, RouterModule, DropdownModule, ButtonModule, ToastModule, ConfirmDialogModule, FormsModule, ScheduleFormComponent],
+  providers: [MessageService, ConfirmationService],
   templateUrl: './roster.component.html',
   styleUrl: './roster.component.scss'
 })
-export class RosterComponent {
+export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
+  @ViewChild('timelineScroll') timelineScroll?: ElementRef;
+  private shouldScrollToCurrentHour = false;
+  private timeUpdateTimer?: any;
   private readonly empleadoService = inject(EmpleadoService);
   private readonly authStore = inject(AuthStore);
   private readonly messageService = inject(MessageService);
+  private readonly confirmationService = inject(ConfirmationService);
 
   employees = signal<{label: string, value: number}[]>([]);
   selectedEmployeeId = signal<number | null>(null);
@@ -37,6 +43,177 @@ export class RosterComponent {
   currentDate = signal<Date>(new Date());
   calendarDays = signal<any[]>([]);
   loading = signal<boolean>(false);
+  currentTimeOffset = signal<number>(0);
+  selectedShift = signal<any>(null);
+  
+  canManage = computed(() => {
+    const permissions = this.authStore.permissions() || [];
+    const roles = this.authStore.roles() || [];
+    return permissions.includes('HORARIO_MANAGE') || 
+           roles.includes('ROLE_SUPERADMIN') || 
+           roles.includes('ROLE_ADMINISTRADOR') ||
+           roles.includes('SUPERADMIN') || 
+           roles.includes('ADMINISTRADOR');
+  });
+
+  selectedEmployeeName = computed(() => {
+    const id = this.selectedEmployeeId();
+    const list = this.employees();
+    return list.find(e => e.value === id)?.label || '';
+  });
+
+  selectedEmployeeCargo = computed(() => {
+    const id = this.selectedEmployeeId();
+    const list = this.employees();
+    return (list.find(e => e.value === id) as any)?.cargo || 'Personal';
+  });
+
+  currentDateFormatted = computed(() => {
+    return new Date().toLocaleDateString('es-PE', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  });
+
+  printableWeeks = computed(() => {
+    const allShifts = this.shifts();
+    const datedShifts = allShifts.filter((s: any) => s.fecha);
+    const baseShifts = allShifts.filter((s: any) => !s.fecha);
+
+    const weeksMap = new Map<string, any[]>();
+    datedShifts.forEach((s: any) => {
+      const d = new Date(s.fecha + 'T00:00:00');
+      const day = d.getDay();
+      const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+      const monday = new Date(d.setDate(diff));
+      const mondayStr = monday.toISOString().split('T')[0];
+      
+      if (!weeksMap.has(mondayStr)) {
+        weeksMap.set(mondayStr, []);
+      }
+      weeksMap.get(mondayStr)?.push(s);
+    });
+
+    const sortedWeekKeys = Array.from(weeksMap.keys()).sort();
+    const list: any[] = [];
+    const dayNames = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO', 'DOMINGO'];
+
+    // 1. Fila de Horario Base (si hay)
+    if (baseShifts.length > 0) {
+      const days: any[] = [];
+      dayNames.forEach(name => {
+        const dayShifts = baseShifts.filter((s: any) => s.diaSemana === name);
+        days.push({
+          name,
+          shifts: dayShifts.map((s: any) => ({
+            timeRange: `${s.horaInicio?.substring(0,5)} - ${s.horaFin?.substring(0,5)}`,
+            duration: this.calculateTotalHours([s])
+          }))
+        });
+      });
+      list.push({
+        isBase: true,
+        title: 'Base Semanal',
+        subtitle: 'Plantilla Fija',
+        days
+      });
+    }
+
+    // Semanas calendarizadas
+    sortedWeekKeys.forEach(mondayStr => {
+      const mondayDate = new Date(mondayStr + 'T00:00:00');
+      const sundayDate = new Date(mondayDate);
+      sundayDate.setDate(mondayDate.getDate() + 6);
+      
+      const weekShifts = weeksMap.get(mondayStr) || [];
+      const days: any[] = [];
+      
+      for (let i = 0; i < 7; i++) {
+        const currentDay = new Date(mondayDate);
+        currentDay.setDate(mondayDate.getDate() + i);
+        const currentDayStr = currentDay.toISOString().split('T')[0];
+        
+        const dayShifts = weekShifts.filter((s: any) => s.fecha === currentDayStr);
+        days.push({
+          name: dayNames[i],
+          shifts: dayShifts.map((s: any) => ({
+            timeRange: `${s.horaInicio?.substring(0,5)} - ${s.horaFin?.substring(0,5)}`,
+            duration: this.calculateTotalHours([s])
+          }))
+        });
+      }
+
+      list.push({
+        isBase: false,
+        title: 'Semana',
+        subtitle: `${mondayDate.toLocaleDateString('es-PE', {day:'2-digit', month:'2-digit'})} al ${sundayDate.toLocaleDateString('es-PE', {day:'2-digit', month:'2-digit'})}`,
+        days
+      });
+    });
+
+    return list;
+  });
+
+  totalWeeklyHours = computed(() => {
+    const shifts = this.shifts();
+    const mode = this.viewMode();
+    const current = this.currentDate();
+    
+    // Si estamos en vista semana, filtramos por la semana actual
+    if (mode === 'week') {
+      const startOfWeek = new Date(current);
+      startOfWeek.setDate(current.getDate() - current.getDay());
+      const endOfWeek = new Date(startOfWeek);
+      endOfWeek.setDate(startOfWeek.getDate() + 6);
+      
+      const startStr = startOfWeek.toISOString().split('T')[0];
+      const endStr = endOfWeek.toISOString().split('T')[0];
+      
+      return this.calculateTotalHours(shifts.filter(s => s.fecha >= startStr && s.fecha <= endStr));
+    }
+    
+    // Si estamos en vista día, solo el día
+    if (mode === 'day') {
+      const dateStr = current.toISOString().split('T')[0];
+      return this.calculateTotalHours(shifts.filter(s => s.fecha === dateStr));
+    }
+
+    return 0;
+  });
+
+  totalMonthlyHours = computed(() => {
+    const shifts = this.shifts();
+    const current = this.currentDate();
+    const year = current.getFullYear();
+    const month = current.getMonth();
+    
+    const startStr = new Date(year, month, 1).toISOString().split('T')[0];
+    const endStr = new Date(year, month + 1, 0).toISOString().split('T')[0];
+    
+    return this.calculateTotalHours(shifts.filter(s => s.fecha >= startStr && s.fecha <= endStr));
+  });
+
+  totalShiftsHours = computed(() => {
+    return this.calculateTotalHours(this.shifts());
+  });
+
+  private calculateTotalHours(shifts: any[]): number {
+    let total = 0;
+    shifts.forEach(s => {
+      if (s.horaInicio && s.horaFin) {
+        const [h1, m1] = s.horaInicio.split(':').map(Number);
+        const [h2, m2] = s.horaFin.split(':').map(Number);
+        const diff = (h2 + m2 / 60) - (h1 + m1 / 60);
+        if (diff > 0) total += diff;
+      }
+    });
+    return Math.round(total * 100) / 100;
+  }
+
+  scheduleRange = computed(() => {
+    const shifts = this.shifts();
+    if (shifts.length === 0) return null;
+    const dates = shifts.map(s => s.fecha).filter(f => !!f).sort();
+    if (dates.length === 0) return null;
+    return { start: dates[0], end: dates[dates.length - 1] };
+  });
   
   readonly monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
   readonly viewOptions = [
@@ -59,16 +236,69 @@ export class RosterComponent {
       const date = this.currentDate();
       if (empId) {
         this.loadSchedule(empId);
+        if (mode === 'day') {
+          this.shouldScrollToCurrentHour = true;
+          this.updateTimeOffset();
+        }
       } else {
         this.calendarDays.set([]);
       }
     });
   }
 
+  ngOnInit() {
+    this.timeUpdateTimer = setInterval(() => {
+      if (this.viewMode() === 'day') {
+        this.updateTimeOffset();
+      }
+    }, 60000);
+  }
+
+  ngOnDestroy() {
+    if (this.timeUpdateTimer) {
+      clearInterval(this.timeUpdateTimer);
+    }
+  }
+
+  ngAfterViewChecked() {
+    if (this.shouldScrollToCurrentHour && this.timelineScroll) {
+      this.scrollToCurrentHour();
+      this.shouldScrollToCurrentHour = false;
+    }
+  }
+
+  private scrollToCurrentHour() {
+    if (!this.timelineScroll) return;
+    
+    const now = new Date();
+    const currentHour = now.getHours();
+    
+    // Cada slot tiene min-h-[44px] más bordes, aprox 45px por hora
+    const scrollAmount = Math.max(0, (currentHour * 45) - 45); // Restamos una hora para que se vea un poco de contexto
+    
+    this.timelineScroll.nativeElement.scrollTop = scrollAmount;
+  }
+
+  private updateTimeOffset() {
+    const now = new Date();
+    const isToday = this.isToday(this.currentDate());
+    if (!isToday) {
+      this.currentTimeOffset.set(-1);
+      return;
+    }
+    const h = now.getHours();
+    const m = now.getMinutes();
+    this.currentTimeOffset.set((h * 45) + (m / 60 * 45));
+  }
+
   loadEmployeeList(companyId: number) {
     this.empleadoService.listar(companyId, undefined, 0, 1000).subscribe({
       next: (res) => {
-        const list = res.data.content.map(e => ({ label: `${e.nombre} ${e.apellido}`, value: e.id }));
+        const list = res.data.content.map(e => ({
+          label: `${e.nombre} ${e.apellido}`,
+          value: e.id,
+          cargo: e.tiposEmpleado && e.tiposEmpleado.length > 0 ? e.tiposEmpleado[0] : 'Personal'
+        }));
         this.employees.set(list);
       }
     });
@@ -235,6 +465,27 @@ export class RosterComponent {
     }
   }
 
+  editShift(shift: any) {
+    if (!this.canManage()) return;
+    this.selectedShift.set(shift);
+    this.showSidebar.set(true);
+  }
+
+  openAddForm(date?: string) {
+    if (!this.selectedEmployeeId()) {
+      this.messageService.add({ severity: 'warn', summary: 'Atención', detail: 'Selecciona un empleado primero' });
+      return;
+    }
+    this.selectedShift.set(date ? { fecha: date } : null);
+    this.showSidebar.set(true);
+  }
+
+  onDayClick(item: any) {
+    if (!this.canManage() || item.otherMonth) return;
+    const dateStr = item.date.toISOString().split('T')[0];
+    this.openAddForm(dateStr);
+  }
+
   prev() {
     const d = new Date(this.currentDate());
     const mode = this.viewMode();
@@ -271,14 +522,572 @@ export class RosterComponent {
     return `${d.getDate()} ${this.monthNames[d.getMonth()]} ${d.getFullYear()}`;
   }
 
-  deleteShift(id: number) {
-    if (confirm('¿Estás seguro de eliminar este turno?')) {
-      this.empleadoService.deleteHorario(id).subscribe({
-        next: () => {
-          this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Turno eliminado' });
-          if (this.selectedEmployeeId()) this.loadSchedule(this.selectedEmployeeId()!);
-        }
+  deleteShift(shift: any) {
+    const detail = `del día ${shift.fecha} a las ${shift.horaInicio}`;
+    this.confirmationService.confirm({
+      message: `¿Estás seguro de eliminar permanentemente el turno ${detail}?`,
+      header: 'Confirmar Eliminación',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Sí, eliminar',
+      rejectLabel: 'Cancelar',
+      acceptButtonStyleClass: 'p-button-danger p-button-sm',
+      rejectButtonStyleClass: 'p-button-text p-button-sm',
+      accept: () => {
+        this.empleadoService.deleteHorario(shift.id).subscribe({
+          next: () => {
+            this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Turno eliminado correctamente' });
+            if (this.selectedEmployeeId()) this.loadSchedule(this.selectedEmployeeId()!);
+          }
+        });
+      }
+    });
+  }
+
+  copyLastWeek() {
+    const id = this.selectedEmployeeId();
+    if (!id) return;
+
+    const current = new Date(this.currentDate());
+    const startOfThisWeek = new Date(current);
+    startOfThisWeek.setDate(current.getDate() - current.getDay());
+    
+    const startOfLastWeek = new Date(startOfThisWeek);
+    startOfLastWeek.setDate(startOfThisWeek.getDate() - 7);
+    const endOfLastWeek = new Date(startOfLastWeek);
+    endOfLastWeek.setDate(startOfLastWeek.getDate() + 6);
+
+    const startStr = startOfLastWeek.toISOString().split('T')[0];
+    const endStr = endOfLastWeek.toISOString().split('T')[0];
+
+    // Obtener turnos de la semana pasada
+    const lastWeekShifts = this.shifts().filter(s => s.fecha >= startStr && s.fecha <= endStr);
+
+    if (lastWeekShifts.length === 0) {
+      this.messageService.add({ severity: 'warn', summary: 'Atención', detail: 'No hay turnos en la semana anterior para copiar.' });
+      return;
+    }
+
+    this.confirmationService.confirm({
+      message: `¿Deseas copiar los ${lastWeekShifts.length} turnos de la semana pasada a la semana actual? Se sobrescribirán los existentes.`,
+      header: 'Automatizar Horario',
+      icon: 'pi pi-copy',
+      acceptLabel: 'Sí, copiar',
+      rejectLabel: 'Cancelar',
+      accept: () => {
+        const sourceStr = startOfLastWeek.toISOString().split('T')[0];
+        const targetStr = startOfThisWeek.toISOString().split('T')[0];
+
+        this.loading.set(true);
+        this.empleadoService.cloneWeek(id, sourceStr, targetStr).subscribe({
+          next: () => {
+            this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Horario clonado correctamente desde el servidor' });
+            this.loadSchedule(id);
+          },
+          error: (err) => {
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error al clonar' });
+            this.loading.set(false);
+          }
+        });
+      }
+    });
+  }
+
+  exportPdf() {
+    const empName = this.selectedEmployeeName();
+    if (!empName) {
+      this.messageService.add({ severity: 'warn', summary: 'Atención', detail: 'Selecciona un empleado para exportar' });
+      return;
+    }
+
+    this.messageService.add({ severity: 'success', summary: 'Generando Reporte', detail: `Preparando PDF de ${empName}...` });
+    
+    // Obtener el elemento Angular renderizado reactivamente
+    const printContent = document.getElementById('print-area');
+    if (!printContent) {
+      this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se encontró el contenedor de impresión' });
+      return;
+    }
+
+    // Crear iframe temporal para aislar la impresión de la UI de administración
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'absolute';
+    iframe.style.width = '0px';
+    iframe.style.height = '0px';
+    iframe.style.border = 'none';
+    document.body.appendChild(iframe);
+
+    const doc = iframe.contentWindow?.document || iframe.contentDocument;
+    if (doc) {
+      doc.open();
+      doc.write(`
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>Cuadrante de Horario - ${empName}</title>
+            <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap">
+            <style>
+              body {
+                font-family: 'Outfit', sans-serif;
+                color: #0f172a;
+                background-color: #ffffff;
+                margin: 0;
+                padding: 40px;
+                -webkit-print-color-adjust: exact;
+              }
+              
+              .print-header-container {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                border-bottom: 2px solid #0f172a;
+                padding-bottom: 20px;
+                margin-bottom: 30px;
+              }
+              
+              .print-logo-title {
+                display: flex;
+                flex-direction: column;
+              }
+              
+              .print-logo-text {
+                font-size: 26px;
+                font-weight: 800;
+                color: #0f172a;
+                letter-spacing: -0.5px;
+                line-height: 1;
+              }
+              
+              .print-subtitle {
+                font-size: 9px;
+                font-weight: 700;
+                color: #475569;
+                text-transform: uppercase;
+                letter-spacing: 1.5px;
+                margin-top: 4px;
+              }
+
+              .print-report-info {
+                text-align: right;
+                font-size: 11px;
+                color: #475569;
+                line-height: 1.5;
+              }
+
+              /* Ficha de Datos Premium Minimalista */
+              .print-employee-card {
+                background: #ffffff;
+                border: 1px solid #0f172a;
+                border-radius: 0 !important; /* Totalmente cuadrado */
+                padding: 16px 20px;
+                margin-bottom: 30px;
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 20px;
+              }
+
+              .print-card-field {
+                display: flex;
+                flex-direction: column;
+              }
+
+              .print-field-label {
+                font-size: 9px;
+                font-weight: 800;
+                color: #475569;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                margin-bottom: 4px;
+              }
+
+              .print-field-value {
+                font-size: 14px;
+                font-weight: 600;
+                color: #0f172a;
+              }
+
+              .print-highlight-value {
+                color: #000000;
+                font-size: 16px;
+                font-weight: 800;
+              }
+
+              /* Cuadro Matriz Tipo Horario Geométrico */
+              .print-matrix-table-container {
+                border: 1px solid #0f172a;
+                border-radius: 0 !important; /* Totalmente cuadrado */
+                overflow: hidden;
+                margin-bottom: 30px;
+                background: #ffffff;
+              }
+
+              .print-table {
+                width: 100%;
+                border-collapse: collapse;
+              }
+
+              .print-table th {
+                background: #f8fafc !important;
+                color: #0f172a !important;
+                font-size: 10px;
+                font-weight: 800;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                padding: 12px;
+                text-align: center;
+                border: 1px solid #0f172a;
+              }
+
+              .print-table th:first-child {
+                text-align: left;
+                border-left: none;
+              }
+
+              .print-table th:last-child {
+                border-right: none;
+              }
+
+              .print-table td {
+                border: 1px solid #0f172a;
+                padding: 8px;
+                vertical-align: middle;
+                text-align: center;
+                font-size: 11px;
+                border-radius: 0 !important;
+              }
+
+              .print-table td:first-child {
+                border-left: none;
+              }
+
+              .print-table td:last-child {
+                border-right: none;
+              }
+
+              .print-table tr:last-child td {
+                border-bottom: none;
+              }
+
+              .print-week-cell {
+                background: #f8fafc !important;
+                text-align: left;
+                width: 130px;
+                font-weight: 800;
+                color: #0f172a;
+                padding-left: 12px;
+              }
+
+              .print-week-dates {
+                font-size: 10px;
+                color: #475569;
+                font-weight: 700;
+              }
+
+              .print-week-dates-sub {
+                font-size: 9px;
+                color: #64748b;
+                font-weight: 600;
+              }
+
+              .print-shift-cell {
+                background: #ffffff;
+              }
+
+              .print-empty-cell {
+                color: #cbd5e1;
+                font-size: 12px;
+                font-weight: 500;
+                background: #ffffff !important;
+              }
+
+              /* Caja de Turno en Matriz (Cuadrado Perfecto, Sin Relleno Saturado) */
+              .print-matrix-shift-box {
+                background: #ffffff !important;
+                border: 1px solid #0f172a !important;
+                border-radius: 0 !important; /* Totalmente cuadrado */
+                padding: 6px;
+                text-align: center;
+                display: inline-block;
+                width: 100%;
+                box-sizing: border-box;
+              }
+
+              .print-time-range {
+                font-size: 10px;
+                font-weight: 800;
+                color: #000000;
+              }
+
+              .print-duration-tag {
+                font-size: 8px;
+                font-weight: 700;
+                text-transform: uppercase;
+                color: #475569;
+                margin-top: 2px;
+              }
+
+              .print-empty-state-row {
+                padding: 30px;
+                text-align: center;
+                color: #64748b;
+                font-size: 12px;
+                font-weight: 500;
+                background: #ffffff !important;
+              }
+
+              .print-footer-notes {
+                margin-top: 50px;
+                border-top: 1px solid #0f172a;
+                padding-top: 20px;
+                font-size: 10px;
+                color: #64748b;
+                text-align: center;
+                font-weight: 500;
+                line-height: 1.6;
+              }
+
+              @media print {
+                body {
+                  padding: 10px;
+                }
+                .print-matrix-table-container {
+                  border-radius: 0 !important;
+                }
+                .print-table th {
+                  background: #f8fafc !important;
+                  color: #0f172a !important;
+                  print-color-adjust: exact;
+                }
+                .print-matrix-shift-box {
+                  background: #ffffff !important;
+                  border: 1px solid #0f172a !important;
+                  border-radius: 0 !important;
+                  print-color-adjust: exact;
+                }
+                .print-week-cell {
+                  background: #f8fafc !important;
+                  print-color-adjust: exact;
+                }
+                .print-empty-cell {
+                  background: #ffffff !important;
+                  print-color-adjust: exact;
+                }
+              }
+            </style>
+          </head>
+          <body>
+            ${printContent.innerHTML}
+          </body>
+        </html>
+      `);
+      doc.close();
+
+      setTimeout(() => {
+        iframe.contentWindow?.focus();
+        iframe.contentWindow?.print();
+        document.body.removeChild(iframe);
+      }, 500);
+    }
+  }
+
+  async exportExcel() {
+    const empName = this.selectedEmployeeName();
+    if (!empName) {
+      this.messageService.add({ severity: 'warn', summary: 'Atención', detail: 'Selecciona un empleado para exportar' });
+      return;
+    }
+
+    this.messageService.add({ severity: 'success', summary: 'Generando Reporte', detail: `Preparando Excel de ${empName}...` });
+
+    const cargo    = this.selectedEmployeeCargo();
+    const dateStr  = new Date().toLocaleDateString('es-PE');
+    const totalHrs = this.totalShiftsHours();
+    const weeks    = this.printableWeeks();
+    const days     = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+
+    // ── Helpers de estilo ────────────────────────────────────────────────────
+    const headerFill  = (hex: string): ExcelJS.Fill => ({ type: 'pattern', pattern: 'solid', fgColor: { argb: hex } });
+    const thinBorder  = (): Partial<ExcelJS.Borders> => ({
+      top:    { style: 'thin', color: { argb: 'FF94A3B8' } },
+      left:   { style: 'thin', color: { argb: 'FF94A3B8' } },
+      bottom: { style: 'thin', color: { argb: 'FF94A3B8' } },
+      right:  { style: 'thin', color: { argb: 'FF94A3B8' } },
+    });
+    const gridBorder  = (): Partial<ExcelJS.Borders> => ({
+      top:    { style: 'thin', color: { argb: 'FFCBD5E1' } },
+      left:   { style: 'thin', color: { argb: 'FFCBD5E1' } },
+      bottom: { style: 'thin', color: { argb: 'FFCBD5E1' } },
+      right:  { style: 'thin', color: { argb: 'FFCBD5E1' } },
+    });
+    const darkBorder  = (): Partial<ExcelJS.Borders> => ({
+      top:    { style: 'thin', color: { argb: 'FF1E293B' } },
+      left:   { style: 'thin', color: { argb: 'FF1E293B' } },
+      bottom: { style: 'thin', color: { argb: 'FF1E293B' } },
+      right:  { style: 'thin', color: { argb: 'FF1E293B' } },
+    });
+
+    // ── Crear libro y hoja ───────────────────────────────────────────────────
+    const workbook  = new ExcelJS.Workbook();
+    workbook.creator = 'VargasVet Sistema';
+    workbook.created = new Date();
+    const sheet = workbook.addWorksheet(`Horario ${empName}`, {
+      pageSetup: { paperSize: 9, orientation: 'landscape', fitToPage: true, fitToWidth: 1 },
+      properties: { tabColor: { argb: 'FF0F172A' } },
+    });
+
+    // ── Anchos de columna ────────────────────────────────────────────────────
+    sheet.columns = [
+      { width: 22 }, // A: Periodo / Semana
+      { width: 18 }, // B: Lunes
+      { width: 18 }, // C: Martes
+      { width: 18 }, // D: Miércoles
+      { width: 18 }, // E: Jueves
+      { width: 18 }, // F: Viernes
+      { width: 18 }, // G: Sábado
+      { width: 18 }, // H: Domingo
+    ];
+
+    // ── FILA 1: Título Principal ─────────────────────────────────────────────
+    sheet.mergeCells('A1:H1');
+    const titleCell = sheet.getCell('A1');
+    titleCell.value = 'VARGASVET — CUADRANTE CONSOLIDADO DE TRABAJO';
+    titleCell.font  = { name: 'Calibri', bold: true, size: 16, color: { argb: 'FF0F172A' } };
+    titleCell.fill  = headerFill('FFF8FAFC');
+    titleCell.alignment = { horizontal: 'left', vertical: 'middle' };
+    titleCell.border = {
+      bottom: { style: 'medium', color: { argb: 'FF0F172A' } },
+    };
+    sheet.getRow(1).height = 32;
+
+    // ── FILA 2: Spacer ───────────────────────────────────────────────────────
+    sheet.getRow(2).height = 8;
+
+    // ── FILAS 3-4: Ficha de Datos ────────────────────────────────────────────
+    const metaRows: [string, string, string, string][] = [
+      ['Colaborador', empName,   'Fecha de Emisión',        dateStr       ],
+      ['Cargo / Función', cargo, 'Total Horas Registradas', `${totalHrs} hrs`],
+    ];
+    metaRows.forEach((meta, i) => {
+      const rowIdx = 3 + i;
+      const row = sheet.getRow(rowIdx);
+      row.height = 22;
+
+      // Label 1 (A)
+      const labelA = sheet.getCell(`A${rowIdx}`);
+      labelA.value = meta[0];
+      labelA.font  = { name: 'Calibri', bold: true, size: 10, color: { argb: 'FF1E293B' } };
+      labelA.fill  = headerFill('FFF1F5F9');
+      labelA.border = thinBorder();
+      labelA.alignment = { horizontal: 'left', vertical: 'middle', indent: 1 };
+
+      // Value 1 (B-D)
+      sheet.mergeCells(`B${rowIdx}:D${rowIdx}`);
+      const valueA = sheet.getCell(`B${rowIdx}`);
+      valueA.value = meta[1];
+      valueA.font  = { name: 'Calibri', size: 10, color: { argb: 'FF0F172A' } };
+      valueA.border = thinBorder();
+      valueA.alignment = { horizontal: 'left', vertical: 'middle', indent: 1 };
+
+      // Label 2 (E)
+      const labelB = sheet.getCell(`E${rowIdx}`);
+      labelB.value = meta[2];
+      labelB.font  = { name: 'Calibri', bold: true, size: 10, color: { argb: 'FF1E293B' } };
+      labelB.fill  = headerFill('FFF1F5F9');
+      labelB.border = thinBorder();
+      labelB.alignment = { horizontal: 'left', vertical: 'middle', indent: 1 };
+
+      // Value 2 (F-H)
+      sheet.mergeCells(`F${rowIdx}:H${rowIdx}`);
+      const valueB = sheet.getCell(`F${rowIdx}`);
+      valueB.value = meta[3];
+      valueB.font  = i === 1
+        ? { name: 'Calibri', bold: true, size: 12, color: { argb: 'FF0F172A' } }
+        : { name: 'Calibri', size: 10,   color: { argb: 'FF0F172A' } };
+      valueB.fill  = i === 1 ? headerFill('FFE2E8F0') : headerFill('FFFFFFFF');
+      valueB.border = thinBorder();
+      valueB.alignment = { horizontal: 'left', vertical: 'middle', indent: 1 };
+    });
+
+    // ── FILA 5: Spacer ───────────────────────────────────────────────────────
+    sheet.getRow(5).height = 12;
+
+    // ── FILA 6: Cabecera del Cuadrante ───────────────────────────────────────
+    const hdrRow = sheet.getRow(6);
+    hdrRow.height = 28;
+    ['Periodo / Semana', ...days].forEach((label, col) => {
+      const cell = hdrRow.getCell(col + 1);
+      cell.value = label.toUpperCase();
+      cell.font  = { name: 'Calibri', bold: true, size: 9, color: { argb: 'FFFFFFFF' } };
+      cell.fill  = headerFill(col === 0 ? 'FF0F172A' : 'FF1E293B');
+      cell.border = darkBorder();
+      cell.alignment = { horizontal: col === 0 ? 'left' : 'center', vertical: 'middle', indent: col === 0 ? 1 : 0 };
+    });
+
+    // ── FILAS DE DATOS: Semanas ──────────────────────────────────────────────
+    let currentRow = 7;
+    if (weeks.length === 0) {
+      sheet.mergeCells(`A${currentRow}:H${currentRow}`);
+      const emptyCell = sheet.getCell(`A${currentRow}`);
+      emptyCell.value = 'No hay turnos planificados asignados a este colaborador.';
+      emptyCell.font  = { name: 'Calibri', italic: true, size: 10, color: { argb: 'FF64748B' } };
+      emptyCell.alignment = { horizontal: 'center', vertical: 'middle' };
+      emptyCell.border = gridBorder();
+      sheet.getRow(currentRow).height = 28;
+    } else {
+      weeks.forEach((week: any, idx: number) => {
+        const row  = sheet.getRow(currentRow);
+        row.height = 40;
+        const altBg = idx % 2 === 1 ? 'FFF1F5F9' : 'FFFFFFFF';
+
+        // Columna A: etiqueta de semana
+        const weekCell = row.getCell(1);
+        weekCell.value = { richText: [
+          { text: week.title + '\n', font: { name: 'Calibri', bold: true,   size: 9, color: { argb: 'FF0F172A' } } },
+          { text: week.subtitle,     font: { name: 'Calibri', bold: false,  size: 8, color: { argb: 'FF475569' } } },
+        ]};
+        weekCell.fill  = headerFill('FFF8FAFC');
+        weekCell.border = gridBorder();
+        weekCell.alignment = { horizontal: 'left', vertical: 'middle', wrapText: true, indent: 1 };
+
+        // Columnas B-H: cada día
+        week.days.forEach((day: any, d: number) => {
+          const cell = row.getCell(d + 2);
+          cell.border = gridBorder();
+          cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+
+          if (day.shifts && day.shifts.length > 0) {
+            const lines = day.shifts.map((s: any) => `${s.timeRange}  (${s.duration}h)`).join('\n');
+            cell.value = lines;
+            cell.font  = { name: 'Calibri', bold: true, size: 9, color: { argb: 'FF0F172A' } };
+            cell.fill  = headerFill(idx % 2 === 1 ? 'FFE0F2FE' : 'FFF0F9FF');
+          } else {
+            cell.value = '–';
+            cell.font  = { name: 'Calibri', size: 11, color: { argb: 'FFCBD5E1' } };
+            cell.fill  = headerFill(altBg);
+          }
+        });
+        currentRow++;
       });
     }
+
+    // ── Spacer + Pie de Página ───────────────────────────────────────────────
+    currentRow++;
+    sheet.mergeCells(`A${currentRow}:H${currentRow}`);
+    const footerCell = sheet.getCell(`A${currentRow}`);
+    footerCell.value = `Este cuadrante representa la planificación de turnos vigente. Toda modificación deberá ser autorizada por la Gerencia de Operaciones de VargasVet S.A.C. — Emitido el ${dateStr}`;
+    footerCell.font  = { name: 'Calibri', italic: true, size: 8, color: { argb: 'FF94A3B8' } };
+    footerCell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+    footerCell.border = { top: { style: 'thin', color: { argb: 'FFE2E8F0' } } };
+    sheet.getRow(currentRow).height = 28;
+
+    // ── Descargar .xlsx ──────────────────────────────────────────────────────
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob   = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const link   = document.createElement('a');
+    link.href    = URL.createObjectURL(blob);
+    link.download = `Horario_${empName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.xlsx`;
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 }
