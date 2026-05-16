@@ -9,6 +9,12 @@ export interface CompanyDTO {
   website?: string;
   description?: string;
   businessHours?: string;
-  openingTime?: string;
-  closingTime?: string;
+  operatingHours?: CompanyOperatingHourDTO[];
+}
+
+export interface CompanyOperatingHourDTO {
+  diaSemana: string;
+  openingTime: string;
+  closingTime: string;
+  isOpen: boolean;
 }

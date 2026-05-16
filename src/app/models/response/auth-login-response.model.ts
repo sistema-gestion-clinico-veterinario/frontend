@@ -12,6 +12,7 @@ export interface Menu {
 
 export interface AuthLoginData {
   token: string;
+  refreshToken: string;
   roles: string[];
   companyId: number;
   companyName: string;

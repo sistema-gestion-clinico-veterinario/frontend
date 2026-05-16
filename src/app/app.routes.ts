@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 import { AuthGuard } from './core/guards/auth.guard';
-import { Role } from './core/enums/role.enum';
+import { Permission } from './core/enums/permission.enum';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -20,52 +20,52 @@ export const routes: Routes = [
     children: [
       {
         path: 'dashboard',
-        data: { roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.VETERINARIO, Role.RECEPCIONISTA] },
+        data: { permission: Permission.ADMIN_DASHBOARD },
         loadComponent: () => import('./pages/dashboard/dashboard.component').then((m) => m.DashboardComponent)
       },
       {
         path: 'admin/company',
-        data: { roles: [Role.SUPER_ADMIN] },
+        data: { permission: Permission.COMPANY_MANAGE },
         loadComponent: () => import('./pages/admin/company/company.component').then((m) => m.CompanyComponent)
       },
       {
         path: 'admin/roles',
-        data: { roles: [Role.SUPER_ADMIN, Role.ADMIN] },
+        data: { permission: Permission.ROLE_MANAGE },
         loadComponent: () => import('./pages/admin/roles/roles.component').then((m) => m.RolesComponent)
       },
       {
         path: 'admin/menus',
-        data: { roles: [Role.SUPER_ADMIN] },
+        data: { permission: Permission.USER_MANAGE },
         loadComponent: () => import('./pages/admin/menu-management/menu-management.component').then((m) => m.MenuManagementComponent)
       },
       {
         path: 'admin/complementario',
-        data: { roles: [Role.SUPER_ADMIN] },
+        data: { permission: Permission.USER_MANAGE },
         loadComponent: () => import('./pages/admin/complementario/complementario.component').then((m) => m.ComplementarioComponent)
       },
       {
         path: 'admin/empleados',
-        data: { roles: [Role.SUPER_ADMIN, Role.ADMIN] },
+        data: { permission: Permission.EMPLEADO_READ },
         loadComponent: () => import('./pages/admin/employee/employee.component').then((m) => m.EmployeeComponent)
       },
       {
         path: 'admin/clientes',
-        data: { roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.RECEPCIONISTA] },
+        data: { permission: Permission.APODERADO_READ },
         loadComponent: () => import('./pages/admin/client/client.component').then((m) => m.ClientComponent)
       },
       {
         path: 'mascotas',
-        data: { roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.VETERINARIO, Role.RECEPCIONISTA] },
+        data: { permission: Permission.PET_READ },
         loadComponent: () => import('./pages/mascotas/lista-mascotas/lista-mascotas.component').then((m) => m.ListaMascotasComponent)
       },
       {
         path: 'recetas',
-        data: { roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.VETERINARIO, Role.RECEPCIONISTA] },
+        data: { permission: Permission.PET_HISTORY_READ },
         loadComponent: () => import('./pages/mascotas/lista-recetas/lista-recetas.component').then((m) => m.ListaRecetasComponent)
       },
       {
         path: 'historias-clinicas',
-        data: { roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.VETERINARIO, Role.RECEPCIONISTA] },
+        data: { permission: Permission.CLINICAL_RECORD_READ },
         children: [
           {
             path: '',
@@ -83,13 +83,28 @@ export const routes: Routes = [
       },
       {
         path: 'citas',
-        data: { roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.VETERINARIO, Role.RECEPCIONISTA] },
+        data: { permission: Permission.CITA_READ },
         children: [
           {
             path: 'agenda',
             loadComponent: () => import('./pages/citas/agenda/agenda.component').then((m) => m.AgendaComponent)
           }
         ]
+      },
+      {
+        path: 'admin/empleados/horarios',
+        data: { permission: Permission.HORARIO_READ },
+        loadComponent: () => import('./pages/admin/employee/roster/roster.component').then((m) => m.RosterComponent)
+      },
+      {
+        path: 'admin/empleados/:id/horario',
+        data: { permission: Permission.HORARIO_READ },
+        loadComponent: () => import('./pages/admin/employee/schedule-management/schedule-management.component').then((m) => m.ScheduleManagementComponent)
+      },
+      {
+        path: 'mi-horario',
+        data: { permission: Permission.USER_READ },
+        loadComponent: () => import('./pages/employee/my-schedule/my-schedule.component').then(m => m.MyScheduleComponent)
       },
       {
         path: 'profile',

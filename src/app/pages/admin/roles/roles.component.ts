@@ -11,7 +11,8 @@ import { Permission as PermissionModel, Role } from '../../../models/response/pe
   standalone: true,
   imports: [CommonModule, ToastModule],
   providers: [MessageService],
-  templateUrl: './roles.component.html'
+  templateUrl: './roles.component.html',
+  styleUrl: './roles.component.scss'
 })
 export class RolesComponent implements OnInit {
   private readonly roleService = inject(RoleService);

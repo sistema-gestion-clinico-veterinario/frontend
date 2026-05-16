@@ -1,0 +1,227 @@
+<p-toast></p-toast>
+
+<div class="p-8 flex flex-col gap-8 animate-fade-in">
+
+  <!-- Cabecera -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+    <div class="flex flex-col gap-2">
+      <h1 class="text-4xl font-extrabold text-slate-800 tracking-tight">Cuadrante de Turnos</h1>
+      <p class="text-slate-500 font-medium">Gestión de horarios y disponibilidad del personal</p>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-3">
+
+      <!-- Selector empleado -->
+      <div class="flex flex-col gap-1">
+        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-0.5">Empleado</label>
+        <select [ngModel]="selectedEmployeeId()" (change)="onEmployeeChange($any($event.target).value)"
+          class="h-10 px-3 min-w-[220px] bg-white border border-slate-300 rounded-lg text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500">
+          <option [value]="null">— Seleccionar empleado —</option>
+          <option *ngFor="let emp of employees()" [value]="emp.value">{{ emp.label }}</option>
+        </select>
+      </div>
+
+      <!-- Separador -->
+      <div class="w-px h-10 bg-slate-200 hidden md:block"></div>
+
+      <!-- Modos de vista -->
+      <div class="flex flex-col gap-1">
+        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-0.5">Vista</label>
+        <div class="flex border border-slate-300 rounded-lg overflow-hidden h-10">
+          <button *ngFor="let opt of viewOptions"
+            (click)="viewMode.set($any(opt.value))"
+            class="px-4 text-xs font-semibold border-r border-slate-300 last:border-r-0"
+            [class.bg-[#0066AA]]="viewMode() === opt.value"
+            [class.text-white]="viewMode() === opt.value"
+            [class.text-slate-500]="viewMode() !== opt.value"
+            [class.hover:bg-slate-50]="viewMode() !== opt.value">
+            {{ opt.label }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Separador -->
+      <div class="w-px h-10 bg-slate-200 hidden md:block"></div>
+
+      <!-- Navegación de fecha -->
+      <div class="flex flex-col gap-1">
+        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-0.5">Período</label>
+        <div class="flex items-center border border-slate-300 rounded-lg overflow-hidden h-10">
+          <button (click)="prev()" class="px-3 h-full border-r border-slate-300 text-slate-500 hover:bg-slate-50">
+            <i class="pi pi-chevron-left text-xs"></i>
+          </button>
+          <span class="px-5 text-xs font-bold text-slate-700 uppercase tracking-wide min-w-[150px] text-center">
+            {{ currentLabel }}
+          </span>
+          <button (click)="next()" class="px-3 h-full border-l border-slate-300 text-slate-500 hover:bg-slate-50">
+            <i class="pi pi-chevron-right text-xs"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Botón asignar -->
+      <div class="flex flex-col gap-1" *ngIf="selectedEmployeeId()">
+        <label class="text-[10px] font-bold text-transparent uppercase tracking-widest ml-0.5">·</label>
+        <button (click)="showSidebar.set(true)"
+          class="flex items-center gap-2 bg-[#0066AA] hover:bg-[#005a96] text-white text-sm font-medium px-5 h-10 rounded-lg">
+          <i class="pi pi-plus text-xs"></i>
+          Asignar Horario
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <app-schedule-form
+    [visible]="showSidebar()"
+    [employeeId]="selectedEmployeeId()"
+    (close)="showSidebar.set(false)"
+    (saved)="loadSchedule(selectedEmployeeId()!)">
+  </app-schedule-form>
+
+  <!-- Estado vacío -->
+  <div *ngIf="!selectedEmployeeId()" class="bg-white border border-slate-200 rounded-2xl py-24 flex flex-col items-center text-center">
+    <i class="pi pi-calendar text-4xl text-slate-200 block mb-4"></i>
+    <p class="text-sm font-semibold text-slate-500">Selecciona un empleado para ver su cuadrante</p>
+    <p class="text-xs text-slate-400 mt-1 max-w-xs">Usa el selector de la parte superior para elegir un miembro del equipo.</p>
+  </div>
+
+  <!-- Calendario -->
+  <div *ngIf="selectedEmployeeId()" class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-none">
+
+    <!-- ============ VISTA DÍA: Timeline por horas ============ -->
+    <ng-container *ngIf="viewMode() === 'day'">
+      
+      <!-- Cabecera del día -->
+      <div class="flex items-center gap-4 px-6 py-4 border-b border-slate-100 bg-slate-50">
+        <div>
+          <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">
+            {{ dayViewDayName }}
+          </p>
+          <p class="text-2xl font-extrabold text-slate-800">
+            {{ dayViewFullDate }}
+          </p>
+        </div>
+        <div *ngIf="dayViewHours().length" class="ml-auto flex items-center gap-3">
+          <ng-container *ngFor="let h of dayViewHours()">
+            <ng-container *ngIf="h.isShiftStart && h.shift">
+              <span class="px-3 py-1 rounded-full text-xs font-bold text-white bg-[#0066AA]">
+                {{ h.shift.horaInicio?.substring(0,5) }} – {{ h.shift.horaFin?.substring(0,5) }}
+              </span>
+            </ng-container>
+          </ng-container>
+          <span *ngIf="!hasWorkingHours" class="text-xs text-slate-400 italic">Sin turnos asignados</span>
+        </div>
+      </div>
+
+      <!-- Timeline -->
+      <div class="overflow-y-auto" style="max-height: 600px;">
+        <div *ngFor="let slot of dayViewHours(); let i = index" class="flex group relative"
+          [class.border-t]="i > 0"
+          [class.border-slate-100]="!slot.isWorking"
+          [class.border-blue-100]="slot.isWorking">
+          
+          <!-- Etiqueta de hora -->
+          <div class="w-16 flex-shrink-0 flex items-start justify-end pr-3 pt-2 pb-2">
+            <span class="text-[11px] font-semibold leading-none"
+              [class.text-slate-400]="!slot.isWorking"
+              [class.text-[#0066AA]]="slot.isWorking">
+              {{ slot.label }}
+            </span>
+          </div>
+
+          <!-- Bloque de hora -->
+          <div class="flex-1 relative min-h-[52px] border-l"
+            [style.borderLeftColor]="slot.isWorking ? '#0066AA' : '#E2E8F0'"
+            [style.backgroundColor]="slot.isWorking ? '#EFF6FF' : (slot.hour % 2 === 0 ? '#FFFFFF' : '#FAFAFA')">
+
+            <!-- Etiqueta del turno (solo en el inicio) -->
+            <div *ngIf="slot.isShiftStart && slot.shift" class="px-3 py-2">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full flex-shrink-0" style="background-color: #0066AA;"></span>
+                <span class="text-xs font-bold" style="color: #0066AA;">
+                  Turno: {{ slot.shift.horaInicio?.substring(0,5) }} – {{ slot.shift.horaFin?.substring(0,5) }}
+                </span>
+                <button (click)="deleteShift(slot.shift.id)"
+                  class="ml-auto px-2 py-0.5 rounded text-[10px] font-semibold text-red-500 border border-red-200 hover:bg-red-50 opacity-0 group-hover:opacity-100">
+                  <i class="pi pi-trash mr-1 text-[9px]"></i>Eliminar
+                </button>
+              </div>
+            </div>
+
+            <!-- Relleno visual para horas de trabajo sin etiqueta -->
+            <div *ngIf="slot.isWorking && !slot.isShiftStart" class="h-full px-3 flex items-center">
+              <div class="h-px w-full" style="background-color: #BFDBFE;"></div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- ============ VISTA SEMANA / MES ============ -->
+    <ng-container *ngIf="viewMode() !== 'day'">
+      <!-- Cabecera de días -->
+      <div class="grid grid-cols-7 border-b border-slate-100 bg-slate-50">
+        <div *ngFor="let day of ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']; let i = index"
+          class="py-3 text-center text-xs font-bold uppercase tracking-wider border-r border-slate-100 last:border-r-0"
+          [class.text-rose-400]="i === 0"
+          [class.text-slate-400]="i !== 0">
+          {{ day }}
+        </div>
+      </div>
+
+      <!-- Grid de celdas -->
+      <div [class.grid]="true" class="grid-cols-7"
+        [class.grid-cols-7]="viewMode() === 'week' || viewMode() === 'month'">
+
+        <div *ngFor="let item of calendarDays()"
+          class="border-r border-b border-slate-100 last:border-r-0 relative"
+          [class.bg-slate-50]="item.otherMonth"
+          [class.bg-white]="!item.otherMonth"
+          [style.min-height]="viewMode() === 'month' ? '120px' : '260px'">
+
+          <!-- Número de día -->
+          <div class="flex items-center justify-between px-3 pt-2.5 pb-1.5">
+            <span
+              class="text-sm font-bold w-7 h-7 flex items-center justify-center rounded-full"
+              [class.text-slate-300]="item.otherMonth"
+              [class.text-slate-700]="!item.otherMonth && !item.isToday"
+              [class.text-white]="item.isToday"
+              [class.bg-[#0066AA]]="item.isToday">
+              {{ item.day }}
+            </span>
+            <span *ngIf="item.shifts?.length > 0"
+              class="text-[10px] font-bold px-1.5 py-0.5 rounded text-white bg-[#0066AA]">
+              {{ item.shifts.length }}
+            </span>
+          </div>
+
+          <!-- Lista de turnos -->
+          <div class="px-2 pb-2 space-y-1">
+            <div *ngFor="let shift of item.shifts"
+              class="flex items-center justify-between px-2 py-1.5 rounded-lg border border-blue-100 bg-blue-50 group">
+              <div class="flex items-center gap-1.5 min-w-0">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#0066AA] flex-shrink-0"></span>
+                <span class="text-xs font-medium text-slate-700 truncate">
+                  {{ shift.horaInicio }} – {{ shift.horaFin }}
+                </span>
+              </div>
+              <button (click)="deleteShift(shift.id); $event.stopPropagation()"
+                class="flex-shrink-0 w-5 h-5 items-center justify-center rounded-full text-white bg-red-500 opacity-0 group-hover:opacity-100 flex">
+                <i class="pi pi-times text-[9px]"></i>
+              </button>
+            </div>
+
+            <p *ngIf="!item.shifts?.length && !item.otherMonth && viewMode() !== 'month'"
+              class="text-xs text-slate-300 text-center pt-6">Sin turnos</p>
+          </div>
+
+        </div>
+      </div>
+    </ng-container>
+
+  </div>
+
+</div>

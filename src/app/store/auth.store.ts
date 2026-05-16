@@ -9,6 +9,7 @@ interface Enterprise {
 
 interface AuthState {
   token: string | null;
+  refreshToken: string | null;
   roles: string[];
   permissions: string[];
   companyId: number | null;
@@ -35,6 +36,7 @@ const createInitialState = (useStorage = true): AuthState => {
 
   return {
     token: null,
+    refreshToken: null,
     roles: [],
     permissions: [],
     companyId: null,
@@ -66,6 +68,7 @@ export const AuthStore = signalStore(
       if (typeof window !== 'undefined') {
         const current = {
           token,
+          refreshToken: store.refreshToken(),
           roles: store.roles(),
           permissions: store.permissions(),
           companyId: store.companyId(),
@@ -86,6 +89,7 @@ export const AuthStore = signalStore(
       if (typeof window !== 'undefined') {
         const current = {
           token: store.token(),
+          refreshToken: store.refreshToken(),
           roles: store.roles(),
           permissions: store.permissions(),
           companyId: store.companyId(),
