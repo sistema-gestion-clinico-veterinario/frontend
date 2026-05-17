@@ -37,20 +37,40 @@
 <div class="p-4 md:p-6 flex flex-col gap-6 animate-fade-in bg-slate-50/50 min-h-screen print:hidden">
 
   <!-- Cabecera Compacta -->
-  <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200">
-    <div class="flex flex-col">
-      <h1 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
-        <i class="pi pi-calendar-plus text-[#0066AA]"></i>
-        Cuadrante de Turnos
-      </h1>
-      <p class="text-xs text-slate-500 font-medium mt-0.5">Gestión de horarios y disponibilidad del personal</p>
+  <div class="flex flex-col gap-4 bg-white p-4 rounded-2xl border border-slate-200">
+
+    <!-- Fila 1: Título + Botones de acción -->
+    <div class="flex items-start justify-between gap-2">
+      <div class="flex flex-col min-w-0">
+        <h1 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+          <i class="pi pi-calendar-plus text-[#0066AA] flex-shrink-0"></i>
+          <span class="truncate">Cuadrante de Turnos</span>
+        </h1>
+        <p class="text-xs text-slate-500 font-medium mt-0.5">Gestión de horarios y disponibilidad del personal</p>
+      </div>
+      <!-- Botones de acción -->
+      <div class="flex items-center gap-2 flex-shrink-0" *ngIf="selectedEmployeeId() && canManage()">
+        <button (click)="copyLastWeek()" *ngIf="viewMode() === 'week'"
+          class="flex items-center gap-1.5 bg-slate-50 text-slate-700 text-[10px] font-bold px-2.5 h-8 rounded-lg border border-slate-200 hover:bg-white transition-all"
+          title="Clonar semana anterior">
+          <i class="pi pi-copy text-[10px]"></i>
+          <span class="roster-action-text">CLONAR</span>
+        </button>
+        <button (click)="openAddForm()"
+          class="flex items-center gap-1.5 bg-[#0066AA] text-white text-[10px] font-bold px-2.5 h-8 rounded-lg"
+          title="Asignar turno">
+          <i class="pi pi-plus text-[10px]"></i>
+          <span class="roster-action-text">TURNO</span>
+        </button>
+      </div>
     </div>
 
-    <div class="flex flex-wrap items-center gap-3">
+    <!-- Fila 2: Controles con container queries -->
+    <div class="roster-header-controls">
 
       <!-- Selector empleado -->
-      <div class="flex flex-col min-w-[240px]">
-        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Empleado</label>
+      <div class="flex flex-col roster-employee-selector">
+        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Empleado</label>
         <p-dropdown 
           [options]="employees()" 
           [ngModel]="selectedEmployeeId()" 
@@ -64,15 +84,13 @@
         </p-dropdown>
       </div>
 
-      <div class="w-px h-8 bg-slate-200 hidden lg:block mx-1"></div>
-
       <!-- Modos de vista -->
       <div class="flex flex-col">
-        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Vista</label>
+        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Vista</label>
         <div class="flex bg-slate-50 p-1 rounded-lg border border-slate-200 h-9">
           <button *ngFor="let opt of viewOptions"
             (click)="viewMode.set($any(opt.value))"
-            class="px-4 text-[10px] font-bold uppercase tracking-tight rounded-md"
+            class="flex-1 text-[10px] font-bold uppercase tracking-tight rounded-md px-2"
             [class.bg-[#0066AA]]="viewMode() === opt.value"
             [class.text-white]="viewMode() === opt.value"
             [class.text-slate-500]="viewMode() !== opt.value">
@@ -81,38 +99,18 @@
         </div>
       </div>
 
-      <div class="w-px h-8 bg-slate-200 hidden lg:block mx-1"></div>
-
       <!-- Navegación de fecha -->
-      <div class="flex flex-col">
-        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Período</label>
+      <div class="flex flex-col roster-period-nav">
+        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Período</label>
         <div class="flex items-center bg-slate-50 rounded-lg border border-slate-200 h-9 overflow-hidden">
-          <button (click)="prev()" class="px-2.5 h-full text-slate-500 hover:bg-white hover:text-[#0066AA]">
+          <button (click)="prev()" class="px-2 h-full text-slate-500 hover:bg-white hover:text-[#0066AA] flex-shrink-0">
             <i class="pi pi-chevron-left text-[10px]"></i>
           </button>
-          <span class="px-4 text-[11px] font-bold text-slate-700 uppercase tracking-wider min-w-[130px] text-center">
+          <span class="flex-1 px-1 text-[10px] font-bold text-slate-700 uppercase tracking-wider text-center truncate">
             {{ currentLabel }}
           </span>
-          <button (click)="next()" class="px-2.5 h-full text-slate-500 hover:bg-white hover:text-[#0066AA]">
+          <button (click)="next()" class="px-2 h-full text-slate-500 hover:bg-white hover:text-[#0066AA] flex-shrink-0">
             <i class="pi pi-chevron-right text-[10px]"></i>
-          </button>
-        </div>
-      </div>
-
-      <!-- Botón asignar -->
-      <div class="flex flex-col ml-auto lg:ml-2" *ngIf="selectedEmployeeId() && canManage()">
-        <label class="text-[10px] font-bold text-transparent uppercase tracking-widest mb-2">.</label>
-        <div class="flex items-center gap-2">
-          <button (click)="copyLastWeek()" *ngIf="viewMode() === 'week'"
-            class="flex items-center gap-2 bg-slate-50 text-slate-700 text-[10px] font-bold px-4 h-9 rounded-lg border border-slate-200 tracking-wide hover:bg-white transition-all"
-            title="Copiar turnos de la semana pasada">
-            <i class="pi pi-copy text-[10px]"></i>
-            CLONAR SEMANA
-          </button>
-          <button (click)="openAddForm()"
-            class="flex items-center gap-2 bg-[#0066AA] text-white text-[10px] font-bold px-4 h-9 rounded-lg border border-[#0066AA] tracking-wide">
-            <i class="pi pi-plus text-[10px]"></i>
-            ASIGNAR TURNO
           </button>
         </div>
       </div>
@@ -121,38 +119,39 @@
   </div>
 
   <!-- Resumen de Horas (Solo cuando hay empleado seleccionado) -->
-  <div *ngIf="selectedEmployeeId()" class="grid grid-cols-1 md:grid-cols-4 gap-4">
-    <div class="bg-white border border-slate-200 p-4 rounded-2xl flex items-center gap-4">
-      <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-[#0066AA]">
-        <i class="pi pi-clock text-xl"></i>
+  <div *ngIf="selectedEmployeeId()" class="roster-stats-grid">
+    <div class="bg-white border border-slate-200 p-3 rounded-2xl flex items-center gap-3">
+      <div class="w-9 h-9 bg-blue-50 rounded-xl flex items-center justify-center text-[#0066AA] flex-shrink-0">
+        <i class="pi pi-clock text-base"></i>
       </div>
-      <div>
-        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Horas en {{ viewMode() === 'week' ? 'Semana' : (viewMode() === 'month' ? 'Mes' : 'Día') }}</p>
+      <div class="min-w-0">
+        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-tight truncate">Horas Vista</p>
         <p class="text-xl font-black text-slate-800">{{ totalWeeklyHours() }}h</p>
       </div>
     </div>
-    <div class="bg-white border border-slate-200 p-4 rounded-2xl flex items-center gap-4">
-      <div class="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-500">
-        <i class="pi pi-calendar text-xl"></i>
+    <div class="bg-white border border-slate-200 p-3 rounded-2xl flex items-center gap-3">
+      <div class="w-9 h-9 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-500 flex-shrink-0">
+        <i class="pi pi-calendar text-base"></i>
       </div>
-      <div>
-        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Horas del Mes</p>
+      <div class="min-w-0">
+        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-tight truncate">Horas Mes</p>
         <p class="text-xl font-black text-slate-800">{{ totalMonthlyHours() }}h</p>
       </div>
     </div>
-    <div class="bg-white border border-slate-200 p-4 rounded-2xl flex items-center gap-4 md:col-span-2">
-      <div class="flex items-center gap-3 ml-auto">
-        <button (click)="exportPdf()"
-          class="flex items-center gap-2 bg-white text-rose-600 text-[10px] font-bold px-4 h-10 rounded-xl border border-rose-100 tracking-wide hover:bg-rose-50 transition-all">
-          <i class="pi pi-file-pdf text-[14px]"></i>
-          EXPORTAR HORARIO (PDF)
-        </button>
-        <button (click)="exportExcel()"
-          class="flex items-center gap-2 bg-white text-emerald-600 text-[10px] font-bold px-4 h-10 rounded-xl border border-emerald-100 tracking-wide hover:bg-emerald-50 transition-all">
-          <i class="pi pi-file-excel text-[14px]"></i>
-          EXPORTAR HORARIO (EXCEL)
-        </button>
-      </div>
+    <!-- Botones de exportación -->
+    <div class="roster-export-card bg-white border border-slate-200 p-3 rounded-2xl flex items-center justify-end gap-2">
+      <button (click)="exportPdf()"
+        class="flex items-center gap-1.5 bg-white text-rose-600 text-[10px] font-bold px-3 h-9 rounded-xl border border-rose-100 hover:bg-rose-50 transition-all"
+        title="Exportar horario en PDF">
+        <i class="pi pi-file-pdf text-[13px]"></i>
+        <span class="roster-export-text">PDF</span>
+      </button>
+      <button (click)="exportExcel()"
+        class="flex items-center gap-1.5 bg-white text-emerald-600 text-[10px] font-bold px-3 h-9 rounded-xl border border-emerald-100 hover:bg-emerald-50 transition-all"
+        title="Exportar horario en Excel">
+        <i class="pi pi-file-excel text-[13px]"></i>
+        <span class="roster-export-text">EXCEL</span>
+      </button>
     </div>
   </div>
 
@@ -279,12 +278,12 @@
     <ng-container *ngIf="viewMode() !== 'day'">
       <!-- Cabecera de días -->
       <div class="grid grid-cols-7 border-b border-slate-100 bg-slate-50/50">
-        <div *ngFor="let day of ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']; let i = index"
-          class="py-3 text-center text-[10px] font-bold uppercase tracking-widest border-r border-slate-100 last:border-r-0"
+        <div *ngFor="let i of [0,1,2,3,4,5,6]"
+          class="py-2 text-center text-[9px] font-bold uppercase tracking-wider border-r border-slate-100 last:border-r-0"
           [class.text-rose-500]="i === 0"
           [class.text-slate-500]="i !== 0">
-          <span class="hidden md:inline">{{ day }}</span>
-          <span class="inline md:hidden">{{ day.substring(0,3) }}</span>
+          <span class="cal-day-name-full">{{ ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'][i] }}</span>
+          <span class="cal-day-name-short">{{ ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'][i] }}</span>
         </div>
       </div>
 
@@ -295,7 +294,7 @@
           (click)="onDayClick(item)"
           class="border-r border-b border-slate-100 last:border-r-0 relative group hover:bg-slate-50/50 cursor-pointer transition-all"
           [ngClass]="{'bg-slate-50/50': item.otherMonth, 'bg-white': !item.otherMonth}"
-          [style.min-height]="viewMode() === 'month' ? '90px' : '200px'">
+          [style.min-height]="viewMode() === 'month' ? '70px' : '160px'">
 
           <!-- Número de día -->
           <div class="flex items-center justify-between px-2 pt-2 pb-1">
