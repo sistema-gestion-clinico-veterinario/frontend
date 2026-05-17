@@ -23,9 +23,11 @@ export class LoginComponent implements OnInit {
 
   ngOnInit() {
     if (this.authStore.token()) {
-      const roles = this.authStore.roles();
+      const roles = this.authStore.roles() ?? [];
       if (roles.includes('ROLE_SUPER_ADMIN')) {
         this.router.navigateByUrl('/admin/company');
+      } else if (roles.includes('ROLE_CLIENTE')) {
+        this.router.navigateByUrl('/clientes/portal');
       } else {
         this.router.navigateByUrl('/dashboard');
       }
@@ -74,9 +76,11 @@ export class LoginComponent implements OnInit {
           menu: data.menu
         });
         sessionStorage.removeItem('pw_modal_dismissed');
-        const roles = data.roles;
+        const roles = data.roles ?? [];
         if (roles.includes('ROLE_SUPER_ADMIN')) {
           this.router.navigateByUrl('/admin/company');
+        } else if (roles.includes('ROLE_CLIENTE')) {
+          this.router.navigateByUrl('/clientes/portal');
         } else {
           this.router.navigateByUrl('/dashboard');
         }

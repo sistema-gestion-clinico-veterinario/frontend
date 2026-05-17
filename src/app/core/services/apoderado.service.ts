@@ -43,4 +43,54 @@ export class ApoderadoService {
   eliminar(id: number) {
     return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`);
   }
+
+  getPortalPerfil() {
+    return this.http.get<ApiResponse<ApoderadoRequest>>(`${environment.apiUrl}/clientes/portal/perfil`);
+  }
+
+  getPortalMascotas() {
+    return this.http.get<ApiResponse<any[]>>(`${environment.apiUrl}/clientes/portal/mascotas`);
+  }
+
+  getPortalMascotaHistoria(mascotaId: number) {
+    return this.http.get<ApiResponse<any>>(`${environment.apiUrl}/clientes/portal/mascotas/${mascotaId}/historia`);
+  }
+
+  getPortalCitas() {
+    return this.http.get<ApiResponse<any[]>>(`${environment.apiUrl}/clientes/portal/citas`);
+  }
+
+  getPortalCitasFiltradas(mascotaId?: number) {
+    const params = mascotaId ? `?mascotaId=${mascotaId}` : '';
+    return this.http.get<ApiResponse<any[]>>(`${environment.apiUrl}/clientes/portal/citas${params}`);
+  }
+
+  getPortalRecetas() {
+    return this.http.get<ApiResponse<any[]>>(`${environment.apiUrl}/clientes/portal/recetas`);
+  }
+
+  getPortalServicios() {
+    return this.http.get<ApiResponse<any[]>>(`${environment.apiUrl}/clientes/portal/servicios`);
+  }
+
+  getPortalEmpleados(servicioId?: number) {
+    const params = servicioId ? `?servicioId=${servicioId}` : '';
+    return this.http.get<ApiResponse<any[]>>(`${environment.apiUrl}/clientes/portal/empleados${params}`);
+  }
+
+  getPortalDisponibilidad(empleadoId: number, fecha: string, servicioId: number) {
+    return this.http.get<ApiResponse<string[]>>(`${environment.apiUrl}/clientes/portal/disponibilidad?empleadoId=${empleadoId}&fecha=${fecha}&servicioId=${servicioId}`);
+  }
+
+  crearPortalCita(request: any) {
+    return this.http.post<ApiResponse<any>>(`${environment.apiUrl}/clientes/portal/citas`, request);
+  }
+
+  updatePortalCita(id: number, request: any) {
+    return this.http.put<ApiResponse<any>>(`${environment.apiUrl}/clientes/portal/citas/${id}`, request);
+  }
+
+  reschedulePortalCita(id: number, request: any) {
+    return this.http.put<ApiResponse<any>>(`${environment.apiUrl}/clientes/portal/citas/${id}/reprogramar`, request);
+  }
 }

@@ -109,6 +109,10 @@ export const routes: Routes = [
       {
         path: 'profile',
         loadComponent: () => import('./pages/profile/profile.component').then((m) => m.ProfileComponent)
+      },
+      {
+        path: 'clientes/portal',
+        loadComponent: () => import('./pages/apoderado-portal/apoderado-portal.component').then((m) => m.ApoderadoPortalComponent)
       }
     ]
   },
