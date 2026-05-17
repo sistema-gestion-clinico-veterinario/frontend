@@ -47,6 +47,20 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
   selectedShift = signal<any>(null);
   showCloneDayModal = signal<boolean>(false);
   cloneTargetDate = signal<string>('');
+  showCleanModal = signal<boolean>(false);
+  cleanStartDate = signal<string>('');
+  cleanEndDate = signal<string>('');
+  selectedCleanDays = signal<Set<string>>(new Set());
+  
+  readonly dayOfWeekOptions = [
+    { label: 'L', value: 'LUNES' },
+    { label: 'M', value: 'MARTES' },
+    { label: 'X', value: 'MIERCOLES' },
+    { label: 'J', value: 'JUEVES' },
+    { label: 'V', value: 'VIERNES' },
+    { label: 'S', value: 'SABADO' },
+    { label: 'D', value: 'DOMINGO' }
+  ];
   
   canManage = computed(() => {
     const permissions = this.authStore.permissions() || [];
@@ -642,6 +656,96 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
       error: (err) => {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error al clonar' });
         this.loading.set(false);
+      }
+    });
+  }
+
+  openCleanDialog() {
+    const current = new Date(this.currentDate());
+    const mode = this.viewMode();
+    let start = new Date(current);
+    let end = new Date(current);
+
+    if (mode === 'month') {
+      start = new Date(current.getFullYear(), current.getMonth(), 1);
+      end = new Date(current.getFullYear(), current.getMonth() + 1, 0);
+    } else if (mode === 'week') {
+      const day = current.getDay();
+      const diff = current.getDate() - day + (day === 0 ? -6 : 1);
+      start = new Date(current.setDate(diff));
+      end = new Date(start);
+      end.setDate(start.getDate() + 6);
+    }
+
+    this.cleanStartDate.set(start.toISOString().split('T')[0]);
+    this.cleanEndDate.set(end.toISOString().split('T')[0]);
+    this.selectedCleanDays.set(new Set<string>());
+    this.showCleanModal.set(true);
+  }
+
+  closeCleanDialog() {
+    this.showCleanModal.set(false);
+  }
+
+  toggleCleanDay(day: string) {
+    const current = new Set(this.selectedCleanDays());
+    if (current.has(day)) {
+      current.delete(day);
+    } else {
+      current.add(day);
+    }
+    this.selectedCleanDays.set(current);
+  }
+
+  confirmClean() {
+    const id = this.selectedEmployeeId();
+    if (!id) return;
+
+    const startStr = this.cleanStartDate();
+    const endStr = this.cleanEndDate();
+
+    if (!startStr || !endStr) {
+      this.messageService.add({ severity: 'warn', summary: 'Atención', detail: 'Por favor selecciona las fechas de inicio y fin.' });
+      return;
+    }
+
+    if (new Date(startStr) > new Date(endStr)) {
+      this.messageService.add({ severity: 'warn', summary: 'Atención', detail: 'La fecha de inicio no puede ser posterior a la de fin.' });
+      return;
+    }
+
+    const daysArray = Array.from(this.selectedCleanDays());
+    const daysLabel = daysArray.length > 0 ? `los días ${daysArray.join(', ')}` : 'todos los días';
+
+    // Cerrar el modal temporalmente para que no se superpongan visualmente
+    this.showCleanModal.set(false);
+
+    this.confirmationService.confirm({
+      message: `¿Estás seguro de eliminar permanentemente los turnos de ${this.selectedEmployeeName()} desde el ${startStr} hasta el ${endStr} para ${daysLabel}? Esta acción no se puede deshacer.`,
+      header: 'Confirmar Eliminación Masiva',
+      icon: 'pi pi-trash',
+      acceptLabel: 'Sí, eliminar todo',
+      rejectLabel: 'Cancelar',
+      acceptButtonStyleClass: 'p-button-danger p-button-sm',
+      rejectButtonStyleClass: 'p-button-text p-button-sm',
+      accept: () => {
+        this.loading.set(true);
+        this.empleadoService.deleteBulkSchedule(id, startStr, endStr, daysArray).subscribe({
+          next: () => {
+            this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Horarios eliminados correctamente.' });
+            this.loadSchedule(id);
+          },
+          error: (err) => {
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error al eliminar horarios.' });
+            this.loading.set(false);
+            // Reabrir el modal en caso de error para que no pierda sus datos
+            this.showCleanModal.set(true);
+          }
+        });
+      },
+      reject: () => {
+        // Si cancela la confirmación, reabrimos el modal original manteniendo su estado
+        this.showCleanModal.set(true);
       }
     });
   }
