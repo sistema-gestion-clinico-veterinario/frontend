@@ -12,17 +12,14 @@ export const AuthGuard: CanActivateFn = (route, state) => {
     return false;
   }
 
-  // 1. Prioridad: Verificar por Permiso específico
   const requiredPermission = route.data?.['permission'] as string | undefined;
   if (requiredPermission) {
     if (!authStore.hasPermission(requiredPermission)) {
-      router.navigate(['/dashboard']); // Redirigir al dashboard si no tiene permiso
+      router.navigate(['/dashboard']); 
       return false;
     }
     return true;
   }
-
-  // 2. Fallback: Verificar por Roles (para compatibilidad con rutas antiguas)
   const roles = authStore.roles() ?? [];
   const requiredRoles = route.data?.['roles'] as string[] | undefined;
 

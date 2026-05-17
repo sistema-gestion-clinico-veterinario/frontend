@@ -58,7 +58,6 @@ export class SidebarComponent {
       .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
   });
 
-  // Estado para menús expandidos
   expandedMenus = signal<Set<number>>(new Set());
 
   toggleSubmenu(id: number, event: Event) {

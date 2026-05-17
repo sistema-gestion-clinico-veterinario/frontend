@@ -136,13 +136,18 @@
         <div class="grid grid-cols-7 gap-1.5">
           <button *ngFor="let d of diasSemana" type="button"
             (click)="toggleDay(d.key)"
-            class="flex flex-col items-center justify-center h-11 rounded-lg border text-xs font-bold"
-            [class.bg-[#0066AA]]="isDaySelected(d.key)"
-            [class.text-white]="isDaySelected(d.key)"
-            [class.border-[#0066AA]]="isDaySelected(d.key)"
-            [class.bg-white]="!isDaySelected(d.key)"
-            [class.text-slate-500]="!isDaySelected(d.key)"
-            [class.border-slate-300]="!isDaySelected(d.key)">
+            [disabled]="!availableDays().has(d.key)"
+            class="flex flex-col items-center justify-center h-11 rounded-lg border text-xs font-bold transition-all"
+            [class.bg-[#0066AA]]="isDaySelected(d.key) && availableDays().has(d.key)"
+            [class.text-white]="isDaySelected(d.key) && availableDays().has(d.key)"
+            [class.border-[#0066AA]]="isDaySelected(d.key) && availableDays().has(d.key)"
+            [class.bg-white]="!isDaySelected(d.key) || !availableDays().has(d.key)"
+            [class.text-slate-500]="!isDaySelected(d.key) && availableDays().has(d.key)"
+            [class.border-slate-300]="!isDaySelected(d.key) && availableDays().has(d.key)"
+            [class.text-slate-300]="!availableDays().has(d.key)"
+            [class.border-slate-100]="!availableDays().has(d.key)"
+            [class.opacity-45]="!availableDays().has(d.key)"
+            [class.cursor-not-allowed]="!availableDays().has(d.key)">
             {{ d.label }}
           </button>
         </div>

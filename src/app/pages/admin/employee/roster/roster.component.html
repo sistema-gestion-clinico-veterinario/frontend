@@ -56,6 +56,12 @@
           <i class="pi pi-copy text-[10px]"></i>
           <span class="roster-action-text">CLONAR</span>
         </button>
+        <button (click)="openCloneDayDialog()" *ngIf="viewMode() === 'day'"
+          class="flex items-center gap-1.5 bg-slate-50 text-slate-700 text-[10px] font-bold px-2.5 h-8 rounded-lg border border-slate-200 hover:bg-white transition-all"
+          title="Clonar este día">
+          <i class="pi pi-copy text-[10px]"></i>
+          <span class="roster-action-text">CLONAR DÍA</span>
+        </button>
         <button (click)="openAddForm()"
           class="flex items-center gap-1.5 bg-[#0066AA] text-white text-[10px] font-bold px-2.5 h-8 rounded-lg"
           title="Asignar turno">
@@ -620,3 +626,58 @@
     Este cuadrante representa la planificación de turnos vigente. Toda modificación posterior deberá ser autorizada por la Gerencia de Operaciones de VargasVet S.A.C.
   </div>
 </div>
+
+<!-- Modal de Clonación Diaria -->
+<div *ngIf="showCloneDayModal()" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+  <!-- Backdrop difuminado premium -->
+  <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" (click)="closeCloneDayDialog()"></div>
+  
+  <!-- Caja del Modal -->
+  <div class="relative bg-white w-full max-w-sm rounded-2xl border border-slate-200 shadow-2xl overflow-hidden animate-fade-in p-6">
+    <!-- Cabecera -->
+    <div class="flex items-center gap-3 mb-4">
+      <div class="w-10 h-10 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-[#0066AA] flex-shrink-0">
+        <i class="pi pi-copy text-sm"></i>
+      </div>
+      <div>
+        <h3 class="text-xs font-bold text-slate-800 leading-tight">Clonar Horario Diario</h3>
+        <p class="text-[10px] font-medium text-slate-400 mt-0.5">Copia los turnos planificados de un día a otro</p>
+      </div>
+    </div>
+    
+    <!-- Formulario -->
+    <div class="flex flex-col gap-4 my-2">
+      <!-- Día Origen (Lectura) -->
+      <div class="flex flex-col gap-1.5">
+        <label class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Día de Origen</label>
+        <div class="h-9 px-3 flex items-center bg-slate-50 border border-slate-100 rounded-lg text-[11px] font-semibold text-slate-500 capitalize">
+          {{ currentDate().toLocaleDateString('es-PE', { weekday: 'long', day: 'numeric', month: 'long' }) }}
+        </div>
+      </div>
+      
+      <!-- Día Destino (Selección) -->
+      <div class="flex flex-col gap-1.5">
+        <label class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Día de Destino</label>
+        <input type="date" 
+          [ngModel]="cloneTargetDate()" 
+          (ngModelChange)="cloneTargetDate.set($event)"
+          class="w-full h-9 px-3 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 outline-none focus:border-[#0066AA] focus:ring-1 focus:ring-[#0066AA] transition-all" />
+      </div>
+    </div>
+    
+    <!-- Footer -->
+    <div class="flex justify-end gap-2 mt-6">
+      <button type="button" 
+        class="px-4 py-2 text-[10px] font-bold text-slate-400 hover:text-slate-600 transition-all" 
+        (click)="closeCloneDayDialog()">
+        Cancelar
+      </button>
+      <button type="button" 
+        class="px-5 py-2 text-[10px] font-bold text-white bg-[#0066AA] hover:bg-[#005588] rounded-lg transition-all active:scale-95 flex items-center gap-1.5" 
+        (click)="confirmCloneDay()">
+        <span>Confirmar</span>
+      </button>
+    </div>
+  </div>
+</div>
+

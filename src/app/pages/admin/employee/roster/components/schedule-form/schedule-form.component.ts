@@ -22,6 +22,8 @@ export class ScheduleFormComponent implements OnInit {
 
   companyInfo = signal<any>(null);
   currentData = signal<any>(null);
+  selectedStartDate = signal<string>('');
+  selectedEndDate = signal<string>('');
 
   @Input() scheduleRange: { start: string, end: string } | null = null;
 
@@ -41,6 +43,36 @@ export class ScheduleFormComponent implements OnInit {
     return `Atención ${dayName}: ${op.openingTime.substring(0, 5)} a ${op.closingTime.substring(0, 5)}`;
   });
 
+  availableDays = computed(() => {
+    const startStr = this.selectedStartDate();
+    const endStr = this.selectedEndDate();
+    if (!startStr || !endStr) {
+      return new Set<string>(['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO', 'DOMINGO']);
+    }
+
+    const start = new Date(startStr + 'T00:00:00');
+    const end = new Date(endStr + 'T00:00:00');
+
+    if (start > end) {
+      return new Set<string>();
+    }
+
+    const diffTime = Math.abs(end.getTime() - start.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    if (diffDays >= 6) {
+      return new Set<string>(['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO', 'DOMINGO']);
+    }
+
+    const days = new Set<string>();
+    const tempDate = new Date(start);
+    while (tempDate <= end) {
+      const dayName = this.dayOfWeekMap[tempDate.getDay()];
+      days.add(dayName);
+      tempDate.setDate(tempDate.getDate() + 1);
+    }
+    return days;
+  });
+
   @Input() visible = false;
   @Input() employeeId: number | null = null;
   @Input() employeeName: string = '';
@@ -49,6 +81,8 @@ export class ScheduleFormComponent implements OnInit {
       // Si el objeto tiene ID, es una edición real
       if (data.id) {
         this.currentData.set(data);
+        this.selectedStartDate.set(data.fecha || '');
+        this.selectedEndDate.set(data.fecha || '');
         this.scheduleForm.patchValue({
           fechaInicio: data.fecha,
           fechaFin: data.fecha,
@@ -60,6 +94,8 @@ export class ScheduleFormComponent implements OnInit {
       } else {
         // Si no tiene ID, es una preselección de fecha para crear
         this.currentData.set(null);
+        this.selectedStartDate.set(data.fecha || '');
+        this.selectedEndDate.set(data.fecha || '');
         this.scheduleForm.reset({
           fechaInicio: data.fecha,
           fechaFin: data.fecha,
@@ -71,6 +107,8 @@ export class ScheduleFormComponent implements OnInit {
       }
     } else {
       this.currentData.set(null);
+      this.selectedStartDate.set('');
+      this.selectedEndDate.set('');
       this.scheduleForm.reset({
         horaInicio: '',
         horaFin: '',
@@ -143,6 +181,27 @@ export class ScheduleFormComponent implements OnInit {
     this.companyService.getCompany().subscribe(res => {
       this.companyInfo.set(res.data);
     });
+
+    // Escuchar cambios de fecha para limpiar días seleccionados fuera de rango y actualizar señales reactivas
+    this.scheduleForm.get('fechaInicio')?.valueChanges.subscribe(val => {
+      this.selectedStartDate.set(val || '');
+      this.filterSelectedDays();
+    });
+    this.scheduleForm.get('fechaFin')?.valueChanges.subscribe(val => {
+      this.selectedEndDate.set(val || '');
+      this.filterSelectedDays();
+    });
+  }
+
+  filterSelectedDays() {
+    const current = this.scheduleForm.get('dias')?.value as string[];
+    if (!current || current.length === 0) return;
+    const available = this.availableDays();
+    const filtered = current.filter(d => available.has(d));
+    
+    if (filtered.length !== current.length) {
+      this.scheduleForm.get('dias')?.setValue(filtered);
+    }
   }
 
   onSave() {

@@ -45,6 +45,8 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
   loading = signal<boolean>(false);
   currentTimeOffset = signal<number>(0);
   selectedShift = signal<any>(null);
+  showCloneDayModal = signal<boolean>(false);
+  cloneTargetDate = signal<string>('');
   
   canManage = computed(() => {
     const permissions = this.authStore.permissions() || [];
@@ -588,6 +590,58 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
             this.loading.set(false);
           }
         });
+      }
+    });
+  }
+
+  openCloneDayDialog() {
+    const current = new Date(this.currentDate());
+    const tomorrow = new Date(current);
+    tomorrow.setDate(current.getDate() + 1);
+    this.cloneTargetDate.set(tomorrow.toISOString().split('T')[0]);
+    this.showCloneDayModal.set(true);
+  }
+
+  closeCloneDayDialog() {
+    this.showCloneDayModal.set(false);
+  }
+
+  confirmCloneDay() {
+    const id = this.selectedEmployeeId();
+    if (!id) return;
+
+    const sourceStr = this.currentDate().toISOString().split('T')[0];
+    const targetStr = this.cloneTargetDate();
+
+    if (!targetStr) {
+      this.messageService.add({ severity: 'warn', summary: 'Atención', detail: 'Selecciona una fecha de destino.' });
+      return;
+    }
+
+    if (sourceStr === targetStr) {
+      this.messageService.add({ severity: 'warn', summary: 'Atención', detail: 'La fecha de destino debe ser diferente al día de origen.' });
+      return;
+    }
+
+    const dayOfWeekMap = ['DOMINGO', 'LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO'];
+    const dayOfWeek = dayOfWeekMap[this.currentDate().getDay()];
+    const shiftsForToday = this.shifts().filter(s => s.fecha === sourceStr || (!s.fecha && s.diaSemana === dayOfWeek));
+
+    if (shiftsForToday.length === 0) {
+      this.messageService.add({ severity: 'warn', summary: 'Atención', detail: 'No hay turnos registrados en este día para clonar.' });
+      return;
+    }
+
+    this.loading.set(true);
+    this.empleadoService.cloneDay(id, sourceStr, targetStr).subscribe({
+      next: () => {
+        this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Horario clonado correctamente para el día seleccionado.' });
+        this.showCloneDayModal.set(false);
+        this.loadSchedule(id);
+      },
+      error: (err) => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error al clonar' });
+        this.loading.set(false);
       }
     });
   }

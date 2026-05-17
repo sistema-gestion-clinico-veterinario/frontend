@@ -14,14 +14,7 @@ export class DiagnosticoIaService {
   private readonly http = inject(HttpClient);
   private readonly iaUrl = `${environment.apiUrl}/ia/diagnostico`;
 
-  /**
-   * Envía los datos clínicos al modelo de lenguaje y obtiene un diagnóstico asistido.
-   * Mientras el endpoint de IA no esté disponible, se utiliza la respuesta simulada.
-   */
   analizar(request: DiagnosticoIaRequest): Observable<DiagnosticoIaResponse> {
-    // TODO: descomentar cuando el backend IA esté listo:
-    // return this.http.post<ApiResponse<DiagnosticoIaResponse>>(this.iaUrl, request)
-    //   .pipe(map(r => r.data));
 
     return of(this.generarRespuestaSimulada(request)).pipe(delay(2400));
   }

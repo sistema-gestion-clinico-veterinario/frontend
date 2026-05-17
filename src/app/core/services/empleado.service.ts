@@ -66,6 +66,10 @@ export class EmpleadoService {
     return this.http.post<ApiResponse<void>>(`${this.apiUrl}/${empleadoId}/clone-week?sourceWeekStart=${sourceWeekStart}&targetWeekStart=${targetWeekStart}`, {});
   }
 
+  cloneDay(empleadoId: number, sourceDate: string, targetDate: string): Observable<ApiResponse<void>> {
+    return this.http.post<ApiResponse<void>>(`${this.apiUrl}/${empleadoId}/clone-day?sourceDate=${sourceDate}&targetDate=${targetDate}`, {});
+  }
+
   getSchedulesReport(companyId?: number): Observable<ApiResponse<any[]>> {
     const params = companyId ? `?companyId=${companyId}` : '';
     return this.http.get<ApiResponse<any[]>>(`${this.apiUrl}/schedules-report${params}`);
