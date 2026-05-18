@@ -16,7 +16,9 @@ import { ApoderadoService } from '../../../core/services/apoderado.service';
 import { MascotaService } from '../../../core/services/mascota.service';
 import { CompanyService } from '../../../core/services/company.service';
 import { ServicioService } from '../../../core/services/servicio.service';
+import { PagoService } from '../../../core/services/pago.service';
 import { ServicioResponse } from '../../../models/response/servicio-response';
+import { MetodoPago, PagoRequest } from '../../../models/request/pago-request';
 import { CitaResponse } from '../../../models/response/cita-response';
 import { MascotaResponse } from '../../../models/response/mascota-response';
 import { HorarioEmpleadoResponse } from '../../../models/response/horario-empleado-response';
@@ -64,6 +66,7 @@ export class AgendaComponent implements OnInit {
   private readonly mascotaService    = inject(MascotaService);
   private readonly companyService    = inject(CompanyService);
   private readonly servicioService   = inject(ServicioService);
+  private readonly pagoService       = inject(PagoService);
   private readonly messageService    = inject(MessageService);
   private readonly confirmationService = inject(ConfirmationService);
   private readonly router            = inject(Router);
@@ -73,11 +76,42 @@ export class AgendaComponent implements OnInit {
   readonly isSuperAdmin = computed(() => this.authStore.roles().includes(Role.SUPER_ADMIN));
   readonly isAdmin      = computed(() => this.authStore.roles().includes(Role.ADMIN));
   readonly canManage    = computed(() => this.isAdmin() || this.isSuperAdmin());
+
+  readonly totalCita = computed(() => {
+    const cita = this.citaParaPago();
+    if (!cita?.servicioId) return 0;
+    return this.servicios().find(s => s.value === cita.servicioId)?.precio ?? 0;
+  });
+
+  readonly cambio = computed(() => {
+    if (this.metodoPago() !== 'EFECTIVO') return 0;
+    const recibido = this.montoRecibido() ?? 0;
+    const total = this.totalCita();
+    return recibido > total ? recibido - total : 0;
+  });
+
+  readonly saldoPendiente = computed(() => {
+    if (this.metodoPago() !== 'EFECTIVO') return 0;
+    const recibido = this.montoRecibido() ?? 0;
+    const total = this.totalCita();
+    return recibido < total ? total - recibido : 0;
+  });
+
+  readonly esPagoValido = computed(() => {
+    if (this.metodoPago() !== 'EFECTIVO') return true;
+    const recibido = this.montoRecibido() ?? 0;
+    const total = this.totalCita();
+    return total === 0 || recibido >= total / 2;
+  });
   citas            = signal<CitaResponse[]>([]);
   totalRecords     = signal<number>(0);
   displayModal     = signal<boolean>(false);
   displayCancelModal = signal<boolean>(false);
   displayDeleteModal = signal<boolean>(false);
+  displayCajaModal   = signal<boolean>(false);
+  citaParaPago       = signal<CitaResponse | null>(null);
+  metodoPago         = signal<MetodoPago>('EFECTIVO');
+  montoRecibido      = signal<number | null>(null);
   cancelMotivo     = signal<string>('');
   cancelMotivoAttempted = signal<boolean>(false);
   selectedCita     = signal<CitaResponse | null>(null);
@@ -105,7 +139,7 @@ export class AgendaComponent implements OnInit {
   showServicioSelector = signal<boolean>(false);
   showEstadoFilter = signal<boolean>(false);
   showVeterinarioFilter = signal<boolean>(false);
-  filterFecha: string             = new Date().toISOString().split('T')[0];
+  filterFecha: string             = this.toDateStr(new Date());
   filterEstado: EstadoCita | null = null;
   filterVeterinarioId: number | null = null;
   filtersOpen                        = false;
@@ -359,7 +393,7 @@ export class AgendaComponent implements OnInit {
     if (horarios.length === 0) return false;
 
     const dayOfWeek = fecha.getDay();
-    const diasSemana = ['DOMINGO', 'LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES', 'SÁBADO'];
+    const diasSemana = ['DOMINGO', 'LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO'];
     const diaActual = diasSemana[dayOfWeek];
     const horarioDelDia = horarios.find(h => h.diaSemana === diaActual);
     if (!horarioDelDia) return false;
@@ -428,6 +462,9 @@ export class AgendaComponent implements OnInit {
   saveCita() {
     if (this.citaForm.invalid) {
       this.citaForm.markAllAsTouched();
+      if (this.citaForm.get('fechaHoraInicio')?.hasError('fuera-de-horario')) {
+        this.messageService.add({ severity: 'warn', summary: 'Horario no disponible', detail: this.mensajeHorario });
+      }
       return;
     }
     const formValue = this.citaForm.value;
@@ -733,7 +770,74 @@ export class AgendaComponent implements OnInit {
     });
   }
 
-  toDateStr(d: Date): string { return d.toISOString().split('T')[0]; }
+  canCobrar(cita: CitaResponse): boolean {
+    if (!cita.servicioId) return false;
+    if (cita.estado === EstadoCita.CANCELADA || cita.estado === EstadoCita.NO_ASISTIO) return false;
+    const total = cita.totalServicio ?? 0;
+    const pagado = cita.montoPagado ?? 0;
+    return total <= 0 || pagado < total;
+  }
+
+  abrirCaja(cita: CitaResponse) {
+    this.citaParaPago.set(cita);
+    this.metodoPago.set('EFECTIVO');
+    this.montoRecibido.set(null);
+    this.displayCajaModal.set(true);
+  }
+
+  confirmarPago() {
+    const cita = this.citaParaPago();
+    if (!cita) return;
+
+    if (this.metodoPago() === 'EFECTIVO') {
+      if (!this.esPagoValido()) {
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Monto insuficiente',
+          detail: `El mínimo aceptado es S/ ${(this.totalCita() / 2).toFixed(2)} (50% del total)`
+        });
+        return;
+      }
+    }
+
+    const request: PagoRequest = {
+      citaId: cita.id,
+      metodoPago: this.metodoPago(),
+      ...(this.metodoPago() === 'EFECTIVO' ? { montoRecibido: this.montoRecibido() ?? 0 } : {})
+    };
+
+    this.loadingStore.show();
+    this.pagoService.registrar(request).subscribe({
+      next: () => {
+        this.messageService.add({ severity: 'success', summary: 'Pago registrado', detail: `Pago con ${this.metodoPago() === 'EFECTIVO' ? 'efectivo' : 'Yape'} registrado correctamente` });
+        this.displayCajaModal.set(false);
+        this.loadCitas();
+        this.loadingStore.hide();
+      },
+      error: (err) => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo registrar el pago' });
+        this.loadingStore.hide();
+      }
+    });
+  }
+
+  get horarioDelDiaSeleccionado(): HorarioEmpleadoResponse | null {
+    const v = this.citaForm.get('fechaHoraInicio')?.value;
+    if (!v) return null;
+    const fecha = typeof v === 'string' ? new Date(v) : v as Date;
+    const dias = ['DOMINGO', 'LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO'];
+    return this.horariosVeterinario().find(h => h.diaSemana === dias[fecha.getDay()]) ?? null;
+  }
+
+  get mensajeHorario(): string {
+    const h = this.horarioDelDiaSeleccionado;
+    if (!h) return 'El médico no atiende ese día de la semana.';
+    return `Fuera del horario del médico. Disponible: ${h.horaInicio} – ${h.horaFin}`;
+  }
+
+  toDateStr(d: Date): string {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
   getCitasDia(d: Date): CitaResponse[] { return this.citasPorDia()[this.toDateStr(d)] ?? []; }
   getCitasHora(d: Date, h: number): CitaResponse[] {
     return this.getCitasDia(d).filter(c => new Date(c.fechaHoraInicio).getHours() === h);

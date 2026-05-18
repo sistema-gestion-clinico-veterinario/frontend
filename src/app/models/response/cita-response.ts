@@ -19,4 +19,6 @@ export interface CitaResponse {
   notas?: string;
   consultaId?: number;
   esEmergencia: boolean;
+  totalServicio?: number;
+  montoPagado?: number;
 }
