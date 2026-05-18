@@ -9,6 +9,9 @@ export interface DashboardStats {
   totalCitas: number;
   totalEmpleados: number;
   totalEmpresas?: number;
+  citasPorDia?: number[];
+  citasPorSemana?: number[];
+  citasPorMes?: number[];
 }
 
 @Injectable({

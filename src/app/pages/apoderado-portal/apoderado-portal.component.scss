@@ -1,0 +1,55 @@
+:host {
+  display: block;
+}
+
+/* Custom Micro-animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Glassmorphism elements */
+.backdrop-blur-md {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* Custom styles for PrimeNG overrides */
+::ng-deep {
+  .p-dialog {
+    border-radius: 16px !important;
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.15) !important;
+    border: 1px solid rgba(226, 232, 240, 0.8) !important;
+
+    .p-dialog-header {
+      background: #f8fafc !important;
+      padding: 1.25rem 1.5rem !important;
+      border-bottom: 1px solid #e2e8f0 !important;
+
+      .p-dialog-title {
+        font-weight: 800 !important;
+        color: #1e293b !important;
+        font-size: 1.125rem !important;
+      }
+    }
+
+    .p-dialog-content {
+      padding: 1.5rem !important;
+    }
+  }
+
+  .p-calendar {
+    width: 100% !important;
+  }
+}

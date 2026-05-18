@@ -70,8 +70,21 @@ export class EmpleadoService {
     return this.http.post<ApiResponse<void>>(`${this.apiUrl}/${empleadoId}/clone-day?sourceDate=${sourceDate}&targetDate=${targetDate}`, {});
   }
 
+  deleteBulkSchedule(empleadoId: number, startDate: string, endDate: string, dias?: string[]): Observable<ApiResponse<void>> {
+    let params = `?startDate=${startDate}&endDate=${endDate}`;
+    if (dias && dias.length > 0) {
+      params += `&dias=${dias.join(',')}`;
+    }
+    return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${empleadoId}/schedule-bulk${params}`);
+  }
+
   getSchedulesReport(companyId?: number): Observable<ApiResponse<any[]>> {
     const params = companyId ? `?companyId=${companyId}` : '';
     return this.http.get<ApiResponse<any[]>>(`${this.apiUrl}/schedules-report${params}`);
+  }
+
+  resetPassword(userId: number | null, newPassword: string, email?: string): Observable<ApiResponse<void>> {
+    const url = `${environment.apiUrl}/admin/usuarios/reset-password`;
+    return this.http.post<ApiResponse<void>>(url, { userId, newPassword, email });
   }
 }

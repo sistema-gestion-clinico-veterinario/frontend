@@ -55,6 +55,15 @@ export class ChangePasswordModalComponent {
     return 'bg-emerald-400';
   }
 
+  strengthLabel(): string {
+    const s = this.passwordStrength;
+    if (s === 0) return 'Muy débil';
+    if (s === 1) return 'Débil';
+    if (s === 2) return 'Aceptable';
+    if (s === 3) return 'Fuerte';
+    return 'Excelente';
+  }
+
   submit() {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
     this.isSubmitting.set(true);
@@ -75,7 +84,8 @@ export class ChangePasswordModalComponent {
           passwordChanged: true,
           needsCompanySelection: this.authStore.needsCompanySelection(),
           selectedEnterprise: this.authStore.selectedEnterprise(),
-          menu: this.authStore.menu()
+          menu: this.authStore.menu(),
+          assignedRoles: this.authStore.assignedRoles()
         });
         this.isSubmitting.set(false);
         this.dismissed.emit();

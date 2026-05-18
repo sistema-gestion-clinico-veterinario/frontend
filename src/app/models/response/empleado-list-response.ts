@@ -9,4 +9,5 @@ export interface EmpleadoListResponse {
   activo: boolean;
   tiposEmpleado: string[];
   especialidades: string[];
+  userId?: number;
 }

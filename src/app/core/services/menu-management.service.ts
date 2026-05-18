@@ -30,4 +30,12 @@ export class MenuManagementService {
   eliminar(id: number) {
     return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`);
   }
+
+  obtenerMenuUsuario(companyId?: number, roleId?: number) {
+    const paramsList: string[] = [];
+    if (companyId) paramsList.push(`companyId=${companyId}`);
+    if (roleId) paramsList.push(`roleId=${roleId}`);
+    const params = paramsList.length > 0 ? `?${paramsList.join('&')}` : '';
+    return this.http.get<ApiResponse<Menu[]>>(`${this.apiUrl}/user-menu${params}`);
+  }
 }

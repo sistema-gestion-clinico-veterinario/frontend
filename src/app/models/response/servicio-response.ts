@@ -8,4 +8,6 @@ export interface ServicioResponse {
   disponible: boolean;
   activo: boolean;
   duracionEstimada?: Date;
+  tipoEmpleadoId?: number;
+  tipoEmpleadoNombre?: string;
 }

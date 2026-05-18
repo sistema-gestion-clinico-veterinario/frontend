@@ -73,6 +73,5 @@ export class ListaRecetasComponent implements OnInit {
   }
 
   imprimirReceta(receta: PrescripcionResponse) {
-    console.log('Imprimiendo receta:', receta.id);
   }
 }

@@ -104,6 +104,8 @@ export class AgendaComponent implements OnInit {
     return total === 0 || recibido >= total / 2;
   });
   citas            = signal<CitaResponse[]>([]);
+  private loadTimeout: any = null;
+  private lastLazyEvent: any = { first: 0, rows: 10 };
   totalRecords     = signal<number>(0);
   displayModal     = signal<boolean>(false);
   displayCancelModal = signal<boolean>(false);
@@ -251,7 +253,22 @@ export class AgendaComponent implements OnInit {
     });
   }
 
-  loadCitas(event: any = { first: 0, rows: 10 }) {
+  loadCitas(event: any = null) {
+    if (event) {
+      this.lastLazyEvent = event;
+    }
+
+    if (this.loadTimeout) {
+      clearTimeout(this.loadTimeout);
+    }
+
+    this.loadTimeout = setTimeout(() => {
+      this.executeLoadCitas();
+    }, 50);
+  }
+
+  private executeLoadCitas() {
+    const event = this.lastLazyEvent;
     const companyId = this.activeCompanyId;
     if (!companyId) {
       this.citas.set([]);

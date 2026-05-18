@@ -1,67 +1,290 @@
-<div class="p-8 min-h-screen bg-slate-50 font-['Barlow']">
-  
-  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
-    <div>
-      <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Mi Horario de Trabajo</h1>
-      <p class="text-slate-500 font-medium mt-1 flex items-center gap-2">
-        <span class="w-2 h-2 rounded-full bg-indigo-600"></span>
-        Consulta tu programación mensual y turnos asignados
-      </p>
+<div class="p-4 md:p-6 flex flex-col gap-6 animate-fade-in bg-slate-50/50 min-h-screen">
+
+  <!-- Encabezado de la vista -->
+  <div class="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4 relative overflow-hidden">
+    <!-- Adorno sutil de fondo -->
+    <div class="absolute -right-10 -top-10 w-40 h-40 bg-slate-50 rounded-full blur-3xl opacity-50 pointer-events-none"></div>
+
+    <!-- Título -->
+    <div class="flex flex-col min-w-0">
+      <h1 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+        <i class="pi pi-calendar-plus text-[#0066AA] flex-shrink-0"></i>
+        <span class="truncate">Mi Horario</span>
+      </h1>
+      <p class="text-xs text-slate-500 font-medium mt-0.5">Gestión de horarios y disponibilidad personal</p>
     </div>
-    <button (click)="goToToday()"
-      class="px-6 h-11 text-sm font-bold text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all shadow-sm active:scale-95">
-      Hoy
-    </button>
+
+    <!-- Controles -->
+    <div class="flex flex-col sm:flex-row gap-4 items-end relative z-10">
+      
+      <!-- Modos de vista -->
+      <div class="flex flex-col w-full sm:w-48 md:w-56">
+        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Vista</label>
+        <div class="flex bg-slate-50 p-1 rounded-lg border border-slate-200 h-9">
+          <button (click)="changeView('day')"
+            class="flex-1 text-[10px] font-bold uppercase tracking-tight rounded-md px-2 transition-colors"
+            [class.bg-[#0066AA]]="viewMode === 'day'"
+            [class.text-white]="viewMode === 'day'"
+            [class.text-slate-500]="viewMode !== 'day'">
+            Día
+          </button>
+          <button (click)="changeView('week')"
+            class="flex-1 text-[10px] font-bold uppercase tracking-tight rounded-md px-2 transition-colors"
+            [class.bg-[#0066AA]]="viewMode === 'week'"
+            [class.text-white]="viewMode === 'week'"
+            [class.text-slate-500]="viewMode !== 'week'">
+            Semana
+          </button>
+          <button (click)="changeView('month')"
+            class="flex-1 text-[10px] font-bold uppercase tracking-tight rounded-md px-2 transition-colors"
+            [class.bg-[#0066AA]]="viewMode === 'month'"
+            [class.text-white]="viewMode === 'month'"
+            [class.text-slate-500]="viewMode !== 'month'">
+            Mes
+          </button>
+        </div>
+      </div>
+
+      <!-- Navegación de fecha -->
+      <div class="flex flex-col w-full sm:w-56 md:w-64">
+        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Período</label>
+        <div class="flex items-center bg-slate-50 rounded-lg border border-slate-200 h-9 overflow-hidden">
+          <button (click)="prev()" class="px-2 h-full text-slate-500 hover:bg-white hover:text-[#0066AA] flex-shrink-0 transition-colors">
+            <i class="pi pi-chevron-left text-[10px]"></i>
+          </button>
+          <span *ngIf="viewMode === 'month'" class="flex-1 px-1 text-[10px] font-bold text-slate-700 uppercase tracking-wider text-center truncate">
+            {{ monthNames[currentDate.getMonth()] }} {{ currentDate.getFullYear() }}
+          </span>
+          <span *ngIf="viewMode === 'week'" class="flex-1 px-1 text-[10px] font-bold text-slate-700 uppercase tracking-wider text-center truncate">
+            SEM {{ calendarDays[0]?.day }} - {{ calendarDays[6]?.day }} {{ monthNames[currentDate.getMonth()].substring(0,3) }}
+          </span>
+          <span *ngIf="viewMode === 'day'" class="flex-1 px-1 text-[10px] font-bold text-slate-700 uppercase tracking-wider text-center truncate">
+            {{ currentDate.getDate() }} {{ monthNames[currentDate.getMonth()] }}
+          </span>
+          <button (click)="next()" class="px-2 h-full text-slate-500 hover:bg-white hover:text-[#0066AA] flex-shrink-0 transition-colors">
+            <i class="pi pi-chevron-right text-[10px]"></i>
+          </button>
+        </div>
+      </div>
+
+    </div>
   </div>
 
-  <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-    <div class="p-6 border-b border-slate-100 flex justify-center items-center bg-white">
-      <div class="flex items-center gap-2 bg-slate-50 p-1 rounded-xl border border-slate-100">
-        <button (click)="prevMonth()" class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-white hover:shadow-sm text-slate-500 transition-all">
-          <i class="pi pi-chevron-left text-xs"></i>
-        </button>
-        <span class="text-base font-bold text-slate-800 min-w-[180px] text-center uppercase tracking-widest">
-          {{ monthNames[currentDate.getMonth()] }} {{ currentDate.getFullYear() }}
-        </span>
-        <button (click)="nextMonth()" class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-white hover:shadow-sm text-slate-500 transition-all">
-          <i class="pi pi-chevron-right text-xs"></i>
-        </button>
+  <!-- Resumen de Horas -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="bg-white border border-slate-200 p-3 rounded-2xl flex items-center gap-3">
+      <div class="w-9 h-9 bg-blue-50 rounded-xl flex items-center justify-center text-[#0066AA] flex-shrink-0">
+        <i class="pi pi-clock text-base"></i>
+      </div>
+      <div class="min-w-0">
+        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-tight truncate">Turnos Totales</p>
+        <p class="text-xl font-black text-slate-800">{{ horarios.length }}</p>
       </div>
     </div>
+    <div class="bg-white border border-slate-200 p-3 rounded-2xl flex flex-col justify-center items-end gap-1">
+       <div class="flex gap-2 items-center">
+         <button (click)="exportPdf()"
+           class="flex items-center gap-1.5 bg-white text-rose-600 text-[10px] font-bold px-3 h-8 rounded-lg border border-rose-100 hover:bg-rose-50 transition-all"
+           title="Exportar horario en PDF">
+           <i class="pi pi-file-pdf text-[13px]"></i>
+           <span class="hidden md:inline">PDF</span>
+         </button>
+         <button (click)="exportExcel()"
+           class="flex items-center gap-1.5 bg-white text-emerald-600 text-[10px] font-bold px-3 h-8 rounded-lg border border-emerald-100 hover:bg-emerald-50 transition-all"
+           title="Exportar horario en Excel">
+           <i class="pi pi-file-excel text-[13px]"></i>
+           <span class="hidden md:inline">EXCEL</span>
+         </button>
+         <button (click)="goToToday()" class="flex items-center gap-1.5 bg-slate-50 text-slate-700 text-[10px] font-bold px-3 h-8 rounded-lg border border-slate-200 hover:bg-white transition-all">
+            <i class="pi pi-calendar text-[10px]"></i>
+            Ir a Hoy
+         </button>
+       </div>
+    </div>
+  </div>
 
-    <div class="grid grid-cols-7 border-collapse">
-      <!-- Weekday Headers -->
-      <div *ngFor="let day of ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']" 
-           class="p-4 text-center text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50/50 border-b border-slate-100">
-        {{ day }}
+  <!-- Calendario Contenedor -->
+  <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+
+    <!-- ============ VISTA SEMANA / MES ============ -->
+    <ng-container *ngIf="viewMode !== 'day'">
+      <!-- Cabecera de días -->
+      <div class="grid grid-cols-7 border-b border-slate-100 bg-slate-50/50">
+        <div *ngFor="let i of [0,1,2,3,4,5,6]"
+          class="py-2 text-center text-[9px] font-bold uppercase tracking-wider border-r border-slate-100 last:border-r-0"
+          [class.text-rose-500]="i === 0"
+          [class.text-slate-500]="i !== 0">
+          <span class="hidden md:inline">{{ ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'][i] }}</span>
+          <span class="inline md:hidden">{{ ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'][i] }}</span>
+        </div>
       </div>
 
-      <!-- Days -->
-      <div *ngFor="let day of calendarDays" 
-           [ngClass]="{
-             'bg-slate-50/30 opacity-40': day.otherMonth,
-             'bg-indigo-50/20': day.isToday,
-             'hover:bg-slate-50/50': !day.otherMonth
-           }"
-           class="min-h-[140px] p-3 border-r border-b border-slate-100 last:border-r-0 transition-all relative">
-        
-        <div class="flex justify-between items-start mb-3">
-          <span [ngClass]="day.isToday ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100' : 'text-slate-500'"
-                class="w-7 h-7 flex items-center justify-center text-xs font-bold rounded-full transition-colors">
-            {{ day.day }}
-          </span>
+      <!-- Grid de celdas -->
+      <div class="grid grid-cols-7">
+        <div *ngFor="let item of calendarDays"
+          class="border-r border-b border-slate-100 last:border-r-0 relative group hover:bg-slate-50/50 transition-all"
+          [ngClass]="{'bg-slate-50/50': item.otherMonth, 'bg-white': !item.otherMonth}"
+          [style.min-height]="viewMode === 'month' ? '80px' : '160px'">
+
+          <!-- Número de día -->
+          <div class="flex items-center justify-between px-2 pt-2 pb-1">
+            <span
+              class="text-xs font-bold w-6 h-6 flex items-center justify-center rounded-md"
+              [class.text-slate-300]="item.otherMonth"
+              [class.text-slate-600]="!item.otherMonth && !item.isToday"
+              [class.text-white]="item.isToday"
+              [class.bg-[#0066AA]]="item.isToday">
+              {{ item.day }}
+            </span>
+          </div>
+
+          <!-- Lista de turnos Compacta -->
+          <div class="px-1.5 pb-2 space-y-1">
+            <div *ngFor="let shift of item.shifts" 
+              class="flex items-center justify-between px-2 py-1.5 rounded-md border border-slate-200 bg-slate-50/50">
+              <div class="flex items-center gap-1.5 min-w-0">
+                <i class="pi pi-clock text-[8px] text-[#0066AA]"></i>
+                <span class="text-[9px] font-bold text-slate-700 truncate">
+                  {{ shift.horaInicio | slice:0:5 }} – {{ shift.horaFin | slice:0:5 }}
+                </span>
+              </div>
+            </div>
+
+            <div *ngIf="!item.shifts?.length && !item.otherMonth && viewMode !== 'month'"
+              class="flex flex-col items-center justify-center pt-8 opacity-20">
+              <i class="pi pi-calendar-minus text-lg"></i>
+              <p class="text-[9px] font-bold mt-1 uppercase tracking-tighter">Libre</p>
+            </div>
+          </div>
+
         </div>
-        
-        <div class="space-y-1.5 overflow-y-auto max-h-[90px] pr-1">
-          <div *ngFor="let shift of day.shifts" 
-               class="px-2.5 py-1.5 bg-white border border-slate-200 text-indigo-700 text-[10px] font-bold rounded-lg shadow-sm flex items-center gap-1.5 border-l-4 border-l-indigo-600">
-            <span class="w-1 h-1 rounded-full bg-indigo-400"></span>
-            {{ shift.horaInicio | slice:0:5 }} - {{ shift.horaFin | slice:0:5 }}
+      </div>
+    </ng-container>
+
+    <!-- ============ VISTA DÍA ============ -->
+    <ng-container *ngIf="viewMode === 'day'">
+      <div class="flex items-center gap-4 px-6 py-4 border-b border-slate-100 bg-white">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-[#0066AA] rounded-xl flex flex-col items-center justify-center text-white">
+            <span class="text-[10px] uppercase font-bold leading-none">{{ currentDate.getDate() }}</span>
+            <span class="text-[8px] uppercase font-medium opacity-80 leading-none mt-0.5">{{ monthNames[currentDate.getMonth()].substring(0,3) }}</span>
+          </div>
+          <div>
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">
+              Día Seleccionado
+            </p>
+            <p class="text-lg font-bold text-slate-800 leading-none">
+              {{ calendarDays[0]?.date | date:'longDate' }}
+            </p>
           </div>
         </div>
       </div>
-    </div>
+
+      <div class="p-8 bg-slate-50/30">
+        <div *ngIf="calendarDays[0]?.shifts.length === 0" class="text-center py-10">
+          <div class="w-16 h-16 bg-white border border-slate-200 rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm">
+            <i class="pi pi-calendar-minus text-xl text-slate-400"></i>
+          </div>
+          <p class="text-slate-500 font-bold text-sm">Libre</p>
+          <p class="text-slate-400 text-xs">No tienes turnos asignados para este día.</p>
+        </div>
+        
+        <div *ngIf="calendarDays[0]?.shifts.length > 0" class="max-w-lg mx-auto bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+          <div class="bg-slate-50 border-b border-slate-200 p-3">
+            <h3 class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Turnos Programados</h3>
+          </div>
+          <div class="divide-y divide-slate-100">
+            <div *ngFor="let shift of calendarDays[0].shifts" class="p-4 flex items-center justify-between">
+              <div class="flex items-center gap-4">
+                <div class="w-10 h-10 bg-indigo-50 border border-indigo-100 rounded-lg flex items-center justify-center text-[#0066AA]">
+                  <i class="pi pi-clock text-base"></i>
+                </div>
+                <div>
+                  <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest mb-0.5">Horario</p>
+                  <p class="text-base font-black text-slate-800">{{ shift.horaInicio | slice:0:5 }} - {{ shift.horaFin | slice:0:5 }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
   </div>
 
 </div>
+
+<!-- Contenedor Exclusivo de Impresión (Oculto en pantalla, visible al imprimir PDF) -->
+<div id="print-area" class="hidden print:block font-sans p-10 text-[#0f172a] bg-white">
+  <div class="print-header-container">
+    <div class="print-logo-title">
+      <span class="print-logo-text">VARGASVET</span>
+      <span class="print-subtitle">Mi Horario de Trabajo</span>
+    </div>
+    <div class="print-report-info">
+      <span>Reporte Personal</span><br>
+      <strong>VargasVet S.A.C.</strong><br>
+      <span style="font-size: 9px; color: #94a3b8; margin-top: 4px; display: inline-block;">Emitido: {{ currentDateFormatted }}</span>
+    </div>
+  </div>
+
+  <div class="print-employee-card">
+    <div class="print-card-field">
+      <span class="print-field-label">Colaborador</span>
+      <span class="print-field-value">{{ authStore.nombre }}</span>
+    </div>
+    <div class="print-card-field">
+      <span class="print-field-label">Cargo / Función</span>
+      <span class="print-field-value">{{ authStore.cargo || 'Personal' }}</span>
+    </div>
+    <div class="print-card-field">
+      <span class="print-field-label">Total Horas Registradas</span>
+      <span class="print-field-value print-highlight-value">{{ totalShiftsHours }} hrs</span>
+    </div>
+  </div>
+
+  <div class="print-matrix-table-container">
+    <table class="print-table">
+      <thead>
+        <tr>
+          <th style="width: 140px;">Periodo / Semana</th>
+          <th>Lunes</th>
+          <th>Martes</th>
+          <th>Miércoles</th>
+          <th>Jueves</th>
+          <th>Viernes</th>
+          <th>Sábado</th>
+          <th>Domingo</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let week of printableWeeks">
+          <td class="print-week-cell">
+            <strong>{{ week.title }}</strong><br>
+            <span class="print-week-dates" [class.print-week-dates-sub]="week.isBase">{{ week.subtitle }}</span>
+          </td>
+          <td *ngFor="let day of week.days" [class.print-shift-cell]="day.shifts.length > 0" [class.print-empty-cell]="day.shifts.length === 0">
+            <div *ngIf="day.shifts.length > 0" class="space-y-1">
+              <div *ngFor="let shift of day.shifts" class="print-matrix-shift-box">
+                <div class="print-time-range">{{ shift.timeRange }}</div>
+                <div class="print-duration-tag">{{ shift.duration }}h Turno</div>
+              </div>
+            </div>
+            <div *ngIf="day.shifts.length === 0">-</div>
+          </td>
+        </tr>
+        <tr *ngIf="printableWeeks.length === 0">
+          <td colspan="8" class="print-empty-state-row">
+            No tienes turnos planificados asignados.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="print-footer-notes">
+    Este horario representa tus turnos vigentes programados. Toda modificación debe ser coordinada con administración.
+  </div>
+</div>
+
 <p-toast position="bottom-right"></p-toast>

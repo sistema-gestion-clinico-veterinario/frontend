@@ -9,6 +9,14 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/auth/login/login.component').then((m) => m.LoginComponent)
   },
   {
+    path: 'forgot-password',
+    loadComponent: () => import('./pages/auth/forgot-password/forgot-password.component').then((m) => m.ForgotPasswordComponent) // forgot password route
+  },
+  {
+    path: 'reset-password',
+    loadComponent: () => import('./pages/auth/reset-password/reset-password.component').then((m) => m.ResetPasswordComponent) // reset password route
+  },
+  {
     path: 'auth/verify/:token',
     loadComponent: () => import('./pages/auth/verify-email/verify-email.component').then((m) => m.VerifyEmailComponent)
   },
@@ -27,6 +35,11 @@ export const routes: Routes = [
         path: 'admin/company',
         data: { permission: Permission.COMPANY_MANAGE },
         loadComponent: () => import('./pages/admin/company/company.component').then((m) => m.CompanyComponent)
+      },
+      {
+        path: 'admin/auditoria',
+        data: { permission: Permission.COMPANY_MANAGE },
+        loadComponent: () => import('./pages/admin/auditoria/auditoria.component').then((m) => m.AuditoriaComponent)
       },
       {
         path: 'admin/roles',
@@ -109,6 +122,30 @@ export const routes: Routes = [
       {
         path: 'profile',
         loadComponent: () => import('./pages/profile/profile.component').then((m) => m.ProfileComponent)
+      },
+      {
+        path: 'password-change',
+        loadComponent: () => import('./pages/auth/password-change/password-change.component').then((m) => m.PasswordChangeComponent)
+      },
+      {
+        path: 'apoderado',
+        loadComponent: () => import('./pages/apoderado-portal/apoderado-portal.component').then((m) => m.ApoderadoPortalComponent)
+      },
+      {
+        path: 'mis-citas',
+        loadComponent: () => import('./pages/apoderado/citas/citas.component').then((m) => m.CitasComponent)
+      },
+      {
+        path: 'mis-mascotas',
+        loadComponent: () => import('./pages/apoderado/mis-mascotas/mis-mascotas.component').then((m) => m.MisMascotasComponent)
+      },
+      {
+        path: 'mi-historial',
+        loadComponent: () => import('./pages/apoderado/mi-historial/mi-historial.component').then((m) => m.MiHistorialComponent)
+      },
+      {
+        path: 'mi-historial/:mascotaId',
+        loadComponent: () => import('./pages/apoderado/mi-historial/mi-historial.component').then((m) => m.MiHistorialComponent)
       }
     ]
   },

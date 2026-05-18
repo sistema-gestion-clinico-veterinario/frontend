@@ -1,14 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { AuthStore } from '../../../store/auth.store';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
 })
@@ -23,9 +23,11 @@ export class LoginComponent implements OnInit {
 
   ngOnInit() {
     if (this.authStore.token()) {
-      const roles = this.authStore.roles();
+      const roles = this.authStore.roles() ?? [];
       if (roles.includes('ROLE_SUPER_ADMIN')) {
         this.router.navigateByUrl('/admin/company');
+      } else if (roles.includes('ROLE_CLIENTE') || roles.includes('ROLE_APODERADO')) {
+        this.router.navigateByUrl('/apoderado');
       } else {
         this.router.navigateByUrl('/dashboard');
       }
@@ -71,12 +73,15 @@ export class LoginComponent implements OnInit {
           passwordChanged: data.passwordChanged,
           needsCompanySelection: data.needsCompanySelection,
           selectedEnterprise: null,
-          menu: data.menu
+          menu: data.menu,
+          assignedRoles: data.assignedRoles ?? data.roles
         });
         sessionStorage.removeItem('pw_modal_dismissed');
-        const roles = data.roles;
+        const roles = data.roles ?? [];
         if (roles.includes('ROLE_SUPER_ADMIN')) {
           this.router.navigateByUrl('/admin/company');
+        } else if (roles.includes('ROLE_CLIENTE') || roles.includes('ROLE_APODERADO')) {
+          this.router.navigateByUrl('/apoderado');
         } else {
           this.router.navigateByUrl('/dashboard');
         }

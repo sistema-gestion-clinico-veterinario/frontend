@@ -9,5 +9,7 @@ export interface Permission {
 export interface Role {
   id: number;
   name: string;
+  companyId: number | null;
   permissions: Permission[];
+  menuIds: number[];
 }
