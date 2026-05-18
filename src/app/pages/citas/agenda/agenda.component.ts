@@ -112,6 +112,12 @@ export class AgendaComponent implements OnInit {
   citaParaPago       = signal<CitaResponse | null>(null);
   metodoPago         = signal<MetodoPago>('EFECTIVO');
   montoRecibido      = signal<number | null>(null);
+
+  // Yape — MercadoPago
+  yapePhone = signal<string>('');
+  yapeOtp   = signal<string>('');
+  yapeEmail = signal<string>('');
+  yapeError = signal<string | null>(null);
   cancelMotivo     = signal<string>('');
   cancelMotivoAttempted = signal<boolean>(false);
   selectedCita     = signal<CitaResponse | null>(null);
@@ -784,6 +790,10 @@ export class AgendaComponent implements OnInit {
     this.citaParaPago.set(cita);
     this.metodoPago.set('EFECTIVO');
     this.montoRecibido.set(null);
+    this.yapePhone.set('');
+    this.yapeOtp.set('');
+    this.yapeEmail.set('');
+    this.yapeError.set(null);
     this.displayCajaModal.set(true);
   }
 
@@ -802,10 +812,35 @@ export class AgendaComponent implements OnInit {
       }
     }
 
+    if (this.metodoPago() === 'YAPE') {
+      const phone = this.yapePhone().trim();
+      const otp   = this.yapeOtp().trim();
+      const email = this.yapeEmail().trim();
+
+      if (!phone || phone.length !== 9) {
+        this.yapeError.set('Ingresa un número de teléfono válido de 9 dígitos');
+        return;
+      }
+      if (!otp || otp.length !== 6) {
+        this.yapeError.set('Ingresa el código OTP de 6 dígitos de la app Yape');
+        return;
+      }
+      if (!email || !email.includes('@')) {
+        this.yapeError.set('Ingresa un email válido del pagador');
+        return;
+      }
+      this.yapeError.set(null);
+    }
+
     const request: PagoRequest = {
       citaId: cita.id,
       metodoPago: this.metodoPago(),
-      ...(this.metodoPago() === 'EFECTIVO' ? { montoRecibido: this.montoRecibido() ?? 0 } : {})
+      ...(this.metodoPago() === 'EFECTIVO' ? { montoRecibido: this.montoRecibido() ?? 0 } : {}),
+      ...(this.metodoPago() === 'YAPE' ? {
+        yapePhoneNumber: Number(this.yapePhone().trim()),
+        yapeOtp: Number(this.yapeOtp().trim()),
+        payerEmail: this.yapeEmail().trim()
+      } : {})
     };
 
     this.loadingStore.show();
