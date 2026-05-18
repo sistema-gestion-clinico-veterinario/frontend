@@ -60,6 +60,7 @@ export class LoginComponent implements OnInit {
       next: ({ data }) => {
         this.authStore.setAuth({
           token: data.token,
+          refreshToken: data.refreshToken,
           roles: data.roles,
           permissions: data.permissions,
           companyId: data.companyId,

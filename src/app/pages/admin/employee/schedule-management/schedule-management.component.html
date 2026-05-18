@@ -1,0 +1,177 @@
+<div class="p-8 min-h-screen bg-slate-50 font-['Barlow']">
+  
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
+    <div>
+      <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Gestión de Turnos</h1>
+      <p class="text-slate-500 font-medium mt-1 flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+        Asignación de horarios y planificación para {{ empleadoNombre }}
+      </p>
+    </div>
+    <div class="flex items-center gap-3">
+      <button *appHasPermission="Permission.HORARIO_MANAGE" (click)="openBulkModal()"
+        class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold px-6 h-11 rounded-xl transition-all shadow-lg shadow-blue-200 active:scale-95">
+        <i class="pi pi-calendar-plus text-xs"></i>
+        Asignación Masiva
+      </button>
+    </div>
+  </div>
+
+  <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+    <div class="p-6 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-4 bg-white">
+      <div class="flex items-center gap-2 bg-slate-50 p-1 rounded-xl border border-slate-100">
+        <button (click)="prevMonth()" class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-white hover:shadow-sm text-slate-500 transition-all">
+          <i class="pi pi-chevron-left text-xs"></i>
+        </button>
+        <span class="text-base font-bold text-slate-800 min-w-[160px] text-center uppercase tracking-wide">
+          {{ monthNames[currentDate.getMonth()] }} {{ currentDate.getFullYear() }}
+        </span>
+        <button (click)="nextMonth()" class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-white hover:shadow-sm text-slate-500 transition-all">
+          <i class="pi pi-chevron-right text-xs"></i>
+        </button>
+      </div>
+      
+      <div class="flex items-center gap-2">
+        <!-- COMPONENTE_ACTUALIZADO_V3 -->
+        <button (click)="volviendoAlPresente()"
+          class="px-4 h-9 text-xs font-bold text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-all active:scale-95">
+          Hoy
+        </button>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-7 border-collapse">
+      <!-- Weekday Headers -->
+      <div *ngFor="let day of ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']" 
+           class="p-4 text-center text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50/50 border-b border-slate-100">
+        {{ day }}
+      </div>
+
+      <!-- Days -->
+      <div *ngFor="let day of calendarDays" 
+           [ngClass]="{
+             'bg-slate-50/30 opacity-40': day.otherMonth,
+             'bg-blue-50/20': day.isToday,
+             'hover:bg-slate-50/50': !day.otherMonth
+           }"
+           class="min-h-[140px] p-3 border-r border-b border-slate-100 last:border-r-0 transition-all relative group">
+        
+        <div class="flex justify-between items-start mb-3">
+          <span [ngClass]="day.isToday ? 'bg-blue-600 text-white' : 'text-slate-500 hover:text-slate-900'"
+                class="w-7 h-7 flex items-center justify-center text-xs font-bold rounded-full transition-colors cursor-default">
+            {{ day.day }}
+          </span>
+        </div>
+        
+        <div class="space-y-1.5 overflow-y-auto max-h-[90px] pr-1 scrollbar-thin scrollbar-thumb-slate-200">
+          <div *ngFor="let shift of day.shifts" 
+               class="px-2.5 py-1.5 bg-white border border-slate-200 text-blue-700 text-[10px] font-bold rounded-lg shadow-sm flex items-center justify-between group/shift hover:border-blue-300 transition-all">
+            <div class="flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+              {{ shift.horaInicio | slice:0:5 }} - {{ shift.horaFin | slice:0:5 }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="displayBulkModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+  <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl flex flex-col max-h-[95vh] animate-in zoom-in-95 duration-200">
+    
+    <div class="px-8 py-6 border-b border-slate-100 flex items-center justify-between bg-white rounded-t-2xl">
+      <div>
+        <h2 class="text-xl font-extrabold text-slate-900 tracking-tight">Asignación Masiva</h2>
+        <p class="text-xs text-slate-400 font-medium mt-0.5">Planifica turnos por rango de fechas</p>
+      </div>
+      <button (click)="displayBulkModal = false" class="w-10 h-10 flex items-center justify-center rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-all">
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+
+    <div class="flex-1 overflow-y-auto p-8">
+      <form [formGroup]="bulkForm" (ngSubmit)="saveBulkSchedule()" class="space-y-8">
+        
+        <div class="space-y-5">
+          <div class="flex flex-col gap-2">
+            <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">Periodo de Asignación</label>
+            <p-calendar formControlName="dateRange" 
+                      selectionMode="range" 
+                      [readonlyInput]="true" 
+                      placeholder="Seleccione el rango de fechas"
+                      [showIcon]="true"
+                      styleClass="w-full h-11"
+                      appendTo="body"></p-calendar>
+          </div>
+
+          <div class="flex items-center gap-3 p-4 bg-slate-50 border border-slate-100 rounded-xl group transition-all hover:border-amber-200">
+            <p-checkbox formControlName="overwrite" [binary]="true" inputId="ov"></p-checkbox>
+            <div class="flex flex-col">
+              <label for="ov" class="text-sm font-bold text-slate-700 leading-none cursor-pointer">Sobrescribir horarios</label>
+              <p class="text-[10px] text-slate-400 mt-1">Reemplaza cualquier turno existente en las fechas seleccionadas.</p>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <div class="flex justify-between items-center">
+              <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">Configuración de Turnos</label>
+              <button type="button" (click)="addShift()" 
+                class="flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-700 transition-colors">
+                <i class="pi pi-plus-circle text-xs"></i>
+                Añadir Turno
+              </button>
+            </div>
+            
+            <div class="space-y-2" formArrayName="shifts">
+              <div *ngFor="let s of shifts.controls; let i=index" [formGroupName]="i" 
+                   class="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-xl shadow-sm animate-in slide-in-from-top-2 duration-200">
+                <div class="flex-1">
+                  <p class="text-[9px] font-bold text-slate-400 uppercase mb-1 ml-1">Inicio</p>
+                  <input type="time" formControlName="horaInicio" 
+                         class="w-full h-9 px-3 text-sm font-bold text-slate-700 bg-slate-50 border border-slate-100 rounded-lg outline-none focus:ring-2 focus:ring-blue-500/20 transition-all" />
+                </div>
+                <div class="flex items-center pt-5">
+                  <i class="pi pi-arrow-right text-slate-300"></i>
+                </div>
+                <div class="flex-1">
+                  <p class="text-[9px] font-bold text-slate-400 uppercase mb-1 ml-1">Fin</p>
+                  <input type="time" formControlName="horaFin" 
+                         class="w-full h-9 px-3 text-sm font-bold text-slate-700 bg-slate-50 border border-slate-100 rounded-lg outline-none focus:ring-2 focus:ring-blue-500/20 transition-all" />
+                </div>
+                <button type="button" (click)="removeShift(i)" *ngIf="shifts.length > 1"
+                        class="mt-5 w-9 h-9 flex items-center justify-center rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all">
+                  <i class="pi pi-trash text-sm"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="shifts.length > 1" class="flex items-start gap-3 p-4 bg-amber-50/50 border border-amber-100 rounded-xl">
+            <i class="pi pi-info-circle text-amber-500 mt-0.5"></i>
+            <div>
+              <p class="text-xs font-bold text-amber-800">Regla de Refrigerio</p>
+              <p class="text-[10px] text-amber-600/80 mt-0.5 leading-relaxed">El sistema requiere al menos 1 hora de descanso entre turnos para cumplir con la normativa laboral.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-4">
+          <button type="button" (click)="displayBulkModal = false"
+            class="px-6 py-2.5 text-sm font-bold text-slate-500 hover:text-slate-800 hover:bg-slate-50 rounded-xl transition-all">
+            Cancelar
+          </button>
+          <button type="submit" [disabled]="loading"
+            class="px-8 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-blue-100 disabled:opacity-50 transition-all flex items-center justify-center gap-2 min-w-[160px]">
+            <i *ngIf="loading" class="pi pi-spin pi-spinner text-xs"></i>
+            {{ loading ? 'Procesando...' : 'Guardar Horarios' }}
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+
+<p-toast position="bottom-right"></p-toast>
+<p-confirmDialog styleClass="custom-confirm"></p-confirmDialog>

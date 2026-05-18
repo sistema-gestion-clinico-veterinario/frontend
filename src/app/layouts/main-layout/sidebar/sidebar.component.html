@@ -3,7 +3,6 @@
   [class.w-64]="!collapsed()"
   [class.w-20]="collapsed()"
 >
-  <!-- Header Minimalista Centrado -->
   <div class="flex h-16 shrink-0 items-center transition-all" [class.px-6]="!collapsed()" [class.justify-center]="collapsed()">
     <div class="flex items-center gap-3 cursor-pointer group">
       <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#0F172A] text-white transition-transform group-hover:scale-105">
@@ -17,8 +16,6 @@
       </div>
     </div>
   </div>
-
-  <!-- Navegación "Flat" Centrada -->
   <nav class="flex-1 overflow-y-auto py-6 custom-scrollbar" [class.px-3]="!collapsed()" [class.px-0]="collapsed()">
     <ul class="space-y-0.5">
       <ng-container *ngFor="let item of menuItems(); let first = first">

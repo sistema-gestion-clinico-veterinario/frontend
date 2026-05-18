@@ -1,17 +1,13 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { TableModule } from 'primeng/table';
-import { ButtonModule } from 'primeng/button';
-import { DialogModule } from 'primeng/dialog';
-import { InputTextModule } from 'primeng/inputtext';
-import { InputTextarea } from 'primeng/inputtextarea';
-import { ToastModule } from 'primeng/toast';
-import { CheckboxModule } from 'primeng/checkbox';
+import { InputSwitch } from 'primeng/inputswitch';
+import { Toast } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { CompanyService } from '../../../core/services/company.service';
 import { CompanyListResponse } from '../../../models/response/company-list-response';
-import { CompanyDTO } from '../../../models/request/company-dto';
+import { CompanyDTO, CompanyOperatingHourDTO } from '../../../models/request/company-dto';
 
 @Component({
   selector: 'app-company',
@@ -20,15 +16,12 @@ import { CompanyDTO } from '../../../models/request/company-dto';
     CommonModule,
     ReactiveFormsModule,
     TableModule,
-    ButtonModule,
-    DialogModule,
-    InputTextModule,
-    ToastModule,
-    CheckboxModule
+    Toast,
+    InputSwitch
   ],
   providers: [MessageService],
   templateUrl: './company.component.html',
-  styleUrls: ['./company.component.scss']
+  styleUrl: './company.component.scss'
 })
 export class CompanyComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
@@ -41,6 +34,8 @@ export class CompanyComponent implements OnInit {
   loading: boolean = false;
   totalRecords: number = 0;
 
+  daysOfWeek = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO', 'DOMINGO'];
+
   companyForm: FormGroup = this.fb.group({
     id: [null],
     name: ['', [Validators.required]],
@@ -52,10 +47,25 @@ export class CompanyComponent implements OnInit {
     website: [''],
     description: [''],
     businessHours: [''],
-    openingTime: [''],
-    closingTime: [''],
-    logoUrl: ['']
+    logoUrl: [''],
+    operatingHours: this.fb.array([])
   });
+
+  get operatingHours() {
+    return this.companyForm.get('operatingHours') as FormArray;
+  }
+
+  private initOperatingHours() {
+    this.operatingHours.clear();
+    this.daysOfWeek.forEach(day => {
+      this.operatingHours.push(this.fb.group({
+        diaSemana: [day],
+        openingTime: ['08:00', Validators.required],
+        closingTime: ['18:00', Validators.required],
+        isOpen: [true]
+      }));
+    });
+  }
 
   ngOnInit() {
     this.loadCompanies();
@@ -79,6 +89,7 @@ export class CompanyComponent implements OnInit {
 
   openNew() {
     this.companyForm.reset();
+    this.initOperatingHours();
     this.isEdit = false;
     this.displayModal = true;
   }
@@ -93,6 +104,21 @@ export class CompanyComponent implements OnInit {
           ...data,
           hasWebsite: !!data.website
         });
+        
+        this.operatingHours.clear();
+        if (data.operatingHours && data.operatingHours.length > 0) {
+          data.operatingHours.forEach((h: CompanyOperatingHourDTO) => {
+            this.operatingHours.push(this.fb.group({
+              diaSemana: [h.diaSemana],
+              openingTime: [h.openingTime],
+              closingTime: [h.closingTime],
+              isOpen: [h.isOpen]
+            }));
+          });
+        } else {
+          this.initOperatingHours();
+        }
+
         this.displayModal = true;
         this.loading = false;
       },

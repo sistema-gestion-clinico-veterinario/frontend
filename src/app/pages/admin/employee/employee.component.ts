@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, signal, HostListener, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators, AbstractControl } from '@angular/forms';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
@@ -28,6 +29,7 @@ import { HasPermissionDirective } from '../../../core/directives/has-permission.
   imports: [
     CommonModule,
     ReactiveFormsModule,
+    RouterModule,
     FormsModule,
     TableModule,
     ButtonModule,

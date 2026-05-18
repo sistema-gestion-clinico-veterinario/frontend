@@ -1,0 +1,210 @@
+<!-- Panel lateral -->
+<div class="fixed inset-y-0 right-0 w-[420px] bg-white border-l border-slate-200 z-[100] flex flex-col"
+  [class.translate-x-0]="visible"
+  [class.translate-x-full]="!visible">
+
+  <!-- Cabecera -->
+  <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50 rounded-none">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-[#0066AA]/10 flex items-center justify-center border border-[#0066AA]/20">
+        <i class="pi pi-calendar-edit text-[#0066AA] text-lg"></i>
+      </div>
+      <div>
+        <h2 class="text-sm font-bold text-slate-800 leading-none">
+          {{ currentData() ? 'Actualizar Horario' : 'Asignar Horario' }}
+        </h2>
+        <p class="text-[10px] font-bold text-[#0066AA] uppercase tracking-wider mt-1 leading-none">
+          {{ employeeName }}
+        </p>
+      </div>
+    </div>
+    <button (click)="close.emit()" class="text-slate-400 hover:text-slate-600 p-2">
+      <i class="pi pi-times"></i>
+    </button>
+  </div>
+
+  <!-- Formulario -->
+  <div class="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-slate-200">
+    <form [formGroup]="scheduleForm" class="space-y-6">
+
+      <!-- Información de Referencia (Solo en edición) -->
+      <div *ngIf="currentData()" class="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
+        <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
+          <i class="pi pi-info-circle text-[#0066AA] text-xs"></i>
+          <h3 class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Valores Actuales</h3>
+        </div>
+        <div class="grid grid-cols-2 gap-y-2">
+          <div class="flex flex-col">
+            <span class="text-[9px] font-bold text-slate-400 uppercase">Fecha</span>
+            <span class="text-xs font-bold text-slate-700">{{ currentData().fecha }}</span>
+          </div>
+          <div class="flex flex-col">
+            <span class="text-[9px] font-bold text-slate-400 uppercase">Turno</span>
+            <span class="text-xs font-bold text-slate-700">{{ currentData().horaInicio?.substring(0,5) }} – {{ currentData().horaFin?.substring(0,5) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modo de edición -->
+      <div *ngIf="currentData()" class="space-y-3">
+        <div class="flex items-center gap-2">
+          <span class="w-1.5 h-4 bg-amber-400 rounded-full"></span>
+          <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Alcance del cambio</h3>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <button type="button" (click)="setEditMode('single')"
+            [class.bg-[#0066AA]]="scheduleForm.get('editMode')?.value === 'single'"
+            [class.text-white]="scheduleForm.get('editMode')?.value === 'single'"
+            [class.border-[#0066AA]]="scheduleForm.get('editMode')?.value === 'single'"
+            [class.bg-white]="scheduleForm.get('editMode')?.value !== 'single'"
+            [class.text-slate-500]="scheduleForm.get('editMode')?.value !== 'single'"
+            class="flex flex-col items-center justify-center gap-1 py-3 px-3 rounded-xl border border-slate-200 text-[10px] font-bold transition-all">
+            <i class="pi pi-calendar mb-1"></i>
+            ESTE DÍA
+          </button>
+          <button type="button" (click)="setEditMode('bulk')"
+            [class.bg-[#0066AA]]="scheduleForm.get('editMode')?.value === 'bulk'"
+            [class.text-white]="scheduleForm.get('editMode')?.value === 'bulk'"
+            [class.border-[#0066AA]]="scheduleForm.get('editMode')?.value === 'bulk'"
+            [class.bg-white]="scheduleForm.get('editMode')?.value !== 'bulk'"
+            [class.text-slate-500]="scheduleForm.get('editMode')?.value !== 'bulk'"
+            class="flex flex-col items-center justify-center gap-1 py-3 px-3 rounded-xl border border-slate-200 text-[10px] font-bold transition-all">
+            <i class="pi pi-clone mb-1"></i>
+            RANGO COMPLETO
+          </button>
+        </div>
+        <p class="text-[10px] text-slate-400 px-1 leading-snug">
+          {{ scheduleForm.get('editMode')?.value === 'single' ? 'Se actualizará únicamente la entrada de este día específico.' : 'Se sobrescribirán todos los turnos similares en el rango de fechas seleccionado.' }}
+        </p>
+      </div>
+
+      <!-- Sección 1: Rango de fechas -->
+      <div class="space-y-3">
+        <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
+          <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
+          <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">1. Rango de fechas</h3>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-semibold text-slate-700 ml-0.5">Fecha inicio <span class="text-rose-500">*</span></label>
+            <input type="date" formControlName="fechaInicio"
+              [ngClass]="scheduleForm.get('fechaInicio')?.invalid && scheduleForm.get('fechaInicio')?.touched ? 'border-rose-400' : 'border-slate-300'"
+              class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10">
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-semibold text-slate-700 ml-0.5">Fecha fin <span class="text-rose-500">*</span></label>
+            <input type="date" formControlName="fechaFin"
+              [ngClass]="scheduleForm.get('fechaFin')?.invalid && scheduleForm.get('fechaFin')?.touched ? 'border-rose-400' : 'border-slate-300'"
+              class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10">
+          </div>
+        </div>
+      </div>
+
+      <!-- Sección 2: Horario -->
+      <div class="space-y-3">
+        <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
+          <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
+          <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">2. Horario de turno</h3>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-semibold text-slate-700 ml-0.5">Hora entrada <span class="text-rose-500">*</span></label>
+            <input type="time" formControlName="horaInicio"
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10">
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-semibold text-slate-700 ml-0.5">Hora salida <span class="text-rose-500">*</span></label>
+            <input type="time" formControlName="horaFin"
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10">
+          </div>
+        </div>
+        <!-- Indicador de horario de clínica -->
+        <div *ngIf="clinicHoursInfo()" 
+          class="mt-2 text-[10px] font-bold text-[#0066AA] bg-blue-50 border border-blue-100 rounded-md px-3 py-1.5 flex items-center gap-2">
+          <i class="pi pi-clock text-[10px]"></i>
+          <span>{{ clinicHoursInfo() }}</span>
+        </div>
+      </div>
+
+      <!-- Sección 3: Días -->
+      <div class="space-y-3">
+        <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
+          <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
+          <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">3. Días laborales</h3>
+        </div>
+        <p class="text-xs text-slate-400">El turno se asigna a los días seleccionados dentro del rango de fechas.</p>
+        <div class="grid grid-cols-7 gap-1.5">
+          <button *ngFor="let d of diasSemana" type="button"
+            (click)="toggleDay(d.key)"
+            [disabled]="!availableDays().has(d.key)"
+            class="flex flex-col items-center justify-center h-11 rounded-lg border text-xs font-bold transition-all"
+            [class.bg-[#0066AA]]="isDaySelected(d.key) && availableDays().has(d.key)"
+            [class.text-white]="isDaySelected(d.key) && availableDays().has(d.key)"
+            [class.border-[#0066AA]]="isDaySelected(d.key) && availableDays().has(d.key)"
+            [class.bg-white]="!isDaySelected(d.key) || !availableDays().has(d.key)"
+            [class.text-slate-500]="!isDaySelected(d.key) && availableDays().has(d.key)"
+            [class.border-slate-300]="!isDaySelected(d.key) && availableDays().has(d.key)"
+            [class.text-slate-300]="!availableDays().has(d.key)"
+            [class.border-slate-100]="!availableDays().has(d.key)"
+            [class.opacity-45]="!availableDays().has(d.key)"
+            [class.cursor-not-allowed]="!availableDays().has(d.key)">
+            {{ d.label }}
+          </button>
+        </div>
+        <p *ngIf="scheduleForm.get('dias')?.value?.length === 0"
+          class="text-[11px] text-amber-600 flex items-center gap-1 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
+          <i class="pi pi-info-circle text-[10px]"></i>
+          Sin selección: se aplica a todos los días hábiles del rango.
+        </p>
+      </div>
+
+      <!-- Sección: Resumen -->
+      <div class="space-y-3">
+        <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
+          <span class="w-1.5 h-4 bg-slate-300 rounded-full"></span>
+          <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Resumen de configuración</h3>
+        </div>
+        <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-2">
+          <div class="flex justify-between text-xs">
+            <span class="text-slate-500 font-medium">Período:</span>
+            <span class="font-semibold text-slate-700">
+              {{ scheduleForm.get('fechaInicio')?.value || '—' }} &rarr; {{ scheduleForm.get('fechaFin')?.value || '—' }}
+            </span>
+          </div>
+          <div class="flex justify-between text-xs">
+            <span class="text-slate-500 font-medium">Horario:</span>
+            <span class="font-semibold text-slate-700">
+              {{ scheduleForm.get('horaInicio')?.value || '—' }} – {{ scheduleForm.get('horaFin')?.value || '—' }}
+            </span>
+          </div>
+          <div class="flex justify-between text-xs">
+            <span class="text-slate-500 font-medium">Días:</span>
+            <span class="font-semibold text-slate-700 text-right max-w-[200px]">
+              {{ scheduleForm.get('dias')?.value?.length > 0 ? scheduleForm.get('dias')?.value?.join(', ') : 'Todos los días hábiles' }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+    </form>
+  </div>
+
+  <!-- Footer -->
+  <div class="flex justify-end gap-3 px-6 py-4 border-t border-slate-200">
+    <button (click)="close.emit()"
+      class="px-5 py-2.5 text-sm font-semibold text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg">
+      Cancelar
+    </button>
+    <button (click)="onSave()" [disabled]="loading()"
+      class="px-8 py-2.5 text-sm font-bold text-white bg-[#0066AA] hover:bg-[#004488] rounded-lg disabled:opacity-50 flex items-center justify-center gap-2 min-w-[160px]">
+      <i *ngIf="loading()" class="pi pi-spin pi-spinner text-xs"></i>
+      {{ loading() ? 'Guardando...' : (currentData() ? 'Actualizar Turno' : 'Confirmar Asignación') }}
+    </button>
+  </div>
+
+</div>
+
+<!-- Overlay -->
+<div *ngIf="visible" (click)="close.emit()"
+  class="fixed inset-0 z-[90] bg-slate-900/40">
+</div>

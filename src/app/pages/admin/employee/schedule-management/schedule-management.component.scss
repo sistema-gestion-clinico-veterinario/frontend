@@ -1,0 +1,10 @@
+:host {
+  display: block;
+}
+
+// Custom confirm dialog override if needed
+:host ::ng-deep .custom-confirm {
+  .p-dialog-content {
+    padding: 2rem !important;
+  }
+}

@@ -1,0 +1,67 @@
+<div class="p-8 min-h-screen bg-slate-50 font-['Barlow']">
+  
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
+    <div>
+      <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Mi Horario de Trabajo</h1>
+      <p class="text-slate-500 font-medium mt-1 flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-indigo-600"></span>
+        Consulta tu programación mensual y turnos asignados
+      </p>
+    </div>
+    <button (click)="goToToday()"
+      class="px-6 h-11 text-sm font-bold text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all shadow-sm active:scale-95">
+      Hoy
+    </button>
+  </div>
+
+  <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+    <div class="p-6 border-b border-slate-100 flex justify-center items-center bg-white">
+      <div class="flex items-center gap-2 bg-slate-50 p-1 rounded-xl border border-slate-100">
+        <button (click)="prevMonth()" class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-white hover:shadow-sm text-slate-500 transition-all">
+          <i class="pi pi-chevron-left text-xs"></i>
+        </button>
+        <span class="text-base font-bold text-slate-800 min-w-[180px] text-center uppercase tracking-widest">
+          {{ monthNames[currentDate.getMonth()] }} {{ currentDate.getFullYear() }}
+        </span>
+        <button (click)="nextMonth()" class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-white hover:shadow-sm text-slate-500 transition-all">
+          <i class="pi pi-chevron-right text-xs"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-7 border-collapse">
+      <!-- Weekday Headers -->
+      <div *ngFor="let day of ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']" 
+           class="p-4 text-center text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50/50 border-b border-slate-100">
+        {{ day }}
+      </div>
+
+      <!-- Days -->
+      <div *ngFor="let day of calendarDays" 
+           [ngClass]="{
+             'bg-slate-50/30 opacity-40': day.otherMonth,
+             'bg-indigo-50/20': day.isToday,
+             'hover:bg-slate-50/50': !day.otherMonth
+           }"
+           class="min-h-[140px] p-3 border-r border-b border-slate-100 last:border-r-0 transition-all relative">
+        
+        <div class="flex justify-between items-start mb-3">
+          <span [ngClass]="day.isToday ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100' : 'text-slate-500'"
+                class="w-7 h-7 flex items-center justify-center text-xs font-bold rounded-full transition-colors">
+            {{ day.day }}
+          </span>
+        </div>
+        
+        <div class="space-y-1.5 overflow-y-auto max-h-[90px] pr-1">
+          <div *ngFor="let shift of day.shifts" 
+               class="px-2.5 py-1.5 bg-white border border-slate-200 text-indigo-700 text-[10px] font-bold rounded-lg shadow-sm flex items-center gap-1.5 border-l-4 border-l-indigo-600">
+            <span class="w-1 h-1 rounded-full bg-indigo-400"></span>
+            {{ shift.horaInicio | slice:0:5 }} - {{ shift.horaFin | slice:0:5 }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<p-toast position="bottom-right"></p-toast>

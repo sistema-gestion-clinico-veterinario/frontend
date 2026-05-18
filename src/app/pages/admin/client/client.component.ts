@@ -34,7 +34,8 @@ import { HasPermissionDirective } from '../../../core/directives/has-permission.
     HasPermissionDirective
   ],
   providers: [MessageService],
-  templateUrl: './client.component.html'
+  templateUrl: './client.component.html',
+  styleUrl: './client.component.scss'
 })
 export class ClientComponent implements OnInit {
   private readonly fb = inject(FormBuilder);

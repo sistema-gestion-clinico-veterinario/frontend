@@ -61,7 +61,8 @@ interface RoleItem {
     HasPermissionDirective
   ],
   providers: [MessageService],
-  templateUrl: './complementario.component.html'
+  templateUrl: './complementario.component.html',
+  styleUrl: './complementario.component.scss'
 })
 export class ComplementarioComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
