@@ -117,7 +117,9 @@
               </div>
             </div>
             <button (click)="editMascota(mascota)"
-              class="p-2 rounded-lg text-slate-300 hover:text-[#0066AA] hover:bg-blue-50 flex-shrink-0">
+              [disabled]="!mascota.activo"
+              [title]="!mascota.activo ? 'La mascota está inactiva' : 'Editar'"
+              class="p-2 rounded-lg text-slate-300 hover:text-[#0066AA] hover:bg-blue-50 flex-shrink-0 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-slate-300">
               <i class="pi pi-pencil text-sm"></i>
             </button>
           </div>

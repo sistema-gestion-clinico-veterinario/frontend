@@ -116,7 +116,8 @@
               <th class="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider w-1/3">Denominación</th>
               <th class="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider">Descripción</th>
               <th class="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider">Especialidades</th>
-              <th class="px-6 py-4 w-20"></th>
+              <th class="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider">Estado</th>
+              <th class="px-6 py-4 w-24"></th>
             </tr>
           </ng-template>
           <ng-template pTemplate="body" let-item>
@@ -140,17 +141,31 @@
                   {{ item.permiteEspecialidades ? 'Habilitado' : 'Desactivado' }}
                 </span>
               </td>
-              <td class="px-6 py-4 text-right">
-                <button (click)="eliminarTipoEmpleado(item.id)"
-                  class="p-2 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all active:scale-90">
-                  <i class="pi pi-trash text-sm"></i>
+              <td class="px-6 py-4">
+                <button (click)="cambiarEstadoTipo(item)"
+                  [class]="item.estado ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-500'"
+                  class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-all active:scale-95">
+                  <span [class]="item.estado ? 'bg-green-500' : 'bg-red-400'" class="w-1.5 h-1.5 rounded-full"></span>
+                  {{ item.estado ? 'Activo' : 'Inactivo' }}
                 </button>
+              </td>
+              <td class="px-6 py-4 text-right">
+                <div class="flex items-center justify-end gap-1">
+                  <button (click)="openTipoModal(item)"
+                    class="p-2 rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-90">
+                    <i class="pi pi-pencil text-sm"></i>
+                  </button>
+                  <button *appHasPermission="Permission.TIPO_EMPLEADO_DELETE" (click)="eliminarTipoEmpleado(item.id)"
+                    class="p-2 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all active:scale-90">
+                    <i class="pi pi-trash text-sm"></i>
+                  </button>
+                </div>
               </td>
             </tr>
           </ng-template>
           <ng-template pTemplate="emptymessage">
             <tr>
-              <td colspan="4" class="py-20 text-center">
+              <td colspan="5" class="py-20 text-center">
                 <i class="pi pi-id-card text-3xl text-slate-200 block mb-3"></i>
                 <p class="text-sm text-slate-400 font-medium">No se han registrado tipos de empleado aún</p>
               </td>

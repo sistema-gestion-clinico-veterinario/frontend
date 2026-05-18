@@ -1,16 +1,19 @@
 <div class="p-4 sm:p-6 lg:p-8 min-h-screen bg-slate-50 font-['Barlow']">
 
-  <div class="mb-6 flex items-center gap-3">
-    <button (click)="volver()"
-      class="w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-400 hover:text-[#0066AA] hover:border-[#0066AA]">
-      <i class="pi pi-arrow-left text-sm"></i>
-    </button>
-    <div>
-      <h1 class="text-2xl font-extrabold text-slate-900 leading-tight">Historia Clínica</h1>
-      <p *ngIf="hc()" class="text-sm text-slate-400 font-medium mt-0.5">
-        {{ hc()!.mascotaNombre }} · {{ hc()!.numeroHc }}
-      </p>
+  <div class="mb-6 flex items-center justify-between gap-3">
+    <div class="flex items-center gap-3">
+      <button (click)="volver()"
+        class="w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-400 hover:text-[#0066AA] hover:border-[#0066AA]">
+        <i class="pi pi-arrow-left text-sm"></i>
+      </button>
+      <div>
+        <h1 class="text-2xl font-extrabold text-slate-900 leading-tight">Historia Clínica</h1>
+        <p *ngIf="hc()" class="text-sm text-slate-400 font-medium mt-0.5">
+          {{ hc()!.mascotaNombre }} · {{ hc()!.numeroHc }}
+        </p>
+      </div>
     </div>
+    <app-diagnostico-ia *ngIf="hc()" [hc]="hc()!"></app-diagnostico-ia>
   </div>
 
   <div *ngIf="noTieneHc()"
@@ -288,11 +291,16 @@
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <a *ngFor="let a of consultaActiva()!.archivos"
-                [href]="a.url" target="_blank" rel="noopener noreferrer"
-                class="flex items-center gap-3 border border-slate-200 rounded-xl p-3.5 hover:border-[#0066AA] hover:bg-blue-50 group">
+              <button *ngFor="let a of consultaActiva()!.archivos"
+                type="button"
+                (click)="visualizarArchivo(a)"
+                [disabled]="previewCargando()"
+                class="flex items-center gap-3 border border-slate-200 rounded-xl p-3.5 text-left
+                       hover:border-[#0066AA] hover:bg-blue-50 group
+                       disabled:opacity-60 disabled:cursor-wait transition-colors">
                 <div class="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center shrink-0 group-hover:bg-white">
-                  <i class="pi pi-file text-slate-400 group-hover:text-[#0066AA]"></i>
+                  <i *ngIf="!previewCargando()" class="pi pi-file text-slate-400 group-hover:text-[#0066AA]"></i>
+                  <i *ngIf="previewCargando()" class="pi pi-spin pi-spinner text-[#0066AA]"></i>
                 </div>
                 <div class="flex-1 min-w-0">
                   <p class="text-xs font-bold text-slate-800 truncate">{{ a.nombre }}</p>
@@ -306,8 +314,8 @@
                   </div>
                   <p *ngIf="a.descripcion" class="text-[10px] text-slate-400 mt-0.5 truncate">{{ a.descripcion }}</p>
                 </div>
-                <i class="pi pi-external-link text-xs text-slate-300 group-hover:text-[#0066AA] shrink-0"></i>
-              </a>
+                <i class="pi pi-eye text-xs text-slate-300 group-hover:text-[#0066AA] shrink-0"></i>
+              </button>
             </div>
           </div>
 
@@ -318,5 +326,14 @@
   </ng-container>
 
 </div>
+
+<app-archivo-modals
+  [previewArchivo]="previewArchivo()"
+  [previewUrl]="previewUrl()"
+  [previewTipo]="previewTipo()"
+  [showConfirmEliminar]="false"
+  (cerrar)="cerrarPreview()"
+  (descargar)="descargarArchivo($event)">
+</app-archivo-modals>
 
 <p-toast position="bottom-right"></p-toast>

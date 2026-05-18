@@ -29,6 +29,11 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/admin/company/company.component').then((m) => m.CompanyComponent)
       },
       {
+        path: 'admin/roles',
+        data: { roles: [Role.SUPER_ADMIN, Role.ADMIN] },
+        loadComponent: () => import('./pages/admin/roles/roles.component').then((m) => m.RolesComponent)
+      },
+      {
         path: 'admin/menus',
         data: { roles: [Role.SUPER_ADMIN] },
         loadComponent: () => import('./pages/admin/menu-management/menu-management.component').then((m) => m.MenuManagementComponent)
@@ -54,6 +59,11 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/mascotas/lista-mascotas/lista-mascotas.component').then((m) => m.ListaMascotasComponent)
       },
       {
+        path: 'recetas',
+        data: { roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.VETERINARIO, Role.RECEPCIONISTA] },
+        loadComponent: () => import('./pages/mascotas/lista-recetas/lista-recetas.component').then((m) => m.ListaRecetasComponent)
+      },
+      {
         path: 'historias-clinicas',
         data: { roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.VETERINARIO, Role.RECEPCIONISTA] },
         children: [
@@ -67,7 +77,7 @@ export const routes: Routes = [
           },
           {
             path: 'consulta/:consultaId',
-            loadComponent: () => import('./pages/historias-clinicas/form-hc/consulta-form.component').then((m) => m.ConsultaFormComponent)
+            loadComponent: () => import('./pages/historias-clinicas/consulta/consulta-form.component').then((m) => m.ConsultaFormComponent)
           }
         ]
       },
@@ -80,6 +90,10 @@ export const routes: Routes = [
             loadComponent: () => import('./pages/citas/agenda/agenda.component').then((m) => m.AgendaComponent)
           }
         ]
+      },
+      {
+        path: 'profile',
+        loadComponent: () => import('./pages/profile/profile.component').then((m) => m.ProfileComponent)
       }
     ]
   },

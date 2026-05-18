@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 
@@ -8,15 +9,17 @@ import { HistoriaClinicaService } from '../../../core/services/historia-clinica.
 import { LoadingStore } from '../../../store/loading.store';
 import {
   HistoriaClinicaDetalle,
-  ConsultaResumen
+  ConsultaResumen,
+  ArchivoClinico
 } from '../../../models/response/historia-clinica-response';
-
-import { Location } from '@angular/common';
+import { ArchivoClinicoResponse } from '../../../models/response/archivo-clinico-response';
+import { ArchivoModalsComponent } from '../form-hc/archivo-modals/archivo-modals.component';
+import { DiagnosticoIaComponent } from './diagnostico-ia/diagnostico-ia.component';
 
 @Component({
   selector: 'app-historia-clinica-mascota',
   standalone: true,
-  imports: [CommonModule, ToastModule],
+  imports: [CommonModule, ToastModule, ArchivoModalsComponent, DiagnosticoIaComponent],
   providers: [MessageService],
   templateUrl: './historia-clinica-mascota.component.html'
 })
@@ -26,12 +29,19 @@ export class HistoriaClinicaMascotaComponent implements OnInit {
   private readonly location   = inject(Location);
   private readonly hcService  = inject(HistoriaClinicaService);
   private readonly msgService = inject(MessageService);
+  private readonly sanitizer  = inject(DomSanitizer);
   readonly loadingStore       = inject(LoadingStore);
 
   hc               = signal<HistoriaClinicaDetalle | null>(null);
   consultaActiva   = signal<ConsultaResumen | null>(null);
   tabActiva        = signal<'clinico' | 'recetas' | 'archivos'>('clinico');
   noTieneHc        = signal<boolean>(false);
+
+  previewArchivo   = signal<ArchivoClinicoResponse | null>(null);
+  previewUrl       = signal<SafeResourceUrl | string>('');
+  previewRawUrl    = signal<string>('');
+  previewTipo      = signal<'imagen' | 'pdf' | 'dcm' | null>(null);
+  previewCargando  = signal<boolean>(false);
 
   ngOnInit() {
     this.route.params.subscribe(params => {
@@ -129,5 +139,61 @@ export class HistoriaClinicaMascotaComponent implements OnInit {
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  visualizarArchivo(archivo: ArchivoClinico): void {
+    const ext = archivo.nombre?.split('.').pop()?.toLowerCase() ?? '';
+    const consultaId = this.consultaActiva()?.id;
+    if (!consultaId) return;
+
+    if (ext === 'dcm') {
+      this.previewArchivo.set(archivo as unknown as ArchivoClinicoResponse);
+      this.previewTipo.set('dcm');
+      this.previewUrl.set('');
+      return;
+    }
+
+    this.previewCargando.set(true);
+    this.hcService.obtenerContenidoArchivo(consultaId, archivo.id).subscribe({
+      next: (blob) => {
+        if (this.previewRawUrl()) URL.revokeObjectURL(this.previewRawUrl());
+        const objectUrl = URL.createObjectURL(blob);
+        this.previewRawUrl.set(objectUrl);
+        this.previewUrl.set(ext === 'pdf'
+          ? this.sanitizer.bypassSecurityTrustResourceUrl(objectUrl)
+          : objectUrl);
+        this.previewArchivo.set(archivo as unknown as ArchivoClinicoResponse);
+        this.previewTipo.set(ext === 'pdf' ? 'pdf' : 'imagen');
+        this.previewCargando.set(false);
+      },
+      error: () => {
+        this.previewCargando.set(false);
+        this.msgService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cargar el archivo' });
+      }
+    });
+  }
+
+  cerrarPreview(): void {
+    if (this.previewRawUrl()) URL.revokeObjectURL(this.previewRawUrl());
+    this.previewRawUrl.set('');
+    this.previewUrl.set('');
+    this.previewArchivo.set(null);
+    this.previewTipo.set(null);
+  }
+
+  descargarArchivo(archivo: ArchivoClinicoResponse): void {
+    const consultaId = this.consultaActiva()?.id;
+    if (!consultaId) return;
+    this.hcService.obtenerContenidoArchivo(consultaId, archivo.id, true).subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = archivo.nombre;
+        a.click();
+        URL.revokeObjectURL(url);
+      },
+      error: () => this.msgService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo descargar el archivo' })
+    });
   }
 }

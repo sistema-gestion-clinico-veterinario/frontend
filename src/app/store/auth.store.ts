@@ -101,6 +101,9 @@ export const AuthStore = signalStore(
         window.localStorage.setItem('auth', JSON.stringify(current));
       }
     },
+    hasPermission(permission: string): boolean {
+      return (store.permissions() ?? []).includes(permission);
+    },
     logout() {
       patchState(store, createInitialState(false));
       if (typeof window !== 'undefined') {

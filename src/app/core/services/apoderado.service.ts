@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { ApiResponse } from '../../models/response/api-response';
 import { Page } from '../../models/response/page';
 import { ApoderadoListResponse } from '../../models/response/apoderado-list-response';
+import { environment } from '../../../environments/environment';
 import { ApoderadoRequest } from '../../models/request/apoderado-request';
 import { UserProfileDTO } from '../../models/response/user-profile-dto';
 
@@ -11,7 +12,7 @@ import { UserProfileDTO } from '../../models/response/user-profile-dto';
 })
 export class ApoderadoService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = 'http://localhost:8080/api/v1/clientes/apoderados';
+  private readonly apiUrl = `${environment.apiUrl}/clientes/apoderados`;
 
   listar(companyId?: number, nombre?: string, numeroDocumento?: string, page: number = 0, size: number = 10) {
     let params = `?page=${page}&size=${size}`;
@@ -37,5 +38,9 @@ export class ApoderadoService {
 
   cambiarEstado(id: number, active: boolean) {
     return this.http.patch<ApiResponse<void>>(`${this.apiUrl}/${id}/status?active=${active}`, {});
+  }
+
+  eliminar(id: number) {
+    return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`);
   }
 }

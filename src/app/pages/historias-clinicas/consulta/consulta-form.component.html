@@ -125,12 +125,22 @@
           </button>
           <button type="button" (click)="tabActiva.set('recetas')"
             [class]="tabActiva() === 'recetas'
-              ? 'py-3 text-xs font-extrabold text-[#0066AA] border-b-2 border-[#0066AA] whitespace-nowrap'
-              : 'py-3 text-xs font-bold text-slate-400 border-b-2 border-transparent hover:text-slate-600 whitespace-nowrap'">
+              ? 'py-3 text-xs font-extrabold text-[#0066AA] border-b-2 border-[#0066AA] mr-6 whitespace-nowrap'
+              : 'py-3 text-xs font-bold text-slate-400 border-b-2 border-transparent mr-6 hover:text-slate-600 whitespace-nowrap'">
             Recetas
             <span *ngIf="recetas().length > 0"
               class="ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full bg-[#0066AA]/10 text-[#0066AA] text-[9px] font-black">
               {{ recetas().length }}
+            </span>
+          </button>
+          <button type="button" (click)="tabActiva.set('examenes')"
+            [class]="tabActiva() === 'examenes'
+              ? 'py-3 text-xs font-extrabold text-[#0066AA] border-b-2 border-[#0066AA] whitespace-nowrap'
+              : 'py-3 text-xs font-bold text-slate-400 border-b-2 border-transparent hover:text-slate-600 whitespace-nowrap'">
+            Exámenes
+            <span *ngIf="archivos().length > 0"
+              class="ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full bg-[#0066AA]/10 text-[#0066AA] text-[9px] font-black">
+              {{ archivos().length }}
             </span>
           </button>
         </div>
@@ -395,6 +405,112 @@
 
         </div>
 
+        <!-- TAB EXÁMENES -->
+        <div *ngIf="tabActiva() === 'examenes'" class="p-5 flex flex-col gap-5">
+
+          <div *ngIf="!isCerrada()" class="border border-dashed border-slate-200 rounded-xl p-4 bg-slate-50/50 flex flex-col gap-3">
+            <div class="flex items-start gap-3 flex-wrap sm:flex-nowrap">
+              <div class="flex-1 min-w-0">
+                <label class="block text-xs font-bold text-slate-600 mb-1.5">Seleccionar archivo</label>
+                <label
+                  class="flex items-center gap-2 w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-sm text-slate-500 cursor-pointer hover:border-[#0066AA] hover:text-[#0066AA] transition-all">
+                  <i class="pi pi-upload text-[11px]"></i>
+                  <span class="truncate">{{ archivoPendiente() ? archivoPendiente()!.name : 'Elegir archivo...' }}</span>
+                  <input type="file" class="hidden" accept=".dcm,.pdf,.jpg,.jpeg,.png" (change)="onFileSelected($event)">
+                </label>
+                <p class="text-[10px] text-slate-400 mt-1">Formatos aceptados: .dcm, .pdf, .jpg, .png &nbsp;·&nbsp; Máx. 20 MB</p>
+              </div>
+              <div class="w-full sm:w-40">
+                <label class="block text-xs font-bold text-slate-600 mb-1.5">Tipo</label>
+                <div class="relative">
+                  <select [value]="tipoSeleccionado()" (change)="tipoSeleccionado.set($any($event.target).value)"
+                    class="w-full appearance-none rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-[#0066AA] pr-8">
+                    <option *ngFor="let t of tiposArchivo" [value]="t.value">{{ t.label }}</option>
+                  </select>
+                  <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    <i class="pi pi-chevron-down text-[10px] text-slate-400"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-bold text-slate-600">Descripción <span class="text-slate-400 font-normal">(opcional)</span></label>
+              <input type="text" [value]="descripcionArchivo()" (input)="descripcionArchivo.set($any($event.target).value)"
+                placeholder="Ej: Hemograma completo — 09/05/2026"
+                class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20" />
+            </div>
+            <div class="flex justify-end">
+              <button type="button" (click)="subirArchivo()" [disabled]="!archivoPendiente() || archivoSubiendo()"
+                class="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#0066AA] text-white text-xs font-bold hover:bg-[#0055aa] disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+                <i class="pi" [ngClass]="archivoSubiendo() ? 'pi-spin pi-spinner' : 'pi-cloud-upload'"></i>
+                {{ archivoSubiendo() ? 'Subiendo...' : 'Subir archivo' }}
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <p class="text-xs font-bold text-slate-500 mb-3">
+              Archivos adjuntos &nbsp;·&nbsp; {{ archivos().length }} {{ archivos().length === 1 ? 'archivo' : 'archivos' }}
+            </p>
+
+            <div *ngIf="archivos().length > 0; else noArchivos" class="flex flex-col gap-2">
+              <div *ngFor="let archivo of archivos()"
+                class="flex items-center gap-3 bg-white border border-slate-100 rounded-xl px-4 py-3 hover:border-blue-100 hover:bg-blue-50/20 transition-all">
+
+                <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+                  [ngClass]="{
+                    'bg-blue-50 text-[#0066AA]':   archivo.tipoMime === 'image/jpeg' || archivo.tipoMime === 'image/png',
+                    'bg-rose-50 text-rose-500':     archivo.tipoMime === 'application/pdf',
+                    'bg-violet-50 text-violet-500': archivo.tipoMime === 'application/dicom' || archivo.tipoMime === 'application/octet-stream',
+                    'bg-slate-50 text-slate-400':   true
+                  }">
+                  <i class="pi text-sm"
+                    [ngClass]="{
+                      'pi-image':    archivo.tipoMime === 'image/jpeg' || archivo.tipoMime === 'image/png',
+                      'pi-file-pdf': archivo.tipoMime === 'application/pdf',
+                      'pi-eye':      archivo.tipoMime === 'application/dicom' || archivo.tipoMime === 'application/octet-stream',
+                      'pi-file':     true
+                    }"></i>
+                </div>
+
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-bold text-slate-800 truncate">{{ archivo.nombre }}</p>
+                  <p class="text-[10px] text-slate-400 mt-0.5 flex items-center gap-2">
+                    <span class="font-bold uppercase">{{ archivo.tipo }}</span>
+                    <span>·</span>
+                    <span>{{ formatBytes(archivo.tamanioBytes) }}</span>
+                    <ng-container *ngIf="archivo.subidoPor"><span>·</span><span>{{ archivo.subidoPor }}</span></ng-container>
+                  </p>
+                  <p *ngIf="archivo.descripcion" class="text-[10px] text-slate-500 italic mt-0.5">{{ archivo.descripcion }}</p>
+                </div>
+
+                <div class="flex items-center gap-1.5 flex-shrink-0">
+                  <button type="button" (click)="visualizarArchivo(archivo)" title="Visualizar"
+                    class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:text-[#0066AA] hover:border-blue-200 hover:bg-blue-50 transition-all">
+                    <i class="pi pi-eye text-xs"></i>
+                  </button>
+                  <button type="button" (click)="descargarArchivo(archivo)" title="Descargar"
+                    class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:text-emerald-600 hover:border-emerald-200 hover:bg-emerald-50 transition-all">
+                    <i class="pi pi-download text-xs"></i>
+                  </button>
+                  <button *ngIf="!isCerrada()" type="button" (click)="confirmarEliminarArchivo(archivo)" title="Eliminar"
+                    class="w-8 h-8 flex items-center justify-center rounded-lg border border-rose-100 text-rose-400 hover:text-rose-600 hover:border-rose-300 hover:bg-rose-50 transition-all">
+                    <i class="pi pi-trash text-xs"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <ng-template #noArchivos>
+              <div class="py-10 text-center bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                <i class="pi pi-folder-open text-3xl text-slate-200 mb-3 block"></i>
+                <p class="text-sm text-slate-400 font-medium">No hay exámenes adjuntos</p>
+              </div>
+            </ng-template>
+          </div>
+
+        </div>
+
       </div>
 
       <div *ngIf="isCerrada()" class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-center gap-3">
@@ -424,6 +540,7 @@
       </div>
 
     </form>
+
   </ng-container>
 
 </div>
@@ -431,155 +548,30 @@
 <p-confirmDialog></p-confirmDialog>
 <p-toast position="bottom-right"></p-toast>
 
-<!-- MODAL NUEVA / EDITAR RECETA -->
-<div *ngIf="showRecetaModal()"
-  class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
-  (click)="showRecetaModal.set(false)">
-  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg" (click)="$event.stopPropagation()">
+<app-archivo-modals
+  [previewArchivo]="previewArchivo()"
+  [previewUrl]="previewUrl()"
+  [previewTipo]="previewTipo()"
+  [showConfirmEliminar]="showConfirmEliminarArchivo()"
+  [archivoEliminando]="archivoEliminando()"
+  (cerrar)="cerrarPreview()"
+  (descargar)="descargarArchivo($event)"
+  (cancelarEliminar)="showConfirmEliminarArchivo.set(false); archivoEliminando.set(null)"
+  (confirmarEliminar)="eliminarArchivo()">
+</app-archivo-modals>
 
-    <div class="flex items-center gap-4 px-6 py-5 border-b border-slate-100 bg-slate-50 rounded-t-2xl">
-      <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
-        <i class="pi pi-file-edit text-[#0066AA] text-lg"></i>
-      </div>
-      <div>
-        <h2 class="text-base font-extrabold text-slate-800 leading-tight">
-          {{ recetaEditando() ? 'Editar medicamento' : 'Agregar medicamento' }}
-        </h2>
-        <p class="text-xs text-slate-400 mt-0.5">{{ consulta()?.mascotaNombre }}</p>
-      </div>
-    </div>
-
-    <form [formGroup]="recetaForm" class="p-6 flex flex-col gap-4">
-
-      <div class="grid sm:grid-cols-2 gap-4">
-        <div class="flex flex-col gap-1">
-          <label class="text-xs font-bold text-slate-600">Medicamento <span class="text-rose-500">*</span></label>
-          <input type="text" formControlName="medicamento" placeholder="Nombre del medicamento"
-            class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
-            [ngClass]="{'border-rose-400': recetaForm.get('medicamento')?.invalid && recetaForm.get('medicamento')?.touched, 'border-slate-200': !(recetaForm.get('medicamento')?.invalid && recetaForm.get('medicamento')?.touched)}" />
-          <span *ngIf="recetaForm.get('medicamento')?.invalid && recetaForm.get('medicamento')?.touched" class="text-xs text-rose-500">Requerido</span>
-        </div>
-        <div class="flex flex-col gap-1">
-          <label class="text-xs font-bold text-slate-600">Principio activo</label>
-          <input type="text" formControlName="principioActivo" placeholder="Ej: Amoxicilina"
-            class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20" />
-        </div>
-      </div>
-
-      <div class="grid sm:grid-cols-3 gap-4">
-        <div class="flex flex-col gap-1">
-          <label class="text-xs font-bold text-slate-600">Dosis <span class="text-rose-500">*</span></label>
-          <input type="text" formControlName="dosis" placeholder="Ej: 250mg"
-            class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
-            [ngClass]="{'border-rose-400': recetaForm.get('dosis')?.invalid && recetaForm.get('dosis')?.touched, 'border-slate-200': !(recetaForm.get('dosis')?.invalid && recetaForm.get('dosis')?.touched)}" />
-          <span *ngIf="recetaForm.get('dosis')?.invalid && recetaForm.get('dosis')?.touched" class="text-xs text-rose-500">Requerido</span>
-        </div>
-        <div class="flex flex-col gap-1">
-          <label class="text-xs font-bold text-slate-600">Frecuencia <span class="text-rose-500">*</span></label>
-          <input type="text" formControlName="frecuencia" placeholder="Ej: cada 8 horas"
-            class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
-            [ngClass]="{'border-rose-400': recetaForm.get('frecuencia')?.invalid && recetaForm.get('frecuencia')?.touched, 'border-slate-200': !(recetaForm.get('frecuencia')?.invalid && recetaForm.get('frecuencia')?.touched)}" />
-          <span *ngIf="recetaForm.get('frecuencia')?.invalid && recetaForm.get('frecuencia')?.touched" class="text-xs text-rose-500">Requerido</span>
-        </div>
-        <div class="flex flex-col gap-1">
-          <label class="text-xs font-bold text-slate-600">Duración (días)</label>
-          <input type="number" min="1" formControlName="duracionDias" placeholder="Ej: 7"
-            class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20" />
-        </div>
-      </div>
-
-      <div class="flex flex-col gap-1">
-        <label class="text-xs font-bold text-slate-600">Vía de administración <span class="text-rose-500">*</span></label>
-        <div class="relative">
-          <select formControlName="viaAdministracion"
-            class="w-full appearance-none rounded-xl border px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20 pr-10"
-            [ngClass]="{'border-rose-400': recetaForm.get('viaAdministracion')?.invalid && recetaForm.get('viaAdministracion')?.touched, 'border-slate-200': !(recetaForm.get('viaAdministracion')?.invalid && recetaForm.get('viaAdministracion')?.touched)}">
-            <option value="" disabled>Seleccionar vía</option>
-            <option value="Oral">Oral</option>
-            <option value="Subcutáneo">Subcutáneo</option>
-            <option value="Intramuscular">Intramuscular</option>
-            <option value="Intravenoso">Intravenoso</option>
-            <option value="Tópico">Tópico</option>
-            <option value="Ocular">Ocular</option>
-            <option value="Ótico">Ótico</option>
-            <option value="Inhalado">Inhalado</option>
-          </select>
-          <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-            <i class="pi pi-chevron-down text-[10px] text-slate-400"></i>
-          </div>
-        </div>
-        <span *ngIf="recetaForm.get('viaAdministracion')?.invalid && recetaForm.get('viaAdministracion')?.touched" class="text-xs text-rose-500">Requerido</span>
-      </div>
-
-      <div class="grid sm:grid-cols-2 gap-4">
-        <div class="flex flex-col gap-1">
-          <label class="text-xs font-bold text-slate-600">Fecha inicio <span class="text-rose-500">*</span></label>
-          <input type="date" formControlName="fechaInicio"
-            class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
-            [ngClass]="{'border-rose-400': recetaForm.get('fechaInicio')?.invalid && recetaForm.get('fechaInicio')?.touched, 'border-slate-200': !(recetaForm.get('fechaInicio')?.invalid && recetaForm.get('fechaInicio')?.touched)}" />
-          <span *ngIf="recetaForm.get('fechaInicio')?.invalid && recetaForm.get('fechaInicio')?.touched" class="text-xs text-rose-500">Requerido</span>
-        </div>
-        <div class="flex flex-col gap-1">
-          <label class="text-xs font-bold text-slate-600">Fecha fin</label>
-          <input type="date" formControlName="fechaFin"
-            class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20" />
-        </div>
-      </div>
-
-      <div class="flex flex-col gap-1">
-        <label class="text-xs font-bold text-slate-600">Indicaciones especiales</label>
-        <textarea formControlName="instrucciones" rows="2" placeholder="Indicaciones adicionales para el propietario..."
-          class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 outline-none resize-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20">
-        </textarea>
-      </div>
-
-    </form>
-
-    <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3 rounded-b-2xl">
-      <button type="button" (click)="showRecetaModal.set(false)"
-        class="px-4 py-2 rounded-xl text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-100 transition-all">
-        Cancelar
-      </button>
-      <button type="button" (click)="guardarReceta()"
-        class="px-5 py-2 rounded-xl text-sm font-bold text-white bg-[#0066AA] hover:bg-[#0055aa] transition-all">
-        <i class="pi pi-save mr-1.5"></i>
-        {{ recetaEditando() ? 'Guardar cambios' : 'Agregar medicamento' }}
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL CONFIRMAR ELIMINAR RECETA -->
-<div *ngIf="showConfirmEliminar()"
-  class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md">
-    <div class="px-6 py-5 border-b border-slate-100 bg-slate-50 rounded-t-2xl flex items-center gap-4">
-      <div class="w-10 h-10 rounded-xl bg-rose-100 flex items-center justify-center">
-        <i class="pi pi-trash text-rose-500 text-lg"></i>
-      </div>
-      <div>
-        <h2 class="text-base font-extrabold text-slate-800">Eliminar receta</h2>
-        <p class="text-xs text-slate-400 mt-0.5">Esta acción no se puede deshacer</p>
-      </div>
-    </div>
-    <div class="px-6 py-5">
-      <p class="text-sm text-slate-600">
-        ¿Deseas eliminar la receta de
-        <strong class="text-slate-900">{{ recetaEliminando()?.medicamento }}</strong>?
-      </p>
-    </div>
-    <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3 rounded-b-2xl">
-      <button type="button" (click)="showConfirmEliminar.set(false); recetaEliminando.set(null)"
-        class="px-4 py-2 rounded-xl text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-100 transition-all">
-        Cancelar
-      </button>
-      <button type="button" (click)="eliminarReceta()"
-        class="px-5 py-2 rounded-xl text-sm font-bold text-white bg-rose-500 hover:bg-rose-600 transition-all">
-        <i class="pi pi-trash mr-1.5"></i> Eliminar
-      </button>
-    </div>
-  </div>
-</div>
+<app-receta-modals
+  [showForm]="showRecetaModal()"
+  [recetaEditando]="recetaEditando()"
+  [consultaNombre]="consulta()?.mascotaNombre ?? ''"
+  [form]="recetaForm"
+  [showConfirmEliminar]="showConfirmEliminar()"
+  [recetaEliminando]="recetaEliminando()"
+  (cerrarForm)="showRecetaModal.set(false)"
+  (guardar)="guardarReceta()"
+  (cancelarEliminar)="showConfirmEliminar.set(false); recetaEliminando.set(null)"
+  (confirmarEliminar)="eliminarReceta()">
+</app-receta-modals>
 <p-drawer [visible]="displayDetalleHistorial()" (visibleChange)="displayDetalleHistorial.set($event)" position="right"
   styleClass="w-full md:w-[500px] lg:w-[600px] border-l border-slate-200 shadow-none overflow-hidden">
 

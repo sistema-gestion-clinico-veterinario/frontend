@@ -1,0 +1,107 @@
+<div class="p-8 min-h-screen bg-slate-50 font-['Barlow']">
+  <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-10">
+    <div>
+      <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Buscador de Recetas</h1>
+      <p class="text-slate-500 font-medium mt-1 flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-[#0066AA]"></span>
+        Consulta y gestiona el historial de prescripciones médicas emitidas
+      </p>
+    </div>
+    <div class="flex flex-col md:flex-row items-start md:items-center gap-4">
+      <div class="relative w-full md:w-80">
+        <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+        <input 
+          type="text" 
+          pInputText 
+          placeholder="Paciente o número de HC..." 
+          [(ngModel)]="searchQuery"
+          (input)="onFilterChange()"
+          class="w-full pl-9 pr-4 h-10 border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
+        />
+      </div>
+      <button (click)="resetFiltros()"
+        class="flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 text-sm font-medium px-4 h-10 rounded-lg transition-colors">
+        <i class="pi pi-filter-slash text-xs"></i>
+        Limpiar
+      </button>
+    </div>
+  </div>
+
+  <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-none">
+    <p-table 
+      [value]="recetas()" 
+      [loading]="loadingStore.isLoading()" 
+      [rowHover]="true"
+      styleClass="p-datatable-borderless"
+      [responsiveLayout]="'scroll'"
+    >
+      <ng-template pTemplate="header">
+        <tr class="border-b border-slate-100">
+          <th class="px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Historia Clínica</th>
+          <th class="px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Paciente</th>
+          <th class="px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Prescripción</th>
+          <th class="px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Veterinario</th>
+          <th class="px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Fecha Emisión</th>
+          <th class="px-6 py-4 w-20"></th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-receta>
+        <tr class="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors">
+          <td class="px-6 py-4">
+            <span class="text-sm font-bold text-[#0066AA]">{{ receta.numeroHc }}</span>
+          </td>
+          <td class="px-6 py-4">
+            <span class="text-sm font-medium text-slate-800">{{ receta.pacienteNombre }}</span>
+          </td>
+          <td class="px-6 py-4">
+            <div class="flex flex-col">
+              <span class="text-sm font-semibold text-slate-800">{{ receta.medicamento }}</span>
+              <span class="text-[11px] text-slate-400 font-bold uppercase tracking-tighter mt-0.5">{{ receta.principioActivo || '-' }}</span>
+              <div class="flex items-center gap-2 mt-1.5">
+                <span class="px-2 py-0.5 rounded text-[10px] bg-blue-50 text-blue-600 font-bold uppercase">{{ receta.dosis }}</span>
+                <span class="text-[10px] text-slate-400 font-medium italic">{{ receta.frecuencia }}</span>
+              </div>
+            </div>
+          </td>
+          <td class="px-6 py-4">
+            <span class="text-sm text-slate-600">{{ receta.veterinarioNombre }}</span>
+          </td>
+          <td class="px-6 py-4">
+            <span class="text-sm text-slate-600 font-medium">{{ receta.fechaCreacion | date:'dd/MM/yyyy' }}</span>
+          </td>
+          <td class="px-6 py-4 text-right">
+            <button 
+              (click)="imprimirReceta(receta)"
+              class="p-2 rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-90"
+              pTooltip="Imprimir Receta"
+            >
+              <i class="pi pi-print text-sm"></i>
+            </button>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="6" class="py-20 text-center">
+            <i class="pi pi-file-excel text-3xl text-slate-200 block mb-3"></i>
+            <p class="text-sm text-slate-400 font-medium">No se encontraron recetas médicas registradas</p>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+
+    <div class="border-t border-slate-100">
+      <p-paginator 
+        [rows]="pageSize" 
+        [totalRecords]="totalRecords()" 
+        [first]="currentPage * pageSize"
+        (onPageChange)="onPageChange($event)"
+        [showCurrentPageReport]="true"
+        currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} recetas"
+        styleClass="p-paginator-borderless py-3"
+      ></p-paginator>
+    </div>
+  </div>
+</div>

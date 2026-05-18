@@ -27,9 +27,10 @@ import { ServicioService } from '../../../core/services/servicio.service';
 import { ServicioResponse } from '../../../models/response/servicio-response';
 import { LoadingStore } from '../../../store/loading.store';
 import { AuthStore } from '../../../store/auth.store';
-import { Role } from '../../../core/enums/role.enum';
+import { Permission } from '../../../core/enums/permission.enum';
+import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 
-interface Permission {
+interface PermissionItem {
   id: number;
   name: string;
 }
@@ -37,7 +38,7 @@ interface Permission {
 interface RoleItem {
   id: number;
   name: string;
-  permissions: Permission[];
+  permissions: PermissionItem[];
 }
 
 @Component({
@@ -56,7 +57,8 @@ interface RoleItem {
     DropdownModule,
     ToastModule,
     CheckboxModule,
-    MultiSelectModule
+    MultiSelectModule,
+    HasPermissionDirective
   ],
   providers: [MessageService],
   templateUrl: './complementario.component.html'
@@ -72,7 +74,7 @@ export class ComplementarioComponent implements OnInit {
   readonly authStore = inject(AuthStore);
   readonly loadingStore = inject(LoadingStore);
 
-  readonly isSuperAdmin = this.authStore.roles().includes(Role.SUPER_ADMIN);
+  readonly Permission = Permission;
 
   get activeCompanyId(): number | null {
     return this.authStore.selectedEnterprise()?.establishmentId ?? this.authStore.companyId();
@@ -108,7 +110,7 @@ export class ComplementarioComponent implements OnInit {
   });
 
   roles = signal<RoleItem[]>([]);
-  permisos = signal<Permission[]>([]);
+  permisos = signal<PermissionItem[]>([]);
   permisosOptions = signal<{ label: string; value: number }[]>([]);
   
   permissionSearch = signal<string>('');
@@ -257,10 +259,15 @@ export class ComplementarioComponent implements OnInit {
       ...(companyId ? { company: { id: companyId } } : {})
     };
 
+    const editing = this.editingTipo();
+    const req = editing
+      ? this.tipoEmpleadoService.actualizar(editing.id, payload)
+      : this.tipoEmpleadoService.crear(payload);
+
     this.loadingStore.show();
-    this.tipoEmpleadoService.crear(payload).subscribe({
+    req.subscribe({
       next: () => {
-        this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Tipo de empleado creado' });
+        this.messageService.add({ severity: 'success', summary: 'Éxito', detail: editing ? 'Tipo de empleado actualizado' : 'Tipo de empleado creado' });
         this.showTipoModal.set(false);
         this.loadTiposEmpleado();
         this.loadingStore.hide();
@@ -269,6 +276,18 @@ export class ComplementarioComponent implements OnInit {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error al guardar' });
         this.loadingStore.hide();
       }
+    });
+  }
+
+  cambiarEstadoTipo(item: any) {
+    this.loadingStore.show();
+    this.tipoEmpleadoService.cambiarEstado(item.id, !item.estado).subscribe({
+      next: () => {
+        this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Estado actualizado' });
+        this.loadTiposEmpleado();
+        this.loadingStore.hide();
+      },
+      error: () => this.loadingStore.hide()
     });
   }
 
@@ -363,8 +382,8 @@ export class ComplementarioComponent implements OnInit {
   loadPermisos() {
     this.roleService.listarPermisos().subscribe({
       next: (res) => {
-        this.permisos.set((res.data ?? []) as Permission[]);
-        this.permisosOptions.set(((res.data ?? []) as Permission[]).map(p => ({ label: p.name, value: p.id })));
+        this.permisos.set((res.data ?? []) as PermissionItem[]);
+        this.permisosOptions.set(((res.data ?? []) as PermissionItem[]).map(p => ({ label: p.name, value: p.id })));
       }
     });
   }

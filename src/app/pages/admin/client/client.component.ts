@@ -15,6 +15,8 @@ import { ApoderadoRequest } from '../../../models/request/apoderado-request';
 import { LoadingStore } from '../../../store/loading.store';
 import { AuthStore } from '../../../store/auth.store';
 import { Role } from '../../../core/enums/role.enum';
+import { Permission } from '../../../core/enums/permission.enum';
+import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 
 @Component({
   selector: 'app-client',
@@ -28,7 +30,8 @@ import { Role } from '../../../core/enums/role.enum';
     DialogModule,
     InputTextModule,
     DropdownModule,
-    ToastModule
+    ToastModule,
+    HasPermissionDirective
   ],
   providers: [MessageService],
   templateUrl: './client.component.html'
@@ -46,9 +49,25 @@ export class ClientComponent implements OnInit {
   displayModal = signal<boolean>(false);
   isEdit = signal<boolean>(false);
   totalRecords = signal<number>(0);
+  confirmDialog = signal<{ title: string; message: string; onConfirm: () => void } | null>(null);
   
+  readonly Permission = Permission;
+
   get activeCompanyId(): number | null {
     return this.authStore.selectedEnterprise()?.establishmentId ?? this.authStore.companyId();
+  }
+
+  openConfirm(title: string, message: string, onConfirm: () => void) {
+    this.confirmDialog.set({ title, message, onConfirm });
+  }
+
+  confirmAction() {
+    this.confirmDialog()?.onConfirm();
+    this.confirmDialog.set(null);
+  }
+
+  cancelConfirm() {
+    this.confirmDialog.set(null);
   }
 
   tipoDocumentos = [
@@ -64,12 +83,12 @@ export class ClientComponent implements OnInit {
 
   clientForm: FormGroup = this.fb.group({
     id: [null],
-    nombre: ['', [Validators.required]],
-    apellido: ['', [Validators.required]],
+    nombre: ['', [Validators.required, Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/)]],
+    apellido: ['', [Validators.required, Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/)]],
     email: ['', [Validators.required, Validators.email]],
-    numeroDocumento: ['', [Validators.required]],
+    numeroDocumento: ['', [Validators.required, Validators.pattern(/^\d{8}$/)]],
     tipoDocumento: ['DNI', [Validators.required]],
-    telefono: ['', [Validators.required]],
+    telefono: ['', [Validators.required, Validators.pattern(/^\d{9}$/)]],
     direccion: ['', [Validators.required]],
     companyId: [null],
     genero: ['MASCULINO', [Validators.required]],
@@ -77,8 +96,30 @@ export class ClientComponent implements OnInit {
     observaciones: ['']
   });
 
+  get documentoErrorMsg(): string {
+    const tipo = this.clientForm.get('tipoDocumento')?.value;
+    if (tipo === 'PASAPORTE') return 'El pasaporte debe comenzar con una letra seguida de 8 números';
+    if (tipo === 'CARNET_EXTRANJERIA') return 'El carnet de extranjería debe tener exactamente 9 dígitos';
+    return 'El DNI debe tener exactamente 8 dígitos';
+  }
+
   ngOnInit() {
     this.loadClients();
+
+    this.clientForm.get('tipoDocumento')?.valueChanges.subscribe(tipo => {
+      const doc = this.clientForm.get('numeroDocumento');
+      if (tipo === 'DNI') {
+        doc?.setValidators([Validators.required, Validators.pattern(/^\d{8}$/)]);
+      } else if (tipo === 'PASAPORTE') {
+        doc?.setValidators([Validators.required, Validators.pattern(/^[a-zA-Z]\d{8}$/)]);
+      } else {
+        doc?.setValidators([Validators.required, Validators.pattern(/^\d{9}$/)]);
+      }
+      if (!this.isEdit()) {
+        doc?.reset('');
+      }
+      doc?.updateValueAndValidity();
+    });
   }
 
   loadClients(event: any = { first: 0, rows: 10 }) {
@@ -135,6 +176,7 @@ export class ClientComponent implements OnInit {
   saveClient() {
     if (this.clientForm.invalid) {
       this.clientForm.markAllAsTouched();
+      this.messageService.add({ severity: 'warn', summary: 'Campos incompletos', detail: 'Por favor completa todos los campos requeridos correctamente.' });
       return;
     }
 
@@ -167,11 +209,42 @@ export class ClientComponent implements OnInit {
   }
 
   toggleStatus(client: ApoderadoListResponse) {
-    this.apoderadoService.cambiarEstado(client.id, !client.activo).subscribe({
-      next: () => {
-        this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Estado actualizado' });
-        this.loadClients();
+    const action = client.activo ? 'desactivar' : 'activar';
+    this.openConfirm(
+      'Cambiar estado',
+      `¿Confirmas que deseas ${action} a ${client.nombre} ${client.apellido}?`,
+      () => {
+        this.apoderadoService.cambiarEstado(client.id, !client.activo).subscribe({
+          next: () => {
+            this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Estado actualizado' });
+            this.loadClients();
+          },
+          error: (err) => {
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo cambiar el estado' });
+          }
+        });
       }
-    });
+    );
+  }
+
+  deleteClient(client: ApoderadoListResponse) {
+    this.openConfirm(
+      'Eliminar propietario',
+      `¿Estás seguro de que deseas eliminar a ${client.nombre} ${client.apellido}? Esta acción no se puede deshacer.`,
+      () => {
+        this.loadingStore.show();
+        this.apoderadoService.eliminar(client.id).subscribe({
+          next: () => {
+            this.messageService.add({ severity: 'success', summary: 'Eliminado', detail: 'Propietario eliminado correctamente' });
+            this.loadClients();
+            this.loadingStore.hide();
+          },
+          error: (err) => {
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo eliminar el propietario' });
+            this.loadingStore.hide();
+          }
+        });
+      }
+    );
   }
 }

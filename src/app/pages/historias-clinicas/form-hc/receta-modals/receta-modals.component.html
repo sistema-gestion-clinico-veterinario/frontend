@@ -1,0 +1,147 @@
+<div *ngIf="showForm"
+  class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+  (click)="cerrarForm.emit()">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg" (click)="$event.stopPropagation()">
+
+    <div class="flex items-center gap-4 px-6 py-5 border-b border-slate-100 bg-slate-50 rounded-t-2xl">
+      <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
+        <i class="pi pi-file-edit text-[#0066AA] text-lg"></i>
+      </div>
+      <div>
+        <h2 class="text-base font-extrabold text-slate-800 leading-tight">
+          {{ recetaEditando ? 'Editar medicamento' : 'Agregar medicamento' }}
+        </h2>
+        <p class="text-xs text-slate-400 mt-0.5">{{ consultaNombre }}</p>
+      </div>
+    </div>
+
+    <form [formGroup]="form" class="p-6 flex flex-col gap-4">
+
+      <div class="grid sm:grid-cols-2 gap-4">
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-bold text-slate-600">Medicamento <span class="text-rose-500">*</span></label>
+          <input type="text" formControlName="medicamento" placeholder="Nombre del medicamento"
+            class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
+            [ngClass]="{'border-rose-400': form.get('medicamento')?.invalid && form.get('medicamento')?.touched, 'border-slate-200': !(form.get('medicamento')?.invalid && form.get('medicamento')?.touched)}" />
+          <span *ngIf="form.get('medicamento')?.invalid && form.get('medicamento')?.touched" class="text-xs text-rose-500">Requerido</span>
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-bold text-slate-600">Principio activo</label>
+          <input type="text" formControlName="principioActivo" placeholder="Ej: Amoxicilina"
+            class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20" />
+        </div>
+      </div>
+
+      <div class="grid sm:grid-cols-3 gap-4">
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-bold text-slate-600">Dosis <span class="text-rose-500">*</span></label>
+          <input type="text" formControlName="dosis" placeholder="Ej: 250mg"
+            class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
+            [ngClass]="{'border-rose-400': form.get('dosis')?.invalid && form.get('dosis')?.touched, 'border-slate-200': !(form.get('dosis')?.invalid && form.get('dosis')?.touched)}" />
+          <span *ngIf="form.get('dosis')?.invalid && form.get('dosis')?.touched" class="text-xs text-rose-500">Requerido</span>
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-bold text-slate-600">Frecuencia <span class="text-rose-500">*</span></label>
+          <input type="text" formControlName="frecuencia" placeholder="Ej: cada 8 horas"
+            class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
+            [ngClass]="{'border-rose-400': form.get('frecuencia')?.invalid && form.get('frecuencia')?.touched, 'border-slate-200': !(form.get('frecuencia')?.invalid && form.get('frecuencia')?.touched)}" />
+          <span *ngIf="form.get('frecuencia')?.invalid && form.get('frecuencia')?.touched" class="text-xs text-rose-500">Requerido</span>
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-bold text-slate-600">Duración (días)</label>
+          <input type="number" min="1" formControlName="duracionDias" placeholder="Ej: 7"
+            class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20" />
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-bold text-slate-600">Vía de administración <span class="text-rose-500">*</span></label>
+        <div class="relative">
+          <select formControlName="viaAdministracion"
+            class="w-full appearance-none rounded-xl border px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20 pr-10"
+            [ngClass]="{'border-rose-400': form.get('viaAdministracion')?.invalid && form.get('viaAdministracion')?.touched, 'border-slate-200': !(form.get('viaAdministracion')?.invalid && form.get('viaAdministracion')?.touched)}">
+            <option value="" disabled>Seleccionar vía</option>
+            <option value="Oral">Oral</option>
+            <option value="Subcutáneo">Subcutáneo</option>
+            <option value="Intramuscular">Intramuscular</option>
+            <option value="Intravenoso">Intravenoso</option>
+            <option value="Tópico">Tópico</option>
+            <option value="Ocular">Ocular</option>
+            <option value="Ótico">Ótico</option>
+            <option value="Inhalado">Inhalado</option>
+          </select>
+          <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+            <i class="pi pi-chevron-down text-[10px] text-slate-400"></i>
+          </div>
+        </div>
+        <span *ngIf="form.get('viaAdministracion')?.invalid && form.get('viaAdministracion')?.touched" class="text-xs text-rose-500">Requerido</span>
+      </div>
+
+      <div class="grid sm:grid-cols-2 gap-4">
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-bold text-slate-600">Fecha inicio <span class="text-rose-500">*</span></label>
+          <input type="date" formControlName="fechaInicio"
+            class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
+            [ngClass]="{'border-rose-400': form.get('fechaInicio')?.invalid && form.get('fechaInicio')?.touched, 'border-slate-200': !(form.get('fechaInicio')?.invalid && form.get('fechaInicio')?.touched)}" />
+          <span *ngIf="form.get('fechaInicio')?.invalid && form.get('fechaInicio')?.touched" class="text-xs text-rose-500">Requerido</span>
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-bold text-slate-600">Fecha fin</label>
+          <input type="date" formControlName="fechaFin"
+            class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20" />
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-bold text-slate-600">Indicaciones especiales</label>
+        <textarea formControlName="instrucciones" rows="2" placeholder="Indicaciones adicionales para el propietario..."
+          class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 outline-none resize-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20">
+        </textarea>
+      </div>
+
+    </form>
+
+    <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3 rounded-b-2xl">
+      <button type="button" (click)="cerrarForm.emit()"
+        class="px-4 py-2 rounded-xl text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-100 transition-all">
+        Cancelar
+      </button>
+      <button type="button" (click)="guardar.emit()"
+        class="px-5 py-2 rounded-xl text-sm font-bold text-white bg-[#0066AA] hover:bg-[#0055aa] transition-all">
+        <i class="pi pi-save mr-1.5"></i>
+        {{ recetaEditando ? 'Guardar cambios' : 'Agregar medicamento' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="showConfirmEliminar"
+  class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+    <div class="px-6 py-5 border-b border-slate-100 bg-slate-50 rounded-t-2xl flex items-center gap-4">
+      <div class="w-10 h-10 rounded-xl bg-rose-100 flex items-center justify-center">
+        <i class="pi pi-trash text-rose-500 text-lg"></i>
+      </div>
+      <div>
+        <h2 class="text-base font-extrabold text-slate-800">Eliminar receta</h2>
+        <p class="text-xs text-slate-400 mt-0.5">Esta acción no se puede deshacer</p>
+      </div>
+    </div>
+    <div class="px-6 py-5">
+      <p class="text-sm text-slate-600">
+        ¿Deseas eliminar la receta de
+        <strong class="text-slate-900">{{ recetaEliminando?.medicamento }}</strong>?
+      </p>
+    </div>
+    <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3 rounded-b-2xl">
+      <button type="button" (click)="cancelarEliminar.emit()"
+        class="px-4 py-2 rounded-xl text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-100 transition-all">
+        Cancelar
+      </button>
+      <button type="button" (click)="confirmarEliminar.emit()"
+        class="px-5 py-2 rounded-xl text-sm font-bold text-white bg-rose-500 hover:bg-rose-600 transition-all">
+        <i class="pi pi-trash mr-1.5"></i> Eliminar
+      </button>
+    </div>
+  </div>
+</div>
