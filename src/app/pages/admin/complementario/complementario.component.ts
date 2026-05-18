@@ -107,7 +107,8 @@ export class ComplementarioComponent implements OnInit {
     descripcion: ['', [Validators.required]],
     precio:      [null, [Validators.required, Validators.min(0.01)]],
     duracionEstimada: [20, [Validators.required, Validators.min(1)]],
-    disponible:  [true]
+    disponible:  [true],
+    tipoEmpleadoId: [null]
   });
 
   roles = signal<RoleItem[]>([]);
@@ -307,7 +308,11 @@ export class ComplementarioComponent implements OnInit {
   loadServicios() {
     const cid = this.activeCompanyId ?? undefined;
     this.servicioService.listar(cid, 0, 100).subscribe({
-      next: (res) => this.servicios.set(res.data.content),
+      next: (res) => {
+        // Filter out soft-deleted services so they do not show up in the active list
+        const activeList = (res.data.content || []).filter((s: ServicioResponse) => s.activo);
+        this.servicios.set(activeList);
+      },
       error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar los servicios' })
     });
   }
@@ -319,7 +324,8 @@ export class ComplementarioComponent implements OnInit {
       descripcion: item?.descripcion ?? '',
       precio:      item?.precio      ?? null,
       duracionEstimada: item?.duracionEstimada ?? 20,
-      disponible:  item?.disponible  ?? true
+      disponible:  item?.disponible  ?? true,
+      tipoEmpleadoId: item?.tipoEmpleadoId ?? null
     });
     this.showServicioModal.set(true);
   }
@@ -362,12 +368,12 @@ export class ComplementarioComponent implements OnInit {
     this.loadingStore.show();
     this.servicioService.eliminar(id).subscribe({
       next: () => {
-        this.messageService.add({ severity: 'success', summary: 'Desactivado', detail: 'Servicio desactivado correctamente' });
+        this.messageService.add({ severity: 'success', summary: 'Eliminado', detail: 'Servicio eliminado correctamente' });
         this.loadServicios();
         this.loadingStore.hide();
       },
       error: (err) => {
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo desactivar' });
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo eliminar el servicio' });
         this.loadingStore.hide();
       }
     });

@@ -74,6 +74,11 @@ export class NavbarComponent implements OnInit {
     this.router.navigate(['/profile']);
   }
 
+  goToPasswordChange() {
+    this.dropdownOpen.set(false);
+    this.router.navigate(['/password-change']);
+  }
+
   logout() {
     this.authStore.logout();
     this.router.navigate(['/login']);

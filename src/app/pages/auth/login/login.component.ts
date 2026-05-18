@@ -27,7 +27,7 @@ export class LoginComponent implements OnInit {
       if (roles.includes('ROLE_SUPER_ADMIN')) {
         this.router.navigateByUrl('/admin/company');
       } else if (roles.includes('ROLE_CLIENTE')) {
-        this.router.navigateByUrl('/clientes/portal');
+        this.router.navigateByUrl('/apoderado');
       } else {
         this.router.navigateByUrl('/dashboard');
       }
@@ -80,7 +80,7 @@ export class LoginComponent implements OnInit {
         if (roles.includes('ROLE_SUPER_ADMIN')) {
           this.router.navigateByUrl('/admin/company');
         } else if (roles.includes('ROLE_CLIENTE')) {
-          this.router.navigateByUrl('/clientes/portal');
+          this.router.navigateByUrl('/apoderado');
         } else {
           this.router.navigateByUrl('/dashboard');
         }

@@ -1,8 +1,11 @@
-import { Component, inject, signal, Output, EventEmitter } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
+import { Router } from '@angular/router';
 import { AuthStore } from '../../../store/auth.store';
 import { AuthService } from '../../../core/services/auth.service';
+import { MessageService } from 'primeng/api';
+import { ToastModule } from 'primeng/toast';
 
 function passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
   const newPassword = control.get('newPassword')?.value;
@@ -11,18 +14,19 @@ function passwordMatchValidator(control: AbstractControl): ValidationErrors | nu
 }
 
 @Component({
-  selector: 'app-change-password-modal',
+  selector: 'app-password-change',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './change-password-modal.component.html',
-  styleUrl: './change-password-modal.component.scss'
+  imports: [CommonModule, ReactiveFormsModule, ToastModule],
+  providers: [MessageService],
+  templateUrl: './password-change.component.html',
+  styleUrl: './password-change.component.scss'
 })
-export class ChangePasswordModalComponent {
-  @Output() dismissed = new EventEmitter<void>();
-
+export class PasswordChangeComponent {
   private readonly fb = inject(FormBuilder);
   readonly authStore = inject(AuthStore);
   private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
+  private readonly messageService = inject(MessageService);
 
   showOld = signal(false);
   showNew = signal(false);
@@ -65,10 +69,15 @@ export class ChangePasswordModalComponent {
   }
 
   submit() {
-    if (this.form.invalid) { this.form.markAllAsTouched(); return; }
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+
     this.isSubmitting.set(true);
     this.errorMsg.set(null);
     const { oldPassword, newPassword } = this.form.value;
+
     this.authService.changePassword({ oldPassword: oldPassword!, newPassword: newPassword! }).subscribe({
       next: () => {
         this.authStore.setAuth({
@@ -86,13 +95,45 @@ export class ChangePasswordModalComponent {
           selectedEnterprise: this.authStore.selectedEnterprise(),
           menu: this.authStore.menu()
         });
-        this.isSubmitting.set(false);
-        this.dismissed.emit();
+
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Contraseña Actualizada',
+          detail: 'Tu contraseña ha sido cambiada con éxito. Redirigiendo...'
+        });
+
+        setTimeout(() => {
+          this.isSubmitting.set(false);
+          const roles = this.authStore.roles() ?? [];
+          if (roles.includes('ROLE_SUPER_ADMIN')) {
+            this.router.navigateByUrl('/admin/company');
+          } else if (roles.includes('ROLE_CLIENTE')) {
+            this.router.navigateByUrl('/apoderado');
+          } else {
+            this.router.navigateByUrl('/dashboard');
+          }
+        }, 1500);
       },
       error: (err) => {
         this.errorMsg.set(err.error?.message ?? 'La contraseña actual es incorrecta.');
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: this.errorMsg()!
+        });
         this.isSubmitting.set(false);
       }
     });
+  }
+
+  cancel() {
+    const roles = this.authStore.roles() ?? [];
+    if (roles.includes('ROLE_SUPER_ADMIN')) {
+      this.router.navigateByUrl('/admin/company');
+    } else if (roles.includes('ROLE_CLIENTE')) {
+      this.router.navigateByUrl('/apoderado');
+    } else {
+      this.router.navigateByUrl('/dashboard');
+    }
   }
 }

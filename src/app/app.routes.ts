@@ -111,8 +111,16 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/profile/profile.component').then((m) => m.ProfileComponent)
       },
       {
-        path: 'clientes/portal',
+        path: 'password-change',
+        loadComponent: () => import('./pages/auth/password-change/password-change.component').then((m) => m.PasswordChangeComponent)
+      },
+      {
+        path: 'apoderado',
         loadComponent: () => import('./pages/apoderado-portal/apoderado-portal.component').then((m) => m.ApoderadoPortalComponent)
+      },
+      {
+        path: 'apoderado/mis-citas',
+        loadComponent: () => import('./pages/apoderado/citas/citas.component').then((m) => m.CitasComponent)
       }
     ]
   },

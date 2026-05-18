@@ -82,4 +82,9 @@ export class EmpleadoService {
     const params = companyId ? `?companyId=${companyId}` : '';
     return this.http.get<ApiResponse<any[]>>(`${this.apiUrl}/schedules-report${params}`);
   }
+
+  resetPassword(userId: number | null, newPassword: string, email?: string): Observable<ApiResponse<void>> {
+    const url = `${environment.apiUrl}/admin/usuarios/reset-password`;
+    return this.http.post<ApiResponse<void>>(url, { userId, newPassword, email });
+  }
 }

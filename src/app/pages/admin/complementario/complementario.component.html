@@ -265,16 +265,22 @@
             </tr>
           </ng-template>
           <ng-template pTemplate="body" let-item>
-            <tr class="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors"
-              [class.opacity-50]="!item.activo">
-              <td class="px-6 py-4">
-                <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600 font-bold text-base flex-shrink-0">
-                    {{ item.nombre.substring(0,2).toUpperCase() }}
-                  </div>
-                  <span class="text-sm font-medium text-slate-800">{{ item.nombre }}</span>
-                </div>
-              </td>
+             <tr class="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors"
+               [class.opacity-50]="!item.activo">
+               <td class="px-6 py-4">
+                 <div class="flex items-center gap-3">
+                   <div class="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600 font-bold text-base flex-shrink-0">
+                     {{ item.nombre.substring(0,2).toUpperCase() }}
+                   </div>
+                   <div class="flex flex-col gap-0.5">
+                     <span class="text-sm font-medium text-slate-800 leading-none">{{ item.nombre }}</span>
+                     <span *ngIf="item.tipoEmpleadoNombre"
+                       class="px-1.5 py-0.5 rounded text-[8px] bg-purple-50 text-purple-600 font-extrabold uppercase tracking-wider w-max mt-1">
+                       {{ item.tipoEmpleadoNombre }}
+                     </span>
+                   </div>
+                 </div>
+               </td>
               <td class="px-6 py-4">
                 <p class="text-sm text-slate-400 truncate max-w-[200px]">{{ item.descripcion || '—' }}</p>
               </td>
@@ -493,6 +499,19 @@
               class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
           </div>
         </div>
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-semibold text-slate-700 ml-0.5">Cargo / Tipo de Empleado Requerido</label>
+          <div class="relative">
+            <select formControlName="tipoEmpleadoId"
+              class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 bg-white transition-all appearance-none font-bold text-slate-700">
+              <option [value]="null">Cualquier cargo (Servicio General)</option>
+              <option *ngFor="let t of tiposEmpleado()" [value]="t.id">{{ t.nombre }}</option>
+            </select>
+            <i class="pi pi-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 pointer-events-none"></i>
+          </div>
+          <p class="text-[10px] text-slate-400 mt-0.5">Sincroniza la agenda para que solo este tipo de profesional pueda ser reservado para este servicio.</p>
+        </div>
+
         <div class="flex items-start gap-3 p-3 bg-slate-50 border border-slate-200 rounded">
           <input type="checkbox" formControlName="disponible" id="chkDisp"
             class="w-4 h-4 text-blue-600 border-slate-300 rounded mt-0.5 focus:ring-blue-500">
