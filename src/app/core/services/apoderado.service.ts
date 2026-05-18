@@ -52,6 +52,14 @@ export class ApoderadoService {
     return this.http.get<ApiResponse<any[]>>(`${environment.apiUrl}/clientes/portal/mascotas`);
   }
 
+  getPortalMascotasPaginated(page: number = 0, size: number = 6, nombre?: string, especie?: string, activo?: boolean) {
+    let params = `?page=${page}&size=${size}`;
+    if (nombre) params += `&nombre=${nombre}`;
+    if (especie) params += `&especie=${especie}`;
+    if (activo !== undefined && activo !== null) params += `&activo=${activo}`;
+    return this.http.get<ApiResponse<Page<any>>>(`${environment.apiUrl}/clientes/portal/mascotas/paginated${params}`);
+  }
+
   getPortalMascotaHistoria(mascotaId: number) {
     return this.http.get<ApiResponse<any>>(`${environment.apiUrl}/clientes/portal/mascotas/${mascotaId}/historia`);
   }

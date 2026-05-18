@@ -84,7 +84,8 @@ export class ChangePasswordModalComponent {
           passwordChanged: true,
           needsCompanySelection: this.authStore.needsCompanySelection(),
           selectedEnterprise: this.authStore.selectedEnterprise(),
-          menu: this.authStore.menu()
+          menu: this.authStore.menu(),
+          assignedRoles: this.authStore.assignedRoles()
         });
         this.isSubmitting.set(false);
         this.dismissed.emit();

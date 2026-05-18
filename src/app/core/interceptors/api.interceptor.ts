@@ -48,11 +48,23 @@ const handle401Error = (req: HttpRequest<any>, next: HttpHandlerFn, authStore: a
         switchMap((res: any) => {
           isRefreshing = false;
           authStore.setAuth({
-            ...authStore.$state(),
             token: res.data.token,
             refreshToken: res.data.refreshToken,
             permissions: res.data.permissions,
-            roles: res.data.roles
+            roles: res.data.roles,
+            companyId: authStore.companyId(),
+            companyName: authStore.companyName(),
+            nombreCompleto: authStore.nombreCompleto(),
+            userType: authStore.userType(),
+            empleadoId: authStore.empleadoId(),
+            passwordChanged: authStore.passwordChanged(),
+            needsCompanySelection: authStore.needsCompanySelection(),
+            selectedEnterprise: authStore.selectedEnterprise(),
+            menu: authStore.menu(),
+            simulatedRoleId: authStore.simulatedRoleId(),
+            originalMenu: authStore.originalMenu(),
+            originalPermissions: authStore.originalPermissions(),
+            assignedRoles: res.data.assignedRoles ?? authStore.assignedRoles()
           });
           refreshTokenSubject.next(res.data.token);
           return next(req.clone({

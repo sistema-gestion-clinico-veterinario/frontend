@@ -16,7 +16,7 @@ export const AuthGuard: CanActivateFn = (route, state) => {
   if (requiredPermission) {
     if (!authStore.hasPermission(requiredPermission)) {
       const roles = authStore.roles() ?? [];
-      if (roles.includes('ROLE_CLIENTE')) {
+      if (roles.includes('ROLE_CLIENTE') || roles.includes('ROLE_APODERADO')) {
         router.navigate(['/apoderado']);
       } else {
         router.navigate(['/dashboard']);

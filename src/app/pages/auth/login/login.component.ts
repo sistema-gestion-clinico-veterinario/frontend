@@ -26,7 +26,7 @@ export class LoginComponent implements OnInit {
       const roles = this.authStore.roles() ?? [];
       if (roles.includes('ROLE_SUPER_ADMIN')) {
         this.router.navigateByUrl('/admin/company');
-      } else if (roles.includes('ROLE_CLIENTE')) {
+      } else if (roles.includes('ROLE_CLIENTE') || roles.includes('ROLE_APODERADO')) {
         this.router.navigateByUrl('/apoderado');
       } else {
         this.router.navigateByUrl('/dashboard');
@@ -73,13 +73,14 @@ export class LoginComponent implements OnInit {
           passwordChanged: data.passwordChanged,
           needsCompanySelection: data.needsCompanySelection,
           selectedEnterprise: null,
-          menu: data.menu
+          menu: data.menu,
+          assignedRoles: data.assignedRoles ?? data.roles
         });
         sessionStorage.removeItem('pw_modal_dismissed');
         const roles = data.roles ?? [];
         if (roles.includes('ROLE_SUPER_ADMIN')) {
           this.router.navigateByUrl('/admin/company');
-        } else if (roles.includes('ROLE_CLIENTE')) {
+        } else if (roles.includes('ROLE_CLIENTE') || roles.includes('ROLE_APODERADO')) {
           this.router.navigateByUrl('/apoderado');
         } else {
           this.router.navigateByUrl('/dashboard');

@@ -299,7 +299,7 @@ export class EmployeeComponent implements OnInit {
   loadRoles() {
     this.roleService.listar().subscribe({
       next: (res) => {
-        const protectedRoles = ['ROLE_SUPER_ADMIN', 'ROLE_CLIENTE'];
+        const protectedRoles = ['ROLE_SUPER_ADMIN', 'ROLE_CLIENTE', 'ROLE_APODERADO'];
         const list = res.data
           .filter(r => !protectedRoles.includes(r.name))
           .map(r => ({
@@ -320,7 +320,8 @@ export class EmployeeComponent implements OnInit {
       'ROLE_ADMIN': 'Administrador',
       'ROLE_VETERINARIO': 'Veterinario',
       'ROLE_RECEPCIONISTA': 'Recepcionista',
-      'ROLE_CLIENTE': 'Cliente'
+      'ROLE_CLIENTE': 'Cliente',
+      'ROLE_APODERADO': 'Apoderado'
     };
     return map[name] ?? name.replace('ROLE_', '');
   }

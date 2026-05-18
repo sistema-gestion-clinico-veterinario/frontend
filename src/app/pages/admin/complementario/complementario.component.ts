@@ -21,7 +21,6 @@ import { MultiSelectModule } from 'primeng/multiselect';
 import { MessageService } from 'primeng/api';
 import { EspecialidadService } from '../../../core/services/especialidad.service';
 import { TipoEmpleadoService } from '../../../core/services/tipo-empleado.service';
-import { RoleService } from '../../../core/services/role.service';
 import { CompanyService } from '../../../core/services/company.service';
 import { ServicioService } from '../../../core/services/servicio.service';
 import { ServicioResponse } from '../../../models/response/servicio-response';
@@ -30,16 +29,6 @@ import { AuthStore } from '../../../store/auth.store';
 import { Permission } from '../../../core/enums/permission.enum';
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 
-interface PermissionItem {
-  id: number;
-  name: string;
-}
-
-interface RoleItem {
-  id: number;
-  name: string;
-  permissions: PermissionItem[];
-}
 
 @Component({
   selector: 'app-complementario',
@@ -68,7 +57,6 @@ export class ComplementarioComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly especialidadService = inject(EspecialidadService);
   private readonly tipoEmpleadoService = inject(TipoEmpleadoService);
-  private readonly roleService = inject(RoleService);
   private readonly companyService = inject(CompanyService);
   private readonly servicioService = inject(ServicioService);
   private readonly messageService = inject(MessageService);
@@ -110,74 +98,13 @@ export class ComplementarioComponent implements OnInit {
     disponible:  [true],
     tipoEmpleadoId: [null]
   });
-
-  roles = signal<RoleItem[]>([]);
-  permisos = signal<PermissionItem[]>([]);
-  permisosOptions = signal<{ label: string; value: number }[]>([]);
-  
-  permissionSearch = signal<string>('');
-  
-  filteredPermisos = computed(() => {
-    const search = this.permissionSearch().toLowerCase();
-    return this.permisosOptions().filter(p => p.label.toLowerCase().includes(search));
-  });
-
-  groupedPermisos = computed(() => {
-    const filtered = this.filteredPermisos();
-    const groups: { [key: string]: any[] } = {};
-    
-    filtered.forEach((p: { label: string; value: number }) => {
-      const parts = p.label.split('_');
-      const category = parts.length > 1 ? parts[0] : 'OTROS';
-      if (!groups[category]) groups[category] = [];
-      groups[category].push(p);
-    });
-
-    return Object.keys(groups).sort().map(key => ({
-      name: key,
-      items: groups[key]
-    }));
-  });
-  showRolModal = signal(false);
-  editingRol = signal<RoleItem | null>(null);
-  rolForm: FormGroup = this.fb.group({
-    name: ['', [Validators.required, Validators.minLength(3)]],
-    permissionIds: [[]]
-  });
-
   ngOnInit() {
     this.loadAll();
-    this.loadRoles();
-    this.loadPermisos();
-  }
-
-  isPermissionSelected(id: number): boolean {
-    const current = this.rolForm.get('permissionIds')?.value || [];
-    return current.includes(id);
-  }
-
-  togglePermission(id: number) {
-    const control = this.rolForm.get('permissionIds');
-    const current = control?.value || [];
-    if (current.includes(id)) {
-      control?.setValue(current.filter((i: number) => i !== id));
-    } else {
-      control?.setValue([...current, id]);
-    }
-  }
-
-  selectAllPermissions() {
-    this.rolForm.get('permissionIds')?.setValue(this.permisosOptions().map(p => p.value));
-  }
-
-  deselectAllPermissions() {
-    this.rolForm.get('permissionIds')?.setValue([]);
   }
 
   loadAll() {
     this.loadEspecialidades();
     this.loadTiposEmpleado();
-    this.loadRoles();
     this.loadServicios();
   }
 
@@ -379,66 +306,5 @@ export class ComplementarioComponent implements OnInit {
     });
   }
 
-  loadRoles() {
-    this.roleService.listar().subscribe({
-      next: (res) => this.roles.set((res.data ?? []) as RoleItem[]),
-      error: () => {}
-    });
-  }
-
-  loadPermisos() {
-    this.roleService.listarPermisos().subscribe({
-      next: (res) => {
-        this.permisos.set((res.data ?? []) as PermissionItem[]);
-        this.permisosOptions.set(((res.data ?? []) as PermissionItem[]).map(p => ({ label: p.name, value: p.id })));
-      }
-    });
-  }
-
-  openRolModal(item?: any) {
-    this.editingRol.set(item ?? null);
-    this.rolForm.reset({
-      name: item?.name ?? '',
-      permissionIds: item?.permissions?.map((p: any) => p.id) ?? []
-    });
-    this.showRolModal.set(true);
-  }
-
-  saveRol() {
-    if (this.rolForm.invalid) { this.rolForm.markAllAsTouched(); return; }
-    const val = this.rolForm.value;
-    const currentRole = this.editingRol();
-    const req = currentRole
-      ? this.roleService.actualizar(currentRole.id!, val)
-      : this.roleService.crear(val);
-
-    this.loadingStore.show();
-    req.subscribe({
-      next: () => {
-        this.messageService.add({ severity: 'success', summary: 'Éxito', detail: this.editingRol() ? 'Rol actualizado' : 'Rol creado' });
-        this.showRolModal.set(false);
-        this.loadRoles();
-        this.loadingStore.hide();
-      },
-      error: (err) => {
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error al guardar' });
-        this.loadingStore.hide();
-      }
-    });
-  }
-
-  eliminarRol(id: number) {
-    this.loadingStore.show();
-    this.roleService.eliminar(id).subscribe({
-      next: () => {
-        this.messageService.add({ severity: 'success', summary: 'Eliminado', detail: 'Rol eliminado' });
-        this.loadRoles();
-        this.loadingStore.hide();
-      },
-      error: (err) => {
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se puede eliminar este rol' });
-        this.loadingStore.hide();
-      }
-    });
-  }
 }
+

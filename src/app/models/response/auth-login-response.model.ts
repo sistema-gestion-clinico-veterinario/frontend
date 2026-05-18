@@ -23,6 +23,7 @@ export interface AuthLoginData {
   passwordChanged: boolean;
   needsCompanySelection: boolean;
   menu: Menu[];
+  assignedRoles?: string[];
 }
 
 export interface AuthLoginResponse {

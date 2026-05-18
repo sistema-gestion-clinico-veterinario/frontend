@@ -31,5 +31,9 @@ export class AuthService {
   refreshToken(refreshToken: string): Observable<AuthLoginResponse> {
     return this.http.post<AuthLoginResponse>(`${this.baseUrl}/refresh`, { refreshToken });
   }
+
+  switchRole(roleName: string): Observable<AuthLoginResponse> {
+    return this.http.post<AuthLoginResponse>(`${this.baseUrl}/switch-role`, { roleName });
+  }
 }
 

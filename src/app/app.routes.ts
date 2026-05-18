@@ -29,6 +29,11 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/admin/company/company.component').then((m) => m.CompanyComponent)
       },
       {
+        path: 'admin/auditoria',
+        data: { permission: Permission.COMPANY_MANAGE },
+        loadComponent: () => import('./pages/admin/auditoria/auditoria.component').then((m) => m.AuditoriaComponent)
+      },
+      {
         path: 'admin/roles',
         data: { permission: Permission.ROLE_MANAGE },
         loadComponent: () => import('./pages/admin/roles/roles.component').then((m) => m.RolesComponent)
@@ -119,8 +124,20 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/apoderado-portal/apoderado-portal.component').then((m) => m.ApoderadoPortalComponent)
       },
       {
-        path: 'apoderado/mis-citas',
+        path: 'mis-citas',
         loadComponent: () => import('./pages/apoderado/citas/citas.component').then((m) => m.CitasComponent)
+      },
+      {
+        path: 'mis-mascotas',
+        loadComponent: () => import('./pages/apoderado/mis-mascotas/mis-mascotas.component').then((m) => m.MisMascotasComponent)
+      },
+      {
+        path: 'mi-historial',
+        loadComponent: () => import('./pages/apoderado/mi-historial/mi-historial.component').then((m) => m.MiHistorialComponent)
+      },
+      {
+        path: 'mi-historial/:mascotaId',
+        loadComponent: () => import('./pages/apoderado/mi-historial/mi-historial.component').then((m) => m.MiHistorialComponent)
       }
     ]
   },

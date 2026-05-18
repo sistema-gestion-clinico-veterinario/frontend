@@ -1,68 +1,187 @@
 <p-toast position="top-right" />
 
-<div class="p-8 min-h-screen bg-slate-50 font-['Barlow']">
-  <div class="mb-8">
-    <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Gestión de Roles y Permisos</h1>
-    <p class="text-slate-500 font-medium mt-1 flex items-center gap-2">
-      <span class="w-2 h-2 rounded-full bg-[#0066AA]"></span>
-      Configura qué puede hacer cada rol sin reiniciar el servidor
-    </p>
+<div class="p-4 min-h-screen bg-slate-50 font-['Barlow']">
+  <!-- Header -->
+  <div class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <div>
+      <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Gestión de Roles</h1>
+      <p class="text-slate-500 font-medium mt-1 flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-[#0066AA]"></span>
+        Configura permisos y menús para cada rol del sistema
+      </p>
+    </div>
+
+    <!-- Section switcher (solo SUPER_ADMIN ve ambas secciones) -->
+    <div *ngIf="isSuperAdmin()" class="flex items-center gap-1 bg-slate-100 rounded-xl p-1 w-fit shrink-0">
+      <button (click)="setSection('empresa')"
+        [class.bg-white]="activeSection() === 'empresa'"
+        [class.text-slate-800]="activeSection() === 'empresa'"
+        [class.text-slate-500]="activeSection() !== 'empresa'"
+        class="px-4 py-2 rounded-lg text-sm font-semibold transition-all">
+        <i class="pi pi-building text-xs mr-1.5"></i>
+        Roles de Empresa
+      </button>
+      <button (click)="setSection('sistema')"
+        [class.bg-white]="activeSection() === 'sistema'"
+        [class.text-slate-800]="activeSection() === 'sistema'"
+        [class.text-slate-500]="activeSection() !== 'sistema'"
+        class="px-4 py-2 rounded-lg text-sm font-semibold transition-all">
+        <i class="pi pi-server text-xs mr-1.5"></i>
+        Roles del Sistema
+      </button>
+    </div>
   </div>
 
   <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
 
-    <!-- Panel izquierdo: lista de roles -->
+    <!-- ===== Panel izquierdo: lista de roles ===== -->
     <div class="lg:col-span-1">
       <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-        <div class="px-4 py-3 border-b border-slate-100">
-          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Roles</p>
+        <div class="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+            {{ activeSection() === 'empresa' ? 'Roles de empresa' : 'Roles del sistema' }}
+          </p>
+          <span class="text-xs text-slate-300 font-semibold">
+            {{ (activeSection() === 'empresa' ? companyRoles() : systemRoles()).length }}
+          </span>
         </div>
-        <div class="divide-y divide-slate-50">
-          <button *ngFor="let role of roles()"
-            (click)="selectRole(role)"
-            [class.bg-blue-50]="selectedRole()?.id === role.id"
-            [class.border-l-2]="selectedRole()?.id === role.id"
-            [class.border-l-[#0066AA]]="selectedRole()?.id === role.id"
-            class="w-full text-left px-4 py-3.5 hover:bg-slate-50 transition-colors">
-            <p [class.text-[#0066AA]]="selectedRole()?.id === role.id"
-               [class.font-semibold]="selectedRole()?.id === role.id"
-               class="text-sm text-slate-700">{{ roleLabel(role.name) }}</p>
-            <p class="text-xs text-slate-400 mt-0.5">{{ role.permissions.length }} permisos</p>
-          </button>
-        </div>
+
+
+
+        <!-- Roles de empresa -->
+        <ng-container *ngIf="activeSection() === 'empresa'">
+          <div class="divide-y divide-slate-50">
+            <button *ngFor="let role of companyRoles()"
+              (click)="selectRole(role)"
+              [class.bg-blue-50]="selectedRole()?.id === role.id"
+              [class.border-l-2]="selectedRole()?.id === role.id"
+              [class.border-l-[#0066AA]]="selectedRole()?.id === role.id"
+              class="w-full text-left px-4 py-3.5 hover:bg-slate-50 transition-colors">
+              <div class="flex items-center gap-2">
+                <div class="w-6 h-6 rounded bg-blue-100 flex items-center justify-center shrink-0">
+                  <i class="pi pi-shield text-[10px] text-[#0066AA]"></i>
+                </div>
+                <p [class.text-[#0066AA]]="selectedRole()?.id === role.id"
+                   [class.font-semibold]="selectedRole()?.id === role.id"
+                   class="text-sm text-slate-700 truncate">{{ roleLabel(role.name) }}</p>
+              </div>
+              <div class="flex items-center gap-2 mt-1 ml-8">
+                <span class="text-xs text-slate-400">{{ role.permissions.length }} permisos</span>
+                <span class="text-slate-200">·</span>
+                <span class="text-xs text-slate-400">{{ role.menuIds.length }} menús</span>
+              </div>
+            </button>
+            <div *ngIf="companyRoles().length === 0" class="px-4 py-8 text-center text-xs text-slate-400">
+              <i class="pi pi-shield block text-2xl text-slate-200 mb-2"></i>
+              No hay roles de empresa registrados
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- Roles del sistema (solo SUPER_ADMIN) -->
+        <ng-container *ngIf="activeSection() === 'sistema'">
+          <div class="divide-y divide-slate-50">
+            <button *ngFor="let role of systemRoles()"
+              (click)="selectRole(role)"
+              [class.bg-amber-50]="selectedRole()?.id === role.id"
+              [class.border-l-2]="selectedRole()?.id === role.id"
+              [class.border-l-amber-500]="selectedRole()?.id === role.id"
+              class="w-full text-left px-4 py-3.5 hover:bg-slate-50 transition-colors">
+              <div class="flex items-center gap-2">
+                <div class="w-6 h-6 rounded bg-amber-100 flex items-center justify-center shrink-0">
+                  <i class="pi pi-lock text-[10px] text-amber-600"></i>
+                </div>
+                <p [class.text-amber-600]="selectedRole()?.id === role.id"
+                   [class.font-semibold]="selectedRole()?.id === role.id"
+                   class="text-sm text-slate-700 truncate">{{ roleLabel(role.name) }}</p>
+              </div>
+              <div class="flex items-center gap-2 mt-1 ml-8">
+                <span class="text-xs text-slate-400">{{ role.permissions.length }} permisos</span>
+                <span class="text-slate-200">·</span>
+                <span class="text-xs text-slate-400">{{ role.menuIds.length }} menús</span>
+              </div>
+            </button>
+            <div *ngIf="systemRoles().length === 0" class="px-4 py-8 text-center text-xs text-slate-400">
+              <i class="pi pi-lock block text-2xl text-slate-200 mb-2"></i>
+              No hay roles del sistema
+            </div>
+          </div>
+        </ng-container>
       </div>
     </div>
 
-    <!-- Panel derecho: permisos del rol seleccionado -->
+    <!-- ===== Panel derecho: detalle del rol ===== -->
     <div class="lg:col-span-3">
+
+      <!-- Empty state -->
       <div *ngIf="!selectedRole()" class="bg-white border border-slate-200 rounded-xl flex items-center justify-center h-64">
         <div class="text-center">
-          <i class="pi pi-shield text-3xl text-slate-200 block mb-3"></i>
-          <p class="text-sm text-slate-400">Selecciona un rol para ver y editar sus permisos</p>
+          <i class="pi pi-shield text-4xl text-slate-200 block mb-3"></i>
+          <p class="text-sm text-slate-400 font-medium">Selecciona un rol para configurarlo</p>
+          <p class="text-xs text-slate-300 mt-1">Gestiona sus permisos y menús visibles</p>
         </div>
       </div>
 
       <div *ngIf="selectedRole()" class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+
         <!-- Header -->
         <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-          <div>
-            <h2 class="text-base font-bold text-slate-800">{{ roleLabel(selectedRole()!.name) }}</h2>
-            <p class="text-xs text-slate-400 mt-0.5">{{ pendingIds().size }} permisos activos</p>
+          <div class="flex items-center gap-3">
+            <div [class]="activeSection() === 'sistema'
+                ? 'w-9 h-9 bg-amber-50 text-amber-600 rounded-lg flex items-center justify-center'
+                : 'w-9 h-9 bg-blue-50 text-[#0066AA] rounded-lg flex items-center justify-center'">
+              <i [class]="activeSection() === 'sistema' ? 'pi pi-lock text-base' : 'pi pi-shield text-base'"></i>
+            </div>
+            <div>
+              <h2 class="text-sm font-bold text-slate-800">{{ roleLabel(selectedRole()!.name) }}</h2>
+              <p class="text-xs text-slate-400">
+                {{ pendingPermIds().size }} permisos · {{ pendingMenuIds().size }} menús asignados
+                <span *ngIf="activeSection() === 'sistema'"
+                  class="ml-2 bg-amber-100 text-amber-700 text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider">
+                  Sistema
+                </span>
+                <span *ngIf="activeSection() === 'empresa'"
+                  class="ml-2 bg-blue-100 text-[#0066AA] text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider">
+                  Empresa
+                </span>
+              </p>
+            </div>
           </div>
           <div class="flex gap-2" *ngIf="isDirty()">
             <button (click)="discard()"
-              class="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+              class="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-colors">
               Descartar
             </button>
             <button (click)="save()"
-              class="px-4 py-1.5 rounded-lg bg-[#0066AA] text-white text-xs font-medium hover:bg-[#005a96] transition-colors">
+              class="px-4 py-1.5 rounded-lg bg-[#0066AA] text-white text-xs font-semibold hover:bg-[#005a96] transition-colors flex items-center gap-1.5">
+              <i class="pi pi-save text-xs"></i>
               Guardar cambios
             </button>
           </div>
         </div>
 
-        <!-- Permisos por módulo -->
-        <div class="p-6 space-y-6">
+        <!-- Tabs -->
+        <div class="flex border-b border-slate-100">
+          <button (click)="setTab('permisos')"
+            [class.text-[#0066AA]]="activeTab() === 'permisos'"
+            [class.border-b-2]="activeTab() === 'permisos'"
+            [class.border-[#0066AA]]="activeTab() === 'permisos'"
+            [class.font-semibold]="activeTab() === 'permisos'"
+            class="px-5 py-3 text-sm text-slate-500 hover:text-slate-700 transition-colors -mb-px">
+            <i class="pi pi-key text-xs mr-1.5"></i>Permisos
+          </button>
+          <button (click)="setTab('menus')"
+            [class.text-[#0066AA]]="activeTab() === 'menus'"
+            [class.border-b-2]="activeTab() === 'menus'"
+            [class.border-[#0066AA]]="activeTab() === 'menus'"
+            [class.font-semibold]="activeTab() === 'menus'"
+            class="px-5 py-3 text-sm text-slate-500 hover:text-slate-700 transition-colors -mb-px">
+            <i class="pi pi-list text-xs mr-1.5"></i>Menús visibles
+          </button>
+        </div>
+
+        <!-- Tab Permisos -->
+        <div *ngIf="activeTab() === 'permisos'" class="p-6 space-y-6">
           <div *ngFor="let entry of modules() | keyvalue">
             <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">{{ entry.key }}</p>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
@@ -70,11 +189,8 @@
                 class="flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors"
                 [class.border-blue-200]="hasPermission(perm.id)"
                 [class.bg-blue-50]="hasPermission(perm.id)"
-                [class.border-slate-100]="!hasPermission(perm.id)"
-                [class.hover:bg-slate-50]="!hasPermission(perm.id)">
-                <input type="checkbox"
-                  [checked]="hasPermission(perm.id)"
-                  (change)="togglePermission(perm.id)"
+                [class.border-slate-100]="!hasPermission(perm.id)">
+                <input type="checkbox" [checked]="hasPermission(perm.id)" (change)="togglePermission(perm.id)"
                   class="mt-0.5 w-4 h-4 accent-[#0066AA] shrink-0 cursor-pointer" />
                 <div>
                   <p class="text-xs font-semibold text-slate-700 leading-tight">{{ perm.label }}</p>
@@ -84,6 +200,50 @@
             </div>
           </div>
         </div>
+
+        <!-- Tab Menús -->
+        <div *ngIf="activeTab() === 'menus'" class="p-6">
+          <p class="text-xs text-slate-400 mb-5">
+            Marca los menús visibles para
+            <span class="font-semibold text-slate-600">{{ roleLabel(selectedRole()!.name) }}</span>.
+          </p>
+          <div class="space-y-3">
+            <div *ngFor="let menu of rootMenus()" class="border border-slate-200 rounded-xl overflow-hidden">
+              <label class="flex items-center gap-3 px-4 py-3 bg-slate-50 cursor-pointer hover:bg-slate-100 transition-colors"
+                [class.bg-blue-50]="hasMenu(menu.id)">
+                <input type="checkbox"
+                  [checked]="hasMenu(menu.id) || allChildrenSelected(menu)"
+                  [indeterminate]="someChildrenSelected(menu)"
+                  (change)="toggleMenuWithChildren(menu)"
+                  class="w-4 h-4 accent-[#0066AA] shrink-0 cursor-pointer" />
+                <div class="flex items-center gap-2 flex-1">
+                  <i [class]="menu.icon + ' text-sm text-slate-400'"></i>
+                  <span class="text-sm font-semibold text-slate-700">{{ menu.label }}</span>
+                  <span *ngIf="menu.path" class="ml-auto text-[10px] font-mono text-slate-400 bg-slate-100 px-2 py-0.5 rounded">{{ menu.path }}</span>
+                </div>
+              </label>
+              <div *ngIf="menu.children && menu.children.length > 0" class="divide-y divide-slate-100">
+                <label *ngFor="let child of menu.children"
+                  class="flex items-center gap-3 pl-10 pr-4 py-2.5 cursor-pointer hover:bg-slate-50 transition-colors"
+                  [class.bg-blue-50]="hasMenu(child.id)">
+                  <input type="checkbox" [checked]="hasMenu(child.id)" (change)="toggleMenu(child.id)"
+                    class="w-4 h-4 accent-[#0066AA] shrink-0 cursor-pointer" />
+                  <div class="flex items-center gap-2 flex-1">
+                    <i [class]="child.icon + ' text-xs text-slate-300'"></i>
+                    <span class="text-sm text-slate-600">{{ child.label }}</span>
+                    <span *ngIf="child.path" class="ml-auto text-[10px] font-mono text-slate-400 bg-slate-100 px-2 py-0.5 rounded">{{ child.path }}</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+            <div *ngIf="rootMenus().length === 0"
+              class="text-center py-10 text-slate-400 text-sm border border-dashed border-slate-200 rounded-xl">
+              <i class="pi pi-list text-2xl block mb-2 text-slate-200"></i>
+              No hay menús creados. Ve al módulo de <strong>Gestión de Menús</strong> para crearlos.
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>

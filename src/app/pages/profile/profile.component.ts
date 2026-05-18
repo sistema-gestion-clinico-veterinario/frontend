@@ -150,7 +150,8 @@ export class ProfileComponent implements OnInit {
       'ROLE_ADMIN': 'Administrador',
       'ROLE_VETERINARIO': 'Veterinario',
       'ROLE_RECEPCIONISTA': 'Recepcionista',
-      'ROLE_CLIENTE': 'Cliente'
+      'ROLE_CLIENTE': 'Cliente',
+      'ROLE_APODERADO': 'Apoderado'
     };
     return roles.map(r => map[r] ?? r).join(', ');
   }

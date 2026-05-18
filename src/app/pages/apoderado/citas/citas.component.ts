@@ -40,6 +40,7 @@ export class CitasComponent implements OnInit {
   private readonly messageService = inject(MessageService);
   readonly authStore = inject(AuthStore);
   readonly loadingStore = inject(LoadingStore);
+  private loadTimeout: any = null;
 
   // Lists & Signals
   mascotas = signal<any[]>([]);
@@ -89,6 +90,15 @@ export class CitasComponent implements OnInit {
   }
 
   loadCitas() {
+    if (this.loadTimeout) {
+      clearTimeout(this.loadTimeout);
+    }
+    this.loadTimeout = setTimeout(() => {
+      this.executeLoadCitas();
+    }, 50);
+  }
+
+  private executeLoadCitas() {
     const filterId = this.selectedPetFilter();
     this.apoderadoService.getPortalCitasFiltradas(filterId || undefined).subscribe({
       next: (res) => {

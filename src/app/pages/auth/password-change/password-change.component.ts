@@ -93,7 +93,8 @@ export class PasswordChangeComponent {
           passwordChanged: true,
           needsCompanySelection: this.authStore.needsCompanySelection(),
           selectedEnterprise: this.authStore.selectedEnterprise(),
-          menu: this.authStore.menu()
+          menu: this.authStore.menu(),
+          assignedRoles: this.authStore.assignedRoles()
         });
 
         this.messageService.add({
@@ -107,7 +108,7 @@ export class PasswordChangeComponent {
           const roles = this.authStore.roles() ?? [];
           if (roles.includes('ROLE_SUPER_ADMIN')) {
             this.router.navigateByUrl('/admin/company');
-          } else if (roles.includes('ROLE_CLIENTE')) {
+          } else if (roles.includes('ROLE_CLIENTE') || roles.includes('ROLE_APODERADO')) {
             this.router.navigateByUrl('/apoderado');
           } else {
             this.router.navigateByUrl('/dashboard');
@@ -130,7 +131,7 @@ export class PasswordChangeComponent {
     const roles = this.authStore.roles() ?? [];
     if (roles.includes('ROLE_SUPER_ADMIN')) {
       this.router.navigateByUrl('/admin/company');
-    } else if (roles.includes('ROLE_CLIENTE')) {
+    } else if (roles.includes('ROLE_CLIENTE') || roles.includes('ROLE_APODERADO')) {
       this.router.navigateByUrl('/apoderado');
     } else {
       this.router.navigateByUrl('/dashboard');
