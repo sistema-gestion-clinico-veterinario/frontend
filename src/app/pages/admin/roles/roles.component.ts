@@ -118,9 +118,6 @@ export class RolesComponent implements OnInit {
   }
 
   selectRole(role: Role) {
-    console.log('--- selectRole Debug ---');
-    console.log('role.menuIds:', role.menuIds, role.menuIds.map(id => typeof id));
-    console.log('allMenusFlat:', this.allMenusFlat().map(m => ({ id: m.id, type: typeof m.id, label: m.label })));
     this.selectedRole.set(role);
     this.pendingPermIds.set(new Set(role.permissions.map(p => p.id)));
     this.pendingMenuIds.set(new Set(role.menuIds));

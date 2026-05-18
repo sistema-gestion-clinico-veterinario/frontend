@@ -105,8 +105,6 @@ export class ClientComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.loadClients();
-
     this.clientForm.get('tipoDocumento')?.valueChanges.subscribe(tipo => {
       const doc = this.clientForm.get('numeroDocumento');
       if (tipo === 'DNI') {

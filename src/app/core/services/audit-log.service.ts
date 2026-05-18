@@ -34,6 +34,7 @@ export class AuditLogService {
     page?: number;
     size?: number;
     sort?: string;
+    initialLoad?: boolean;
   }) {
     let params = new HttpParams();
     
@@ -63,6 +64,9 @@ export class AuditLogService {
     }
     if (filters.sort) {
       params = params.set('sort', filters.sort);
+    }
+    if (filters.initialLoad) {
+      params = params.set('initialLoad', 'true');
     }
 
     return this.http.get<ApiResponse<Page<AuditLog>>>(this.apiUrl, { params });

@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, inject, signal, computed, effect, untracked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { TableModule } from 'primeng/table';
+import { PaginatorModule } from 'primeng/paginator';
 import { Toast } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { AuditLogService, AuditLog } from '../../../core/services/audit-log.service';
@@ -16,8 +16,8 @@ import { environment } from '../../../../environments/environment';
   imports: [
     CommonModule,
     FormsModule,
-    TableModule,
-    Toast
+    Toast,
+    PaginatorModule
   ],
   providers: [MessageService],
   templateUrl: './auditoria.component.html',
@@ -51,35 +51,50 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
   endDateFilter: string = '';
 
   // Paginación actual
-  first = 0;
-  rows = 10;
+  currentPage = 0;
+  readonly pageSize = 10;
 
   modulesList = [
-    'Seguridad', 'Citas', 'Mascotas', 'Usuarios', 
+    'Seguridad', 'Citas', 'Mascotas', 'Usuarios',
     'Clientes', 'Facturación', 'Consultas', 'Horarios', 'Empleados'
   ];
-  
+
   actionsList = [
-    'LOGIN_EXITOSO', 'CAMBIO_ROL', 'CAMBIO_CONTRASENA', 'RESET_CONTRASENA', 
-    'SUSPENSION_CUENTA', 'CONSULTA_AUDITORIA', 'CREAR_EMPLEADO', 'ACTUALIZAR_EMPLEADO', 
-    'ACTIVAR_EMPLEADO', 'DESACTIVAR_EMPLEADO', 'ELIMINAR_EMPLEADO', 'ASIGNAR_HORARIOS_MASIVO', 
-    'CLONAR_HORARIOS_SEMANA', 'CLONAR_HORARIOS_DIA', 'ELIMINAR_HORARIOS_MASIVO', 
-    'REGISTRAR_MASCOTA', 'ACTUALIZAR_MASCOTA', 'ACTIVAR_MASCOTA', 'DESACTIVAR_MASCOTA', 
-    'CREAR_APODERADO', 'ACTUALIZAR_APODERADO', 'ACTIVAR_APODERADO', 'DESACTIVAR_APODERADO', 
-    'ELIMINAR_APODERADO', 'CREAR_CITA', 'REPROGRAMAR_CITA', 'CANCELAR_CITA', 
-    'ELIMINAR_CITA', 'INICIAR_ATENCION', 'ACTUALIZAR_CONSULTA', 'CERRAR_CONSULTA', 
-    'REGISTRAR_PAGO'
+    'LOGIN_EXITOSO', 'CAMBIO_ROL', 'CAMBIO_CONTRASENA', 'RESET_CONTRASENA',
+    'SUSPENSION_CUENTA', 'CONSULTA_AUDITORIA',
+    'CONSULTAR_EMPLEADOS', 'CONSULTAR_DETALLE_EMPLEADO',
+    'CONSULTAR_APODERADOS', 'CONSULTAR_DETALLE_APODERADO',
+    'CONSULTAR_MASCOTAS',
+    'CONSULTAR_HISTORIAS_CLINICAS', 'CONSULTAR_DETALLE_HISTORIA_CLINICA', 'CONSULTAR_HISTORIA_CLINICA_MASCOTA',
+    'CONSULTAR_CITAS',
+    'CREAR_EMPLEADO', 'ACTUALIZAR_EMPLEADO',
+    'ACTIVAR_EMPLEADO', 'DESACTIVAR_EMPLEADO', 'ELIMINAR_EMPLEADO', 'ASIGNAR_HORARIOS_MASIVO',
+    'CLONAR_HORARIOS_SEMANA', 'CLONAR_HORARIOS_DIA', 'ELIMINAR_HORARIOS_MASIVO',
+    'REGISTRAR_MASCOTA', 'ACTUALIZAR_MASCOTA', 'ACTIVAR_MASCOTA', 'DESACTIVAR_MASCOTA',
+    'CREAR_APODERADO', 'ACTUALIZAR_APODERADO', 'ACTIVAR_APODERADO', 'DESACTIVAR_APODERADO',
+    'ELIMINAR_APODERADO', 'CREAR_CITA', 'REPROGRAMAR_CITA', 'CANCELAR_CITA',
+    'ELIMINAR_CITA', 'INICIAR_ATENCION', 'ACTUALIZAR_CONSULTA', 'CERRAR_CONSULTA',
+    'REGISTRAR_PAGO', 'CREAR_ROL', 'ACTUALIZAR_ROL', 'ELIMINAR_ROL',
+    'CREAR_MENU', 'ACTUALIZAR_MENU', 'ELIMINAR_MENU'
   ];
+
+  private initialized = false;
 
   constructor() {
     effect(() => {
-      // Registrar dependencia del signal reactivamente
+      // Registrar dependencias reactivas
       const enterprise = this.authStore.selectedEnterprise();
       const compId = this.authStore.companyId();
-      
+
       untracked(() => {
-        this.first = 0;
-        this.loadLogs();
+        if (!this.initialized) {
+          // Primera ejecución: carga inicial con flag de auditoría
+          this.initialized = true;
+          this.executeLoadLogs(0, true);
+        } else {
+          // Ejecuciones posteriores: cambio de empresa u otro signal
+          this.applyFilters();
+        }
       });
     });
   }
@@ -92,6 +107,7 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
         }
       });
     }
+    // La carga inicial de logs la gestiona el effect() del constructor
   }
 
   ngOnDestroy() {
@@ -101,7 +117,7 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
   }
 
   setupWebSocket(targetCompanyId: number | undefined) {
-    const destination = targetCompanyId 
+    const destination = targetCompanyId
       ? `/topic/audit-logs/${targetCompanyId}`
       : '/topic/audit-logs';
 
@@ -119,7 +135,7 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
     try {
       const urlObj = new URL(environment.apiUrl);
       const wsProtocol = urlObj.protocol === 'https:' ? 'wss:' : 'ws:';
-      
+
       // Obtener el context-path de forma dinámica (ej: '/api/v1')
       let path = urlObj.pathname.trim();
       if (path.endsWith('/')) {
@@ -133,10 +149,10 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
         () => {
           this.stompClient?.subscribe(destination, (newLog: AuditLog) => {
             // Incorporar el log en tiempo real al principio de la tabla si el usuario está en la página 0
-            if (this.first === 0) {
+            if (this.currentPage === 0) {
               this.logs.update(current => {
                 if (current.some(l => l.id === newLog.id)) return current;
-                return [newLog, ...current.slice(0, this.rows - 1)];
+                return [newLog, ...current.slice(0, this.pageSize - 1)];
               });
               this.totalRecords.update(total => total + 1);
             } else {
@@ -153,32 +169,25 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
     }
   }
 
-  loadLogs(event: any = null) {
-    if (event) {
-      this.first = event.first ?? 0;
-      this.rows = event.rows ?? 10;
-    }
+  loadLogs(page: number = 0) {
+    this.currentPage = page;
 
     if (this.loadTimeout) {
       clearTimeout(this.loadTimeout);
     }
 
     this.loadTimeout = setTimeout(() => {
-      this.executeLoadLogs();
+      // Navegación de página y filtros nunca son initialLoad
+      this.executeLoadLogs(page, false);
     }, 50);
   }
 
-  private executeLoadLogs() {
-    const page = this.first / this.rows;
+  private executeLoadLogs(page: number, initialLoad = false) {
     this.loading.set(true);
 
     const formattedStart = this.startDateFilter ? `${this.startDateFilter}T00:00:00` : undefined;
     const formattedEnd = this.endDateFilter ? `${this.endDateFilter}T23:59:59` : undefined;
 
-    // Determinar la empresa meta:
-    // Si es super admin y tiene un filtro de empresa local, usamos ese.
-    // Si es super admin y el filtro es "Todas las clínicas" (null), pasamos undefined para ver todo.
-    // Si no es super admin, forzamos el companyId de su sesión.
     let targetCompanyId: number | undefined = undefined;
     if (this.isSuperAdmin()) {
       targetCompanyId = this.selectedCompanyId || undefined;
@@ -194,15 +203,16 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
       startDate: formattedStart,
       endDate: formattedEnd,
       page: page,
-      size: this.rows,
-      sort: 'timestamp,desc'
+      size: this.pageSize,
+      sort: 'timestamp,desc',
+      initialLoad: initialLoad || undefined
     }).subscribe({
       next: (res) => {
-        this.logs.set(res.data.content);
-        this.totalRecords.set(res.data.totalElements);
+        const data = res.data as any;
+        const total = data.totalElements ?? data.page?.totalElements ?? 0;
+        this.logs.set(data.content ?? []);
+        this.totalRecords.set(total);
         this.loading.set(false);
-
-        // Configurar/actualizar el canal WebSocket reactivamente tras cargar los registros iniciales exitosamente
         this.setupWebSocket(targetCompanyId);
       },
       error: () => {
@@ -213,8 +223,7 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
   }
 
   applyFilters() {
-    this.first = 0;
-    this.loadLogs();
+    this.loadLogs(0);
   }
 
   clearFilters() {
@@ -233,6 +242,16 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
         return 'bg-teal-50 border-teal-200 text-teal-700';
       case 'CONSULTA_AUDITORIA':
         return 'bg-violet-50 border-violet-200 text-violet-700';
+      case 'CONSULTAR_EMPLEADOS':
+      case 'CONSULTAR_DETALLE_EMPLEADO':
+      case 'CONSULTAR_APODERADOS':
+      case 'CONSULTAR_DETALLE_APODERADO':
+      case 'CONSULTAR_MASCOTAS':
+      case 'CONSULTAR_HISTORIAS_CLINICAS':
+      case 'CONSULTAR_DETALLE_HISTORIA_CLINICA':
+      case 'CONSULTAR_HISTORIA_CLINICA_MASCOTA':
+      case 'CONSULTAR_CITAS':
+        return 'bg-slate-50 border-slate-200 text-slate-700';
       case 'SUSPENSION_CUENTA':
         return 'bg-rose-50 border-rose-200 text-rose-700';
       case 'CAMBIO_ROL':
@@ -303,7 +322,7 @@ class LightweightStompClient {
   private subscriptions = new Map<string, (payload: any) => void>();
   private subIdCounter = 0;
 
-  constructor(private url: string) {}
+  constructor(private url: string) { }
 
   isConnected(): boolean {
     return this.connected;
@@ -311,7 +330,6 @@ class LightweightStompClient {
 
   connect(onConnect: () => void, onError: (err: any) => void) {
     try {
-      console.log('🔌 Conectando al WebSocket de auditoría...', this.url);
       this.socket = new WebSocket(this.url);
 
       this.socket.onopen = () => {
@@ -323,12 +341,10 @@ class LightweightStompClient {
         let data = event.data as string;
         if (!data || data === '\n' || data === '\r\n') return; // Heartbeat check
 
-        // Normalizar saltos de línea Windows/Linux a \n
         data = data.replace(/\r\n/g, '\n');
 
         if (data.startsWith('CONNECTED')) {
           this.connected = true;
-          console.log('✅ WebSocket de auditoría conectado exitosamente!');
           onConnect();
           this.subscriptions.forEach((callback, dest) => {
             this.sendSubscribeFrame(dest);
@@ -339,7 +355,7 @@ class LightweightStompClient {
             const body = data.substring(bodyStart + 2, data.lastIndexOf('\0')).trim();
             try {
               const parsed = JSON.parse(body);
-              console.log('📥 Mensaje de auditoría recibido en tiempo real:', parsed);
+
               const destMatch = data.match(/destination:([^\n]+)/);
               if (destMatch) {
                 const destination = destMatch[1].trim();
@@ -356,18 +372,16 @@ class LightweightStompClient {
       };
 
       this.socket.onerror = (err) => {
-        console.error('❌ Error en el WebSocket de auditoría:', err);
         onError(err);
       };
 
       this.socket.onclose = () => {
-        console.log('🔌 WebSocket de auditoría cerrado.');
         this.connected = false;
         // Intentar reconectar si la desconexión no fue manual
         if (this.socket) {
           setTimeout(() => {
             if (this.socket && !this.connected) {
-              console.log('🔄 Intentando reconectar WebSocket de auditoría...');
+
               this.connect(onConnect, onError);
             }
           }, 5000);

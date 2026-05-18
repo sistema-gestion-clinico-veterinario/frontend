@@ -23,6 +23,10 @@ export class ProfileService {
     return this.http.get<ApiResponse<ProfileResponse>>(this.apiUrl);
   }
 
+  getMySchedule() {
+    return this.http.get<ApiResponse<ProfileResponse>>(`${this.apiUrl}/horario`);
+  }
+
   updateProfile(data: ProfileUpdateRequest) {
     return this.http.put<ApiResponse<ProfileResponse>>(this.apiUrl, data);
   }

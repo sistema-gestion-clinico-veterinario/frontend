@@ -194,10 +194,9 @@ export class EmployeeComponent implements OnInit {
   ngOnInit() {
     const companyId = this.activeCompanyId;
     if (companyId) {
-      this.loadEmployees();
       this.loadEspecialidades(companyId);
       this.loadTypesEmpleado(companyId);
-      this.loadRoles();
+      this.loadRoles(companyId);
       this.employeeForm.get('companyId')?.setValue(companyId);
     }
 
@@ -236,7 +235,7 @@ export class EmployeeComponent implements OnInit {
       }
       this.loadEspecialidades(companyId);
       this.loadTypesEmpleado(companyId);
-      this.loadRoles();
+      this.loadRoles(companyId);
     });
   }
 
@@ -296,8 +295,9 @@ export class EmployeeComponent implements OnInit {
     });
   }
 
-  loadRoles() {
-    this.roleService.listar().subscribe({
+  loadRoles(companyId?: number) {
+    const id = companyId || this.activeCompanyId;
+    this.roleService.listarPorEmpresa(id || undefined).subscribe({
       next: (res) => {
         const protectedRoles = ['ROLE_SUPER_ADMIN', 'ROLE_CLIENTE', 'ROLE_APODERADO'];
         const list = res.data
