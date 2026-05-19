@@ -54,6 +54,7 @@ export class MenuManagementComponent implements OnInit {
   });
 
   permissions = signal<Permission[]>([]);
+  availableRoutes = signal<{ path: string; label: string; group: string }[]>([]);
   expandedNodes = signal<Set<number>>(new Set());
   selectedId = signal<number | null>(null);
   editingItem = signal<Partial<Menu> | null>(null);
@@ -69,6 +70,7 @@ export class MenuManagementComponent implements OnInit {
   loadData() {
     this.menuService.listarTodo().pipe(map(res => res.data)).subscribe(data => this.allMenusRaw.set(data));
     this.roleService.listarPermisos().pipe(map(res => res.data)).subscribe(data => this.permissions.set(data));
+    this.menuService.listarRutas().pipe(map(res => res.data)).subscribe(data => this.availableRoutes.set(data));
   }
 
   toggleRow(id: number) {

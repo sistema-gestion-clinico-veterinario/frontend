@@ -41,10 +41,11 @@
     <!-- Panel Lateral -->
     <aside class="hidden xl:block xl:col-span-4 sticky top-6 z-30">
       <div class="bg-white rounded-lg border border-[#F1F5F9] relative shadow-sm">
-        <app-menu-form 
+        <app-menu-form
           [initialData]="editingItem()"
           [permissions]="permissions()"
           [menuOptions]="hierarchicalOptions()"
+          [routes]="availableRoutes()"
           [isEdit]="!!selectedId()"
           (onSave)="handleSave($event)"
           (onClose)="prepareNew()">
@@ -57,10 +58,11 @@
   <div *ngIf="showModal()" class="fixed inset-0 z-50 flex items-center justify-center p-4 xl:hidden">
     <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm animate-fade-in" (click)="showModal.set(false)"></div>
     <div class="relative z-50 w-full max-w-2xl transform transition-all duration-300">
-      <app-menu-form 
+      <app-menu-form
         [initialData]="editingItem()"
         [permissions]="permissions()"
         [menuOptions]="hierarchicalOptions()"
+        [routes]="availableRoutes()"
         [isEdit]="!!selectedId()"
         (onSave)="handleSave($event)"
         (onClose)="showModal.set(false)">
