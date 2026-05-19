@@ -7,4 +7,6 @@ export interface PagoResponse {
   cambio?: number;
   fechaPago: string;
   estado: string;
+  mercadoPagoId?: string;
+  mpStatus?: string;
 }
