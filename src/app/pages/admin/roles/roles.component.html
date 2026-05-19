@@ -142,8 +142,29 @@
               <i [class]="activeSection() === 'sistema' ? 'pi pi-lock text-base' : 'pi pi-shield text-base'"></i>
             </div>
             <div>
-              <h2 class="text-sm font-bold text-slate-800">{{ roleLabel(selectedRole()!.name) }}</h2>
-              <p class="text-xs text-slate-400">
+              <div class="flex items-center gap-2">
+                <ng-container *ngIf="!isEditingName()">
+                  <h2 class="text-sm font-bold text-slate-800">{{ roleLabel(selectedRole()!.name) }}</h2>
+                  <button *ngIf="canRenameRole(selectedRole())" (click)="startEditName()" 
+                    class="w-6 h-6 flex items-center justify-center rounded text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+                    title="Editar nombre del rol">
+                    <i class="pi pi-pencil text-[10px]"></i>
+                  </button>
+                </ng-container>
+                <ng-container *ngIf="isEditingName()">
+                  <div class="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 focus-within:border-[#0066AA] focus-within:ring-1 focus-within:ring-[#0066AA] transition-all">
+                    <span class="text-[10px] font-bold text-slate-400 tracking-wider">ROLE_</span>
+                    <input type="text" [ngModel]="editingNameValue()" (ngModelChange)="editingNameValue.set($event)"
+                      class="bg-transparent border-none text-xs font-bold text-slate-700 focus:outline-none w-48 uppercase p-0"
+                      placeholder="NUEVO_NOMBRE" />
+                  </div>
+                  <button (click)="cancelEditName()" 
+                    class="px-2 py-1 text-[10px] font-semibold text-slate-500 bg-slate-100 hover:bg-slate-200 rounded-md transition-colors border border-slate-200">
+                    Cancelar
+                  </button>
+                </ng-container>
+              </div>
+              <p class="text-xs text-slate-400 mt-1">
                 {{ pendingPermIds().size }} permisos · {{ pendingMenuIds().size }} menús asignados
                 <span *ngIf="activeSection() === 'sistema'"
                   class="ml-2 bg-amber-100 text-amber-700 text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider">
@@ -205,10 +226,10 @@
                 [class.border-blue-200]="hasPermission(perm.id)"
                 [class.bg-blue-50]="hasPermission(perm.id)"
                 [class.border-slate-100]="!hasPermission(perm.id)"
-                [class.opacity-60]="!isAdminOrSuperAdmin()"
-                [class.cursor-not-allowed]="!isAdminOrSuperAdmin()">
+                [class.opacity-60]="!canEditRole(selectedRole())"
+                [class.cursor-not-allowed]="!canEditRole(selectedRole())">
                 <input type="checkbox" [checked]="hasPermission(perm.id)" (change)="togglePermission(perm.id)"
-                  [disabled]="!isAdminOrSuperAdmin()"
+                  [disabled]="!canEditRole(selectedRole())"
                   class="mt-0.5 w-4 h-4 accent-[#0066AA] shrink-0 cursor-pointer disabled:cursor-not-allowed" />
                 <div>
                   <p class="text-xs font-semibold text-slate-700 leading-tight">{{ perm.label }}</p>
@@ -229,13 +250,13 @@
             <div *ngFor="let menu of rootMenus()" class="border border-slate-200 rounded-xl overflow-hidden">
               <label class="flex items-center gap-3 px-4 py-3 bg-slate-50 cursor-pointer hover:bg-slate-100 transition-colors"
                 [class.bg-blue-50]="hasMenu(menu.id)"
-                [class.opacity-60]="!isAdminOrSuperAdmin()"
-                [class.cursor-not-allowed]="!isAdminOrSuperAdmin()">
+                [class.opacity-60]="!canEditRole(selectedRole())"
+                [class.cursor-not-allowed]="!canEditRole(selectedRole())">
                 <input type="checkbox"
                   [checked]="hasMenu(menu.id) || allChildrenSelected(menu)"
                   [indeterminate]="someChildrenSelected(menu)"
                   (change)="toggleMenuWithChildren(menu)"
-                  [disabled]="!isAdminOrSuperAdmin()"
+                  [disabled]="!canEditRole(selectedRole())"
                   class="w-4 h-4 accent-[#0066AA] shrink-0 cursor-pointer disabled:cursor-not-allowed" />
                 <div class="flex items-center gap-2 flex-1">
                   <i [class]="menu.icon + ' text-sm text-slate-400'"></i>
@@ -247,10 +268,10 @@
                 <label *ngFor="let child of menu.children"
                   class="flex items-center gap-3 pl-10 pr-4 py-2.5 cursor-pointer hover:bg-slate-50 transition-colors"
                   [class.bg-blue-50]="hasMenu(child.id)"
-                  [class.opacity-60]="!isAdminOrSuperAdmin()"
-                  [class.cursor-not-allowed]="!isAdminOrSuperAdmin()">
+                  [class.opacity-60]="!canEditRole(selectedRole())"
+                  [class.cursor-not-allowed]="!canEditRole(selectedRole())">
                   <input type="checkbox" [checked]="hasMenu(child.id)" (change)="toggleMenu(child.id)"
-                    [disabled]="!isAdminOrSuperAdmin()"
+                    [disabled]="!canEditRole(selectedRole())"
                     class="w-4 h-4 accent-[#0066AA] shrink-0 cursor-pointer disabled:cursor-not-allowed" />
                   <div class="flex items-center gap-2 flex-1">
                     <i [class]="child.icon + ' text-xs text-slate-300'"></i>
