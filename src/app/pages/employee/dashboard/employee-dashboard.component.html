@@ -1,0 +1,303 @@
+<p-toast></p-toast>
+
+<div class="min-h-screen bg-[#F4F7FA] font-['Barlow']">
+
+  <!-- ══════════════════════════════════════════
+       HEADER
+  ══════════════════════════════════════════ -->
+  <div class="bg-white border-b border-slate-100">
+    <div class="px-6 sm:px-8 lg:px-10 py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2 mb-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-[0.18em]">
+            {{ formatDate(today) }}
+          </p>
+        </div>
+        <h1 class="text-[26px] font-black text-slate-900 leading-snug">
+          {{ dayGreeting }},&nbsp;<span class="text-[#0066AA]">{{ userName }}</span>
+        </h1>
+        <div class="flex items-center gap-2.5 mt-2 flex-wrap">
+          <span [class]="'text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider ' + roleBadgeClass">
+            {{ rolePrincipal }}
+          </span>
+          <span *ngIf="companyName" class="text-xs text-slate-400 font-medium">
+            · {{ companyName }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       CONTENIDO PRINCIPAL
+  ══════════════════════════════════════════ -->
+  <div class="px-6 sm:px-8 lg:px-10 py-7 space-y-6">
+
+    <!-- ── PERSONAL KPI CARDS ── -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+
+      <!-- Mis Citas Hoy -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-5 flex items-center gap-4 hover:border-slate-300 transition-colors">
+        <div class="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+          <i class="pi pi-calendar text-base text-[#0066AA]"></i>
+        </div>
+        <div class="min-w-0">
+          <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest leading-none mb-1">
+            Mis Citas Hoy
+          </p>
+          <p class="text-2xl font-black text-slate-900 leading-none">
+            {{ totalCitasCount() }}
+          </p>
+          <p class="text-[11px] text-slate-400 font-medium mt-1">total asignadas</p>
+        </div>
+      </div>
+
+      <!-- Citas Pendientes -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-5 flex items-center gap-4 hover:border-slate-300 transition-colors">
+        <div class="w-11 h-11 rounded-xl bg-amber-50 flex items-center justify-center shrink-0">
+          <i class="pi pi-clock text-base text-amber-600"></i>
+        </div>
+        <div class="min-w-0">
+          <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest leading-none mb-1">
+            Pendientes
+          </p>
+          <p class="text-2xl font-black text-slate-900 leading-none">
+            {{ pendingCitasCount() }}
+          </p>
+          <p class="text-[11px] text-slate-400 font-medium mt-1">por atender hoy</p>
+        </div>
+      </div>
+
+      <!-- En Proceso -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-5 flex items-center gap-4 hover:border-slate-300 transition-colors">
+        <div class="w-11 h-11 rounded-xl bg-violet-50 flex items-center justify-center shrink-0">
+          <i class="pi pi-spin pi-spinner text-base text-violet-600"></i>
+        </div>
+        <div class="min-w-0">
+          <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest leading-none mb-1">
+            En Proceso
+          </p>
+          <p class="text-2xl font-black text-slate-900 leading-none">
+            {{ inProgressCitasCount() }}
+          </p>
+          <p class="text-[11px] text-slate-400 font-medium mt-1">en consulta actualmente</p>
+        </div>
+      </div>
+
+      <!-- Atendidas -->
+      <div class="bg-[#0066AA] rounded-2xl border border-blue-700/50 p-5 flex items-center gap-4 hover:bg-[#005a96] transition-colors">
+        <div class="w-11 h-11 rounded-xl bg-white/15 flex items-center justify-center shrink-0">
+          <i class="pi pi-check-circle text-base text-white"></i>
+        </div>
+        <div class="min-w-0">
+          <p class="text-[10px] font-extrabold text-blue-200 uppercase tracking-widest leading-none mb-1">
+            Atendidas Hoy
+          </p>
+          <p class="text-2xl font-black text-white leading-none">
+            {{ completedCitasCount() }}
+          </p>
+          <p class="text-[11px] text-blue-200 font-medium mt-1">completadas con éxito</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── GRID PRINCIPAL ── -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+
+      <!-- ─────────────────────────────
+           COLUMNA IZQUIERDA (2/3)
+      ───────────────────────────── -->
+      <div class="lg:col-span-2 space-y-6">
+
+        <!-- 📅 MIS CITAS ASIGNADAS PARA HOY -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-0 overflow-hidden">
+          <div class="px-6 py-5 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
+            <div>
+              <h2 class="text-xs font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-[#0066AA]"></span>
+                Mis Citas para Hoy
+              </h2>
+              <p class="text-[10px] text-slate-400 font-medium mt-0.5">Control de tus atenciones del día de hoy</p>
+            </div>
+            <span class="text-[10px] font-bold text-slate-500 bg-slate-100 rounded-full px-3 py-1">
+              {{ todayAppointments().length }} citas
+            </span>
+          </div>
+
+          <div class="p-6">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="border-b border-slate-200">
+                    <th class="pb-3 text-[9px] font-black text-slate-400 uppercase tracking-wider">Hora</th>
+                    <th class="pb-3 text-[9px] font-black text-slate-400 uppercase tracking-wider">Paciente</th>
+                    <th class="pb-3 text-[9px] font-black text-slate-400 uppercase tracking-wider">Propietario (Apoderado)</th>
+                    <th class="pb-3 text-[9px] font-black text-slate-400 uppercase tracking-wider">Estado</th>
+                    <th class="pb-3 text-[9px] font-black text-slate-400 uppercase tracking-wider text-center">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let cita of todayAppointments()" class="border-b border-slate-100 last:border-0 hover:bg-slate-50/30 transition-colors">
+                    <td class="py-4 text-xs font-black text-slate-700">
+                      {{ formatTime(cita.fechaHoraInicio) }}
+                    </td>
+                    <td class="py-4">
+                      <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-xl bg-pink-50 text-pink-600 border border-pink-100/50 flex items-center justify-center font-bold text-xs shrink-0">
+                          <i class="pi pi-heart-fill text-[10px]"></i>
+                        </div>
+                        <div class="min-w-0">
+                          <p class="text-xs font-bold text-slate-800 truncate leading-snug">{{ cita.mascotaNombre }}</p>
+                          <p class="text-[9px] text-slate-400 truncate leading-none mt-1">{{ cita.servicioNombre || 'Consulta General' }}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="py-4 text-xs font-semibold text-slate-500">
+                      {{ cita.apoderadoNombre }}
+                    </td>
+                    <td class="py-4">
+                      <span [class]="'px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border ' + 
+                        (cita.estado === 'ATENDIDA' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 
+                         cita.estado === 'EN_PROCESO' ? 'bg-violet-50 text-violet-700 border-violet-200' :
+                         'bg-amber-50 text-amber-700 border-amber-200')">
+                        {{ cita.estado }}
+                      </span>
+                    </td>
+                    <td class="py-4 text-center">
+                      <div class="flex items-center justify-center gap-2">
+                        <!-- Iniciar consulta (Disponible si está PENDIENTE/PROGRAMADA/REPROGRAMADA) -->
+                        <button *ngIf="cita.estado === 'PENDIENTE' || cita.estado === 'PROGRAMADA' || cita.estado === 'REPROGRAMADA'"
+                          (click)="iniciarAtencion(cita)"
+                          [disabled]="!canIniciar(cita)"
+                          [title]="canIniciar(cita) ? 'Iniciar atención' : tiempoParaIniciar(cita)"
+                          [class]="canIniciar(cita)
+                            ? 'flex items-center gap-1.5 bg-[#0066AA] hover:bg-[#005a96] text-white text-[10px] font-extrabold px-3 py-1.5 rounded-lg transition-colors cursor-pointer'
+                            : 'flex items-center gap-1.5 bg-slate-100 text-slate-400 border border-slate-200 text-[10px] font-extrabold px-3 py-1.5 rounded-lg cursor-not-allowed'">
+                          <i [class]="canIniciar(cita) ? 'pi pi-play text-[8px]' : 'pi pi-clock text-[8px]'"></i>
+                          {{ canIniciar(cita) ? 'Iniciar' : tiempoParaIniciar(cita) || 'Iniciar' }}
+                        </button>
+
+                        <!-- Continuar consulta (Disponible si está EN_PROCESO) -->
+                        <a *ngIf="cita.estado === 'EN_PROCESO'"
+                          [routerLink]="['/historias-clinicas/consulta', cita.id]" 
+                          class="flex items-center gap-1.5 bg-violet-600 hover:bg-violet-700 text-white text-[10px] font-extrabold px-3 py-1.5 rounded-lg transition-colors cursor-pointer">
+                          <i class="pi pi-pencil text-[8px]"></i>
+                          Continuar
+                        </a>
+
+                        <!-- Ver historial clinico de la mascota -->
+                        <button (click)="verHistorialClinico(cita)"
+                          class="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-200 text-[10px] font-extrabold px-3 py-1.5 rounded-lg transition-colors cursor-pointer">
+                          <i class="pi pi-book text-[8px]"></i>
+                          Historial
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr *ngIf="todayAppointments().length === 0">
+                    <td colspan="5" class="text-center py-10 text-slate-400 text-xs italic font-medium">
+                      No tienes citas médicas asignadas para el día de hoy.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ─────────────────────────────
+           COLUMNA DERECHA (1/3)
+      ───────────────────────────── -->
+      <div class="space-y-6">
+
+        <!-- Perfil del usuario -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-6">
+          <div class="flex items-center gap-3.5 pb-5 mb-5 border-b border-slate-200">
+            <div class="w-12 h-12 rounded-2xl bg-[#0066AA] flex items-center justify-center
+                        text-white font-black text-base shrink-0 select-none">
+              {{ userInitials }}
+            </div>
+            <div class="min-w-0 flex-1">
+              <p class="text-sm font-extrabold text-slate-900 truncate leading-snug">
+                {{ userName }}
+              </p>
+              <span [class]="'inline-block mt-1.5 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider ' + roleBadgeClass">
+                {{ rolePrincipal }}
+              </span>
+            </div>
+          </div>
+
+          <div class="space-y-3">
+            <div *ngIf="companyName" class="flex items-center gap-2.5">
+              <div class="w-6 h-6 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
+                <i class="pi pi-building text-[10px] text-slate-400"></i>
+              </div>
+              <span class="text-xs text-slate-600 font-semibold truncate">{{ companyName }}</span>
+            </div>
+
+            <div class="flex items-center gap-2.5">
+              <div class="w-6 h-6 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 block"></span>
+              </div>
+              <span class="text-xs text-slate-600 font-medium">Sesión Activa</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ⏰ MI TURNO DE HOY -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-0 overflow-hidden">
+          <div class="px-6 py-5 border-b border-slate-200 bg-slate-50/50 flex items-center justify-between">
+            <div>
+              <h2 class="text-xs font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
+                <i class="pi pi-clock text-[#0066AA]"></i>
+                Mi Turno de Hoy
+              </h2>
+              <p class="text-[10px] text-slate-400 font-medium mt-0.5">Horario de trabajo configurado</p>
+            </div>
+          </div>
+
+          <div class="p-6 text-center">
+            <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-blue-50 text-[#0066AA] mb-4">
+              <i class="pi pi-calendar text-2xl"></i>
+            </div>
+            <p class="text-sm font-black text-slate-800">Horario Asignado</p>
+            <p class="text-xl font-black text-[#0066AA] mt-1">
+              {{ todayShiftLabel() }}
+            </p>
+            <p class="text-[10px] text-slate-400 font-medium mt-2">
+              Recuerda marcar asistencia en el panel físico.
+            </p>
+          </div>
+        </div>
+
+        <!-- 🛠️ ACCESOS RÁPIDOS -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-0 overflow-hidden">
+          <div class="px-6 py-5 border-b border-slate-200 bg-slate-50/50">
+            <h2 class="text-xs font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
+              <i class="pi pi-sliders-h text-amber-500"></i>
+              Accesos Rápidos
+            </h2>
+            <p class="text-[10px] text-slate-400 font-medium mt-0.5">Accesos rápidos y herramientas</p>
+          </div>
+
+          <div class="p-6">
+            <div class="grid grid-cols-2 gap-3">
+              <a *ngFor="let act of quickActions"
+                [routerLink]="act.route"
+                [class]="'p-3.5 rounded-xl border flex flex-col items-center justify-center text-center transition-all active:scale-95 cursor-pointer ' + act.colorClass">
+                <i [class]="act.icon + ' mb-2'"></i>
+                <span class="text-[10px] font-extrabold uppercase tracking-wide leading-tight">{{ act.label }}</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>

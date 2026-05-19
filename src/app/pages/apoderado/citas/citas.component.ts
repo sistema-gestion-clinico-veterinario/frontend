@@ -9,8 +9,10 @@ import { InputTextModule } from 'primeng/inputtext';
 import { DropdownModule } from 'primeng/dropdown';
 import { ToastModule } from 'primeng/toast';
 import { CalendarModule } from 'primeng/calendar';
-import { MessageService } from 'primeng/api';
+import { MessageService, ConfirmationService } from 'primeng/api';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ApoderadoService } from '../../../core/services/apoderado.service';
+import { PagoService } from '../../../core/services/pago.service';
 import { AuthStore } from '../../../store/auth.store';
 import { LoadingStore } from '../../../store/loading.store';
 
@@ -28,16 +30,19 @@ import { LoadingStore } from '../../../store/loading.store';
     DropdownModule,
     ToastModule,
     CalendarModule,
-    RouterModule
+    RouterModule,
+    ConfirmDialogModule
   ],
-  providers: [MessageService],
+  providers: [MessageService, ConfirmationService],
   templateUrl: './citas.component.html',
   styleUrl: './citas.component.scss'
 })
 export class CitasComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly apoderadoService = inject(ApoderadoService);
+  private readonly pagoService = inject(PagoService);
   private readonly messageService = inject(MessageService);
+  private readonly confirmationService = inject(ConfirmationService);
   readonly authStore = inject(AuthStore);
   readonly loadingStore = inject(LoadingStore);
   private loadTimeout: any = null;
@@ -60,6 +65,94 @@ export class CitasComponent implements OnInit {
   isEditing = signal<boolean>(false);
   isRescheduling = signal<boolean>(false);
   editingCitaId = signal<number | null>(null);
+
+  // ── PAGO YAPE ──────────────────────────────────────────────────
+  displayPagoModal = signal<boolean>(false);
+  citaPendientePago = signal<any | null>(null);
+  yapePhone         = signal<string>('');
+  yapeOtp           = signal<string>('');
+  yapeEmail         = signal<string>('');
+  pagoProcessing    = signal<boolean>(false);
+
+  onYapePhoneChange(val: string) { this.yapePhone.set(val.replace(/\D/g, '').slice(0, 9)); }
+  onYapeOtpChange(val: string)   { this.yapeOtp.set(val.replace(/\D/g, '').slice(0, 6)); }
+
+  // ── PAGO – helpers ─────────────────────────────────────────────
+  /** Muestra el botón "Pagar" si la cita está ATENDIDA y no tiene pago registrado */
+  canPagar(cita: any): boolean {
+    if (!cita) return false;
+    const pagableStates = ['ATENDIDA', 'EN_PROCESO', 'COMPLETADA'];
+    return pagableStates.includes(cita.estado) && !cita.montoPagado;
+  }
+
+  openPagoModal(cita: any) {
+    this.citaPendientePago.set(cita);
+    this.yapePhone.set('');
+    this.yapeOtp.set('');
+    // Pre-llenar con el email del apoderado autenticado
+    this.yapeEmail.set(this.authStore.token() ? (this.authStore as any).email?.() ?? '' : '');
+    this.displayPagoModal.set(true);
+  }
+
+  closePagoModal() {
+    this.displayPagoModal.set(false);
+    this.citaPendientePago.set(null);
+    this.yapePhone.set('');
+    this.yapeOtp.set('');
+    this.yapeEmail.set('');
+  }
+
+  confirmarPagoYape() {
+    const cita = this.citaPendientePago();
+    if (!cita) return;
+
+    const phone = this.yapePhone().trim();
+    const otp   = this.yapeOtp().trim();
+    const email = this.yapeEmail().trim();
+
+    if (phone.length !== 9) {
+      this.messageService.add({ severity: 'warn', summary: 'Teléfono inválido', detail: 'El número Yape debe tener exactamente 9 dígitos.' });
+      return;
+    }
+    if (otp.length !== 6) {
+      this.messageService.add({ severity: 'warn', summary: 'OTP inválido', detail: 'El código OTP debe tener exactamente 6 dígitos.' });
+      return;
+    }
+    if (!email) {
+      this.messageService.add({ severity: 'warn', summary: 'Email requerido', detail: 'Ingresa tu correo electrónico para completar el pago.' });
+      return;
+    }
+
+    this.pagoProcessing.set(true);
+
+    this.pagoService.registrar({
+      citaId: cita.id,
+      metodoPago: 'YAPE',
+      yapePhoneNumber: Number(phone),
+      yapeOtp: Number(otp),
+      payerEmail: email
+    }).subscribe({
+      next: () => {
+        this.pagoProcessing.set(false);
+        this.messageService.add({
+          severity: 'success',
+          summary: '¡Pago exitoso!',
+          detail: 'Tu pago con Yape fue procesado correctamente.'
+        });
+        this.closePagoModal();
+        this.loadCitas();
+      },
+      error: (err: any) => {
+        this.pagoProcessing.set(false);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error en el pago',
+          detail: err.error?.message || 'No se pudo procesar el pago Yape. Verifica el número y el código OTP.'
+        });
+      }
+    });
+  }
+  // ───────────────────────────────────────────────────────────────
 
   citaForm: FormGroup = this.fb.group({
     mascotaId: [null, [Validators.required]],
@@ -221,8 +314,40 @@ export class CitasComponent implements OnInit {
     
     const startTime = new Date(cita.fechaHoraInicio).getTime();
     const now = new Date().getTime();
-    const oneHourInMs = 60 * 60 * 1000;
-    return (startTime - now) >= oneHourInMs;
+    const sixHoursInMs = 6 * 60 * 60 * 1000;
+    return (startTime - now) >= sixHoursInMs;
+  }
+
+  canCancel(cita: any): boolean {
+    return false;
+  }
+
+  cancelCita(cita: any) {
+    if (!this.canCancel(cita)) {
+      this.messageService.add({ severity: 'warn', summary: 'Restricción', detail: 'No se puede cancelar la cita con menos de 2 horas de anticipación.' });
+      return;
+    }
+
+    this.confirmationService.confirm({
+      message: '¿Está seguro de que desea cancelar esta cita? El veterinario y usted recibirán notificaciones de cancelación.',
+      header: 'Confirmar Cancelación de Citas',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Sí, cancelar',
+      rejectLabel: 'No, volver',
+      accept: () => {
+        this.loadingStore.show();
+        this.apoderadoService.cancelarPortalCita(cita.id, '').subscribe({
+          next: () => {
+            this.messageService.add({ severity: 'success', summary: 'Cita Cancelada', detail: 'La cita ha sido cancelada exitosamente.' });
+            this.loadCitas();
+          },
+          error: (err: any) => {
+            this.messageService.add({ severity: 'error', summary: 'Error al Cancelar', detail: err.error?.message || 'No se pudo cancelar la cita.' });
+            this.loadingStore.hide();
+          }
+        });
+      }
+    });
   }
 
   editCitaDetails(cita: any) {
@@ -366,6 +491,9 @@ export class CitasComponent implements OnInit {
       case 'EN_ATENCION': return 'bg-purple-50 text-purple-700 border-purple-200';
       case 'COMPLETADA': return 'bg-green-50 text-green-700 border-green-200';
       case 'CANCELADA': return 'bg-red-50 text-red-700 border-red-200';
+      case 'ELIMINADA': return 'bg-slate-100 text-slate-400 border-slate-200';
+      case 'ATENDIDA': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      case 'EN_PROCESO': return 'bg-violet-50 text-violet-700 border-violet-200';
       default: return 'bg-slate-50 text-slate-700 border-slate-200';
     }
   }

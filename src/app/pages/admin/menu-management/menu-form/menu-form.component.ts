@@ -43,6 +43,30 @@ export class MenuFormComponent implements OnChanges {
   showParents = signal(false);
   allIcons = PRIME_ICONS;
 
+  /** Búsqueda en el dropdown de permisos */
+  permSearch = signal('');
+  /** Búsqueda en el dropdown de menú padre */
+  parentSearch = signal('');
+
+  /** Permisos filtrados por búsqueda */
+  filteredPermissions = computed(() => {
+    const q = this.permSearch().toLowerCase().trim();
+    if (!q) return this.permissions;
+    return this.permissions.filter(p =>
+      p.name.toLowerCase().includes(q) ||
+      (p.label ?? '').toLowerCase().includes(q)
+    );
+  });
+
+  /** Opciones de menú padre filtradas por búsqueda */
+  filteredMenuOptions = computed(() => {
+    const q = this.parentSearch().toLowerCase().trim();
+    if (!q) return this.menuOptions;
+    return this.menuOptions.filter(m =>
+      m.label.toLowerCase().includes(q)
+    );
+  });
+
   private readonly DEFAULTS = {
     label: '',
     icon: 'pi pi-circle',
@@ -86,6 +110,8 @@ export class MenuFormComponent implements OnChanges {
     this.showPicker.set(false);
     this.showPerms.set(false);
     this.showParents.set(false);
+    this.permSearch.set('');
+    this.parentSearch.set('');
   }
 
   togglePicker(event: Event) {

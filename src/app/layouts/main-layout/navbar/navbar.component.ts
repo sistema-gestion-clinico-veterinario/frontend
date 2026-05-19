@@ -165,13 +165,8 @@ export class NavbarComponent implements OnInit {
           });
 
           const roles = res.data.roles ?? [];
-          if (roles.includes('ROLE_SUPER_ADMIN')) {
-            this.router.navigate(['/admin/company']);
-          } else if (roles.includes('ROLE_CLIENTE') || roles.includes('ROLE_APODERADO')) {
-            this.router.navigate(['/apoderado']);
-          } else {
-            this.router.navigate(['/dashboard']);
-          }
+          const permissions = res.data.permissions ?? [];
+          window.location.href = resolveDashboardRoute(roles, permissions);
         }
       });
     }
@@ -196,4 +191,16 @@ export class NavbarComponent implements OnInit {
     this.authStore.logout();
     this.router.navigate(['/login']);
   }
+}
+
+export function resolveDashboardRoute(roles: string[], permissions: string[]): string {
+  if (roles.includes('ROLE_SUPER_ADMIN')) return '/admin/company';
+  if (permissions.includes('ADMIN_DASHBOARD'))     return '/dashboard';
+  if (permissions.includes('APODERADO_DASHBOARD')) return '/apoderado/dashboard';
+  if (permissions.includes('EMPLEADO_DASHBOARD'))  return '/empleado/dashboard';
+
+  const role = roles[0] ?? '';
+  if (role.includes('APODERADO') || role.includes('CLIENTE')) return '/apoderado/dashboard';
+  if (role.includes('ADMIN')) return '/dashboard';
+  return '/empleado/dashboard';
 }

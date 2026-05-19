@@ -8,5 +8,6 @@ export enum EstadoCita {
   COMPLETADA = 'COMPLETADA',
   NO_ASISTIO = 'NO_ASISTIO',
   CANCELADA = 'CANCELADA',
+  ELIMINADA = 'ELIMINADA',
   OTRO = 'OTRO'
 }

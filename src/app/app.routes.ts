@@ -120,12 +120,21 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/employee/my-schedule/my-schedule.component').then(m => m.MyScheduleComponent)
       },
       {
+        path: 'empleado/dashboard',
+        loadComponent: () => import('./pages/employee/dashboard/employee-dashboard.component').then((m) => m.EmployeeDashboardComponent)
+      },
+      {
         path: 'profile',
         loadComponent: () => import('./pages/profile/profile.component').then((m) => m.ProfileComponent)
       },
       {
         path: 'password-change',
         loadComponent: () => import('./pages/auth/password-change/password-change.component').then((m) => m.PasswordChangeComponent)
+      },
+      {
+        path: 'apoderado/dashboard',
+        data: { permission: Permission.APODERADO_DASHBOARD },
+        loadComponent: () => import('./pages/apoderado/dashboard/apoderado-dashboard.component').then((m) => m.ApoderadoDashboardComponent)
       },
       {
         path: 'apoderado',

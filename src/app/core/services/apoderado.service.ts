@@ -101,4 +101,8 @@ export class ApoderadoService {
   reschedulePortalCita(id: number, request: any) {
     return this.http.put<ApiResponse<any>>(`${environment.apiUrl}/clientes/portal/citas/${id}/reprogramar`, request);
   }
+
+  cancelarPortalCita(id: number, motivo: string) {
+    return this.http.delete<ApiResponse<void>>(`${environment.apiUrl}/clientes/portal/citas/${id}/cancelar?motivo=${encodeURIComponent(motivo)}`);
+  }
 }
