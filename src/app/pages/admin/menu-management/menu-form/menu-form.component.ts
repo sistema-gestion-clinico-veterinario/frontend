@@ -33,6 +33,7 @@ export class MenuFormComponent implements OnChanges {
   @Input() initialData: Partial<Menu> | null = null;
   @Input() permissions: Permission[] = [];
   @Input() menuOptions: {id: number, label: string}[] = [];
+  @Input() routes: { path: string; label: string; group: string }[] = [];
   @Input() isEdit = false;
 
   @Output() onSave = new EventEmitter<any>();
@@ -41,12 +42,12 @@ export class MenuFormComponent implements OnChanges {
   showPicker = signal(false);
   showPerms = signal(false);
   showParents = signal(false);
+  showRoutes = signal(false);
   allIcons = PRIME_ICONS;
 
-  /** Búsqueda en el dropdown de permisos */
   permSearch = signal('');
-  /** Búsqueda en el dropdown de menú padre */
   parentSearch = signal('');
+  routeSearch = signal('');
 
   /** Permisos filtrados por búsqueda */
   filteredPermissions = computed(() => {
@@ -58,12 +59,21 @@ export class MenuFormComponent implements OnChanges {
     );
   });
 
-  /** Opciones de menú padre filtradas por búsqueda */
   filteredMenuOptions = computed(() => {
     const q = this.parentSearch().toLowerCase().trim();
     if (!q) return this.menuOptions;
     return this.menuOptions.filter(m =>
       m.label.toLowerCase().includes(q)
+    );
+  });
+
+  filteredRoutes = computed(() => {
+    const q = this.routeSearch().toLowerCase().trim();
+    if (!q) return this.routes;
+    return this.routes.filter(r =>
+      r.label.toLowerCase().includes(q) ||
+      r.path.toLowerCase().includes(q) ||
+      r.group.toLowerCase().includes(q)
     );
   });
 
@@ -110,8 +120,10 @@ export class MenuFormComponent implements OnChanges {
     this.showPicker.set(false);
     this.showPerms.set(false);
     this.showParents.set(false);
+    this.showRoutes.set(false);
     this.permSearch.set('');
     this.parentSearch.set('');
+    this.routeSearch.set('');
   }
 
   togglePicker(event: Event) {
@@ -133,6 +145,25 @@ export class MenuFormComponent implements OnChanges {
     const current = this.showParents();
     this.closeAll();
     this.showParents.set(!current);
+  }
+
+  toggleRoutes(event: Event) {
+    event.stopPropagation();
+    const current = this.showRoutes();
+    this.closeAll();
+    this.showRoutes.set(!current);
+  }
+
+  selectRoute(path: string | null) {
+    this.form.get('path')?.setValue(path ?? '');
+    this.showRoutes.set(false);
+    this.routeSearch.set('');
+  }
+
+  get currentRouteLabel(): string {
+    const val = this.form.get('path')?.value;
+    if (!val) return 'Sin ruta (menú padre)';
+    return this.routes.find(r => r.path === val)?.label ?? val;
   }
 
   selectIcon(icon: string) {
