@@ -3,5 +3,6 @@ export interface HorarioEmpleadoResponse {
   diaSemana: string;
   horaInicio: string;
   horaFin: string;
+  fecha: string;
   activo: boolean;
 }

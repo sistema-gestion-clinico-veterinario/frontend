@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -14,6 +14,8 @@ import { BadgeModule } from 'primeng/badge';
 
 import { HistoriaClinicaService } from '../../../core/services/historia-clinica.service';
 import { LoadingStore } from '../../../store/loading.store';
+import { AuthStore } from '../../../store/auth.store';
+import { Role } from '../../../core/enums/role.enum';
 import { ConsultaResponse } from '../../../models/response/consulta-response';
 import { PrescripcionResponse } from '../../../models/response/prescripcion-response';
 import { PrescripcionRequest } from '../../../models/request/prescripcion-request';
@@ -50,6 +52,11 @@ export class ConsultaFormComponent implements OnInit {
   private readonly confirmSvc  = inject(ConfirmationService);
   private readonly sanitizer   = inject(DomSanitizer);
   readonly loadingStore        = inject(LoadingStore);
+  readonly authStore           = inject(AuthStore);
+
+  readonly isSuperAdmin = computed(() => this.authStore.roles().includes(Role.SUPER_ADMIN));
+  readonly isAdmin      = computed(() => this.authStore.roles().includes(Role.ADMIN));
+  readonly canManage    = computed(() => this.isAdmin() || this.isSuperAdmin());
 
   consulta   = signal<ConsultaResponse | null>(null);
   historia   = signal<any | null>(null); 
@@ -177,7 +184,7 @@ export class ConsultaFormComponent implements OnInit {
           indicacionesReceta:          res.data.indicacionesReceta          ?? '',
           version:                     res.data.version,
         });
-        if (this.isCerrada()) this.form.disable();
+        if (this.isCerrada() && !this.canManage()) this.form.disable();
         this.loadingStore.hide();
       },
       error: () => {

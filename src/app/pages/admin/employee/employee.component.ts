@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal, HostListener, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators, AbstractControl } from '@angular/forms';
+import { RouterModule } from '@angular/router';
+import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
@@ -14,6 +15,7 @@ import { MediaService } from '../../../core/services/media.service';
 import { CompanyService } from '../../../core/services/company.service';
 import { EspecialidadService } from '../../../core/services/especialidad.service';
 import { TipoEmpleadoService } from '../../../core/services/tipo-empleado.service';
+import { RoleService } from '../../../core/services/role.service';
 import { EmpleadoListResponse } from '../../../models/response/empleado-list-response';
 import { EmpleadoRequest, HorarioEmpleadoRequest } from '../../../models/request/empleado-request';
 import { LoadingStore } from '../../../store/loading.store';
@@ -22,12 +24,19 @@ import { Role } from '../../../core/enums/role.enum';
 import { Permission } from '../../../core/enums/permission.enum';
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 
+function passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
+  const newPassword = control.get('newPassword')?.value;
+  const confirmPassword = control.get('confirmPassword')?.value;
+  return newPassword === confirmPassword ? null : { mismatch: true };
+}
+
 @Component({
   selector: 'app-employee',
   standalone: true,
   imports: [
     CommonModule,
     ReactiveFormsModule,
+    RouterModule,
     FormsModule,
     TableModule,
     ButtonModule,
@@ -49,6 +58,7 @@ export class EmployeeComponent implements OnInit {
   private readonly messageService = inject(MessageService);
   private readonly especialidadService = inject(EspecialidadService);
   private readonly tipoEmpleadoService = inject(TipoEmpleadoService);
+  private readonly roleService = inject(RoleService);
   readonly authStore = inject(AuthStore);
   readonly loadingStore = inject(LoadingStore);
 
@@ -63,6 +73,15 @@ export class EmployeeComponent implements OnInit {
   loading = signal<boolean>(false);
   displayModal = signal<boolean>(false);
   isEdit = signal<boolean>(false);
+  showPasswordResetModal = signal<boolean>(false);
+  selectedEmployeeForReset = signal<EmpleadoListResponse | null>(null);
+  showResetNew = signal<boolean>(false);
+  showResetConfirm = signal<boolean>(false);
+
+  resetPasswordForm: FormGroup = this.fb.group({
+    newPassword: ['', [Validators.required, Validators.minLength(6)]],
+    confirmPassword: ['', [Validators.required]]
+  }, { validators: passwordMatchValidator });
   especialidadesList = signal<any[]>([]);
   tiposEmpleadoList = signal<any[]>([]);
   totalRecords = signal<number>(0);
@@ -126,11 +145,7 @@ export class EmployeeComponent implements OnInit {
     return this.authStore.selectedEnterprise()?.establishmentId ?? this.authStore.companyId();
   }
 
-  roles = [
-    { label: 'Administrador', value: 'ROLE_ADMIN' },
-    { label: 'Veterinario', value: 'ROLE_VETERINARIO' },
-    { label: 'Recepcionista', value: 'ROLE_RECEPCIONISTA' }
-  ];
+  roles = signal<{ label: string; value: string }[]>([]);
 
   tipoDocumentos = [
     { label: 'DNI', value: 'DNI' },
@@ -179,9 +194,9 @@ export class EmployeeComponent implements OnInit {
   ngOnInit() {
     const companyId = this.activeCompanyId;
     if (companyId) {
-      this.loadEmployees();
       this.loadEspecialidades(companyId);
       this.loadTypesEmpleado(companyId);
+      this.loadRoles(companyId);
       this.employeeForm.get('companyId')?.setValue(companyId);
     }
 
@@ -215,10 +230,12 @@ export class EmployeeComponent implements OnInit {
       if (!companyId) {
         this.especialidadesList.set([]);
         this.tiposEmpleadoList.set([]);
+        this.roles.set([]);
         return;
       }
       this.loadEspecialidades(companyId);
       this.loadTypesEmpleado(companyId);
+      this.loadRoles(companyId);
     });
   }
 
@@ -276,6 +293,37 @@ export class EmployeeComponent implements OnInit {
         this.tiposEmpleadoList.set(list);
       }
     });
+  }
+
+  loadRoles(companyId?: number) {
+    const id = companyId || this.activeCompanyId;
+    this.roleService.listarPorEmpresa(id || undefined).subscribe({
+      next: (res) => {
+        const protectedRoles = ['ROLE_SUPER_ADMIN', 'ROLE_CLIENTE', 'ROLE_APODERADO'];
+        const list = res.data
+          .filter(r => !protectedRoles.includes(r.name))
+          .map(r => ({
+            label: this.roleLabel(r.name),
+            value: r.name
+          }));
+        this.roles.set(list);
+      },
+      error: () => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar los roles' });
+      }
+    });
+  }
+
+  roleLabel(name: string): string {
+    const map: Record<string, string> = {
+      'ROLE_SUPER_ADMIN': 'Super Administrador',
+      'ROLE_ADMIN': 'Administrador',
+      'ROLE_VETERINARIO': 'Veterinario',
+      'ROLE_RECEPCIONISTA': 'Recepcionista',
+      'ROLE_CLIENTE': 'Cliente',
+      'ROLE_APODERADO': 'Apoderado'
+    };
+    return map[name] ?? name.replace('ROLE_', '');
   }
 
 
@@ -444,5 +492,43 @@ export class EmployeeComponent implements OnInit {
         });
       }
     );
+  }
+
+  openPasswordResetModal(employee: EmpleadoListResponse) {
+    this.selectedEmployeeForReset.set(employee);
+    this.resetPasswordForm.reset();
+    this.showResetNew.set(false);
+    this.showResetConfirm.set(false);
+    this.showPasswordResetModal.set(true);
+  }
+
+  submitPasswordReset() {
+    if (this.resetPasswordForm.invalid) {
+      this.resetPasswordForm.markAllAsTouched();
+      return;
+    }
+    const { newPassword, confirmPassword } = this.resetPasswordForm.value;
+    if (newPassword !== confirmPassword) {
+      this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Las contraseñas no coinciden' });
+      return;
+    }
+    const emp = this.selectedEmployeeForReset();
+    if (!emp || (!emp.userId && !emp.email)) {
+      this.messageService.add({ severity: 'error', summary: 'Error', detail: 'El empleado no tiene un usuario o correo asignado en el sistema' });
+      return;
+    }
+    this.loading.set(true);
+    this.empleadoService.resetPassword(emp.userId ?? null, newPassword!, emp.email).subscribe({
+      next: () => {
+        this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Contraseña restablecida correctamente' });
+        this.showPasswordResetModal.set(false);
+        this.resetPasswordForm.reset();
+        this.loading.set(false);
+      },
+      error: (err) => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo restablecer la contraseña' });
+        this.loading.set(false);
+      }
+    });
   }
 }

@@ -140,10 +140,19 @@
       </td>
       
       <td class="px-8 py-4 text-center">
-        <div *ngIf="item.requiredPermission || !item.parentId" 
-             [class]="getBadgeClasses(item.requiredPermission)"
-             class="inline-block px-3 py-1.5 rounded text-[10px] font-bold uppercase tracking-wider border">
-          {{ item.requiredPermission || 'PÚBLICO' }}
+        <div class="flex flex-col items-center gap-1.5">
+          <div *ngIf="item.requiredPermission || !item.parentId"
+               [class]="getBadgeClasses(item.requiredPermission)"
+               class="inline-block px-3 py-1.5 rounded text-[10px] font-bold uppercase tracking-wider border">
+            {{ item.requiredPermission || 'PÚBLICO' }}
+          </div>
+          <!-- ⚠️ Advertencia: el rol actual no tiene este permiso -->
+          <div *ngIf="itemLacksPermission(item.requiredPermission)"
+            class="flex items-center gap-1 px-2 py-1 bg-amber-50 border border-amber-200 rounded text-[10px] font-semibold text-amber-700"
+            title="Tu rol actual no tiene este permiso. Este menú no será visible para tu rol.">
+            <i class="pi pi-exclamation-triangle text-[9px]"></i>
+            <span>Tu rol no tiene este permiso</span>
+          </div>
         </div>
       </td>
       

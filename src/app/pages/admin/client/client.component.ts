@@ -34,7 +34,8 @@ import { HasPermissionDirective } from '../../../core/directives/has-permission.
     HasPermissionDirective
   ],
   providers: [MessageService],
-  templateUrl: './client.component.html'
+  templateUrl: './client.component.html',
+  styleUrl: './client.component.scss'
 })
 export class ClientComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
@@ -104,8 +105,6 @@ export class ClientComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.loadClients();
-
     this.clientForm.get('tipoDocumento')?.valueChanges.subscribe(tipo => {
       const doc = this.clientForm.get('numeroDocumento');
       if (tipo === 'DNI') {

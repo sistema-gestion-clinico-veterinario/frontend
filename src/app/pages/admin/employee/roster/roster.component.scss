@@ -1,0 +1,84 @@
+:host {
+  display: block;
+  container-type: inline-size;
+  container-name: roster;
+}
+
+/* ── HEADER: controles de empleado / vista / período ───────────────── */
+.roster-header-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ≥ 480px de contenido: 2 columnas */
+@container roster (min-width: 480px) {
+  .roster-header-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: end;
+    gap: 10px;
+  }
+  .roster-employee-selector {
+    grid-column: 1 / -1; /* siempre ocupa toda la fila */
+  }
+}
+
+/* ≥ 760px de contenido: fila horizontal */
+@container roster (min-width: 760px) {
+  .roster-header-controls {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    flex-wrap: nowrap;
+    gap: 10px;
+  }
+  .roster-employee-selector {
+    min-width: 220px;
+    flex: 1 1 220px;
+    grid-column: auto;
+  }
+  .roster-period-nav {
+    min-width: 150px;
+  }
+}
+
+/* ── STATS STRIP ─────────────────────────────────────────────────────── */
+.roster-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+/* El card de exportar siempre ocupa la fila completa en grid de 2 cols */
+.roster-export-card {
+  grid-column: 1 / -1;
+}
+
+/* ≥ 680px de contenido: 3 columnas, export card ocupa la 3a */
+@container roster (min-width: 680px) {
+  .roster-stats-grid {
+    grid-template-columns: 1fr 1fr 1.6fr;
+  }
+  .roster-export-card {
+    grid-column: auto; /* ocupa solo su celda */
+  }
+}
+
+/* ── TEXTOS OPCIONALES en botones de acción ─────────────────────────── */
+.roster-action-text  { display: none; }
+.roster-export-text  { display: none; }
+
+@container roster (min-width: 440px) {
+  .roster-action-text { display: inline; }
+  .roster-export-text { display: inline; }
+}
+
+/* ── NOMBRES DE DÍAS DEL CALENDARIO ────────────────────────────────── */
+.cal-day-name-full  { display: none; }
+.cal-day-name-short { display: block; }
+
+@container roster (min-width: 640px) {
+  .cal-day-name-full  { display: block; }
+  .cal-day-name-short { display: none; }
+}

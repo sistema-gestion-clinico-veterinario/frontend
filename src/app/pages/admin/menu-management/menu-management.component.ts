@@ -6,6 +6,7 @@ import { Menu } from '../../../models/response/auth-login-response.model';
 import { Permission } from '../../../models/response/permission';
 import { RoleService } from '../../../core/services/role.service';
 import { MenuFormComponent } from './menu-form/menu-form.component';
+import { AuthStore } from '../../../store/auth.store';
 
 @Component({
   selector: 'app-menu-management',
@@ -15,8 +16,20 @@ import { MenuFormComponent } from './menu-form/menu-form.component';
   styleUrl: './menu-management.component.scss'
 })
 export class MenuManagementComponent implements OnInit {
-  private menuService = inject(MenuManagementService);
-  private roleService = inject(RoleService);
+  private menuService  = inject(MenuManagementService);
+  private roleService  = inject(RoleService);
+  private authStore    = inject(AuthStore);
+
+  private isSuperAdmin = computed(() =>
+    (this.authStore.roles() ?? []).some(r => r === 'ROLE_SUPER_ADMIN' || r === 'SUPER_ADMIN')
+  );
+
+  /** Verdadero si el permiso de un ítem NO está en el rol actual (no aplica para SUPER_ADMIN) */
+  itemLacksPermission(perm?: string): boolean {
+    if (!perm) return false;
+    if (this.isSuperAdmin()) return false;
+    return !(this.authStore.permissions() ?? []).includes(perm);
+  }
 
   allMenusRaw = signal<Menu[]>([]);
   

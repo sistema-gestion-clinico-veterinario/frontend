@@ -1,0 +1,883 @@
+<p-toast></p-toast>
+<p-confirmDialog #cd 
+  [style]="{width: '380px'}" 
+  styleClass="rounded-2xl overflow-hidden border border-slate-200 bg-white"
+  maskStyleClass="backdrop-blur-sm bg-slate-900/40"
+  [draggable]="false"
+  [closable]="false">
+  
+  <ng-template pTemplate="message" let-message>
+    <div class="flex items-center gap-4 px-6 pt-6 pb-2">
+      <div class="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center border border-amber-100 flex-shrink-0">
+        <i class="pi pi-exclamation-triangle text-amber-500 text-lg"></i>
+      </div>
+      <div class="flex flex-col">
+        <p class="text-[12px] font-medium text-slate-500 leading-snug">{{ message.message }}</p>
+      </div>
+    </div>
+  </ng-template>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-2 px-6 pb-6 pt-2">
+      <button type="button" 
+        class="px-4 py-2 text-[11px] font-bold text-slate-400 hover:text-slate-600 transition-all" 
+        (click)="cd.onReject()">
+        Cancelar
+      </button>
+      <button type="button" 
+        class="px-5 py-2 text-[11px] font-bold text-white bg-[#0066AA] hover:bg-[#005588] rounded-lg transition-all active:scale-95" 
+        (click)="cd.onAccept()">
+        Confirmar
+      </button>
+    </div>
+  </ng-template>
+</p-confirmDialog>
+
+<div class="p-4 md:p-6 flex flex-col gap-6 animate-fade-in bg-slate-50/50 min-h-screen print:hidden">
+
+  <!-- Cabecera Compacta -->
+  <div class="flex flex-col gap-4 bg-white p-4 rounded-2xl border border-slate-200">
+
+    <!-- Fila 1: Título + Botones de acción -->
+    <div class="flex items-start justify-between gap-2">
+      <div class="flex flex-col min-w-0">
+        <h1 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+          <i class="pi pi-calendar-plus text-[#0066AA] flex-shrink-0"></i>
+          <span class="truncate">Cuadrante de Turnos</span>
+        </h1>
+        <p class="text-xs text-slate-500 font-medium mt-0.5">Gestión de horarios y disponibilidad del personal</p>
+      </div>
+      <!-- Botones de acción -->
+      <div class="flex items-center gap-2 flex-shrink-0" *ngIf="selectedEmployeeId() && canManage()">
+        <button (click)="copyLastWeek()" *ngIf="viewMode() === 'week'"
+          class="flex items-center gap-1.5 bg-slate-50 text-slate-700 text-[10px] font-bold px-2.5 h-8 rounded-lg border border-slate-200 hover:bg-white transition-all"
+          title="Clonar semana anterior">
+          <i class="pi pi-copy text-[10px]"></i>
+          <span class="roster-action-text">CLONAR</span>
+        </button>
+        <button (click)="openCloneDayDialog()" *ngIf="viewMode() === 'day'"
+          class="flex items-center gap-1.5 bg-slate-50 text-slate-700 text-[10px] font-bold px-2.5 h-8 rounded-lg border border-slate-200 hover:bg-white transition-all"
+          title="Clonar este día">
+          <i class="pi pi-copy text-[10px]"></i>
+          <span class="roster-action-text">CLONAR DÍA</span>
+        </button>
+        <button (click)="openCleanDialog()"
+          class="flex items-center gap-1.5 bg-rose-50 text-rose-700 text-[10px] font-bold px-2.5 h-8 rounded-lg border border-rose-200 hover:bg-rose-100/50 transition-all"
+          title="Limpiar rango de turnos">
+          <i class="pi pi-trash text-[10px]"></i>
+          <span class="roster-action-text">LIMPIAR</span>
+        </button>
+        <button (click)="openAddForm()"
+          class="flex items-center gap-1.5 bg-[#0066AA] text-white text-[10px] font-bold px-2.5 h-8 rounded-lg"
+          title="Asignar turno">
+          <i class="pi pi-plus text-[10px]"></i>
+          <span class="roster-action-text">TURNO</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Fila 2: Controles con container queries -->
+    <div class="roster-header-controls">
+
+      <!-- Selector empleado -->
+      <div class="flex flex-col roster-employee-selector">
+        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Empleado</label>
+        <p-dropdown 
+          [options]="employees()" 
+          [ngModel]="selectedEmployeeId()" 
+          (onChange)="onEmployeeChange($event.value)"
+          placeholder="— Seleccionar empleado —"
+          [filter]="true"
+          filterBy="label"
+          [showClear]="true"
+          styleClass="w-full h-9 flex items-center bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 outline-none transition-none shadow-none"
+          panelStyleClass="text-xs font-medium border-slate-200 shadow-none">
+        </p-dropdown>
+      </div>
+
+      <!-- Modos de vista -->
+      <div class="flex flex-col">
+        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Vista</label>
+        <div class="flex bg-slate-50 p-1 rounded-lg border border-slate-200 h-9">
+          <button *ngFor="let opt of viewOptions"
+            (click)="viewMode.set($any(opt.value))"
+            class="flex-1 text-[10px] font-bold uppercase tracking-tight rounded-md px-2"
+            [class.bg-[#0066AA]]="viewMode() === opt.value"
+            [class.text-white]="viewMode() === opt.value"
+            [class.text-slate-500]="viewMode() !== opt.value">
+            {{ opt.label }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Navegación de fecha -->
+      <div class="flex flex-col roster-period-nav">
+        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Período</label>
+        <div class="flex items-center bg-slate-50 rounded-lg border border-slate-200 h-9 overflow-hidden">
+          <button (click)="prev()" class="px-2 h-full text-slate-500 hover:bg-white hover:text-[#0066AA] flex-shrink-0">
+            <i class="pi pi-chevron-left text-[10px]"></i>
+          </button>
+          <span class="flex-1 px-1 text-[10px] font-bold text-slate-700 uppercase tracking-wider text-center truncate">
+            {{ currentLabel }}
+          </span>
+          <button (click)="next()" class="px-2 h-full text-slate-500 hover:bg-white hover:text-[#0066AA] flex-shrink-0">
+            <i class="pi pi-chevron-right text-[10px]"></i>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Resumen de Horas (Solo cuando hay empleado seleccionado) -->
+  <div *ngIf="selectedEmployeeId()" class="roster-stats-grid">
+    <div class="bg-white border border-slate-200 p-3 rounded-2xl flex items-center gap-3">
+      <div class="w-9 h-9 bg-blue-50 rounded-xl flex items-center justify-center text-[#0066AA] flex-shrink-0">
+        <i class="pi pi-clock text-base"></i>
+      </div>
+      <div class="min-w-0">
+        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-tight truncate">Horas Vista</p>
+        <p class="text-xl font-black text-slate-800">{{ totalWeeklyHours() }}h</p>
+      </div>
+    </div>
+    <div class="bg-white border border-slate-200 p-3 rounded-2xl flex items-center gap-3">
+      <div class="w-9 h-9 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-500 flex-shrink-0">
+        <i class="pi pi-calendar text-base"></i>
+      </div>
+      <div class="min-w-0">
+        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-tight truncate">Horas Mes</p>
+        <p class="text-xl font-black text-slate-800">{{ totalMonthlyHours() }}h</p>
+      </div>
+    </div>
+    <!-- Botones de exportación -->
+    <div class="roster-export-card bg-white border border-slate-200 p-3 rounded-2xl flex items-center justify-end gap-2">
+      <button (click)="exportPdf()"
+        class="flex items-center gap-1.5 bg-white text-rose-600 text-[10px] font-bold px-3 h-9 rounded-xl border border-rose-100 hover:bg-rose-50 transition-all"
+        title="Exportar horario en PDF">
+        <i class="pi pi-file-pdf text-[13px]"></i>
+        <span class="roster-export-text">PDF</span>
+      </button>
+      <button (click)="exportExcel()"
+        class="flex items-center gap-1.5 bg-white text-emerald-600 text-[10px] font-bold px-3 h-9 rounded-xl border border-emerald-100 hover:bg-emerald-50 transition-all"
+        title="Exportar horario en Excel">
+        <i class="pi pi-file-excel text-[13px]"></i>
+        <span class="roster-export-text">EXCEL</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <app-schedule-form
+    [visible]="showSidebar()"
+    [employeeId]="selectedEmployeeId()"
+    [employeeName]="selectedEmployeeName()"
+    [initialData]="selectedShift()"
+    [scheduleRange]="scheduleRange()"
+    (close)="showSidebar.set(false)"
+    (saved)="loadSchedule(selectedEmployeeId()!)">
+  </app-schedule-form>
+
+  <!-- Estado vacío -->
+  <div *ngIf="!selectedEmployeeId()" class="bg-white border border-slate-200 rounded-2xl py-20 flex flex-col items-center text-center">
+    <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4 border border-slate-100">
+      <i class="pi pi-users text-2xl text-slate-300"></i>
+    </div>
+    <p class="text-base font-bold text-slate-800">No hay empleado seleccionado</p>
+    <p class="text-xs text-slate-400 mt-1 max-w-xs">Elige un miembro del equipo en el selector superior para gestionar sus turnos.</p>
+  </div>
+
+  <!-- Calendario Contenedor -->
+  <div *ngIf="selectedEmployeeId()" class="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+
+    <!-- ============ VISTA DÍA: Timeline por horas ============ -->
+    <ng-container *ngIf="viewMode() === 'day'">
+      
+      <!-- Cabecera del día -->
+      <div class="flex items-center gap-4 px-6 py-4 border-b border-slate-100 bg-white">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-[#0066AA] rounded-xl flex flex-col items-center justify-center text-white">
+            <span class="text-[10px] uppercase font-bold leading-none">{{ currentDate().getDate() }}</span>
+            <span class="text-[8px] uppercase font-medium opacity-80 leading-none mt-0.5">{{ monthNames[currentDate().getMonth()].substring(0,3) }}</span>
+          </div>
+          <div>
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">
+              {{ dayViewDayName }}
+            </p>
+            <p class="text-lg font-bold text-slate-800 leading-none">
+              {{ dayViewFullDate }}
+            </p>
+          </div>
+        </div>
+        
+        <div *ngIf="dayViewHours().length" class="ml-auto flex items-center gap-2">
+          <ng-container *ngFor="let h of dayViewHours()">
+            <ng-container *ngIf="h.isShiftStart && h.shift">
+              <span class="px-2.5 py-1 rounded-md text-[10px] font-bold text-[#0066AA] bg-slate-50 border border-slate-200">
+                {{ h.shift.horaInicio?.substring(0,5) }} – {{ h.shift.horaFin?.substring(0,5) }}
+              </span>
+            </ng-container>
+          </ng-container>
+          <span *ngIf="!hasWorkingHours" class="text-[10px] text-slate-400 font-medium italic">Sin turnos asignados</span>
+        </div>
+      </div>
+
+      <!-- Timeline Optimizado -->
+      <div #timelineScroll class="overflow-y-auto relative" style="max-height: 500px;">
+        
+        <!-- Línea de hora actual -->
+        <div *ngIf="currentTimeOffset() > 0" 
+          class="absolute left-0 right-0 z-10 flex items-center pointer-events-none"
+          [style.top.px]="currentTimeOffset()">
+          <div class="w-2 h-2 rounded-full bg-red-500 -ml-1"></div>
+          <div class="flex-1 h-px bg-red-500 opacity-50"></div>
+        </div>
+
+        <div *ngFor="let slot of dayViewHours(); let i = index" class="flex group relative"
+          [class.border-t]="i > 0"
+          [class.border-slate-50]="!slot.isWorking"
+          [class.border-slate-100]="slot.isWorking">
+          
+          <!-- Etiqueta de hora -->
+          <div class="w-14 flex-shrink-0 flex items-start justify-end pr-3 pt-3 pb-3 bg-slate-50/30">
+            <span class="text-[10px] font-bold tracking-tighter"
+              [class.text-slate-400]="!slot.isWorking"
+              [class.text-[#0066AA]]="slot.isWorking">
+              {{ slot.label }}
+            </span>
+          </div>
+
+          <!-- Bloque de hora -->
+          <div class="flex-1 relative h-[44px] border-l border-slate-100"
+            [ngClass]="{'bg-slate-50/50': slot.isWorking, 'border-l-[#0066AA] border-l-2': slot.isWorking}">
+
+            <!-- Etiqueta del turno -->
+            <div *ngIf="slot.isShiftStart && slot.shift" class="px-4 py-2 flex items-center h-full">
+              <div (click)="verDetalle(slot.shift); $event.stopPropagation()"
+                class="bg-white border border-slate-200 rounded-lg py-1 px-3 flex items-center justify-between w-full cursor-pointer hover:border-[#0066AA] transition-all"
+                [class.ring-2]="selectedShift()?.id === slot.shift.id"
+                [class.ring-[#0066AA]]="selectedShift()?.id === slot.shift.id">
+                <div class="flex items-center gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-[#0066AA]"></span>
+                  <span class="text-[11px] font-bold text-[#0066AA]">
+                    Jornada: {{ slot.shift.horaInicio?.substring(0,5) }} – {{ slot.shift.horaFin?.substring(0,5) }}
+                  </span>
+                </div>
+                <div class="flex items-center gap-1">
+                  <button *ngIf="canManage()" (click)="editShift(slot.shift); $event.stopPropagation()"
+                    class="p-1.5 rounded-md text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all"
+                    title="Editar turno">
+                    <i class="pi pi-pencil text-[10px]"></i>
+                  </button>
+                  <button *ngIf="canManage()" (click)="deleteShift(slot.shift); $event.stopPropagation()"
+                    class="p-1.5 rounded-md text-red-400 hover:text-red-600 hover:bg-red-50 transition-all"
+                    title="Eliminar turno">
+                    <i class="pi pi-trash text-[10px]"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div *ngIf="slot.isWorking && !slot.isShiftStart" class="h-full px-4 flex items-center opacity-30">
+              <div class="h-[2px] w-full bg-slate-200 rounded-full"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- ============ VISTA SEMANA / MES ============ -->
+    <ng-container *ngIf="viewMode() !== 'day'">
+      <!-- Cabecera de días -->
+      <div class="grid grid-cols-7 border-b border-slate-100 bg-slate-50/50">
+        <div *ngFor="let i of [0,1,2,3,4,5,6]"
+          class="py-2 text-center text-[9px] font-bold uppercase tracking-wider border-r border-slate-100 last:border-r-0"
+          [class.text-rose-500]="i === 0"
+          [class.text-slate-500]="i !== 0">
+          <span class="cal-day-name-full">{{ ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'][i] }}</span>
+          <span class="cal-day-name-short">{{ ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'][i] }}</span>
+        </div>
+      </div>
+
+      <!-- Grid de celdas -->
+      <div class="grid grid-cols-7">
+
+        <div *ngFor="let item of calendarDays()"
+          (click)="onDayClick(item)"
+          class="border-r border-b border-slate-100 last:border-r-0 relative group hover:bg-slate-50/50 cursor-pointer transition-all"
+          [ngClass]="{'bg-slate-50/50': item.otherMonth, 'bg-white': !item.otherMonth}"
+          [style.min-height]="viewMode() === 'month' ? '70px' : '160px'">
+
+          <!-- Número de día -->
+          <div class="flex items-center justify-between px-2 pt-2 pb-1">
+            <span
+              class="text-xs font-bold w-6 h-6 flex items-center justify-center rounded-lg"
+              [class.text-slate-300]="item.otherMonth"
+              [class.text-slate-600]="!item.otherMonth && !item.isToday"
+              [class.text-white]="item.isToday"
+              [class.bg-[#0066AA]]="item.isToday">
+              {{ item.day }}
+            </span>
+            <div *ngIf="item.shifts?.length > 0" class="flex -space-x-1">
+               <span class="w-1.5 h-1.5 rounded-full bg-[#0066AA] border border-white"></span>
+            </div>
+          </div>
+
+          <!-- Lista de turnos Compacta -->
+          <div class="px-1.5 pb-2 space-y-1">
+            <div *ngFor="let shift of item.shifts" (click)="verDetalle(shift); $event.stopPropagation()"
+              class="flex items-center justify-between px-2 py-1 rounded-md border border-slate-200 bg-slate-50/50 group/item hover:border-[#0066AA] hover:bg-slate-50 cursor-pointer transition-all"
+              [class.ring-2]="selectedShift()?.id === shift.id"
+              [class.ring-[#0066AA]]="selectedShift()?.id === shift.id"
+              [class.ring-offset-1]="selectedShift()?.id === shift.id"
+              [class.z-20]="selectedShift()?.id === shift.id">
+              <div class="flex items-center gap-1.5 min-w-0">
+                <i class="pi pi-clock text-[8px] text-[#0066AA]"></i>
+                <span class="text-[9px] font-bold text-slate-700 truncate">
+                  {{ shift.horaInicio }} – {{ shift.horaFin }}
+                </span>
+              </div>
+              <div class="flex items-center gap-0.5">
+                <button *ngIf="canManage()" (click)="editShift(shift); $event.stopPropagation()"
+                  class="flex-shrink-0 w-4 h-4 items-center justify-center rounded-md text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 opacity-0 group-hover/item:opacity-100 transition-all flex"
+                  title="Editar">
+                  <i class="pi pi-pencil text-[8px]"></i>
+                </button>
+                <button *ngIf="canManage()" (click)="deleteShift(shift); $event.stopPropagation()"
+                  class="flex-shrink-0 w-4 h-4 items-center justify-center rounded-md text-red-400 hover:text-red-600 hover:bg-red-50 opacity-0 group-hover/item:opacity-100 transition-all flex"
+                  title="Eliminar">
+                  <i class="pi pi-trash text-[8px]"></i>
+                </button>
+              </div>
+            </div>
+
+            <div *ngIf="!item.shifts?.length && !item.otherMonth && viewMode() !== 'month'"
+              class="flex flex-col items-center justify-center pt-8 opacity-20">
+              <i class="pi pi-calendar-minus text-lg"></i>
+              <p class="text-[9px] font-bold mt-1 uppercase tracking-tighter">Libre</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </ng-container>
+
+  </div>
+
+</div>
+
+<!-- Contenedor Exclusivo de Impresión (Oculto en pantalla, visible al imprimir) -->
+<div id="print-area" class="hidden print:block font-sans p-10 text-[#0f172a] bg-white">
+  <style>
+    @media print {
+      body {
+        background-color: #ffffff !important;
+        color: #0f172a !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .print-header-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 2px solid #0f172a;
+        padding-bottom: 20px;
+        margin-bottom: 30px;
+      }
+      .print-logo-title {
+        display: flex;
+        flex-direction: column;
+      }
+      .print-logo-text {
+        font-size: 26px;
+        font-weight: 800;
+        color: #0f172a;
+        letter-spacing: -0.5px;
+        line-height: 1;
+      }
+      .print-subtitle {
+        font-size: 9px;
+        font-weight: 700;
+        color: #475569;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        margin-top: 4px;
+      }
+      .print-report-info {
+        text-align: right;
+        font-size: 11px;
+        color: #475569;
+        line-height: 1.5;
+      }
+      .print-employee-card {
+        background: #ffffff;
+        border: 1px solid #0f172a;
+        border-radius: 0 !important; /* Totalmente cuadrado */
+        padding: 16px 20px;
+        margin-bottom: 30px;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+      }
+      .print-card-field {
+        display: flex;
+        flex-direction: column;
+      }
+      .print-field-label {
+        font-size: 9px;
+        font-weight: 800;
+        color: #475569;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+      }
+      .print-field-value {
+        font-size: 14px;
+        font-weight: 600;
+        color: #0f172a;
+      }
+      .print-highlight-value {
+        color: #000000;
+        font-size: 16px;
+        font-weight: 800;
+      }
+      .print-matrix-table-container {
+        border: 1px solid #0f172a;
+        border-radius: 0 !important; /* Totalmente cuadrado */
+        overflow: hidden;
+        margin-bottom: 30px;
+        background: #ffffff;
+      }
+      .print-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      .print-table th {
+        background: #f8fafc !important;
+        color: #0f172a !important;
+        font-size: 10px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 12px;
+        text-align: center;
+        border: 1px solid #0f172a;
+        print-color-adjust: exact;
+      }
+      .print-table th:first-child {
+        text-align: left;
+        border-left: none;
+      }
+      .print-table th:last-child {
+        border-right: none;
+      }
+      .print-table td {
+        border: 1px solid #0f172a;
+        padding: 8px;
+        vertical-align: middle;
+        text-align: center;
+        font-size: 11px;
+        border-radius: 0 !important;
+      }
+      .print-table td:first-child {
+        border-left: none;
+      }
+      .print-table td:last-child {
+        border-right: none;
+      }
+      .print-table tr:last-child td {
+        border-bottom: none;
+      }
+      .print-week-cell {
+        background: #f8fafc !important;
+        text-align: left;
+        width: 130px;
+        font-weight: 800;
+        color: #0f172a;
+        padding-left: 12px;
+        print-color-adjust: exact;
+      }
+      .print-week-dates {
+        font-size: 10px;
+        color: #475569;
+        font-weight: 700;
+      }
+      .print-week-dates-sub {
+        font-size: 9px;
+        color: #64748b;
+        font-weight: 600;
+      }
+      .print-shift-cell {
+        background: #ffffff;
+      }
+      .print-empty-cell {
+        color: #cbd5e1;
+        font-size: 12px;
+        font-weight: 500;
+        background: #ffffff !important;
+        print-color-adjust: exact;
+      }
+      .print-matrix-shift-box {
+        background: #ffffff !important;
+        border: 1px solid #0f172a !important;
+        border-radius: 0 !important; /* Totalmente cuadrado */
+        padding: 6px;
+        text-align: center;
+        display: inline-block;
+        width: 100%;
+        box-sizing: border-box;
+        print-color-adjust: exact;
+      }
+      .print-time-range {
+        font-size: 10px;
+        font-weight: 800;
+        color: #000000;
+      }
+      .print-duration-tag {
+        font-size: 8px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #475569;
+        margin-top: 2px;
+      }
+      .print-empty-state-row {
+        padding: 30px;
+        text-align: center;
+        color: #64748b;
+        font-size: 12px;
+        font-weight: 500;
+        background: #ffffff !important;
+        print-color-adjust: exact;
+      }
+      .print-footer-notes {
+        margin-top: 50px;
+        border-top: 1px solid #0f172a;
+        padding-top: 20px;
+        font-size: 10px;
+        color: #64748b;
+        text-align: center;
+        font-weight: 500;
+        line-height: 1.6;
+      }
+    }
+  </style>
+
+  <div class="print-header-container">
+    <div class="print-logo-title">
+      <span class="print-logo-text">VARGASVET</span>
+      <span class="print-subtitle">Cuadrante Consolidado de Trabajo</span>
+    </div>
+    <div class="print-report-info">
+      <span>Reporte de Personal</span><br>
+      <strong>VargasVet S.A.C.</strong><br>
+      <span style="font-size: 9px; color: #94a3b8; margin-top: 4px; display: inline-block;">Emitido: {{ currentDateFormatted() }}</span>
+    </div>
+  </div>
+
+  <div class="print-employee-card">
+    <div class="print-card-field">
+      <span class="print-field-label">Colaborador</span>
+      <span class="print-field-value">{{ selectedEmployeeName() }}</span>
+    </div>
+    <div class="print-card-field">
+      <span class="print-field-label">Cargo / Función</span>
+      <span class="print-field-value">{{ selectedEmployeeCargo() }}</span>
+    </div>
+    <div class="print-card-field">
+      <span class="print-field-label">Total Horas Registradas</span>
+      <span class="print-field-value print-highlight-value">{{ totalShiftsHours() }} hrs</span>
+    </div>
+  </div>
+
+  <div class="print-matrix-table-container">
+    <table class="print-table">
+      <thead>
+        <tr>
+          <th style="width: 140px;">Periodo / Semana</th>
+          <th>Lunes</th>
+          <th>Martes</th>
+          <th>Miércoles</th>
+          <th>Jueves</th>
+          <th>Viernes</th>
+          <th>Sábado</th>
+          <th>Domingo</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let week of printableWeeks()">
+          <td class="print-week-cell">
+            <strong>{{ week.title }}</strong><br>
+            <span class="print-week-dates" [class.print-week-dates-sub]="week.isBase">{{ week.subtitle }}</span>
+          </td>
+          <td *ngFor="let day of week.days" [class.print-shift-cell]="day.shifts.length > 0" [class.print-empty-cell]="day.shifts.length === 0">
+            <div *ngIf="day.shifts.length > 0" class="space-y-1">
+              <div *ngFor="let shift of day.shifts" class="print-matrix-shift-box">
+                <div class="print-time-range">{{ shift.timeRange }}</div>
+                <div class="print-duration-tag">{{ shift.duration }}h Turno</div>
+              </div>
+            </div>
+            <div *ngIf="day.shifts.length === 0">-</div>
+          </td>
+        </tr>
+        <tr *ngIf="printableWeeks().length === 0">
+          <td colspan="8" class="print-empty-state-row">
+            No hay turnos planificados asignados a este colaborador en el sistema.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="print-footer-notes">
+    Este cuadrante representa la planificación de turnos vigente. Toda modificación posterior deberá ser autorizada por la Gerencia de Operaciones de VargasVet S.A.C.
+  </div>
+</div>
+
+<!-- Overlay detalle de turno (Roster) -->
+<div *ngIf="displayShiftDetail() && shiftForDetail()"
+     (click)="displayShiftDetail.set(false)"
+     class="fixed inset-0 z-[114] bg-slate-900/40 animate-in fade-in duration-200">
+</div>
+
+<!-- Panel lateral derecho — Detalle del Turno (Roster) -->
+<div *ngIf="displayShiftDetail() && shiftForDetail()"
+     class="fixed inset-y-0 right-0 w-[400px] max-w-full bg-white border-l border-slate-200 z-[115] flex flex-col animate-in slide-in-from-right duration-300">
+
+  <!-- Header -->
+  <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white font-extrabold text-base shrink-0"
+           [class]="shiftForDetail().fecha ? 'bg-[#0066AA]' : 'bg-amber-500'">
+        {{ selectedEmployeeName().charAt(0).toUpperCase() }}
+      </div>
+      <div class="min-w-0">
+        <h2 class="text-sm font-bold text-slate-800 leading-none truncate">{{ selectedEmployeeName() }}</h2>
+        <span class="inline-flex items-center mt-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold"
+              [class]="shiftForDetail().fecha
+                ? 'bg-blue-100 text-blue-700'
+                : 'bg-amber-100 text-amber-700'">
+          {{ shiftForDetail().fecha ? 'Turno Planificado' : 'Horario Base' }}
+        </span>
+      </div>
+    </div>
+    <button (click)="displayShiftDetail.set(false)"
+            class="text-slate-400 hover:text-slate-600 p-2 transition-colors">
+      <i class="pi pi-times"></i>
+    </button>
+  </div>
+
+  <!-- Body -->
+  <div class="flex-1 overflow-y-auto p-6 space-y-6">
+
+    <!-- Sección 1: Fecha -->
+    <div class="space-y-3">
+      <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
+        <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
+        <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">1. Fecha</h3>
+      </div>
+      <div class="grid grid-cols-2 gap-y-3">
+        <div class="flex flex-col">
+          <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Fecha del turno</span>
+          <span class="text-sm font-bold text-slate-700 capitalize">
+            {{ shiftForDetail().fecha ? (shiftForDetail().fecha | date:'dd/MM/yyyy') : (shiftForDetail().diaSemana || '–') }}
+          </span>
+          <span *ngIf="shiftForDetail().fecha" class="text-[10px] text-slate-400 mt-0.5">
+            {{ shiftForDetail().fecha | date:'EEEE' | titlecase }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sección 2: Horario -->
+    <div class="space-y-3">
+      <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
+        <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
+        <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">2. Horario de Turno</h3>
+      </div>
+      <div class="grid grid-cols-2 gap-y-3">
+        <div class="flex flex-col">
+          <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Hora Inicio</span>
+          <span class="text-sm font-bold text-slate-700">{{ shiftForDetail().horaInicio?.substring(0,5) }}</span>
+        </div>
+        <div class="flex flex-col">
+          <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Hora Fin</span>
+          <span class="text-sm font-bold text-slate-700">{{ shiftForDetail().horaFin?.substring(0,5) }}</span>
+        </div>
+        <div class="flex flex-col">
+          <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Turno</span>
+          <span class="text-sm font-bold text-slate-700">
+            {{ shiftForDetail().horaInicio?.substring(0,5) }} – {{ shiftForDetail().horaFin?.substring(0,5) }}
+          </span>
+        </div>
+        <div class="flex flex-col">
+          <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Duración</span>
+          <span class="text-sm font-bold text-slate-700">{{ calcularDuracion(shiftForDetail().horaInicio, shiftForDetail().horaFin) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sección 3: Empleado -->
+    <div class="space-y-3">
+      <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
+        <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
+        <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">3. Empleado</h3>
+      </div>
+      <div class="grid grid-cols-2 gap-y-3">
+        <div class="col-span-2 flex flex-col">
+          <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Nombre</span>
+          <span class="text-sm font-bold text-slate-700">{{ selectedEmployeeName() }}</span>
+        </div>
+        <div class="flex flex-col">
+          <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Cargo</span>
+          <span class="text-sm font-bold text-slate-700">{{ selectedEmployeeCargo() }}</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <div class="px-6 py-4 border-t border-slate-200 space-y-2">
+    <div class="flex gap-2" *ngIf="canManage()">
+      <button (click)="editShift(shiftForDetail()); displayShiftDetail.set(false)"
+              class="flex-1 flex items-center justify-center gap-2 py-2.5 bg-[#0066AA] hover:bg-[#005588] text-white text-xs font-bold rounded-lg transition-all">
+        <i class="pi pi-pencil text-xs"></i> Editar turno
+      </button>
+    </div>
+    <div class="flex gap-2">
+      <button (click)="displayShiftDetail.set(false)"
+              class="flex-1 py-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 text-xs font-bold rounded-lg transition-all">
+        Cerrar
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<!-- Modal de Clonación Diaria -->
+<div *ngIf="showCloneDayModal()" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+  <!-- Backdrop difuminado premium -->
+  <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" (click)="closeCloneDayDialog()"></div>
+  
+  <!-- Caja del Modal -->
+  <div class="relative bg-white w-full max-w-sm rounded-2xl border border-slate-200 shadow-2xl overflow-hidden animate-fade-in p-6">
+    <!-- Cabecera -->
+    <div class="flex items-center gap-3 mb-4">
+      <div class="w-10 h-10 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-[#0066AA] flex-shrink-0">
+        <i class="pi pi-copy text-sm"></i>
+      </div>
+      <div>
+        <h3 class="text-xs font-bold text-slate-800 leading-tight">Clonar Horario Diario</h3>
+        <p class="text-[10px] font-medium text-slate-400 mt-0.5">Copia los turnos planificados de un día a otro</p>
+      </div>
+    </div>
+    
+    <!-- Formulario -->
+    <div class="flex flex-col gap-4 my-2">
+      <!-- Día Origen (Lectura) -->
+      <div class="flex flex-col gap-1.5">
+        <label class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Día de Origen</label>
+        <div class="h-9 px-3 flex items-center bg-slate-50 border border-slate-100 rounded-lg text-[11px] font-semibold text-slate-500 capitalize">
+          {{ currentDate().toLocaleDateString('es-PE', { weekday: 'long', day: 'numeric', month: 'long' }) }}
+        </div>
+      </div>
+      
+      <!-- Día Destino (Selección) -->
+      <div class="flex flex-col gap-1.5">
+        <label class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Día de Destino</label>
+        <input type="date" 
+          [ngModel]="cloneTargetDate()" 
+          (ngModelChange)="cloneTargetDate.set($event)"
+          class="w-full h-9 px-3 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 outline-none focus:border-[#0066AA] focus:ring-1 focus:ring-[#0066AA] transition-all" />
+      </div>
+    </div>
+    
+    <!-- Footer -->
+    <div class="flex justify-end gap-2 mt-6">
+      <button type="button" 
+        class="px-4 py-2 text-[10px] font-bold text-slate-400 hover:text-slate-600 transition-all" 
+        (click)="closeCloneDayDialog()">
+        Cancelar
+      </button>
+      <button type="button" 
+        class="px-5 py-2 text-[10px] font-bold text-white bg-[#0066AA] hover:bg-[#005588] rounded-lg transition-all active:scale-95 flex items-center gap-1.5" 
+        (click)="confirmCloneDay()">
+        <span>Confirmar</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Eliminación Masiva (Limpiar Horario) -->
+<div *ngIf="showCleanModal()" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+  <!-- Backdrop difuminado premium -->
+  <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" (click)="closeCleanDialog()"></div>
+  
+  <!-- Caja del Modal -->
+  <div class="relative bg-white w-full max-w-sm rounded-2xl border border-slate-200 shadow-2xl overflow-hidden animate-fade-in p-6">
+    <!-- Cabecera -->
+    <div class="flex items-center gap-3 mb-4">
+      <div class="w-10 h-10 rounded-full bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-600 flex-shrink-0">
+        <i class="pi pi-trash text-sm"></i>
+      </div>
+      <div>
+        <h3 class="text-xs font-bold text-slate-800 leading-tight">Limpiar Rango de Horarios</h3>
+        <p class="text-[10px] font-medium text-slate-400 mt-0.5">Elimina de forma masiva los turnos en un rango</p>
+      </div>
+    </div>
+    
+    <!-- Formulario -->
+    <div class="flex flex-col gap-4 my-2">
+      <!-- Fecha Inicio -->
+      <div class="flex flex-col gap-1.5">
+        <label class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Fecha de Inicio</label>
+        <input type="date" 
+          [ngModel]="cleanStartDate()" 
+          (ngModelChange)="cleanStartDate.set($event)"
+          class="w-full h-9 px-3 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" />
+      </div>
+      
+      <!-- Fecha Fin -->
+      <div class="flex flex-col gap-1.5">
+        <label class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Fecha de Fin</label>
+        <input type="date" 
+          [ngModel]="cleanEndDate()" 
+          (ngModelChange)="cleanEndDate.set($event)"
+          class="w-full h-9 px-3 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" />
+      </div>
+
+      <!-- Días de la semana -->
+      <div class="flex flex-col gap-1.5">
+        <label class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Días a Eliminar</label>
+        <div class="flex gap-1.5 justify-between mt-1">
+          <button *ngFor="let d of dayOfWeekOptions" type="button"
+            (click)="toggleCleanDay(d.value)"
+            [class.bg-rose-500]="selectedCleanDays().has(d.value)"
+            [class.text-white]="selectedCleanDays().has(d.value)"
+            [class.bg-slate-50]="!selectedCleanDays().has(d.value)"
+            [class.text-slate-600]="!selectedCleanDays().has(d.value)"
+            class="w-8 h-8 rounded-full text-[10px] font-bold border border-slate-200 transition-all flex items-center justify-center select-none active:scale-90">
+            {{ d.label }}
+          </button>
+        </div>
+        <p class="text-[9px] font-medium text-slate-400 mt-1">
+          💡 Si no seleccionas ningún día, se eliminarán todos los turnos del rango.
+        </p>
+      </div>
+    </div>
+    
+    <!-- Footer -->
+    <div class="flex justify-end gap-2 mt-6">
+      <button type="button" 
+        class="px-4 py-2 text-[10px] font-bold text-slate-400 hover:text-slate-600 transition-all" 
+        (click)="closeCleanDialog()">
+        Cancelar
+      </button>
+      <button type="button" 
+        class="px-5 py-2 text-[10px] font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-lg transition-all active:scale-95 flex items-center gap-1.5" 
+        (click)="confirmClean()">
+        <span>Eliminar</span>
+      </button>
+    </div>
+  </div>
+</div>
+

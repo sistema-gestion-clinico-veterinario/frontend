@@ -1,4 +1,4 @@
-<div class="p-8 min-h-screen bg-slate-50 font-['Barlow']">
+<div class="p-4 min-h-screen bg-slate-50 font-['Barlow']">
   <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-10">
     <div>
       <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Gestión de Personal</h1>
@@ -7,7 +7,12 @@
         Administra los accesos y perfiles de los empleados de la organización
       </p>
     </div>
-    <div class="flex flex-col md:flex-row items-start md:items-center gap-4">
+    <div class="flex flex-col md:flex-row items-start md:items-center gap-3">
+      <a routerLink="/admin/empleados/horarios"
+        class="flex items-center gap-2 bg-white border border-slate-200 hover:border-[#0066AA] hover:text-[#0066AA] text-slate-600 text-sm font-medium px-5 h-10 rounded-lg transition-all">
+        <i class="pi pi-calendar text-xs"></i>
+        Gestión de Horarios
+      </a>
       <button (click)="openNew()"
         class="flex items-center gap-2 bg-[#0066AA] hover:bg-[#005a96] text-white text-sm font-medium px-5 h-10 rounded-lg transition-colors">
         <i class="pi pi-plus text-xs"></i>
@@ -74,10 +79,16 @@
           </td>
           <td class="px-6 py-4 text-right">
             <div class="flex items-center justify-end gap-1">
+              <button (click)="openPasswordResetModal(employee)"
+                [disabled]="!employee.activo"
+                [title]="!employee.activo ? 'El empleado está inactivo' : 'Restablecer contraseña'"
+                class="p-2 rounded-lg text-slate-400 hover:text-amber-500 hover:bg-amber-50 transition-all active:scale-90 disabled:opacity-40 disabled:cursor-not-allowed">
+                <i class="pi pi-lock text-sm"></i>
+              </button>
               <button (click)="editEmployee(employee)"
                 [disabled]="!employee.activo"
                 [title]="!employee.activo ? 'El empleado está inactivo' : 'Editar'"
-                class="p-2 rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-90 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-slate-400">
+                class="p-2 rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-90 disabled:opacity-40 disabled:cursor-not-allowed">
                 <i class="pi pi-pencil text-sm"></i>
               </button>
               <button *appHasPermission="Permission.EMPLEADO_DELETE" (click)="deleteEmployee(employee)"
@@ -254,13 +265,13 @@
                   </div>
                 </div>
                 <div class="max-h-48 overflow-y-auto p-1">
-                  <label *ngFor="let r of getFilteredOptions(roles)"
+                  <label *ngFor="let r of getFilteredOptions(roles())"
                     class="flex items-center gap-3 px-3 py-2 hover:bg-blue-50 rounded cursor-pointer transition-colors group">
                     <input type="checkbox" [checked]="isSelected('roles', r.value)" (change)="toggleSelection('roles', r.value)"
                       class="w-3.5 h-3.5 text-blue-600 border-slate-300 rounded focus:ring-blue-500">
                     <span class="text-xs text-slate-600 group-hover:text-slate-900 font-medium">{{ r.label }}</span>
                   </label>
-                  <p *ngIf="!getFilteredOptions(roles).length" class="text-[10px] text-slate-400 italic text-center py-4">Sin resultados</p>
+                  <p *ngIf="!getFilteredOptions(roles()).length" class="text-[10px] text-slate-400 italic text-center py-4">Sin resultados</p>
                 </div>
               </div>
               <p *ngIf="employeeForm.get('roles')?.invalid && employeeForm.get('roles')?.touched" class="text-[11px] text-rose-500 ml-0.5">
@@ -375,32 +386,6 @@
           </div>
         </div>
 
-        <!-- 3. Horario -->
-        <div class="space-y-4">
-          <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
-            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">3. Régimen de Disponibilidad Horaria</h3>
-          </div>
-
-          <div class="grid grid-cols-1 gap-2">
-            <div *ngFor="let h of horarios; let i = index"
-              class="grid grid-cols-[1fr_2fr] items-center p-2 rounded border border-transparent transition-colors"
-              [class.bg-slate-50]="h.activo" [class.border-slate-100]="h.activo">
-              <div class="flex items-center gap-3">
-                <input type="checkbox" [(ngModel)]="h.activo" [ngModelOptions]="{standalone: true}"
-                  class="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500">
-                <span class="text-xs font-bold text-slate-700 uppercase tracking-tight">{{ diasSemana[i].label }}</span>
-              </div>
-              <div class="flex items-center gap-2" [class.opacity-30]="!h.activo" [class.pointer-events-none]="!h.activo">
-                <input type="time" [(ngModel)]="h.horaInicio" [ngModelOptions]="{standalone: true}"
-                  class="w-full px-2 py-1 border border-slate-300 rounded text-xs outline-none focus:border-blue-500">
-                <span class="text-slate-400 text-[10px]">a</span>
-                <input type="time" [(ngModel)]="h.horaFin" [ngModelOptions]="{standalone: true}"
-                  class="w-full px-2 py-1 border border-slate-300 rounded text-xs outline-none focus:border-blue-500">
-              </div>
-            </div>
-          </div>
-        </div>
 
         <div class="flex justify-end gap-3 pt-6 border-t border-slate-200">
           <button type="button" (click)="displayModal.set(false)"
@@ -419,3 +404,89 @@
 </div>
 
 <p-toast position="bottom-right"></p-toast>
+
+<!-- Password Reset Modal -->
+<div *ngIf="showPasswordResetModal()" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm font-['Barlow']">
+  <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-slate-100 flex flex-col overflow-hidden">
+    <!-- Header -->
+    <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 bg-amber-50 text-amber-600 rounded-lg flex items-center justify-center">
+          <i class="pi pi-lock text-base"></i>
+        </div>
+        <h2 class="text-sm font-bold text-slate-800">Restablecer Contraseña</h2>
+      </div>
+      <button (click)="showPasswordResetModal.set(false)"
+        class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+        title="Cerrar modal">
+        <i class="pi pi-times text-xs"></i>
+      </button>
+    </div>
+
+    <div class="p-6 space-y-4">
+      <!-- Info Alert -->
+      <div class="flex items-start gap-2.5 p-3.5 bg-amber-50 border border-amber-100 rounded-lg text-xs text-amber-800 font-semibold leading-relaxed">
+        <i class="pi pi-exclamation-triangle mt-0.5 text-sm shrink-0"></i>
+        <div>
+          Estás restableciendo la contraseña del empleado: 
+          <span class="text-slate-800 font-bold block mt-0.5 uppercase">{{ selectedEmployeeForReset()?.nombre }} {{ selectedEmployeeForReset()?.apellido }}</span>
+        </div>
+      </div>
+
+      <form [formGroup]="resetPasswordForm" (ngSubmit)="submitPasswordReset()" class="space-y-4">
+        <!-- New Password -->
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-semibold text-slate-700 ml-0.5">Nueva Contraseña <span class="text-rose-500">*</span></label>
+          <div class="relative">
+            <input [type]="showResetNew() ? 'text' : 'password'" formControlName="newPassword" placeholder="Mínimo 6 caracteres"
+              class="w-full px-3 py-2 pr-10 border border-slate-300 rounded-lg text-sm focus:border-[#0066AA] focus:ring-1 focus:ring-[#0066AA] outline-none h-10 transition-all duration-150 text-slate-800" />
+            <button type="button" (click)="showResetNew.set(!showResetNew())"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
+              <i [class]="showResetNew() ? 'pi pi-eye-slash text-xs' : 'pi pi-eye text-xs'"></i>
+            </button>
+          </div>
+          <p *ngIf="resetPasswordForm.get('newPassword')?.touched && resetPasswordForm.get('newPassword')?.invalid" 
+            class="text-[10px] text-rose-500 font-bold mt-1">
+            La nueva contraseña debe tener al menos 6 caracteres.
+          </p>
+        </div>
+
+        <!-- Confirm Password -->
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-semibold text-slate-700 ml-0.5">Confirmar Nueva Contraseña <span class="text-rose-500">*</span></label>
+          <div class="relative">
+            <input [type]="showResetConfirm() ? 'text' : 'password'" formControlName="confirmPassword" placeholder="Repita la nueva contraseña"
+              class="w-full px-3 py-2 pr-10 rounded-lg text-sm outline-none h-10 transition-all duration-150 text-slate-800"
+              [class]="resetPasswordForm.errors?.['mismatch'] && resetPasswordForm.get('confirmPassword')?.dirty
+                ? 'border border-rose-300 focus:border-rose-500 focus:ring-1 focus:ring-rose-500'
+                : 'border border-slate-300 focus:border-[#0066AA] focus:ring-1 focus:ring-[#0066AA]'" />
+            <button type="button" (click)="showResetConfirm.set(!showResetConfirm())"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
+              <i [class]="showResetConfirm() ? 'pi pi-eye-slash text-xs' : 'pi pi-eye text-xs'"></i>
+            </button>
+          </div>
+          <p *ngIf="resetPasswordForm.get('confirmPassword')?.touched && resetPasswordForm.get('confirmPassword')?.errors?.['required']" 
+            class="text-[10px] text-rose-500 font-bold mt-1">
+            Confirmación requerida.
+          </p>
+          <p *ngIf="resetPasswordForm.errors?.['mismatch'] && resetPasswordForm.get('confirmPassword')?.dirty" 
+            class="text-[10px] text-rose-500 font-bold mt-1">
+            Las contraseñas no coinciden.
+          </p>
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="flex gap-3 pt-2">
+          <button type="button" (click)="showPasswordResetModal.set(false)"
+            class="flex-1 py-2.5 border border-slate-200 rounded-lg text-sm font-semibold text-slate-500 hover:bg-slate-50 transition-colors">
+            Cancelar
+          </button>
+          <button type="submit" [disabled]="resetPasswordForm.invalid"
+            class="flex-1 bg-[#0066AA] hover:bg-[#005a96] disabled:opacity-60 text-white font-semibold py-2.5 rounded-lg text-sm transition-colors flex items-center justify-center gap-2 cursor-pointer">
+            Restablecer
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

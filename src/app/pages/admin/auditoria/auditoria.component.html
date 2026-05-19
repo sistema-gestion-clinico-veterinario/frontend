@@ -1,0 +1,197 @@
+<p-toast></p-toast>
+
+<div class="p-4 max-w-full mx-auto space-y-6">
+  <!-- Header Premium -->
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-100 pb-5">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-800 tracking-tight flex items-center gap-2.5">
+        <i class="pi pi-shield text-blue-600 bg-blue-50 p-2 rounded-lg"></i>
+        Historial de Auditoría
+      </h1>
+      <p class="text-slate-500 text-sm mt-1">Supervisión y control en tiempo real de operaciones críticas y seguridad del sistema.</p>
+    </div>
+  </div>
+
+  <!-- Panel de Filtros -->
+  <div class="bg-white rounded-xl border border-slate-200 p-4 space-y-4">
+    <div class="flex items-center gap-2 pb-2 border-b border-slate-50">
+      <i class="pi pi-filter text-slate-500 text-sm"></i>
+      <h2 class="text-sm font-semibold text-slate-700">Filtros de Búsqueda</h2>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+      <div *ngIf="isSuperAdmin()" class="flex flex-col gap-1.5">
+        <label class="text-xs font-semibold text-slate-600">Clínica</label>
+        <select 
+          [(ngModel)]="selectedCompanyId"
+          (change)="applyFilters()"
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none transition-colors">
+          <option [ngValue]="null">Todas las clínicas</option>
+          <option *ngFor="let comp of companies()" [ngValue]="comp.id">{{ comp.name }}</option>
+        </select>
+      </div>
+
+      <!-- Filtro Correo Usuario -->
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs font-semibold text-slate-600">Usuario (Email)</label>
+        <input 
+          type="text" 
+          [(ngModel)]="userEmailFilter"
+          placeholder="ejemplo@correo.com"
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none transition-colors"
+          (keyup.enter)="applyFilters()" />
+      </div>
+
+      <!-- Filtro Módulo -->
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs font-semibold text-slate-600">Módulo</label>
+        <select 
+          [(ngModel)]="moduleFilter"
+          (change)="applyFilters()"
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none transition-colors">
+          <option value="">Todos los módulos</option>
+          <option *ngFor="let mod of modulesList" [value]="mod">{{ mod }}</option>
+        </select>
+      </div>
+
+      <!-- Filtro Acción -->
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs font-semibold text-slate-600">Acción</label>
+        <select 
+          [(ngModel)]="actionFilter"
+          (change)="applyFilters()"
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none transition-colors">
+          <option value="">Todas las acciones</option>
+          <option *ngFor="let act of actionsList" [value]="act">{{ act }}</option>
+        </select>
+      </div>
+
+      <!-- Fecha Desde -->
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs font-semibold text-slate-600">Desde</label>
+        <input 
+          type="date" 
+          [(ngModel)]="startDateFilter"
+          (change)="applyFilters()"
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none transition-colors" />
+      </div>
+
+      <!-- Fecha Hasta -->
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs font-semibold text-slate-600">Hasta</label>
+        <input 
+          type="date" 
+          [(ngModel)]="endDateFilter"
+          (change)="applyFilters()"
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none transition-colors" />
+      </div>
+    </div>
+
+    <!-- Botones del Filtro -->
+    <div class="flex justify-end gap-3 pt-3 border-t border-slate-100">
+      <button 
+        (click)="clearFilters()"
+        class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-all flex items-center gap-1.5">
+        <i class="pi pi-filter-slash text-xs"></i> Limpiar Filtros
+      </button>
+      <button 
+        (click)="applyFilters()"
+        class="rounded-lg bg-[#0066AA] hover:bg-[#005491] px-5 py-2 text-sm font-medium text-white transition-all flex items-center gap-1.5">
+        <i class="pi pi-search text-xs"></i> Buscar
+      </button>
+    </div>
+  </div>
+
+  <!-- Tabla de Logs -->
+  <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+
+    <!-- Loading state -->
+    <div *ngIf="loading()" class="flex items-center justify-center py-16 gap-3 text-slate-500 text-sm">
+      <svg class="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+      </svg>
+      Cargando registros...
+    </div>
+
+    <!-- Tabla principal -->
+    <div *ngIf="!loading()" class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="bg-slate-50 border-b border-slate-200">
+          <tr>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider whitespace-nowrap">Fecha / Hora</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Usuario</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider whitespace-nowrap">Rol</th>
+            <th *ngIf="isSuperAdmin()" class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider whitespace-nowrap">Clínica</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Módulo</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Acción</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Detalle de Operación</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider whitespace-nowrap">Origen IP</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Empty state -->
+          <tr *ngIf="logs().length === 0">
+            <td [attr.colspan]="isSuperAdmin() ? 8 : 7" class="text-center py-16">
+              <div class="flex flex-col items-center justify-center gap-2 text-slate-400">
+                <i class="pi pi-inbox text-4xl"></i>
+                <p class="font-medium text-slate-600 text-sm">No se encontraron registros de auditoría</p>
+                <p class="text-xs">Intenta modificando los filtros de búsqueda.</p>
+              </div>
+            </td>
+          </tr>
+          <!-- Filas de datos -->
+          <tr *ngFor="let log of logs()"
+              class="border-b border-slate-100 hover:bg-slate-50 transition-colors text-slate-600">
+            <td class="px-4 py-3 text-sm whitespace-nowrap">
+              {{ log.timestamp | date: 'dd/MM/yyyy HH:mm:ss' }}
+            </td>
+            <td class="px-4 py-3 text-sm font-medium text-slate-800 max-w-[200px] truncate" [title]="log.userEmail">
+              {{ log.userEmail || 'Anónimo / Sistema' }}
+            </td>
+            <td class="px-4 py-3 whitespace-nowrap">
+              <span class="text-xs px-2 py-0.5 rounded-full bg-slate-100 border border-slate-200 text-slate-600">
+                {{ log.userRole || '-' }}
+              </span>
+            </td>
+            <td *ngIf="isSuperAdmin()" class="px-4 py-3 whitespace-nowrap text-sm font-semibold text-slate-700">
+              {{ log.companyName || 'Multi-Sede' }}
+            </td>
+            <td class="px-4 py-3 whitespace-nowrap">
+              <span [ngClass]="getModuleBadgeClass(log.module)" class="text-xs px-2.5 py-1 font-semibold rounded-md border">
+                {{ log.module }}
+              </span>
+            </td>
+            <td class="px-4 py-3 whitespace-nowrap">
+              <span [ngClass]="getActionBadgeClass(log.action)" class="text-xs px-2.5 py-1 font-bold rounded-full border">
+                {{ log.action }}
+              </span>
+            </td>
+            <td class="px-4 py-3 text-sm max-w-[260px]">
+              <span class="line-clamp-2" [title]="log.details">{{ log.details }}</span>
+            </td>
+            <td class="px-4 py-3 font-mono text-xs text-slate-500 whitespace-nowrap">
+              {{ log.ipAddress || 'Interna' }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Paginador -->
+    <div class="border-t border-slate-200 px-4 py-2 flex items-center justify-between bg-white">
+      <p class="text-xs text-slate-500">
+        Total: <span class="font-semibold text-slate-700">{{ totalRecords() }}</span> registros
+      </p>
+      <p-paginator
+        [rows]="pageSize"
+        [totalRecords]="totalRecords()"
+        [first]="currentPage * pageSize"
+        (onPageChange)="loadLogs($event.page)"
+        [showCurrentPageReport]="false"
+        [showPageLinks]="true">
+      </p-paginator>
+    </div>
+
+  </div>
+</div>

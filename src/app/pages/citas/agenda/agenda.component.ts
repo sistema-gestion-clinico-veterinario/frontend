@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { TableModule } from 'primeng/table';
@@ -30,12 +30,19 @@ import { Role } from '../../../core/enums/role.enum';
 import { Router } from '@angular/router';
 import { forkJoin, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
+import { environment } from '../../../../environments/environment';
 
 import { DropdownModule } from 'primeng/dropdown';
 import { CalendarModule } from 'primeng/calendar';
 import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 export type Vista = 'lista' | 'dia' | 'semana' | 'mes';
+
+interface CitaWsEvent {
+  tipo: string;
+  cita: CitaResponse;
+  companyId: number;
+}
 
 @Component({
   selector: 'app-agenda',
@@ -58,7 +65,7 @@ export type Vista = 'lista' | 'dia' | 'semana' | 'mes';
   providers: [MessageService, ConfirmationService],
   templateUrl: './agenda.component.html'
 })
-export class AgendaComponent implements OnInit {
+export class AgendaComponent implements OnInit, OnDestroy {
   private readonly fb                = inject(FormBuilder);
   private readonly citaService       = inject(CitaService);
   private readonly empleadoService   = inject(EmpleadoService);
@@ -72,6 +79,9 @@ export class AgendaComponent implements OnInit {
   private readonly router            = inject(Router);
   readonly authStore                 = inject(AuthStore);
   readonly loadingStore              = inject(LoadingStore);
+
+  private stompClient: AgendaStompClient | null = null;
+  private lastWsDestination: string | null = null;
 
   readonly isSuperAdmin = computed(() => this.authStore.roles().includes(Role.SUPER_ADMIN));
   readonly isAdmin      = computed(() => this.authStore.roles().includes(Role.ADMIN));
@@ -104,20 +114,24 @@ export class AgendaComponent implements OnInit {
     return total === 0 || recibido >= total / 2;
   });
   citas            = signal<CitaResponse[]>([]);
+  private loadTimeout: any = null;
+  private lastLazyEvent: any = { first: 0, rows: 10 };
   totalRecords     = signal<number>(0);
   displayModal     = signal<boolean>(false);
   displayCancelModal = signal<boolean>(false);
   displayDeleteModal = signal<boolean>(false);
+  displayDetalleCita = signal<boolean>(false);
+  citaDetalle        = signal<CitaResponse | null>(null);
   displayCajaModal   = signal<boolean>(false);
   citaParaPago       = signal<CitaResponse | null>(null);
   metodoPago         = signal<MetodoPago>('EFECTIVO');
   montoRecibido      = signal<number | null>(null);
+  yapePhone          = signal<string>('');
+  yapeOtp            = signal<string>('');
+  yapeEmail          = signal<string>('');
 
-  // Yape — MercadoPago
-  yapePhone = signal<string>('');
-  yapeOtp   = signal<string>('');
-  yapeEmail = signal<string>('');
-  yapeError = signal<string | null>(null);
+  onYapePhoneChange(val: string) { this.yapePhone.set(val.replace(/\D/g, '').slice(0, 9)); }
+  onYapeOtpChange(val: string)   { this.yapeOtp.set(val.replace(/\D/g, '').slice(0, 6)); }
   cancelMotivo     = signal<string>('');
   cancelMotivoAttempted = signal<boolean>(false);
   selectedCita     = signal<CitaResponse | null>(null);
@@ -130,7 +144,13 @@ export class AgendaComponent implements OnInit {
   filteredMascotas = signal<{ label: string; value: number }[]>([]);
   empresas         = signal<{ label: string; value: number }[]>([]);
   horariosVeterinario = signal<HorarioEmpleadoResponse[]>([]);
-  servicios           = signal<{ label: string; value: number; precio: number }[]>([]);
+  availableSlots      = signal<string[]>([]);
+  loadingSlots        = signal<boolean>(false);
+  servicios            = signal<{ label: string; value: number; precio: number }[]>([]);
+  serviciosConDetalle  = signal<ServicioResponse[]>([]);
+  todosEmpleados       = signal<{ id: number; nombre: string; apellido: string; tiposEmpleado: string[] }[]>([]);
+  selectedServicioId   = signal<number | null>(null);
+  empleadosDelServicio = signal<{ label: string; value: number }[]>([]);
   showClienteSelector = signal<boolean>(false);
   clienteSearch       = signal<string>('');
   filteredClientes    = computed(() => {
@@ -145,6 +165,7 @@ export class AgendaComponent implements OnInit {
   showServicioSelector = signal<boolean>(false);
   showEstadoFilter = signal<boolean>(false);
   showVeterinarioFilter = signal<boolean>(false);
+  today: Date                     = new Date();
   filterFecha: string             = this.toDateStr(new Date());
   filterEstado: EstadoCita | null = null;
   filterVeterinarioId: number | null = null;
@@ -162,7 +183,8 @@ export class AgendaComponent implements OnInit {
 
   getVeterinarioLabel(): string {
     const id = this.citaForm.get('veterinarioId')?.value;
-    return this.veterinarios().find(v => v.value === id)?.label ?? 'Seleccionar médico';
+    if (!id) return 'Seleccionar empleado...';
+    return this.empleadosDelServicio().find(e => e.value === id)?.label ?? 'Seleccionar empleado...';
   }
 
   getServicioLabel(): string {
@@ -241,6 +263,8 @@ export class AgendaComponent implements OnInit {
     veterinarioId:   [null, [Validators.required]],
     motivoCita:      ['',   [Validators.required]],
     fechaHoraInicio: [null, [Validators.required, this.horariosValidator]],
+    fechaCita:       [null],
+    horaCita:        [null],
     servicioId:      [null],
     notas:           [''],
     esEmergencia:    [false]
@@ -250,14 +274,80 @@ export class AgendaComponent implements OnInit {
     this.loadCitas();
     this.loadServicios();
     this.loadVeterinarios();
+    this.loadTodosEmpleados();
     this.loadClientes();
     this.loadAllMascotas();
     this.citaForm.get('esEmergencia')?.valueChanges.subscribe(() => {
       this.citaForm.get('fechaHoraInicio')?.updateValueAndValidity();
     });
+    this.setupWebSocket();
   }
 
-  loadCitas(event: any = { first: 0, rows: 10 }) {
+  ngOnDestroy() {
+    this.stompClient?.disconnect();
+  }
+
+  setupWebSocket() {
+    const companyId = this.activeCompanyId;
+    if (!companyId) return;
+
+    const destination = `/topic/citas/${companyId}`;
+    if (this.lastWsDestination === destination && this.stompClient?.isConnected()) return;
+    if (this.stompClient) this.stompClient.disconnect();
+    this.lastWsDestination = destination;
+
+    try {
+      const urlObj = new URL(environment.apiUrl);
+      const wsProtocol = urlObj.protocol === 'https:' ? 'wss:' : 'ws:';
+      let path = urlObj.pathname.trim();
+      if (path.endsWith('/')) path = path.slice(0, -1);
+      const wsUrl = `${wsProtocol}//${urlObj.host}${path}/ws/websocket`;
+
+      this.stompClient = new AgendaStompClient(wsUrl);
+      this.stompClient.connect(
+        () => {
+          this.stompClient?.subscribe(destination, (event: CitaWsEvent) => {
+            this.handleCitaWsEvent(event);
+          });
+        },
+        (err) => console.error('[Agenda WS] Error:', err)
+      );
+    } catch (e) {
+      console.error('[Agenda WS] Init error:', e);
+    }
+  }
+
+  private handleCitaWsEvent(event: CitaWsEvent) {
+    const mensajes: Record<string, { detail: string; severity: string }> = {
+      'CREAR_CITA':      { detail: `Nueva cita programada para ${event.cita?.mascotaNombre ?? ''}`,      severity: 'success' },
+      'REPROGRAMAR_CITA':{ detail: `Cita reprogramada — ${event.cita?.mascotaNombre ?? ''}`,             severity: 'warn'    },
+      'CANCELAR_CITA':   { detail: `Cita cancelada — ${event.cita?.mascotaNombre ?? ''}`,                severity: 'error'   },
+      'ACTUALIZAR_CITA': { detail: `Cita actualizada — ${event.cita?.mascotaNombre ?? ''}`,              severity: 'info'    },
+      'INICIAR_ATENCION':{ detail: `Atención iniciada — ${event.cita?.mascotaNombre ?? ''}`,             severity: 'info'    },
+      'ELIMINAR_CITA':   { detail: `Cita eliminada — ${event.cita?.mascotaNombre ?? ''}`,                severity: 'warn'    },
+    };
+    const msg = mensajes[event.tipo] ?? { detail: 'Agenda actualizada', severity: 'info' };
+    this.messageService.add({ severity: msg.severity, summary: 'Agenda en tiempo real', detail: msg.detail, life: 5000 });
+    this.loadCitas();
+    if (this.vistaActual() !== 'lista') this.loadCitasCalendario();
+  }
+
+  loadCitas(event: any = null) {
+    if (event) {
+      this.lastLazyEvent = event;
+    }
+
+    if (this.loadTimeout) {
+      clearTimeout(this.loadTimeout);
+    }
+
+    this.loadTimeout = setTimeout(() => {
+      this.executeLoadCitas();
+    }, 50);
+  }
+
+  private executeLoadCitas() {
+    const event = this.lastLazyEvent;
     const companyId = this.activeCompanyId;
     if (!companyId) {
       this.citas.set([]);
@@ -284,6 +374,14 @@ export class AgendaComponent implements OnInit {
       next: (res) => {
         this.citas.set(res.data.content);
         this.totalRecords.set(res.data.totalElements);
+        // Sincronizar citasPorDia para que la vista 'día' muestre las citas correctamente
+        if (this.vistaActual() === 'dia' && this.filterFecha) {
+          const mapa: Record<string, CitaResponse[]> = {};
+          mapa[this.filterFecha] = res.data.content;
+          this.citasPorDia.set(mapa);
+          const [y, m, d] = this.filterFecha.split('-').map(Number);
+          this.fechaBase.set(new Date(y, m - 1, d));
+        }
         this.loadingStore.hide();
       },
       error: () => {
@@ -332,6 +430,7 @@ export class AgendaComponent implements OnInit {
     const targetCompanyId = companyId ?? (this.activeCompanyId ?? undefined);
     this.servicioService.listarDisponibles(targetCompanyId).subscribe({
       next: (res) => {
+        this.serviciosConDetalle.set(res.data);
         this.servicios.set(
           res.data.map((s: ServicioResponse) => ({
             label: `${s.nombre} — S/ ${s.precio.toFixed(2)}`,
@@ -341,6 +440,17 @@ export class AgendaComponent implements OnInit {
         );
       },
       error: () => this.servicios.set([])
+    });
+  }
+
+  loadTodosEmpleados(companyId?: number) {
+    const cid = companyId ?? (this.activeCompanyId ?? undefined);
+    this.empleadoService.listar(cid, undefined, 0, 200).subscribe({
+      next: (res) => this.todosEmpleados.set(
+        res.data.content
+          .filter((e: any) => e.activo)
+          .map((e: any) => ({ id: e.id, nombre: e.nombre, apellido: e.apellido, tiposEmpleado: e.tiposEmpleado ?? [] }))
+      )
     });
   }
 
@@ -366,11 +476,71 @@ export class AgendaComponent implements OnInit {
     this.citaForm.get('veterinarioId')?.setValue(vet.value);
     this.showVeterinarioSelector.set(false);
     this.onVeterinarioChange(vet.value);
+    this.onBookingParamsChange();
   }
 
-  selectServicio(srv: {label: string, value: number} | null) {
+  selectServicio(srv: { label: string; value: number } | null) {
     this.citaForm.get('servicioId')?.setValue(srv?.value ?? null);
+    this.selectedServicioId.set(srv?.value ?? null);
+    this.citaForm.get('veterinarioId')?.setValue(null);
+    this.availableSlots.set([]);
+    this.citaForm.get('horaCita')?.setValue(null);
     this.showServicioSelector.set(false);
+    this.filterEmpleadosByServicio(srv?.value ?? null);
+    this.onBookingParamsChange();
+  }
+
+  private filterEmpleadosByServicio(servicioId: number | null) {
+    if (!servicioId) { this.empleadosDelServicio.set([]); return; }
+    const servicio = this.serviciosConDetalle().find(s => s.id === servicioId);
+    const todos = this.todosEmpleados();
+    if (!servicio?.tipoEmpleadoNombre) {
+      this.empleadosDelServicio.set(todos.map(e => ({ label: `${e.nombre} ${e.apellido}`, value: e.id })));
+      return;
+    }
+    const tipoTarget = servicio.tipoEmpleadoNombre.toUpperCase().trim();
+    const filtered = todos.filter(e =>
+      e.tiposEmpleado.some(t => t.toUpperCase().trim() === tipoTarget)
+    );
+    this.empleadosDelServicio.set(filtered.map(e => ({ label: `${e.nombre} ${e.apellido}`, value: e.id })));
+  }
+
+  onFechaCitaChange(event: Event) {
+    const dateStr = (event.target as HTMLInputElement).value;
+    this.citaForm.get('fechaCita')?.setValue(dateStr, { emitEvent: false });
+    this.onBookingParamsChange(dateStr);
+  }
+
+  onBookingParamsChange(fechaOverride?: string) {
+    const val = this.citaForm.value;
+    const isEditing = !!val.id && !this.isReprogramando();
+    if (isEditing) return;
+    const fechaRaw = fechaOverride ?? val.fechaCita;
+    if (!val.veterinarioId || !fechaRaw || !val.servicioId) {
+      this.availableSlots.set([]);
+      this.citaForm.get('horaCita')?.setValue(null);
+      return;
+    }
+    this.loadingSlots.set(true);
+    this.availableSlots.set([]);
+    this.citaForm.get('horaCita')?.setValue(null);
+    let fechaStr: string;
+    if (fechaRaw instanceof Date) {
+      const y = fechaRaw.getFullYear();
+      const m = String(fechaRaw.getMonth() + 1).padStart(2, '0');
+      const d = String(fechaRaw.getDate()).padStart(2, '0');
+      fechaStr = `${y}-${m}-${d}`;
+    } else {
+      fechaStr = fechaRaw as string;
+    }
+    this.citaService.getAdminDisponibilidad(val.veterinarioId, fechaStr, val.servicioId).subscribe({
+      next: (res) => { this.availableSlots.set(res.data || []); this.loadingSlots.set(false); },
+      error: ()   => { this.availableSlots.set([]); this.loadingSlots.set(false); }
+    });
+  }
+
+  selectTimeSlot(slot: string) {
+    this.citaForm.get('horaCita')?.setValue(slot);
   }
 
   onVeterinarioChange(veterinarioId: number) {
@@ -414,10 +584,13 @@ export class AgendaComponent implements OnInit {
   }
 
   openNew() {
-    this.citaForm.reset({ esEmergencia: false });
+    this.citaForm.reset({ esEmergencia: false, fechaCita: null, horaCita: null });
     this.selectedClienteLabel.set('Seleccionar dueño...');
     this.selectedMascotaLabel.set('Seleccionar mascota...');
     this.filteredMascotas.set([]);
+    this.horariosVeterinario.set([]);
+    this.availableSlots.set([]);
+    this.selectedServicioId.set(null);
     this.isReprogramando.set(false);
     this.displayModal.set(true);
   }
@@ -441,6 +614,7 @@ export class AgendaComponent implements OnInit {
 
   reprogramarCita(cita: CitaResponse) {
     this.isReprogramando.set(true);
+    this.availableSlots.set([]);
     this.editarCita(cita);
   }
 
@@ -452,6 +626,13 @@ export class AgendaComponent implements OnInit {
         .filter(m => m.apoderadoId === cita.apoderadoId)
         .map(m => ({ label: m.nombreCompleto, value: m.id }))
     );
+    this.availableSlots.set([]);
+    this.selectedServicioId.set(cita.servicioId ?? null);
+    this.filterEmpleadosByServicio(cita.servicioId ?? null);
+    this.onVeterinarioChange(cita.veterinarioId);
+
+    const fechaDate = new Date(cita.fechaHoraInicio);
+    const fechaStr  = `${fechaDate.getFullYear()}-${String(fechaDate.getMonth()+1).padStart(2,'0')}-${String(fechaDate.getDate()).padStart(2,'0')}`;
 
     this.citaForm.patchValue({
       id: cita.id,
@@ -460,6 +641,8 @@ export class AgendaComponent implements OnInit {
       veterinarioId: cita.veterinarioId,
       motivoCita: cita.motivoCita,
       fechaHoraInicio: cita.fechaHoraInicio.substring(0, 16),
+      fechaCita: fechaStr,
+      horaCita: cita.fechaHoraInicio.substring(11, 16),
       servicioId: cita.servicioId,
       notas: cita.notas,
       esEmergencia: cita.esEmergencia
@@ -468,23 +651,41 @@ export class AgendaComponent implements OnInit {
   }
 
   saveCita() {
-    if (this.citaForm.invalid) {
-      this.citaForm.markAllAsTouched();
-      if (this.citaForm.get('fechaHoraInicio')?.hasError('fuera-de-horario')) {
-        this.messageService.add({ severity: 'warn', summary: 'Horario no disponible', detail: this.mensajeHorario });
-      }
-      return;
-    }
     const formValue = this.citaForm.value;
-    let localIsoString = formValue.fechaHoraInicio;
-    if (formValue.fechaHoraInicio instanceof Date) {
-      const date = formValue.fechaHoraInicio;
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      const hours = String(date.getHours()).padStart(2, '0');
-      const minutes = String(date.getMinutes()).padStart(2, '0');
-      localIsoString = `${year}-${month}-${day}T${hours}:${minutes}:00`;
+    const isEditing = !!formValue.id && !this.isReprogramando();
+
+    // Para nueva cita o reprogramación: validar fecha + slot
+    if (!isEditing) {
+      if (!formValue.mascotaId || !formValue.veterinarioId || !formValue.motivoCita || !formValue.fechaCita || !formValue.horaCita) {
+        this.citaForm.markAllAsTouched();
+        this.messageService.add({ severity: 'warn', summary: 'Campos incompletos', detail: 'Complete todos los campos obligatorios y seleccione un horario.' });
+        return;
+      }
+    } else {
+      if (this.citaForm.invalid) {
+        this.citaForm.markAllAsTouched();
+        return;
+      }
+    }
+
+    let localIsoString: string;
+    if (!isEditing) {
+      let dateStr: string;
+      if (formValue.fechaCita instanceof Date) {
+        const y = formValue.fechaCita.getFullYear();
+        const m = String(formValue.fechaCita.getMonth() + 1).padStart(2, '0');
+        const d = String(formValue.fechaCita.getDate()).padStart(2, '0');
+        dateStr = `${y}-${m}-${d}`;
+      } else {
+        dateStr = formValue.fechaCita as string;
+      }
+      localIsoString = `${dateStr}T${formValue.horaCita}:00`;
+    } else {
+      localIsoString = formValue.fechaHoraInicio;
+      if (formValue.fechaHoraInicio instanceof Date) {
+        const date = formValue.fechaHoraInicio;
+        localIsoString = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}T${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}:00`;
+      }
     }
 
     const request: CitaRequest = {
@@ -561,13 +762,23 @@ export class AgendaComponent implements OnInit {
     return diferenciaHoras >= 1;
   }
 
+  verDetalleCita(cita: CitaResponse) {
+    this.citaDetalle.set(cita);
+    this.displayDetalleCita.set(true);
+  }
+
   iniciarCita(cita: CitaResponse) {
+    this.displayDetalleCita.set(false);
     this.loadingStore.show();
     this.citaService.iniciarAtencion(cita.id).subscribe({
       next: (res) => {
         this.messageService.add({ severity: 'success', summary: 'Listo', detail: 'Atención iniciada' });
         this.loadingStore.hide();
-        this.router.navigate(['/historias-clinicas/consulta', res.data]);
+        if (res.data) {
+          this.router.navigate(['/historias-clinicas/consulta', res.data]);
+        } else {
+          this.loadCitas();
+        }
       },
       error: (err) => {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error al iniciar atención' });
@@ -577,21 +788,42 @@ export class AgendaComponent implements OnInit {
   }
 
   cancelarCita(cita: CitaResponse) {
+    this.displayDetalleCita.set(false);
     if (!this.canCancel(cita)) {
       this.messageService.add({ 
         severity: 'warn', 
         summary: 'Restricción', 
-        detail: 'No se puede cancelar citas con menos de 1 hora de anticipación' 
+        detail: 'No se puede cancelar la cita.' 
       });
       return;
     }
-    this.selectedCita.set(cita);
-    this.cancelMotivo.set('');
-    this.cancelMotivoAttempted.set(false);
-    this.displayCancelModal.set(true);
+
+    this.confirmationService.confirm({
+      message: '¿Está seguro de que desea cancelar esta cita? El apoderado y el profesional recibirán notificaciones de cancelación.',
+      header: 'Confirmar Cancelación de Cita',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Sí, cancelar',
+      rejectLabel: 'No, volver',
+      accept: () => {
+        this.loadingStore.show();
+        this.citaService.cancelarCita(cita.id, '').subscribe({
+          next: () => {
+            this.messageService.add({ severity: 'success', summary: 'Listo', detail: 'Cita cancelada correctamente.' });
+            this.loadCitas();
+            if (this.vistaActual() !== 'lista') this.loadCitasCalendario();
+            this.loadingStore.hide();
+          },
+          error: (err) => {
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo cancelar la cita' });
+            this.loadingStore.hide();
+          }
+        });
+      }
+    });
   }
 
   eliminarCita(cita: CitaResponse) {
+    this.displayDetalleCita.set(false);
     if (cita.estado !== EstadoCita.CANCELADA) {
       this.messageService.add({ 
         severity: 'warn', 
@@ -612,7 +844,7 @@ export class AgendaComponent implements OnInit {
     this.loadingStore.show();
     this.citaService.eliminarCita(cita.id).subscribe({
       next: () => {
-        this.messageService.add({ severity: 'success', summary: 'Listo', detail: 'Cita eliminada correctamente' });
+        this.messageService.add({ severity: 'success', summary: 'Listo', detail: 'Cita registrada eliminada correctamente' });
         this.displayDeleteModal.set(false);
         this.loadCitas();
         if (this.vistaActual() !== 'lista') this.loadCitasCalendario();
@@ -629,36 +861,8 @@ export class AgendaComponent implements OnInit {
     });
   }
 
-  confirmarCancelacion() {
-    const cita = this.selectedCita();
-    const motivo = this.cancelMotivo();
-    
-    if (!cita) return;
-    if (!motivo || motivo.trim() === '') {
-      this.cancelMotivoAttempted.set(true);
-      this.messageService.add({ severity: 'warn', summary: 'Aviso', detail: 'Debe ingresar un motivo para cancelar' });
-      return;
-    }
-
-    this.cancelMotivoAttempted.set(false);
-
-    this.loadingStore.show();
-    this.citaService.cancelarCita(cita.id, motivo).subscribe({
-      next: () => {
-        this.messageService.add({ severity: 'success', summary: 'Listo', detail: 'Cita cancelada' });
-        this.displayCancelModal.set(false);
-        this.loadCitas();
-        if (this.vistaActual() !== 'lista') this.loadCitasCalendario();
-        this.loadingStore.hide();
-      },
-      error: (err) => {
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo cancelar la cita' });
-        this.loadingStore.hide();
-      }
-    });
-  }
-
   continuarConsulta(cita: CitaResponse) {
+    this.displayDetalleCita.set(false);
     if (cita.consultaId) {
       this.router.navigate(['/historias-clinicas/consulta', cita.consultaId]);
     } else {
@@ -666,7 +870,11 @@ export class AgendaComponent implements OnInit {
       this.citaService.iniciarAtencion(cita.id).subscribe({
         next: (res) => {
           this.loadingStore.hide();
-          this.router.navigate(['/historias-clinicas/consulta', res.data]);
+          if (res.data) {
+            this.router.navigate(['/historias-clinicas/consulta', res.data]);
+          } else {
+            this.loadCitas();
+          }
         },
         error: (err) => {
           this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo recuperar la consulta activa' });
@@ -687,6 +895,7 @@ export class AgendaComponent implements OnInit {
       [EstadoCita.COMPLETADA]:     'Completada',
       [EstadoCita.NO_ASISTIO]:     'No asistió',
       [EstadoCita.CANCELADA]:      'Cancelada',
+      [EstadoCita.ELIMINADA]:      'Eliminada',
       [EstadoCita.OTRO]:           'Otro',
     };
     return labels[estado] ?? estado;
@@ -703,6 +912,7 @@ export class AgendaComponent implements OnInit {
       case EstadoCita.COMPLETADA:     return 'bg-emerald-50 text-emerald-700';
       case EstadoCita.NO_ASISTIO:     return 'bg-slate-100 text-slate-500';
       case EstadoCita.CANCELADA:      return 'bg-rose-50 text-rose-700';
+      case EstadoCita.ELIMINADA:      return 'bg-red-50 text-red-700';
       default:                        return 'bg-slate-100 text-slate-500';
     }
   }
@@ -715,7 +925,23 @@ export class AgendaComponent implements OnInit {
       case EstadoCita.EN_PROCESO:     return 'bg-amber-500';
       case EstadoCita.COMPLETADA:     return 'bg-emerald-500';
       case EstadoCita.CANCELADA:      return 'bg-rose-400';
+      case EstadoCita.ELIMINADA:      return 'bg-red-400';
       default:                        return 'bg-slate-400';
+    }
+  }
+
+  estadoAvatarClass(estado: EstadoCita): string {
+    switch (estado) {
+      case EstadoCita.PROGRAMADA:     return 'bg-sky-100 text-sky-700';
+      case EstadoCita.PENDIENTE:      return 'bg-yellow-100 text-yellow-700';
+      case EstadoCita.CONFIRMADA:     return 'bg-blue-100 text-blue-700';
+      case EstadoCita.REPROGRAMADA:   return 'bg-orange-100 text-orange-700';
+      case EstadoCita.SALA_DE_ESPERA: return 'bg-violet-100 text-violet-700';
+      case EstadoCita.EN_PROCESO:     return 'bg-amber-100 text-amber-700';
+      case EstadoCita.COMPLETADA:     return 'bg-emerald-100 text-emerald-700';
+      case EstadoCita.CANCELADA:      return 'bg-rose-100 text-rose-600';
+      case EstadoCita.ELIMINADA:      return 'bg-red-100 text-red-600';
+      default:                        return 'bg-slate-100 text-slate-600';
     }
   }
 
@@ -734,15 +960,17 @@ export class AgendaComponent implements OnInit {
     if (v === 'dia') {
       base.setDate(base.getDate() + dir);
       this.filterFecha = this.toDateStr(base);
+      this.fechaBase.set(base);
       this.loadCitas();
     } else if (v === 'semana') {
       base.setDate(base.getDate() + dir * 7);
+      this.fechaBase.set(base);
       this.loadCitasCalendario();
     } else {
       base.setMonth(base.getMonth() + dir);
+      this.fechaBase.set(base);
       this.loadCitasCalendario();
     }
-    this.fechaBase.set(base);
   }
 
   irAHoy() {
@@ -787,13 +1015,13 @@ export class AgendaComponent implements OnInit {
   }
 
   abrirCaja(cita: CitaResponse) {
+    this.displayDetalleCita.set(false);
     this.citaParaPago.set(cita);
     this.metodoPago.set('EFECTIVO');
     this.montoRecibido.set(null);
     this.yapePhone.set('');
     this.yapeOtp.set('');
     this.yapeEmail.set('');
-    this.yapeError.set(null);
     this.displayCajaModal.set(true);
   }
 
@@ -816,31 +1044,30 @@ export class AgendaComponent implements OnInit {
       const phone = this.yapePhone().trim();
       const otp   = this.yapeOtp().trim();
       const email = this.yapeEmail().trim();
-
-      if (!phone || phone.length !== 9) {
-        this.yapeError.set('Ingresa un número de teléfono válido de 9 dígitos');
+      if (!phone || phone.length !== 9 || !/^\d{9}$/.test(phone)) {
+        this.messageService.add({ severity: 'warn', summary: 'Teléfono inválido', detail: 'El número Yape debe tener exactamente 9 dígitos' });
         return;
       }
-      if (!otp || otp.length !== 6) {
-        this.yapeError.set('Ingresa el código OTP de 6 dígitos de la app Yape');
+      if (!otp || otp.length !== 6 || !/^\d{6}$/.test(otp)) {
+        this.messageService.add({ severity: 'warn', summary: 'OTP inválido', detail: 'El código OTP debe tener exactamente 6 dígitos' });
         return;
       }
-      if (!email || !email.includes('@')) {
-        this.yapeError.set('Ingresa un email válido del pagador');
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        this.messageService.add({ severity: 'warn', summary: 'Email inválido', detail: 'Ingrese un correo electrónico válido del cliente' });
         return;
       }
-      this.yapeError.set(null);
     }
 
     const request: PagoRequest = {
       citaId: cita.id,
       metodoPago: this.metodoPago(),
-      ...(this.metodoPago() === 'EFECTIVO' ? { montoRecibido: this.montoRecibido() ?? 0 } : {}),
-      ...(this.metodoPago() === 'YAPE' ? {
-        yapePhoneNumber: Number(this.yapePhone().trim()),
-        yapeOtp: Number(this.yapeOtp().trim()),
-        payerEmail: this.yapeEmail().trim()
-      } : {})
+      ...(this.metodoPago() === 'EFECTIVO'
+        ? { montoRecibido: this.montoRecibido() ?? 0 }
+        : {
+            yapePhoneNumber: Number(this.yapePhone()),
+            yapeOtp: Number(this.yapeOtp()),
+            payerEmail: this.yapeEmail().trim()
+          })
     };
 
     this.loadingStore.show();
@@ -900,5 +1127,79 @@ export class AgendaComponent implements OnInit {
     this.fechaBase.set(d);
     this.filterFecha = this.toDateStr(d);
     this.cambiarVista('dia');
+  }
+}
+
+class AgendaStompClient {
+  private socket: WebSocket | null = null;
+  private connected = false;
+  private subscriptions = new Map<string, (payload: any) => void>();
+  private subIdCounter = 0;
+
+  constructor(private url: string) {}
+
+  isConnected(): boolean { return this.connected; }
+
+  connect(onConnect: () => void, onError: (err: any) => void) {
+    try {
+      this.socket = new WebSocket(this.url);
+
+      this.socket.onopen = () => {
+        this.socket?.send(`CONNECT\naccept-version:1.1,1.2\nheart-beat:10000,10000\n\n\0`);
+      };
+
+      this.socket.onmessage = (event) => {
+        let data = (event.data as string).replace(/\r\n/g, '\n');
+        if (!data || data === '\n') return;
+
+        if (data.startsWith('CONNECTED')) {
+          this.connected = true;
+          onConnect();
+          this.subscriptions.forEach((_, dest) => this.sendSubscribeFrame(dest));
+        } else if (data.startsWith('MESSAGE')) {
+          const bodyStart = data.indexOf('\n\n');
+          if (bodyStart === -1) return;
+          const body = data.substring(bodyStart + 2, data.lastIndexOf('\0')).trim();
+          try {
+            const parsed = JSON.parse(body);
+            const destMatch = data.match(/destination:([^\n]+)/);
+            if (destMatch) {
+              const cb = this.subscriptions.get(destMatch[1].trim());
+              if (cb) cb(parsed);
+            }
+          } catch (e) { console.error('[Agenda WS] Parse error', e); }
+        }
+      };
+
+      this.socket.onerror  = (err) => onError(err);
+      this.socket.onclose  = () => {
+        this.connected = false;
+        if (this.socket) {
+          setTimeout(() => { if (this.socket && !this.connected) this.connect(onConnect, onError); }, 5000);
+        }
+      };
+    } catch (e) { onError(e); }
+  }
+
+  subscribe(destination: string, callback: (payload: any) => void) {
+    this.subscriptions.set(destination, callback);
+    if (this.connected) this.sendSubscribeFrame(destination);
+  }
+
+  private sendSubscribeFrame(destination: string) {
+    this.socket?.send(`SUBSCRIBE\nid:sub-${this.subIdCounter++}\ndestination:${destination}\n\n\0`);
+  }
+
+  disconnect() {
+    this.connected = false;
+    this.subscriptions.clear();
+    if (this.socket) {
+      this.socket.onclose = null;
+      this.socket.onerror = null;
+      this.socket.onmessage = null;
+      this.socket.onopen = null;
+      this.socket.close();
+      this.socket = null;
+    }
   }
 }

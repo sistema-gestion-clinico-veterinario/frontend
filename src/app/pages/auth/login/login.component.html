@@ -104,9 +104,14 @@
               </svg>
             </button>
           </div>
-          <div *ngIf="password?.touched && password?.invalid" class="text-xs text-rose-500 font-medium">
+          <div *ngIf="password?.touched && password?.invalid" class="text-xs text-rose-500 font-medium mt-1">
             <span *ngIf="password?.errors?.['required']">La contraseña es obligatoria.</span>
             <span *ngIf="password?.errors?.['minlength']">Mínimo 6 caracteres.</span>
+          </div>
+          <div class="flex justify-end mt-2">
+            <a routerLink="/forgot-password" class="text-xs font-medium text-[#0066AA] hover:text-[#005599] hover:underline">
+              ¿Olvidaste tu contraseña?
+            </a>
           </div>
         </div>
         <button type="submit" [disabled]="isSubmitting"

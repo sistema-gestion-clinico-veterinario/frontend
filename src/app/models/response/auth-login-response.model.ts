@@ -12,6 +12,7 @@ export interface Menu {
 
 export interface AuthLoginData {
   token: string;
+  refreshToken: string;
   roles: string[];
   companyId: number;
   companyName: string;
@@ -22,6 +23,7 @@ export interface AuthLoginData {
   passwordChanged: boolean;
   needsCompanySelection: boolean;
   menu: Menu[];
+  assignedRoles?: string[];
 }
 
 export interface AuthLoginResponse {

@@ -1,0 +1,10 @@
+:host {
+  display: block;
+}
+
+input[type="date"], input[type="time"] {
+  &::-webkit-calendar-picker-indicator {
+    filter: invert(0.5);
+    cursor: pointer;
+  }
+}

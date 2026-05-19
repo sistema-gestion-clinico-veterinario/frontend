@@ -1,3 +1,5 @@
+import { HorarioEmpleadoResponse } from './horario-empleado-response';
+
 export interface ProfileResponse {
   id: number;
   email: string;
@@ -17,6 +19,6 @@ export interface ProfileResponse {
   fotoUrl: string | null;
   especialidades: string[];
   tiposEmpleado: string[];
-  horarios: { id: number; diaSemana: string; horaInicio: string; horaFin: string; activo: boolean }[];
+  horarios: HorarioEmpleadoResponse[];
   empleado: boolean;
 }

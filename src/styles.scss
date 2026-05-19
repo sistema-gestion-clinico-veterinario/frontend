@@ -8,6 +8,12 @@
   html, body {
     font-family: 'Barlow', sans-serif;
   }
+
+  /* Desactivar el ojo nativo de Edge/Windows para evitar duplicidad con el personalizado */
+  input::-ms-reveal,
+  input::-ms-clear {
+    display: none !important;
+  }
 }
 
 @layer utilities {

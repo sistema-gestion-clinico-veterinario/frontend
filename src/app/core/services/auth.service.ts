@@ -27,5 +27,24 @@ export class AuthService {
   changePassword(payload: { oldPassword: string; newPassword: string }): Observable<ApiResponse<void>> {
     return this.http.post<ApiResponse<void>>(`${this.baseUrl}/change-password`, payload);
   }
-}
 
+  refreshToken(refreshToken: string): Observable<AuthLoginResponse> {
+    return this.http.post<AuthLoginResponse>(`${this.baseUrl}/refresh`, { refreshToken });
+  }
+
+  switchRole(roleName: string): Observable<AuthLoginResponse> {
+    return this.http.post<AuthLoginResponse>(`${this.baseUrl}/switch-role`, { roleName });
+  }
+
+  forgotPassword(email: string): Observable<ApiResponse<void>> {
+    return this.http.post<ApiResponse<void>>(`${this.baseUrl}/forgot-password`, { email });
+  }
+
+  validateResetToken(token: string): Observable<ApiResponse<void>> {
+    return this.http.get<ApiResponse<void>>(`${this.baseUrl}/validate-reset-token?token=${token}`);
+  }
+
+  resetPassword(token: string, newPassword: string): Observable<ApiResponse<void>> {
+    return this.http.post<ApiResponse<void>>(`${this.baseUrl}/reset-password`, { token, newPassword });
+  }
+}
