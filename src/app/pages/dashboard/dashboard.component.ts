@@ -344,7 +344,9 @@ export class DashboardComponent implements OnInit {
       this.loadPets(companyId);
       this.loadRoles(companyId);
       this.loadApoderados(companyId);
-      this.loadSchedulesReport(companyId);
+      if (this.permissions.includes('HORARIO_READ')) {
+        this.loadSchedulesReport(companyId);
+      }
     }
   }
 

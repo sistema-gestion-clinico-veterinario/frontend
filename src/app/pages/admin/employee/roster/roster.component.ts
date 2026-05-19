@@ -45,6 +45,8 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
   loading = signal<boolean>(false);
   currentTimeOffset = signal<number>(0);
   selectedShift = signal<any>(null);
+  displayShiftDetail = signal<boolean>(false);
+  shiftForDetail = signal<any>(null);
   showCloneDayModal = signal<boolean>(false);
   cloneTargetDate = signal<string>('');
   showCleanModal = signal<boolean>(false);
@@ -479,6 +481,28 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
     } else {
       this.selectedEmployeeId.set(Number(value));
     }
+  }
+
+  verDetalle(shift: any) {
+    this.shiftForDetail.set(shift);
+    this.displayShiftDetail.set(true);
+  }
+
+  calcularDuracion(horaInicio: string, horaFin: string): string {
+    if (!horaInicio || !horaFin) return '–';
+    const [h1, m1] = horaInicio.split(':').map(Number);
+    const [h2, m2] = horaFin.split(':').map(Number);
+    const totalMin = (h2 * 60 + m2) - (h1 * 60 + m1);
+    if (totalMin <= 0) return '–';
+    const horas = Math.floor(totalMin / 60);
+    const mins = totalMin % 60;
+    return horas > 0 ? `${horas}h ${mins > 0 ? mins + 'min' : ''}`.trim() : `${mins}min`;
+  }
+
+  formatShiftDate(fecha: string): string {
+    if (!fecha) return '–';
+    const d = new Date(fecha + 'T00:00:00');
+    return d.toLocaleDateString('es-PE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   }
 
   editShift(shift: any) {

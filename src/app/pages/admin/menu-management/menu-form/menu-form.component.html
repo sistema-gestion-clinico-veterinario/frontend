@@ -99,6 +99,18 @@
             </div>
           </div>
         </div>
+
+        <!-- ⚠️ Advertencia de permiso -->
+        <div *ngIf="permissionWarning"
+          class="flex items-start gap-2.5 px-3.5 py-3 bg-amber-50 border border-amber-200 rounded-lg mt-1">
+          <i class="pi pi-exclamation-triangle text-amber-500 text-sm mt-0.5 flex-shrink-0"></i>
+          <p class="text-[12px] text-amber-800 font-medium leading-relaxed">
+            Tu rol actual no tiene asignado el permiso
+            <span class="font-bold">{{ currentPermLabel }}</span>.
+            Este menú <span class="font-bold">no será visible</span> para usuarios con tu rol.
+            Asegúrate de que los roles que deben verlo lo tengan configurado.
+          </p>
+        </div>
       </div>
 
       <!-- Menú Superior -->

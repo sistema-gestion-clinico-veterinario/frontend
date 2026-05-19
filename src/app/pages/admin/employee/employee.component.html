@@ -7,7 +7,12 @@
         Administra los accesos y perfiles de los empleados de la organización
       </p>
     </div>
-    <div class="flex flex-col md:flex-row items-start md:items-center gap-4">
+    <div class="flex flex-col md:flex-row items-start md:items-center gap-3">
+      <a routerLink="/admin/empleados/horarios"
+        class="flex items-center gap-2 bg-white border border-slate-200 hover:border-[#0066AA] hover:text-[#0066AA] text-slate-600 text-sm font-medium px-5 h-10 rounded-lg transition-all">
+        <i class="pi pi-calendar text-xs"></i>
+        Gestión de Horarios
+      </a>
       <button (click)="openNew()"
         class="flex items-center gap-2 bg-[#0066AA] hover:bg-[#005a96] text-white text-sm font-medium px-5 h-10 rounded-lg transition-colors">
         <i class="pi pi-plus text-xs"></i>

@@ -146,6 +146,15 @@ export const routes: Routes = [
       {
         path: 'mi-historial/:mascotaId',
         loadComponent: () => import('./pages/apoderado/mi-historial/mi-historial.component').then((m) => m.MiHistorialComponent)
+      },
+      {
+        path: 'mis-pagos',
+        loadComponent: () => import('./pages/apoderado/mis-pagos/mis-pagos.component').then((m) => m.MisPagosComponent)
+      },
+      {
+        path: 'admin/pagos',
+        data: { permission: Permission.SALE_READ },
+        loadComponent: () => import('./pages/admin/pagos/historial-pagos/historial-pagos.component').then((m) => m.HistorialPagosComponent)
       }
     ]
   },

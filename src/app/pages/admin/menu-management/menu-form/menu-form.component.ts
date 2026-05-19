@@ -1,9 +1,10 @@
-import { Component, Input, Output, EventEmitter, inject, signal, HostListener, ElementRef, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject, signal, computed, HostListener, ElementRef, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Menu } from '../../../../models/response/auth-login-response.model';
 import { Permission } from '../../../../models/response/permission';
 import { PRIME_ICONS } from '../../../../core/constants/icons.constant';
+import { AuthStore } from '../../../../store/auth.store';
 
 @Component({
   selector: 'app-menu-form',
@@ -15,6 +16,19 @@ import { PRIME_ICONS } from '../../../../core/constants/icons.constant';
 export class MenuFormComponent implements OnChanges {
   private el = inject(ElementRef);
   private fb = inject(FormBuilder);
+  private authStore = inject(AuthStore);
+
+  private get isSuperAdmin(): boolean {
+    return (this.authStore.roles() ?? []).some(r => r === 'ROLE_SUPER_ADMIN' || r === 'SUPER_ADMIN');
+  }
+
+  /** Verdadero cuando el permiso seleccionado no está en el rol del usuario actual */
+  get permissionWarning(): boolean {
+    if (this.isSuperAdmin) return false;
+    const selected = this.form.get('requiredPermission')?.value;
+    if (!selected) return false;
+    return !(this.authStore.permissions() ?? []).includes(selected);
+  }
 
   @Input() initialData: Partial<Menu> | null = null;
   @Input() permissions: Permission[] = [];

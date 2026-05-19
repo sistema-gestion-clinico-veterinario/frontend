@@ -72,6 +72,10 @@ export enum Permission {
   SERVICIO_DELETE       = 'SERVICIO_DELETE',
   SERVICIO_TOGGLE       = 'SERVICIO_TOGGLE',
 
+  // VENTAS / PAGOS
+  SALE_READ             = 'SALE_READ',
+  SALE_MANAGE           = 'SALE_MANAGE',
+
   // ADMIN
   ADMIN_DASHBOARD       = 'ADMIN_DASHBOARD',
   USER_MANAGE           = 'USER_MANAGE',
