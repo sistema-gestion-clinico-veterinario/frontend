@@ -45,6 +45,9 @@ export class ScheduleManagementComponent implements OnInit {
   empleadoNombre: string = 'Cargando...';
   horarios: HorarioEmpleadoResponse[] = [];
   displayBulkModal: boolean = false;
+  displayShiftDetail: boolean = false;
+  selectedShift: HorarioEmpleadoResponse | null = null;
+  selectedShiftDate: Date | null = null;
   loading: boolean = false;
 
   currentDate = new Date();
@@ -129,6 +132,28 @@ export class ScheduleManagementComponent implements OnInit {
   }
 
 
+
+  selectedShiftDateFormatted: string = '';
+
+  verDetalleHorario(shift: HorarioEmpleadoResponse, date: Date) {
+    this.selectedShift = shift;
+    this.selectedShiftDate = date;
+    this.selectedShiftDateFormatted = date.toLocaleDateString('es-PE', {
+      weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+    });
+    this.displayShiftDetail = true;
+  }
+
+  calcularDuracion(horaInicio: string, horaFin: string): string {
+    if (!horaInicio || !horaFin) return '–';
+    const [h1, m1] = horaInicio.split(':').map(Number);
+    const [h2, m2] = horaFin.split(':').map(Number);
+    const totalMin = (h2 * 60 + m2) - (h1 * 60 + m1);
+    if (totalMin <= 0) return '–';
+    const horas = Math.floor(totalMin / 60);
+    const mins = totalMin % 60;
+    return horas > 0 ? `${horas}h ${mins > 0 ? mins + 'min' : ''}`.trim() : `${mins}min`;
+  }
 
   addShift() {
     this.shifts.push(this.fb.group({

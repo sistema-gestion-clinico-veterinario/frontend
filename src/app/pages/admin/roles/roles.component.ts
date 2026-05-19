@@ -58,7 +58,7 @@ export class RolesComponent implements OnInit {
 
   showCreateModal = signal<boolean>(false);
   newRoleName     = signal<string>('');
-  confirmDialog   = signal<{ title: string; message: string; onConfirm: () => void } | null>(null);
+  confirmDialog   = signal<{ title: string; message: string; onConfirm: () => void; variant?: 'danger' | 'primary' } | null>(null);
 
   isEditingName    = signal<boolean>(false);
   editingNameValue = signal<string>('');
@@ -198,16 +198,13 @@ export class RolesComponent implements OnInit {
 
   canEditRole(role: Role | null): boolean {
     if (!role) return false;
-    if (!this.isAdminOrSuperAdmin()) return false;
-    // Bloquear edición de los roles centrales del sistema
-    const protectedRoles = ['ROLE_SUPER_ADMIN', 'ROLE_ADMIN'];
-    return !protectedRoles.includes(role.name);
+    return this.isAdminOrSuperAdmin();
   }
 
   canRenameRole(role: Role | null): boolean {
     if (!role) return false;
     if (!this.isAdminOrSuperAdmin()) return false;
-    // No permitir renombrar roles centrales nativos del sistema
+    // No permitir renombrar los roles centrales del sistema
     const protectedRoles = ['ROLE_SUPER_ADMIN', 'ROLE_ADMIN'];
     return !protectedRoles.includes(role.name);
   }
@@ -235,6 +232,18 @@ export class RolesComponent implements OnInit {
   }
 
   save() {
+    const role = this.selectedRole();
+    if (!role) return;
+
+    this.confirmDialog.set({
+      title: 'Guardar cambios',
+      message: `¿Estás seguro de guardar los cambios en el rol "${this.roleLabel(role.name)}"?`,
+      variant: 'primary',
+      onConfirm: () => this.executeSave()
+    });
+  }
+
+  private executeSave() {
     const role = this.selectedRole();
     if (!role) return;
     this.loadingStore.show();
@@ -347,32 +356,38 @@ export class RolesComponent implements OnInit {
       return;
     }
 
-    // El backend exige al menos un permiso al crear un rol.
-    // Le asignamos un permiso básico inicial (ej: USER_READ o el primero de la lista) para cumplir la validación.
     const defaultPerm = this.allPermissions().find(p => p.name === 'USER_READ') || this.allPermissions()[0];
     const initialPermissions = defaultPerm ? [defaultPerm.id] : [];
+    const section = this.activeSection();
 
-    this.loadingStore.show();
-    this.roleService.crear({
-      name: formattedName,
-      companyId: this.activeSection() === 'empresa' ? (this.activeCompanyId ?? undefined) : undefined,
-      permissionIds: initialPermissions,
-      menuIds: []
-    }).subscribe({
-      next: (res) => {
-        if (this.activeSection() === 'empresa') {
-          this.companyRoles.update(list => [...list, res.data]);
-        } else {
-          this.systemRoles.update(list => [...list, res.data]);
-        }
-        this.selectRole(res.data);
-        this.showCreateModal.set(false);
-        this.messageService.add({ severity: 'success', summary: 'Creado', detail: `Rol ${this.roleLabel(res.data.name)} creado exitosamente` });
-        this.loadingStore.hide();
-      },
-      error: (err) => {
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo crear el rol' });
-        this.loadingStore.hide();
+    this.showCreateModal.set(false);
+    this.confirmDialog.set({
+      title: 'Crear nuevo rol',
+      message: `¿Estás seguro de crear el rol "${this.roleLabel(formattedName)}"?`,
+      variant: 'primary',
+      onConfirm: () => {
+        this.loadingStore.show();
+        this.roleService.crear({
+          name: formattedName,
+          companyId: section === 'empresa' ? (this.activeCompanyId ?? undefined) : undefined,
+          permissionIds: initialPermissions,
+          menuIds: []
+        }).subscribe({
+          next: (res) => {
+            if (section === 'empresa') {
+              this.companyRoles.update(list => [...list, res.data]);
+            } else {
+              this.systemRoles.update(list => [...list, res.data]);
+            }
+            this.selectRole(res.data);
+            this.messageService.add({ severity: 'success', summary: 'Creado', detail: `Rol ${this.roleLabel(res.data.name)} creado exitosamente` });
+            this.loadingStore.hide();
+          },
+          error: (err) => {
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo crear el rol' });
+            this.loadingStore.hide();
+          }
+        });
       }
     });
   }
@@ -380,6 +395,7 @@ export class RolesComponent implements OnInit {
   canDeleteRole(role: Role | null): boolean {
     if (!role) return false;
     if (!this.isAdminOrSuperAdmin()) return false;
+    // Nunca permitir eliminar los roles centrales del sistema
     const protectedRoles = ['ROLE_SUPER_ADMIN', 'ROLE_ADMIN'];
     return !protectedRoles.includes(role.name);
   }

@@ -38,13 +38,22 @@ export class SidebarComponent {
       return perms.includes(item.requiredPermission);
     };
 
+    const hasAdminDashboard = perms.includes('ADMIN_DASHBOARD');
+
     const filterTree = (items: Menu[]): Menu[] =>
       items
         .filter(item => hasAccess(item))
-        .map(item => ({
-          ...item,
-          children: item.children?.length ? filterTree(item.children) : []
-        }));
+        .map(item => {
+          let path = item.path;
+          if (path === '/dashboard' && !hasAdminDashboard) {
+            path = '/empleado/dashboard';
+          }
+          return {
+            ...item,
+            path,
+            children: item.children?.length ? filterTree(item.children) : []
+          };
+        });
 
     const filtered = filterTree(raw);
 

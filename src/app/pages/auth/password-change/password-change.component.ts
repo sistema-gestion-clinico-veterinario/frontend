@@ -106,12 +106,17 @@ export class PasswordChangeComponent {
         setTimeout(() => {
           this.isSubmitting.set(false);
           const roles = this.authStore.roles() ?? [];
+          const permissions = this.authStore.permissions() ?? [];
           if (roles.includes('ROLE_SUPER_ADMIN')) {
             this.router.navigateByUrl('/admin/company');
           } else if (roles.includes('ROLE_CLIENTE') || roles.includes('ROLE_APODERADO')) {
             this.router.navigateByUrl('/apoderado');
           } else {
-            this.router.navigateByUrl('/dashboard');
+            if (permissions.includes('ADMIN_DASHBOARD')) {
+              this.router.navigateByUrl('/dashboard');
+            } else {
+              this.router.navigateByUrl('/empleado/dashboard');
+            }
           }
         }, 1500);
       },
@@ -129,12 +134,17 @@ export class PasswordChangeComponent {
 
   cancel() {
     const roles = this.authStore.roles() ?? [];
+    const permissions = this.authStore.permissions() ?? [];
     if (roles.includes('ROLE_SUPER_ADMIN')) {
       this.router.navigateByUrl('/admin/company');
     } else if (roles.includes('ROLE_CLIENTE') || roles.includes('ROLE_APODERADO')) {
       this.router.navigateByUrl('/apoderado');
     } else {
-      this.router.navigateByUrl('/dashboard');
+      if (permissions.includes('ADMIN_DASHBOARD')) {
+        this.router.navigateByUrl('/dashboard');
+      } else {
+        this.router.navigateByUrl('/empleado/dashboard');
+      }
     }
   }
 }

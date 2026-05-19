@@ -376,29 +376,43 @@
           </div>
 
           <div class="p-6 space-y-6">
-            <!-- Stacked Linear Bar -->
-            <div class="h-4 w-full rounded-full flex overflow-hidden bg-slate-100 border border-slate-200/50">
-              <div *ngFor="let item of serviceBreakdown()" 
-                   [style.width.%]="item.percentage" 
-                   [style.background-color]="item.color"
-                   class="h-full first:rounded-l-full last:rounded-r-full hover:brightness-95 transition-all relative group cursor-pointer"
-                   [title]="item.name + ': ' + item.percentage + '%'">
+
+            <!-- Empty state -->
+            <div *ngIf="serviceBreakdown().length === 0"
+              class="flex flex-col items-center justify-center py-8 text-center">
+              <div class="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center mb-3">
+                <i class="pi pi-chart-bar text-slate-300 text-base"></i>
               </div>
+              <p class="text-xs font-semibold text-slate-500">Sin citas registradas</p>
+              <p class="text-[10px] text-slate-400 mt-0.5">La distribución aparecerá cuando haya citas en el sistema.</p>
             </div>
 
-            <!-- Legend Grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div *ngFor="let item of serviceBreakdown()" class="p-3 rounded-xl border border-slate-100 bg-slate-50/30 flex items-center justify-between gap-3">
-                <div class="flex items-center gap-2.5 min-w-0">
-                  <span class="w-2.5 h-2.5 rounded-md shrink-0" [style.background-color]="item.color"></span>
-                  <span class="text-xs font-bold text-slate-700 truncate leading-none">{{ item.name }}</span>
-                </div>
-                <div class="flex items-baseline gap-1 shrink-0 text-right">
-                  <span class="text-xs font-black text-slate-800">{{ item.percentage }}%</span>
-                  <span class="text-[9px] text-slate-400 font-medium">({{ item.count }} citas)</span>
+            <ng-container *ngIf="serviceBreakdown().length > 0">
+              <!-- Stacked Linear Bar -->
+              <div class="h-4 w-full rounded-full flex overflow-hidden bg-slate-100 border border-slate-200/50">
+                <div *ngFor="let item of serviceBreakdown()"
+                     [style.width.%]="item.percentage"
+                     [style.background-color]="item.color"
+                     class="h-full first:rounded-l-full last:rounded-r-full hover:brightness-95 transition-all relative group cursor-pointer"
+                     [title]="item.name + ': ' + item.percentage + '%'">
                 </div>
               </div>
-            </div>
+
+              <!-- Legend Grid -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div *ngFor="let item of serviceBreakdown()" class="p-3 rounded-xl border border-slate-100 bg-slate-50/30 flex items-center justify-between gap-3">
+                  <div class="flex items-center gap-2.5 min-w-0">
+                    <span class="w-2.5 h-2.5 rounded-md shrink-0" [style.background-color]="item.color"></span>
+                    <span class="text-xs font-bold text-slate-700 truncate leading-none">{{ item.name }}</span>
+                  </div>
+                  <div class="flex items-baseline gap-1 shrink-0 text-right">
+                    <span class="text-xs font-black text-slate-800">{{ item.percentage }}%</span>
+                    <span class="text-[9px] text-slate-400 font-medium">({{ item.count }} citas)</span>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+
           </div>
         </div>
 

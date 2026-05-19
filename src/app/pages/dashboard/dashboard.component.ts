@@ -89,16 +89,9 @@ export class DashboardComponent implements OnInit {
       return dates;
     };
 
-    const hasRealData = (arr?: number[]) => arr && arr.some(v => v > 0);
-
     if (period === 'day') {
-      let vals = currentStats?.citasPorDia || [0, 0, 0, 0, 0, 0, 0];
-      if (!hasRealData(vals)) {
-        const compId = this.authStore.selectedEnterprise()?.establishmentId ?? this.authStore.companyId() ?? 1;
-        const multiplier = (compId % 3) + 1;
-        vals = [8 * multiplier, 14 * multiplier, 10 * multiplier, 18 * multiplier, 22 * multiplier, 30 * multiplier, 8 * multiplier];
-      }
-      const maxVal = Math.max(...vals, 5);
+      const vals = currentStats?.citasPorDia ?? [0, 0, 0, 0, 0, 0, 0];
+      const maxVal = Math.max(...vals, 1);
       return {
         labels: getDatesOfWeek(),
         values: vals,
@@ -107,13 +100,8 @@ export class DashboardComponent implements OnInit {
         yAxisLabels: [maxVal, Math.round(maxVal * 0.67), Math.round(maxVal * 0.33), 0]
       };
     } else if (period === 'week') {
-      let vals = currentStats?.citasPorSemana || [0, 0, 0, 0];
-      if (!hasRealData(vals)) {
-        const compId = this.authStore.selectedEnterprise()?.establishmentId ?? this.authStore.companyId() ?? 1;
-        const multiplier = (compId % 3) + 1;
-        vals = [45 * multiplier, 70 * multiplier, 55 * multiplier, 90 * multiplier];
-      }
-      const maxVal = Math.max(...vals, 10);
+      const vals = currentStats?.citasPorSemana ?? [0, 0, 0, 0];
+      const maxVal = Math.max(...vals, 1);
       return {
         labels: ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'],
         values: vals,
@@ -122,13 +110,8 @@ export class DashboardComponent implements OnInit {
         yAxisLabels: [maxVal, Math.round(maxVal * 0.67), Math.round(maxVal * 0.33), 0]
       };
     } else {
-      let vals = currentStats?.citasPorMes || [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-      if (!hasRealData(vals)) {
-        const compId = this.authStore.selectedEnterprise()?.establishmentId ?? this.authStore.companyId() ?? 1;
-        const multiplier = (compId % 3) + 1;
-        vals = [180 * multiplier, 150 * multiplier, 200 * multiplier, 240 * multiplier, 220 * multiplier, 280 * multiplier, 310 * multiplier, 330 * multiplier, 290 * multiplier, 320 * multiplier, 360 * multiplier, 400 * multiplier];
-      }
-      const maxVal = Math.max(...vals, 20);
+      const vals = currentStats?.citasPorMes ?? [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+      const maxVal = Math.max(...vals, 1);
       return {
         labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
         values: vals,
@@ -250,13 +233,7 @@ export class DashboardComponent implements OnInit {
 
   serviceBreakdown = computed(() => {
     const list = this.allAppointments();
-    if (list.length === 0) {
-      return [
-        { name: 'Consulta Médica', count: 5, percentage: 50, color: '#0066AA', bg: 'bg-[#0066AA]/10', border: 'border-[#0066AA]/20' },
-        { name: 'Spa y Baño', count: 3, percentage: 30, color: '#9333EA', bg: 'bg-purple-500/10', border: 'border-purple-500/20' },
-        { name: 'Vacunación', count: 2, percentage: 20, color: '#EC4899', bg: 'bg-pink-500/10', border: 'border-pink-500/20' }
-      ];
-    }
+    if (list.length === 0) return [];
 
     const counts: Record<string, number> = {};
     let total = 0;
@@ -344,7 +321,9 @@ export class DashboardComponent implements OnInit {
       this.loadPets(companyId);
       this.loadRoles(companyId);
       this.loadApoderados(companyId);
-      this.loadSchedulesReport(companyId);
+      if (this.permissions.includes('HORARIO_READ')) {
+        this.loadSchedulesReport(companyId);
+      }
     }
   }
 

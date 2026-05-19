@@ -4,6 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { AuthStore } from '../../../store/auth.store';
+import { resolveDashboardRoute } from '../../../layouts/main-layout/navbar/navbar.component';
 
 @Component({
   selector: 'app-login',
@@ -24,13 +25,8 @@ export class LoginComponent implements OnInit {
   ngOnInit() {
     if (this.authStore.token()) {
       const roles = this.authStore.roles() ?? [];
-      if (roles.includes('ROLE_SUPER_ADMIN')) {
-        this.router.navigateByUrl('/admin/company');
-      } else if (roles.includes('ROLE_CLIENTE') || roles.includes('ROLE_APODERADO')) {
-        this.router.navigateByUrl('/apoderado');
-      } else {
-        this.router.navigateByUrl('/dashboard');
-      }
+      const permissions = this.authStore.permissions() ?? [];
+      this.router.navigateByUrl(resolveDashboardRoute(roles, permissions));
     }
   }
 
@@ -78,13 +74,8 @@ export class LoginComponent implements OnInit {
         });
         sessionStorage.removeItem('pw_modal_dismissed');
         const roles = data.roles ?? [];
-        if (roles.includes('ROLE_SUPER_ADMIN')) {
-          this.router.navigateByUrl('/admin/company');
-        } else if (roles.includes('ROLE_CLIENTE') || roles.includes('ROLE_APODERADO')) {
-          this.router.navigateByUrl('/apoderado');
-        } else {
-          this.router.navigateByUrl('/dashboard');
-        }
+        const permissions = data.permissions ?? [];
+        this.router.navigateByUrl(resolveDashboardRoute(roles, permissions));
       },
       error: () => {
         this.authError = 'Correo o contraseña incorrectos.';

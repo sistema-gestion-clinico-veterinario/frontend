@@ -1,12 +1,13 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { AuthStore } from '../../store/auth.store';
+import { resolveDashboardRoute } from '../../layouts/main-layout/navbar/navbar.component';
 
 export const AuthGuard: CanActivateFn = (route, state) => {
   const authStore = inject(AuthStore);
   const router = inject(Router);
   const token = authStore.token();
-  
+
   if (!token) {
     router.navigate(['/login']);
     return false;
@@ -16,11 +17,8 @@ export const AuthGuard: CanActivateFn = (route, state) => {
   if (requiredPermission) {
     if (!authStore.hasPermission(requiredPermission)) {
       const roles = authStore.roles() ?? [];
-      if (roles.includes('ROLE_CLIENTE') || roles.includes('ROLE_APODERADO')) {
-        router.navigate(['/apoderado']);
-      } else {
-        router.navigate(['/dashboard']);
-      }
+      const permissions = authStore.permissions() ?? [];
+      router.navigate([resolveDashboardRoute(roles, permissions)]);
       return false;
     }
     return true;

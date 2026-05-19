@@ -1,5 +1,6 @@
 import { HttpErrorResponse, HttpEvent, HttpHandlerFn, HttpRequest, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
+import { Router } from '@angular/router';
 import { BehaviorSubject, catchError, filter, finalize, Observable, switchMap, take, throwError } from 'rxjs';
 import { AuthStore } from '../../store/auth.store';
 import { LoadingStore } from '../../store/loading.store';
@@ -12,6 +13,7 @@ export const apiInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, nex
   const authStore = inject(AuthStore);
   const loadingStore = inject(LoadingStore);
   const authService = inject(AuthService);
+  const router = inject(Router);
 
   loadingStore.show();
 
@@ -29,7 +31,7 @@ export const apiInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, nex
   return next(authReq).pipe(
     catchError((error) => {
       if (error instanceof HttpErrorResponse && error.status === 401 && !req.url.includes('/auth/login')) {
-        return handle401Error(authReq, next, authStore, authService);
+        return handle401Error(authReq, next, authStore, authService, router);
       }
       return throwError(() => error);
     }),
@@ -37,7 +39,7 @@ export const apiInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, nex
   );
 };
 
-const handle401Error = (req: HttpRequest<any>, next: HttpHandlerFn, authStore: any, authService: AuthService): Observable<HttpEvent<any>> => {
+const handle401Error = (req: HttpRequest<any>, next: HttpHandlerFn, authStore: any, authService: AuthService, router: Router): Observable<HttpEvent<any>> => {
   if (!isRefreshing) {
     isRefreshing = true;
     refreshTokenSubject.next(null);
@@ -76,12 +78,14 @@ const handle401Error = (req: HttpRequest<any>, next: HttpHandlerFn, authStore: a
         catchError((err) => {
           isRefreshing = false;
           authStore.logout();
+          router.navigate(['/login']);
           return throwError(() => err);
         })
       );
     } else {
       isRefreshing = false;
       authStore.logout();
+      router.navigate(['/login']);
       return throwError(() => new Error('No refresh token available'));
     }
   } else {

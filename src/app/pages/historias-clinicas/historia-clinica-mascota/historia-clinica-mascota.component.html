@@ -113,9 +113,16 @@
                   <span *ngIf="consultaActiva()!.veterinarioNombre"> · {{ consultaActiva()!.veterinarioNombre }}</span>
                 </p>
               </div>
-              <span class="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-slate-100 text-slate-500 uppercase tracking-wide shrink-0">
-                {{ tipoConsultaLabel(consultaActiva()!.tipoConsulta) }}
-              </span>
+              <div class="flex items-center gap-2 shrink-0">
+                <span class="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-slate-100 text-slate-500 uppercase tracking-wide">
+                  {{ tipoConsultaLabel(consultaActiva()!.tipoConsulta) }}
+                </span>
+                <button *ngIf="canManage()" type="button"
+                  (click)="editarConsulta(consultaActiva()!.id)"
+                  class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0066AA] text-white text-[10px] font-bold hover:bg-[#0055aa] transition-all">
+                  <i class="pi pi-pencil text-[9px]"></i> Editar
+                </button>
+              </div>
             </div>
           </div>
           <div class="flex border-b border-slate-100 px-5">

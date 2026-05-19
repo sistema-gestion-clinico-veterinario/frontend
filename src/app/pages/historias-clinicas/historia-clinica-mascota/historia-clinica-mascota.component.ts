@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
@@ -7,6 +7,8 @@ import { MessageService } from 'primeng/api';
 
 import { HistoriaClinicaService } from '../../../core/services/historia-clinica.service';
 import { LoadingStore } from '../../../store/loading.store';
+import { AuthStore } from '../../../store/auth.store';
+import { Role } from '../../../core/enums/role.enum';
 import {
   HistoriaClinicaDetalle,
   ConsultaResumen,
@@ -31,6 +33,12 @@ export class HistoriaClinicaMascotaComponent implements OnInit {
   private readonly msgService = inject(MessageService);
   private readonly sanitizer  = inject(DomSanitizer);
   readonly loadingStore       = inject(LoadingStore);
+  readonly authStore          = inject(AuthStore);
+
+  readonly canManage = computed(() =>
+    this.authStore.roles().includes(Role.SUPER_ADMIN) ||
+    this.authStore.roles().includes(Role.ADMIN)
+  );
 
   hc               = signal<HistoriaClinicaDetalle | null>(null);
   consultaActiva   = signal<ConsultaResumen | null>(null);
@@ -74,6 +82,10 @@ export class HistoriaClinicaMascotaComponent implements OnInit {
   seleccionarConsulta(consulta: ConsultaResumen) {
     this.consultaActiva.set(consulta);
     this.tabActiva.set('clinico');
+  }
+
+  editarConsulta(id: number) {
+    this.router.navigate(['/historias-clinicas/consulta', id]);
   }
 
   volver() {

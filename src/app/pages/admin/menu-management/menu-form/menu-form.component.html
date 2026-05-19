@@ -85,19 +85,53 @@
               <i class="pi pi-chevron-down text-[10px] text-[#94A3B8] group-hover:text-[#0066AA]"></i>
             </div>
 
-            <!-- Lista de Permisos (Overlay Flotante) -->
-            <div *ngIf="showPerms()" 
-                 class="absolute top-full left-[-100%] right-0 mt-1.5 bg-white border border-[#F1F5F9] rounded-lg z-50 shadow-2xl shadow-slate-300/50 animate-fade-in max-h-64 overflow-y-auto custom-scrollbar">
-              <div (click)="selectPerm(undefined)" class="px-4 py-2.5 text-[13px] font-medium text-[#64748B] hover:bg-[#F8FAFC] hover:text-[#0066AA] cursor-pointer border-b border-[#F8FAFC]">
-                Acceso Público (Ninguno)
+            <!-- Lista de Permisos con buscador -->
+            <div *ngIf="showPerms()"
+                 (mousedown)="$event.stopPropagation()"
+                 (click)="$event.stopPropagation()"
+                 class="absolute top-full left-[-100%] right-0 mt-1.5 bg-white border border-[#F1F5F9] rounded-lg z-50 shadow-2xl shadow-slate-300/50 animate-fade-in flex flex-col">
+              <!-- Input buscador -->
+              <div class="p-2 border-b border-[#F1F5F9] bg-white">
+                <div class="flex items-center gap-2 bg-[#F8FAFC] border border-[#E2E8F0] rounded-md px-3 py-1.5">
+                  <i class="pi pi-search text-[#94A3B8] text-[11px]"></i>
+                  <input #permInput type="text" placeholder="Buscar permiso..."
+                    [value]="permSearch()"
+                    (input)="permSearch.set(permInput.value)"
+                    class="flex-1 bg-transparent text-[12px] font-medium text-[#334155] outline-none placeholder:text-[#CBD5E1]" />
+                  <button *ngIf="permSearch()" type="button" (click)="permSearch.set('')"
+                    class="text-[#94A3B8] hover:text-[#334155] cursor-pointer bg-transparent border-none p-0">
+                    <i class="pi pi-times text-[10px]"></i>
+                  </button>
+                </div>
               </div>
-              <div *ngFor="let p of permissions" (click)="selectPerm(p.name)"
-                   class="px-4 py-2.5 text-[13px] font-medium text-[#334155] hover:bg-[#F8FAFC] hover:text-[#0066AA] cursor-pointer flex items-center justify-between group border-b border-[#F8FAFC] last:border-none">
-                <span>{{ p.label }}</span>
-                <span class="text-[9px] text-[#94A3B8] group-hover:text-[#0066AA]/50">{{ p.name }}</span>
+              <!-- Opción pública -->
+              <div class="max-h-52 overflow-y-auto custom-scrollbar">
+                <div (click)="selectPerm(undefined)" class="px-4 py-2.5 text-[13px] font-medium text-[#64748B] hover:bg-[#F8FAFC] hover:text-[#0066AA] cursor-pointer border-b border-[#F8FAFC]">
+                  Acceso Público (Ninguno)
+                </div>
+                <div *ngFor="let p of filteredPermissions()" (click)="selectPerm(p.name)"
+                     class="px-4 py-2.5 text-[13px] font-medium text-[#334155] hover:bg-[#F8FAFC] hover:text-[#0066AA] cursor-pointer flex items-center justify-between group border-b border-[#F8FAFC] last:border-none">
+                  <span>{{ p.label }}</span>
+                  <span class="text-[9px] text-[#94A3B8] group-hover:text-[#0066AA]/50">{{ p.name }}</span>
+                </div>
+                <div *ngIf="filteredPermissions().length === 0" class="px-4 py-4 text-center text-[12px] text-[#CBD5E1] font-medium">
+                  Sin resultados para "{{ permSearch() }}"
+                </div>
               </div>
             </div>
           </div>
+        </div>
+
+        <!-- ⚠️ Advertencia de permiso -->
+        <div *ngIf="permissionWarning"
+          class="flex items-start gap-2.5 px-3.5 py-3 bg-amber-50 border border-amber-200 rounded-lg mt-1">
+          <i class="pi pi-exclamation-triangle text-amber-500 text-sm mt-0.5 flex-shrink-0"></i>
+          <p class="text-[12px] text-amber-800 font-medium leading-relaxed">
+            Tu rol actual no tiene asignado el permiso
+            <span class="font-bold">{{ currentPermLabel }}</span>.
+            Este menú <span class="font-bold">no será visible</span> para usuarios con tu rol.
+            Asegúrate de que los roles que deben verlo lo tengan configurado.
+          </p>
         </div>
       </div>
 
@@ -111,15 +145,37 @@
             <i class="pi pi-chevron-down text-[10px] text-[#94A3B8] group-hover:text-[#0066AA]"></i>
           </div>
 
-          <!-- Lista de Padres (Overlay Flotante) -->
-          <div *ngIf="showParents()" 
-               class="absolute top-full left-0 right-0 mt-1.5 bg-white border border-[#F1F5F9] rounded-lg z-50 shadow-2xl shadow-slate-300/50 animate-fade-in max-h-64 overflow-y-auto custom-scrollbar">
-            <div (click)="selectParent(undefined)" class="px-4 py-2.5 text-[13px] font-medium text-[#64748B] hover:bg-[#F8FAFC] hover:text-[#0066AA] cursor-pointer border-b border-[#F8FAFC]">
-              Nivel Principal (Raíz)
+          <!-- Lista de Padres con buscador -->
+          <div *ngIf="showParents()"
+               (mousedown)="$event.stopPropagation()"
+               (click)="$event.stopPropagation()"
+               class="absolute top-full left-0 right-0 mt-1.5 bg-white border border-[#F1F5F9] rounded-lg z-50 shadow-2xl shadow-slate-300/50 animate-fade-in flex flex-col">
+            <!-- Input buscador -->
+            <div class="p-2 border-b border-[#F1F5F9] bg-white">
+              <div class="flex items-center gap-2 bg-[#F8FAFC] border border-[#E2E8F0] rounded-md px-3 py-1.5">
+                <i class="pi pi-search text-[#94A3B8] text-[11px]"></i>
+                <input #parentInput type="text" placeholder="Buscar menú padre..."
+                  [value]="parentSearch()"
+                  (input)="parentSearch.set(parentInput.value)"
+                  class="flex-1 bg-transparent text-[12px] font-medium text-[#334155] outline-none placeholder:text-[#CBD5E1]" />
+                <button *ngIf="parentSearch()" type="button" (click)="parentSearch.set('')"
+                  class="text-[#94A3B8] hover:text-[#334155] cursor-pointer bg-transparent border-none p-0">
+                  <i class="pi pi-times text-[10px]"></i>
+                </button>
+              </div>
             </div>
-            <div *ngFor="let m of menuOptions" (click)="selectParent(m.id)"
-                 class="px-4 py-2.5 text-[13px] font-medium text-[#334155] hover:bg-[#F8FAFC] hover:text-[#0066AA] cursor-pointer border-b border-[#F8FAFC] last:border-none whitespace-pre">
-              {{ m.label }}
+            <!-- Opciones -->
+            <div class="max-h-52 overflow-y-auto custom-scrollbar">
+              <div *ngIf="!parentSearch()" (click)="selectParent(undefined)" class="px-4 py-2.5 text-[13px] font-medium text-[#64748B] hover:bg-[#F8FAFC] hover:text-[#0066AA] cursor-pointer border-b border-[#F8FAFC]">
+                Nivel Principal (Raíz)
+              </div>
+              <div *ngFor="let m of filteredMenuOptions()" (click)="selectParent(m.id)"
+                   class="px-4 py-2.5 text-[13px] font-medium text-[#334155] hover:bg-[#F8FAFC] hover:text-[#0066AA] cursor-pointer border-b border-[#F8FAFC] last:border-none whitespace-pre">
+                {{ m.label }}
+              </div>
+              <div *ngIf="filteredMenuOptions().length === 0" class="px-4 py-4 text-center text-[12px] text-[#CBD5E1] font-medium">
+                Sin resultados para "{{ parentSearch() }}"
+              </div>
             </div>
           </div>
         </div>

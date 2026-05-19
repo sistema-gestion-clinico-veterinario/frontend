@@ -1,0 +1,278 @@
+<p-toast></p-toast>
+
+<div class="min-h-screen bg-[#F4F7FA] font-['Barlow']">
+
+  <!-- HEADER -->
+  <div class="bg-white border-b border-slate-100">
+    <div class="px-6 sm:px-8 lg:px-10 py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2 mb-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-[0.18em]">
+            {{ formatDate(today) }}
+          </p>
+        </div>
+        <h1 class="text-[26px] font-black text-slate-900 leading-snug">
+          {{ dayGreeting }},&nbsp;<span class="text-[#0066AA]">{{ userName }}</span>
+        </h1>
+        <div class="flex items-center gap-2.5 mt-2 flex-wrap">
+          <span class="text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider bg-indigo-50 text-indigo-700 border border-indigo-100">
+            Propietario
+          </span>
+          <span *ngIf="companyName" class="text-xs text-slate-400 font-medium">
+            · {{ companyName }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTENIDO -->
+  <div class="px-6 sm:px-8 lg:px-10 py-7 space-y-6">
+
+    <!-- KPI CARDS -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+
+      <div class="bg-white rounded-2xl border border-slate-200 p-5 flex items-center gap-4 hover:border-slate-300 transition-colors">
+        <div class="w-11 h-11 rounded-xl bg-pink-50 flex items-center justify-center shrink-0">
+          <i class="pi pi-heart-fill text-base text-pink-500"></i>
+        </div>
+        <div class="min-w-0">
+          <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest leading-none mb-1">Mis Mascotas</p>
+          <p class="text-2xl font-black text-slate-900 leading-none">{{ totalMascotas() }}</p>
+          <p class="text-[11px] text-slate-400 font-medium mt-1">registradas en total</p>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl border border-slate-200 p-5 flex items-center gap-4 hover:border-slate-300 transition-colors">
+        <div class="w-11 h-11 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
+          <i class="pi pi-check-circle text-base text-emerald-600"></i>
+        </div>
+        <div class="min-w-0">
+          <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest leading-none mb-1">Activas</p>
+          <p class="text-2xl font-black text-slate-900 leading-none">{{ mascotasActivas() }}</p>
+          <p class="text-[11px] text-slate-400 font-medium mt-1">mascotas activas</p>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl border border-slate-200 p-5 flex items-center gap-4 hover:border-slate-300 transition-colors">
+        <div class="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+          <i class="pi pi-calendar text-base text-[#0066AA]"></i>
+        </div>
+        <div class="min-w-0">
+          <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest leading-none mb-1">Próximas Citas</p>
+          <p class="text-2xl font-black text-slate-900 leading-none">{{ citasProximas().length }}</p>
+          <p class="text-[11px] text-slate-400 font-medium mt-1">pendientes de atención</p>
+        </div>
+      </div>
+
+      <div class="bg-[#0066AA] rounded-2xl border border-blue-700/50 p-5 flex items-center gap-4 hover:bg-[#005a96] transition-colors">
+        <div class="w-11 h-11 rounded-xl bg-white/15 flex items-center justify-center shrink-0">
+          <i class="pi pi-calendar-clock text-base text-white"></i>
+        </div>
+        <div class="min-w-0">
+          <p class="text-[10px] font-extrabold text-blue-200 uppercase tracking-widest leading-none mb-1">Citas Hoy</p>
+          <p class="text-2xl font-black text-white leading-none">{{ citasHoy().length }}</p>
+          <p class="text-[11px] text-blue-200 font-medium mt-1">programadas para hoy</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- GRID PRINCIPAL -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+
+      <!-- COLUMNA IZQUIERDA (2/3) -->
+      <div class="lg:col-span-2 space-y-6">
+
+        <!-- PRÓXIMAS CITAS -->
+        <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+          <div class="px-6 py-5 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
+            <div>
+              <h2 class="text-xs font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-[#0066AA]"></span>
+                Mis Próximas Citas
+              </h2>
+              <p class="text-[10px] text-slate-400 font-medium mt-0.5">Citas programadas y reprogramadas</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] font-bold text-slate-500 bg-slate-100 rounded-full px-3 py-1">
+                {{ citasProximas().length }} citas
+              </span>
+              <a routerLink="/mis-citas"
+                class="text-[10px] font-extrabold text-[#0066AA] hover:underline flex items-center gap-1">
+                Ver todas <i class="pi pi-arrow-right text-[8px]"></i>
+              </a>
+            </div>
+          </div>
+
+          <div class="p-6">
+            <div *ngIf="citasProximas().length > 0; else sinCitas" class="overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="border-b border-slate-200">
+                    <th class="pb-3 text-[9px] font-black text-slate-400 uppercase tracking-wider">Fecha</th>
+                    <th class="pb-3 text-[9px] font-black text-slate-400 uppercase tracking-wider">Hora</th>
+                    <th class="pb-3 text-[9px] font-black text-slate-400 uppercase tracking-wider">Mascota</th>
+                    <th class="pb-3 text-[9px] font-black text-slate-400 uppercase tracking-wider">Servicio</th>
+                    <th class="pb-3 text-[9px] font-black text-slate-400 uppercase tracking-wider">Estado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let cita of citasProximas()"
+                    class="border-b border-slate-100 last:border-0 hover:bg-slate-50/30 transition-colors">
+                    <td class="py-3.5 text-xs font-bold text-slate-700">
+                      {{ formatFecha(cita.fechaHoraInicio) }}
+                    </td>
+                    <td class="py-3.5 text-xs font-black text-[#0066AA]">
+                      {{ formatHora(cita.fechaHoraInicio) }}
+                    </td>
+                    <td class="py-3.5">
+                      <div class="flex items-center gap-2">
+                        <div class="w-7 h-7 rounded-lg bg-pink-50 text-pink-500 flex items-center justify-center shrink-0">
+                          <i class="pi pi-heart-fill text-[9px]"></i>
+                        </div>
+                        <span class="text-xs font-bold text-slate-800 truncate max-w-[100px]">{{ cita.mascotaNombre }}</span>
+                      </div>
+                    </td>
+                    <td class="py-3.5 text-xs text-slate-500 font-medium max-w-[120px] truncate">
+                      {{ cita.servicioNombre || 'Consulta General' }}
+                    </td>
+                    <td class="py-3.5">
+                      <span [class]="'px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border ' + estadoBadgeClass(cita.estado)">
+                        {{ estadoLabel(cita.estado) }}
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <ng-template #sinCitas>
+              <div class="py-12 text-center">
+                <i class="pi pi-calendar text-3xl text-slate-200 block mb-3"></i>
+                <p class="text-sm text-slate-400 font-medium">No tienes citas próximas</p>
+                <a routerLink="/mis-citas"
+                  class="inline-flex items-center gap-1.5 mt-4 px-4 py-2 rounded-xl bg-[#0066AA] text-white text-xs font-bold hover:bg-[#0055aa] transition-all">
+                  <i class="pi pi-plus text-[10px]"></i> Agendar una cita
+                </a>
+              </div>
+            </ng-template>
+          </div>
+        </div>
+
+        <!-- MIS MASCOTAS (preview) -->
+        <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+          <div class="px-6 py-5 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
+            <div>
+              <h2 class="text-xs font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-pink-400"></span>
+                Mis Mascotas
+              </h2>
+              <p class="text-[10px] text-slate-400 font-medium mt-0.5">Pacientes registrados a tu nombre</p>
+            </div>
+            <a routerLink="/mis-mascotas"
+              class="text-[10px] font-extrabold text-[#0066AA] hover:underline flex items-center gap-1">
+              Ver todas <i class="pi pi-arrow-right text-[8px]"></i>
+            </a>
+          </div>
+
+          <div class="p-6">
+            <div *ngIf="mascotas().length > 0; else sinMascotas"
+              class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div *ngFor="let mascota of mascotas().slice(0, 4)"
+                class="flex items-center gap-3 p-3 rounded-xl border border-slate-100 hover:border-slate-200 hover:bg-slate-50/50 transition-all">
+                <div class="w-10 h-10 rounded-xl bg-pink-50 flex items-center justify-center shrink-0">
+                  <i class="pi pi-heart-fill text-sm text-pink-500"></i>
+                </div>
+                <div class="min-w-0 flex-1">
+                  <p class="text-xs font-extrabold text-slate-800 truncate">{{ mascota.nombre }}</p>
+                  <p class="text-[10px] text-slate-400 font-medium truncate">
+                    {{ mascota.especie }} · {{ mascota.raza || '—' }}
+                  </p>
+                </div>
+                <span [class]="'text-[8px] font-black px-2 py-0.5 rounded-full uppercase ' + (mascota.activo !== false ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-400')">
+                  {{ mascota.activo !== false ? 'Activa' : 'Inactiva' }}
+                </span>
+              </div>
+            </div>
+            <ng-template #sinMascotas>
+              <div class="py-10 text-center">
+                <i class="pi pi-heart text-3xl text-slate-200 block mb-3"></i>
+                <p class="text-sm text-slate-400 font-medium">Aún no tienes mascotas registradas</p>
+              </div>
+            </ng-template>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- COLUMNA DERECHA (1/3) -->
+      <div class="space-y-6">
+
+        <!-- PERFIL -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-6">
+          <div class="flex items-center gap-3.5 pb-5 mb-5 border-b border-slate-200">
+            <div class="w-12 h-12 rounded-2xl bg-[#0066AA] flex items-center justify-center
+                        text-white font-black text-base shrink-0 select-none">
+              {{ userInitials }}
+            </div>
+            <div class="min-w-0 flex-1">
+              <p class="text-sm font-extrabold text-slate-900 truncate leading-snug">{{ userName }}</p>
+              <span class="inline-block mt-1.5 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider bg-indigo-50 text-indigo-700 border border-indigo-100">
+                Propietario
+              </span>
+            </div>
+          </div>
+
+          <div class="space-y-3">
+            <div *ngIf="companyName" class="flex items-center gap-2.5">
+              <div class="w-6 h-6 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
+                <i class="pi pi-building text-[10px] text-slate-400"></i>
+              </div>
+              <span class="text-xs text-slate-600 font-semibold truncate">{{ companyName }}</span>
+            </div>
+            <div class="flex items-center gap-2.5">
+              <div class="w-6 h-6 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 block"></span>
+              </div>
+              <span class="text-xs text-slate-600 font-medium">Sesión Activa</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ACCESOS RÁPIDOS -->
+        <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+          <div class="px-6 py-5 border-b border-slate-200 bg-slate-50/50">
+            <h2 class="text-xs font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
+              <i class="pi pi-th-large text-[#0066AA]"></i>
+              Accesos Rápidos
+            </h2>
+          </div>
+          <div class="p-4 grid grid-cols-2 gap-3">
+            <a routerLink="/mis-mascotas"
+              class="flex flex-col items-center gap-2 p-4 rounded-xl border border-slate-100 hover:border-pink-200 hover:bg-pink-50/50 transition-all cursor-pointer">
+              <i class="pi pi-heart-fill text-xl text-pink-500"></i>
+              <span class="text-[10px] font-extrabold text-slate-600 uppercase tracking-wider text-center leading-tight">Mis Mascotas</span>
+            </a>
+            <a routerLink="/mis-citas"
+              class="flex flex-col items-center gap-2 p-4 rounded-xl border border-slate-100 hover:border-blue-200 hover:bg-blue-50/50 transition-all cursor-pointer">
+              <i class="pi pi-calendar text-xl text-[#0066AA]"></i>
+              <span class="text-[10px] font-extrabold text-slate-600 uppercase tracking-wider text-center leading-tight">Mis Citas</span>
+            </a>
+            <a routerLink="/mi-historial"
+              class="flex flex-col items-center gap-2 p-4 rounded-xl border border-slate-100 hover:border-indigo-200 hover:bg-indigo-50/50 transition-all cursor-pointer">
+              <i class="pi pi-book text-xl text-indigo-600"></i>
+              <span class="text-[10px] font-extrabold text-slate-600 uppercase tracking-wider text-center leading-tight">Mi Historial</span>
+            </a>
+            <a routerLink="/mis-pagos"
+              class="flex flex-col items-center gap-2 p-4 rounded-xl border border-slate-100 hover:border-emerald-200 hover:bg-emerald-50/50 transition-all cursor-pointer">
+              <i class="pi pi-wallet text-xl text-emerald-600"></i>
+              <span class="text-[10px] font-extrabold text-slate-600 uppercase tracking-wider text-center leading-tight">Mis Pagos</span>
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>

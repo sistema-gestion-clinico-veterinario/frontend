@@ -47,4 +47,10 @@ export class CitaService {
   reprogramar(id: number, data: CitaRequest) {
     return this.http.put<ApiResponse<CitaResponse>>(`${this.apiUrl}/${id}/reprogramar`, data);
   }
+
+  getAdminDisponibilidad(empleadoId: number, fecha: string, servicioId: number) {
+    return this.http.get<ApiResponse<string[]>>(
+      `${this.apiUrl}/disponibilidad?empleadoId=${empleadoId}&fecha=${fecha}&servicioId=${servicioId}`
+    );
+  }
 }
