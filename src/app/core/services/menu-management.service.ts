@@ -31,6 +31,10 @@ export class MenuManagementService {
     return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`);
   }
 
+  listarRutas() {
+    return this.http.get<ApiResponse<{ path: string; label: string; group: string }[]>>(`${this.apiUrl}/available-routes`);
+  }
+
   obtenerMenuUsuario(companyId?: number, roleId?: number) {
     const paramsList: string[] = [];
     if (companyId) paramsList.push(`companyId=${companyId}`);

@@ -71,9 +71,53 @@
       <div class="grid grid-cols-2 gap-4">
         <div class="space-y-1.5">
           <label class="text-[11px] font-bold text-[#94A3B8] uppercase tracking-wider">Ruta (Path)</label>
-          <input formControlName="path" type="text" 
-            class="w-full rounded-lg px-4 py-2.5 text-[13px] font-medium font-mono outline-none bg-[#F8FAFC] border border-[#F1F5F9]" 
-            placeholder="/...">
+          <div class="relative">
+            <div (click)="toggleRoutes($event)"
+                 class="w-full rounded-lg px-4 py-2.5 text-[13px] font-bold bg-[#F8FAFC] border border-[#F1F5F9] cursor-pointer flex justify-between items-center group hover:bg-[#EFF6FF] transition-all">
+              <span class="truncate font-mono text-[12px]" [class.text-[#334155]]="form.get('path')?.value" [class.text-[#94A3B8]]="!form.get('path')?.value">
+                {{ form.get('path')?.value || 'Sin ruta' }}
+              </span>
+              <i class="pi pi-chevron-down text-[10px] text-[#94A3B8] group-hover:text-[#0066AA] flex-shrink-0"></i>
+            </div>
+            <p class="text-[10px] text-[#94A3B8] font-medium mt-1">{{ currentRouteLabel }}</p>
+
+            <div *ngIf="showRoutes()"
+                 (mousedown)="$event.stopPropagation()"
+                 (click)="$event.stopPropagation()"
+                 class="absolute top-full left-0 right-0 mt-1.5 bg-white border border-[#F1F5F9] rounded-lg z-50 shadow-2xl shadow-slate-300/50 animate-fade-in flex flex-col">
+              <div class="p-2 border-b border-[#F1F5F9] bg-white">
+                <div class="flex items-center gap-2 bg-[#F8FAFC] border border-[#E2E8F0] rounded-md px-3 py-1.5">
+                  <i class="pi pi-search text-[#94A3B8] text-[11px]"></i>
+                  <input #routeInput type="text" placeholder="Buscar ruta..."
+                    [value]="routeSearch()"
+                    (input)="routeSearch.set(routeInput.value)"
+                    class="flex-1 bg-transparent text-[12px] font-medium text-[#334155] outline-none placeholder:text-[#CBD5E1]" />
+                  <button *ngIf="routeSearch()" type="button" (click)="routeSearch.set('')"
+                    class="text-[#94A3B8] hover:text-[#334155] cursor-pointer bg-transparent border-none p-0">
+                    <i class="pi pi-times text-[10px]"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="max-h-52 overflow-y-auto custom-scrollbar">
+                <div (click)="selectRoute(null)" class="px-4 py-2.5 text-[13px] font-medium text-[#64748B] hover:bg-[#F8FAFC] hover:text-[#0066AA] cursor-pointer border-b border-[#F8FAFC]">
+                  Sin ruta (menú padre)
+                </div>
+                <ng-container *ngFor="let r of filteredRoutes()">
+                  <div (click)="selectRoute(r.path)"
+                       class="px-4 py-2.5 hover:bg-[#F8FAFC] hover:text-[#0066AA] cursor-pointer border-b border-[#F8FAFC] last:border-none flex items-center justify-between group">
+                    <div class="flex flex-col min-w-0">
+                      <span class="text-[13px] font-medium text-[#334155] group-hover:text-[#0066AA] truncate">{{ r.label }}</span>
+                      <span class="text-[10px] font-mono text-[#94A3B8] group-hover:text-[#0066AA]/60">{{ r.path }}</span>
+                    </div>
+                    <span class="text-[9px] text-[#CBD5E1] font-bold uppercase ml-2 flex-shrink-0">{{ r.group }}</span>
+                  </div>
+                </ng-container>
+                <div *ngIf="filteredRoutes().length === 0" class="px-4 py-4 text-center text-[12px] text-[#CBD5E1] font-medium">
+                  Sin resultados para "{{ routeSearch() }}"
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
         
         <div class="space-y-1.5">
