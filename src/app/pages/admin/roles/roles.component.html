@@ -37,13 +37,22 @@
     <!-- ===== Panel izquierdo: lista de roles ===== -->
     <div class="lg:col-span-1">
       <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-        <div class="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
-          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-            {{ activeSection() === 'empresa' ? 'Roles de empresa' : 'Roles del sistema' }}
-          </p>
-          <span class="text-xs text-slate-300 font-semibold">
-            {{ (activeSection() === 'empresa' ? companyRoles() : systemRoles()).length }}
-          </span>
+        <div class="px-4 py-3 border-b border-slate-100 flex items-center justify-between gap-2">
+          <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+              {{ activeSection() === 'empresa' ? 'Roles de empresa' : 'Roles del sistema' }}
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-slate-300 font-semibold bg-slate-50 px-2 py-0.5 rounded">
+              {{ (activeSection() === 'empresa' ? companyRoles() : systemRoles()).length }}
+            </span>
+            <button *ngIf="isAdminOrSuperAdmin()" (click)="openCreateModal()"
+              title="Crear Nuevo Rol"
+              class="w-6 h-6 rounded bg-blue-50 text-[#0066AA] hover:bg-blue-100 transition-colors flex items-center justify-center shrink-0 active:scale-95">
+              <i class="pi pi-plus text-xs"></i>
+            </button>
+          </div>
         </div>
 
 
@@ -133,8 +142,29 @@
               <i [class]="activeSection() === 'sistema' ? 'pi pi-lock text-base' : 'pi pi-shield text-base'"></i>
             </div>
             <div>
-              <h2 class="text-sm font-bold text-slate-800">{{ roleLabel(selectedRole()!.name) }}</h2>
-              <p class="text-xs text-slate-400">
+              <div class="flex items-center gap-2">
+                <ng-container *ngIf="!isEditingName()">
+                  <h2 class="text-sm font-bold text-slate-800">{{ roleLabel(selectedRole()!.name) }}</h2>
+                  <button *ngIf="canRenameRole(selectedRole())" (click)="startEditName()" 
+                    class="w-6 h-6 flex items-center justify-center rounded text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+                    title="Editar nombre del rol">
+                    <i class="pi pi-pencil text-[10px]"></i>
+                  </button>
+                </ng-container>
+                <ng-container *ngIf="isEditingName()">
+                  <div class="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 focus-within:border-[#0066AA] focus-within:ring-1 focus-within:ring-[#0066AA] transition-all">
+                    <span class="text-[10px] font-bold text-slate-400 tracking-wider">ROLE_</span>
+                    <input type="text" [ngModel]="editingNameValue()" (ngModelChange)="editingNameValue.set($event)"
+                      class="bg-transparent border-none text-xs font-bold text-slate-700 focus:outline-none w-48 uppercase p-0"
+                      placeholder="NUEVO_NOMBRE" />
+                  </div>
+                  <button (click)="cancelEditName()" 
+                    class="px-2 py-1 text-[10px] font-semibold text-slate-500 bg-slate-100 hover:bg-slate-200 rounded-md transition-colors border border-slate-200">
+                    Cancelar
+                  </button>
+                </ng-container>
+              </div>
+              <p class="text-xs text-slate-400 mt-1">
                 {{ pendingPermIds().size }} permisos · {{ pendingMenuIds().size }} menús asignados
                 <span *ngIf="activeSection() === 'sistema'"
                   class="ml-2 bg-amber-100 text-amber-700 text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider">
@@ -147,12 +177,18 @@
               </p>
             </div>
           </div>
-          <div class="flex gap-2" *ngIf="isDirty()">
-            <button (click)="discard()"
+          <div class="flex gap-2 items-center">
+            <!-- Botón Eliminar Rol (Solo si es eliminable) -->
+            <button *ngIf="canDeleteRole(selectedRole())" (click)="deleteRole(selectedRole()!)"
+              class="px-3 py-1.5 rounded-lg border border-red-200 text-xs font-semibold text-red-600 hover:bg-red-50 hover:border-red-300 transition-colors flex items-center gap-1.5 active:scale-95">
+              <i class="pi pi-trash text-xs"></i>
+              Eliminar Rol
+            </button>
+            <button *ngIf="isDirty() && isAdminOrSuperAdmin()" (click)="discard()"
               class="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-colors">
               Descartar
             </button>
-            <button (click)="save()"
+            <button *ngIf="isDirty() && isAdminOrSuperAdmin()" (click)="save()"
               class="px-4 py-1.5 rounded-lg bg-[#0066AA] text-white text-xs font-semibold hover:bg-[#005a96] transition-colors flex items-center gap-1.5">
               <i class="pi pi-save text-xs"></i>
               Guardar cambios
@@ -189,9 +225,12 @@
                 class="flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors"
                 [class.border-blue-200]="hasPermission(perm.id)"
                 [class.bg-blue-50]="hasPermission(perm.id)"
-                [class.border-slate-100]="!hasPermission(perm.id)">
+                [class.border-slate-100]="!hasPermission(perm.id)"
+                [class.opacity-60]="!canEditRole(selectedRole())"
+                [class.cursor-not-allowed]="!canEditRole(selectedRole())">
                 <input type="checkbox" [checked]="hasPermission(perm.id)" (change)="togglePermission(perm.id)"
-                  class="mt-0.5 w-4 h-4 accent-[#0066AA] shrink-0 cursor-pointer" />
+                  [disabled]="!canEditRole(selectedRole())"
+                  class="mt-0.5 w-4 h-4 accent-[#0066AA] shrink-0 cursor-pointer disabled:cursor-not-allowed" />
                 <div>
                   <p class="text-xs font-semibold text-slate-700 leading-tight">{{ perm.label }}</p>
                   <p class="text-[10px] text-slate-400 mt-0.5 leading-tight">{{ perm.description }}</p>
@@ -210,12 +249,15 @@
           <div class="space-y-3">
             <div *ngFor="let menu of rootMenus()" class="border border-slate-200 rounded-xl overflow-hidden">
               <label class="flex items-center gap-3 px-4 py-3 bg-slate-50 cursor-pointer hover:bg-slate-100 transition-colors"
-                [class.bg-blue-50]="hasMenu(menu.id)">
+                [class.bg-blue-50]="hasMenu(menu.id)"
+                [class.opacity-60]="!canEditRole(selectedRole())"
+                [class.cursor-not-allowed]="!canEditRole(selectedRole())">
                 <input type="checkbox"
                   [checked]="hasMenu(menu.id) || allChildrenSelected(menu)"
                   [indeterminate]="someChildrenSelected(menu)"
                   (change)="toggleMenuWithChildren(menu)"
-                  class="w-4 h-4 accent-[#0066AA] shrink-0 cursor-pointer" />
+                  [disabled]="!canEditRole(selectedRole())"
+                  class="w-4 h-4 accent-[#0066AA] shrink-0 cursor-pointer disabled:cursor-not-allowed" />
                 <div class="flex items-center gap-2 flex-1">
                   <i [class]="menu.icon + ' text-sm text-slate-400'"></i>
                   <span class="text-sm font-semibold text-slate-700">{{ menu.label }}</span>
@@ -225,9 +267,12 @@
               <div *ngIf="menu.children && menu.children.length > 0" class="divide-y divide-slate-100">
                 <label *ngFor="let child of menu.children"
                   class="flex items-center gap-3 pl-10 pr-4 py-2.5 cursor-pointer hover:bg-slate-50 transition-colors"
-                  [class.bg-blue-50]="hasMenu(child.id)">
+                  [class.bg-blue-50]="hasMenu(child.id)"
+                  [class.opacity-60]="!canEditRole(selectedRole())"
+                  [class.cursor-not-allowed]="!canEditRole(selectedRole())">
                   <input type="checkbox" [checked]="hasMenu(child.id)" (change)="toggleMenu(child.id)"
-                    class="w-4 h-4 accent-[#0066AA] shrink-0 cursor-pointer" />
+                    [disabled]="!canEditRole(selectedRole())"
+                    class="w-4 h-4 accent-[#0066AA] shrink-0 cursor-pointer disabled:cursor-not-allowed" />
                   <div class="flex items-center gap-2 flex-1">
                     <i [class]="child.icon + ' text-xs text-slate-300'"></i>
                     <span class="text-sm text-slate-600">{{ child.label }}</span>
@@ -248,3 +293,76 @@
     </div>
   </div>
 </div>
+
+<!-- Create Role Modal -->
+<div *ngIf="showCreateModal()" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm font-['Barlow'] animate-in fade-in duration-200">
+  <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-slate-100 flex flex-col overflow-hidden transform transition-all scale-100 animate-in zoom-in-95 duration-200">
+    <!-- Header -->
+    <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 bg-blue-50 text-[#0066AA] rounded-lg flex items-center justify-center">
+          <i class="pi pi-plus text-base"></i>
+        </div>
+        <h2 class="text-sm font-bold text-slate-800">Crear Nuevo Rol</h2>
+      </div>
+      <button (click)="closeCreateModal()"
+        class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+        title="Cerrar modal">
+        <i class="pi pi-times text-xs"></i>
+      </button>
+    </div>
+
+    <!-- Content -->
+    <div class="p-6 space-y-4">
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs font-semibold text-slate-700 ml-0.5">Nombre del Rol <span class="text-rose-500">*</span></label>
+        <div class="relative">
+          <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-extrabold text-slate-400 select-none">ROLE_</span>
+          <input type="text" [ngModel]="newRoleName()" (ngModelChange)="newRoleName.set($event)" placeholder="EJ: ATENCION_CLIENTE"
+            class="w-full pl-14 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:border-[#0066AA] focus:ring-1 focus:ring-[#0066AA] outline-none h-10 transition-all font-bold text-slate-800 uppercase" />
+        </div>
+        <p class="text-[10px] text-slate-400 mt-1 leading-relaxed">
+          El nombre del rol se guardará automáticamente en mayúsculas y con prefijo <code class="font-extrabold text-slate-600">ROLE_</code>.
+        </p>
+      </div>
+
+      <!-- Footer Actions -->
+      <div class="flex gap-3 pt-2">
+        <button type="button" (click)="closeCreateModal()"
+          class="flex-1 py-2.5 border border-slate-200 rounded-lg text-sm font-semibold text-slate-500 hover:bg-slate-50 transition-colors">
+          Cancelar
+        </button>
+        <button type="button" (click)="createRole()" [disabled]="!newRoleName().trim()"
+          class="flex-1 bg-[#0066AA] hover:bg-[#005a96] disabled:opacity-60 text-white font-semibold py-2.5 rounded-lg text-sm transition-colors flex items-center justify-center gap-2 cursor-pointer">
+          Crear Rol
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Dialog -->
+<div *ngIf="confirmDialog()" class="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 backdrop-blur-sm font-['Barlow'] animate-in fade-in duration-200">
+  <div class="bg-white rounded-xl p-6 max-w-sm w-full mx-4 border border-slate-200 shadow-xl transform transition-all animate-in zoom-in-95 duration-200">
+    <div class="flex items-start gap-3 mb-4">
+      <div class="w-9 h-9 rounded-full bg-red-50 flex items-center justify-center shrink-0">
+        <i class="pi pi-exclamation-triangle text-red-500"></i>
+      </div>
+      <div>
+        <h3 class="text-sm font-semibold text-slate-800">{{ confirmDialog()!.title }}</h3>
+        <p class="text-sm text-slate-500 mt-1 leading-relaxed">{{ confirmDialog()!.message }}</p>
+      </div>
+    </div>
+    <div class="flex justify-end gap-3">
+      <button (click)="cancelConfirm()"
+        class="px-4 py-2 rounded-lg border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+        Cancelar
+      </button>
+      <button (click)="confirmAction()"
+        class="px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-medium hover:bg-red-700 transition-colors">
+        Confirmar
+      </button>
+    </div>
+  </div>
+</div>
+

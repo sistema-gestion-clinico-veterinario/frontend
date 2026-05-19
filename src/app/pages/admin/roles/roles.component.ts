@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { RoleService } from '../../../core/services/role.service';
@@ -14,7 +15,7 @@ type Section = 'empresa' | 'sistema';
 @Component({
   selector: 'app-roles',
   standalone: true,
-  imports: [CommonModule, ToastModule],
+  imports: [CommonModule, ToastModule, FormsModule],
   providers: [MessageService],
   templateUrl: './roles.component.html',
   styleUrl: './roles.component.scss'
@@ -26,6 +27,10 @@ export class RolesComponent implements OnInit {
   readonly loadingStore = inject(LoadingStore);
 
   isSuperAdmin = computed(() => (this.authStore.roles() ?? []).includes('ROLE_SUPER_ADMIN'));
+  isAdminOrSuperAdmin = computed(() => {
+    const userRoles = this.authStore.roles() ?? [];
+    return userRoles.includes('ROLE_SUPER_ADMIN') || userRoles.includes('ROLE_ADMIN');
+  });
 
   get activeCompanyId(): number | null {
     return this.authStore.selectedEnterprise()?.establishmentId ?? this.authStore.companyId();
@@ -50,6 +55,13 @@ export class RolesComponent implements OnInit {
   pendingMenuIds  = signal<Set<number>>(new Set());
   activeTab       = signal<Tab>('permisos');
   activeSection   = signal<Section>('empresa');
+
+  showCreateModal = signal<boolean>(false);
+  newRoleName     = signal<string>('');
+  confirmDialog   = signal<{ title: string; message: string; onConfirm: () => void } | null>(null);
+
+  isEditingName    = signal<boolean>(false);
+  editingNameValue = signal<string>('');
 
   readonly modules = computed(() => {
     const map = new Map<string, PermissionModel[]>();
@@ -115,12 +127,16 @@ export class RolesComponent implements OnInit {
     this.selectedRole.set(null);
     this.pendingPermIds.set(new Set());
     this.pendingMenuIds.set(new Set());
+    this.isEditingName.set(false);
+    this.editingNameValue.set('');
   }
 
   selectRole(role: Role) {
     this.selectedRole.set(role);
     this.pendingPermIds.set(new Set(role.permissions.map(p => p.id)));
     this.pendingMenuIds.set(new Set(role.menuIds));
+    this.isEditingName.set(false);
+    this.editingNameValue.set('');
   }
 
   setTab(tab: Tab) { this.activeTab.set(tab); }
@@ -163,10 +179,55 @@ export class RolesComponent implements OnInit {
   // ---- Dirty / Save ----
   isDirty(): boolean {
     const role = this.selectedRole();
-    if (!role) return false;
-    return !this.setsEqual(new Set(role.permissions.map(p => p.id)), this.pendingPermIds()) ||
+    if (!role || !this.canEditRole(role)) return false;
+
+    let nameChanged = false;
+    if (this.isEditingName() && this.editingNameValue().trim()) {
+      let formattedName = this.editingNameValue().trim().toUpperCase();
+      if (!formattedName.startsWith('ROLE_')) {
+        formattedName = 'ROLE_' + formattedName;
+      }
+      formattedName = formattedName.replace(/\s+/g, '_');
+      nameChanged = formattedName !== role.name;
+    }
+
+    return nameChanged ||
+           !this.setsEqual(new Set(role.permissions.map(p => p.id)), this.pendingPermIds()) ||
            !this.setsEqual(new Set(role.menuIds), this.pendingMenuIds());
   }
+
+  canEditRole(role: Role | null): boolean {
+    if (!role) return false;
+    if (!this.isAdminOrSuperAdmin()) return false;
+    // Bloquear edición de los roles centrales del sistema
+    const protectedRoles = ['ROLE_SUPER_ADMIN', 'ROLE_ADMIN'];
+    return !protectedRoles.includes(role.name);
+  }
+
+  canRenameRole(role: Role | null): boolean {
+    if (!role) return false;
+    if (!this.isAdminOrSuperAdmin()) return false;
+    // No permitir renombrar roles centrales nativos del sistema
+    const protectedRoles = ['ROLE_SUPER_ADMIN', 'ROLE_ADMIN'];
+    return !protectedRoles.includes(role.name);
+  }
+
+  startEditName() {
+    const role = this.selectedRole();
+    if (!role) return;
+    let cleanName = role.name;
+    if (cleanName.startsWith('ROLE_')) {
+      cleanName = cleanName.substring(5);
+    }
+    this.editingNameValue.set(cleanName);
+    this.isEditingName.set(true);
+  }
+
+  cancelEditName() {
+    this.isEditingName.set(false);
+    this.editingNameValue.set('');
+  }
+
   private setsEqual(a: Set<number>, b: Set<number>): boolean {
     if (a.size !== b.size) return false;
     for (const v of a) if (!b.has(v)) return false;
@@ -177,14 +238,39 @@ export class RolesComponent implements OnInit {
     const role = this.selectedRole();
     if (!role) return;
     this.loadingStore.show();
-        const currentRole = this.selectedRole();
-        const effectiveCompanyId = currentRole ? currentRole.companyId : this.activeCompanyId;
-        this.roleService.actualizar(role.id, {
-          name: role.name,
-          companyId: effectiveCompanyId ?? undefined,
-          permissionIds: Array.from(this.pendingPermIds()),
-          menuIds: Array.from(this.pendingMenuIds())
-        }).subscribe({
+    const currentRole = this.selectedRole();
+    const effectiveCompanyId = currentRole ? currentRole.companyId : this.activeCompanyId;
+
+    let finalName = role.name;
+    if (this.isEditingName() && this.editingNameValue().trim()) {
+      let formattedName = this.editingNameValue().trim().toUpperCase();
+      if (!formattedName.startsWith('ROLE_')) {
+        formattedName = 'ROLE_' + formattedName;
+      }
+      formattedName = formattedName.replace(/\s+/g, '_');
+
+      // Validar que el nombre no esté duplicado en otro rol
+      const nameExists = [...this.companyRoles(), ...this.systemRoles()].some(
+        r => r.id !== role.id && r.name.toUpperCase() === formattedName
+      );
+      if (nameExists) {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Nombre duplicado',
+          detail: `Ya existe un rol con el nombre "${this.roleLabel(formattedName)}" en el sistema`
+        });
+        this.loadingStore.hide();
+        return;
+      }
+      finalName = formattedName;
+    }
+
+    this.roleService.actualizar(role.id, {
+      name: finalName,
+      companyId: effectiveCompanyId ?? undefined,
+      permissionIds: Array.from(this.pendingPermIds()),
+      menuIds: Array.from(this.pendingMenuIds())
+    }).subscribe({
       next: (res) => {
         // Actualizar en la lista correcta
         if (this.activeSection() === 'empresa') {
@@ -195,6 +281,8 @@ export class RolesComponent implements OnInit {
         this.selectedRole.set(res.data);
         this.pendingPermIds.set(new Set(res.data.permissions.map(p => p.id)));
         this.pendingMenuIds.set(new Set(res.data.menuIds));
+        this.isEditingName.set(false);
+        this.editingNameValue.set('');
         this.messageService.add({ severity: 'success', summary: 'Guardado', detail: `Configuración de ${res.data.name} actualizada` });
         this.loadingStore.hide();
       },
@@ -210,6 +298,8 @@ export class RolesComponent implements OnInit {
     if (!role) return;
     this.pendingPermIds.set(new Set(role.permissions.map(p => p.id)));
     this.pendingMenuIds.set(new Set(role.menuIds));
+    this.isEditingName.set(false);
+    this.editingNameValue.set('');
   }
 
   roleLabel(name: string): string {
@@ -221,5 +311,111 @@ export class RolesComponent implements OnInit {
       'ROLE_CLIENTE': 'Cliente / Apoderado'
     };
     return map[name] ?? name.replace('ROLE_', '').replace(/_/g, ' ');
+  }
+
+  openCreateModal() {
+    this.newRoleName.set('');
+    this.showCreateModal.set(true);
+  }
+
+  closeCreateModal() {
+    this.showCreateModal.set(false);
+  }
+
+  createRole() {
+    if (!this.newRoleName().trim()) {
+      this.messageService.add({ severity: 'warn', summary: 'Campo requerido', detail: 'El nombre del rol es obligatorio' });
+      return;
+    }
+
+    let formattedName = this.newRoleName().trim().toUpperCase();
+    if (!formattedName.startsWith('ROLE_')) {
+      formattedName = 'ROLE_' + formattedName;
+    }
+    formattedName = formattedName.replace(/\s+/g, '_');
+
+    // Validación en frontend para nombres duplicados
+    const nameExists = [...this.companyRoles(), ...this.systemRoles()].some(
+      r => r.name.toUpperCase() === formattedName
+    );
+    if (nameExists) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Nombre duplicado',
+        detail: `Ya existe un rol con el nombre "${this.roleLabel(formattedName)}" en el sistema`
+      });
+      return;
+    }
+
+    // El backend exige al menos un permiso al crear un rol.
+    // Le asignamos un permiso básico inicial (ej: USER_READ o el primero de la lista) para cumplir la validación.
+    const defaultPerm = this.allPermissions().find(p => p.name === 'USER_READ') || this.allPermissions()[0];
+    const initialPermissions = defaultPerm ? [defaultPerm.id] : [];
+
+    this.loadingStore.show();
+    this.roleService.crear({
+      name: formattedName,
+      companyId: this.activeSection() === 'empresa' ? (this.activeCompanyId ?? undefined) : undefined,
+      permissionIds: initialPermissions,
+      menuIds: []
+    }).subscribe({
+      next: (res) => {
+        if (this.activeSection() === 'empresa') {
+          this.companyRoles.update(list => [...list, res.data]);
+        } else {
+          this.systemRoles.update(list => [...list, res.data]);
+        }
+        this.selectRole(res.data);
+        this.showCreateModal.set(false);
+        this.messageService.add({ severity: 'success', summary: 'Creado', detail: `Rol ${this.roleLabel(res.data.name)} creado exitosamente` });
+        this.loadingStore.hide();
+      },
+      error: (err) => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo crear el rol' });
+        this.loadingStore.hide();
+      }
+    });
+  }
+
+  canDeleteRole(role: Role | null): boolean {
+    if (!role) return false;
+    if (!this.isAdminOrSuperAdmin()) return false;
+    const protectedRoles = ['ROLE_SUPER_ADMIN', 'ROLE_ADMIN'];
+    return !protectedRoles.includes(role.name);
+  }
+
+  deleteRole(role: Role) {
+    this.confirmDialog.set({
+      title: 'Eliminar Rol',
+      message: `¿Estás seguro de que deseas eliminar el rol ${this.roleLabel(role.name)}? Esta acción no se puede deshacer y quitará este rol a cualquier empleado asignado.`,
+      onConfirm: () => {
+        this.loadingStore.show();
+        this.roleService.eliminar(role.id).subscribe({
+          next: () => {
+            if (this.activeSection() === 'empresa') {
+              this.companyRoles.update(list => list.filter(r => r.id !== role.id));
+            } else {
+              this.systemRoles.update(list => list.filter(r => r.id !== role.id));
+            }
+            this.selectedRole.set(null);
+            this.messageService.add({ severity: 'success', summary: 'Eliminado', detail: 'Rol eliminado exitosamente' });
+            this.loadingStore.hide();
+          },
+          error: (err) => {
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo eliminar el rol' });
+            this.loadingStore.hide();
+          }
+        });
+      }
+    });
+  }
+
+  cancelConfirm() {
+    this.confirmDialog.set(null);
+  }
+
+  confirmAction() {
+    this.confirmDialog()?.onConfirm();
+    this.confirmDialog.set(null);
   }
 }
