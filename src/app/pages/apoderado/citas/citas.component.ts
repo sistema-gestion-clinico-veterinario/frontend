@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { ActivatedRoute, RouterModule } from '@angular/router';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
@@ -43,6 +43,7 @@ export class CitasComponent implements OnInit {
   private readonly pagoService = inject(PagoService);
   private readonly messageService = inject(MessageService);
   private readonly confirmationService = inject(ConfirmationService);
+  private readonly route = inject(ActivatedRoute);
   readonly authStore = inject(AuthStore);
   readonly loadingStore = inject(LoadingStore);
   private loadTimeout: any = null;
@@ -165,6 +166,8 @@ export class CitasComponent implements OnInit {
   });
 
   ngOnInit() {
+    const mascotaId = Number(this.route.snapshot.queryParamMap.get('mascotaId'));
+    if (mascotaId) this.selectedPetFilter.set(mascotaId);
     this.loadInitialData();
   }
 
@@ -289,8 +292,9 @@ export class CitasComponent implements OnInit {
     this.editingCitaId.set(null);
     this.vets.set([]);
     this.availableSlots.set([]);
+    const defaultMascotaId = this.selectedPetFilter() ?? (this.mascotas().length > 0 ? this.mascotas()[0].id : null);
     this.citaForm.reset({
-      mascotaId: this.mascotas().length > 0 ? this.mascotas()[0].id : null,
+      mascotaId: defaultMascotaId,
       servicioId: null,
       veterinarioId: null,
       fechaCita: null,

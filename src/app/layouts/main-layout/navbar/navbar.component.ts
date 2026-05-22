@@ -8,6 +8,7 @@ import { RoleService } from '../../../core/services/role.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { Role } from '../../../core/enums/role.enum';
 import { Role as CompanyRole } from '../../../models/response/permission';
+import { MenuItemDTO, MenuStructureDTO } from '../../../models/response/auth-login-response.model';
 
 @Component({
   selector: 'app-navbar',
@@ -75,7 +76,10 @@ export class NavbarComponent implements OnInit {
     if (this.isSuperAdmin) {
       this.companyService.listar(0, 1000).subscribe({
         next: (res) => {
-          const list = res.data.content.map(c => ({ label: c.name, value: c.id }));
+          const companies = res.data?.content ?? [];
+          const list = companies
+            .filter(c => c.activo)
+            .map(c => ({ label: c.name, value: c.id }));
           this.companies.set(list);
 
           const currentSelected = this.authStore.selectedEnterprise();
@@ -86,6 +90,9 @@ export class NavbarComponent implements OnInit {
           } else if (currentSelected) {
             this.loadCompanyRoles(currentSelected.establishmentId);
           }
+        },
+        error: () => {
+          this.companies.set([]);
         }
       });
     }
@@ -142,7 +149,7 @@ export class NavbarComponent implements OnInit {
             assignedRoles: res.data.assignedRoles || this.authStore.assignedRoles()
           });
 
-          window.location.href = resolveDashboardRoute(res.data.roles ?? []);
+          window.location.href = resolveInitialRoute(res.data.roles ?? [], res.data.menu ?? []);
         }
       });
     }
@@ -176,4 +183,27 @@ export function resolveDashboardRoute(roles: string[]): string {
   if (role.includes('APODERADO') || role.includes('CLIENTE')) return '/apoderado/dashboard';
   if (role.includes('ADMIN')) return '/admin/dashboard';
   return '/empleado/dashboard';
+}
+
+export function resolveInitialRoute(roles: string[], menu: (MenuStructureDTO | MenuItemDTO)[]): string {
+  const firstMenuRoute = findFirstMenuRoute(menu);
+  return firstMenuRoute || resolveDashboardRoute(roles);
+}
+
+function findFirstMenuRoute(menu: (MenuStructureDTO | MenuItemDTO)[]): string | null {
+  for (const item of menu || []) {
+    if (isMenuStructure(item)) {
+      const vista = item.vistas.find(v => (v.activo ?? true) && !!v.ruta);
+      if (vista?.ruta) return vista.ruta;
+      continue;
+    }
+
+    if ((item.activo ?? true) && item.ruta) return item.ruta;
+  }
+
+  return null;
+}
+
+function isMenuStructure(item: MenuStructureDTO | MenuItemDTO): item is MenuStructureDTO {
+  return 'vistas' in item && Array.isArray(item.vistas);
 }

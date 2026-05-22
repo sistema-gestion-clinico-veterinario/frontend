@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule, NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { RoleService, RolVentanaPermiso } from '../../../core/services/role.service';
@@ -13,7 +14,7 @@ type Section = 'empresa' | 'sistema';
 @Component({
   selector: 'app-roles',
   standalone: true,
-  imports: [CommonModule, ToastModule, FormsModule, NgTemplateOutlet],
+  imports: [CommonModule, ToastModule, FormsModule, NgTemplateOutlet, RouterLink],
   providers: [MessageService],
   templateUrl: './roles.component.html',
   styleUrl: './roles.component.scss'
