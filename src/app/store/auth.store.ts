@@ -215,7 +215,33 @@ export const AuthStore = signalStore(
       const normalized = normalizeRoute(routePattern);
       if (!normalized || normalized === 'profile' || normalized === 'password-change') return true;
 
-      return store.allowedRoutes().includes(normalized);
+      // Mapeo de alias de rutas a su ruta canónica en la base de datos
+      const ROUTE_ALIASES: Record<string, string> = {
+        'agenda': 'citas/agenda',
+        'empleado/agenda': 'citas/agenda',
+        'admin/citas/agenda': 'citas/agenda',
+        'empleado/citas/agenda': 'citas/agenda',
+        'empleado/mi-horario': 'mi-horario',
+        'admin/empleados/horarios': 'empleados/horarios',
+        'admin/mascotas': 'mascotas',
+        'empleado/mascotas': 'mascotas',
+        'admin/recetas': 'recetas',
+        'empleado/recetas': 'recetas',
+        'admin/historias-clinicas': 'historias-clinicas',
+        'empleado/historias-clinicas': 'historias-clinicas',
+      };
+
+      const canonicalRoute = ROUTE_ALIASES[normalized] ?? normalized;
+
+      if (store.allowedRoutes().includes(canonicalRoute)) {
+        return true;
+      }
+
+      // Probar quitando prefijos de roles en caso de rutas relativas dinámicas
+      const cleanPattern = stripPrefix(canonicalRoute);
+      const cleanAllowed = store.allowedRoutes().map(r => stripPrefix(r));
+
+      return cleanAllowed.includes(cleanPattern);
     },
 
     isSuperAdmin(): boolean {
@@ -295,4 +321,17 @@ function normalizeRoute(route: string): string {
     r = r.substring(0, r.length - 1);
   }
   return r.toLowerCase();
+}
+
+function stripPrefix(route: string): string {
+  if (route.startsWith('admin/')) {
+    return route.substring(6);
+  }
+  if (route.startsWith('empleado/')) {
+    return route.substring(9);
+  }
+  if (route.startsWith('apoderado/')) {
+    return route.substring(10);
+  }
+  return route;
 }

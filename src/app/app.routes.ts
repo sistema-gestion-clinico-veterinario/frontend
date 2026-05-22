@@ -219,6 +219,16 @@ export const routes: Routes = [
         ]
       },
       {
+        path: 'agenda',
+        data: { ventana: 'VISTA_CITAS_AGENDA' },
+        loadComponent: () => import('./pages/citas/agenda/agenda.component').then((m) => m.AgendaComponent)
+      },
+      {
+        path: 'empleado/agenda',
+        data: { ventana: 'VISTA_CITAS_AGENDA' },
+        loadComponent: () => import('./pages/citas/agenda/agenda.component').then((m) => m.AgendaComponent)
+      },
+      {
         path: 'admin/empleados/horarios',
         data: { permission: Permission.HORARIO_READ },
         loadComponent: () => import('./pages/admin/employee/roster/roster.component').then((m) => m.RosterComponent)

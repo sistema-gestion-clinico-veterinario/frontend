@@ -186,8 +186,7 @@ export function resolveDashboardRoute(roles: string[]): string {
 }
 
 export function resolveInitialRoute(roles: string[], menu: (MenuStructureDTO | MenuItemDTO)[]): string {
-  const firstMenuRoute = findFirstMenuRoute(menu);
-  return firstMenuRoute || resolveDashboardRoute(roles);
+  return resolveDashboardRoute(roles);
 }
 
 function findFirstMenuRoute(menu: (MenuStructureDTO | MenuItemDTO)[]): string | null {
