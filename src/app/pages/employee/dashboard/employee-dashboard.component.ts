@@ -247,7 +247,7 @@ export class EmployeeDashboardComponent implements OnInit {
         icon: 'pi pi-calendar text-xl',
         route: '/citas/agenda',
         colorClass: 'bg-sky-50 text-sky-700 border-sky-100 hover:bg-sky-100/50',
-        permission: 'CITA_READ'
+        permission: 'VISTA_CITAS_AGENDA'
       }
     ];
 

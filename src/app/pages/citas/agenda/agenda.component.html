@@ -55,7 +55,7 @@
           </button>
         </div>
 
-        <button *appHasPermission="'CITAS:escribir'" (click)="openNew()"
+        <button *appHasPermission="'VISTA_CITAS_AGENDA:escribir'" (click)="openNew()"
           class="flex items-center gap-1.5 bg-[#0066AA] hover:bg-[#005a96] text-white font-bold rounded-xl px-4 py-2 text-sm transition-all shadow-sm active:scale-95">
           <i class="pi pi-plus text-sm"></i>
           <span class="hidden sm:inline">Nueva Cita</span>
@@ -228,13 +228,13 @@
               <td class="px-5 py-3.5">
                 <div class="flex items-center justify-center gap-1 flex-wrap">
                   <ng-container *ngIf="canEdit(cita)">
-                    <button *appHasPermission="'CITAS:modificar'" (click)="editarCita(cita)" pTooltip="Editar" tooltipPosition="top"
+                    <button *appHasPermission="'VISTA_CITAS_AGENDA:modificar'" (click)="editarCita(cita)" pTooltip="Editar" tooltipPosition="top"
                       class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 text-slate-500 hover:bg-blue-50 hover:text-[#0066AA] transition-all">
                       <i class="pi pi-pencil text-xs"></i>
                     </button>
                   </ng-container>
                   <ng-container *ngIf="canReprogram(cita)">
-                    <button *appHasPermission="'CITAS:modificar'" (click)="reprogramarCita(cita)" pTooltip="Reprogramar" tooltipPosition="top"
+                    <button *appHasPermission="'VISTA_CITAS_AGENDA:modificar'" (click)="reprogramarCita(cita)" pTooltip="Reprogramar" tooltipPosition="top"
                       class="w-8 h-8 flex items-center justify-center rounded-lg bg-sky-50 text-sky-600 hover:bg-sky-100 transition-all">
                       <i class="pi pi-calendar-plus text-xs"></i>
                     </button>
@@ -264,13 +264,13 @@
                     </button>
                   </ng-container>
                   <ng-container *ngIf="canCancel(cita)">
-                    <button *appHasPermission="'CITAS:modificar'" (click)="cancelarCita(cita)" pTooltip="Cancelar" tooltipPosition="top"
+                    <button *appHasPermission="'VISTA_CITAS_AGENDA:modificar'" (click)="cancelarCita(cita)" pTooltip="Cancelar" tooltipPosition="top"
                       class="w-8 h-8 flex items-center justify-center rounded-lg bg-rose-50 text-rose-500 hover:bg-rose-100 transition-all">
                       <i class="pi pi-times text-xs"></i>
                     </button>
                   </ng-container>
                   <ng-container *ngIf="cita.estado === 'CANCELADA'">
-                    <button *appHasPermission="'CITAS:eliminar'" (click)="eliminarCita(cita)" pTooltip="Eliminar" tooltipPosition="top"
+                    <button *appHasPermission="'VISTA_CITAS_AGENDA:eliminar'" (click)="eliminarCita(cita)" pTooltip="Eliminar" tooltipPosition="top"
                       class="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-500 hover:bg-red-100 transition-all">
                       <i class="pi pi-trash text-xs"></i>
                     </button>
@@ -1253,13 +1253,13 @@
     </div>
     <div class="flex gap-2">
       <ng-container *ngIf="canCancel(citaDetalle()!)">
-        <button *appHasPermission="'CITAS:modificar'" (click)="cancelarCita(citaDetalle()!)"
+        <button *appHasPermission="'VISTA_CITAS_AGENDA:modificar'" (click)="cancelarCita(citaDetalle()!)"
           class="flex-1 flex items-center justify-center gap-2 py-2 border border-slate-200 text-rose-500 hover:bg-rose-50 hover:border-rose-200 text-xs font-semibold rounded-xl transition-all">
           <i class="pi pi-times text-xs"></i> Cancelar
         </button>
       </ng-container>
       <ng-container *ngIf="citaDetalle()?.estado === 'CANCELADA'">
-        <button *appHasPermission="'CITAS:eliminar'" (click)="eliminarCita(citaDetalle()!)"
+        <button *appHasPermission="'VISTA_CITAS_AGENDA:eliminar'" (click)="eliminarCita(citaDetalle()!)"
           class="flex-1 flex items-center justify-center gap-2 py-2 border border-slate-200 text-red-500 hover:bg-red-50 hover:border-red-200 text-xs font-semibold rounded-xl transition-all">
           <i class="pi pi-trash text-xs"></i> Eliminar
         </button>
