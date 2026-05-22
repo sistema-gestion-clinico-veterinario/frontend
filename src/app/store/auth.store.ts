@@ -188,13 +188,13 @@ export const AuthStore = signalStore(
         };
 
         if (isMenuStructure(item)) {
-          const vista = item.vistas.find(v => v.codigo === codigoVista);
+          const vista = item.vistas.find(v => v.codigo === codigo);
           if (vista && vista[tipo as keyof MenuItemDTO]) {
             return true;
           }
         } else {
           const menuItem = item as MenuItemDTO;
-          if (menuItem.codigo === codigoVista && menuItem[tipo as keyof MenuItemDTO]) {
+          if (menuItem.codigo === codigo && menuItem[tipo as keyof MenuItemDTO]) {
             return true;
           }
         }
