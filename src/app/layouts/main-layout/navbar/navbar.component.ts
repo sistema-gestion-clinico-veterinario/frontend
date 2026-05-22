@@ -177,7 +177,7 @@ export class NavbarComponent implements OnInit {
 }
 
 export function resolveDashboardRoute(roles: string[]): string {
-  if (roles.includes('ROLE_SUPER_ADMIN') || roles.includes('SUPER_ADMIN')) return '/admin/company';
+  if (roles.includes('ROLE_SUPER_ADMIN') || roles.includes('SUPER_ADMIN')) return '/dashboard';
 
   const role = roles[0] ?? '';
   if (role.includes('APODERADO') || role.includes('CLIENTE')) return '/apoderado/dashboard';
