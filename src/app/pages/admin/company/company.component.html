@@ -5,7 +5,7 @@
       <h1 class="text-2xl font-semibold text-slate-800">Administración de empresas</h1>
       <p class="text-sm text-slate-400 mt-1">Gestiona y supervisa todas las sedes registradas en el sistema</p>
     </div>
-    <button (click)="openNew()"
+    <button *appHasPermission="'EMPRESA:escribir'" (click)="openNew()"
       class="flex items-center gap-2 bg-[#0066AA] hover:bg-[#005a96] text-white text-sm font-medium px-5 h-10 rounded-lg transition-colors">
       <i class="pi pi-plus text-xs"></i>
       Registrar empresa
@@ -58,10 +58,18 @@
             </span>
           </td>
           <td class="px-6 py-4 text-right">
-            <button (click)="editCompany(company)"
-              class="p-2 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-all">
-              <i class="pi pi-pencil text-sm"></i>
-            </button>
+            <div class="flex items-center justify-end gap-1">
+              <button *appHasPermission="'EMPRESA:modificar'" (click)="toggleActivo(company)"
+                [title]="company.activo ? 'Desactivar empresa' : 'Activar empresa'"
+                [ngClass]="company.activo ? 'text-green-500 hover:bg-red-50 hover:text-red-500' : 'text-red-400 hover:bg-green-50 hover:text-green-600'"
+                class="p-2 rounded-lg transition-all">
+                <i [ngClass]="company.activo ? 'pi pi-lock-open' : 'pi pi-lock'" class="text-sm"></i>
+              </button>
+              <button *appHasPermission="'EMPRESA:modificar'" (click)="editCompany(company)"
+                class="p-2 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-all">
+                <i class="pi pi-pencil text-sm"></i>
+              </button>
+            </div>
           </td>
         </tr>
 

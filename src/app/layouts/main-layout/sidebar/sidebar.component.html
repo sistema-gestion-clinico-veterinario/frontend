@@ -50,7 +50,7 @@
 <ng-template #recursiveMenu let-list let-level="level">
   <li *ngFor="let item of list">
     
-    <ng-container *ngIf="item.children && item.children.length > 0; else singleLink">
+    <ng-container *ngIf="item.hijos && item.hijos.length > 0; else singleLink">
       <button
         type="button"
         (click)="toggleSubmenu(item.id, $event)"
@@ -59,25 +59,25 @@
         class="w-full relative group/btn"
       >
         <div class="flex items-center w-full" [class.gap-3]="!collapsed()" [class.justify-center]="collapsed()">
-          <i [class]="item.icon" 
+          <i [class]="item.icono"
              class="transition-colors text-[16px]"
              [class.text-[#0F172A]]="isMenuOpen(item.id) || level === 0"></i>
-          <span *ngIf="!collapsed()" class="flex-1 text-left whitespace-nowrap tracking-tight">{{ item.label }}</span>
+          <span *ngIf="!collapsed()" class="flex-1 text-left whitespace-nowrap tracking-tight">{{ item.nombre }}</span>
           <i *ngIf="!collapsed()" class="pi pi-angle-right text-[12px] text-[#0F172A] opacity-20 transition-transform duration-300"
              [class.rotate-90]="isMenuOpen(item.id)"
              [class.opacity-60]="isMenuOpen(item.id)"></i>
         </div>
       </button>
 
-      <ul *ngIf="isMenuOpen(item.id) && !collapsed()" 
+      <ul *ngIf="isMenuOpen(item.id) && !collapsed()"
           class="space-y-0.5 animate-in fade-in duration-300">
-        <ng-container *ngTemplateOutlet="recursiveMenu; context:{ $implicit: item.children, level: level + 1 }"></ng-container>
+        <ng-container *ngTemplateOutlet="recursiveMenu; context:{ $implicit: item.hijos, level: level + 1 }"></ng-container>
       </ul>
     </ng-container>
 
     <ng-template #singleLink>
       <a
-        [routerLink]="item.path"
+        [routerLink]="item.ruta"
         routerLinkActive="active-link"
         #rla="routerLinkActive"
         [routerLinkActiveOptions]="{ exact: true }"
@@ -86,10 +86,10 @@
         class="relative"
       >
         <div class="flex items-center" [class.gap-3]="!collapsed()" [class.justify-center]="collapsed()">
-          <i [class]="item.icon"
+          <i [class]="item.icono"
              class="text-[16px] transition-all"
              [class.text-[#0F172A]]="rla.isActive"></i>
-          <span *ngIf="!collapsed()" class="whitespace-nowrap tracking-tight">{{ item.label }}</span>
+          <span *ngIf="!collapsed()" class="whitespace-nowrap tracking-tight">{{ item.nombre }}</span>
         </div>
         <div *ngIf="rla.isActive && !collapsed()" 
              class="absolute right-0 top-1/2 -translate-y-1/2 w-0.5 h-3 bg-[#0F172A] rounded-l-full">

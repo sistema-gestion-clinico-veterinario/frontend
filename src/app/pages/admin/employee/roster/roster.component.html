@@ -67,7 +67,7 @@
           <i class="pi pi-trash text-[10px]"></i>
           <span class="roster-action-text">LIMPIAR</span>
         </button>
-        <button (click)="openAddForm()"
+        <button (click)="openAddForm(viewMode() === 'day' ? currentDateIso() : undefined)"
           class="flex items-center gap-1.5 bg-[#0066AA] text-white text-[10px] font-bold px-2.5 h-8 rounded-lg"
           title="Asignar turno">
           <i class="pi pi-plus text-[10px]"></i>
@@ -100,7 +100,7 @@
         <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Vista</label>
         <div class="flex bg-slate-50 p-1 rounded-lg border border-slate-200 h-9">
           <button *ngFor="let opt of viewOptions"
-            (click)="viewMode.set($any(opt.value))"
+            (click)="setViewMode($any(opt.value))"
             class="flex-1 text-[10px] font-bold uppercase tracking-tight rounded-md px-2"
             [class.bg-[#0066AA]]="viewMode() === opt.value"
             [class.text-white]="viewMode() === opt.value"

@@ -7,6 +7,7 @@ export interface CitaResponse {
   mascotaNombre: string;
   apoderadoId: number;
   apoderadoNombre: string;
+  apoderadoEmail?: string;
   veterinarioId: number;
   veterinarioNombre: string;
   servicioId?: number;

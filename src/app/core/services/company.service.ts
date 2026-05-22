@@ -32,4 +32,8 @@ export class CompanyService {
   updateCompany(company: CompanyDTO) {
     return this.http.put<ApiResponse<CompanyDTO>>(`${this.apiUrl}/${company.id}`, company);
   }
+
+  toggleActivo(id: number) {
+    return this.http.patch<ApiResponse<CompanyListResponse>>(`${this.apiUrl}/${id}/toggle-activo`, {});
+  }
 }

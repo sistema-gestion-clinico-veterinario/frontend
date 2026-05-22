@@ -84,7 +84,6 @@ export class PasswordChangeComponent {
           token: this.authStore.token()!,
           refreshToken: this.authStore.refreshToken(),
           roles: this.authStore.roles(),
-          permissions: this.authStore.permissions(),
           companyId: this.authStore.companyId(),
           companyName: this.authStore.companyName(),
           nombreCompleto: this.authStore.nombreCompleto(),
@@ -106,17 +105,14 @@ export class PasswordChangeComponent {
         setTimeout(() => {
           this.isSubmitting.set(false);
           const roles = this.authStore.roles() ?? [];
-          const permissions = this.authStore.permissions() ?? [];
           if (roles.includes('ROLE_SUPER_ADMIN')) {
             this.router.navigateByUrl('/admin/company');
           } else if (roles.includes('ROLE_CLIENTE') || roles.includes('ROLE_APODERADO')) {
             this.router.navigateByUrl('/apoderado');
+          } else if (roles.includes('ROLE_ADMIN')) {
+            this.router.navigateByUrl('/admin/dashboard');
           } else {
-            if (permissions.includes('ADMIN_DASHBOARD')) {
-              this.router.navigateByUrl('/dashboard');
-            } else {
-              this.router.navigateByUrl('/empleado/dashboard');
-            }
+            this.router.navigateByUrl('/empleado/dashboard');
           }
         }, 1500);
       },
@@ -134,17 +130,14 @@ export class PasswordChangeComponent {
 
   cancel() {
     const roles = this.authStore.roles() ?? [];
-    const permissions = this.authStore.permissions() ?? [];
     if (roles.includes('ROLE_SUPER_ADMIN')) {
       this.router.navigateByUrl('/admin/company');
     } else if (roles.includes('ROLE_CLIENTE') || roles.includes('ROLE_APODERADO')) {
       this.router.navigateByUrl('/apoderado');
+    } else if (roles.includes('ROLE_ADMIN')) {
+      this.router.navigateByUrl('/admin/dashboard');
     } else {
-      if (permissions.includes('ADMIN_DASHBOARD')) {
-        this.router.navigateByUrl('/dashboard');
-      } else {
-        this.router.navigateByUrl('/empleado/dashboard');
-      }
+      this.router.navigateByUrl('/empleado/dashboard');
     }
   }
 }
