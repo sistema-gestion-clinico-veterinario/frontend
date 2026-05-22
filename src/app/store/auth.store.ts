@@ -1,5 +1,5 @@
 import { signalStore, withState, withMethods, patchState } from '@ngrx/signals';
-import { MenuItemDTO } from '../models/response/auth-login-response.model';
+import { MenuItemDTO, MenuStructureDTO } from '../models/response/auth-login-response.model';
 
 interface Enterprise {
   establishmentId: number;
@@ -20,8 +20,8 @@ interface AuthState {
   passwordChanged: boolean;
   needsCompanySelection: boolean;
   selectedEnterprise: Enterprise | null;
-  menu: MenuItemDTO[];
-  originalMenu: MenuItemDTO[];
+  menu: (MenuItemDTO | MenuStructureDTO)[];
+  originalMenu: (MenuItemDTO | MenuStructureDTO)[];
   simulatedRoleId: number | null;
   allowedRoutes: string[];
 }
@@ -40,8 +40,8 @@ export interface AuthPayload {
   passwordChanged: boolean;
   needsCompanySelection: boolean;
   selectedEnterprise?: Enterprise | null;
-  menu: MenuItemDTO[];
-  originalMenu?: MenuItemDTO[];
+  menu: (MenuItemDTO | MenuStructureDTO)[];
+  originalMenu?: (MenuItemDTO | MenuStructureDTO)[];
   simulatedRoleId?: number | null;
 }
 
@@ -166,16 +166,38 @@ export const AuthStore = signalStore(
       saveToStorage({ ...buildCurrentState(store), simulatedRoleId: null, roles: origRoles, menu: origMenu, allowedRoutes });
     },
 
-    hasAccess(codigoVentana: string, tipo: 'leer' | 'escribir' | 'modificar' | 'eliminar' = 'leer'): boolean {
+    hasAccess(codigoVista: string, tipo: 'leer' | 'escribir' | 'modificar' | 'eliminar' = 'leer'): boolean {
       const menu = store.menu() ?? [];
-      return buscarAccesoEnArbol(menu, codigoVentana, tipo);
+
+      for (const item of menu) {
+        const isMenuStructure = (obj: any): obj is MenuStructureDTO => {
+          return obj && typeof obj === 'object' && 'vistas' in obj && Array.isArray(obj.vistas);
+        };
+
+        if (isMenuStructure(item)) {
+          const vista = item.vistas.find(v => v.codigo === codigoVista);
+          if (vista && vista[tipo as keyof MenuItemDTO]) {
+            return true;
+          }
+        } else {
+          const menuItem = item as MenuItemDTO;
+          if (menuItem.codigo === codigoVista && menuItem[tipo as keyof MenuItemDTO]) {
+            return true;
+          }
+        }
+      }
+      return false;
     },
 
     hasRouteAccess(routePattern: string): boolean {
-      const superAdmin = (store.originalRoles() ?? store.roles()).some(r =>
-        r === 'ROLE_SUPER_ADMIN' || r === 'SUPER_ADMIN'
+      const roles = store.originalRoles()?.length ? store.originalRoles() : store.roles();
+
+      // SUPER_ADMIN y ADMIN tienen acceso irrestricto a todas las rutas
+      const isPrivileged = roles.some(r =>
+        r === 'ROLE_SUPER_ADMIN' || r === 'SUPER_ADMIN' ||
+        r === 'ROLE_ADMIN'       || r === 'ADMIN'
       );
-      if (superAdmin) return true;
+      if (isPrivileged) return true;
 
       const normalized = normalizeRoute(routePattern);
       if (!normalized || normalized === 'profile' || normalized === 'password-change') return true;
@@ -189,6 +211,13 @@ export const AuthStore = signalStore(
       );
     },
 
+    isAdmin(): boolean {
+      return (store.originalRoles() ?? store.roles()).some(r =>
+        r === 'ROLE_SUPER_ADMIN' || r === 'SUPER_ADMIN' ||
+        r === 'ROLE_ADMIN'       || r === 'ADMIN'
+      );
+    },
+
     logout() {
       patchState(store, createInitialState(false));
       if (typeof window !== 'undefined') {
@@ -198,20 +227,6 @@ export const AuthStore = signalStore(
   }))
 );
 
-function buscarAccesoEnArbol(
-  items: MenuItemDTO[],
-  codigo: string,
-  tipo: 'leer' | 'escribir' | 'modificar' | 'eliminar'
-): boolean {
-  for (const item of items) {
-    if (item.codigo === codigo) return item[tipo];
-    if (item.hijos?.length) {
-      const found = buscarAccesoEnArbol(item.hijos, codigo, tipo);
-      if (found) return true;
-    }
-  }
-  return false;
-}
 
 function buildCurrentState(store: any): AuthState {
   return {
@@ -235,28 +250,26 @@ function buildCurrentState(store: any): AuthState {
   };
 }
 
-function extractAllowedRoutes(menuItems: MenuItemDTO[]): Set<string> {
+function extractAllowedRoutes(menuItems: (MenuItemDTO | MenuStructureDTO)[]): Set<string> {
   const routes = new Set<string>();
+  for (const item of menuItems || []) {
+    const isMenuStructure = (obj: any): obj is MenuStructureDTO => {
+      return obj && typeof obj === 'object' && 'vistas' in obj && Array.isArray(obj.vistas);
+    };
 
-  function traverse(items: MenuItemDTO[]) {
-    for (const item of items) {
-      if (item.ruta) {
-        routes.add(normalizeRoute(item.ruta));
-      }
-      if (item.vistas) {
-        for (const vista of item.vistas) {
-          if (vista.ruta && vista.activo) {
-            routes.add(normalizeRoute(vista.ruta));
-          }
+    if (isMenuStructure(item)) {
+      for (const vista of item.vistas) {
+        if ((vista.activo ?? true) && vista.ruta) {
+          routes.add(normalizeRoute(vista.ruta));
         }
       }
-      if (item.hijos) {
-        traverse(item.hijos);
+    } else {
+      const menuItem = item as MenuItemDTO;
+      if ((menuItem.activo ?? true) && menuItem.ruta) {
+        routes.add(normalizeRoute(menuItem.ruta));
       }
     }
   }
-
-  traverse(menuItems || []);
   return routes;
 }
 

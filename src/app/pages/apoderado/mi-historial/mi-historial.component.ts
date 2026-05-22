@@ -33,9 +33,11 @@ export class MiHistorialComponent implements OnInit {
   loadingHc      = signal<boolean>(false);
 
   ngOnInit() {
-    // Si viene con :mascotaId en la URL, pre-selecciona esa mascota
-    this.route.params.subscribe(params => {
-      this.cargarMascotas(params['mascotaId'] ? Number(params['mascotaId']) : null);
+    // Lee mascotaId por URL o query para abrir directamente el historial correcto.
+    this.route.queryParamMap.subscribe(queryParams => {
+      const queryMascotaId = Number(queryParams.get('mascotaId'));
+      const pathMascotaId = Number(this.route.snapshot.paramMap.get('mascotaId'));
+      this.cargarMascotas(queryMascotaId || pathMascotaId || null);
     });
   }
 

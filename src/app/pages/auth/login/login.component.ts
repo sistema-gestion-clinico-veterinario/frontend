@@ -4,7 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { AuthStore } from '../../../store/auth.store';
-import { resolveDashboardRoute } from '../../../layouts/main-layout/navbar/navbar.component';
+import { resolveInitialRoute } from '../../../layouts/main-layout/navbar/navbar.component';
 
 @Component({
   selector: 'app-login',
@@ -25,7 +25,7 @@ export class LoginComponent implements OnInit {
   ngOnInit() {
     if (this.authStore.token()) {
       const roles = this.authStore.roles() ?? [];
-      this.router.navigateByUrl(resolveDashboardRoute(roles));
+      this.router.navigateByUrl(resolveInitialRoute(roles, this.authStore.menu() ?? []));
     }
   }
 
@@ -78,7 +78,7 @@ export class LoginComponent implements OnInit {
           this.isSubmitting = false;
           return;
         }
-        this.router.navigateByUrl(resolveDashboardRoute(roles));
+        this.router.navigateByUrl(resolveInitialRoute(roles, data.menu ?? []));
       },
       error: () => {
         this.authError = 'Correo o contraseña incorrectos.';

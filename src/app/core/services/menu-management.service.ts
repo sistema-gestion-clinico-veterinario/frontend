@@ -2,36 +2,40 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../../models/response/api-response';
-import { MenuItemDTO } from '../../models/response/auth-login-response.model';
+import { MenuItemDTO, VistaDTO } from '../../models/response/auth-login-response.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class MenuManagementService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = `${environment.apiUrl}/admin/ventanas`;
+  private readonly vistaUrl = `${environment.apiUrl}/admin/vistas`;
+  private readonly roleUrl = `${environment.apiUrl}/admin/roles`;
 
-  listar() {
-    return this.http.get<ApiResponse<MenuItemDTO[]>>(this.apiUrl);
+  // Vistas API
+  listarVistas(grupo?: string) {
+    const params = grupo ? `?grupo=${grupo}` : '';
+    return this.http.get<ApiResponse<VistaDTO[]>>(`${this.vistaUrl}${params}`);
   }
 
-  listarArbol() {
-    return this.http.get<ApiResponse<MenuItemDTO[]>>(`${this.apiUrl}/arbol`);
+  crearVista(data: { codigo: string; nombre: string; grupo?: string; activo?: boolean }) {
+    return this.http.post<ApiResponse<VistaDTO>>(`${this.vistaUrl}`, data);
   }
 
-  listarArbolCompleto() {
-    return this.http.get<ApiResponse<MenuItemDTO[]>>(`${this.apiUrl}/arbol/completo`);
+  actualizarVista(id: number, data: { nombre: string; grupo?: string; activo?: boolean }) {
+    return this.http.put<ApiResponse<VistaDTO>>(`${this.vistaUrl}/${id}`, data);
   }
 
-  crear(data: Partial<MenuItemDTO>) {
-    return this.http.post<ApiResponse<MenuItemDTO>>(this.apiUrl, data);
+  eliminarVista(id: number) {
+    return this.http.delete<ApiResponse<void>>(`${this.vistaUrl}/${id}`);
   }
 
-  actualizar(id: number, data: Partial<MenuItemDTO>) {
-    return this.http.put<ApiResponse<MenuItemDTO>>(`${this.apiUrl}/${id}`, data);
+  // Roles Vistas Permisos
+  obtenerVistasPorRol(rolId: number) {
+    return this.http.get<ApiResponse<MenuItemDTO[]>>(`${this.roleUrl}/${rolId}/vistas`);
   }
 
-  eliminar(id: number) {
-    return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`);
+  asignarVistasPorRol(rolId: number, permisos: any[]) {
+    return this.http.put<ApiResponse<MenuItemDTO[]>>(`${this.roleUrl}/${rolId}/vistas`, permisos);
   }
 }

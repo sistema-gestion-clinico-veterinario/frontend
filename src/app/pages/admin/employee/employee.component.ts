@@ -10,6 +10,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
+import { forkJoin } from 'rxjs';
 import { EmpleadoService } from '../../../core/services/empleado.service';
 import { MediaService } from '../../../core/services/media.service';
 import { CompanyService } from '../../../core/services/company.service';
@@ -294,11 +295,18 @@ export class EmployeeComponent implements OnInit {
 
   loadRoles(companyId?: number) {
     const id = companyId || this.activeCompanyId;
-    this.roleService.listarPorEmpresa(id || undefined).subscribe({
-      next: (res) => {
-        const protectedRoles = ['ROLE_SUPER_ADMIN', 'ROLE_CLIENTE', 'ROLE_APODERADO'];
-        const list = res.data
-          .filter(r => !protectedRoles.includes(r.name))
+    forkJoin({
+      empresa: this.roleService.listarPorEmpresa(id || undefined),
+      sistema: this.roleService.listarSistema()
+    }).subscribe({
+      next: ({ empresa, sistema }) => {
+        const hiddenRoles = ['ROLE_SUPER_ADMIN', 'ROLE_CLIENTE', 'ROLE_APODERADO'];
+        const roles = [
+          ...(empresa.data ?? []),
+          ...(sistema.data ?? []).filter(r => r.name === 'ROLE_ADMIN')
+        ];
+        const list = roles
+          .filter((r, index, items) => !hiddenRoles.includes(r.name) && items.findIndex(item => item.name === r.name) === index)
           .map(r => ({
             label: this.roleLabel(r.name),
             value: r.name

@@ -89,7 +89,7 @@ export class MisMascotasComponent implements OnInit {
   }
 
   goToHistorial(mascota: MascotaResponse) {
-    this.router.navigate(['/mi-historial', mascota.id]);
+    this.router.navigate(['/apoderado/mi-historial'], { queryParams: { mascotaId: mascota.id } });
   }
 
   goToCitas(mascota: MascotaResponse) {
@@ -97,6 +97,6 @@ export class MisMascotasComponent implements OnInit {
       this.messageService.add({ severity: 'warn', summary: 'Atención', detail: 'No puedes programar citas para una mascota inactiva.' });
       return;
     }
-    this.router.navigate(['/mis-citas'], { queryParams: { mascotaId: mascota.id } });
+    this.router.navigate(['/apoderado/mis-citas'], { queryParams: { mascotaId: mascota.id } });
   }
 }

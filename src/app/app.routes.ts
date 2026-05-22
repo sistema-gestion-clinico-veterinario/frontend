@@ -27,7 +27,7 @@ export const routes: Routes = [
     canActivateChild: [AuthGuard],
     children: [
       {
-        path: 'admin/dashboard',
+        path: 'dashboard',
         loadComponent: () => import('./pages/dashboard/dashboard.component').then((m) => m.DashboardComponent)
       },
       {
@@ -63,6 +63,16 @@ export const routes: Routes = [
         path: 'roles',
         data: { permission: Permission.ROLE_MANAGE },
         loadComponent: () => import('./pages/admin/roles/roles.component').then((m) => m.RolesComponent)
+      },
+      {
+        path: 'admin/ventanas',
+        data: { permission: Permission.ROLE_MANAGE },
+        loadComponent: () => import('./pages/admin/ventanas/ventanas.component').then((m) => m.VentanasComponent)
+      },
+      {
+        path: 'ventanas',
+        data: { permission: Permission.ROLE_MANAGE },
+        loadComponent: () => import('./pages/admin/ventanas/ventanas.component').then((m) => m.VentanasComponent)
       },
       {
         path: 'admin/complementario',
