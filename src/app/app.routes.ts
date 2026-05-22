@@ -27,10 +27,6 @@ export const routes: Routes = [
     canActivateChild: [AuthGuard],
     children: [
       {
-        path: 'dashboard',
-        loadComponent: () => import('./pages/dashboard/dashboard.component').then((m) => m.DashboardComponent)
-      },
-      {
         path: 'admin/dashboard',
         loadComponent: () => import('./pages/dashboard/dashboard.component').then((m) => m.DashboardComponent)
       },
@@ -40,17 +36,7 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/admin/company/company.component').then((m) => m.CompanyComponent)
       },
       {
-        path: 'company',
-        data: { permission: Permission.COMPANY_MANAGE },
-        loadComponent: () => import('./pages/admin/company/company.component').then((m) => m.CompanyComponent)
-      },
-      {
         path: 'admin/auditoria',
-        data: { permission: Permission.COMPANY_MANAGE },
-        loadComponent: () => import('./pages/admin/auditoria/auditoria.component').then((m) => m.AuditoriaComponent)
-      },
-      {
-        path: 'auditoria',
         data: { permission: Permission.COMPANY_MANAGE },
         loadComponent: () => import('./pages/admin/auditoria/auditoria.component').then((m) => m.AuditoriaComponent)
       },
@@ -60,17 +46,7 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/admin/roles/roles.component').then((m) => m.RolesComponent)
       },
       {
-        path: 'roles',
-        data: { permission: Permission.ROLE_MANAGE },
-        loadComponent: () => import('./pages/admin/roles/roles.component').then((m) => m.RolesComponent)
-      },
-      {
         path: 'admin/ventanas',
-        data: { permission: Permission.ROLE_MANAGE },
-        loadComponent: () => import('./pages/admin/ventanas/ventanas.component').then((m) => m.VentanasComponent)
-      },
-      {
-        path: 'ventanas',
         data: { permission: Permission.ROLE_MANAGE },
         loadComponent: () => import('./pages/admin/ventanas/ventanas.component').then((m) => m.VentanasComponent)
       },
@@ -80,17 +56,7 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/admin/complementario/complementario.component').then((m) => m.ComplementarioComponent)
       },
       {
-        path: 'complementario',
-        data: { permission: Permission.USER_MANAGE },
-        loadComponent: () => import('./pages/admin/complementario/complementario.component').then((m) => m.ComplementarioComponent)
-      },
-      {
         path: 'admin/empleados',
-        data: { permission: Permission.EMPLEADO_READ },
-        loadComponent: () => import('./pages/admin/employee/employee.component').then((m) => m.EmployeeComponent)
-      },
-      {
-        path: 'empleados',
         data: { permission: Permission.EMPLEADO_READ },
         loadComponent: () => import('./pages/admin/employee/employee.component').then((m) => m.EmployeeComponent)
       },
@@ -98,16 +64,6 @@ export const routes: Routes = [
         path: 'admin/clientes',
         data: { permission: Permission.APODERADO_READ },
         loadComponent: () => import('./pages/admin/client/client.component').then((m) => m.ClientComponent)
-      },
-      {
-        path: 'clientes',
-        data: { permission: Permission.APODERADO_READ },
-        loadComponent: () => import('./pages/admin/client/client.component').then((m) => m.ClientComponent)
-      },
-      {
-        path: 'mascotas',
-        data: { permission: Permission.PET_READ },
-        loadComponent: () => import('./pages/mascotas/lista-mascotas/lista-mascotas.component').then((m) => m.ListaMascotasComponent)
       },
       {
         path: 'admin/mascotas',
@@ -120,11 +76,6 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/mascotas/lista-mascotas/lista-mascotas.component').then((m) => m.ListaMascotasComponent)
       },
       {
-        path: 'recetas',
-        data: { permission: Permission.PET_HISTORY_READ },
-        loadComponent: () => import('./pages/mascotas/lista-recetas/lista-recetas.component').then((m) => m.ListaRecetasComponent)
-      },
-      {
         path: 'admin/recetas',
         data: { permission: Permission.PET_HISTORY_READ },
         loadComponent: () => import('./pages/mascotas/lista-recetas/lista-recetas.component').then((m) => m.ListaRecetasComponent)
@@ -133,24 +84,6 @@ export const routes: Routes = [
         path: 'empleado/recetas',
         data: { permission: Permission.PET_HISTORY_READ },
         loadComponent: () => import('./pages/mascotas/lista-recetas/lista-recetas.component').then((m) => m.ListaRecetasComponent)
-      },
-      {
-        path: 'historias-clinicas',
-        data: { permission: Permission.CLINICAL_RECORD_READ },
-        children: [
-          {
-            path: '',
-            loadComponent: () => import('./pages/historias-clinicas/lista-hc/lista-hc.component').then((m) => m.ListaHcComponent)
-          },
-          {
-            path: 'mascota/:mascotaId',
-            loadComponent: () => import('./pages/historias-clinicas/historia-clinica-mascota/historia-clinica-mascota.component').then((m) => m.HistoriaClinicaMascotaComponent)
-          },
-          {
-            path: 'consulta/:consultaId',
-            loadComponent: () => import('./pages/historias-clinicas/consulta/consulta-form.component').then((m) => m.ConsultaFormComponent)
-          }
-        ]
       },
       {
         path: 'admin/historias-clinicas',
@@ -219,22 +152,7 @@ export const routes: Routes = [
         ]
       },
       {
-        path: 'agenda',
-        data: { ventana: 'VISTA_CITAS_AGENDA' },
-        loadComponent: () => import('./pages/citas/agenda/agenda.component').then((m) => m.AgendaComponent)
-      },
-      {
-        path: 'empleado/agenda',
-        data: { ventana: 'VISTA_CITAS_AGENDA' },
-        loadComponent: () => import('./pages/citas/agenda/agenda.component').then((m) => m.AgendaComponent)
-      },
-      {
         path: 'admin/empleados/horarios',
-        data: { permission: Permission.HORARIO_READ },
-        loadComponent: () => import('./pages/admin/employee/roster/roster.component').then((m) => m.RosterComponent)
-      },
-      {
-        path: 'empleados/horarios',
         data: { permission: Permission.HORARIO_READ },
         loadComponent: () => import('./pages/admin/employee/roster/roster.component').then((m) => m.RosterComponent)
       },
@@ -250,11 +168,6 @@ export const routes: Routes = [
       },
       {
         path: 'empleado/mi-horario',
-        data: { permission: Permission.USER_READ },
-        loadComponent: () => import('./pages/employee/my-schedule/my-schedule.component').then(m => m.MyScheduleComponent)
-      },
-      {
-        path: 'mi-horario',
         data: { permission: Permission.USER_READ },
         loadComponent: () => import('./pages/employee/my-schedule/my-schedule.component').then(m => m.MyScheduleComponent)
       },
@@ -276,20 +189,8 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/apoderado/dashboard/apoderado-dashboard.component').then((m) => m.ApoderadoDashboardComponent)
       },
       {
-        path: 'apoderado',
-        loadComponent: () => import('./pages/apoderado-portal/apoderado-portal.component').then((m) => m.ApoderadoPortalComponent)
-      },
-      {
-        path: 'mis-citas',
-        loadComponent: () => import('./pages/apoderado/citas/citas.component').then((m) => m.CitasComponent)
-      },
-      {
         path: 'apoderado/mis-citas',
         loadComponent: () => import('./pages/apoderado/citas/citas.component').then((m) => m.CitasComponent)
-      },
-      {
-        path: 'mis-mascotas',
-        loadComponent: () => import('./pages/apoderado/mis-mascotas/mis-mascotas.component').then((m) => m.MisMascotasComponent)
       },
       {
         path: 'apoderado/mis-mascotas',
@@ -304,20 +205,11 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/apoderado/mi-historial/mi-historial.component').then((m) => m.MiHistorialComponent)
       },
       {
-        path: 'mis-pagos',
-        loadComponent: () => import('./pages/apoderado/mis-pagos/mis-pagos.component').then((m) => m.MisPagosComponent)
-      },
-      {
         path: 'apoderado/mis-pagos',
         loadComponent: () => import('./pages/apoderado/mis-pagos/mis-pagos.component').then((m) => m.MisPagosComponent)
       },
       {
         path: 'admin/pagos',
-        data: { permission: Permission.SALE_READ },
-        loadComponent: () => import('./pages/admin/pagos/historial-pagos/historial-pagos.component').then((m) => m.HistorialPagosComponent)
-      },
-      {
-        path: 'pagos',
         data: { permission: Permission.SALE_READ },
         loadComponent: () => import('./pages/admin/pagos/historial-pagos/historial-pagos.component').then((m) => m.HistorialPagosComponent)
       }

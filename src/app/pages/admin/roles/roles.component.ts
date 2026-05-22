@@ -8,13 +8,14 @@ import { RoleService, RolVentanaPermiso } from '../../../core/services/role.serv
 import { LoadingStore } from '../../../store/loading.store';
 import { AuthStore } from '../../../store/auth.store';
 import { Role } from '../../../models/response/permission';
+import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 
 type Section = 'empresa' | 'sistema';
 
 @Component({
   selector: 'app-roles',
   standalone: true,
-  imports: [CommonModule, ToastModule, FormsModule, NgTemplateOutlet, RouterLink],
+  imports: [CommonModule, ToastModule, FormsModule, NgTemplateOutlet, RouterLink, HasPermissionDirective],
   providers: [MessageService],
   templateUrl: './roles.component.html',
   styleUrl: './roles.component.scss'
@@ -29,6 +30,10 @@ export class RolesComponent implements OnInit {
   isAdminOrSuperAdmin = computed(() => {
     const userRoles = this.authStore.roles() ?? [];
     return userRoles.includes('ROLE_SUPER_ADMIN') || userRoles.includes('ROLE_ADMIN');
+  });
+
+  hasModifyAccess = computed(() => {
+    return this.isSuperAdmin() || this.authStore.hasAccess('ROLES', 'modificar');
   });
 
   get activeCompanyId(): number | null {

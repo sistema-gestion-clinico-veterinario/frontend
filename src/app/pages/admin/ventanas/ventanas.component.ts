@@ -6,6 +6,7 @@ import { MessageService } from 'primeng/api';
 import { MenuManagementService } from '../../../core/services/menu-management.service';
 import { VistaDTO } from '../../../models/response/auth-login-response.model';
 import { LoadingStore } from '../../../store/loading.store';
+import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 
 interface VistaGrupo {
   grupo: string;
@@ -15,7 +16,7 @@ interface VistaGrupo {
 @Component({
   selector: 'app-ventanas',
   standalone: true,
-  imports: [CommonModule, FormsModule, ToastModule],
+  imports: [CommonModule, FormsModule, ToastModule, HasPermissionDirective],
   providers: [MessageService],
   templateUrl: './ventanas.component.html',
   styleUrl: './ventanas.component.scss'

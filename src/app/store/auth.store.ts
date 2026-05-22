@@ -175,6 +175,12 @@ export const AuthStore = signalStore(
         'EMPRESA':          'VISTA_COMPANY',
         'HORARIO_MANAGE':   'VISTA_HORARIOS',
         'APODERADO_UPDATE': 'VISTA_CLIENTES',
+        'ROLES':            'VISTA_ROLES',
+        'VENTANAS':         'VISTA_VENTANAS',
+        'PAGOS':            'VISTA_PAGOS',
+        'AUDITORIA':        'VISTA_AUDITORIA_ADMIN',
+        'RECETAS':          'VISTA_RECETAS',
+        'HISTORIAS':        'VISTA_HISTORIAS',
       };
       const codigo = ALIASES[codigoVista] ?? codigoVista;
 

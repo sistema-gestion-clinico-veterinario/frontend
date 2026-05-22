@@ -43,7 +43,7 @@
             <span class="text-xs text-slate-300 font-semibold bg-slate-50 px-2 py-0.5 rounded">
               {{ (activeSection() === 'empresa' ? companyRoles() : systemRoles()).length }}
             </span>
-            <button *ngIf="isAdminOrSuperAdmin()" (click)="openCreateModal()"
+            <button *ngIf="isAdminOrSuperAdmin()" *appHasPermission="'ROLES:escribir'" (click)="openCreateModal()"
               title="Crear Nuevo Rol"
               class="w-6 h-6 rounded bg-blue-50 text-[#0066AA] hover:bg-blue-100 transition-colors flex items-center justify-center shrink-0 active:scale-95">
               <i class="pi pi-plus text-xs"></i>
@@ -111,12 +111,12 @@
               <p class="text-xs text-slate-400 mt-0.5">{{ selectedRole()!.name }}</p>
             </div>
             <div class="flex items-center gap-2">
-              <button *ngIf="canRenameRole(selectedRole()) && !isEditingName()"
+              <button *ngIf="canRenameRole(selectedRole()) && !isEditingName()" *appHasPermission="'ROLES:modificar'"
                 (click)="startEditName()"
                 class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors">
                 <i class="pi pi-pencil mr-1"></i>Renombrar
               </button>
-              <button *ngIf="canDeleteRole(selectedRole())"
+              <button *ngIf="canDeleteRole(selectedRole())" *appHasPermission="'ROLES:eliminar'"
                 (click)="deleteRole(selectedRole()!)"
                 class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-rose-50 border border-rose-100 text-rose-600 hover:bg-rose-100 transition-colors">
                 <i class="pi pi-trash mr-1"></i>Eliminar
@@ -176,7 +176,7 @@
                     class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors">
                     Descartar
                   </button>
-                  <button (click)="savePermisos()"
+                  <button *appHasPermission="'ROLES:modificar'" (click)="savePermisos()"
                     class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-[#0066AA] text-white hover:bg-[#0055AA] transition-colors">
                     <i class="pi pi-save mr-1"></i>Guardar permisos
                   </button>
@@ -270,7 +270,8 @@
     <input type="checkbox"
       [checked]="getPermiso(v, campo)"
       (change)="togglePermiso(v, campo)"
-      class="w-4 h-4 accent-[#0066AA] cursor-pointer"
+      [disabled]="!hasModifyAccess()"
+      class="w-4 h-4 accent-[#0066AA] cursor-pointer disabled:opacity-50"
     />
   </div>
 </ng-template>
