@@ -10,7 +10,7 @@ import { SidebarComponent } from './sidebar/sidebar.component';
   templateUrl: './main-layout.component.html'
 })
 export class MainLayoutComponent {
-  sidebarCollapsed = signal(true);
+  sidebarCollapsed = signal(false);
 
   toggleSidebar() {
     this.sidebarCollapsed.update(v => !v);
