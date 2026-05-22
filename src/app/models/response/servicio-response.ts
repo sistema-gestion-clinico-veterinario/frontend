@@ -7,7 +7,8 @@ export interface ServicioResponse {
   precio: number;
   disponible: boolean;
   activo: boolean;
-  duracionEstimada?: Date;
+  duracionEstimada?: number;
+  permiteEmergencia?: boolean;
   tipoEmpleadoId?: number;
   tipoEmpleadoNombre?: string;
 }

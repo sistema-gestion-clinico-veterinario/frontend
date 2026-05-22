@@ -26,7 +26,6 @@ import { ServicioService } from '../../../core/services/servicio.service';
 import { ServicioResponse } from '../../../models/response/servicio-response';
 import { LoadingStore } from '../../../store/loading.store';
 import { AuthStore } from '../../../store/auth.store';
-import { Permission } from '../../../core/enums/permission.enum';
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 
 
@@ -62,8 +61,6 @@ export class ComplementarioComponent implements OnInit {
   private readonly messageService = inject(MessageService);
   readonly authStore = inject(AuthStore);
   readonly loadingStore = inject(LoadingStore);
-
-  readonly Permission = Permission;
 
   get activeCompanyId(): number | null {
     return this.authStore.selectedEnterprise()?.establishmentId ?? this.authStore.companyId();

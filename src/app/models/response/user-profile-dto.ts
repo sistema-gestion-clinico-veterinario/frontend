@@ -1,5 +1,6 @@
 export interface UserProfileDTO {
   id: number;
+  apoderadoId?: number;
   email: string;
   nombre: string;
   apellido: string;

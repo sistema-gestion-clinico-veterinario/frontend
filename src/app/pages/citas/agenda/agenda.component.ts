@@ -36,6 +36,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import { CalendarModule } from 'primeng/calendar';
 import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 export type Vista = 'lista' | 'dia' | 'semana' | 'mes';
 
 interface CitaWsEvent {
@@ -60,7 +61,8 @@ interface CitaWsEvent {
     TooltipModule,
 
     ConfirmDialogModule,
-    ToastModule
+    ToastModule,
+    HasPermissionDirective
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './agenda.component.html'
@@ -86,6 +88,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
   readonly isSuperAdmin = computed(() => this.authStore.roles().includes(Role.SUPER_ADMIN));
   readonly isAdmin      = computed(() => this.authStore.roles().includes(Role.ADMIN));
   readonly canManage    = computed(() => this.isAdmin() || this.isSuperAdmin());
+
 
   readonly totalCita = computed(() => {
     const cita = this.citaParaPago();
@@ -116,6 +119,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
   citas            = signal<CitaResponse[]>([]);
   private loadTimeout: any = null;
   private lastLazyEvent: any = { first: 0, rows: 10 };
+  private suppressSseToast = false;
   totalRecords     = signal<number>(0);
   displayModal     = signal<boolean>(false);
   displayCancelModal = signal<boolean>(false);
@@ -151,6 +155,12 @@ export class AgendaComponent implements OnInit, OnDestroy {
   todosEmpleados       = signal<{ id: number; nombre: string; apellido: string; tiposEmpleado: string[] }[]>([]);
   selectedServicioId   = signal<number | null>(null);
   empleadosDelServicio = signal<{ label: string; value: number }[]>([]);
+
+  servicioPermiteEmergencia = computed(() => {
+    const id = this.selectedServicioId();
+    if (!id) return false;
+    return this.serviciosConDetalle().find(s => s.id === id)?.permiteEmergencia ?? false;
+  });
   showClienteSelector = signal<boolean>(false);
   clienteSearch       = signal<string>('');
   filteredClientes    = computed(() => {
@@ -159,12 +169,31 @@ export class AgendaComponent implements OnInit, OnDestroy {
   });
 
   selectedClienteLabel = signal<string>('Seleccionar dueño...');
+  selectedClienteId    = signal<number | null>(null);
   selectedMascotaLabel = signal<string>('Seleccionar mascota...');
   showMascotaSelector  = signal<boolean>(false);
   showVeterinarioSelector = signal<boolean>(false);
   showServicioSelector = signal<boolean>(false);
   showEstadoFilter = signal<boolean>(false);
   showVeterinarioFilter = signal<boolean>(false);
+
+  showNuevoCliente   = signal(false);
+  savingNuevoCliente = signal(false);
+  ncNombre    = signal('');
+  ncApellido  = signal('');
+  ncTelefono  = signal('');
+  ncCorreo    = signal('');
+  ncTipoDoc   = signal('DNI');
+  ncNumDoc    = signal('');
+  ncGenero    = signal('MASCULINO');
+
+  showNuevaMascota   = signal(false);
+  savingNuevaMascota = signal(false);
+  nmNombre    = signal('');
+  nmEspecie   = signal('PERRO');
+  nmRaza      = signal('');
+  nmSexo      = signal('MACHO');
+  nmFechaNac  = signal('');
   today: Date                     = new Date();
   filterFecha: string             = this.toDateStr(new Date());
   filterEstado: EstadoCita | null = null;
@@ -318,6 +347,10 @@ export class AgendaComponent implements OnInit, OnDestroy {
   }
 
   private handleCitaWsEvent(event: CitaWsEvent) {
+    if (this.suppressSseToast) {
+      this.suppressSseToast = false;
+      return;
+    }
     const mensajes: Record<string, { detail: string; severity: string }> = {
       'CREAR_CITA':      { detail: `Nueva cita programada para ${event.cita?.mascotaNombre ?? ''}`,      severity: 'success' },
       'REPROGRAMAR_CITA':{ detail: `Cita reprogramada — ${event.cita?.mascotaNombre ?? ''}`,             severity: 'warn'    },
@@ -456,6 +489,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
 
   onClienteChange(cliente: {label: string, value: number}) {
     this.selectedClienteLabel.set(cliente.label);
+    this.selectedClienteId.set(cliente.value);
     this.showClienteSelector.set(false);
     this.filteredMascotas.set(
       this.allMascotas()
@@ -487,6 +521,8 @@ export class AgendaComponent implements OnInit, OnDestroy {
     this.citaForm.get('horaCita')?.setValue(null);
     this.showServicioSelector.set(false);
     this.filterEmpleadosByServicio(srv?.value ?? null);
+    const permiteEmergencia = this.serviciosConDetalle().find(s => s.id === srv?.value)?.permiteEmergencia ?? false;
+    if (!permiteEmergencia) this.citaForm.get('esEmergencia')?.setValue(false);
     this.onBookingParamsChange();
   }
 
@@ -592,6 +628,16 @@ export class AgendaComponent implements OnInit, OnDestroy {
     this.availableSlots.set([]);
     this.selectedServicioId.set(null);
     this.isReprogramando.set(false);
+    this.selectedClienteId.set(null);
+    this.showClienteSelector.set(false);
+    this.clienteSearch.set('');
+    this.showNuevoCliente.set(false);
+    this.ncNombre.set(''); this.ncApellido.set('');
+    this.ncTelefono.set(''); this.ncCorreo.set('');
+    this.ncTipoDoc.set('DNI'); this.ncNumDoc.set(''); this.ncGenero.set('MASCULINO');
+    this.showNuevaMascota.set(false);
+    this.nmNombre.set(''); this.nmEspecie.set('PERRO');
+    this.nmRaza.set(''); this.nmSexo.set('MACHO'); this.nmFechaNac.set('');
     this.displayModal.set(true);
   }
 
@@ -647,7 +693,100 @@ export class AgendaComponent implements OnInit, OnDestroy {
       notas: cita.notas,
       esEmergencia: cita.esEmergencia
     });
+    this.selectedClienteId.set(cita.apoderadoId);
+    this.showClienteSelector.set(false);
+    this.clienteSearch.set('');
+    this.showNuevoCliente.set(false);
+    this.showNuevaMascota.set(false);
     this.displayModal.set(true);
+  }
+
+  crearNuevoCliente() {
+    const nombre   = this.ncNombre().trim();
+    const apellido = this.ncApellido().trim();
+    const telefono = this.ncTelefono().trim();
+    const correo   = this.ncCorreo().trim();
+    const numDoc   = this.ncNumDoc().trim();
+
+    if (!nombre || !apellido || !telefono || !correo || !numDoc) {
+      this.messageService.add({ severity: 'warn', summary: 'Campos incompletos', detail: 'Complete todos los campos del nuevo cliente.' });
+      return;
+    }
+
+    this.savingNuevoCliente.set(true);
+    this.apoderadoService.registrar({
+      nombre,
+      apellido,
+      email: correo,
+      telefono,
+      tipoDocumento: this.ncTipoDoc(),
+      numeroDocumento: numDoc,
+      genero: this.ncGenero(),
+      companyId: this.activeCompanyId ?? undefined
+    }).subscribe({
+      next: (res) => {
+        const apoderadoId = res.data.apoderadoId ?? res.data.id;
+        const nuevoCliente = { label: `${nombre} ${apellido}`, value: apoderadoId };
+        this.clientes.update(list => [nuevoCliente, ...list]);
+        this.onClienteChange(nuevoCliente);
+        this.ncNombre.set(''); this.ncApellido.set('');
+        this.ncTelefono.set(''); this.ncCorreo.set('');
+        this.ncTipoDoc.set('DNI'); this.ncNumDoc.set(''); this.ncGenero.set('MASCULINO');
+        this.showNuevoCliente.set(false);
+        this.savingNuevoCliente.set(false);
+        this.messageService.add({ severity: 'success', summary: 'Cliente creado', detail: `${nombre} ${apellido} registrado correctamente.` });
+      },
+      error: (err) => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo crear el cliente.' });
+        this.savingNuevoCliente.set(false);
+      }
+    });
+  }
+
+  crearNuevaMascota() {
+    const apoderadoId = this.selectedClienteId();
+    if (!apoderadoId) {
+      this.messageService.add({ severity: 'warn', summary: 'Sin dueño', detail: 'Selecciona o crea un cliente primero.' });
+      return;
+    }
+    const nombre = this.nmNombre().trim();
+    const raza   = this.nmRaza().trim();
+    const fecha  = this.nmFechaNac().trim();
+    if (!nombre || !raza || !fecha) {
+      this.messageService.add({ severity: 'warn', summary: 'Campos incompletos', detail: 'Complete nombre, raza y fecha de nacimiento.' });
+      return;
+    }
+    if (fecha > this.toDateStr(this.today)) {
+      this.messageService.add({ severity: 'warn', summary: 'Fecha inválida', detail: 'La fecha de nacimiento no puede ser futura.' });
+      return;
+    }
+
+    this.savingNuevaMascota.set(true);
+    this.mascotaService.crear({
+      nombreCompleto: nombre,
+      especie: this.nmEspecie(),
+      raza,
+      sexo: this.nmSexo(),
+      fechaNacimiento: fecha,
+      apoderadoId
+    }).subscribe({
+      next: (res) => {
+        const mascota = res.data;
+        this.allMascotas.update(list => [mascota, ...list]);
+        const item = { label: mascota.nombreCompleto, value: mascota.id };
+        this.filteredMascotas.update(list => [item, ...list]);
+        this.selectMascota(item);
+        this.nmNombre.set(''); this.nmEspecie.set('PERRO');
+        this.nmRaza.set(''); this.nmSexo.set('MACHO'); this.nmFechaNac.set('');
+        this.showNuevaMascota.set(false);
+        this.savingNuevaMascota.set(false);
+        this.messageService.add({ severity: 'success', summary: 'Mascota registrada', detail: `${nombre} registrado correctamente.` });
+      },
+      error: (err) => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo registrar la mascota.' });
+        this.savingNuevaMascota.set(false);
+      }
+    });
   }
 
   saveCita() {
@@ -696,10 +835,11 @@ export class AgendaComponent implements OnInit, OnDestroy {
     const id = this.citaForm.get('id')?.value;
     const observer = {
       next: () => {
-        this.messageService.add({ 
-          severity: 'success', 
-          summary: 'Listo', 
-          detail: id ? 'Cita actualizada' : 'Cita programada' 
+        this.suppressSseToast = true;
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Listo',
+          detail: id ? 'Cita actualizada' : 'Cita programada'
         });
         this.displayModal.set(false);
         this.loadCitas();
@@ -772,6 +912,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
     this.loadingStore.show();
     this.citaService.iniciarAtencion(cita.id).subscribe({
       next: (res) => {
+        this.suppressSseToast = true;
         this.messageService.add({ severity: 'success', summary: 'Listo', detail: 'Atención iniciada' });
         this.loadingStore.hide();
         if (res.data) {
@@ -808,6 +949,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
         this.loadingStore.show();
         this.citaService.cancelarCita(cita.id, '').subscribe({
           next: () => {
+            this.suppressSseToast = true;
             this.messageService.add({ severity: 'success', summary: 'Listo', detail: 'Cita cancelada correctamente.' });
             this.loadCitas();
             if (this.vistaActual() !== 'lista') this.loadCitasCalendario();
@@ -844,6 +986,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
     this.loadingStore.show();
     this.citaService.eliminarCita(cita.id).subscribe({
       next: () => {
+        this.suppressSseToast = true;
         this.messageService.add({ severity: 'success', summary: 'Listo', detail: 'Cita registrada eliminada correctamente' });
         this.displayDeleteModal.set(false);
         this.loadCitas();
@@ -1021,7 +1164,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
     this.montoRecibido.set(null);
     this.yapePhone.set('');
     this.yapeOtp.set('');
-    this.yapeEmail.set('');
+    this.yapeEmail.set(cita.apoderadoEmail ?? '');
     this.displayCajaModal.set(true);
   }
 

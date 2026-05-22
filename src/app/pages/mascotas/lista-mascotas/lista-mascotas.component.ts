@@ -18,6 +18,7 @@ import { MascotaRequest } from '../../../models/request/mascota-request';
 import { LoadingStore } from '../../../store/loading.store';
 import { AuthStore } from '../../../store/auth.store';
 import { Role } from '../../../core/enums/role.enum';
+import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 
 @Component({
   selector: 'app-lista-mascotas',
@@ -32,7 +33,8 @@ import { Role } from '../../../core/enums/role.enum';
     DropdownModule,
     InputTextModule,
     PaginatorModule,
-    ToastModule
+    ToastModule,
+    HasPermissionDirective
   ],
   providers: [MessageService],
   templateUrl: './lista-mascotas.component.html'
@@ -48,6 +50,8 @@ export class ListaMascotasComponent implements OnInit {
   readonly loadingStore             = inject(LoadingStore);
 
   readonly isSuperAdmin = computed(() => this.authStore.roles().includes(Role.SUPER_ADMIN));
+
+  readonly todayStr = new Date().toISOString().split('T')[0];
 
   mascotas     = signal<MascotaResponse[]>([]);
   totalRecords = signal<number>(0);

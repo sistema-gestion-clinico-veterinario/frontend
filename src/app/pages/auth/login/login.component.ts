@@ -25,8 +25,7 @@ export class LoginComponent implements OnInit {
   ngOnInit() {
     if (this.authStore.token()) {
       const roles = this.authStore.roles() ?? [];
-      const permissions = this.authStore.permissions() ?? [];
-      this.router.navigateByUrl(resolveDashboardRoute(roles, permissions));
+      this.router.navigateByUrl(resolveDashboardRoute(roles));
     }
   }
 
@@ -60,7 +59,6 @@ export class LoginComponent implements OnInit {
           token: data.token,
           refreshToken: data.refreshToken,
           roles: data.roles,
-          permissions: data.permissions,
           companyId: data.companyId,
           companyName: data.companyName,
           nombreCompleto: data.nombreCompleto,
@@ -74,8 +72,13 @@ export class LoginComponent implements OnInit {
         });
         sessionStorage.removeItem('pw_modal_dismissed');
         const roles = data.roles ?? [];
-        const permissions = data.permissions ?? [];
-        this.router.navigateByUrl(resolveDashboardRoute(roles, permissions));
+        if (roles.length === 0) {
+          this.authStore.logout();
+          this.authError = 'Tu usuario no tiene ningún rol asignado. Contacta al administrador.';
+          this.isSubmitting = false;
+          return;
+        }
+        this.router.navigateByUrl(resolveDashboardRoute(roles));
       },
       error: () => {
         this.authError = 'Correo o contraseña incorrectos.';

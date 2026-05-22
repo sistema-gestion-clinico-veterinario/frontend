@@ -4,7 +4,6 @@ import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthStore } from '../../../store/auth.store';
 import { CompanyService } from '../../../core/services/company.service';
-import { MenuManagementService } from '../../../core/services/menu-management.service';
 import { RoleService } from '../../../core/services/role.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { Role } from '../../../core/enums/role.enum';
@@ -21,7 +20,6 @@ export class NavbarComponent implements OnInit {
 
   authStore = inject(AuthStore);
   private companyService = inject(CompanyService);
-  private menuService = inject(MenuManagementService);
   private roleService = inject(RoleService);
   private authService = inject(AuthService);
   private router = inject(Router);
@@ -85,20 +83,8 @@ export class NavbarComponent implements OnInit {
             const firstCompany = list[0];
             this.authStore.setSelectedEnterprise({ establishmentId: firstCompany.value, name: firstCompany.label });
             this.loadCompanyRoles(firstCompany.value);
-            
-            this.menuService.obtenerMenuUsuario(firstCompany.value).subscribe({
-              next: (menuRes) => {
-                this.authStore.setMenu(menuRes.data);
-              }
-            });
           } else if (currentSelected) {
             this.loadCompanyRoles(currentSelected.establishmentId);
-            
-            this.menuService.obtenerMenuUsuario(currentSelected.establishmentId).subscribe({
-              next: (menuRes) => {
-                this.authStore.setMenu(menuRes.data);
-              }
-            });
           }
         }
       });
@@ -111,16 +97,10 @@ export class NavbarComponent implements OnInit {
     if (selectedCompany) {
       this.authStore.setSelectedEnterprise({ establishmentId: selectedCompany.value, name: selectedCompany.label });
       this.loadCompanyRoles(selectedCompany.value);
-      
-      this.menuService.obtenerMenuUsuario(selectedCompany.value).subscribe({
-        next: (res) => {
-          this.authStore.setMenu(res.data);
 
-          const currentUrl = this.router.url;
-          this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
-            this.router.navigate([currentUrl]);
-          });
-        }
+      const currentUrl = this.router.url;
+      this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
+        this.router.navigate([currentUrl]);
       });
     }
     this.companyDropdownOpen.set(false);
@@ -148,7 +128,6 @@ export class NavbarComponent implements OnInit {
             token: res.data.token,
             refreshToken: res.data.refreshToken,
             roles: res.data.roles,
-            permissions: res.data.permissions,
             companyId: res.data.companyId,
             companyName: res.data.companyName,
             nombreCompleto: res.data.nombreCompleto,
@@ -160,13 +139,10 @@ export class NavbarComponent implements OnInit {
             menu: res.data.menu,
             simulatedRoleId: this.authStore.simulatedRoleId(),
             originalMenu: res.data.menu,
-            originalPermissions: res.data.permissions,
             assignedRoles: res.data.assignedRoles || this.authStore.assignedRoles()
           });
 
-          const roles = res.data.roles ?? [];
-          const permissions = res.data.permissions ?? [];
-          window.location.href = resolveDashboardRoute(roles, permissions);
+          window.location.href = resolveDashboardRoute(res.data.roles ?? []);
         }
       });
     }
@@ -193,14 +169,11 @@ export class NavbarComponent implements OnInit {
   }
 }
 
-export function resolveDashboardRoute(roles: string[], permissions: string[]): string {
-  if (roles.includes('ROLE_SUPER_ADMIN')) return '/admin/company';
-  if (permissions.includes('ADMIN_DASHBOARD'))     return '/dashboard';
-  if (permissions.includes('APODERADO_DASHBOARD')) return '/apoderado/dashboard';
-  if (permissions.includes('EMPLEADO_DASHBOARD'))  return '/empleado/dashboard';
+export function resolveDashboardRoute(roles: string[]): string {
+  if (roles.includes('ROLE_SUPER_ADMIN') || roles.includes('SUPER_ADMIN')) return '/admin/company';
 
   const role = roles[0] ?? '';
   if (role.includes('APODERADO') || role.includes('CLIENTE')) return '/apoderado/dashboard';
-  if (role.includes('ADMIN')) return '/dashboard';
+  if (role.includes('ADMIN')) return '/admin/dashboard';
   return '/empleado/dashboard';
 }

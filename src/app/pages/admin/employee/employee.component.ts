@@ -21,7 +21,6 @@ import { EmpleadoRequest, HorarioEmpleadoRequest } from '../../../models/request
 import { LoadingStore } from '../../../store/loading.store';
 import { AuthStore } from '../../../store/auth.store';
 import { Role } from '../../../core/enums/role.enum';
-import { Permission } from '../../../core/enums/permission.enum';
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 
 function passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
@@ -125,8 +124,6 @@ export class EmployeeComponent implements OnInit {
   resolvePhotoUrl(path: string | null | undefined): string | null {
     return this.mediaService.resolveUrl(path);
   }
-
-  readonly Permission = Permission;
 
   openConfirm(title: string, message: string, onConfirm: () => void) {
     this.confirmDialog.set({ title, message, onConfirm });

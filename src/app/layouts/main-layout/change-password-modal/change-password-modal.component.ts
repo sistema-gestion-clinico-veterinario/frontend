@@ -75,7 +75,6 @@ export class ChangePasswordModalComponent {
           token: this.authStore.token()!,
           refreshToken: this.authStore.refreshToken(),
           roles: this.authStore.roles(),
-          permissions: this.authStore.permissions(),
           companyId: this.authStore.companyId(),
           companyName: this.authStore.companyName(),
           nombreCompleto: this.authStore.nombreCompleto(),

@@ -8,7 +8,6 @@ import { PagoService } from '../../../../core/services/pago.service';
 import { PagoListResponse } from '../../../../models/response/pago-response';
 import { LoadingStore } from '../../../../store/loading.store';
 import { AuthStore } from '../../../../store/auth.store';
-import { Permission } from '../../../../core/enums/permission.enum';
 
 @Component({
   selector: 'app-historial-pagos',
@@ -23,8 +22,6 @@ export class HistorialPagosComponent implements OnInit {
   private readonly messageService = inject(MessageService);
   readonly loadingStore          = inject(LoadingStore);
   readonly authStore             = inject(AuthStore);
-  readonly Permission            = Permission;
-
   pagos          = signal<PagoListResponse[]>([]);
   loading        = signal<boolean>(false);
   totalRecords   = signal<number>(0);
