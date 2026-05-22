@@ -15,7 +15,6 @@ import { ApoderadoRequest } from '../../../models/request/apoderado-request';
 import { LoadingStore } from '../../../store/loading.store';
 import { AuthStore } from '../../../store/auth.store';
 import { Role } from '../../../core/enums/role.enum';
-import { Permission } from '../../../core/enums/permission.enum';
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 
 @Component({
@@ -52,8 +51,6 @@ export class ClientComponent implements OnInit {
   totalRecords = signal<number>(0);
   confirmDialog = signal<{ title: string; message: string; onConfirm: () => void } | null>(null);
   
-  readonly Permission = Permission;
-
   get activeCompanyId(): number | null {
     return this.authStore.selectedEnterprise()?.establishmentId ?? this.authStore.companyId();
   }

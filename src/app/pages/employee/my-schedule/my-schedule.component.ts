@@ -51,32 +51,44 @@ export class MyScheduleComponent implements OnInit {
     this.generateCalendar();
   }
 
+  private toLocalDateStr(d: Date): string {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+
+  private readonly dayOfWeekMap = ['DOMINGO', 'LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO'];
+
+  private getShiftsForDay(d: Date): any[] {
+    const dateStr = this.toLocalDateStr(d);
+    const dow = this.dayOfWeekMap[d.getDay()];
+    return this.horarios.filter(h =>
+      h.fecha === dateStr || (!h.fecha && h.diaSemana === dow)
+    );
+  }
+
   generateCalendar() {
     this.calendarDays = [];
     const today = new Date();
-    
+
     if (this.viewMode === 'month') {
       const year = this.currentDate.getFullYear();
       const month = this.currentDate.getMonth();
       const firstDay = new Date(year, month, 1);
       const lastDay = new Date(year, month + 1, 0);
       const startPadding = firstDay.getDay();
-
       const prevMonthLastDay = new Date(year, month, 0).getDate();
+
       for (let i = startPadding - 1; i >= 0; i--) {
-        this.calendarDays.push({ day: prevMonthLastDay - i, otherMonth: true, date: new Date(year, month - 1, prevMonthLastDay - i) });
+        const d = new Date(year, month - 1, prevMonthLastDay - i);
+        this.calendarDays.push({ day: d.getDate(), otherMonth: true, date: d, shifts: [] });
       }
-
       for (let i = 1; i <= lastDay.getDate(); i++) {
-        const date = new Date(year, month, i);
-        const isToday = date.toDateString() === today.toDateString();
-        const dayShifts = this.horarios.filter(h => new Date(h.fecha).toDateString() === date.toDateString());
-        this.calendarDays.push({ day: i, otherMonth: false, isToday, shifts: dayShifts, date: date });
+        const d = new Date(year, month, i);
+        this.calendarDays.push({ day: i, otherMonth: false, isToday: d.toDateString() === today.toDateString(), shifts: this.getShiftsForDay(d), date: d });
       }
-
       const remainingSlots = 42 - this.calendarDays.length;
       for (let i = 1; i <= remainingSlots; i++) {
-        this.calendarDays.push({ day: i, otherMonth: true, date: new Date(year, month + 1, i) });
+        const d = new Date(year, month + 1, i);
+        this.calendarDays.push({ day: i, otherMonth: true, date: d, shifts: [] });
       }
     } else if (this.viewMode === 'week') {
       const startOfWeek = new Date(this.currentDate);
@@ -84,15 +96,11 @@ export class MyScheduleComponent implements OnInit {
       for (let i = 0; i < 7; i++) {
         const d = new Date(startOfWeek);
         d.setDate(startOfWeek.getDate() + i);
-        const isToday = d.toDateString() === today.toDateString();
-        const dayShifts = this.horarios.filter(h => new Date(h.fecha).toDateString() === d.toDateString());
-        this.calendarDays.push({ day: d.getDate(), otherMonth: d.getMonth() !== this.currentDate.getMonth(), isToday, shifts: dayShifts, date: d });
+        this.calendarDays.push({ day: d.getDate(), otherMonth: d.getMonth() !== this.currentDate.getMonth(), isToday: d.toDateString() === today.toDateString(), shifts: this.getShiftsForDay(d), date: d });
       }
-    } else if (this.viewMode === 'day') {
+    } else {
       const d = new Date(this.currentDate);
-      const isToday = d.toDateString() === today.toDateString();
-      const dayShifts = this.horarios.filter(h => new Date(h.fecha).toDateString() === d.toDateString());
-      this.calendarDays.push({ day: d.getDate(), otherMonth: false, isToday, shifts: dayShifts, date: d });
+      this.calendarDays.push({ day: d.getDate(), otherMonth: false, isToday: d.toDateString() === today.toDateString(), shifts: this.getShiftsForDay(d), date: d });
     }
   }
 

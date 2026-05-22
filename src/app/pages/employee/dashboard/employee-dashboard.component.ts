@@ -27,7 +27,6 @@ export class EmployeeDashboardComponent implements OnInit {
 
   userName = this.authStore.nombreCompleto() ?? '';
   roles = this.authStore.roles() ?? [];
-  permissions = this.authStore.permissions() ?? [];
   companyName = this.authStore.companyName() ?? '';
   empleadoId = this.authStore.empleadoId();
 
@@ -252,6 +251,6 @@ export class EmployeeDashboardComponent implements OnInit {
       }
     ];
 
-    return list.filter(act => !act.permission || this.permissions.includes(act.permission));
+    return list.filter(act => !act.permission || this.authStore.hasAccess(act.permission, 'leer'));
   }
 }

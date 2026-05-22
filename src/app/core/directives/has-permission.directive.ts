@@ -1,4 +1,4 @@
-import { Directive, Input, OnInit, TemplateRef, ViewContainerRef, inject, effect } from '@angular/core';
+import { Directive, Input, OnInit, TemplateRef, ViewContainerRef, inject } from '@angular/core';
 import { AuthStore } from '../../store/auth.store';
 
 @Directive({
@@ -10,10 +10,17 @@ export class HasPermissionDirective implements OnInit {
   private readonly templateRef = inject(TemplateRef<any>);
   private readonly viewContainer = inject(ViewContainerRef);
 
-  private permission = '';
+  private ventanaCodigo = '';
+  private tipo: 'leer' | 'escribir' | 'modificar' | 'eliminar' = 'leer';
 
-  @Input() set appHasPermission(permission: string) {
-    this.permission = permission;
+  @Input() set appHasPermission(value: string) {
+    const parts = value.split(':');
+    this.ventanaCodigo = parts[0];
+    if (parts[1] === 'escribir' || parts[1] === 'modificar' || parts[1] === 'eliminar') {
+      this.tipo = parts[1];
+    } else {
+      this.tipo = 'leer';
+    }
     this.updateView();
   }
 
@@ -23,7 +30,9 @@ export class HasPermissionDirective implements OnInit {
 
   private updateView() {
     this.viewContainer.clear();
-    if (this.authStore.hasPermission(this.permission)) {
+    const superAdmin = this.authStore.isSuperAdmin();
+    const isAdmin = this.authStore.roles().some((r: string) => r === 'ROLE_ADMIN' || r === 'ADMIN');
+    if (!this.ventanaCodigo || superAdmin || isAdmin || this.authStore.hasAccess(this.ventanaCodigo, this.tipo)) {
       this.viewContainer.createEmbeddedView(this.templateRef);
     }
   }

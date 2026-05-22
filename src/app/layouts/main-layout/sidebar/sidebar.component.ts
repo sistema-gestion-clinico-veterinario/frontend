@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, input, computed, signal, output } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthStore } from '../../../store/auth.store';
-import { Menu } from '../../../models/response/auth-login-response.model';
+import { MenuItemDTO } from '../../../models/response/auth-login-response.model';
 
 @Component({
   selector: 'app-sidebar',
@@ -20,51 +20,8 @@ export class SidebarComponent {
   userName = computed(() => this.authStore.nombreCompleto() ?? 'Usuario');
   companyName = computed(() => this.authStore.companyName() ?? '');
 
-  private userPermissions = computed(() => this.authStore.permissions() ?? []);
-  private isSuperAdmin = computed(() =>
-    (this.authStore.roles() ?? []).some(r => r === 'ROLE_SUPER_ADMIN' || r === 'SUPER_ADMIN')
-  );
-
   menuItems = computed(() => {
-    const raw = this.authStore.menu() || [];
-    if (!raw.length) return [];
-
-    const perms = this.userPermissions();
-    const superAdmin = this.isSuperAdmin();
-
-    const hasAccess = (item: Menu): boolean => {
-      if (superAdmin) return true;
-      if (!item.requiredPermission) return true;
-      return perms.includes(item.requiredPermission);
-    };
-
-    const hasAdminDashboard = perms.includes('ADMIN_DASHBOARD');
-
-    const filterTree = (items: Menu[]): Menu[] =>
-      items
-        .filter(item => hasAccess(item))
-        .map(item => {
-          let path = item.path;
-          if (path === '/dashboard' && !hasAdminDashboard) {
-            path = '/empleado/dashboard';
-          }
-          return {
-            ...item,
-            path,
-            children: item.children?.length ? filterTree(item.children) : []
-          };
-        });
-
-    const filtered = filterTree(raw);
-
-    const childIds = new Set<number>();
-    filtered.forEach(item => {
-      if (item.children?.length) item.children.forEach(c => childIds.add(c.id));
-    });
-
-    return filtered
-      .filter(item => !childIds.has(item.id))
-      .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+    return this.authStore.menu() || [];
   });
 
   expandedMenus = signal<Set<number>>(new Set());

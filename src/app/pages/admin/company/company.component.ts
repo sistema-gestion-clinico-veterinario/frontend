@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { TableModule } from 'primeng/table';
@@ -8,6 +8,8 @@ import { MessageService } from 'primeng/api';
 import { CompanyService } from '../../../core/services/company.service';
 import { CompanyListResponse } from '../../../models/response/company-list-response';
 import { CompanyDTO, CompanyOperatingHourDTO } from '../../../models/request/company-dto';
+import { AuthStore } from '../../../store/auth.store';
+import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 
 @Component({
   selector: 'app-company',
@@ -17,7 +19,8 @@ import { CompanyDTO, CompanyOperatingHourDTO } from '../../../models/request/com
     ReactiveFormsModule,
     TableModule,
     Toast,
-    InputSwitch
+    InputSwitch,
+    HasPermissionDirective
   ],
   providers: [MessageService],
   templateUrl: './company.component.html',
@@ -27,6 +30,7 @@ export class CompanyComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly companyService = inject(CompanyService);
   private readonly messageService = inject(MessageService);
+  readonly authStore = inject(AuthStore);
 
   companies: CompanyListResponse[] = [];
   displayModal: boolean = false;
@@ -156,6 +160,22 @@ export class CompanyComponent implements OnInit {
       },
       error: () => {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Ocurrió un error al guardar' });
+      }
+    });
+  }
+
+  toggleActivo(company: CompanyListResponse) {
+    this.companyService.toggleActivo(company.id).subscribe({
+      next: (res) => {
+        company.activo = res.data.activo;
+        this.messageService.add({
+          severity: company.activo ? 'success' : 'warn',
+          summary: company.activo ? 'Empresa activada' : 'Empresa desactivada',
+          detail: `${company.name} fue ${company.activo ? 'activada' : 'desactivada'}. Los usuarios de esta empresa ${company.activo ? 'ya pueden' : 'no pueden'} iniciar sesión.`
+        });
+      },
+      error: () => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cambiar el estado de la empresa' });
       }
     });
   }

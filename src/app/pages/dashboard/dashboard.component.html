@@ -219,7 +219,7 @@
             <div>
               <h2 class="text-xs font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
                 <span class="w-2 h-2 rounded-full bg-blue-500"></span>
-                Usuarios Registrados
+                Empleados Registrados
               </h2>
               <p class="text-[10px] text-slate-400 font-medium mt-0.5">Personal con acceso al sistema en la sede</p>
             </div>
@@ -416,31 +416,6 @@
           </div>
         </div>
 
-        <!-- Permisos asignados (Solo visible para no-admins) -->
-        <div *ngIf="!isSuperAdmin && !isAdmin" class="bg-white rounded-2xl border border-slate-100 p-6">
-          <div class="flex items-center gap-2.5 mb-5">
-            <div class="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center">
-              <i class="pi pi-shield text-xs text-emerald-600"></i>
-            </div>
-            <h2 class="text-xs font-extrabold text-slate-700 uppercase tracking-[0.15em]">
-              Permisos asignados
-            </h2>
-            <span class="ml-auto text-[10px] font-bold text-slate-400 bg-slate-100
-                         rounded-full px-2.5 py-1">
-              {{ permissions.length }}
-            </span>
-          </div>
-
-          <div *ngIf="permissions.length > 0" class="flex flex-wrap gap-2">
-            <span *ngFor="let perm of permissions"
-              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg
-                     bg-slate-50 border border-slate-100
-                     text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-              <i class="pi pi-check text-[9px] text-emerald-500"></i>
-              {{ permissionLabel(perm) }}
-            </span>
-          </div>
-        </div>
 
       </div>
 

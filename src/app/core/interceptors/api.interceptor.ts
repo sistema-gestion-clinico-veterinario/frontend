@@ -7,7 +7,7 @@ import { LoadingStore } from '../../store/loading.store';
 import { AuthService } from '../services/auth.service';
 
 let isRefreshing = false;
-const refreshTokenSubject: BehaviorSubject<string | null> = new BehaviorSubject<string | null>(null);
+let refreshTokenSubject: BehaviorSubject<string | null> = new BehaviorSubject<string | null>(null);
 
 export const apiInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, next: HttpHandlerFn): Observable<HttpEvent<unknown>> => {
   const authStore = inject(AuthStore);
@@ -52,7 +52,6 @@ const handle401Error = (req: HttpRequest<any>, next: HttpHandlerFn, authStore: a
           authStore.setAuth({
             token: res.data.token,
             refreshToken: res.data.refreshToken,
-            permissions: res.data.permissions,
             roles: res.data.roles,
             companyId: authStore.companyId(),
             companyName: authStore.companyName(),
@@ -65,7 +64,6 @@ const handle401Error = (req: HttpRequest<any>, next: HttpHandlerFn, authStore: a
             menu: authStore.menu(),
             simulatedRoleId: authStore.simulatedRoleId(),
             originalMenu: authStore.originalMenu(),
-            originalPermissions: authStore.originalPermissions(),
             assignedRoles: res.data.assignedRoles ?? authStore.assignedRoles()
           });
           refreshTokenSubject.next(res.data.token);
@@ -77,6 +75,8 @@ const handle401Error = (req: HttpRequest<any>, next: HttpHandlerFn, authStore: a
         }),
         catchError((err) => {
           isRefreshing = false;
+          refreshTokenSubject.error(err);
+          refreshTokenSubject = new BehaviorSubject<string | null>(null);
           authStore.logout();
           router.navigate(['/login']);
           return throwError(() => err);
