@@ -167,7 +167,20 @@ export const AuthStore = signalStore(
     },
 
     hasAccess(codigoVista: string, tipo: 'leer' | 'escribir' | 'modificar' | 'eliminar' = 'leer'): boolean {
+      const ALIASES: Record<string, string> = {
+        'APODERADOS':       'VISTA_CLIENTES',
+        'EMPLEADOS':        'VISTA_EMPLEADOS',
+        'MASCOTAS':         'VISTA_MASCOTAS',
+        'COMPLEMENTARIO':   'VISTA_COMPLEMENTARIO',
+        'EMPRESA':          'VISTA_COMPANY',
+        'HORARIO_MANAGE':   'VISTA_HORARIOS',
+        'APODERADO_UPDATE': 'VISTA_CLIENTES',
+      };
+      const codigo = ALIASES[codigoVista] ?? codigoVista;
+
       const menu = store.menu() ?? [];
+      const isMenuStructure = (obj: any): obj is MenuStructureDTO =>
+        obj && typeof obj === 'object' && 'vistas' in obj && Array.isArray(obj.vistas);
 
       for (const item of menu) {
         const isMenuStructure = (obj: any): obj is MenuStructureDTO => {
@@ -188,7 +201,7 @@ export const AuthStore = signalStore(
       }
       return false;
     },
-
+    
     hasRouteAccess(routePattern: string): boolean {
       const roles = store.originalRoles()?.length ? store.originalRoles() : store.roles();
 
