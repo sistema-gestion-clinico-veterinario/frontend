@@ -1,7 +1,7 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router, ActivatedRouteSnapshot } from '@angular/router';
 import { AuthStore } from '../../store/auth.store';
-import { resolveDashboardRoute } from '../../layouts/main-layout/navbar/navbar.component';
+import { resolveDashboardRoute, resolveInitialRoute } from '../../layouts/main-layout/navbar/navbar.component';
 
 export const AuthGuard: CanActivateFn = (route, state) => {
   const authStore = inject(AuthStore);
@@ -24,7 +24,7 @@ export const AuthGuard: CanActivateFn = (route, state) => {
   // Dynamic route pattern access check
   const pattern = getRoutePattern(route);
   if (pattern && !authStore.hasRouteAccess(pattern)) {
-    router.navigate([resolveDashboardRoute(authStore.roles() ?? [])]);
+    router.navigate([resolveInitialRoute(authStore.roles() ?? [], authStore.menu() ?? [])]);
     return false;
   }
 
@@ -32,7 +32,7 @@ export const AuthGuard: CanActivateFn = (route, state) => {
   const requiredVentana = route.data?.['ventana'] as string | undefined;
   if (requiredVentana) {
     if (!authStore.hasAccess(requiredVentana, 'leer')) {
-      router.navigate([resolveDashboardRoute(authStore.roles() ?? [])]);
+      router.navigate([resolveInitialRoute(authStore.roles() ?? [], authStore.menu() ?? [])]);
       return false;
     }
   }

@@ -66,8 +66,12 @@ export class ListaMascotasComponent implements OnInit {
   currentPage       = 0;
   readonly pageSize = 12;
   readonly especieOpciones = [
-    { label: 'Perro',   value: 'PERRO'   },
-    { label: 'Gato',    value: 'GATO'    },
+    { label: 'Perro',  value: 'PERRO'  },
+    { label: 'Gato',   value: 'GATO'   },
+    { label: 'Conejo', value: 'CONEJO' },
+    { label: 'Ave',    value: 'AVE'    },
+    { label: 'Reptil', value: 'REPTIL' },
+    { label: 'Otro',   value: 'OTRO'   },
   ];
 
   readonly sexoOpciones = [

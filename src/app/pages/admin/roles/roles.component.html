@@ -165,7 +165,12 @@
             <!-- Matriz de permisos de ventana -->
             <div>
               <div class="flex items-center justify-between mb-3">
-                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Permisos por ventana</p>
+                <div class="flex items-center gap-3">
+                  <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Permisos por ventana</p>
+                  <a [routerLink]="['/admin/ventanas']" class="text-xs text-[#0066AA] font-bold hover:underline flex items-center gap-1">
+                    <i class="pi pi-cog text-[10px]"></i>Configurar Ventanas
+                  </a>
+                </div>
                 <div *ngIf="permisosModificados()" class="flex gap-2">
                   <button (click)="discardPermisos()"
                     class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors">
@@ -201,29 +206,43 @@
                   </div>
 
                   <!-- Ventana raíz con ruta (hoja directa) -->
-                  <div *ngIf="childrenOf(grupo.codigo).length === 0"
-                    class="grid grid-cols-[1fr_80px_80px_80px_80px] px-4 py-2.5 border-b border-slate-100 hover:bg-slate-50 items-center">
-                    <div class="flex items-center gap-2">
-                      <i [class]="grupo.icono + ' text-xs text-slate-400'"></i>
-                      <span class="text-sm text-slate-700">{{ grupo.nombre }}</span>
+                  <div *ngIf="childrenOf(grupo.codigo).length === 0" class="border-b border-slate-100">
+                    <div class="grid grid-cols-[1fr_80px_80px_80px_80px] px-4 py-2.5 hover:bg-slate-50 items-center">
+                      <div class="flex items-center gap-2">
+                        <i [class]="grupo.icono + ' text-xs text-slate-400'"></i>
+                        <span class="text-sm text-slate-700">{{ grupo.nombre }}</span>
+                      </div>
+                      <ng-container *ngTemplateOutlet="checkboxCell; context: { v: grupo, campo: 'leer' }"></ng-container>
+                      <ng-container *ngTemplateOutlet="checkboxCell; context: { v: grupo, campo: 'escribir' }"></ng-container>
+                      <ng-container *ngTemplateOutlet="checkboxCell; context: { v: grupo, campo: 'modificar' }"></ng-container>
+                      <ng-container *ngTemplateOutlet="checkboxCell; context: { v: grupo, campo: 'eliminar' }"></ng-container>
                     </div>
-                    <ng-container *ngTemplateOutlet="checkboxCell; context: { v: grupo, campo: 'leer' }"></ng-container>
-                    <ng-container *ngTemplateOutlet="checkboxCell; context: { v: grupo, campo: 'escribir' }"></ng-container>
-                    <ng-container *ngTemplateOutlet="checkboxCell; context: { v: grupo, campo: 'modificar' }"></ng-container>
-                    <ng-container *ngTemplateOutlet="checkboxCell; context: { v: grupo, campo: 'eliminar' }"></ng-container>
+                    <!-- Vistas de la ventana raíz -->
+                    <div *ngIf="grupo.vistas && grupo.vistas.length > 0" class="pl-8 pb-2.5 pr-4 flex flex-wrap gap-1 bg-slate-50/50">
+                      <span *ngFor="let vis of grupo.vistas" class="text-[9px] bg-white text-slate-500 font-mono px-1.5 py-0.5 rounded border border-slate-200/50">
+                        <i class="pi pi-link text-[8px] mr-0.5 text-slate-400"></i>{{ vis.nombre }}: <span class="text-[#0066AA]">{{ vis.ruta }}</span>
+                      </span>
+                    </div>
                   </div>
 
                   <!-- Hijos del grupo -->
-                  <div *ngFor="let v of childrenOf(grupo.codigo)"
-                    class="grid grid-cols-[1fr_80px_80px_80px_80px] px-4 py-2.5 border-b border-slate-100 hover:bg-slate-50 items-center">
-                    <div class="flex items-center gap-2 pl-4">
-                      <i [class]="v.icono + ' text-xs text-slate-400'"></i>
-                      <span class="text-sm text-slate-700">{{ v.nombre }}</span>
+                  <div *ngFor="let v of childrenOf(grupo.codigo)" class="border-b border-slate-100">
+                    <div class="grid grid-cols-[1fr_80px_80px_80px_80px] px-4 py-2.5 hover:bg-slate-50 items-center">
+                      <div class="flex items-center gap-2 pl-4">
+                        <i [class]="v.icono + ' text-xs text-slate-400'"></i>
+                        <span class="text-sm text-slate-700">{{ v.nombre }}</span>
+                      </div>
+                      <ng-container *ngTemplateOutlet="checkboxCell; context: { v: v, campo: 'leer' }"></ng-container>
+                      <ng-container *ngTemplateOutlet="checkboxCell; context: { v: v, campo: 'escribir' }"></ng-container>
+                      <ng-container *ngTemplateOutlet="checkboxCell; context: { v: v, campo: 'modificar' }"></ng-container>
+                      <ng-container *ngTemplateOutlet="checkboxCell; context: { v: v, campo: 'eliminar' }"></ng-container>
                     </div>
-                    <ng-container *ngTemplateOutlet="checkboxCell; context: { v: v, campo: 'leer' }"></ng-container>
-                    <ng-container *ngTemplateOutlet="checkboxCell; context: { v: v, campo: 'escribir' }"></ng-container>
-                    <ng-container *ngTemplateOutlet="checkboxCell; context: { v: v, campo: 'modificar' }"></ng-container>
-                    <ng-container *ngTemplateOutlet="checkboxCell; context: { v: v, campo: 'eliminar' }"></ng-container>
+                    <!-- Vistas de la ventana hija -->
+                    <div *ngIf="v.vistas && v.vistas.length > 0" class="pl-12 pb-2.5 pr-4 flex flex-wrap gap-1 bg-slate-50/30">
+                      <span *ngFor="let vis of v.vistas" class="text-[9px] bg-white text-slate-500 font-mono px-1.5 py-0.5 rounded border border-slate-200/50">
+                        <i class="pi pi-link text-[8px] mr-0.5 text-slate-400"></i>{{ vis.nombre }}: <span class="text-[#0066AA]">{{ vis.ruta }}</span>
+                      </span>
+                    </div>
                   </div>
                 </ng-container>
               </div>
