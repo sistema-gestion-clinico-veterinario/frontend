@@ -62,7 +62,7 @@
           </td>
           <td class="px-6 py-4 text-right">
             <div class="flex items-center justify-end gap-1">
-              <button *appHasPermission="Permission.APODERADO_UPDATE"
+              <button *appHasPermission="'APODERADOS:modificar'"
                 (click)="editClient(client)"
                 [disabled]="!client.activo"
                 [title]="!client.activo ? 'El cliente está inactivo' : 'Editar'"
