@@ -190,7 +190,7 @@ export const routes: Routes = [
       },
       {
         path: 'citas',
-        data: { permission: Permission.CITA_READ },
+        data: { ventana: 'VISTA_CITAS_AGENDA' },
         children: [
           {
             path: 'agenda',
@@ -200,7 +200,7 @@ export const routes: Routes = [
       },
       {
         path: 'admin/citas',
-        data: { permission: Permission.CITA_READ },
+        data: { ventana: 'VISTA_CITAS_AGENDA' },
         children: [
           {
             path: 'agenda',
@@ -210,7 +210,7 @@ export const routes: Routes = [
       },
       {
         path: 'empleado/citas',
-        data: { permission: Permission.CITA_READ },
+        data: { ventana: 'VISTA_CITAS_AGENDA' },
         children: [
           {
             path: 'agenda',
