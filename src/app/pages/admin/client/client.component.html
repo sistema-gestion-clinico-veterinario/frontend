@@ -62,7 +62,8 @@
           </td>
           <td class="px-6 py-4 text-right">
             <div class="flex items-center justify-end gap-1">
-              <button *appHasPermission="'APODERADOS:modificar'" (click)="editClient(client)"
+              <button *appHasPermission="Permission.APODERADO_UPDATE"
+                (click)="editClient(client)"
                 [disabled]="!client.activo"
                 [title]="!client.activo ? 'El cliente está inactivo' : 'Editar'"
                 class="p-2 rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-90 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-slate-400">
