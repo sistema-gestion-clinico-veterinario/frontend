@@ -149,7 +149,7 @@ export class NavbarComponent implements OnInit {
             assignedRoles: res.data.assignedRoles || this.authStore.assignedRoles()
           });
 
-          window.location.href = resolveInitialRoute(res.data.roles ?? [], res.data.menu ?? []);
+          this.router.navigateByUrl(resolveInitialRoute(res.data.roles ?? [], res.data.menu ?? []), { replaceUrl: true });
         }
       });
     }

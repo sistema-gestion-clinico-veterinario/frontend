@@ -54,6 +54,7 @@ export class CitasComponent implements OnInit {
   servicios = signal<any[]>([]);
   vets = signal<any[]>([]);
   availableSlots = signal<string[]>([]);
+  horariosVeterinario = signal<any[]>([]);
   
   // View Modes & Filters
   citasViewMode = signal<'list' | 'grid'>('list');
@@ -233,6 +234,7 @@ export class CitasComponent implements OnInit {
         horaCita: null
       });
       this.availableSlots.set([]);
+      this.horariosVeterinario.set([]);
     }
 
     if (!servicioId || servicioId === 'null') {
@@ -264,11 +266,7 @@ export class CitasComponent implements OnInit {
     this.availableSlots.set([]);
     this.citaForm.patchValue({ horaCita: null });
 
-    const dateObj: Date = val.fechaCita;
-    const year = dateObj.getFullYear();
-    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-    const day = String(dateObj.getDate()).padStart(2, '0');
-    const fechaStr = `${year}-${month}-${day}`;
+    const fechaStr = this.toDateInputValue(val.fechaCita);
 
     this.apoderadoService.getPortalDisponibilidad(val.veterinarioId, fechaStr, val.servicioId).subscribe({
       next: (res) => {
@@ -286,12 +284,28 @@ export class CitasComponent implements OnInit {
     this.citaForm.patchValue({ horaCita: slot });
   }
 
+  onVeterinarioChange() {
+    const veterinarioId = Number(this.citaForm.get('veterinarioId')?.value);
+    this.onBookingParamsChange();
+
+    if (!veterinarioId) {
+      this.horariosVeterinario.set([]);
+      return;
+    }
+
+    this.apoderadoService.getPortalEmpleadoHorario(veterinarioId).subscribe({
+      next: (res) => this.horariosVeterinario.set(this.sortHorarios(res.data || [])),
+      error: () => this.horariosVeterinario.set([])
+    });
+  }
+
   openNuevaCita() {
     this.isEditing.set(false);
     this.isRescheduling.set(false);
     this.editingCitaId.set(null);
     this.vets.set([]);
     this.availableSlots.set([]);
+    this.horariosVeterinario.set([]);
     const defaultMascotaId = this.selectedPetFilter() ?? (this.mascotas().length > 0 ? this.mascotas()[0].id : null);
     this.citaForm.reset({
       mascotaId: defaultMascotaId,
@@ -365,12 +379,13 @@ export class CitasComponent implements OnInit {
       mascotaId: cita.mascotaId,
       servicioId: cita.servicioId,
       veterinarioId: cita.veterinarioId,
-      fechaCita: new Date(cita.fechaHoraInicio),
+      fechaCita: this.toDateInputValue(cita.fechaHoraInicio),
       horaCita: new Date(cita.fechaHoraInicio).toTimeString().substring(0, 5),
       motivoCita: cita.motivoCita,
       notas: cita.notas || ''
     });
 
+    this.onVeterinarioChange();
     this.displayCitaModal.set(true);
   }
 
@@ -381,6 +396,7 @@ export class CitasComponent implements OnInit {
     
     this.onServiceChange(cita.servicioId, true);
     this.availableSlots.set([]);
+    this.horariosVeterinario.set([]);
 
     this.citaForm.reset({
       mascotaId: cita.mascotaId,
@@ -392,6 +408,7 @@ export class CitasComponent implements OnInit {
       notas: cita.notas || ''
     });
 
+    this.onVeterinarioChange();
     this.displayCitaModal.set(true);
   }
 
@@ -417,13 +434,10 @@ export class CitasComponent implements OnInit {
 
     let isoString = '';
     if (!this.isEditing()) {
-      const dateObj: Date = formVal.fechaCita;
-      const year = dateObj.getFullYear();
-      const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-      const day = String(dateObj.getDate()).padStart(2, '0');
+      const fechaStr = this.toDateInputValue(formVal.fechaCita);
       const timeStr = formVal.horaCita; 
       
-      isoString = `${year}-${month}-${day}T${timeStr}:00`;
+      isoString = `${fechaStr}T${timeStr}:00`;
     }
 
     const originalCita = this.editingCitaId() ? this.citas().find(c => c.id === this.editingCitaId()) : null;
@@ -500,5 +514,53 @@ export class CitasComponent implements OnInit {
       case 'EN_PROCESO': return 'bg-violet-50 text-violet-700 border-violet-200';
       default: return 'bg-slate-50 text-slate-700 border-slate-200';
     }
+  }
+
+  get selectedVetName(): string {
+    const id = Number(this.citaForm.get('veterinarioId')?.value);
+    return this.vets().find(v => Number(v.value) === id)?.label ?? 'Profesional seleccionado';
+  }
+
+  get horariosActivos(): any[] {
+    return this.horariosVeterinario().filter(h => h.activo !== false);
+  }
+
+  formatDiaSemana(dia: string): string {
+    const labels: Record<string, string> = {
+      LUNES: 'Lunes',
+      MARTES: 'Martes',
+      MIERCOLES: 'Miércoles',
+      JUEVES: 'Jueves',
+      VIERNES: 'Viernes',
+      SABADO: 'Sábado',
+      DOMINGO: 'Domingo'
+    };
+    return labels[dia] ?? dia;
+  }
+
+  formatHora(hora: string): string {
+    return hora?.substring(0, 5) ?? '';
+  }
+
+  private sortHorarios(horarios: any[]): any[] {
+    const order = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO', 'DOMINGO'];
+    return [...horarios].sort((a, b) => {
+      const fechaCmp = String(a.fecha ?? '').localeCompare(String(b.fecha ?? ''));
+      if (fechaCmp !== 0) return fechaCmp;
+      const dayCmp = order.indexOf(a.diaSemana) - order.indexOf(b.diaSemana);
+      if (dayCmp !== 0) return dayCmp;
+      return String(a.horaInicio ?? '').localeCompare(String(b.horaInicio ?? ''));
+    });
+  }
+
+  toDateInputValue(value: string | Date): string {
+    if (value instanceof Date) {
+      const year = value.getFullYear();
+      const month = String(value.getMonth() + 1).padStart(2, '0');
+      const day = String(value.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    return String(value).substring(0, 10);
   }
 }
