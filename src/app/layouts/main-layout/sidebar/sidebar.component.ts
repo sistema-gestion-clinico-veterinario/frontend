@@ -66,10 +66,16 @@ export class SidebarComponent {
       };
 
       if (isMenuStructure(item)) {
-        const vistasConRuta: MenuItemWithRuta[] = item.vistas.map(vista => ({
-          ...vista,
-          ruta: vista.ruta || this.routeMapper.getRoute(vista.codigo) || '/'
-        }));
+        const vistasConRuta: MenuItemWithRuta[] = item.vistas
+          .filter(vista => vista.leer !== false)
+          .map(vista => ({
+            ...vista,
+            ruta: vista.ruta || this.routeMapper.getRoute(vista.codigo) || '/'
+          }));
+
+        if (vistasConRuta.length === 0) {
+          continue;
+        }
 
         structures.push({
           ...item,
@@ -77,6 +83,9 @@ export class SidebarComponent {
         });
       } else {
         const vistaItem = item as MenuItemDTO;
+        if (vistaItem.leer === false) {
+          continue;
+        }
         structures.push({
           ventanaId: undefined,
           ventanaNombre: vistaItem.nombre,

@@ -16,6 +16,14 @@ import { PagoService } from '../../../core/services/pago.service';
 import { AuthStore } from '../../../store/auth.store';
 import { LoadingStore } from '../../../store/loading.store';
 
+interface HorarioResumen {
+  diaSemana: string;
+  horaInicio: string;
+  horaFin: string;
+  rangoFechas: string;
+  totalFechas: number;
+}
+
 @Component({
   selector: 'app-apoderado-citas',
   standalone: true,
@@ -525,6 +533,10 @@ export class CitasComponent implements OnInit {
     return this.horariosVeterinario().filter(h => h.activo !== false);
   }
 
+  get horariosResumen(): HorarioResumen[] {
+    return this.buildHorarioResumen(this.horariosActivos);
+  }
+
   formatDiaSemana(dia: string): string {
     const labels: Record<string, string> = {
       LUNES: 'Lunes',
@@ -540,6 +552,63 @@ export class CitasComponent implements OnInit {
 
   formatHora(hora: string): string {
     return hora?.substring(0, 5) ?? '';
+  }
+
+  private buildHorarioResumen(horarios: any[]): HorarioResumen[] {
+    const groups = new Map<string, {
+      diaSemana: string;
+      horaInicio: string;
+      horaFin: string;
+      fechas: Set<string>;
+    }>();
+
+    for (const horario of horarios) {
+      const horaInicio = this.formatHora(horario.horaInicio);
+      const horaFin = this.formatHora(horario.horaFin);
+      const key = `${horario.diaSemana}|${horaInicio}|${horaFin}`;
+      const current = groups.get(key) ?? {
+        diaSemana: horario.diaSemana,
+        horaInicio,
+        horaFin,
+        fechas: new Set<string>()
+      };
+
+      if (horario.fecha) {
+        current.fechas.add(String(horario.fecha).substring(0, 10));
+      }
+
+      groups.set(key, current);
+    }
+
+    const order = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO', 'DOMINGO'];
+    return Array.from(groups.values())
+      .sort((a, b) => {
+        const dayCmp = order.indexOf(a.diaSemana) - order.indexOf(b.diaSemana);
+        if (dayCmp !== 0) return dayCmp;
+        return a.horaInicio.localeCompare(b.horaInicio);
+      })
+      .map(group => {
+        const fechas = Array.from(group.fechas).sort();
+        return {
+          diaSemana: group.diaSemana,
+          horaInicio: group.horaInicio,
+          horaFin: group.horaFin,
+          rangoFechas: this.formatRangoFechas(fechas),
+          totalFechas: fechas.length
+        };
+      });
+  }
+
+  private formatRangoFechas(fechas: string[]): string {
+    if (fechas.length === 0) return 'Horario recurrente';
+    if (fechas.length === 1) return `Fecha: ${this.formatFechaCorta(fechas[0])}`;
+    return `${this.formatFechaCorta(fechas[0])} - ${this.formatFechaCorta(fechas[fechas.length - 1])}`;
+  }
+
+  private formatFechaCorta(fecha: string): string {
+    const [year, month, day] = fecha.split('-');
+    if (!year || !month || !day) return fecha;
+    return `${day}/${month}/${year}`;
   }
 
   private sortHorarios(horarios: any[]): any[] {

@@ -8,6 +8,7 @@ import { LoadingStore } from '../../../store/loading.store';
 import { Role } from '../../../core/enums/role.enum';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
+import { catchError, finalize, forkJoin, of } from 'rxjs';
 
 @Component({
   selector: 'app-employee-dashboard',
@@ -103,51 +104,34 @@ export class EmployeeDashboardComponent implements OnInit {
   loadDashboardData() {
     this.loadingStore.show();
 
-    // 1. Fetch employee schedule/profile information
-    this.profileService.getProfile().subscribe({
-      next: (res) => {
-        if (res.data && res.data.horarios) {
-          this.horariosList.set(res.data.horarios);
-        }
-      },
-      error: () => {
+    const todayStr = this.toDateStr(this.today);
+    const profileRequest = this.profileService.getProfile().pipe(
+      catchError(() => {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cargar el horario de turnos.' });
-      }
-    });
+        return of(null);
+      })
+    );
 
-    // 2. Fetch today's appointments assigned to this employee
-    if (this.empleadoId) {
-      this.citaService.listar(undefined, undefined, undefined, this.empleadoId, 0, 100).subscribe({
-        next: (res) => {
-          const content = res.data?.content ?? [];
-          const todayYear = this.today.getFullYear();
-          const todayMonth = this.today.getMonth();
-          const todayDate = this.today.getDate();
-
-          // Timezone-safe local date filter
-          const filtered = content.filter((cita: any) => {
-            if (!cita.fechaHoraInicio) return false;
-            const citaDate = new Date(cita.fechaHoraInicio);
-            return citaDate.getFullYear() === todayYear &&
-                   citaDate.getMonth() === todayMonth &&
-                   citaDate.getDate() === todayDate;
-          });
-
-          // Sort chronologically by start hour
-          filtered.sort((a, b) => new Date(a.fechaHoraInicio).getTime() - new Date(b.fechaHoraInicio).getTime());
-
-          this.todayAppointments.set(filtered);
-          this.loadingStore.hide();
-        },
-        error: () => {
-          this.todayAppointments.set([]);
+    const appointmentsRequest = this.empleadoId
+      ? this.citaService.listar(undefined, todayStr, undefined, this.empleadoId, 0, 100).pipe(
+        catchError(() => {
           this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron recuperar las citas de hoy.' });
-          this.loadingStore.hide();
-        }
+          return of(null);
+        })
+      )
+      : of(null);
+
+    forkJoin({ profile: profileRequest, appointments: appointmentsRequest })
+      .pipe(finalize(() => this.loadingStore.hide()))
+      .subscribe(({ profile, appointments }) => {
+        this.horariosList.set(profile?.data?.horarios ?? []);
+
+        const content = appointments?.data?.content ?? [];
+        const sorted = [...content].sort(
+          (a, b) => new Date(a.fechaHoraInicio).getTime() - new Date(b.fechaHoraInicio).getTime()
+        );
+        this.todayAppointments.set(sorted);
       });
-    } else {
-      this.loadingStore.hide();
-    }
   }
 
   // Appointment Actions
@@ -217,6 +201,10 @@ export class EmployeeDashboardComponent implements OnInit {
     return d.toLocaleDateString('es-PE', {
       weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
     });
+  }
+
+  private toDateStr(d: Date): string {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   }
 
   // Quick Action Card Links

@@ -146,6 +146,7 @@ export class NavbarComponent implements OnInit {
             menu: res.data.menu,
             simulatedRoleId: this.authStore.simulatedRoleId(),
             originalMenu: res.data.menu,
+            originalRoles: res.data.assignedRoles || this.authStore.assignedRoles(),
             assignedRoles: res.data.assignedRoles || this.authStore.assignedRoles()
           });
 
@@ -186,21 +187,26 @@ export function resolveDashboardRoute(roles: string[]): string {
 }
 
 export function resolveInitialRoute(roles: string[], menu: (MenuStructureDTO | MenuItemDTO)[]): string {
-  return resolveDashboardRoute(roles);
+  const menuRoute = findFirstMenuRoute(menu);
+  return menuRoute ? normalizeInitialRoute(menuRoute) : resolveDashboardRoute(roles);
 }
 
 function findFirstMenuRoute(menu: (MenuStructureDTO | MenuItemDTO)[]): string | null {
   for (const item of menu || []) {
     if (isMenuStructure(item)) {
-      const vista = item.vistas.find(v => (v.activo ?? true) && !!v.ruta);
+      const vista = item.vistas.find(v => (v.activo ?? true) && v.leer !== false && !!v.ruta);
       if (vista?.ruta) return vista.ruta;
       continue;
     }
 
-    if ((item.activo ?? true) && item.ruta) return item.ruta;
+    if ((item.activo ?? true) && item.leer !== false && item.ruta) return item.ruta;
   }
 
   return null;
+}
+
+function normalizeInitialRoute(route: string): string {
+  return route.startsWith('/') ? route : `/${route}`;
 }
 
 function isMenuStructure(item: MenuStructureDTO | MenuItemDTO): item is MenuStructureDTO {
