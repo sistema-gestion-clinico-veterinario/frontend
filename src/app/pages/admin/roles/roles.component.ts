@@ -33,7 +33,7 @@ export class RolesComponent implements OnInit {
   });
 
   hasModifyAccess = computed(() => {
-    return this.isSuperAdmin() || this.authStore.hasAccess('ROLES', 'modificar');
+    return this.isSuperAdmin() || this.authStore.hasAccess('VISTA_ROLES', 'modificar');
   });
 
   get activeCompanyId(): number | null {

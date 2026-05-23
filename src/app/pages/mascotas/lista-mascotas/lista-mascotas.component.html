@@ -17,7 +17,7 @@
       <div class="flex items-center gap-2.5 sm:gap-3 shrink-0">
 
 
-        <button *appHasPermission="'MASCOTAS:escribir'" (click)="openNew()"
+        <button *appHasPermission="'VISTA_MASCOTAS:escribir'" (click)="openNew()"
           class="flex items-center gap-1.5 bg-[#0066AA] text-white font-medium rounded-lg h-9 sm:h-10 px-3 sm:px-5 text-sm">
           <i class="pi pi-plus text-xs"></i>
           <span class="hidden sm:inline">Registrar mascota</span>
@@ -116,7 +116,7 @@
                 </div>
               </div>
             </div>
-            <button *appHasPermission="'MASCOTAS:modificar'" (click)="editMascota(mascota)"
+            <button *appHasPermission="'VISTA_MASCOTAS:modificar'" (click)="editMascota(mascota)"
               [disabled]="!mascota.activo"
               [title]="!mascota.activo ? 'La mascota está inactiva' : 'Editar'"
               class="p-2 rounded-lg text-slate-300 hover:text-[#0066AA] hover:bg-blue-50 flex-shrink-0 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-slate-300">
@@ -173,7 +173,7 @@
               <i class="pi pi-file text-xs"></i>
               Sin HC
             </span>
-            <button *appHasPermission="'MASCOTAS:modificar'" (click)="toggleEstado(mascota)"
+            <button *appHasPermission="'VISTA_MASCOTAS:modificar'" (click)="toggleEstado(mascota)"
               [class]="mascota.activo
                 ? 'bg-emerald-50 text-emerald-700'
                 : 'bg-red-50 text-red-500'"

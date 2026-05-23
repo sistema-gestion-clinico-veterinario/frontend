@@ -8,3 +8,9 @@ export interface CitaRequest {
   version?: number;
   esEmergencia?: boolean;
 }
+
+export interface CitaReprogramacionRequest {
+  veterinarioId?: number;
+  fechaHoraInicio: string;
+  motivoReprogramacion?: string;
+}
