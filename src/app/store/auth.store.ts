@@ -306,13 +306,13 @@ function extractAllowedRoutes(menuItems: (MenuItemDTO | MenuStructureDTO)[]): Se
 
     if (isMenuStructure(item)) {
       for (const vista of item.vistas) {
-        if ((vista.activo ?? true) && vista.ruta) {
+        if ((vista.activo ?? true) && vista.leer !== false && vista.ruta) {
           routes.add(normalizeRoute(vista.ruta));
         }
       }
     } else {
       const menuItem = item as MenuItemDTO;
-      if ((menuItem.activo ?? true) && menuItem.ruta) {
+      if ((menuItem.activo ?? true) && menuItem.leer !== false && menuItem.ruta) {
         routes.add(normalizeRoute(menuItem.ruta));
       }
     }

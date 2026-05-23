@@ -14,7 +14,7 @@ export const AuthGuard: CanActivateFn = (route, state) => {
   const token = authStore.token();
   const refreshToken = authStore.refreshToken();
 
-  if (!token) {
+  if (!token && !refreshToken) {
     return router.createUrlTree(['/login']);
   }
 
@@ -47,6 +47,10 @@ export const AuthGuard: CanActivateFn = (route, state) => {
         return of(router.createUrlTree(['/login']));
       })
     );
+  }
+
+  if (!token) {
+    return router.createUrlTree(['/login']);
   }
 
   return validateAccess(route, authStore, router);

@@ -342,13 +342,27 @@
               <i class="pi pi-clock text-[#0066AA] text-sm"></i>
             </div>
 
-            <div *ngIf="horariosActivos.length > 0; else noHorarioVet" class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-32 overflow-y-auto pr-1">
-              <div *ngFor="let horario of horariosActivos"
-                class="flex items-center justify-between gap-2 rounded-lg bg-white border border-slate-100 px-3 py-2">
-                <span class="text-[11px] font-semibold text-slate-600">{{ formatDiaSemana(horario.diaSemana) }}</span>
-                <span class="text-[11px] font-bold text-[#0066AA] whitespace-nowrap">
-                  {{ formatHora(horario.horaInicio) }} - {{ formatHora(horario.horaFin) }}
-                </span>
+            <p class="text-[10px] font-semibold text-slate-400 mb-3">Elige una fecha dentro de estos dias y rangos disponibles.</p>
+
+            <div *ngIf="horariosResumen.length > 0; else noHorarioVet" class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-44 overflow-y-auto pr-1">
+              <div *ngFor="let horario of horariosResumen"
+                class="rounded-lg bg-white border border-slate-100 px-3 py-2.5">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="text-[11px] font-extrabold text-slate-700">{{ formatDiaSemana(horario.diaSemana) }}</span>
+                  <span class="text-[11px] font-extrabold text-[#0066AA] whitespace-nowrap">
+                    {{ horario.horaInicio }} - {{ horario.horaFin }}
+                  </span>
+                </div>
+                <div class="mt-1.5 flex items-center justify-between gap-2">
+                  <span class="flex items-center gap-1.5 text-[10px] font-semibold text-slate-400 min-w-0">
+                    <i class="pi pi-calendar text-[10px] shrink-0"></i>
+                    <span class="truncate">{{ horario.rangoFechas }}</span>
+                  </span>
+                  <span *ngIf="horario.totalFechas > 1"
+                    class="text-[10px] font-bold text-slate-400 whitespace-nowrap">
+                    {{ horario.totalFechas }} fechas
+                  </span>
+                </div>
               </div>
             </div>
 

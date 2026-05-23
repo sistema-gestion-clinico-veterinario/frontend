@@ -1,14 +1,16 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule, NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { RoleService, RolVentanaPermiso } from '../../../core/services/role.service';
 import { LoadingStore } from '../../../store/loading.store';
 import { AuthStore } from '../../../store/auth.store';
+import { AuthService } from '../../../core/services/auth.service';
 import { Role } from '../../../models/response/permission';
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
+import { resolveInitialRoute } from '../../../layouts/main-layout/navbar/navbar.component';
 
 type Section = 'empresa' | 'sistema';
 
@@ -24,6 +26,8 @@ export class RolesComponent implements OnInit {
   private readonly roleService = inject(RoleService);
   private readonly messageService = inject(MessageService);
   private readonly authStore = inject(AuthStore);
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
   readonly loadingStore = inject(LoadingStore);
 
   isSuperAdmin = computed(() => (this.authStore.roles() ?? []).includes('ROLE_SUPER_ADMIN'));
@@ -160,7 +164,7 @@ export class RolesComponent implements OnInit {
         this.ventanaPermisos.set(res.data);
         this.permisosModificados.set(false);
         this.messageService.add({ severity: 'success', summary: 'Guardado', detail: 'Permisos actualizados correctamente' });
-        this.loadingStore.hide();
+        this.refreshCurrentSessionIfActiveRoleChanged(role.name);
       },
       error: (err) => {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo guardar' });
@@ -379,5 +383,47 @@ export class RolesComponent implements OnInit {
   confirmAction() {
     this.confirmDialog()?.onConfirm();
     this.confirmDialog.set(null);
+  }
+
+  private refreshCurrentSessionIfActiveRoleChanged(roleName: string) {
+    const activeRole = this.authStore.roles()[0];
+    const refreshToken = this.authStore.refreshToken();
+
+    if (activeRole !== roleName || !refreshToken) {
+      this.loadingStore.hide();
+      return;
+    }
+
+    this.authService.refreshToken(refreshToken).subscribe({
+      next: ({ data }) => {
+        this.authStore.setAuth({
+          token: data.token,
+          refreshToken: data.refreshToken,
+          roles: data.roles,
+          assignedRoles: data.assignedRoles ?? this.authStore.assignedRoles(),
+          originalRoles: data.assignedRoles ?? this.authStore.assignedRoles(),
+          companyId: data.companyId,
+          companyName: data.companyName,
+          nombreCompleto: data.nombreCompleto,
+          userType: data.userType,
+          empleadoId: data.empleadoId ?? null,
+          passwordChanged: data.passwordChanged,
+          needsCompanySelection: data.needsCompanySelection,
+          selectedEnterprise: this.authStore.selectedEnterprise(),
+          menu: data.menu,
+          originalMenu: data.menu,
+          simulatedRoleId: this.authStore.simulatedRoleId()
+        });
+
+        if (!this.authStore.hasRouteAccess(this.router.url)) {
+          this.router.navigateByUrl(resolveInitialRoute(data.roles ?? [], data.menu ?? []), { replaceUrl: true });
+        }
+
+        this.loadingStore.hide();
+      },
+      error: () => {
+        this.loadingStore.hide();
+      }
+    });
   }
 }
