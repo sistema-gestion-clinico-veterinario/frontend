@@ -28,15 +28,15 @@
         class="text-[10px] font-bold px-2 py-1 rounded bg-slate-100 text-slate-500 border border-slate-200">
         V{{ consulta()!.version }}
       </span>
-      <span *ngIf="(!isCerrada() || canManage()) && autoSaveStatus() === 'saving'"
+      <span *ngIf="canModify() && autoSaveStatus() === 'saving'"
         class="text-[10px] font-bold px-2 py-1 rounded bg-blue-50 text-[#0066AA] border border-blue-100">
         <i class="pi pi-spin pi-spinner mr-1"></i>Guardando
       </span>
-      <span *ngIf="(!isCerrada() || canManage()) && autoSaveStatus() === 'saved'"
+      <span *ngIf="canModify() && autoSaveStatus() === 'saved'"
         class="text-[10px] font-bold px-2 py-1 rounded bg-emerald-50 text-emerald-700 border border-emerald-100">
         <i class="pi pi-check mr-1"></i>Guardado
       </span>
-      <span *ngIf="(!isCerrada() || canManage()) && autoSaveStatus() === 'error'"
+      <span *ngIf="canModify() && autoSaveStatus() === 'error'"
         class="text-[10px] font-bold px-2 py-1 rounded bg-rose-50 text-rose-600 border border-rose-100">
         <i class="pi pi-exclamation-circle mr-1"></i>Error al guardar
       </span>
@@ -328,7 +328,7 @@
                 <i class="pi pi-print text-[10px]"></i>
                 Imprimir receta
               </button>
-              <button *ngIf="!isCerrada() || canManage()" type="button" (click)="abrirNuevaReceta()"
+              <button *ngIf="canCreate()" type="button" (click)="abrirNuevaReceta()"
                 class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0066AA] text-white text-xs font-bold hover:bg-[#0055aa] transition-all">
                 <i class="pi pi-plus text-[10px]"></i>
                 Agregar medicamento
@@ -380,11 +380,11 @@
                   </span>
                 </div>
                 <div class="flex items-center gap-2">
-                  <button *ngIf="!isCerrada() || canManage()" type="button" (click)="abrirEditarReceta(receta)"
+                  <button *ngIf="canModify()" type="button" (click)="abrirEditarReceta(receta)"
                     class="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold text-slate-500 hover:text-[#0066AA] hover:bg-blue-50 border border-slate-200 hover:border-blue-200 transition-all">
                     <i class="pi pi-pencil text-[9px]"></i> Editar
                   </button>
-                  <button *ngIf="!isCerrada() || canManage()" type="button" (click)="confirmarEliminarReceta(receta)"
+                  <button *ngIf="canDelete()" type="button" (click)="confirmarEliminarReceta(receta)"
                     class="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold text-rose-400 hover:text-rose-600 hover:bg-rose-50 border border-rose-100 hover:border-rose-200 transition-all">
                     <i class="pi pi-trash text-[9px]"></i> Eliminar
                   </button>
@@ -397,7 +397,7 @@
             <div class="py-10 text-center bg-slate-50 rounded-xl border border-dashed border-slate-200 mb-4">
               <i class="pi pi-file-edit text-3xl text-slate-200 mb-3 block"></i>
               <p class="text-sm text-slate-400 font-medium">No hay medicamentos prescritos</p>
-              <p *ngIf="!isCerrada()" class="text-xs text-slate-300 mt-1">Haz clic en "Agregar medicamento" para agregar uno</p>
+              <p *ngIf="canCreate()" class="text-xs text-slate-300 mt-1">Haz clic en "Agregar medicamento" para agregar uno</p>
             </div>
           </ng-template>
 
@@ -408,9 +408,9 @@
             </label>
             <textarea formControlName="indicacionesReceta" rows="3"
               placeholder="Indicaciones generales para el propietario sobre el tratamiento..."
-              [attr.readonly]="(isCerrada() && !canManage()) ? true : null"
+              [attr.readonly]="!canModify() ? true : null"
               class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 outline-none resize-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
-              [ngClass]="{'bg-slate-50 text-slate-500 cursor-not-allowed': isCerrada() && !canManage()}">
+              [ngClass]="{'bg-slate-50 text-slate-500 cursor-not-allowed': !canModify()}">
             </textarea>
             <p class="text-[10px] text-slate-400">Estas indicaciones aparecerán en la receta impresa.</p>
           </div>
@@ -420,7 +420,7 @@
         <!-- TAB EXÁMENES -->
         <div *ngIf="tabActiva() === 'examenes'" class="p-5 flex flex-col gap-5">
 
-          <div *ngIf="!isCerrada() || canManage()" class="border border-dashed border-slate-200 rounded-xl p-4 bg-slate-50/50 flex flex-col gap-3">
+          <div *ngIf="canCreate()" class="border border-dashed border-slate-200 rounded-xl p-4 bg-slate-50/50 flex flex-col gap-3">
             <div class="flex items-start gap-3 flex-wrap sm:flex-nowrap">
               <div class="flex-1 min-w-0">
                 <label class="block text-xs font-bold text-slate-600 mb-1.5">Seleccionar archivo</label>
@@ -505,7 +505,7 @@
                     class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:text-emerald-600 hover:border-emerald-200 hover:bg-emerald-50 transition-all">
                     <i class="pi pi-download text-xs"></i>
                   </button>
-                  <button *ngIf="!isCerrada() || canManage()" type="button" (click)="confirmarEliminarArchivo(archivo)" title="Eliminar"
+                  <button *ngIf="canDelete()" type="button" (click)="confirmarEliminarArchivo(archivo)" title="Eliminar"
                     class="w-8 h-8 flex items-center justify-center rounded-lg border border-rose-100 text-rose-400 hover:text-rose-600 hover:border-rose-300 hover:bg-rose-50 transition-all">
                     <i class="pi pi-trash text-xs"></i>
                   </button>
@@ -536,7 +536,7 @@
         </div>
       </div>
 
-      <div *ngIf="!isCerrada() || canManage()" class="flex flex-col gap-3 mt-4 items-end">
+      <div *ngIf="canModify()" class="flex flex-col gap-3 mt-4 items-end">
         <div class="flex flex-col sm:flex-row gap-3 justify-end w-full">
           <button *ngIf="!isCerrada()" type="button" (click)="confirmarCerrar()" [disabled]="form.invalid || autoSaveStatus() === 'saving'"
             class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 text-white text-sm font-bold hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all">

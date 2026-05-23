@@ -8,6 +8,7 @@ import { MediaService } from '../../core/services/media.service';
 import { ProfileResponse } from '../../models/response/profile-response';
 import { HorarioEmpleadoResponse } from '../../models/response/horario-empleado-response';
 import { LoadingStore } from '../../store/loading.store';
+import { AuthStore } from '../../store/auth.store';
 
 interface HorarioResumen {
   diaSemana: string;
@@ -29,6 +30,7 @@ export class ProfileComponent implements OnInit {
   private readonly profileService = inject(ProfileService);
   private readonly mediaService = inject(MediaService);
   private readonly messageService = inject(MessageService);
+  private readonly authStore = inject(AuthStore);
   readonly loadingStore = inject(LoadingStore);
 
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
@@ -79,6 +81,7 @@ export class ProfileComponent implements OnInit {
   }
 
   toggleEdit() {
+    if (!this.canModifyProfile) return;
     if (this.editMode()) {
       const p = this.profile();
       if (p) this.patchForm(p);
@@ -130,6 +133,12 @@ export class ProfileComponent implements OnInit {
   }
 
   save() {
+    if (!this.canModifyProfile) {
+      this.editMode.set(false);
+      this.messageService.add({ severity: 'warn', summary: 'Sin permiso', detail: 'No tienes permiso para editar tu perfil' });
+      return;
+    }
+
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       this.messageService.add({ severity: 'warn', summary: 'Campos inválidos', detail: 'Revisa los campos del formulario' });
@@ -174,6 +183,10 @@ export class ProfileComponent implements OnInit {
   isInvalid(field: string): boolean {
     const c = this.form.get(field);
     return !!(c?.invalid && c?.touched);
+  }
+
+  get canModifyProfile(): boolean {
+    return this.authStore.hasAccess('VISTA_PROFILE', 'modificar');
   }
 
   get horariosResumen(): HorarioResumen[] {
