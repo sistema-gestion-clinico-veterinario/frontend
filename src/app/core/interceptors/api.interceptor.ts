@@ -1,13 +1,15 @@
 import { HttpErrorResponse, HttpEvent, HttpHandlerFn, HttpRequest, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { BehaviorSubject, catchError, filter, finalize, Observable, switchMap, take, throwError } from 'rxjs';
+import { BehaviorSubject, catchError, filter, finalize, Observable, switchMap, take, throwError, timeout } from 'rxjs';
 import { AuthStore } from '../../store/auth.store';
 import { LoadingStore } from '../../store/loading.store';
 import { AuthService } from '../services/auth.service';
 
 let isRefreshing = false;
 let refreshTokenSubject: BehaviorSubject<string | null> = new BehaviorSubject<string | null>(null);
+const DEFAULT_REQUEST_TIMEOUT_MS = 30000;
+const UPLOAD_REQUEST_TIMEOUT_MS = 120000;
 
 export const apiInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, next: HttpHandlerFn): Observable<HttpEvent<unknown>> => {
   const authStore = inject(AuthStore);
@@ -28,7 +30,12 @@ export const apiInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, nex
     });
   }
 
+  const requestTimeout = req.url.includes('/media/upload')
+    ? UPLOAD_REQUEST_TIMEOUT_MS
+    : DEFAULT_REQUEST_TIMEOUT_MS;
+
   return next(authReq).pipe(
+    timeout(requestTimeout),
     catchError((error) => {
       const isAuthRecoveryRequest = req.url.includes('/auth/login') || req.url.includes('/auth/refresh');
       if (error instanceof HttpErrorResponse && error.status === 401 && !isAuthRecoveryRequest) {
