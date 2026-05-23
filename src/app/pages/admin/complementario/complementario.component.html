@@ -38,7 +38,7 @@
             <h2 class="text-base font-bold text-slate-800">Especialidades</h2>
             <p class="text-sm text-slate-500 mt-0.5">Catálogo de especialidades disponibles</p>
           </div>
-          <button *appHasPermission="'COMPLEMENTARIO:escribir'" (click)="openEspModal()"
+          <button *appHasPermission="'VISTA_COMPLEMENTARIO:escribir'" (click)="openEspModal()"
             class="flex items-center gap-2 bg-[#0066AA] hover:bg-[#005a96] text-white text-sm font-medium px-5 h-10 rounded-lg transition-colors">
             <i class="pi pi-plus text-xs"></i>
             Registrar Especialidad
@@ -68,11 +68,11 @@
               </td>
               <td class="px-6 py-4 text-right">
                 <div class="flex items-center justify-end gap-1">
-                  <button *appHasPermission="'COMPLEMENTARIO:modificar'" (click)="openEspModal(item)"
+                  <button *appHasPermission="'VISTA_COMPLEMENTARIO:modificar'" (click)="openEspModal(item)"
                     class="p-2 rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-90">
                     <i class="pi pi-pencil text-sm"></i>
                   </button>
-                  <button *appHasPermission="'COMPLEMENTARIO:eliminar'" (click)="eliminarEspecialidad(item.id)"
+                  <button *appHasPermission="'VISTA_COMPLEMENTARIO:eliminar'" (click)="eliminarEspecialidad(item.id)"
                     class="p-2 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all active:scale-90">
                     <i class="pi pi-trash text-sm"></i>
                   </button>
@@ -98,7 +98,7 @@
             <h2 class="text-base font-bold text-slate-800">Tipos de Empleado</h2>
             <p class="text-sm text-slate-500 mt-0.5">Estructura de cargos de la organización</p>
           </div>
-          <button *appHasPermission="'COMPLEMENTARIO:escribir'" (click)="openTipoModal()"
+          <button *appHasPermission="'VISTA_COMPLEMENTARIO:escribir'" (click)="openTipoModal()"
             class="flex items-center gap-2 bg-[#0066AA] hover:bg-[#005a96] text-white text-sm font-medium px-5 h-10 rounded-lg transition-colors">
             <i class="pi pi-plus text-xs"></i>
             Registrar Tipo
@@ -137,7 +137,7 @@
                 </span>
               </td>
               <td class="px-6 py-4">
-                <button *appHasPermission="'COMPLEMENTARIO:modificar'" (click)="cambiarEstadoTipo(item)"
+                <button *appHasPermission="'VISTA_COMPLEMENTARIO:modificar'" (click)="cambiarEstadoTipo(item)"
                   [class]="item.estado ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-500'"
                   class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-all active:scale-95">
                   <span [class]="item.estado ? 'bg-green-500' : 'bg-red-400'" class="w-1.5 h-1.5 rounded-full"></span>
@@ -146,11 +146,11 @@
               </td>
               <td class="px-6 py-4 text-right">
                 <div class="flex items-center justify-end gap-1">
-                  <button *appHasPermission="'COMPLEMENTARIO:modificar'" (click)="openTipoModal(item)"
+                  <button *appHasPermission="'VISTA_COMPLEMENTARIO:modificar'" (click)="openTipoModal(item)"
                     class="p-2 rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-90">
                     <i class="pi pi-pencil text-sm"></i>
                   </button>
-                  <button *appHasPermission="'COMPLEMENTARIO:eliminar'" (click)="eliminarTipoEmpleado(item.id)"
+                  <button *appHasPermission="'VISTA_COMPLEMENTARIO:eliminar'" (click)="eliminarTipoEmpleado(item.id)"
                     class="p-2 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all active:scale-90">
                     <i class="pi pi-trash text-sm"></i>
                   </button>
@@ -176,7 +176,7 @@
             <h2 class="text-base font-bold text-slate-800">Catálogo de Servicios</h2>
             <p class="text-sm text-slate-500 mt-0.5">Servicios ofrecidos por la clínica</p>
           </div>
-          <button *appHasPermission="'COMPLEMENTARIO:escribir'" (click)="openServicioModal()"
+          <button *appHasPermission="'VISTA_COMPLEMENTARIO:escribir'" (click)="openServicioModal()"
             class="flex items-center gap-2 bg-[#0066AA] hover:bg-[#005a96] text-white text-sm font-medium px-5 h-10 rounded-lg transition-colors">
             <i class="pi pi-plus text-xs"></i>
             Nuevo Servicio
@@ -217,7 +217,7 @@
                 <span class="text-sm font-extrabold text-slate-800">S/ {{ item.precio | number:'1.2-2' }}</span>
               </td>
               <td class="px-6 py-4">
-                <button *appHasPermission="'COMPLEMENTARIO:modificar'" (click)="toggleServicioDisponible(item)"
+                <button *appHasPermission="'VISTA_COMPLEMENTARIO:modificar'" (click)="toggleServicioDisponible(item)"
                   [class]="item.disponible ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-500'"
                   class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-all active:scale-95">
                   <span [class]="item.disponible ? 'bg-green-500' : 'bg-red-400'" class="w-1.5 h-1.5 rounded-full"></span>
@@ -226,11 +226,11 @@
               </td>
               <td class="px-6 py-4 text-right">
                 <div class="flex items-center justify-end gap-1">
-                  <button *appHasPermission="'COMPLEMENTARIO:modificar'" (click)="openServicioModal(item)"
+                  <button *appHasPermission="'VISTA_COMPLEMENTARIO:modificar'" (click)="openServicioModal(item)"
                     class="p-2 rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-90">
                     <i class="pi pi-pencil text-sm"></i>
                   </button>
-                  <button *appHasPermission="'COMPLEMENTARIO:eliminar'" (click)="eliminarServicio(item.id)"
+                  <button *appHasPermission="'VISTA_COMPLEMENTARIO:eliminar'" (click)="eliminarServicio(item.id)"
                     class="p-2 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all active:scale-90">
                     <i class="pi pi-trash text-sm"></i>
                   </button>

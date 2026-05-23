@@ -167,7 +167,28 @@ export const AuthStore = signalStore(
     },
 
     hasAccess(codigoVista: string, tipo: 'leer' | 'escribir' | 'modificar' | 'eliminar' = 'leer'): boolean {
+      const ALIASES: Record<string, string> = {
+        'APODERADOS':       'VISTA_CLIENTES',
+        'EMPLEADOS':        'VISTA_EMPLEADOS',
+        'MASCOTAS':         'VISTA_MASCOTAS',
+        'COMPLEMENTARIO':   'VISTA_COMPLEMENTARIO',
+        'EMPRESA':          'VISTA_COMPANY',
+        'HORARIO':          'VISTA_HORARIOS',
+        'HORARIOS':         'VISTA_HORARIOS',
+        'HORARIO_MANAGE':   'VISTA_HORARIOS',
+        'APODERADO_UPDATE': 'VISTA_CLIENTES',
+        'ROLES':            'VISTA_ROLES',
+        'VENTANAS':         'VISTA_VENTANAS',
+        'PAGOS':            'VISTA_PAGOS',
+        'AUDITORIA':        'VISTA_AUDITORIA_ADMIN',
+        'RECETAS':          'VISTA_RECETAS',
+        'HISTORIAS':        'VISTA_HISTORIAS',
+      };
+      const codigo = ALIASES[codigoVista] ?? codigoVista;
+
       const menu = store.menu() ?? [];
+      const isMenuStructure = (obj: any): obj is MenuStructureDTO =>
+        obj && typeof obj === 'object' && 'vistas' in obj && Array.isArray(obj.vistas);
 
       for (const item of menu) {
         const isMenuStructure = (obj: any): obj is MenuStructureDTO => {
@@ -175,20 +196,20 @@ export const AuthStore = signalStore(
         };
 
         if (isMenuStructure(item)) {
-          const vista = item.vistas.find(v => v.codigo === codigoVista);
+          const vista = item.vistas.find(v => v.codigo === codigo);
           if (vista && vista[tipo as keyof MenuItemDTO]) {
             return true;
           }
         } else {
           const menuItem = item as MenuItemDTO;
-          if (menuItem.codigo === codigoVista && menuItem[tipo as keyof MenuItemDTO]) {
+          if (menuItem.codigo === codigo && menuItem[tipo as keyof MenuItemDTO]) {
             return true;
           }
         }
       }
       return false;
     },
-
+    
     hasRouteAccess(routePattern: string): boolean {
       const roles = store.originalRoles()?.length ? store.originalRoles() : store.roles();
 
@@ -202,7 +223,33 @@ export const AuthStore = signalStore(
       const normalized = normalizeRoute(routePattern);
       if (!normalized || normalized === 'profile' || normalized === 'password-change') return true;
 
-      return store.allowedRoutes().includes(normalized);
+      // Mapeo de alias de rutas a su ruta canónica en la base de datos
+      const ROUTE_ALIASES: Record<string, string> = {
+        'agenda': 'citas/agenda',
+        'empleado/agenda': 'citas/agenda',
+        'admin/citas/agenda': 'citas/agenda',
+        'empleado/citas/agenda': 'citas/agenda',
+        'empleado/mi-horario': 'mi-horario',
+        'admin/empleados/horarios': 'empleados/horarios',
+        'admin/mascotas': 'mascotas',
+        'empleado/mascotas': 'mascotas',
+        'admin/recetas': 'recetas',
+        'empleado/recetas': 'recetas',
+        'admin/historias-clinicas': 'historias-clinicas',
+        'empleado/historias-clinicas': 'historias-clinicas',
+      };
+
+      const canonicalRoute = ROUTE_ALIASES[normalized] ?? normalized;
+
+      if (store.allowedRoutes().includes(canonicalRoute)) {
+        return true;
+      }
+
+      // Probar quitando prefijos de roles en caso de rutas relativas dinámicas
+      const cleanPattern = stripPrefix(canonicalRoute);
+      const cleanAllowed = store.allowedRoutes().map(r => stripPrefix(r));
+
+      return cleanAllowed.includes(cleanPattern);
     },
 
     isSuperAdmin(): boolean {
@@ -282,4 +329,17 @@ function normalizeRoute(route: string): string {
     r = r.substring(0, r.length - 1);
   }
   return r.toLowerCase();
+}
+
+function stripPrefix(route: string): string {
+  if (route.startsWith('admin/')) {
+    return route.substring(6);
+  }
+  if (route.startsWith('empleado/')) {
+    return route.substring(9);
+  }
+  if (route.startsWith('apoderado/')) {
+    return route.substring(10);
+  }
+  return route;
 }

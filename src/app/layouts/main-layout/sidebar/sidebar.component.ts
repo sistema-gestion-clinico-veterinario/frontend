@@ -40,9 +40,20 @@ export class SidebarComponent {
     }));
   }
 
-  isSectionExpanded(ventanaId: number | undefined): boolean {
-    const key = String(ventanaId ?? 'default');
-    return this.expandedSections()[key] ?? true;
+  isSectionExpanded(structure: MenuSection): boolean {
+    const key = String(structure.ventanaId ?? 'default');
+    const userToggled = this.expandedSections()[key];
+    if (userToggled !== undefined) {
+      return userToggled;
+    }
+
+    // Collapse by default, but auto-expand if one of the inner views is active
+    const currentUrl = this.router.url.split('?')[0];
+    return structure.vistas.some(vista => {
+      const vRuta = vista.ruta.startsWith('/') ? vista.ruta : '/' + vista.ruta;
+      const cUrl = currentUrl.startsWith('/') ? currentUrl : '/' + currentUrl;
+      return cUrl === vRuta;
+    });
   }
 
   menuStructure = computed(() => {

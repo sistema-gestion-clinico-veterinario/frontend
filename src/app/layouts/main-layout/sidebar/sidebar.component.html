@@ -29,8 +29,8 @@
             <p class="text-xs font-bold text-[#526783] uppercase tracking-wider flex-1 text-left">{{ structure.ventanaNombre }}</p>
             <i
               class="pi text-xs text-slate-500 group-hover:text-[#0066AA] transition-all duration-200 flex-shrink-0"
-              [class.pi-chevron-down]="isSectionExpanded(structure.ventanaId)"
-              [class.pi-chevron-right]="!isSectionExpanded(structure.ventanaId)"
+              [class.pi-chevron-down]="isSectionExpanded(structure)"
+              [class.pi-chevron-right]="!isSectionExpanded(structure)"
             ></i>
           </button>
 
@@ -38,7 +38,7 @@
             <i [class]="sectionIcon(structure) + ' text-sm text-slate-400'"></i>
           </div>
 
-          <div *ngIf="isSectionExpanded(structure.ventanaId)" class="space-y-1 transition-all duration-200 ease-in-out">
+          <div *ngIf="isSectionExpanded(structure)" class="space-y-1 transition-all duration-200 ease-in-out">
             <a
               *ngFor="let vista of structure.vistas"
               [routerLink]="vista.ruta"

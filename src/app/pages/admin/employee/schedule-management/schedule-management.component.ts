@@ -9,7 +9,6 @@ import { MessageService, ConfirmationService } from 'primeng/api';
 import { ActivatedRoute } from '@angular/router';
 import { EmpleadoService } from '../../../../core/services/empleado.service';
 import { HorarioEmpleadoResponse } from '../../../../models/response/horario-empleado-response';
-import { Permission } from '../../../../core/enums/permission.enum';
 import { HasPermissionDirective } from '../../../../core/directives/has-permission.directive';
 
 @Component({
@@ -33,8 +32,6 @@ export class ScheduleManagementComponent implements OnInit {
   private readonly messageService = inject(MessageService);
   private readonly confirmationService = inject(ConfirmationService);
   private readonly route = inject(ActivatedRoute);
-
-  readonly Permission = Permission;
 
   public volviendoAlPresente() {
     this.currentDate = new Date();

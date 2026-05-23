@@ -31,8 +31,7 @@ export class HasPermissionDirective implements OnInit {
   private updateView() {
     this.viewContainer.clear();
     const superAdmin = this.authStore.isSuperAdmin();
-    const isAdmin = this.authStore.roles().some((r: string) => r === 'ROLE_ADMIN' || r === 'ADMIN');
-    if (!this.ventanaCodigo || superAdmin || isAdmin || this.authStore.hasAccess(this.ventanaCodigo, this.tipo)) {
+    if (!this.ventanaCodigo || superAdmin || this.authStore.hasAccess(this.ventanaCodigo, this.tipo)) {
       this.viewContainer.createEmbeddedView(this.templateRef);
     }
   }

@@ -55,7 +55,7 @@
           </button>
         </div>
 
-        <button *appHasPermission="'CITAS:escribir'" (click)="openNew()"
+        <button *appHasPermission="'VISTA_CITAS_AGENDA:escribir'" (click)="openNew()"
           class="flex items-center gap-1.5 bg-[#0066AA] hover:bg-[#005a96] text-white font-bold rounded-xl px-4 py-2 text-sm transition-all shadow-sm active:scale-95">
           <i class="pi pi-plus text-sm"></i>
           <span class="hidden sm:inline">Nueva Cita</span>
@@ -95,7 +95,7 @@
           <label class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest flex items-center gap-1">
             <i class="pi pi-calendar text-[10px]"></i> Fecha
           </label>
-          <input type="date" [(ngModel)]="filterFecha" (change)="loadCitas()"
+          <input type="date" [(ngModel)]="filterFecha" (change)="onFilterFechaChange()"
             class="w-full h-10 bg-slate-50 border border-slate-200 rounded-xl px-3 text-sm font-semibold text-slate-700 focus:outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/10 transition-all" />
         </div>
 
@@ -144,7 +144,7 @@
         </div>
 
         <div class="flex flex-col justify-end">
-          <button (click)="loadCitas()"
+          <button (click)="refreshCurrentView()"
             class="h-10 flex items-center justify-center gap-2 bg-slate-50 border border-slate-200 text-slate-500 hover:bg-slate-100 hover:border-slate-300 text-sm font-semibold rounded-xl transition-all">
             <i class="pi pi-refresh text-sm" [class.pi-spin]="loadingStore.isLoading()"></i>
             <span>{{ loadingStore.isLoading() ? 'Cargando...' : 'Actualizar' }}</span>
@@ -228,13 +228,13 @@
               <td class="px-5 py-3.5">
                 <div class="flex items-center justify-center gap-1 flex-wrap">
                   <ng-container *ngIf="canEdit(cita)">
-                    <button *appHasPermission="'CITAS:modificar'" (click)="editarCita(cita)" pTooltip="Editar" tooltipPosition="top"
+                    <button *appHasPermission="'VISTA_CITAS_AGENDA:modificar'" (click)="editarCita(cita)" pTooltip="Editar" tooltipPosition="top"
                       class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 text-slate-500 hover:bg-blue-50 hover:text-[#0066AA] transition-all">
                       <i class="pi pi-pencil text-xs"></i>
                     </button>
                   </ng-container>
                   <ng-container *ngIf="canReprogram(cita)">
-                    <button *appHasPermission="'CITAS:modificar'" (click)="reprogramarCita(cita)" pTooltip="Reprogramar" tooltipPosition="top"
+                    <button *appHasPermission="'VISTA_CITAS_AGENDA:modificar'" (click)="reprogramarCita(cita)" pTooltip="Reprogramar" tooltipPosition="top"
                       class="w-8 h-8 flex items-center justify-center rounded-lg bg-sky-50 text-sky-600 hover:bg-sky-100 transition-all">
                       <i class="pi pi-calendar-plus text-xs"></i>
                     </button>
@@ -264,13 +264,13 @@
                     </button>
                   </ng-container>
                   <ng-container *ngIf="canCancel(cita)">
-                    <button *appHasPermission="'CITAS:modificar'" (click)="cancelarCita(cita)" pTooltip="Cancelar" tooltipPosition="top"
+                    <button *appHasPermission="'VISTA_CITAS_AGENDA:modificar'" (click)="cancelarCita(cita)" pTooltip="Cancelar" tooltipPosition="top"
                       class="w-8 h-8 flex items-center justify-center rounded-lg bg-rose-50 text-rose-500 hover:bg-rose-100 transition-all">
                       <i class="pi pi-times text-xs"></i>
                     </button>
                   </ng-container>
                   <ng-container *ngIf="cita.estado === 'CANCELADA'">
-                    <button *appHasPermission="'CITAS:eliminar'" (click)="eliminarCita(cita)" pTooltip="Eliminar" tooltipPosition="top"
+                    <button *appHasPermission="'VISTA_CITAS_AGENDA:eliminar'" (click)="eliminarCita(cita)" pTooltip="Eliminar" tooltipPosition="top"
                       class="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-500 hover:bg-red-100 transition-all">
                       <i class="pi pi-trash text-xs"></i>
                     </button>
@@ -299,157 +299,19 @@
       </div>
     </ng-container>
 
-    <!-- ══════════════ VISTA DÍA ══════════════ -->
-    <ng-container *ngIf="vistaActual() === 'dia'">
-      <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-
-        <div *ngIf="loadingStore.isLoading()" class="py-16 flex flex-col items-center gap-3 text-slate-400">
-          <i class="pi pi-refresh pi-spin text-2xl"></i>
-          <span class="text-sm font-medium">Cargando citas…</span>
-        </div>
-
-        <div *ngIf="!loadingStore.isLoading()" class="overflow-y-auto max-h-[680px]">
-          <div *ngFor="let hora of HORAS_DIA"
-            class="flex border-b border-slate-50 last:border-0 min-h-[60px] hover:bg-slate-50/50 transition-colors group">
-            <!-- Hora label -->
-            <div class="w-16 shrink-0 px-3 pt-4 border-r border-slate-100">
-              <span class="text-xs font-bold text-slate-300 group-hover:text-slate-400 transition-colors">{{ hora }}:00</span>
-            </div>
-            <!-- Citas en esa hora -->
-            <div class="flex-1 px-3 py-2 flex flex-wrap gap-2 items-start">
-              <div *ngFor="let cita of getCitasHora(fechaBase(), hora)"
-                (click)="verDetalleCita(cita)"
-                class="flex items-center gap-3 rounded-xl px-3 py-2.5 border text-xs max-w-[340px] cursor-pointer hover:shadow-md transition-all group/card"
-                [class]="estadoClass(cita.estado)">
-                <div class="w-1 self-stretch rounded-full shrink-0" [class]="estadoColor(cita.estado)"></div>
-                <div class="min-w-0 flex-1">
-                  <div class="flex items-center gap-1.5 mb-0.5">
-                    <span class="text-[10px] opacity-60 font-bold shrink-0">{{ cita.fechaHoraInicio | date:'HH:mm' }}</span>
-                    <span *ngIf="cita.esEmergencia" class="text-rose-500 text-[9px] font-extrabold">⚠ Emergencia</span>
-                  </div>
-                  <p class="font-extrabold leading-tight truncate">{{ cita.mascotaNombre }}</p>
-                  <p class="opacity-55 leading-snug truncate text-[10px] mt-0.5">{{ cita.motivoCita }}</p>
-                  <p class="opacity-45 mt-0.5 truncate text-[10px]">{{ cita.veterinarioNombre }}</p>
-                </div>
-                <i class="pi pi-chevron-right text-[10px] opacity-30 group-hover/card:opacity-60 transition-opacity shrink-0"></i>
-              </div>
-              <div *ngIf="getCitasHora(fechaBase(), hora).length === 0" class="h-2"></div>
-            </div>
-          </div>
-
-          <div *ngIf="citas().length === 0" class="py-16 text-center">
-            <div class="flex flex-col items-center gap-3">
-              <div class="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center">
-                <i class="pi pi-calendar text-2xl text-slate-300"></i>
-              </div>
-              <p class="text-sm font-semibold text-slate-400">Sin citas para este día</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </ng-container>
-
-    <!-- ══════════════ VISTA SEMANA ══════════════ -->
-    <ng-container *ngIf="vistaActual() === 'semana'">
-      <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-
+    <!-- ══════════════ CALENDARIO FULLCALENDAR ══════════════ -->
+    <ng-container *ngIf="vistaActual() !== 'lista'">
+      <div class="agenda-calendar-shell bg-white border border-slate-200 rounded-xl overflow-hidden p-3 sm:p-4">
         <div *ngIf="cargandoCal()" class="py-16 flex flex-col items-center gap-3 text-slate-400">
           <i class="pi pi-refresh pi-spin text-2xl"></i>
-          <span class="text-sm font-medium">Cargando semana…</span>
+          <span class="text-sm font-medium">Cargando agenda...</span>
         </div>
 
-        <div *ngIf="!cargandoCal()" class="overflow-x-auto">
-          <!-- Cabecera días -->
-          <div class="grid grid-cols-7 border-b border-slate-100 min-w-[700px] bg-slate-50">
-            <div *ngFor="let dia of diasSemanaActual()" class="px-2 py-3 text-center">
-              <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">
-                {{ dia.toLocaleDateString('es-PE', { weekday: 'short' }) }}
-              </p>
-              <div [class]="'mx-auto mt-1 w-8 h-8 flex items-center justify-center rounded-full text-sm font-extrabold transition-all ' +
-                (esHoy(dia) ? 'bg-[#0066AA] text-white shadow-sm' : 'text-slate-700 hover:bg-slate-200')">
-                {{ dia.getDate() }}
-              </div>
-            </div>
-          </div>
-
-          <!-- Cuerpo -->
-          <div class="grid grid-cols-7 min-w-[700px] divide-x divide-slate-100" style="min-height: 480px;">
-            <div *ngFor="let dia of diasSemanaActual()"
-              [class]="'px-2 py-3 flex flex-col gap-1.5 overflow-hidden' + (esHoy(dia) ? ' bg-blue-50/40' : '')">
-              <div *ngFor="let cita of getCitasDia(dia)"
-                (click)="verDetalleCita(cita)"
-                class="rounded-xl px-2.5 py-2 text-xs cursor-pointer hover:shadow-md transition-all border group/sem"
-                [class]="estadoClass(cita.estado)">
-                <div class="flex items-center gap-1 mb-0.5">
-                  <span class="text-[10px] opacity-65 font-bold">{{ cita.fechaHoraInicio | date:'HH:mm' }}</span>
-                  <span *ngIf="cita.esEmergencia" class="text-rose-500 text-[9px]">⚠</span>
-                </div>
-                <p class="font-extrabold leading-tight truncate">{{ cita.mascotaNombre }}</p>
-                <p class="opacity-55 truncate leading-snug text-[10px] mt-0.5">{{ cita.motivoCita }}</p>
-                <div class="flex items-center justify-between mt-1.5">
-                  <span class="text-[9px] font-extrabold opacity-50">{{ estadoLabel(cita.estado) }}</span>
-                  <i class="pi pi-chevron-right text-[9px] opacity-25 group-hover/sem:opacity-60 transition-opacity"></i>
-                </div>
-              </div>
-              <div *ngIf="getCitasDia(dia).length === 0"
-                class="flex-1 flex items-center justify-center py-4">
-                <span class="text-[10px] text-slate-200 font-semibold">—</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </ng-container>
-
-    <!-- ══════════════ VISTA MES ══════════════ -->
-    <ng-container *ngIf="vistaActual() === 'mes'">
-      <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-
-        <div *ngIf="cargandoCal()" class="py-16 flex flex-col items-center gap-3 text-slate-400">
-          <i class="pi pi-refresh pi-spin text-2xl"></i>
-          <span class="text-sm font-medium">Cargando mes…</span>
-        </div>
-
-        <div *ngIf="!cargandoCal()">
-          <!-- Cabecera días semana -->
-          <div class="grid grid-cols-7 border-b border-slate-100 bg-slate-50">
-            <div *ngFor="let d of ['Lu','Ma','Mi','Ju','Vi','Sá','Do']"
-              class="py-3 text-center text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">{{ d }}</div>
-          </div>
-          <!-- Grilla -->
-          <div class="grid grid-cols-7" style="min-height: 480px;">
-            <div *ngFor="let dia of diasMesActual()" (click)="clickDiaMes(dia)"
-              class="border-b border-r border-slate-100 last:border-r-0 p-2 min-h-[100px] cursor-pointer transition-colors hover:bg-slate-50"
-              [class.opacity-35]="!esMesActual(dia)"
-              [class.bg-blue-50]="esHoy(dia)">
-              <div class="flex items-center justify-between mb-1.5">
-                <span [class]="esHoy(dia)
-                  ? 'w-6 h-6 bg-[#0066AA] text-white rounded-full flex items-center justify-center text-xs font-extrabold'
-                  : 'text-xs font-bold text-slate-500'">
-                  {{ dia.getDate() }}
-                </span>
-                <span *ngIf="getCitasDia(dia).length > 0"
-                  class="text-[10px] font-extrabold text-[#0066AA] bg-blue-50 border border-blue-100 px-1.5 py-0.5 rounded-full">
-                  {{ getCitasDia(dia).length }}
-                </span>
-              </div>
-              <div class="flex flex-col gap-1">
-                <div *ngFor="let cita of getCitasDia(dia).slice(0, 3)"
-                  (click)="$event.stopPropagation(); verDetalleCita(cita)"
-                  class="rounded-lg px-1.5 py-0.5 text-[10px] font-bold truncate border cursor-pointer hover:opacity-75 transition-opacity"
-                  [class]="estadoClass(cita.estado)">
-                  {{ cita.fechaHoraInicio | date:'HH:mm' }} {{ cita.mascotaNombre }}
-                </div>
-                <span *ngIf="getCitasDia(dia).length > 3"
-                  class="text-[10px] text-slate-400 font-semibold pl-0.5">
-                  +{{ getCitasDia(dia).length - 3 }} más
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-
+        <full-calendar
+          *ngIf="!cargandoCal()"
+          #fullCalendar
+          [options]="calendarOptions">
+        </full-calendar>
       </div>
     </ng-container>
 
@@ -1253,13 +1115,13 @@
     </div>
     <div class="flex gap-2">
       <ng-container *ngIf="canCancel(citaDetalle()!)">
-        <button *appHasPermission="'CITAS:modificar'" (click)="cancelarCita(citaDetalle()!)"
+        <button *appHasPermission="'VISTA_CITAS_AGENDA:modificar'" (click)="cancelarCita(citaDetalle()!)"
           class="flex-1 flex items-center justify-center gap-2 py-2 border border-slate-200 text-rose-500 hover:bg-rose-50 hover:border-rose-200 text-xs font-semibold rounded-xl transition-all">
           <i class="pi pi-times text-xs"></i> Cancelar
         </button>
       </ng-container>
       <ng-container *ngIf="citaDetalle()?.estado === 'CANCELADA'">
-        <button *appHasPermission="'CITAS:eliminar'" (click)="eliminarCita(citaDetalle()!)"
+        <button *appHasPermission="'VISTA_CITAS_AGENDA:eliminar'" (click)="eliminarCita(citaDetalle()!)"
           class="flex-1 flex items-center justify-center gap-2 py-2 border border-slate-200 text-red-500 hover:bg-red-50 hover:border-red-200 text-xs font-semibold rounded-xl transition-all">
           <i class="pi pi-trash text-xs"></i> Eliminar
         </button>

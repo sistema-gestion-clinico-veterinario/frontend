@@ -1,6 +1,5 @@
 import { Routes } from '@angular/router';
 import { AuthGuard } from './core/guards/auth.guard';
-import { Permission } from './core/enums/permission.enum';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -35,108 +34,108 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/dashboard/dashboard.component').then((m) => m.DashboardComponent)
       },
       {
-        path: 'admin/company',
-        data: { permission: Permission.COMPANY_MANAGE },
-        loadComponent: () => import('./pages/admin/company/company.component').then((m) => m.CompanyComponent)
-      },
-      {
         path: 'company',
-        data: { permission: Permission.COMPANY_MANAGE },
+        data: { ventana: 'VISTA_COMPANY' },
         loadComponent: () => import('./pages/admin/company/company.component').then((m) => m.CompanyComponent)
       },
       {
-        path: 'admin/auditoria',
-        data: { permission: Permission.COMPANY_MANAGE },
-        loadComponent: () => import('./pages/admin/auditoria/auditoria.component').then((m) => m.AuditoriaComponent)
+        path: 'admin/company',
+        data: { ventana: 'VISTA_COMPANY' },
+        loadComponent: () => import('./pages/admin/company/company.component').then((m) => m.CompanyComponent)
       },
       {
         path: 'auditoria',
-        data: { permission: Permission.COMPANY_MANAGE },
+        data: { ventana: 'VISTA_AUDITORIA_ADMIN' },
         loadComponent: () => import('./pages/admin/auditoria/auditoria.component').then((m) => m.AuditoriaComponent)
       },
       {
-        path: 'admin/roles',
-        data: { permission: Permission.ROLE_MANAGE },
-        loadComponent: () => import('./pages/admin/roles/roles.component').then((m) => m.RolesComponent)
+        path: 'admin/auditoria',
+        data: { ventana: 'VISTA_AUDITORIA_ADMIN' },
+        loadComponent: () => import('./pages/admin/auditoria/auditoria.component').then((m) => m.AuditoriaComponent)
       },
       {
         path: 'roles',
-        data: { permission: Permission.ROLE_MANAGE },
+        data: { ventana: 'VISTA_ROLES' },
         loadComponent: () => import('./pages/admin/roles/roles.component').then((m) => m.RolesComponent)
       },
       {
-        path: 'admin/ventanas',
-        data: { permission: Permission.ROLE_MANAGE },
-        loadComponent: () => import('./pages/admin/ventanas/ventanas.component').then((m) => m.VentanasComponent)
+        path: 'admin/roles',
+        data: { ventana: 'VISTA_ROLES' },
+        loadComponent: () => import('./pages/admin/roles/roles.component').then((m) => m.RolesComponent)
       },
       {
         path: 'ventanas',
-        data: { permission: Permission.ROLE_MANAGE },
+        data: { ventana: 'VISTA_VENTANAS' },
         loadComponent: () => import('./pages/admin/ventanas/ventanas.component').then((m) => m.VentanasComponent)
       },
       {
-        path: 'admin/complementario',
-        data: { permission: Permission.USER_MANAGE },
-        loadComponent: () => import('./pages/admin/complementario/complementario.component').then((m) => m.ComplementarioComponent)
+        path: 'admin/ventanas',
+        data: { ventana: 'VISTA_VENTANAS' },
+        loadComponent: () => import('./pages/admin/ventanas/ventanas.component').then((m) => m.VentanasComponent)
       },
       {
         path: 'complementario',
-        data: { permission: Permission.USER_MANAGE },
+        data: { ventana: 'VISTA_COMPLEMENTARIO' },
         loadComponent: () => import('./pages/admin/complementario/complementario.component').then((m) => m.ComplementarioComponent)
       },
       {
-        path: 'admin/empleados',
-        data: { permission: Permission.EMPLEADO_READ },
-        loadComponent: () => import('./pages/admin/employee/employee.component').then((m) => m.EmployeeComponent)
+        path: 'admin/complementario',
+        data: { ventana: 'VISTA_COMPLEMENTARIO' },
+        loadComponent: () => import('./pages/admin/complementario/complementario.component').then((m) => m.ComplementarioComponent)
       },
       {
         path: 'empleados',
-        data: { permission: Permission.EMPLEADO_READ },
+        data: { ventana: 'VISTA_EMPLEADOS' },
         loadComponent: () => import('./pages/admin/employee/employee.component').then((m) => m.EmployeeComponent)
       },
       {
-        path: 'admin/clientes',
-        data: { permission: Permission.APODERADO_READ },
-        loadComponent: () => import('./pages/admin/client/client.component').then((m) => m.ClientComponent)
+        path: 'admin/empleados',
+        data: { ventana: 'VISTA_EMPLEADOS' },
+        loadComponent: () => import('./pages/admin/employee/employee.component').then((m) => m.EmployeeComponent)
       },
       {
         path: 'clientes',
-        data: { permission: Permission.APODERADO_READ },
+        data: { ventana: 'VISTA_CLIENTES' },
+        loadComponent: () => import('./pages/admin/client/client.component').then((m) => m.ClientComponent)
+      },
+      {
+        path: 'admin/clientes',
+        data: { ventana: 'VISTA_CLIENTES' },
         loadComponent: () => import('./pages/admin/client/client.component').then((m) => m.ClientComponent)
       },
       {
         path: 'mascotas',
-        data: { permission: Permission.PET_READ },
+        data: { ventana: 'VISTA_MASCOTAS' },
         loadComponent: () => import('./pages/mascotas/lista-mascotas/lista-mascotas.component').then((m) => m.ListaMascotasComponent)
       },
       {
         path: 'admin/mascotas',
-        data: { permission: Permission.PET_READ },
+        data: { ventana: 'VISTA_MASCOTAS' },
         loadComponent: () => import('./pages/mascotas/lista-mascotas/lista-mascotas.component').then((m) => m.ListaMascotasComponent)
       },
       {
         path: 'empleado/mascotas',
-        data: { permission: Permission.PET_READ },
+        data: { ventana: 'VISTA_MASCOTAS' },
         loadComponent: () => import('./pages/mascotas/lista-mascotas/lista-mascotas.component').then((m) => m.ListaMascotasComponent)
       },
       {
         path: 'recetas',
-        data: { permission: Permission.PET_HISTORY_READ },
+        data: { ventana: 'VISTA_RECETAS' },
         loadComponent: () => import('./pages/mascotas/lista-recetas/lista-recetas.component').then((m) => m.ListaRecetasComponent)
       },
       {
         path: 'admin/recetas',
-        data: { permission: Permission.PET_HISTORY_READ },
+        data: { ventana: 'VISTA_RECETAS' },
         loadComponent: () => import('./pages/mascotas/lista-recetas/lista-recetas.component').then((m) => m.ListaRecetasComponent)
       },
       {
         path: 'empleado/recetas',
-        data: { permission: Permission.PET_HISTORY_READ },
+        data: { ventana: 'VISTA_RECETAS' },
         loadComponent: () => import('./pages/mascotas/lista-recetas/lista-recetas.component').then((m) => m.ListaRecetasComponent)
       },
       {
         path: 'historias-clinicas',
-        data: { permission: Permission.CLINICAL_RECORD_READ },
+        data: { ventana: 'VISTA_HISTORIAS' },
         children: [
           {
             path: '',
@@ -154,7 +153,7 @@ export const routes: Routes = [
       },
       {
         path: 'admin/historias-clinicas',
-        data: { permission: Permission.CLINICAL_RECORD_READ },
+        data: { ventana: 'VISTA_HISTORIAS' },
         children: [
           {
             path: '',
@@ -172,7 +171,7 @@ export const routes: Routes = [
       },
       {
         path: 'empleado/historias-clinicas',
-        data: { permission: Permission.CLINICAL_RECORD_READ },
+        data: { ventana: 'VISTA_HISTORIAS' },
         children: [
           {
             path: '',
@@ -190,7 +189,7 @@ export const routes: Routes = [
       },
       {
         path: 'citas',
-        data: { permission: Permission.CITA_READ },
+        data: { ventana: 'VISTA_CITAS_AGENDA' },
         children: [
           {
             path: 'agenda',
@@ -200,7 +199,7 @@ export const routes: Routes = [
       },
       {
         path: 'admin/citas',
-        data: { permission: Permission.CITA_READ },
+        data: { ventana: 'VISTA_CITAS_AGENDA' },
         children: [
           {
             path: 'agenda',
@@ -210,7 +209,7 @@ export const routes: Routes = [
       },
       {
         path: 'empleado/citas',
-        data: { permission: Permission.CITA_READ },
+        data: { ventana: 'VISTA_CITAS_AGENDA' },
         children: [
           {
             path: 'agenda',
@@ -220,32 +219,32 @@ export const routes: Routes = [
       },
       {
         path: 'admin/empleados/horarios',
-        data: { permission: Permission.HORARIO_READ },
+        data: { ventana: 'VISTA_HORARIOS' },
         loadComponent: () => import('./pages/admin/employee/roster/roster.component').then((m) => m.RosterComponent)
       },
       {
         path: 'empleados/horarios',
-        data: { permission: Permission.HORARIO_READ },
+        data: { ventana: 'VISTA_HORARIOS' },
         loadComponent: () => import('./pages/admin/employee/roster/roster.component').then((m) => m.RosterComponent)
       },
       {
         path: 'admin/empleados/:id/horario',
-        data: { permission: Permission.HORARIO_READ },
+        data: { ventana: 'VISTA_HORARIOS' },
         loadComponent: () => import('./pages/admin/employee/schedule-management/schedule-management.component').then((m) => m.ScheduleManagementComponent)
       },
       {
         path: 'empleados/:id/horario',
-        data: { permission: Permission.HORARIO_READ },
+        data: { ventana: 'VISTA_HORARIOS' },
         loadComponent: () => import('./pages/admin/employee/schedule-management/schedule-management.component').then((m) => m.ScheduleManagementComponent)
       },
       {
         path: 'empleado/mi-horario',
-        data: { permission: Permission.USER_READ },
+        data: { ventana: 'VISTA_MI_HORARIO' },
         loadComponent: () => import('./pages/employee/my-schedule/my-schedule.component').then(m => m.MyScheduleComponent)
       },
       {
         path: 'mi-horario',
-        data: { permission: Permission.USER_READ },
+        data: { ventana: 'VISTA_MI_HORARIO' },
         loadComponent: () => import('./pages/employee/my-schedule/my-schedule.component').then(m => m.MyScheduleComponent)
       },
       {
@@ -262,53 +261,42 @@ export const routes: Routes = [
       },
       {
         path: 'apoderado/dashboard',
-        data: { permission: Permission.APODERADO_DASHBOARD },
+        data: { ventana: 'VISTA_APODERADO_DASHBOARD' },
         loadComponent: () => import('./pages/apoderado/dashboard/apoderado-dashboard.component').then((m) => m.ApoderadoDashboardComponent)
       },
       {
-        path: 'apoderado',
-        loadComponent: () => import('./pages/apoderado-portal/apoderado-portal.component').then((m) => m.ApoderadoPortalComponent)
-      },
-      {
-        path: 'mis-citas',
-        loadComponent: () => import('./pages/apoderado/citas/citas.component').then((m) => m.CitasComponent)
-      },
-      {
         path: 'apoderado/mis-citas',
+        data: { ventana: 'VISTA_MIS_CITAS' },
         loadComponent: () => import('./pages/apoderado/citas/citas.component').then((m) => m.CitasComponent)
-      },
-      {
-        path: 'mis-mascotas',
-        loadComponent: () => import('./pages/apoderado/mis-mascotas/mis-mascotas.component').then((m) => m.MisMascotasComponent)
       },
       {
         path: 'apoderado/mis-mascotas',
+        data: { ventana: 'VISTA_MIS_MASCOTAS' },
         loadComponent: () => import('./pages/apoderado/mis-mascotas/mis-mascotas.component').then((m) => m.MisMascotasComponent)
       },
       {
         path: 'apoderado/mi-historial',
+        data: { ventana: 'VISTA_MI_HISTORIAL' },
         loadComponent: () => import('./pages/apoderado/mi-historial/mi-historial.component').then((m) => m.MiHistorialComponent)
       },
       {
         path: 'mi-historial/:mascotaId',
+        data: { ventana: 'VISTA_MI_HISTORIAL' },
         loadComponent: () => import('./pages/apoderado/mi-historial/mi-historial.component').then((m) => m.MiHistorialComponent)
       },
       {
-        path: 'mis-pagos',
-        loadComponent: () => import('./pages/apoderado/mis-pagos/mis-pagos.component').then((m) => m.MisPagosComponent)
-      },
-      {
         path: 'apoderado/mis-pagos',
+        data: { ventana: 'VISTA_MIS_PAGOS' },
         loadComponent: () => import('./pages/apoderado/mis-pagos/mis-pagos.component').then((m) => m.MisPagosComponent)
       },
       {
         path: 'admin/pagos',
-        data: { permission: Permission.SALE_READ },
+        data: { ventana: 'VISTA_PAGOS' },
         loadComponent: () => import('./pages/admin/pagos/historial-pagos/historial-pagos.component').then((m) => m.HistorialPagosComponent)
       },
       {
         path: 'pagos',
-        data: { permission: Permission.SALE_READ },
+        data: { ventana: 'VISTA_PAGOS' },
         loadComponent: () => import('./pages/admin/pagos/historial-pagos/historial-pagos.component').then((m) => m.HistorialPagosComponent)
       }
     ]

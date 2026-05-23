@@ -233,21 +233,21 @@ export class EmployeeDashboardComponent implements OnInit {
         icon: 'pi pi-book text-xl',
         route: '/historias-clinicas',
         colorClass: 'bg-indigo-50 text-indigo-700 border-indigo-100 hover:bg-indigo-100/50',
-        permission: 'CLINICAL_RECORD_READ'
+        permission: 'VISTA_HISTORIAS'
       },
       {
         label: 'Mascotas',
         icon: 'pi pi-heart-fill text-xl',
         route: '/mascotas',
         colorClass: 'bg-pink-50 text-pink-700 border-pink-100 hover:bg-pink-100/50',
-        permission: 'PET_READ'
+        permission: 'VISTA_MASCOTAS'
       },
       {
         label: 'Agenda de Citas',
         icon: 'pi pi-calendar text-xl',
         route: '/citas/agenda',
         colorClass: 'bg-sky-50 text-sky-700 border-sky-100 hover:bg-sky-100/50',
-        permission: 'CITA_READ'
+        permission: 'VISTA_CITAS_AGENDA'
       }
     ];
 

@@ -42,7 +42,7 @@
          [class.md:grid-cols-5]="isSuperAdmin">
 
       <!-- Pacientes -->
-      <div class="bg-white rounded-2xl border border-slate-100 p-5 flex items-center gap-4">
+      <div *ngIf="canViewMascotas() || canViewClientes() || canViewCitas()" class="bg-white rounded-2xl border border-slate-100 p-5 flex items-center gap-4">
         <div class="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
           <i class="pi pi-heart text-base text-[#0066AA]"></i>
         </div>
@@ -58,7 +58,7 @@
       </div>
 
       <!-- Citas Hoy (destacada) -->
-      <div class="bg-[#0066AA] rounded-2xl p-5 flex items-center gap-4">
+      <div *ngIf="canViewCitas()" class="bg-[#0066AA] rounded-2xl p-5 flex items-center gap-4">
         <div class="w-11 h-11 rounded-xl bg-white/15 flex items-center justify-center shrink-0">
           <i class="pi pi-calendar text-base text-white"></i>
         </div>
@@ -74,7 +74,7 @@
       </div>
 
       <!-- Citas Totales -->
-      <div class="bg-white rounded-2xl border border-slate-100 p-5 flex items-center gap-4">
+      <div *ngIf="canViewCitas()" class="bg-white rounded-2xl border border-slate-100 p-5 flex items-center gap-4">
         <div class="w-11 h-11 rounded-xl bg-violet-50 flex items-center justify-center shrink-0">
           <i class="pi pi-history text-base text-violet-600"></i>
         </div>
@@ -90,7 +90,7 @@
       </div>
 
       <!-- Personal -->
-      <div class="bg-white rounded-2xl border border-slate-100 p-5 flex items-center gap-4">
+      <div *ngIf="canViewEmpleados()" class="bg-white rounded-2xl border border-slate-100 p-5 flex items-center gap-4">
         <div class="w-11 h-11 rounded-xl bg-amber-50 flex items-center justify-center shrink-0">
           <i class="pi pi-id-card text-base text-amber-600"></i>
         </div>
@@ -133,7 +133,7 @@
       <div class="lg:col-span-2 space-y-6">
 
         <!-- 📊 GRÁFICO DE CITAS -->
-        <div *ngIf="isSuperAdmin || isAdmin" class="bg-white rounded-2xl border border-slate-100 p-0 overflow-hidden">
+        <div *ngIf="canViewCitas()" class="bg-white rounded-2xl border border-slate-100 p-0 overflow-hidden">
           <div class="px-6 py-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/50">
             <div>
               <h2 class="text-xs font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
@@ -214,7 +214,7 @@
         </div>
 
         <!-- 👥 USUARIOS REGISTRADOS (PERSONAL) -->
-        <div *ngIf="isSuperAdmin || isAdmin" class="bg-white rounded-2xl border border-slate-100 p-0 overflow-hidden">
+        <div *ngIf="canViewEmpleados()" class="bg-white rounded-2xl border border-slate-100 p-0 overflow-hidden">
           <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
             <div>
               <h2 class="text-xs font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
@@ -272,7 +272,7 @@
         </div>
 
         <!-- 👥 APODERADOS REGISTRADOS (CLIENTES) -->
-        <div *ngIf="isSuperAdmin || isAdmin" class="bg-white rounded-2xl border border-slate-100 p-0 overflow-hidden">
+        <div *ngIf="canViewClientes()" class="bg-white rounded-2xl border border-slate-100 p-0 overflow-hidden">
           <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
             <div>
               <h2 class="text-xs font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
@@ -281,7 +281,7 @@
               </h2>
               <p class="text-[10px] text-slate-400 font-medium mt-0.5">Propietarios de mascotas asociados a la sede</p>
             </div>
-            <a routerLink="/admin/apoderados" class="text-[9px] font-black text-[#0066AA] hover:underline uppercase tracking-wider">
+            <a routerLink="/clientes" class="text-[9px] font-black text-[#0066AA] hover:underline uppercase tracking-wider">
               Gestionar
             </a>
           </div>
@@ -330,7 +330,7 @@
         </div>
 
         <!-- 🐾 MASCOTAS REGISTRADAS -->
-        <div *ngIf="isSuperAdmin || isAdmin" class="bg-white rounded-2xl border border-slate-100 p-0 overflow-hidden">
+        <div *ngIf="canViewMascotas()" class="bg-white rounded-2xl border border-slate-100 p-0 overflow-hidden">
           <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
             <div>
               <h2 class="text-xs font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
@@ -364,7 +364,7 @@
         </div>
 
         <!-- 📊 DISTRIBUCIÓN DE SERVICIOS -->
-        <div *ngIf="isSuperAdmin || isAdmin" class="bg-white rounded-2xl border border-slate-100 p-0 overflow-hidden">
+        <div *ngIf="canViewCitas()" class="bg-white rounded-2xl border border-slate-100 p-0 overflow-hidden">
           <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
             <div>
               <h2 class="text-xs font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
@@ -459,7 +459,7 @@
         </div>
 
         <!-- 📅 CITAS DEL DÍA -->
-        <div *ngIf="isSuperAdmin || isAdmin" class="bg-white rounded-2xl border border-slate-100 p-0 overflow-hidden">
+        <div *ngIf="canViewCitas()" class="bg-white rounded-2xl border border-slate-100 p-0 overflow-hidden">
           <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
             <div>
               <h2 class="text-xs font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
@@ -500,7 +500,7 @@
         </div>
 
         <!-- 🩺 PERSONAL DE TURNO -->
-        <div *ngIf="isSuperAdmin || isAdmin" class="bg-white rounded-2xl border border-slate-100 p-0 overflow-hidden">
+        <div *ngIf="canViewHorarios()" class="bg-white rounded-2xl border border-slate-100 p-0 overflow-hidden">
           <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
             <div>
               <h2 class="text-xs font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
@@ -535,7 +535,7 @@
         </div>
 
         <!-- 🛡️ ROLES POR EMPRESA -->
-        <div *ngIf="isSuperAdmin || isAdmin" class="bg-white rounded-2xl border border-slate-100 p-0 overflow-hidden">
+        <div *ngIf="canViewRoles()" class="bg-white rounded-2xl border border-slate-100 p-0 overflow-hidden">
           <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
             <div>
               <h2 class="text-xs font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
@@ -566,7 +566,7 @@
         </div>
 
         <!-- Actividad Reciente / Auditoría (Solo SuperAdmin) -->
-        <div *ngIf="isSuperAdmin" class="bg-white rounded-2xl border border-slate-100 p-0 overflow-hidden">
+        <div *ngIf="canViewAuditoria()" class="bg-white rounded-2xl border border-slate-100 p-0 overflow-hidden">
           <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
             <div class="flex items-center gap-3">
               <div class="w-8 h-8 rounded-xl bg-blue-100/50 flex items-center justify-center border border-blue-100">

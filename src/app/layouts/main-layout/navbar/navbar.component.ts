@@ -177,7 +177,7 @@ export class NavbarComponent implements OnInit {
 }
 
 export function resolveDashboardRoute(roles: string[]): string {
-  if (roles.includes('ROLE_SUPER_ADMIN') || roles.includes('SUPER_ADMIN')) return '/admin/company';
+  if (roles.includes('ROLE_SUPER_ADMIN') || roles.includes('SUPER_ADMIN')) return '/dashboard';
 
   const role = roles[0] ?? '';
   if (role.includes('APODERADO') || role.includes('CLIENTE')) return '/apoderado/dashboard';
@@ -186,8 +186,7 @@ export function resolveDashboardRoute(roles: string[]): string {
 }
 
 export function resolveInitialRoute(roles: string[], menu: (MenuStructureDTO | MenuItemDTO)[]): string {
-  const firstMenuRoute = findFirstMenuRoute(menu);
-  return firstMenuRoute || resolveDashboardRoute(roles);
+  return resolveDashboardRoute(roles);
 }
 
 function findFirstMenuRoute(menu: (MenuStructureDTO | MenuItemDTO)[]): string | null {

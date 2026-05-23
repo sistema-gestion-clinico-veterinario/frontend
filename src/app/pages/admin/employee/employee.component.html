@@ -13,7 +13,7 @@
         <i class="pi pi-calendar text-xs"></i>
         Gestión de Horarios
       </a>
-      <button *appHasPermission="'EMPLEADOS:escribir'" (click)="openNew()"
+      <button *appHasPermission="'VISTA_EMPLEADOS:escribir'" (click)="openNew()"
         class="flex items-center gap-2 bg-[#0066AA] hover:bg-[#005a96] text-white text-sm font-medium px-5 h-10 rounded-lg transition-colors">
         <i class="pi pi-plus text-xs"></i>
         Registrar empleado
@@ -70,7 +70,7 @@
             </div>
           </td>
           <td class="px-6 py-4">
-            <button *appHasPermission="'EMPLEADOS:modificar'" (click)="toggleStatus(employee)"
+            <button *appHasPermission="'VISTA_EMPLEADOS:modificar'" (click)="toggleStatus(employee)"
               [class]="employee.activo ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-500'"
               class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-all active:scale-95">
               <span [class]="employee.activo ? 'bg-green-500' : 'bg-red-400'" class="w-1.5 h-1.5 rounded-full"></span>
@@ -85,13 +85,13 @@
                 class="p-2 rounded-lg text-slate-400 hover:text-amber-500 hover:bg-amber-50 transition-all active:scale-90 disabled:opacity-40 disabled:cursor-not-allowed">
                 <i class="pi pi-lock text-sm"></i>
               </button>
-              <button *appHasPermission="'EMPLEADOS:modificar'" (click)="editEmployee(employee)"
+              <button *appHasPermission="'VISTA_EMPLEADOS:modificar'" (click)="editEmployee(employee)"
                 [disabled]="!employee.activo"
                 [title]="!employee.activo ? 'El empleado está inactivo' : 'Editar'"
                 class="p-2 rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-90 disabled:opacity-40 disabled:cursor-not-allowed">
                 <i class="pi pi-pencil text-sm"></i>
               </button>
-              <button *appHasPermission="'EMPLEADOS:eliminar'" (click)="deleteEmployee(employee)"
+              <button *appHasPermission="'VISTA_EMPLEADOS:eliminar'" (click)="deleteEmployee(employee)"
                 class="p-2 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-all active:scale-90">
                 <i class="pi pi-trash text-sm"></i>
               </button>
