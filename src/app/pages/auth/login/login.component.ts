@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { finalize, timeout } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
 import { AuthStore } from '../../../store/auth.store';
 import { resolveInitialRoute } from '../../../layouts/main-layout/navbar/navbar.component';
@@ -53,7 +54,10 @@ export class LoginComponent implements OnInit {
     this.authError = null;
     this.isSubmitting = true;
 
-    this.authService.login(this.loginForm.value as { email: string; password: string }).subscribe({
+    this.authService.login(this.loginForm.value as { email: string; password: string }).pipe(
+      timeout(15000),
+      finalize(() => this.isSubmitting = false)
+    ).subscribe({
       next: ({ data }) => {
         this.authStore.setAuth({
           token: data.token,
@@ -75,18 +79,15 @@ export class LoginComponent implements OnInit {
         if (roles.length === 0) {
           this.authStore.logout();
           this.authError = 'Tu usuario no tiene ningún rol asignado. Contacta al administrador.';
-          this.isSubmitting = false;
           return;
         }
         this.router.navigateByUrl(resolveInitialRoute(roles, data.menu ?? []));
       },
-      error: () => {
-        this.authError = 'Correo o contraseña incorrectos.';
-        this.isSubmitting = false;
+      error: (error) => {
+        this.authError = error?.name === 'TimeoutError' || error?.status === 0
+          ? 'No se pudo conectar con el servidor. Intenta nuevamente en unos segundos.'
+          : 'Correo o contraseña incorrectos.';
       },
-      complete: () => {
-        this.isSubmitting = false;
-      }
     });
   }
 }

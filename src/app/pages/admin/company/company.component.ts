@@ -2,7 +2,6 @@ import { Component, OnInit, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { TableModule } from 'primeng/table';
-import { InputSwitch } from 'primeng/inputswitch';
 import { Toast } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { CompanyService } from '../../../core/services/company.service';
@@ -19,7 +18,6 @@ import { HasPermissionDirective } from '../../../core/directives/has-permission.
     ReactiveFormsModule,
     TableModule,
     Toast,
-    InputSwitch,
     HasPermissionDirective
   ],
   providers: [MessageService],
@@ -37,6 +35,7 @@ export class CompanyComponent implements OnInit {
   isEdit: boolean = false;
   loading: boolean = false;
   totalRecords: number = 0;
+  companyPendingStatus: CompanyListResponse | null = null;
 
   daysOfWeek = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO', 'DOMINGO'];
 
@@ -164,10 +163,22 @@ export class CompanyComponent implements OnInit {
     });
   }
 
-  toggleActivo(company: CompanyListResponse) {
+  confirmToggleActivo(company: CompanyListResponse) {
+    this.companyPendingStatus = company;
+  }
+
+  cancelToggleActivo() {
+    this.companyPendingStatus = null;
+  }
+
+  toggleActivo() {
+    const company = this.companyPendingStatus;
+    if (!company) return;
+
     this.companyService.toggleActivo(company.id).subscribe({
       next: (res) => {
         company.activo = res.data.activo;
+        this.companyPendingStatus = null;
         this.messageService.add({
           severity: company.activo ? 'success' : 'warn',
           summary: company.activo ? 'Empresa activada' : 'Empresa desactivada',
@@ -175,6 +186,7 @@ export class CompanyComponent implements OnInit {
         });
       },
       error: () => {
+        this.companyPendingStatus = null;
         this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cambiar el estado de la empresa' });
       }
     });

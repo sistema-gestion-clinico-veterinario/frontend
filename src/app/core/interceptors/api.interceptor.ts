@@ -1,13 +1,15 @@
 import { HttpErrorResponse, HttpEvent, HttpHandlerFn, HttpRequest, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { BehaviorSubject, catchError, filter, finalize, Observable, switchMap, take, throwError } from 'rxjs';
+import { BehaviorSubject, catchError, filter, finalize, Observable, switchMap, take, throwError, timeout } from 'rxjs';
 import { AuthStore } from '../../store/auth.store';
 import { LoadingStore } from '../../store/loading.store';
 import { AuthService } from '../services/auth.service';
 
 let isRefreshing = false;
 let refreshTokenSubject: BehaviorSubject<string | null> = new BehaviorSubject<string | null>(null);
+const DEFAULT_REQUEST_TIMEOUT_MS = 30000;
+const UPLOAD_REQUEST_TIMEOUT_MS = 120000;
 
 export const apiInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, next: HttpHandlerFn): Observable<HttpEvent<unknown>> => {
   const authStore = inject(AuthStore);
@@ -28,9 +30,15 @@ export const apiInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, nex
     });
   }
 
+  const requestTimeout = req.url.includes('/media/upload')
+    ? UPLOAD_REQUEST_TIMEOUT_MS
+    : DEFAULT_REQUEST_TIMEOUT_MS;
+
   return next(authReq).pipe(
+    timeout(requestTimeout),
     catchError((error) => {
-      if (error instanceof HttpErrorResponse && error.status === 401 && !req.url.includes('/auth/login')) {
+      const isAuthRecoveryRequest = req.url.includes('/auth/login') || req.url.includes('/auth/refresh');
+      if (error instanceof HttpErrorResponse && error.status === 401 && !isAuthRecoveryRequest) {
         return handle401Error(authReq, next, authStore, authService, router);
       }
       return throwError(() => error);
@@ -53,17 +61,18 @@ const handle401Error = (req: HttpRequest<any>, next: HttpHandlerFn, authStore: a
             token: res.data.token,
             refreshToken: res.data.refreshToken,
             roles: res.data.roles,
-            companyId: authStore.companyId(),
-            companyName: authStore.companyName(),
-            nombreCompleto: authStore.nombreCompleto(),
-            userType: authStore.userType(),
-            empleadoId: authStore.empleadoId(),
-            passwordChanged: authStore.passwordChanged(),
-            needsCompanySelection: authStore.needsCompanySelection(),
+            companyId: res.data.companyId,
+            companyName: res.data.companyName,
+            nombreCompleto: res.data.nombreCompleto,
+            userType: res.data.userType,
+            empleadoId: res.data.empleadoId ?? null,
+            passwordChanged: res.data.passwordChanged,
+            needsCompanySelection: res.data.needsCompanySelection,
             selectedEnterprise: authStore.selectedEnterprise(),
-            menu: authStore.menu(),
+            menu: res.data.menu,
             simulatedRoleId: authStore.simulatedRoleId(),
-            originalMenu: authStore.originalMenu(),
+            originalMenu: res.data.menu,
+            originalRoles: res.data.assignedRoles ?? res.data.roles,
             assignedRoles: res.data.assignedRoles ?? authStore.assignedRoles()
           });
           refreshTokenSubject.next(res.data.token);

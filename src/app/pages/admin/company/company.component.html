@@ -59,7 +59,7 @@
           </td>
           <td class="px-6 py-4 text-right">
             <div class="flex items-center justify-end gap-1">
-              <button *ngIf="authStore.isSuperAdmin()" (click)="toggleActivo(company)"
+              <button *ngIf="authStore.isSuperAdmin()" (click)="confirmToggleActivo(company)"
                 [title]="company.activo ? 'Desactivar empresa' : 'Activar empresa'"
                 [ngClass]="company.activo ? 'text-green-500 hover:bg-red-50 hover:text-red-500' : 'text-red-400 hover:bg-green-50 hover:text-green-600'"
                 class="p-2 rounded-lg transition-all">
@@ -195,27 +195,32 @@
             <div class="grid grid-cols-1 gap-3">
               <div formArrayName="operatingHours" class="grid grid-cols-1 gap-2">
                 <div *ngFor="let hour of operatingHours.controls; let i=index" [formGroupName]="i" 
-                  class="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-lg group hover:border-blue-200 transition-all">
+                  class="grid grid-cols-1 sm:grid-cols-[190px_1fr] gap-3 items-center p-3 bg-slate-50 border border-slate-200 rounded-lg hover:border-blue-200 transition-all">
                   
-                  <div class="flex items-center gap-4 w-1/4">
-                    <p-inputSwitch formControlName="isOpen"></p-inputSwitch>
+                  <div class="flex items-center justify-between gap-3">
+                    <button type="button" (click)="hour.get('isOpen')?.setValue(!hour.get('isOpen')?.value)"
+                      [ngClass]="hour.get('isOpen')?.value ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200' : 'bg-slate-100 text-slate-500 border-slate-200 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200'"
+                      class="inline-flex items-center gap-1.5 px-3 py-2 rounded border text-xs font-bold transition-all">
+                      <i [ngClass]="hour.get('isOpen')?.value ? 'pi pi-check-circle' : 'pi pi-minus-circle'" class="text-[11px]"></i>
+                      {{ hour.get('isOpen')?.value ? 'Abierto' : 'Cerrado' }}
+                    </button>
                     <span class="text-sm font-bold text-slate-700 w-24 uppercase tracking-tighter">{{ daysOfWeek[i] }}</span>
                   </div>
 
-                  <div class="flex items-center gap-4 flex-1 justify-end" *ngIf="hour.get('isOpen')?.value">
+                  <div class="grid grid-cols-2 gap-3" *ngIf="hour.get('isOpen')?.value">
                     <div class="flex flex-col gap-1">
                       <label class="text-[10px] font-bold text-slate-400 uppercase">Apertura</label>
                       <input type="time" formControlName="openingTime"
-                        class="px-2 py-1.5 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 outline-none w-32" />
+                        class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 outline-none h-10" />
                     </div>
                     <div class="flex flex-col gap-1">
                       <label class="text-[10px] font-bold text-slate-400 uppercase">Cierre</label>
                       <input type="time" formControlName="closingTime"
-                        class="px-2 py-1.5 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 outline-none w-32" />
+                        class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 outline-none h-10" />
                     </div>
                   </div>
 
-                  <div *ngIf="!hour.get('isOpen')?.value" class="flex-1 text-right italic text-slate-400 text-xs font-medium">
+                  <div *ngIf="!hour.get('isOpen')?.value" class="text-xs font-medium text-slate-400 bg-white border border-slate-200 rounded px-3 py-2">
                     Cerrado (El sistema no permitirá citas este día)
                   </div>
                 </div>
@@ -236,6 +241,35 @@
           </button>
         </div>
       </form>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="companyPendingStatus" class="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+  <div class="bg-white w-full max-w-md rounded-lg shadow-2xl overflow-hidden">
+    <div class="px-6 py-4 border-b border-slate-100">
+      <h3 class="text-base font-bold text-slate-800">
+        {{ companyPendingStatus.activo ? 'Desactivar empresa' : 'Activar empresa' }}
+      </h3>
+    </div>
+    <div class="p-6">
+      <p class="text-sm text-slate-600 leading-relaxed">
+        {{ companyPendingStatus.activo
+          ? 'Al desactivar la empresa, sus usuarios no podran iniciar sesion.'
+          : 'Al activar la empresa, sus usuarios podran iniciar sesion nuevamente.' }}
+      </p>
+      <p class="text-sm font-bold text-slate-800 mt-3">{{ companyPendingStatus.name }}</p>
+    </div>
+    <div class="px-6 py-4 bg-slate-50 flex justify-end gap-3">
+      <button type="button" (click)="cancelToggleActivo()"
+        class="px-4 py-2 text-sm font-semibold text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded transition-all">
+        Cancelar
+      </button>
+      <button type="button" (click)="toggleActivo()"
+        [ngClass]="companyPendingStatus.activo ? 'bg-rose-600 hover:bg-rose-700' : 'bg-[#0066AA] hover:bg-[#004488]'"
+        class="px-5 py-2 text-sm font-bold text-white rounded transition-all">
+        {{ companyPendingStatus.activo ? 'Desactivar' : 'Activar' }}
+      </button>
     </div>
   </div>
 </div>

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject, signal, computed } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -11,6 +11,7 @@ import { CardModule } from 'primeng/card';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { DrawerModule } from 'primeng/drawer';
 import { BadgeModule } from 'primeng/badge';
+import { EMPTY, Observable, Subscription, catchError, debounceTime, filter, finalize, map, of, switchMap, tap } from 'rxjs';
 
 import { HistoriaClinicaService } from '../../../core/services/historia-clinica.service';
 import { LoadingStore } from '../../../store/loading.store';
@@ -43,7 +44,7 @@ import { ArchivoModalsComponent } from '../form-hc/archivo-modals/archivo-modals
   providers: [MessageService, ConfirmationService],
   templateUrl: './consulta-form.component.html'
 })
-export class ConsultaFormComponent implements OnInit {
+export class ConsultaFormComponent implements OnInit, OnDestroy {
   private readonly route       = inject(ActivatedRoute);
   private readonly router      = inject(Router);
   private readonly fb          = inject(FormBuilder);
@@ -56,12 +57,13 @@ export class ConsultaFormComponent implements OnInit {
 
   readonly isSuperAdmin = computed(() => this.authStore.roles().includes(Role.SUPER_ADMIN));
   readonly isAdmin      = computed(() => this.authStore.roles().includes(Role.ADMIN));
-  readonly canManage    = computed(() => this.isAdmin() || this.isSuperAdmin());
+  readonly canManage    = computed(() => this.isAdmin() || this.isSuperAdmin() || this.authStore.hasAccess('VISTA_HISTORIAS', 'modificar'));
 
   consulta   = signal<ConsultaResponse | null>(null);
   historia   = signal<any | null>(null); 
   tabActiva  = signal<'signos' | 'clinico' | 'antecedentes' | 'historial' | 'recetas' | 'examenes'>('signos');
   isCerrada  = signal<boolean>(false);
+  autoSaveStatus = signal<'idle' | 'saving' | 'saved' | 'error'>('idle');
   consultaId = 0;
   displayDetalleHistorial = signal<boolean>(false);
   detalleSeleccionado      = signal<any | null>(null);
@@ -91,6 +93,8 @@ export class ConsultaFormComponent implements OnInit {
   recetaEditando     = signal<PrescripcionResponse | null>(null);
   recetaEliminando   = signal<PrescripcionResponse | null>(null);
   showConfirmEliminar = signal<boolean>(false);
+  private autosaveSub?: Subscription;
+  private syncingForm = false;
 
   recetaForm: FormGroup = this.fb.group({
     medicamento:       ['', Validators.required],
@@ -139,6 +143,7 @@ export class ConsultaFormComponent implements OnInit {
   });
 
   ngOnInit() {
+    this.setupAutosave();
     this.route.params.subscribe(params => {
       this.consultaId = Number(params['consultaId']);
       if (!this.consultaId) {
@@ -148,6 +153,10 @@ export class ConsultaFormComponent implements OnInit {
       }
       this.loadConsulta();
     });
+  }
+
+  ngOnDestroy() {
+    this.autosaveSub?.unsubscribe();
   }
 
   loadConsulta() {
@@ -162,6 +171,7 @@ export class ConsultaFormComponent implements OnInit {
         this.loadRecetas();
         this.loadArchivos();
 
+        this.syncingForm = true;
         this.form.patchValue({
           tipoConsulta:            res.data.tipoConsulta           ?? null,
           motivoConsulta:          res.data.motivoConsulta         ?? '',
@@ -183,8 +193,15 @@ export class ConsultaFormComponent implements OnInit {
           grupoSanguineo:              res.data.grupoSanguineo              ?? '',
           indicacionesReceta:          res.data.indicacionesReceta          ?? '',
           version:                     res.data.version,
-        });
-        if (this.isCerrada() && !this.canManage()) this.form.disable();
+        }, { emitEvent: false });
+        if (this.puedeEditarConsulta()) {
+          this.form.enable({ emitEvent: false });
+        } else {
+          this.form.disable({ emitEvent: false });
+        }
+        this.form.markAsPristine();
+        this.autoSaveStatus.set('saved');
+        this.syncingForm = false;
         this.loadingStore.hide();
       },
       error: () => {
@@ -198,6 +215,18 @@ export class ConsultaFormComponent implements OnInit {
     this.hcService.getPorMascota(mascotaId).subscribe({
       next: (res) => this.historia.set(res.data)
     });
+  }
+
+  private setupAutosave() {
+    this.autosaveSub = this.form.valueChanges.pipe(
+      debounceTime(1200),
+      filter(() => !this.syncingForm && this.puedeEditarConsulta() && this.form.dirty),
+      switchMap(() => this.guardarSilencioso(true))
+    ).subscribe();
+  }
+
+  private puedeEditarConsulta(): boolean {
+    return !this.isCerrada() || this.canManage();
   }
 
   loadRecetas() {
@@ -483,6 +512,30 @@ export class ConsultaFormComponent implements OnInit {
     setTimeout(() => iframe.contentWindow!.print(), 300);
   }
 
+  private guardarSilencioso(mostrarError: boolean): Observable<boolean> {
+    const version = this.consulta()?.version;
+    if (version === undefined) return of(false);
+
+    this.autoSaveStatus.set('saving');
+    const payload = { ...this.form.getRawValue(), version };
+    return this.hcService.updateConsulta(this.consultaId, payload).pipe(
+      tap((res) => {
+        this.consulta.set(res.data);
+        this.form.patchValue({ version: res.data.version }, { emitEvent: false });
+        this.form.markAsPristine();
+        this.autoSaveStatus.set('saved');
+      }),
+      map(() => true),
+      catchError((err) => {
+        this.autoSaveStatus.set('error');
+        if (mostrarError) {
+          this.msgService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo guardar automaticamente' });
+        }
+        return of(false);
+      })
+    );
+  }
+
   confirmarGuardar() {
     this.confirmSvc.confirm({
       message: '¿Deseas guardar los cambios realizados en la consulta?',
@@ -531,19 +584,26 @@ export class ConsultaFormComponent implements OnInit {
   }
 
   private cerrar() {
-    const version = this.consulta()?.version;
-    if (version === undefined) return;
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
 
     this.loadingStore.show();
-    this.hcService.cerrarConsulta(this.consultaId, { version }).subscribe({
+    this.guardarSilencioso(true).pipe(
+      switchMap((guardado) => {
+        const version = this.consulta()?.version;
+        if (!guardado || version === undefined) return EMPTY;
+        return this.hcService.cerrarConsulta(this.consultaId, { version });
+      }),
+      finalize(() => this.loadingStore.hide())
+    ).subscribe({
       next: () => {
         this.msgService.add({ severity: 'success', summary: 'Cerrada', detail: 'La consulta fue cerrada exitosamente' });
         setTimeout(() => this.router.navigate(['/citas/agenda']), 1500);
-        this.loadingStore.hide();
       },
       error: (err) => {
         this.msgService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error al cerrar la consulta' });
-        this.loadingStore.hide();
       }
     });
   }
