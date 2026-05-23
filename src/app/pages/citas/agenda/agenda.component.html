@@ -641,6 +641,46 @@
               (change)="onFechaCitaChange($event)"
               class="w-full h-10 px-3 border border-slate-200 rounded-xl text-xs font-semibold outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/10 bg-white transition-all cursor-pointer">
           </div>
+          <div *ngIf="citaForm.get('veterinarioId')?.value && (!citaForm.get('id')?.value || isReprogramando())"
+            class="rounded-xl border border-slate-200 bg-slate-50/70 p-3">
+            <div class="flex items-center justify-between gap-3 mb-2.5">
+              <div class="min-w-0">
+                <p class="text-[9px] font-bold uppercase tracking-wider text-slate-400">Horario del empleado</p>
+                <p class="text-xs font-bold text-slate-700 truncate">{{ getVeterinarioLabel() }}</p>
+              </div>
+              <i class="pi pi-clock text-[#0066AA] text-sm"></i>
+            </div>
+
+            <p class="text-[9px] font-semibold text-slate-400 mb-2">Guia de dias y rangos para elegir fecha.</p>
+
+            <div *ngIf="horariosResumen.length > 0; else noHorarioEmpleado" class="space-y-2 max-h-[150px] overflow-y-auto pr-1">
+              <div *ngFor="let horario of horariosResumen"
+                class="rounded-lg bg-white border border-slate-100 px-2.5 py-2">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="text-[10px] font-extrabold text-slate-700">{{ formatDiaSemana(horario.diaSemana) }}</span>
+                  <span class="text-[10px] font-extrabold text-[#0066AA] whitespace-nowrap">
+                    {{ horario.horaInicio }} - {{ horario.horaFin }}
+                  </span>
+                </div>
+                <div class="mt-1 flex items-center justify-between gap-2">
+                  <span class="flex items-center gap-1.5 text-[9px] font-semibold text-slate-400 min-w-0">
+                    <i class="pi pi-calendar text-[9px] shrink-0"></i>
+                    <span class="truncate">{{ horario.rangoFechas }}</span>
+                  </span>
+                  <span *ngIf="horario.totalFechas > 1"
+                    class="text-[9px] font-bold text-slate-400 whitespace-nowrap">
+                    {{ horario.totalFechas }} fechas
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <ng-template #noHorarioEmpleado>
+              <div class="rounded-lg bg-white border border-slate-100 px-2.5 py-2 text-[10px] font-semibold text-slate-400">
+                Este empleado no tiene horarios activos registrados.
+              </div>
+            </ng-template>
+          </div>
           <div class="flex flex-col gap-1.5 col-span-2" *ngIf="citaForm.get('id')?.value && !isReprogramando()">
             <label class="text-xs font-semibold text-slate-600">Fecha y Hora</label>
             <input type="datetime-local" formControlName="fechaHoraInicio"

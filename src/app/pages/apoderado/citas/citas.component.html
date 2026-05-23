@@ -295,7 +295,7 @@
             <!-- Veterinario Selection -->
             <div class="flex flex-col gap-1" [class.col-span-2]="isRescheduling()">
               <label class="text-xs font-semibold text-slate-700 ml-0.5">Médico Veterinario <span class="text-rose-500">*</span></label>
-              <select formControlName="veterinarioId" (change)="onBookingParamsChange()"
+              <select formControlName="veterinarioId" (change)="onVeterinarioChange()"
                 class="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-[#0066AA]/20 focus:border-[#0066AA] outline-none h-11 bg-white cursor-pointer transition-all">
                 <option [value]="null" disabled selected hidden>Elige un profesional...</option>
                 <option *ngFor="let v of vets()" [value]="v.value">{{ v.label }}</option>
@@ -315,9 +315,9 @@
             <!-- Date Picker Selection -->
             <div class="flex flex-col gap-1" *ngIf="!isEditing()">
               <label class="text-xs font-semibold text-slate-700 ml-0.5">Fecha de la Cita <span class="text-rose-500">*</span></label>
-              <p-calendar formControlName="fechaCita" [minDate]="today" (onSelect)="onBookingParamsChange()"
-                [style]="{ width: '100%' }" inputStyleClass="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-[#0066AA]/20 focus:border-[#0066AA] outline-none h-11 transition-all bg-white">
-              </p-calendar>
+              <input type="date" formControlName="fechaCita" [min]="toDateInputValue(today)"
+                (change)="onBookingParamsChange()"
+                class="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-[#0066AA]/20 focus:border-[#0066AA] outline-none h-11 transition-all bg-white cursor-pointer" />
             </div>
 
             <!-- Motivo input field -->
@@ -330,6 +330,47 @@
                 Por favor ingresa un motivo válido (mínimo 5 caracteres).
               </p>
             </div>
+          </div>
+
+          <div *ngIf="citaForm.get('veterinarioId')?.value && !isEditing()"
+            class="rounded-xl border border-slate-200 bg-slate-50/70 p-3.5">
+            <div class="flex items-center justify-between gap-3 mb-3">
+              <div class="min-w-0">
+                <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Horario del profesional</p>
+                <p class="text-xs font-bold text-slate-700 truncate">{{ selectedVetName }}</p>
+              </div>
+              <i class="pi pi-clock text-[#0066AA] text-sm"></i>
+            </div>
+
+            <p class="text-[10px] font-semibold text-slate-400 mb-3">Elige una fecha dentro de estos dias y rangos disponibles.</p>
+
+            <div *ngIf="horariosResumen.length > 0; else noHorarioVet" class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-44 overflow-y-auto pr-1">
+              <div *ngFor="let horario of horariosResumen"
+                class="rounded-lg bg-white border border-slate-100 px-3 py-2.5">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="text-[11px] font-extrabold text-slate-700">{{ formatDiaSemana(horario.diaSemana) }}</span>
+                  <span class="text-[11px] font-extrabold text-[#0066AA] whitespace-nowrap">
+                    {{ horario.horaInicio }} - {{ horario.horaFin }}
+                  </span>
+                </div>
+                <div class="mt-1.5 flex items-center justify-between gap-2">
+                  <span class="flex items-center gap-1.5 text-[10px] font-semibold text-slate-400 min-w-0">
+                    <i class="pi pi-calendar text-[10px] shrink-0"></i>
+                    <span class="truncate">{{ horario.rangoFechas }}</span>
+                  </span>
+                  <span *ngIf="horario.totalFechas > 1"
+                    class="text-[10px] font-bold text-slate-400 whitespace-nowrap">
+                    {{ horario.totalFechas }} fechas
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <ng-template #noHorarioVet>
+              <div class="rounded-lg bg-white border border-slate-100 px-3 py-2 text-[11px] font-semibold text-slate-400">
+                Este profesional no tiene horarios activos registrados.
+              </div>
+            </ng-template>
           </div>
 
           <!-- Dynamic time-slot selector -->

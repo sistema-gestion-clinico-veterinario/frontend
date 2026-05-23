@@ -6,7 +6,16 @@ import { MessageService } from 'primeng/api';
 import { ProfileService } from '../../core/services/profile.service';
 import { MediaService } from '../../core/services/media.service';
 import { ProfileResponse } from '../../models/response/profile-response';
+import { HorarioEmpleadoResponse } from '../../models/response/horario-empleado-response';
 import { LoadingStore } from '../../store/loading.store';
+
+interface HorarioResumen {
+  diaSemana: string;
+  horaInicio: string;
+  horaFin: string;
+  rangoFechas: string;
+  totalFechas: number;
+}
 
 @Component({
   selector: 'app-profile',
@@ -165,5 +174,84 @@ export class ProfileComponent implements OnInit {
   isInvalid(field: string): boolean {
     const c = this.form.get(field);
     return !!(c?.invalid && c?.touched);
+  }
+
+  get horariosResumen(): HorarioResumen[] {
+    const horarios = this.profile()?.horarios?.filter(h => h.activo !== false) ?? [];
+    return this.buildHorarioResumen(horarios);
+  }
+
+  formatDiaSemana(dia: string): string {
+    const labels: Record<string, string> = {
+      LUNES: 'Lunes',
+      MARTES: 'Martes',
+      MIERCOLES: 'Miercoles',
+      JUEVES: 'Jueves',
+      VIERNES: 'Viernes',
+      SABADO: 'Sabado',
+      DOMINGO: 'Domingo'
+    };
+    return labels[dia] ?? dia;
+  }
+
+  private buildHorarioResumen(horarios: HorarioEmpleadoResponse[]): HorarioResumen[] {
+    const groups = new Map<string, {
+      diaSemana: string;
+      horaInicio: string;
+      horaFin: string;
+      fechas: Set<string>;
+    }>();
+
+    for (const horario of horarios) {
+      const horaInicio = this.formatHora(horario.horaInicio);
+      const horaFin = this.formatHora(horario.horaFin);
+      const key = `${horario.diaSemana}|${horaInicio}|${horaFin}`;
+      const current = groups.get(key) ?? {
+        diaSemana: horario.diaSemana,
+        horaInicio,
+        horaFin,
+        fechas: new Set<string>()
+      };
+
+      if (horario.fecha) {
+        current.fechas.add(String(horario.fecha).substring(0, 10));
+      }
+
+      groups.set(key, current);
+    }
+
+    const order = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO', 'DOMINGO'];
+    return Array.from(groups.values())
+      .sort((a, b) => {
+        const dayCmp = order.indexOf(a.diaSemana) - order.indexOf(b.diaSemana);
+        if (dayCmp !== 0) return dayCmp;
+        return a.horaInicio.localeCompare(b.horaInicio);
+      })
+      .map(group => {
+        const fechas = Array.from(group.fechas).sort();
+        return {
+          diaSemana: group.diaSemana,
+          horaInicio: group.horaInicio,
+          horaFin: group.horaFin,
+          rangoFechas: this.formatRangoFechas(fechas),
+          totalFechas: fechas.length
+        };
+      });
+  }
+
+  private formatHora(hora: string): string {
+    return hora?.substring(0, 5) ?? '';
+  }
+
+  private formatRangoFechas(fechas: string[]): string {
+    if (fechas.length === 0) return 'Horario recurrente';
+    if (fechas.length === 1) return `Fecha: ${this.formatFechaCorta(fechas[0])}`;
+    return `${this.formatFechaCorta(fechas[0])} - ${this.formatFechaCorta(fechas[fechas.length - 1])}`;
+  }
+
+  private formatFechaCorta(fecha: string): string {
+    const [year, month, day] = fecha.split('-');
+    if (!year || !month || !day) return fecha;
+    return `${day}/${month}/${year}`;
   }
 }

@@ -86,6 +86,10 @@ export class ApoderadoService {
     return this.http.get<ApiResponse<any[]>>(`${environment.apiUrl}/clientes/portal/empleados${params}`);
   }
 
+  getPortalEmpleadoHorario(empleadoId: number) {
+    return this.http.get<ApiResponse<any[]>>(`${environment.apiUrl}/clientes/portal/empleados/${empleadoId}/horario`);
+  }
+
   getPortalDisponibilidad(empleadoId: number, fecha: string, servicioId: number) {
     return this.http.get<ApiResponse<string[]>>(`${environment.apiUrl}/clientes/portal/disponibilidad?empleadoId=${empleadoId}&fecha=${fecha}&servicioId=${servicioId}`);
   }
