@@ -28,6 +28,18 @@
         class="text-[10px] font-bold px-2 py-1 rounded bg-slate-100 text-slate-500 border border-slate-200">
         V{{ consulta()!.version }}
       </span>
+      <span *ngIf="(!isCerrada() || canManage()) && autoSaveStatus() === 'saving'"
+        class="text-[10px] font-bold px-2 py-1 rounded bg-blue-50 text-[#0066AA] border border-blue-100">
+        <i class="pi pi-spin pi-spinner mr-1"></i>Guardando
+      </span>
+      <span *ngIf="(!isCerrada() || canManage()) && autoSaveStatus() === 'saved'"
+        class="text-[10px] font-bold px-2 py-1 rounded bg-emerald-50 text-emerald-700 border border-emerald-100">
+        <i class="pi pi-check mr-1"></i>Guardado
+      </span>
+      <span *ngIf="(!isCerrada() || canManage()) && autoSaveStatus() === 'error'"
+        class="text-[10px] font-bold px-2 py-1 rounded bg-rose-50 text-rose-600 border border-rose-100">
+        <i class="pi pi-exclamation-circle mr-1"></i>Error al guardar
+      </span>
     </div>
   </div>
 
@@ -526,12 +538,7 @@
 
       <div *ngIf="!isCerrada() || canManage()" class="flex flex-col gap-3 mt-4 items-end">
         <div class="flex flex-col sm:flex-row gap-3 justify-end w-full">
-          <button type="button" (click)="confirmarGuardar()" [disabled]="form.invalid"
-            class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-[#0066AA] text-white text-sm font-bold hover:bg-[#0055aa] disabled:opacity-50 disabled:cursor-not-allowed transition-all">
-            <i class="pi pi-save"></i>
-            Guardar cambios
-          </button>
-          <button *ngIf="!isCerrada()" type="button" (click)="confirmarCerrar()" [disabled]="form.invalid"
+          <button *ngIf="!isCerrada()" type="button" (click)="confirmarCerrar()" [disabled]="form.invalid || autoSaveStatus() === 'saving'"
             class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 text-white text-sm font-bold hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
             <i class="pi pi-check-circle"></i>
             Cerrar consulta
