@@ -30,7 +30,8 @@ export const apiInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, nex
 
   return next(authReq).pipe(
     catchError((error) => {
-      if (error instanceof HttpErrorResponse && error.status === 401 && !req.url.includes('/auth/login')) {
+      const isAuthRecoveryRequest = req.url.includes('/auth/login') || req.url.includes('/auth/refresh');
+      if (error instanceof HttpErrorResponse && error.status === 401 && !isAuthRecoveryRequest) {
         return handle401Error(authReq, next, authStore, authService, router);
       }
       return throwError(() => error);
@@ -53,17 +54,18 @@ const handle401Error = (req: HttpRequest<any>, next: HttpHandlerFn, authStore: a
             token: res.data.token,
             refreshToken: res.data.refreshToken,
             roles: res.data.roles,
-            companyId: authStore.companyId(),
-            companyName: authStore.companyName(),
-            nombreCompleto: authStore.nombreCompleto(),
-            userType: authStore.userType(),
-            empleadoId: authStore.empleadoId(),
-            passwordChanged: authStore.passwordChanged(),
-            needsCompanySelection: authStore.needsCompanySelection(),
+            companyId: res.data.companyId,
+            companyName: res.data.companyName,
+            nombreCompleto: res.data.nombreCompleto,
+            userType: res.data.userType,
+            empleadoId: res.data.empleadoId ?? null,
+            passwordChanged: res.data.passwordChanged,
+            needsCompanySelection: res.data.needsCompanySelection,
             selectedEnterprise: authStore.selectedEnterprise(),
-            menu: authStore.menu(),
+            menu: res.data.menu,
             simulatedRoleId: authStore.simulatedRoleId(),
-            originalMenu: authStore.originalMenu(),
+            originalMenu: res.data.menu,
+            originalRoles: res.data.assignedRoles ?? res.data.roles,
             assignedRoles: res.data.assignedRoles ?? authStore.assignedRoles()
           });
           refreshTokenSubject.next(res.data.token);

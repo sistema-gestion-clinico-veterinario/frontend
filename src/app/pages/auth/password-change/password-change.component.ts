@@ -108,7 +108,7 @@ export class PasswordChangeComponent {
           if (roles.includes('ROLE_SUPER_ADMIN')) {
             this.router.navigateByUrl('/admin/company');
           } else if (roles.includes('ROLE_CLIENTE') || roles.includes('ROLE_APODERADO')) {
-            this.router.navigateByUrl('/apoderado');
+            this.router.navigateByUrl('/apoderado/dashboard');
           } else if (roles.includes('ROLE_ADMIN')) {
             this.router.navigateByUrl('/admin/dashboard');
           } else {
@@ -133,7 +133,7 @@ export class PasswordChangeComponent {
     if (roles.includes('ROLE_SUPER_ADMIN')) {
       this.router.navigateByUrl('/admin/company');
     } else if (roles.includes('ROLE_CLIENTE') || roles.includes('ROLE_APODERADO')) {
-      this.router.navigateByUrl('/apoderado');
+      this.router.navigateByUrl('/apoderado/dashboard');
     } else if (roles.includes('ROLE_ADMIN')) {
       this.router.navigateByUrl('/admin/dashboard');
     } else {
