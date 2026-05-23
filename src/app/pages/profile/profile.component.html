@@ -68,7 +68,7 @@
         </div>
 
         <!-- Edit toggle button -->
-        <div class="shrink-0">
+        <div *ngIf="canModifyProfile" class="shrink-0">
           <button (click)="toggleEdit()"
             [class]="editMode() ? 'bg-slate-100 text-slate-600 hover:bg-slate-200' : 'bg-[#0066AA] text-white hover:bg-[#0055AA]'"
             class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors duration-150">

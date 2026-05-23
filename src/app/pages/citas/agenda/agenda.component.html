@@ -239,19 +239,19 @@
                       <i class="pi pi-calendar-plus text-xs"></i>
                     </button>
                   </ng-container>
-                  <ng-container *ngIf="cita.estado === 'PROGRAMADA' || cita.estado === 'CONFIRMADA' || cita.estado === 'SALA_DE_ESPERA' || cita.estado === 'REPROGRAMADA'">
+                  <ng-container *ngIf="canCreateHistoria() && (cita.estado === 'PROGRAMADA' || cita.estado === 'CONFIRMADA' || cita.estado === 'SALA_DE_ESPERA' || cita.estado === 'REPROGRAMADA')">
                     <button (click)="iniciarCita(cita)" pTooltip="Iniciar consulta" tooltipPosition="top"
                       class="w-8 h-8 flex items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-all">
                       <i class="pi pi-play text-xs"></i>
                     </button>
                   </ng-container>
-                  <ng-container *ngIf="cita.estado === 'EN_PROCESO'">
+                  <ng-container *ngIf="canReadHistoria() && cita.estado === 'EN_PROCESO'">
                     <button (click)="continuarConsulta(cita)" pTooltip="Continuar consulta" tooltipPosition="top"
                       class="w-8 h-8 flex items-center justify-center rounded-lg bg-amber-50 text-amber-600 hover:bg-amber-100 transition-all">
                       <i class="pi pi-eye text-xs"></i>
                     </button>
                   </ng-container>
-                  <ng-container *ngIf="(cita.estado === 'COMPLETADA' || cita.consultaId) && cita.estado !== 'EN_PROCESO'">
+                  <ng-container *ngIf="canReadHistoria() && (cita.estado === 'COMPLETADA' || cita.consultaId) && cita.estado !== 'EN_PROCESO'">
                     <button (click)="continuarConsulta(cita)" pTooltip="Ver consulta" tooltipPosition="top"
                       class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 text-slate-500 hover:bg-slate-200 transition-all">
                       <i class="pi pi-file-edit text-xs"></i>
@@ -1128,19 +1128,19 @@
   <!-- Footer: acciones -->
   <div class="px-5 py-4 border-t border-slate-100 space-y-2 bg-slate-50/60">
     <div class="flex gap-2">
-      <ng-container *ngIf="citaDetalle()?.estado === 'PROGRAMADA' || citaDetalle()?.estado === 'CONFIRMADA' || citaDetalle()?.estado === 'SALA_DE_ESPERA' || citaDetalle()?.estado === 'REPROGRAMADA'">
+      <ng-container *ngIf="canCreateHistoria() && (citaDetalle()?.estado === 'PROGRAMADA' || citaDetalle()?.estado === 'CONFIRMADA' || citaDetalle()?.estado === 'SALA_DE_ESPERA' || citaDetalle()?.estado === 'REPROGRAMADA')">
         <button (click)="iniciarCita(citaDetalle()!)"
           class="flex-1 flex items-center justify-center gap-2 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-xl transition-all">
           <i class="pi pi-play text-xs"></i> Iniciar atención
         </button>
       </ng-container>
-      <ng-container *ngIf="citaDetalle()?.estado === 'EN_PROCESO'">
+      <ng-container *ngIf="canReadHistoria() && citaDetalle()?.estado === 'EN_PROCESO'">
         <button (click)="continuarConsulta(citaDetalle()!)"
           class="flex-1 flex items-center justify-center gap-2 py-2.5 bg-amber-400 hover:bg-amber-500 text-white text-xs font-bold rounded-xl transition-all">
-          <i class="pi pi-pencil text-xs"></i> Continuar consulta
+          <i class="pi pi-pencil text-xs"></i> {{ canModifyHistoria() ? 'Continuar consulta' : 'Ver consulta' }}
         </button>
       </ng-container>
-      <ng-container *ngIf="(citaDetalle()?.estado === 'COMPLETADA' || citaDetalle()?.consultaId) && citaDetalle()?.estado !== 'EN_PROCESO'">
+      <ng-container *ngIf="canReadHistoria() && (citaDetalle()?.estado === 'COMPLETADA' || citaDetalle()?.consultaId) && citaDetalle()?.estado !== 'EN_PROCESO'">
         <button (click)="continuarConsulta(citaDetalle()!)"
           class="flex-1 flex items-center justify-center gap-2 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold rounded-xl transition-all">
           <i class="pi pi-file text-xs"></i> Ver consulta

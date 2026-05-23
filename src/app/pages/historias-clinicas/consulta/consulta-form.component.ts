@@ -16,7 +16,6 @@ import { EMPTY, Observable, Subscription, catchError, debounceTime, filter, fina
 import { HistoriaClinicaService } from '../../../core/services/historia-clinica.service';
 import { LoadingStore } from '../../../store/loading.store';
 import { AuthStore } from '../../../store/auth.store';
-import { Role } from '../../../core/enums/role.enum';
 import { ConsultaResponse } from '../../../models/response/consulta-response';
 import { PrescripcionResponse } from '../../../models/response/prescripcion-response';
 import { PrescripcionRequest } from '../../../models/request/prescripcion-request';
@@ -55,9 +54,9 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
   readonly loadingStore        = inject(LoadingStore);
   readonly authStore           = inject(AuthStore);
 
-  readonly isSuperAdmin = computed(() => this.authStore.roles().includes(Role.SUPER_ADMIN));
-  readonly isAdmin      = computed(() => this.authStore.roles().includes(Role.ADMIN));
-  readonly canManage    = computed(() => this.isAdmin() || this.isSuperAdmin() || this.authStore.hasAccess('VISTA_HISTORIAS', 'modificar'));
+  readonly canCreate = computed(() => this.authStore.hasAccess('VISTA_HISTORIAS', 'escribir'));
+  readonly canModify = computed(() => this.authStore.hasAccess('VISTA_HISTORIAS', 'modificar'));
+  readonly canDelete = computed(() => this.authStore.hasAccess('VISTA_HISTORIAS', 'eliminar'));
 
   consulta   = signal<ConsultaResponse | null>(null);
   historia   = signal<any | null>(null); 
@@ -226,7 +225,7 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
   }
 
   private puedeEditarConsulta(): boolean {
-    return !this.isCerrada() || this.canManage();
+    return this.canModify();
   }
 
   loadRecetas() {
@@ -250,6 +249,7 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
   }
 
   subirArchivo() {
+    if (!this.canCreate()) return;
     const file = this.archivoPendiente();
     if (!file) return;
     this.archivoSubiendo.set(true);
@@ -314,11 +314,13 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
   }
 
   confirmarEliminarArchivo(archivo: ArchivoClinicoResponse) {
+    if (!this.canDelete()) return;
     this.archivoEliminando.set(archivo);
     this.showConfirmEliminarArchivo.set(true);
   }
 
   eliminarArchivo() {
+    if (!this.canDelete()) return;
     const archivo = this.archivoEliminando();
     if (!archivo) return;
     this.hcService.eliminarArchivo(this.consultaId, archivo.id).subscribe({
@@ -348,12 +350,14 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
   }
 
   abrirNuevaReceta() {
+    if (!this.canCreate()) return;
     this.recetaEditando.set(null);
     this.recetaForm.reset({ fechaInicio: new Date().toISOString().split('T')[0] });
     this.showRecetaModal.set(true);
   }
 
   abrirEditarReceta(receta: PrescripcionResponse) {
+    if (!this.canModify()) return;
     this.recetaEditando.set(receta);
     this.recetaForm.patchValue({
       medicamento:       receta.medicamento,
@@ -370,6 +374,7 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
   }
 
   guardarReceta() {
+    if (this.recetaEditando() ? !this.canModify() : !this.canCreate()) return;
     if (this.recetaForm.invalid) {
       this.recetaForm.markAllAsTouched();
       return;
@@ -397,11 +402,13 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
   }
 
   confirmarEliminarReceta(receta: PrescripcionResponse) {
+    if (!this.canDelete()) return;
     this.recetaEliminando.set(receta);
     this.showConfirmEliminar.set(true);
   }
 
   eliminarReceta() {
+    if (!this.canDelete()) return;
     const receta = this.recetaEliminando();
     if (!receta) return;
     this.hcService.eliminarReceta(receta.id).subscribe({
@@ -513,6 +520,7 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
   }
 
   private guardarSilencioso(mostrarError: boolean): Observable<boolean> {
+    if (!this.canModify()) return of(false);
     const version = this.consulta()?.version;
     if (version === undefined) return of(false);
 
@@ -537,6 +545,7 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
   }
 
   confirmarGuardar() {
+    if (!this.canModify()) return;
     this.confirmSvc.confirm({
       message: '¿Deseas guardar los cambios realizados en la consulta?',
       header: 'Guardar cambios',
@@ -548,6 +557,7 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
   }
 
   guardar() {
+    if (!this.canModify()) return;
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
@@ -571,6 +581,7 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
   }
 
   confirmarCerrar() {
+    if (!this.canModify()) return;
     this.confirmSvc.confirm({
       message: 'Al cerrar la consulta no podrás modificarla. ¿Deseas continuar?',
       header: 'Cerrar consulta',
@@ -584,6 +595,7 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
   }
 
   private cerrar() {
+    if (!this.canModify()) return;
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
