@@ -8,7 +8,7 @@
     </div>
 
     <div class="flex flex-wrap items-center gap-4">
-      <button *appHasPermission="'APODERADOS:escribir'" (click)="openNew()"
+      <button *appHasPermission="'VISTA_CLIENTES:escribir'" (click)="openNew()"
         class="flex items-center gap-2 bg-[#0066AA] hover:bg-[#005a96] text-white text-sm font-medium px-5 h-10 rounded-lg transition-colors">
         <i class="pi pi-plus text-xs"></i>
         Registrar cliente
@@ -53,7 +53,7 @@
             </span>
           </td>
           <td class="px-6 py-4">
-            <button *appHasPermission="'APODERADOS:modificar'" (click)="toggleStatus(client)"
+            <button *appHasPermission="'VISTA_CLIENTES:modificar'" (click)="toggleStatus(client)"
               [class]="client.activo ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-500'"
               class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-all active:scale-95">
               <span [class]="client.activo ? 'bg-green-500' : 'bg-red-400'" class="w-1.5 h-1.5 rounded-full"></span>
@@ -62,14 +62,14 @@
           </td>
           <td class="px-6 py-4 text-right">
             <div class="flex items-center justify-end gap-1">
-              <button *appHasPermission="'APODERADOS:modificar'"
+              <button *appHasPermission="'VISTA_CLIENTES:modificar'"
                 (click)="editClient(client)"
                 [disabled]="!client.activo"
                 [title]="!client.activo ? 'El cliente está inactivo' : 'Editar'"
                 class="p-2 rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-90 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-slate-400">
                 <i class="pi pi-pencil text-sm"></i>
               </button>
-              <button *appHasPermission="'APODERADOS:eliminar'" (click)="deleteClient(client)"
+              <button *appHasPermission="'VISTA_CLIENTES:eliminar'" (click)="deleteClient(client)"
                 class="p-2 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-all active:scale-90">
                 <i class="pi pi-trash text-sm"></i>
               </button>

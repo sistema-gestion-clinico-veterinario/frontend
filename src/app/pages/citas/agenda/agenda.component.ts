@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { TableModule } from 'primeng/table';
@@ -31,6 +31,11 @@ import { Router } from '@angular/router';
 import { forkJoin, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
+import { FullCalendarComponent, FullCalendarModule } from '@fullcalendar/angular';
+import { CalendarOptions, EventContentArg, EventInput } from '@fullcalendar/core';
+import dayGridPlugin from '@fullcalendar/daygrid';
+import timeGridPlugin from '@fullcalendar/timegrid';
+import interactionPlugin from '@fullcalendar/interaction';
 
 import { DropdownModule } from 'primeng/dropdown';
 import { CalendarModule } from 'primeng/calendar';
@@ -62,12 +67,15 @@ interface CitaWsEvent {
 
     ConfirmDialogModule,
     ToastModule,
+    FullCalendarModule,
     HasPermissionDirective
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './agenda.component.html'
 })
 export class AgendaComponent implements OnInit, OnDestroy {
+  @ViewChild('fullCalendar') fullCalendar?: FullCalendarComponent;
+
   private readonly fb                = inject(FormBuilder);
   private readonly citaService       = inject(CitaService);
   private readonly empleadoService   = inject(EmpleadoService);
@@ -206,7 +214,38 @@ export class AgendaComponent implements OnInit, OnDestroy {
   vistaActual  = signal<Vista>('lista');
   fechaBase    = signal<Date>(new Date());
   citasPorDia  = signal<Record<string, CitaResponse[]>>({});
+  calendarEvents = signal<EventInput[]>([]);
   cargandoCal  = signal<boolean>(false);
+  calendarOptions: CalendarOptions = {
+    plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
+    initialView: 'timeGridDay',
+    initialDate: new Date(),
+    locale: 'es',
+    height: 'auto',
+    allDaySlot: false,
+    nowIndicator: true,
+    editable: true,
+    eventStartEditable: true,
+    eventDurationEditable: false,
+    headerToolbar: false,
+    slotMinTime: '07:00:00',
+    slotMaxTime: '21:00:00',
+    slotDuration: '00:20:00',
+    slotLabelInterval: '01:00',
+    expandRows: true,
+    stickyHeaderDates: true,
+    dayMaxEvents: 3,
+    moreLinkClassNames: 'agenda-more-link',
+    slotLabelFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
+    eventTimeFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
+    events: [],
+    eventContent: (info) => this.renderCalendarEvent(info),
+    eventClick: (info) => {
+      const cita = info.event.extendedProps['cita'] as CitaResponse | undefined;
+      if (cita) this.verDetalleCita(cita);
+    },
+    eventDrop: (info) => this.onCalendarEventDrop(info)
+  };
 
   readonly HORAS_DIA = Array.from({ length: 15 }, (_, i) => i + 7);
 
@@ -229,7 +268,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
   setEstadoFilter(value: EstadoCita | null) {
     this.filterEstado = value;
     this.showEstadoFilter.set(false);
-    this.loadCitas();
+    this.refreshCurrentView();
   }
 
   getVeterinarioFilterLabel(): string {
@@ -240,7 +279,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
   setVeterinarioFilter(value: number | null) {
     this.filterVeterinarioId = value;
     this.showVeterinarioFilter.set(false);
-    this.loadCitas();
+    this.refreshCurrentView();
   }
 
   readonly diasSemanaActual = computed<Date[]>(() => {
@@ -390,10 +429,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
 
     const page      = Math.floor(event.first / event.rows);
     const fechaStr  = this.filterFecha || undefined;
-    let veterinarioId = this.filterVeterinarioId || undefined;
-    if (this.authStore.roles().includes('ROLE_VETERINARIO') && !this.isSuperAdmin()) {
-      veterinarioId = this.authStore.empleadoId() ?? undefined;
-    }
+    const veterinarioId = this.getEffectiveVeterinarioFilter();
 
     this.loadingStore.show();
     this.citaService.listar(
@@ -1090,9 +1126,10 @@ export class AgendaComponent implements OnInit, OnDestroy {
 
   cambiarVista(vista: Vista) {
     this.vistaActual.set(vista);
-    if (vista === 'lista' || vista === 'dia') {
+    if (vista === 'lista') {
       this.loadCitas();
     } else {
+      this.setFullCalendarView(vista);
       this.loadCitasCalendario();
     }
   }
@@ -1104,7 +1141,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
       base.setDate(base.getDate() + dir);
       this.filterFecha = this.toDateStr(base);
       this.fechaBase.set(base);
-      this.loadCitas();
+      this.loadCitasCalendario();
     } else if (v === 'semana') {
       base.setDate(base.getDate() + dir * 7);
       this.fechaBase.set(base);
@@ -1120,7 +1157,23 @@ export class AgendaComponent implements OnInit, OnDestroy {
     const hoy = new Date();
     this.fechaBase.set(hoy);
     this.filterFecha = this.toDateStr(hoy);
-    if (this.vistaActual() === 'lista' || this.vistaActual() === 'dia') {
+    if (this.vistaActual() === 'lista') {
+      this.loadCitas();
+    } else {
+      this.loadCitasCalendario();
+    }
+  }
+
+  onFilterFechaChange() {
+    if (this.filterFecha) {
+      const [y, m, d] = this.filterFecha.split('-').map(Number);
+      this.fechaBase.set(new Date(y, m - 1, d));
+    }
+    this.refreshCurrentView();
+  }
+
+  refreshCurrentView() {
+    if (this.vistaActual() === 'lista') {
       this.loadCitas();
     } else {
       this.loadCitasCalendario();
@@ -1130,13 +1183,16 @@ export class AgendaComponent implements OnInit, OnDestroy {
   loadCitasCalendario() {
     const companyId = this.activeCompanyId ?? undefined;
     if (!companyId) { this.citasPorDia.set({}); return; }
-    const dias = this.vistaActual() === 'semana' ? this.diasSemanaActual() : this.diasMesActual();
+    const dias = this.vistaActual() === 'dia'
+      ? [this.fechaBase()]
+      : this.vistaActual() === 'semana' ? this.diasSemanaActual() : this.diasMesActual();
     const fechas = [...new Set(dias.map(d => this.toDateStr(d)))];
+    const veterinarioId = this.getEffectiveVeterinarioFilter();
 
     this.cargandoCal.set(true);
     forkJoin(
       fechas.map(fecha =>
-        this.citaService.listar(companyId, fecha, undefined, undefined, 0, 50).pipe(
+        this.citaService.listar(companyId, fecha, this.filterEstado || undefined, veterinarioId, 0, 50).pipe(
           map(res => ({ fecha, citas: res.data.content })),
           catchError(() => of({ fecha, citas: [] as CitaResponse[] }))
         )
@@ -1145,8 +1201,174 @@ export class AgendaComponent implements OnInit, OnDestroy {
       const mapa: Record<string, CitaResponse[]> = {};
       results.forEach(r => (mapa[r.fecha] = r.citas));
       this.citasPorDia.set(mapa);
+      const citas = results.flatMap(r => r.citas);
+      this.calendarEvents.set(this.toCalendarEvents(citas));
+      this.syncFullCalendar();
       this.cargandoCal.set(false);
     });
+  }
+
+  private getEffectiveVeterinarioFilter(): number | undefined {
+    if (this.filterVeterinarioId) return this.filterVeterinarioId;
+    const roles = this.authStore.roles();
+    if ((roles.includes('ROLE_VETERINARIO') || roles.includes('ROLE_EMPLEADO')) && !this.isSuperAdmin()) {
+      return this.authStore.empleadoId() ?? undefined;
+    }
+    return undefined;
+  }
+
+  private setFullCalendarView(vista: Vista) {
+    const viewName = vista === 'dia' ? 'timeGridDay' : vista === 'semana' ? 'timeGridWeek' : 'dayGridMonth';
+    this.calendarOptions = {
+      ...this.calendarOptions,
+      initialView: viewName,
+      initialDate: this.fechaBase()
+    };
+    setTimeout(() => {
+      const api = this.fullCalendar?.getApi();
+      api?.changeView(viewName, this.fechaBase());
+    });
+  }
+
+  private syncFullCalendar() {
+    this.calendarOptions = {
+      ...this.calendarOptions,
+      initialDate: this.fechaBase(),
+      events: this.calendarEvents()
+    };
+    setTimeout(() => {
+      const api = this.fullCalendar?.getApi();
+      if (!api) return;
+      api.gotoDate(this.fechaBase());
+      api.removeAllEvents();
+      api.addEventSource(this.calendarEvents());
+    });
+  }
+
+  private toCalendarEvents(citas: CitaResponse[]): EventInput[] {
+    return citas.map(cita => ({
+      id: String(cita.id),
+      title: cita.mascotaNombre,
+      start: cita.fechaHoraInicio,
+      end: cita.fechaHoraFin,
+      editable: this.canReprogram(cita) && this.authStore.hasAccess('VISTA_CITAS_AGENDA', 'modificar'),
+      backgroundColor: this.calendarBgColor(cita.estado),
+      borderColor: this.calendarColor(cita.estado),
+      textColor: '#1e293b',
+      extendedProps: { cita }
+    }));
+  }
+
+  private renderCalendarEvent(info: EventContentArg) {
+    const cita = info.event.extendedProps['cita'] as CitaResponse | undefined;
+    const accent = info.event.borderColor || '#0066AA';
+    const timeHtml = info.timeText
+      ? `<span class="agenda-event-time" style="color:${accent}">${info.timeText}</span>`
+      : '';
+    const title   = cita?.mascotaNombre ?? info.event.title;
+    const service = cita?.servicioNombre ?? cita?.veterinarioNombre ?? '';
+    const estado  = cita ? this.estadoLabel(cita.estado) : '';
+
+    return {
+      html: `
+        <div class="agenda-event-card">
+          <div class="agenda-event-main">
+            ${timeHtml}
+            <span class="agenda-event-title">${this.escapeHtml(title)}</span>
+          </div>
+          ${service ? `<span class="agenda-event-service">${this.escapeHtml(service)}</span>` : ''}
+          ${estado  ? `<span class="agenda-event-badge" style="color:${accent};border-color:${accent}30;background:${accent}10">${this.escapeHtml(estado)}</span>` : ''}
+        </div>
+      `
+    };
+  }
+
+  private escapeHtml(value: string): string {
+    return value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  private onCalendarEventDrop(info: any) {
+    const cita = info.event.extendedProps?.cita as CitaResponse | undefined;
+    const nuevaFecha = info.event.start as Date | null;
+
+    if (!cita || !nuevaFecha) {
+      info.revert();
+      return;
+    }
+
+    if (!this.canReprogram(cita) || !this.authStore.hasAccess('VISTA_CITAS_AGENDA', 'modificar')) {
+      info.revert();
+      this.messageService.add({ severity: 'warn', summary: 'Sin permiso', detail: 'No puedes reprogramar esta cita.' });
+      return;
+    }
+
+    this.loadingStore.show();
+    this.citaService.reprogramar(cita.id, {
+      veterinarioId: cita.veterinarioId,
+      fechaHoraInicio: this.toLocalDateTimeString(nuevaFecha),
+      motivoReprogramacion: 'Reprogramado desde agenda'
+    }).subscribe({
+      next: () => {
+        this.suppressSseToast = true;
+        this.messageService.add({ severity: 'success', summary: 'Listo', detail: 'Cita reprogramada correctamente.' });
+        this.loadCitas();
+        this.loadCitasCalendario();
+        this.loadingStore.hide();
+      },
+      error: (err) => {
+        info.revert();
+        this.messageService.add({
+          severity: 'error',
+          summary: 'No se pudo reprogramar',
+          detail: err.error?.message || 'El nuevo horario no está disponible.'
+        });
+        this.loadingStore.hide();
+      }
+    });
+  }
+
+  private calendarColor(estado: EstadoCita): string {
+    const colors: Record<string, string> = {
+      PROGRAMADA: '#0066AA',
+      PENDIENTE: '#d97706',
+      CONFIRMADA: '#059669',
+      REPROGRAMADA: '#7c3aed',
+      SALA_DE_ESPERA: '#0891b2',
+      EN_PROCESO: '#ea580c',
+      COMPLETADA: '#16a34a',
+      CANCELADA: '#dc2626',
+      NO_ASISTIO: '#64748b'
+    };
+    return colors[estado] ?? '#475569';
+  }
+
+  private calendarBgColor(estado: EstadoCita): string {
+    const colors: Record<string, string> = {
+      PROGRAMADA:    '#e8f4ff',
+      PENDIENTE:     '#fffbeb',
+      CONFIRMADA:    '#ecfdf5',
+      REPROGRAMADA:  '#f5f3ff',
+      SALA_DE_ESPERA:'#ecfeff',
+      EN_PROCESO:    '#fff7ed',
+      COMPLETADA:    '#f0fdf4',
+      CANCELADA:     '#fef2f2',
+      NO_ASISTIO:    '#f8fafc'
+    };
+    return colors[estado] ?? '#f8fafc';
+  }
+
+  private toLocalDateTimeString(date: Date): string {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    const h = String(date.getHours()).padStart(2, '0');
+    const min = String(date.getMinutes()).padStart(2, '0');
+    return `${y}-${m}-${d}T${h}:${min}:00`;
   }
 
   canCobrar(cita: CitaResponse): boolean {

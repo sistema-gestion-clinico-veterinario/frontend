@@ -258,22 +258,62 @@ export class DashboardComponent implements OnInit {
     return [];
   }
 
+  canView(vista: string): boolean {
+    return this.authStore.hasAccess(vista, 'leer');
+  }
+
+  canViewCitas(): boolean {
+    return this.canView('VISTA_CITAS_AGENDA');
+  }
+
+  canViewClientes(): boolean {
+    return this.canView('VISTA_CLIENTES');
+  }
+
+  canViewMascotas(): boolean {
+    return this.canView('VISTA_MASCOTAS');
+  }
+
+  canViewEmpleados(): boolean {
+    return this.canView('VISTA_EMPLEADOS');
+  }
+
+  canViewHorarios(): boolean {
+    return this.canView('VISTA_HORARIOS');
+  }
+
+  canViewRoles(): boolean {
+    return this.canView('VISTA_ROLES');
+  }
+
+  canViewAuditoria(): boolean {
+    return this.canView('VISTA_AUDITORIA_ADMIN');
+  }
+
   // ─── Métodos de carga ────────────────────────────────────────────
 
   loadAllDashboardData(companyId?: number) {
     this.loadStats(companyId);
-    if (this.isSuperAdmin) {
+    if (this.canViewAuditoria()) {
       this.loadRecentLogs();
     }
-    if (this.isSuperAdmin || this.isAdmin) {
+    if (this.canViewEmpleados()) {
       this.loadEmployees(companyId);
+    }
+    if (this.canViewCitas()) {
       this.loadTodayAppointments(companyId);
+    }
+    if (this.canViewMascotas()) {
       this.loadPets(companyId);
+    }
+    if (this.canViewRoles()) {
       this.loadRoles(companyId);
+    }
+    if (this.canViewClientes()) {
       this.loadApoderados(companyId);
-      if (this.authStore.hasAccess('HORARIO', 'leer')) {
-        this.loadSchedulesReport(companyId);
-      }
+    }
+    if (this.canViewHorarios()) {
+      this.loadSchedulesReport(companyId);
     }
   }
 

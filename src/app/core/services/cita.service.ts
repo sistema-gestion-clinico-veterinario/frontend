@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
-import { CitaRequest } from '../../models/request/cita-request';
+import { CitaReprogramacionRequest, CitaRequest } from '../../models/request/cita-request';
 import { CitaResponse } from '../../models/response/cita-response';
 import { Page } from '../../models/response/page';
 import { ApiResponse } from '../../models/response/api-response';
@@ -44,8 +44,8 @@ export class CitaService {
     return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`);
   }
 
-  reprogramar(id: number, data: CitaRequest) {
-    return this.http.put<ApiResponse<CitaResponse>>(`${this.apiUrl}/${id}/reprogramar`, data);
+  reprogramar(id: number, data: CitaReprogramacionRequest) {
+    return this.http.patch<ApiResponse<CitaResponse>>(`${this.apiUrl}/${id}/reprogramar`, data);
   }
 
   getAdminDisponibilidad(empleadoId: number, fecha: string, servicioId: number) {

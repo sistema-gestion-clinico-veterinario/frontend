@@ -173,6 +173,8 @@ export const AuthStore = signalStore(
         'MASCOTAS':         'VISTA_MASCOTAS',
         'COMPLEMENTARIO':   'VISTA_COMPLEMENTARIO',
         'EMPRESA':          'VISTA_COMPANY',
+        'HORARIO':          'VISTA_HORARIOS',
+        'HORARIOS':         'VISTA_HORARIOS',
         'HORARIO_MANAGE':   'VISTA_HORARIOS',
         'APODERADO_UPDATE': 'VISTA_CLIENTES',
         'ROLES':            'VISTA_ROLES',

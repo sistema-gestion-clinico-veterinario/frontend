@@ -4,7 +4,6 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { EmpleadoService } from '../../../../core/services/empleado.service';
 import { EmpleadoListResponse } from '../../../../models/response/empleado-list-response';
-import { Permission } from '../../../../core/enums/permission.enum';
 import { HasPermissionDirective } from '../../../../core/directives/has-permission.directive';
 import { AuthStore } from '../../../../store/auth.store';
 
@@ -65,7 +64,7 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
 
   canManage = computed(() => {
     const roles = this.authStore.roles() || [];
-    return this.authStore.hasAccess('HORARIOS', 'escribir') ||
+    return this.authStore.hasAccess('VISTA_HORARIOS', 'modificar') ||
            roles.includes('ROLE_SUPER_ADMIN') ||
            roles.includes('ROLE_ADMIN');
   });
