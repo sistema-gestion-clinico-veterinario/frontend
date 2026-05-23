@@ -1464,6 +1464,27 @@ export class AgendaComponent implements OnInit, OnDestroy {
     return `Fuera del horario del médico. Disponible: ${h.horaInicio} – ${h.horaFin}`;
   }
 
+  get horariosActivos(): HorarioEmpleadoResponse[] {
+    return this.horariosVeterinario().filter(h => h.activo !== false);
+  }
+
+  formatDiaSemana(dia: string): string {
+    const labels: Record<string, string> = {
+      LUNES: 'Lunes',
+      MARTES: 'Martes',
+      MIERCOLES: 'Miércoles',
+      JUEVES: 'Jueves',
+      VIERNES: 'Viernes',
+      SABADO: 'Sábado',
+      DOMINGO: 'Domingo'
+    };
+    return labels[dia] ?? dia;
+  }
+
+  formatHora(hora: string): string {
+    return hora?.substring(0, 5) ?? '';
+  }
+
   toDateStr(d: Date): string {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   }

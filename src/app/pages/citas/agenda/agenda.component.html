@@ -641,6 +641,32 @@
               (change)="onFechaCitaChange($event)"
               class="w-full h-10 px-3 border border-slate-200 rounded-xl text-xs font-semibold outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/10 bg-white transition-all cursor-pointer">
           </div>
+          <div *ngIf="citaForm.get('veterinarioId')?.value && (!citaForm.get('id')?.value || isReprogramando())"
+            class="rounded-xl border border-slate-200 bg-slate-50/70 p-3">
+            <div class="flex items-center justify-between gap-3 mb-2.5">
+              <div class="min-w-0">
+                <p class="text-[9px] font-bold uppercase tracking-wider text-slate-400">Horario del empleado</p>
+                <p class="text-xs font-bold text-slate-700 truncate">{{ getVeterinarioLabel() }}</p>
+              </div>
+              <i class="pi pi-clock text-[#0066AA] text-sm"></i>
+            </div>
+
+            <div *ngIf="horariosActivos.length > 0; else noHorarioEmpleado" class="space-y-1.5 max-h-[118px] overflow-y-auto pr-1">
+              <div *ngFor="let horario of horariosActivos"
+                class="flex items-center justify-between gap-2 rounded-lg bg-white border border-slate-100 px-2.5 py-1.5">
+                <span class="text-[10px] font-semibold text-slate-600">{{ formatDiaSemana(horario.diaSemana) }}</span>
+                <span class="text-[10px] font-bold text-[#0066AA] whitespace-nowrap">
+                  {{ formatHora(horario.horaInicio) }} - {{ formatHora(horario.horaFin) }}
+                </span>
+              </div>
+            </div>
+
+            <ng-template #noHorarioEmpleado>
+              <div class="rounded-lg bg-white border border-slate-100 px-2.5 py-2 text-[10px] font-semibold text-slate-400">
+                Este empleado no tiene horarios activos registrados.
+              </div>
+            </ng-template>
+          </div>
           <div class="flex flex-col gap-1.5 col-span-2" *ngIf="citaForm.get('id')?.value && !isReprogramando()">
             <label class="text-xs font-semibold text-slate-600">Fecha y Hora</label>
             <input type="datetime-local" formControlName="fechaHoraInicio"
