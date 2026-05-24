@@ -24,7 +24,7 @@ export class ProfileService {
   }
 
   getMySchedule() {
-    return this.http.get<ApiResponse<ProfileResponse>>(`${this.apiUrl}/horario`);
+    return this.http.get<ApiResponse<ProfileResponse>>(`${this.apiUrl}/schedule`);
   }
 
   updateProfile(data: ProfileUpdateRequest) {

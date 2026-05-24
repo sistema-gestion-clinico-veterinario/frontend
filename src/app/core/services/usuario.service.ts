@@ -8,7 +8,7 @@ import { ApiResponse } from '../../models/response/api-response';
 })
 export class UsuarioService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = `${environment.apiUrl}/admin/usuarios`;
+  private readonly apiUrl = `${environment.apiUrl}/admin/users`;
 
   resetPassword(userId: number, newPassword: string) {
     return this.http.post<ApiResponse<void>>(`${this.apiUrl}/reset-password`, { userId, newPassword });

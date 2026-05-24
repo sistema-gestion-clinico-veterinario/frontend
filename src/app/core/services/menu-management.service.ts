@@ -9,7 +9,7 @@ import { MenuItemDTO, VistaDTO } from '../../models/response/auth-login-response
 })
 export class MenuManagementService {
   private readonly http = inject(HttpClient);
-  private readonly vistaUrl = `${environment.apiUrl}/admin/vistas`;
+  private readonly vistaUrl = `${environment.apiUrl}/admin/views`;
   private readonly roleUrl = `${environment.apiUrl}/admin/roles`;
 
   // Vistas API
@@ -32,10 +32,10 @@ export class MenuManagementService {
 
   // Roles Vistas Permisos
   obtenerVistasPorRol(rolId: number) {
-    return this.http.get<ApiResponse<MenuItemDTO[]>>(`${this.roleUrl}/${rolId}/vistas`);
+    return this.http.get<ApiResponse<MenuItemDTO[]>>(`${this.roleUrl}/${rolId}/views`);
   }
 
   asignarVistasPorRol(rolId: number, permisos: any[]) {
-    return this.http.put<ApiResponse<MenuItemDTO[]>>(`${this.roleUrl}/${rolId}/vistas`, permisos);
+    return this.http.put<ApiResponse<MenuItemDTO[]>>(`${this.roleUrl}/${rolId}/views`, permisos);
   }
 }
