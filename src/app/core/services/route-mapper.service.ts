@@ -72,6 +72,9 @@ export class RouteMapperService {
     VISTA_MI_HISTORIAL: '/mi-historial/:mascotaId',
     VISTA_MI_HISTORIAL_APODERADO: '/apoderado/mi-historial',
 
+    VISTA_MIS_RECETAS: '/apoderado/mis-recetas',
+    VISTA_MIS_RECETAS_APODERADO: '/apoderado/mis-recetas',
+
     VISTA_MIS_PAGOS: '/apoderado/mis-pagos',
     VISTA_MIS_PAGOS_APODERADO: '/apoderado/mis-pagos',
 

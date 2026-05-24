@@ -11,11 +11,11 @@ import { ServicioRequest } from '../../models/request/servicio-request';
 })
 export class ServicioService {
   private readonly http = inject(HttpClient);
-  private readonly url = `${environment.apiUrl}/servicios`;
+  private readonly url = `${environment.apiUrl}/services`;
 
   listarDisponibles(companyId?: number) {
     let query = companyId ? `?companyId=${companyId}` : '';
-    return this.http.get<ApiResponse<ServicioResponse[]>>(`${this.url}/disponibles${query}`);
+    return this.http.get<ApiResponse<ServicioResponse[]>>(`${this.url}/available${query}`);
   }
 
   listar(companyId?: number, page = 0, size = 20) {

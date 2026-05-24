@@ -149,6 +149,7 @@ export class SidebarComponent {
       VISTA_MIS_MASCOTAS: 'pi pi-heart-fill',
       VISTA_MIS_CITAS: 'pi pi-calendar-plus',
       VISTA_MI_HISTORIAL: 'pi pi-book',
+      VISTA_MIS_RECETAS: 'pi pi-file-edit',
       VISTA_MIS_PAGOS: 'pi pi-credit-card',
       VISTA_PROFILE: 'pi pi-user'
     };

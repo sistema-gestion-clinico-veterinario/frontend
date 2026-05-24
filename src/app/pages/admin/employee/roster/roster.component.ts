@@ -4,7 +4,6 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { EmpleadoService } from '../../../../core/services/empleado.service';
 import { EmpleadoListResponse } from '../../../../models/response/empleado-list-response';
-import { HasPermissionDirective } from '../../../../core/directives/has-permission.directive';
 import { AuthStore } from '../../../../store/auth.store';
 
 import { DropdownModule } from 'primeng/dropdown';
@@ -62,12 +61,10 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
     { label: 'D', value: 'DOMINGO' }
   ];
 
-  canManage = computed(() => {
-    const roles = this.authStore.roles() || [];
-    return this.authStore.hasAccess('VISTA_HORARIOS', 'modificar') ||
-           roles.includes('ROLE_SUPER_ADMIN') ||
-           roles.includes('ROLE_ADMIN');
-  });
+  canCreate = computed(() => this.authStore.hasAccess('VISTA_HORARIOS', 'escribir'));
+  canModify = computed(() => this.authStore.hasAccess('VISTA_HORARIOS', 'modificar'));
+  canDelete = computed(() => this.authStore.hasAccess('VISTA_HORARIOS', 'eliminar'));
+  canClone  = computed(() => this.canCreate() && this.canModify());
 
   selectedEmployeeName = computed(() => {
     const id = this.selectedEmployeeId();
@@ -446,12 +443,13 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
   }
 
   editShift(shift: any) {
-    if (!this.canManage()) return;
+    if (!this.canModify()) return;
     this.selectedShift.set(shift);
     this.showSidebar.set(true);
   }
 
   openAddForm(date?: string) {
+    if (!this.canCreate()) return;
     if (!this.selectedEmployeeId()) {
       this.messageService.add({ severity: 'warn', summary: 'Atención', detail: 'Selecciona un empleado primero' });
       return;
@@ -461,7 +459,7 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
   }
 
   onDayClick(item: any) {
-    if (!this.canManage() || item.otherMonth) return;
+    if (!this.canCreate() || item.otherMonth) return;
     const dateStr = item.date.toISOString().split('T')[0];
     this.openAddForm(dateStr);
   }
@@ -513,6 +511,7 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
   }
 
   deleteShift(shift: any) {
+    if (!this.canDelete()) return;
     const detail = `del día ${shift.fecha} a las ${shift.horaInicio}`;
     this.confirmationService.confirm({
       message: `¿Estás seguro de eliminar permanentemente el turno ${detail}?`,
@@ -534,6 +533,7 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
   }
 
   copyLastWeek() {
+    if (!this.canClone()) return;
     const id = this.selectedEmployeeId();
     if (!id) return;
 
@@ -580,6 +580,7 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
   }
 
   openCloneDayDialog() {
+    if (!this.canClone()) return;
     const current   = new Date(this.currentDate());
     const tomorrow  = new Date(current);
     tomorrow.setDate(current.getDate() + 1);
@@ -592,6 +593,7 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
   }
 
   confirmCloneDay() {
+    if (!this.canClone()) return;
     const id        = this.selectedEmployeeId();
     if (!id) return;
 
@@ -631,6 +633,7 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
   }
 
   openCleanDialog() {
+    if (!this.canDelete()) return;
     const current = new Date(this.currentDate());
     const mode    = this.viewMode();
     let start     = new Date(current);
@@ -665,6 +668,7 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
   }
 
   confirmClean() {
+    if (!this.canDelete()) return;
     const id = this.selectedEmployeeId();
     if (!id) return;
 

@@ -8,7 +8,6 @@ import { MessageService } from 'primeng/api';
 import { HistoriaClinicaService } from '../../../core/services/historia-clinica.service';
 import { LoadingStore } from '../../../store/loading.store';
 import { AuthStore } from '../../../store/auth.store';
-import { Role } from '../../../core/enums/role.enum';
 import {
   HistoriaClinicaDetalle,
   ConsultaResumen,
@@ -35,10 +34,7 @@ export class HistoriaClinicaMascotaComponent implements OnInit {
   readonly loadingStore       = inject(LoadingStore);
   readonly authStore          = inject(AuthStore);
 
-  readonly canManage = computed(() =>
-    this.authStore.roles().includes(Role.SUPER_ADMIN) ||
-    this.authStore.roles().includes(Role.ADMIN)
-  );
+  readonly canModify = computed(() => this.authStore.hasAccess('VISTA_HISTORIAS', 'modificar'));
 
   hc               = signal<HistoriaClinicaDetalle | null>(null);
   consultaActiva   = signal<ConsultaResumen | null>(null);
@@ -85,6 +81,7 @@ export class HistoriaClinicaMascotaComponent implements OnInit {
   }
 
   editarConsulta(id: number) {
+    if (!this.canModify()) return;
     this.router.navigate(['/historias-clinicas/consulta', id]);
   }
 

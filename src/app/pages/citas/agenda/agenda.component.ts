@@ -104,6 +104,9 @@ export class AgendaComponent implements OnInit, OnDestroy {
   readonly isSuperAdmin = computed(() => this.authStore.roles().includes(Role.SUPER_ADMIN));
   readonly isAdmin      = computed(() => this.authStore.roles().includes(Role.ADMIN));
   readonly canManage    = computed(() => this.isAdmin() || this.isSuperAdmin());
+  readonly canReadHistoria   = computed(() => this.authStore.hasAccess('VISTA_HISTORIAS', 'leer'));
+  readonly canCreateHistoria = computed(() => this.authStore.hasAccess('VISTA_HISTORIAS', 'escribir'));
+  readonly canModifyHistoria = computed(() => this.authStore.hasAccess('VISTA_HISTORIAS', 'modificar'));
 
 
   readonly totalCita = computed(() => {
@@ -953,6 +956,10 @@ export class AgendaComponent implements OnInit, OnDestroy {
   }
 
   iniciarCita(cita: CitaResponse) {
+    if (!this.canCreateHistoria()) {
+      this.messageService.add({ severity: 'warn', summary: 'Sin permiso', detail: 'No puedes iniciar historias clÃ­nicas.' });
+      return;
+    }
     this.displayDetalleCita.set(false);
     this.loadingStore.show();
     this.citaService.iniciarAtencion(cita.id).subscribe({
@@ -1050,10 +1057,18 @@ export class AgendaComponent implements OnInit, OnDestroy {
   }
 
   continuarConsulta(cita: CitaResponse) {
+    if (!this.canReadHistoria()) {
+      this.messageService.add({ severity: 'warn', summary: 'Sin permiso', detail: 'No puedes ver historias clÃ­nicas.' });
+      return;
+    }
     this.displayDetalleCita.set(false);
     if (cita.consultaId) {
       this.router.navigate(['/historias-clinicas/consulta', cita.consultaId]);
     } else {
+      if (!this.canCreateHistoria()) {
+        this.messageService.add({ severity: 'warn', summary: 'Sin permiso', detail: 'No puedes iniciar historias clÃ­nicas.' });
+        return;
+      }
       this.loadingStore.show();
       this.citaService.iniciarAtencion(cita.id).subscribe({
         next: (res) => {

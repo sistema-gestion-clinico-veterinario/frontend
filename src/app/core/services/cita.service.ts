@@ -12,7 +12,7 @@ import { EstadoCita } from '../enums/estado-cita.enum';
 })
 export class CitaService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = `${environment.apiUrl}/citas`;
+  private readonly apiUrl = `${environment.apiUrl}/appointments`;
 
   listar(companyId?: number, fecha?: string, estado?: EstadoCita, veterinarioId?: number, page: number = 0, size: number = 10) {
     let query = `?page=${page}&size=${size}`;
@@ -33,11 +33,11 @@ export class CitaService {
   }
 
   iniciarAtencion(id: number) {
-    return this.http.patch<ApiResponse<number>>(`${this.apiUrl}/${id}/iniciar`, {});
+    return this.http.patch<ApiResponse<number>>(`${this.apiUrl}/${id}/start`, {});
   }
 
   cancelarCita(id: number, motivo: string) {
-    return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}/cancelar?motivo=${encodeURIComponent(motivo)}`);
+    return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}/cancel?motivo=${encodeURIComponent(motivo)}`);
   }
 
   eliminarCita(id: number) {
@@ -45,12 +45,12 @@ export class CitaService {
   }
 
   reprogramar(id: number, data: CitaReprogramacionRequest) {
-    return this.http.patch<ApiResponse<CitaResponse>>(`${this.apiUrl}/${id}/reprogramar`, data);
+    return this.http.patch<ApiResponse<CitaResponse>>(`${this.apiUrl}/${id}/reschedule`, data);
   }
 
   getAdminDisponibilidad(empleadoId: number, fecha: string, servicioId: number) {
     return this.http.get<ApiResponse<string[]>>(
-      `${this.apiUrl}/disponibilidad?empleadoId=${empleadoId}&fecha=${fecha}&servicioId=${servicioId}`
+      `${this.apiUrl}/availability?empleadoId=${empleadoId}&fecha=${fecha}&servicioId=${servicioId}`
     );
   }
 }

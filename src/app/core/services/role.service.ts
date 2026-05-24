@@ -46,11 +46,11 @@ export class RoleService {
 
   listarPorEmpresa(companyId?: number) {
     const params = companyId ? `?companyId=${companyId}` : '';
-    return this.http.get<ApiResponse<Role[]>>(`${this.apiUrl}/empresa${params}`);
+    return this.http.get<ApiResponse<Role[]>>(`${this.apiUrl}/company${params}`);
   }
 
   listarSistema() {
-    return this.http.get<ApiResponse<Role[]>>(`${this.apiUrl}/sistema`);
+    return this.http.get<ApiResponse<Role[]>>(`${this.apiUrl}/system`);
   }
 
   crear(data: { name: string; descripcion?: string; companyId?: number }) {
@@ -66,7 +66,7 @@ export class RoleService {
   }
 
   getVentanas(roleId: number) {
-    return this.http.get<ApiResponse<RolVistaPermiso[]>>(`${this.apiUrl}/${roleId}/vistas`).pipe(
+    return this.http.get<ApiResponse<RolVistaPermiso[]>>(`${this.apiUrl}/${roleId}/views`).pipe(
       map((res) => ({
         ...res,
         data: res.data.map((vista) => this.toRolVentanaPermiso(vista))
@@ -86,7 +86,7 @@ export class RoleService {
       eliminar: permiso.eliminar
     }));
 
-    return this.http.put<ApiResponse<RolVistaPermiso[]>>(`${this.apiUrl}/${roleId}/vistas`, payload).pipe(
+    return this.http.put<ApiResponse<RolVistaPermiso[]>>(`${this.apiUrl}/${roleId}/views`, payload).pipe(
       map((res) => ({
         ...res,
         data: res.data.map((vista) => this.toRolVentanaPermiso(vista))
