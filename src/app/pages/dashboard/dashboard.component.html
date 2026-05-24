@@ -18,7 +18,8 @@
           {{ dayGreeting }},&nbsp;<span class="text-[#0066AA]">{{ userName }}</span>
         </h1>
         <div class="flex items-center gap-2.5 mt-2 flex-wrap">
-          <span [class]="'text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider ' + roleBadgeClass">
+          <span
+            [class]="'text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider ' + roleBadgeClass">
             {{ rolePrincipal }}
           </span>
           <span *ngIf="companyName" class="text-xs text-slate-400 font-medium">
@@ -38,11 +39,11 @@
   <div class="px-6 sm:px-8 lg:px-10 py-7 space-y-6">
 
     <!-- ── KPI CARDS ── -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4"
-         [class.md:grid-cols-5]="isSuperAdmin">
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4" [class.md:grid-cols-5]="isSuperAdmin">
 
       <!-- Pacientes -->
-      <div *ngIf="canViewMascotas() || canViewClientes() || canViewCitas()" class="bg-white rounded-2xl border border-slate-100 p-5 flex items-center gap-4">
+      <div *ngIf="canViewMascotas() || canViewClientes() || canViewCitas()"
+        class="bg-white rounded-2xl border border-slate-100 p-5 flex items-center gap-4">
         <div class="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
           <i class="pi pi-heart text-base text-[#0066AA]"></i>
         </div>
@@ -106,8 +107,7 @@
       </div>
 
       <!-- Sedes (solo superAdmin) -->
-      <div *ngIf="isSuperAdmin"
-        class="bg-slate-900 rounded-2xl p-5 flex items-center gap-4">
+      <div *ngIf="isSuperAdmin" class="bg-slate-900 rounded-2xl p-5 flex items-center gap-4">
         <div class="w-11 h-11 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
           <i class="pi pi-building text-base text-white"></i>
         </div>
@@ -123,99 +123,90 @@
       </div>
 
     </div>
-
-    <!-- ── GRID PRINCIPAL ── -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-
-      <!-- ─────────────────────────────
-           COLUMNA IZQUIERDA (2/3)
-      ───────────────────────────── -->
       <div class="lg:col-span-2 space-y-6">
 
-        <!-- 📊 GRÁFICO DE CITAS -->
+
         <div *ngIf="canViewCitas()" class="bg-white rounded-2xl border border-slate-100 p-0 overflow-hidden">
-          <div class="px-6 py-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/50">
+          <div
+            class="px-6 py-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/50 flex-wrap">
             <div>
               <h2 class="text-xs font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
                 <span class="w-2 h-2 rounded-full bg-[#0066AA]"></span>
                 Estadísticas de Citas
               </h2>
-              <p class="text-[10px] text-slate-400 font-medium mt-0.5">Volumen de atención en el periodo seleccionado</p>
+              <p class="text-[10px] text-slate-400 font-medium mt-0.5">Volumen de atención en el periodo seleccionado
+              </p>
             </div>
-            
+
             <!-- Selector de Periodo -->
             <div class="flex bg-slate-100 rounded-lg p-0.5 border border-slate-200 self-start sm:self-auto">
-              <button (click)="chartPeriod.set('day')" 
-                      [class]="'px-3 py-1 rounded-md text-[9px] font-black uppercase tracking-wider transition-all ' + (chartPeriod() === 'day' ? 'bg-white text-[#0066AA]' : 'text-slate-500 hover:text-slate-800')">
+              <button (click)="chartPeriod.set('day')"
+                [class]="'px-3 py-1 rounded-md text-[9px] font-black uppercase tracking-wider transition-all ' + (chartPeriod() === 'day' ? 'bg-white text-[#0066AA]' : 'text-slate-500 hover:text-slate-800')">
                 Día
               </button>
-              <button (click)="chartPeriod.set('week')" 
-                      [class]="'px-3 py-1 rounded-md text-[9px] font-black uppercase tracking-wider transition-all ' + (chartPeriod() === 'week' ? 'bg-white text-emerald-600' : 'text-slate-500 hover:text-slate-800')">
+              <button (click)="chartPeriod.set('week')"
+                [class]="'px-3 py-1 rounded-md text-[9px] font-black uppercase tracking-wider transition-all ' + (chartPeriod() === 'week' ? 'bg-white text-emerald-600' : 'text-slate-500 hover:text-slate-800')">
                 Semana
               </button>
-              <button (click)="chartPeriod.set('month')" 
-                      [class]="'px-3 py-1 rounded-md text-[9px] font-black uppercase tracking-wider transition-all ' + (chartPeriod() === 'month' ? 'bg-white text-violet-600' : 'text-slate-500 hover:text-slate-800')">
+              <button (click)="chartPeriod.set('month')"
+                [class]="'px-3 py-1 rounded-md text-[9px] font-black uppercase tracking-wider transition-all ' + (chartPeriod() === 'month' ? 'bg-white text-violet-600' : 'text-slate-500 hover:text-slate-800')">
                 Mes
               </button>
             </div>
           </div>
 
-          <!-- custom SVG/CSS Bar Chart with Premium Animation & Styling -->
-          <div class="p-6">
-            <div class="flex gap-3">
-              
-              <!-- Y-Axis Scale (Counter) -->
-              <div class="w-8 flex flex-col justify-between text-[9px] font-extrabold text-slate-400 text-right pr-2 select-none h-60 pb-8 pt-4">
-                <div>{{ chartData().yAxisLabels[0] }}</div>
-                <div>{{ chartData().yAxisLabels[1] }}</div>
-                <div>{{ chartData().yAxisLabels[2] }}</div>
-                <div>{{ chartData().yAxisLabels[3] }}</div>
+          <div class="p-4 sm:p-6 overflow-x-auto">
+            <div class="flex gap-2"
+                 [style.min-width]="chartPeriod() === 'month' ? '600px' : chartPeriod() === 'day' ? '380px' : '260px'">
+
+              <div class="w-7 shrink-0 flex flex-col justify-between text-[9px] font-extrabold text-slate-400 text-right pr-1 select-none pb-6"
+                   style="height:176px">
+                <span>{{ chartData().yAxisLabels[0] }}</span>
+                <span>{{ chartData().yAxisLabels[1] }}</span>
+                <span>{{ chartData().yAxisLabels[2] }}</span>
+                <span>{{ chartData().yAxisLabels[3] }}</span>
               </div>
 
-              <!-- Chart Main Area -->
-              <div class="flex-1 h-60 flex flex-col justify-between pt-4 relative">
-                <!-- Grid Y-axis background lines -->
-                <div class="absolute inset-0 flex flex-col justify-between pointer-events-none pb-6 pt-4">
+              <div class="flex-1 relative" style="height:176px">
+
+                <div class="absolute inset-x-0 top-0 flex flex-col justify-between pointer-events-none"
+                     style="bottom:24px">
                   <div class="w-full border-t border-dashed border-slate-100"></div>
                   <div class="w-full border-t border-dashed border-slate-100"></div>
                   <div class="w-full border-t border-dashed border-slate-100"></div>
                   <div class="w-full border-t border-dashed border-slate-100"></div>
                 </div>
 
-                <!-- Chart Columns -->
-                <div class="flex-1 flex items-stretch justify-around gap-2 px-2 z-10 pb-2">
-                  <div *ngFor="let item of chartData().values; let idx = index" 
-                       class="flex-1 flex flex-col justify-end items-center group relative max-w-[48px] h-full">
-                    
-                    <!-- Tooltip -->
-                    <div class="absolute -top-10 scale-0 group-hover:scale-100 transition-all bg-slate-900 text-white text-[9px] font-bold py-1 px-2 rounded border border-slate-850 whitespace-nowrap z-30">
+                <div class="absolute inset-x-0 top-0 flex items-end justify-around gap-1 px-1"
+                     style="bottom:24px">
+                  <div *ngFor="let item of chartData().values"
+                       class="flex-1 flex flex-col justify-end items-center group relative max-w-[56px] h-full">
+                    <div class="absolute -top-8 left-1/2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-all bg-slate-900 text-white text-[9px] font-bold py-1 px-2 rounded whitespace-nowrap z-30">
                       {{ item }} citas
                     </div>
-
-                    <!-- Bar filling with brand color -->
-                    <div class="w-full rounded-t-lg transition-all duration-500 hover:brightness-105"
-                         [style.height]="((item / chartData().max) * 100) + '%'"
+                    <div class="w-full rounded-t-md transition-all duration-500 hover:brightness-105"
+                         [style.height.%]="chartData().max > 0 ? (item / chartData().max) * 100 : 0"
                          [style.background-color]="chartData().color">
                     </div>
                   </div>
                 </div>
 
-                <!-- Labels X-axis -->
-                <div class="flex justify-around border-t border-slate-100 pt-2 z-10">
-                  <div *ngFor="let label of chartData().labels" 
+                <div class="absolute inset-x-0 bottom-0 flex justify-around border-t border-slate-100 pt-1"
+                     style="height:24px">
+                  <div *ngFor="let label of chartData().labels"
                        class="flex-1 text-center text-[8px] font-black text-slate-400 uppercase tracking-wider truncate px-0.5">
                     {{ label }}
                   </div>
                 </div>
-              </div>
 
+              </div>
             </div>
           </div>
         </div>
-
-        <!-- 👥 USUARIOS REGISTRADOS (PERSONAL) -->
         <div *ngIf="canViewEmpleados()" class="bg-white rounded-2xl border border-slate-100 p-0 overflow-hidden">
-          <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+          <div
+            class="px-6 py-5 border-b border-slate-100 flex items-center justify-between gap-3 flex-wrap bg-slate-50/50">
             <div>
               <h2 class="text-xs font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
                 <span class="w-2 h-2 rounded-full bg-blue-500"></span>
@@ -223,7 +214,8 @@
               </h2>
               <p class="text-[10px] text-slate-400 font-medium mt-0.5">Personal con acceso al sistema en la sede</p>
             </div>
-            <a routerLink="/admin/empleados" class="text-[9px] font-black text-[#0066AA] hover:underline uppercase tracking-wider">
+            <a routerLink="/admin/empleados"
+              class="text-[9px] font-black text-[#0066AA] hover:underline uppercase tracking-wider">
               Gestionar
             </a>
           </div>
@@ -234,28 +226,34 @@
                 <thead>
                   <tr class="border-b border-slate-100">
                     <th class="pb-3 text-[9px] font-black text-slate-400 uppercase tracking-wider">Nombre / Email</th>
-                    <th class="pb-3 text-[9px] font-black text-slate-400 uppercase tracking-wider">Especialidad</th>
-                    <th class="pb-3 text-[9px] font-black text-slate-400 uppercase tracking-wider text-right">Estado</th>
+                    <th class="pb-3 text-[9px] font-black text-slate-400 uppercase tracking-wider hidden sm:table-cell">
+                      Especialidad</th>
+                    <th class="pb-3 text-[9px] font-black text-slate-400 uppercase tracking-wider text-right">Estado
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr *ngFor="let emp of employeesList()" class="border-b border-slate-50 last:border-0 hover:bg-slate-50/30 transition-colors">
+                  <tr *ngFor="let emp of employeesList()"
+                    class="border-b border-slate-50 last:border-0 hover:bg-slate-50/30 transition-colors">
                     <td class="py-3">
                       <div class="flex items-center gap-2.5">
-                        <div class="w-8 h-8 rounded-xl bg-blue-50 text-[#0066AA] border border-blue-100/50 font-black text-xs flex items-center justify-center shrink-0">
+                        <div
+                          class="w-8 h-8 rounded-xl bg-blue-50 text-[#0066AA] border border-blue-100/50 font-black text-xs flex items-center justify-center shrink-0">
                           {{ emp.nombre[0] }}{{ emp.apellido[0] }}
                         </div>
                         <div class="min-w-0">
-                          <p class="text-xs font-bold text-slate-800 truncate leading-snug">{{ emp.nombre }} {{ emp.apellido }}</p>
+                          <p class="text-xs font-bold text-slate-800 truncate leading-snug">{{ emp.nombre }} {{
+                            emp.apellido }}</p>
                           <p class="text-[10px] text-slate-400 truncate leading-none mt-1">{{ emp.email }}</p>
                         </div>
                       </div>
                     </td>
-                    <td class="py-3 text-xs font-semibold text-slate-500">
+                    <td class="py-3 text-xs font-semibold text-slate-500 hidden sm:table-cell">
                       {{ emp.especialidadNombre || 'General' }}
                     </td>
                     <td class="py-3 text-right">
-                      <span [class]="'px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border ' + (emp.activo ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-red-50 text-red-700 border-red-100')">
+                      <span
+                        [class]="'px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border ' + (emp.activo ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-red-50 text-red-700 border-red-100')">
                         {{ emp.activo ? 'Activo' : 'Inactivo' }}
                       </span>
                     </td>
@@ -270,10 +268,9 @@
             </div>
           </div>
         </div>
-
-        <!-- 👥 APODERADOS REGISTRADOS (CLIENTES) -->
         <div *ngIf="canViewClientes()" class="bg-white rounded-2xl border border-slate-100 p-0 overflow-hidden">
-          <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+          <div
+            class="px-6 py-5 border-b border-slate-100 flex items-center justify-between gap-3 flex-wrap bg-slate-50/50">
             <div>
               <h2 class="text-xs font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
                 <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
@@ -281,7 +278,8 @@
               </h2>
               <p class="text-[10px] text-slate-400 font-medium mt-0.5">Propietarios de mascotas asociados a la sede</p>
             </div>
-            <a routerLink="/clientes" class="text-[9px] font-black text-[#0066AA] hover:underline uppercase tracking-wider">
+            <a routerLink="/clientes"
+              class="text-[9px] font-black text-[#0066AA] hover:underline uppercase tracking-wider">
               Gestionar
             </a>
           </div>
@@ -292,28 +290,35 @@
                 <thead>
                   <tr class="border-b border-slate-100">
                     <th class="pb-3 text-[9px] font-black text-slate-400 uppercase tracking-wider">Nombre / Email</th>
-                    <th class="pb-3 text-[9px] font-black text-slate-400 uppercase tracking-wider">Teléfono</th>
-                    <th class="pb-3 text-[9px] font-black text-slate-400 uppercase tracking-wider text-right">Documento</th>
+                    <th class="pb-3 text-[9px] font-black text-slate-400 uppercase tracking-wider hidden sm:table-cell">
+                      Teléfono</th>
+                    <th
+                      class="pb-3 text-[9px] font-black text-slate-400 uppercase tracking-wider text-right hidden sm:table-cell">
+                      Documento</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr *ngFor="let apo of apoderadosList()" class="border-b border-slate-50 last:border-0 hover:bg-slate-50/30 transition-colors">
+                  <tr *ngFor="let apo of apoderadosList()"
+                    class="border-b border-slate-50 last:border-0 hover:bg-slate-50/30 transition-colors">
                     <td class="py-3">
                       <div class="flex items-center gap-2.5">
-                        <div class="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100/50 font-black text-xs flex items-center justify-center shrink-0">
+                        <div
+                          class="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100/50 font-black text-xs flex items-center justify-center shrink-0">
                           {{ apo.nombre[0] }}{{ apo.apellido[0] }}
                         </div>
                         <div class="min-w-0">
-                          <p class="text-xs font-bold text-slate-800 truncate leading-snug">{{ apo.nombre }} {{ apo.apellido }}</p>
+                          <p class="text-xs font-bold text-slate-800 truncate leading-snug">{{ apo.nombre }} {{
+                            apo.apellido }}</p>
                           <p class="text-[10px] text-slate-400 truncate leading-none mt-1">{{ apo.email }}</p>
                         </div>
                       </div>
                     </td>
-                    <td class="py-3 text-xs font-semibold text-slate-500">
+                    <td class="py-3 text-xs font-semibold text-slate-500 hidden sm:table-cell">
                       {{ apo.telefono || 'Sin teléfono' }}
                     </td>
-                    <td class="py-3 text-right">
-                      <span class="px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border bg-slate-50 text-slate-600 border-slate-100">
+                    <td class="py-3 text-right hidden sm:table-cell">
+                      <span
+                        class="px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border bg-slate-50 text-slate-600 border-slate-100">
                         {{ apo.tipoDocumento }}: {{ apo.numeroDocumento }}
                       </span>
                     </td>
@@ -328,10 +333,9 @@
             </div>
           </div>
         </div>
-
-        <!-- 🐾 MASCOTAS REGISTRADAS -->
         <div *ngIf="canViewMascotas()" class="bg-white rounded-2xl border border-slate-100 p-0 overflow-hidden">
-          <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+          <div
+            class="px-6 py-5 border-b border-slate-100 flex items-center justify-between gap-3 flex-wrap bg-slate-50/50">
             <div>
               <h2 class="text-xs font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
                 <span class="w-2 h-2 rounded-full bg-pink-500"></span>
@@ -339,15 +343,18 @@
               </h2>
               <p class="text-[10px] text-slate-400 font-medium mt-0.5">Últimos pacientes agregados en la sede</p>
             </div>
-            <a routerLink="/mascotas" class="text-[9px] font-black text-[#0066AA] hover:underline uppercase tracking-wider">
+            <a routerLink="/mascotas"
+              class="text-[9px] font-black text-[#0066AA] hover:underline uppercase tracking-wider">
               Ver todas
             </a>
           </div>
 
           <div class="p-6">
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-              <div *ngFor="let pet of petsList()" class="p-3 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-[#0066AA]/5 hover:border-[#0066AA]/30 transition-all flex items-center gap-3">
-                <div class="w-9 h-9 rounded-xl bg-pink-50 text-pink-600 border border-pink-100 flex items-center justify-center shrink-0">
+              <div *ngFor="let pet of petsList()"
+                class="p-3 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-[#0066AA]/5 hover:border-[#0066AA]/30 transition-all flex items-center gap-3">
+                <div
+                  class="w-9 h-9 rounded-xl bg-pink-50 text-pink-600 border border-pink-100 flex items-center justify-center shrink-0">
                   <i class="pi pi-heart-fill text-xs"></i>
                 </div>
                 <div class="min-w-0 flex-1">
@@ -356,16 +363,18 @@
                   <p class="text-[9px] text-slate-500 truncate mt-0.5">Prop: {{ pet.apoderadoNombreCompleto }}</p>
                 </div>
               </div>
-              <div *ngIf="petsList().length === 0" class="col-span-full text-center py-6 text-slate-400 text-xs italic font-medium">
+              <div *ngIf="petsList().length === 0"
+                class="col-span-full text-center py-6 text-slate-400 text-xs italic font-medium">
                 No hay mascotas registradas para esta empresa.
               </div>
             </div>
           </div>
         </div>
 
-        <!-- 📊 DISTRIBUCIÓN DE SERVICIOS -->
+
         <div *ngIf="canViewCitas()" class="bg-white rounded-2xl border border-slate-100 p-0 overflow-hidden">
-          <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+          <div
+            class="px-6 py-5 border-b border-slate-100 flex items-center justify-between gap-3 flex-wrap bg-slate-50/50">
             <div>
               <h2 class="text-xs font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
                 <span class="w-2 h-2 rounded-full bg-pink-500"></span>
@@ -380,27 +389,29 @@
             <!-- Empty state -->
             <div *ngIf="serviceBreakdown().length === 0"
               class="flex flex-col items-center justify-center py-8 text-center">
-              <div class="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center mb-3">
+              <div
+                class="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center mb-3">
                 <i class="pi pi-chart-bar text-slate-300 text-base"></i>
               </div>
               <p class="text-xs font-semibold text-slate-500">Sin citas registradas</p>
-              <p class="text-[10px] text-slate-400 mt-0.5">La distribución aparecerá cuando haya citas en el sistema.</p>
+              <p class="text-[10px] text-slate-400 mt-0.5">La distribución aparecerá cuando haya citas en el sistema.
+              </p>
             </div>
 
             <ng-container *ngIf="serviceBreakdown().length > 0">
               <!-- Stacked Linear Bar -->
               <div class="h-4 w-full rounded-full flex overflow-hidden bg-slate-100 border border-slate-200/50">
-                <div *ngFor="let item of serviceBreakdown()"
-                     [style.width.%]="item.percentage"
-                     [style.background-color]="item.color"
-                     class="h-full first:rounded-l-full last:rounded-r-full hover:brightness-95 transition-all relative group cursor-pointer"
-                     [title]="item.name + ': ' + item.percentage + '%'">
+                <div *ngFor="let item of serviceBreakdown()" [style.width.%]="item.percentage"
+                  [style.background-color]="item.color"
+                  class="h-full first:rounded-l-full last:rounded-r-full hover:brightness-95 transition-all relative group cursor-pointer"
+                  [title]="item.name + ': ' + item.percentage + '%'">
                 </div>
               </div>
 
               <!-- Legend Grid -->
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div *ngFor="let item of serviceBreakdown()" class="p-3 rounded-xl border border-slate-100 bg-slate-50/30 flex items-center justify-between gap-3">
+                <div *ngFor="let item of serviceBreakdown()"
+                  class="p-3 rounded-xl border border-slate-100 bg-slate-50/30 flex items-center justify-between gap-3">
                   <div class="flex items-center gap-2.5 min-w-0">
                     <span class="w-2.5 h-2.5 rounded-md shrink-0" [style.background-color]="item.color"></span>
                     <span class="text-xs font-bold text-slate-700 truncate leading-none">{{ item.name }}</span>
@@ -435,7 +446,8 @@
               <p class="text-sm font-extrabold text-slate-900 truncate leading-snug">
                 {{ userName }}
               </p>
-              <span [class]="'inline-block mt-1.5 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider ' + roleBadgeClass">
+              <span
+                [class]="'inline-block mt-1.5 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider ' + roleBadgeClass">
                 {{ rolePrincipal }}
               </span>
             </div>
@@ -470,14 +482,16 @@
                 Atenciones programadas para hoy
               </p>
             </div>
-            <a routerLink="/citas/agenda" class="text-[9px] font-black text-[#0066AA] hover:underline uppercase tracking-wider">
+            <a routerLink="/citas/agenda"
+              class="text-[9px] font-black text-[#0066AA] hover:underline uppercase tracking-wider">
               Agenda
             </a>
           </div>
 
           <div class="p-6">
             <div class="space-y-3">
-              <div *ngFor="let cita of todayAppointmentsList()" class="p-3 rounded-xl border border-slate-100 bg-slate-50/30 hover:bg-slate-50 transition-all flex items-center justify-between">
+              <div *ngFor="let cita of todayAppointmentsList()"
+                class="p-3 rounded-xl border border-slate-100 bg-slate-50/30 hover:bg-slate-50 transition-all flex items-center justify-between">
                 <div class="min-w-0">
                   <p class="text-xs font-black text-slate-800 truncate leading-snug">{{ cita.mascotaNombre }}</p>
                   <p class="text-[9px] text-slate-400 truncate mt-0.5">Prop: {{ cita.apoderadoNombre }}</p>
@@ -486,13 +500,16 @@
                   </p>
                 </div>
                 <div class="text-right shrink-0">
-                  <p class="text-xs font-black text-slate-700 leading-none mb-1.5">{{ formatTime(cita.fechaHoraInicio) }}</p>
-                  <span [class]="'px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border ' + (cita.estado === 'PENDIENTE' || cita.estado === 'PROGRAMADA' ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100')">
+                  <p class="text-xs font-black text-slate-700 leading-none mb-1.5">{{ formatTime(cita.fechaHoraInicio)
+                    }}</p>
+                  <span
+                    [class]="'px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border ' + (cita.estado === 'PENDIENTE' || cita.estado === 'PROGRAMADA' ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100')">
                     {{ cita.estado }}
                   </span>
                 </div>
               </div>
-              <div *ngIf="todayAppointmentsList().length === 0" class="text-center py-6 text-slate-400 text-xs italic font-medium">
+              <div *ngIf="todayAppointmentsList().length === 0"
+                class="text-center py-6 text-slate-400 text-xs italic font-medium">
                 No hay citas programadas para hoy.
               </div>
             </div>
@@ -513,7 +530,8 @@
 
           <div class="p-6">
             <div class="space-y-3">
-              <div *ngFor="let emp of employeeAvailability()" class="p-3 rounded-xl border border-slate-100 bg-slate-50/30 flex items-center justify-between gap-3">
+              <div *ngFor="let emp of employeeAvailability()"
+                class="p-3 rounded-xl border border-slate-100 bg-slate-50/30 flex items-center justify-between gap-3">
                 <div class="min-w-0 flex-1">
                   <p class="text-xs font-black text-slate-800 truncate leading-snug">{{ emp.nombre }}</p>
                   <p class="text-[8px] text-[#0066AA] font-black tracking-widest uppercase mt-0.5">{{ emp.cargo }}</p>
@@ -522,12 +540,14 @@
                   </p>
                 </div>
                 <div class="shrink-0 text-right">
-                  <span [class]="'px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border ' + emp.badgeClass">
+                  <span
+                    [class]="'px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border ' + emp.badgeClass">
                     {{ emp.statusLabel }}
                   </span>
                 </div>
               </div>
-              <div *ngIf="employeeAvailability().length === 0" class="text-center py-6 text-slate-400 text-xs italic font-medium">
+              <div *ngIf="employeeAvailability().length === 0"
+                class="text-center py-6 text-slate-400 text-xs italic font-medium">
                 No hay empleados programados para hoy.
               </div>
             </div>
@@ -544,21 +564,24 @@
               </h2>
               <p class="text-[10px] text-slate-400 font-medium mt-0.5">Perfiles de seguridad configurados</p>
             </div>
-            <a routerLink="/admin/roles" class="text-[9px] font-black text-[#0066AA] hover:underline uppercase tracking-wider">
+            <a routerLink="/admin/roles"
+              class="text-[9px] font-black text-[#0066AA] hover:underline uppercase tracking-wider">
               Editar
             </a>
           </div>
 
           <div class="p-6">
             <div class="flex flex-wrap gap-2">
-              <div *ngFor="let role of rolesList()" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-[10px] font-bold text-slate-600 hover:border-blue-200 transition-all">
+              <div *ngFor="let role of rolesList()"
+                class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-[10px] font-bold text-slate-600 hover:border-blue-200 transition-all">
                 <div class="w-1.5 h-1.5 rounded-full bg-[#0066AA]"></div>
                 <span class="uppercase tracking-wider font-extrabold">{{ role.name }}</span>
                 <span class="text-[8px] bg-slate-200/80 text-slate-500 px-1.5 py-0.5 rounded-md font-bold">
                   {{ role.permissions?.length || 0 }} perms.
                 </span>
               </div>
-              <div *ngIf="rolesList().length === 0" class="text-center w-full py-6 text-slate-400 text-xs italic font-medium">
+              <div *ngIf="rolesList().length === 0"
+                class="text-center w-full py-6 text-slate-400 text-xs italic font-medium">
                 No hay roles configurados para esta empresa.
               </div>
             </div>
@@ -579,7 +602,8 @@
                 <p class="text-[10px] text-slate-400 font-medium mt-0.5">Últimos movimientos del sistema</p>
               </div>
             </div>
-            <a routerLink="/admin/auditoria" class="text-[9px] font-black text-[#0066AA] hover:underline uppercase tracking-wider">
+            <a routerLink="/admin/auditoria"
+              class="text-[9px] font-black text-[#0066AA] hover:underline uppercase tracking-wider">
               Logs
             </a>
           </div>
@@ -587,17 +611,20 @@
           <div class="p-6">
             <div class="space-y-6">
               <div *ngFor="let log of recentLogs(); let isLast = last" class="flex gap-4">
-                
+
                 <!-- Timeline Line & Dot -->
                 <div class="relative flex flex-col items-center">
-                  <div [class]="'w-2.5 h-2.5 rounded-full mt-1 z-10 border-2 border-white ' + getActionStyle(log.action).dot"></div>
+                  <div
+                    [class]="'w-2.5 h-2.5 rounded-full mt-1 z-10 border-2 border-white ' + getActionStyle(log.action).dot">
+                  </div>
                   <div *ngIf="!isLast" class="w-[2px] h-full bg-slate-100 absolute top-4 rounded-full"></div>
                 </div>
 
                 <!-- Content -->
                 <div class="pb-1 min-w-0 flex-1">
                   <div class="flex items-center justify-between gap-2 mb-1">
-                    <span [class]="'px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-wider border border-white/50 ' + getActionStyle(log.action).bg + ' ' + getActionStyle(log.action).text">
+                    <span
+                      [class]="'px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-wider border border-white/50 ' + getActionStyle(log.action).bg + ' ' + getActionStyle(log.action).text">
                       {{ formatActionName(log.action) }}
                     </span>
                     <span class="text-[9px] text-slate-400 font-bold whitespace-nowrap">
@@ -607,7 +634,8 @@
                   <p class="text-[10px] font-bold text-slate-600 truncate mb-1">
                     {{ log.userEmail }}
                   </p>
-                  <p class="text-[9px] text-slate-500 bg-slate-50 border border-slate-100 p-2 rounded-lg leading-relaxed">
+                  <p
+                    class="text-[9px] text-slate-500 bg-slate-50 border border-slate-100 p-2 rounded-lg leading-relaxed">
                     {{ log.details }}
                   </p>
                 </div>
@@ -626,7 +654,5 @@
   </div>
 </div>
 
-<app-change-password-modal
-  *ngIf="showPasswordModal()"
-  (dismissed)="dismissPasswordModal()">
+<app-change-password-modal *ngIf="showPasswordModal()" (dismissed)="dismissPasswordModal()">
 </app-change-password-modal>
