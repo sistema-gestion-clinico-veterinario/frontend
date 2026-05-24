@@ -15,9 +15,9 @@ import { ApiResponse } from '../../models/response/api-response';
 })
 export class HistoriaClinicaService {
   private readonly http            = inject(HttpClient);
-  private readonly hcUrl           = `${environment.apiUrl}/historias-clinicas`;
-  private readonly citasUrl        = `${environment.apiUrl}/consultas`;
-  private readonly recetasUrl      = `${environment.apiUrl}/prescripciones`;
+  private readonly hcUrl           = `${environment.apiUrl}/medical-records`;
+  private readonly citasUrl        = `${environment.apiUrl}/consultations`;
+  private readonly recetasUrl      = `${environment.apiUrl}/prescriptions`;
   private readonly baseUrl         = environment.apiUrl;
 
   buscar(query: { numeroHc?: string; nombrePaciente?: string; nombrePropietario?: string; fechaDesde?: string; fechaHasta?: string; companyId?: number; page?: number; size?: number }) {
@@ -33,7 +33,7 @@ export class HistoriaClinicaService {
   }
 
   getPorMascota(mascotaId: number) {
-    return this.http.get<ApiResponse<HistoriaClinicaDetalle>>(`${this.hcUrl}/mascota/${mascotaId}`);
+    return this.http.get<ApiResponse<HistoriaClinicaDetalle>>(`${this.hcUrl}/pet/${mascotaId}`);
   }
 
   getConsulta(consultaId: number) {
@@ -45,15 +45,15 @@ export class HistoriaClinicaService {
   }
 
   cerrarConsulta(consultaId: number, request: CerrarConsultaRequest) {
-    return this.http.patch<ApiResponse<ConsultaResponse>>(`${this.citasUrl}/${consultaId}/cerrar`, request);
+    return this.http.patch<ApiResponse<ConsultaResponse>>(`${this.citasUrl}/${consultaId}/close`, request);
   }
 
   crearReceta(consultaId: number, request: PrescripcionRequest) {
-    return this.http.post<ApiResponse<PrescripcionResponse>>(`${this.recetasUrl}/consulta/${consultaId}`, request);
+    return this.http.post<ApiResponse<PrescripcionResponse>>(`${this.recetasUrl}/consultation/${consultaId}`, request);
   }
 
   listarRecetas(consultaId: number) {
-    return this.http.get<ApiResponse<PrescripcionResponse[]>>(`${this.recetasUrl}/consulta/${consultaId}`);
+    return this.http.get<ApiResponse<PrescripcionResponse[]>>(`${this.recetasUrl}/consultation/${consultaId}`);
   }
 
   actualizarReceta(id: number, request: PrescripcionRequest) {
@@ -71,7 +71,7 @@ export class HistoriaClinicaService {
   }
 
   listarArchivos(consultaId: number) {
-    return this.http.get<ApiResponse<ArchivoClinicoResponse[]>>(`${this.citasUrl}/${consultaId}/archivos`);
+    return this.http.get<ApiResponse<ArchivoClinicoResponse[]>>(`${this.citasUrl}/${consultaId}/files`);
   }
 
   subirArchivo(consultaId: number, file: File, tipo: string, descripcion?: string) {
@@ -79,14 +79,14 @@ export class HistoriaClinicaService {
     form.append('file', file);
     form.append('tipo', tipo);
     if (descripcion) form.append('descripcion', descripcion);
-    return this.http.post<ApiResponse<ArchivoClinicoResponse>>(`${this.citasUrl}/${consultaId}/archivos`, form);
+    return this.http.post<ApiResponse<ArchivoClinicoResponse>>(`${this.citasUrl}/${consultaId}/files`, form);
   }
 
   obtenerContenidoArchivo(consultaId: number, id: number, descargar = false) {
-    return this.http.get(`${this.citasUrl}/${consultaId}/archivos/${id}/contenido?descargar=${descargar}`, { responseType: 'blob' });
+    return this.http.get(`${this.citasUrl}/${consultaId}/files/${id}/content?descargar=${descargar}`, { responseType: 'blob' });
   }
 
   eliminarArchivo(consultaId: number, id: number) {
-    return this.http.delete<ApiResponse<void>>(`${this.citasUrl}/${consultaId}/archivos/${id}`);
+    return this.http.delete<ApiResponse<void>>(`${this.citasUrl}/${consultaId}/files/${id}`);
   }
 }

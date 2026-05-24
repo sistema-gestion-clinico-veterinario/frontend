@@ -18,7 +18,7 @@ export class CompanyService {
   }
 
   listar(page: number = 0, size: number = 10) {
-    return this.http.get<ApiResponse<Page<CompanyListResponse>>>(`${this.apiUrl}/listar?page=${page}&size=${size}`);
+    return this.http.get<ApiResponse<Page<CompanyListResponse>>>(`${this.apiUrl}/list?page=${page}&size=${size}`);
   }
 
   getById(id: number) {
@@ -34,6 +34,6 @@ export class CompanyService {
   }
 
   toggleActivo(id: number) {
-    return this.http.patch<ApiResponse<CompanyListResponse>>(`${this.apiUrl}/${id}/toggle-activo`, {});
+    return this.http.patch<ApiResponse<CompanyListResponse>>(`${this.apiUrl}/${id}/toggle-active`, {});
   }
 }

@@ -11,14 +11,14 @@ import { Page } from '../../models/response/page';
 })
 export class PagoService {
   private readonly http = inject(HttpClient);
-  private readonly url = `${environment.apiUrl}/pagos`;
+  private readonly url = `${environment.apiUrl}/payments`;
 
   registrar(data: PagoRequest) {
     return this.http.post<ApiResponse<PagoResponse>>(this.url, data);
   }
 
   obtenerPorCita(citaId: number) {
-    return this.http.get<ApiResponse<PagoResponse>>(`${this.url}/cita/${citaId}`);
+    return this.http.get<ApiResponse<PagoResponse>>(`${this.url}/appointment/${citaId}`);
   }
 
   listarTodos(page: number = 0, size: number = 10) {
@@ -26,6 +26,6 @@ export class PagoService {
   }
 
   getMisPagos(page: number = 0, size: number = 10) {
-    return this.http.get<ApiResponse<Page<PagoListResponse>>>(`${this.url}/portal/mis-pagos?page=${page}&size=${size}`);
+    return this.http.get<ApiResponse<Page<PagoListResponse>>>(`${this.url}/portal/my-payments?page=${page}&size=${size}`);
   }
 }

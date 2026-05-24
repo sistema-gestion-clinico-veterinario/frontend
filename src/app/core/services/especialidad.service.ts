@@ -9,7 +9,7 @@ import { Page } from '../../models/response/page';
 })
 export class EspecialidadService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = `${environment.apiUrl}/admin/especialidades`;
+  private readonly apiUrl = `${environment.apiUrl}/admin/specialties`;
 
   listar(companyId?: number) {
     const params = companyId ? `?companyId=${companyId}&size=1000` : '?size=1000';

@@ -11,7 +11,7 @@ import { ApiResponse } from '../../models/response/api-response';
 })
 export class MascotaService {
   private readonly http    = inject(HttpClient);
-  private readonly apiUrl  = `${environment.apiUrl}/mascotas`;
+  private readonly apiUrl  = `${environment.apiUrl}/pets`;
 
   listar(
     companyId?: number,
