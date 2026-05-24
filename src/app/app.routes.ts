@@ -280,6 +280,11 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/apoderado/mi-historial/mi-historial.component').then((m) => m.MiHistorialComponent)
       },
       {
+        path: 'apoderado/mis-recetas',
+        data: { ventana: 'VISTA_MIS_RECETAS' },
+        loadComponent: () => import('./pages/apoderado/mis-recetas/mis-recetas.component').then((m) => m.MisRecetasComponent)
+      },
+      {
         path: 'mi-historial/:mascotaId',
         data: { ventana: 'VISTA_MI_HISTORIAL' },
         loadComponent: () => import('./pages/apoderado/mi-historial/mi-historial.component').then((m) => m.MiHistorialComponent)

@@ -15,7 +15,7 @@ import { Page } from '../../models/response/page';
 })
 export class EmpleadoService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = `${environment.apiUrl}/admin/empleados`;
+  private readonly apiUrl = `${environment.apiUrl}/admin/employees`;
 
   listar(companyId?: number, nombre?: string, page: number = 0, size: number = 10) {
     let params = `?page=${page}&size=${size}`;
@@ -51,15 +51,15 @@ export class EmpleadoService {
   }
 
   getHorario(id: number) {
-    return this.http.get<ApiResponse<HorarioEmpleadoResponse[]>>(`${this.apiUrl}/${id}/horario`);
+    return this.http.get<ApiResponse<HorarioEmpleadoResponse[]>>(`${this.apiUrl}/${id}/schedule`);
   }
 
   deleteHorario(horarioId: number): Observable<ApiResponse<void>> {
-    return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/horario/${horarioId}`);
+    return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/schedule/${horarioId}`);
   }
 
   updateHorario(horarioId: number, request: any): Observable<ApiResponse<void>> {
-    return this.http.put<ApiResponse<void>>(`${this.apiUrl}/horario/${horarioId}`, request);
+    return this.http.put<ApiResponse<void>>(`${this.apiUrl}/schedule/${horarioId}`, request);
   }
 
   cloneWeek(empleadoId: number, sourceWeekStart: string, targetWeekStart: string): Observable<ApiResponse<void>> {
@@ -84,7 +84,7 @@ export class EmpleadoService {
   }
 
   resetPassword(userId: number | null, newPassword: string, email?: string): Observable<ApiResponse<void>> {
-    const url = `${environment.apiUrl}/admin/usuarios/reset-password`;
+    const url = `${environment.apiUrl}/admin/users/reset-password`;
     return this.http.post<ApiResponse<void>>(url, { userId, newPassword, email });
   }
 }

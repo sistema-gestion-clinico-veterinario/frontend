@@ -12,7 +12,7 @@ import { UserProfileDTO } from '../../models/response/user-profile-dto';
 })
 export class ApoderadoService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = `${environment.apiUrl}/clientes/apoderados`;
+  private readonly apiUrl = `${environment.apiUrl}/clients/guardians`;
 
   listar(companyId?: number, nombre?: string, numeroDocumento?: string, page: number = 0, size: number = 10) {
     let params = `?page=${page}&size=${size}`;
@@ -45,11 +45,11 @@ export class ApoderadoService {
   }
 
   getPortalPerfil() {
-    return this.http.get<ApiResponse<ApoderadoRequest>>(`${environment.apiUrl}/clientes/portal/perfil`);
+    return this.http.get<ApiResponse<ApoderadoRequest>>(`${environment.apiUrl}/clients/portal/profile`);
   }
 
   getPortalMascotas() {
-    return this.http.get<ApiResponse<any[]>>(`${environment.apiUrl}/clientes/portal/mascotas`);
+    return this.http.get<ApiResponse<any[]>>(`${environment.apiUrl}/clients/portal/pets`);
   }
 
   getPortalMascotasPaginated(page: number = 0, size: number = 6, nombre?: string, especie?: string, activo?: boolean) {
@@ -57,56 +57,56 @@ export class ApoderadoService {
     if (nombre) params += `&nombre=${nombre}`;
     if (especie) params += `&especie=${especie}`;
     if (activo !== undefined && activo !== null) params += `&activo=${activo}`;
-    return this.http.get<ApiResponse<Page<any>>>(`${environment.apiUrl}/clientes/portal/mascotas/paginated${params}`);
+    return this.http.get<ApiResponse<Page<any>>>(`${environment.apiUrl}/clients/portal/pets/paginated${params}`);
   }
 
   getPortalMascotaHistoria(mascotaId: number) {
-    return this.http.get<ApiResponse<any>>(`${environment.apiUrl}/clientes/portal/mascotas/${mascotaId}/historia`);
+    return this.http.get<ApiResponse<any>>(`${environment.apiUrl}/clients/portal/pets/${mascotaId}/medical-record`);
   }
 
   getPortalCitas() {
-    return this.http.get<ApiResponse<any[]>>(`${environment.apiUrl}/clientes/portal/citas`);
+    return this.http.get<ApiResponse<any[]>>(`${environment.apiUrl}/clients/portal/appointments`);
   }
 
   getPortalCitasFiltradas(mascotaId?: number) {
     const params = mascotaId ? `?mascotaId=${mascotaId}` : '';
-    return this.http.get<ApiResponse<any[]>>(`${environment.apiUrl}/clientes/portal/citas${params}`);
+    return this.http.get<ApiResponse<any[]>>(`${environment.apiUrl}/clients/portal/appointments${params}`);
   }
 
   getPortalRecetas() {
-    return this.http.get<ApiResponse<any[]>>(`${environment.apiUrl}/clientes/portal/recetas`);
+    return this.http.get<ApiResponse<any[]>>(`${environment.apiUrl}/clients/portal/prescriptions`);
   }
 
   getPortalServicios() {
-    return this.http.get<ApiResponse<any[]>>(`${environment.apiUrl}/clientes/portal/servicios`);
+    return this.http.get<ApiResponse<any[]>>(`${environment.apiUrl}/clients/portal/services`);
   }
 
   getPortalEmpleados(servicioId?: number) {
     const params = servicioId ? `?servicioId=${servicioId}` : '';
-    return this.http.get<ApiResponse<any[]>>(`${environment.apiUrl}/clientes/portal/empleados${params}`);
+    return this.http.get<ApiResponse<any[]>>(`${environment.apiUrl}/clients/portal/employees${params}`);
   }
 
   getPortalEmpleadoHorario(empleadoId: number) {
-    return this.http.get<ApiResponse<any[]>>(`${environment.apiUrl}/clientes/portal/empleados/${empleadoId}/horario`);
+    return this.http.get<ApiResponse<any[]>>(`${environment.apiUrl}/clients/portal/employees/${empleadoId}/schedule`);
   }
 
   getPortalDisponibilidad(empleadoId: number, fecha: string, servicioId: number) {
-    return this.http.get<ApiResponse<string[]>>(`${environment.apiUrl}/clientes/portal/disponibilidad?empleadoId=${empleadoId}&fecha=${fecha}&servicioId=${servicioId}`);
+    return this.http.get<ApiResponse<string[]>>(`${environment.apiUrl}/clients/portal/availability?empleadoId=${empleadoId}&fecha=${fecha}&servicioId=${servicioId}`);
   }
 
   crearPortalCita(request: any) {
-    return this.http.post<ApiResponse<any>>(`${environment.apiUrl}/clientes/portal/citas`, request);
+    return this.http.post<ApiResponse<any>>(`${environment.apiUrl}/clients/portal/appointments`, request);
   }
 
   updatePortalCita(id: number, request: any) {
-    return this.http.put<ApiResponse<any>>(`${environment.apiUrl}/clientes/portal/citas/${id}`, request);
+    return this.http.put<ApiResponse<any>>(`${environment.apiUrl}/clients/portal/appointments/${id}`, request);
   }
 
   reschedulePortalCita(id: number, request: any) {
-    return this.http.put<ApiResponse<any>>(`${environment.apiUrl}/clientes/portal/citas/${id}/reprogramar`, request);
+    return this.http.put<ApiResponse<any>>(`${environment.apiUrl}/clients/portal/appointments/${id}/reschedule`, request);
   }
 
   cancelarPortalCita(id: number, motivo: string) {
-    return this.http.delete<ApiResponse<void>>(`${environment.apiUrl}/clientes/portal/citas/${id}/cancelar?motivo=${encodeURIComponent(motivo)}`);
+    return this.http.delete<ApiResponse<void>>(`${environment.apiUrl}/clients/portal/appointments/${id}/cancel?motivo=${encodeURIComponent(motivo)}`);
   }
 }

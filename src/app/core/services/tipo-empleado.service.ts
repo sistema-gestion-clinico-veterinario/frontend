@@ -9,7 +9,7 @@ import { Page } from '../../models/response/page';
 })
 export class TipoEmpleadoService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = `${environment.apiUrl}/admin/tipos-empleado`;
+  private readonly apiUrl = `${environment.apiUrl}/admin/employee-types`;
 
   listar(companyId?: number) {
     const params = companyId ? `?companyId=${companyId}&size=1000` : '?size=1000';
