@@ -159,12 +159,27 @@ export class ScheduleFormComponent implements OnInit {
   setEditMode(mode: 'single' | 'bulk') {
     this.scheduleForm.get('editMode')?.setValue(mode);
     
-    // Si cambia a masivo y las fechas son iguales, sugerir un rango basado en el trabajo del empleado
-    if (mode === 'bulk') {
+    if (mode === 'single') {
+      const data = this.currentData();
+      if (data) {
+        this.scheduleForm.patchValue({
+          fechaInicio: data.fecha,
+          fechaFin: data.fecha,
+          dias: data.diaSemana ? [data.diaSemana] : []
+        });
+      } else {
+        const start = this.scheduleForm.get('fechaInicio')?.value;
+        this.scheduleForm.get('fechaFin')?.setValue(start);
+        if (start) {
+          const [y, m, d] = start.split('-').map(Number);
+          const dayName = this.dayOfWeekMap[new Date(y, m - 1, d).getDay()];
+          this.scheduleForm.get('dias')?.setValue([dayName]);
+        }
+      }
+    } else if (mode === 'bulk') {
       const start = this.scheduleForm.get('fechaInicio')?.value;
       const end = this.scheduleForm.get('fechaFin')?.value;
       if (start === end && start) {
-        // Usar el fin del horario actual si existe, sino +30 días
         if (this.scheduleRange?.end && this.scheduleRange.end > start) {
           this.scheduleForm.get('fechaFin')?.setValue(this.scheduleRange.end);
         } else {

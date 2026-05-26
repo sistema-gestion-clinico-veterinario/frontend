@@ -41,15 +41,15 @@ export class CompanyComponent implements OnInit {
 
   companyForm: FormGroup = this.fb.group({
     id: [null],
-    name: ['', [Validators.required]],
+    name: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100)]],
     ruc: ['', [Validators.required, Validators.pattern('^[0-9]{11}$')]],
-    address: ['', [Validators.required]],
-    phone: ['', [Validators.required]],
-    email: ['', [Validators.required, Validators.email]],
+    address: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(200)]],
+    phone: ['', [Validators.required, Validators.pattern(/^\d{9}$/)]],
+    email: ['', [Validators.required, Validators.email, Validators.maxLength(100)]],
     hasWebsite: [false],
-    website: [''],
-    description: [''],
-    businessHours: [''],
+    website: ['', [Validators.maxLength(200)]],
+    description: ['', [Validators.maxLength(500)]],
+    businessHours: ['', [Validators.maxLength(100)]],
     logoUrl: [''],
     operatingHours: this.fb.array([])
   });

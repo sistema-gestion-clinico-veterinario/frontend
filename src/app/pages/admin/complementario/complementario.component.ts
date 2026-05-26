@@ -66,6 +66,67 @@ export class ComplementarioComponent implements OnInit {
     return this.authStore.selectedEnterprise()?.establishmentId ?? this.authStore.companyId();
   }
   activeTab = signal<number>(0);
+  confirmDialog = signal<{title: string; message: string; action: string; item: any} | null>(null);
+
+  openConfirm(title: string, message: string, action: string, item: any) {
+    this.confirmDialog.set({ title, message, action, item });
+  }
+
+  cancelConfirm() {
+    this.confirmDialog.set(null);
+  }
+
+  confirmAction() {
+    const ctx = this.confirmDialog();
+    if (!ctx) return;
+    switch (ctx.action) {
+      case 'guardar-especialidad': this.saveEspecialidad(); break;
+      case 'eliminar-especialidad': this.eliminarEspecialidad(ctx.item.id); break;
+      case 'guardar-tipo-empleado': this.saveTipoEmpleado(); break;
+      case 'eliminar-tipo-empleado': this.eliminarTipoEmpleado(ctx.item.id); break;
+      case 'cambiar-estado-tipo': this.cambiarEstadoTipo(ctx.item); break;
+      case 'guardar-servicio': this.saveServicio(); break;
+      case 'eliminar-servicio': this.eliminarServicio(ctx.item.id); break;
+      case 'toggle-servicio': this.toggleServicioDisponible(ctx.item); break;
+    }
+    this.cancelConfirm();
+  }
+
+  confirmarGuardarEspecialidad() {
+    if (this.espForm.invalid) { this.espForm.markAllAsTouched(); return; }
+    const nombre = this.espForm.get('nombre')?.value?.trim();
+    const editando = this.editingEsp();
+    this.openConfirm(
+      editando ? 'Actualizar especialidad' : 'Crear especialidad',
+      '¿Está seguro de ' + (editando ? 'actualizar' : 'crear') + ' la especialidad «' + nombre + '»?',
+      'guardar-especialidad',
+      null
+    );
+  }
+
+  confirmarGuardarTipoEmpleado() {
+    if (this.tipoForm.invalid) { this.tipoForm.markAllAsTouched(); return; }
+    const nombre = this.tipoForm.get('nombre')?.value?.trim();
+    const editando = this.editingTipo();
+    this.openConfirm(
+      editando ? 'Actualizar tipo de empleado' : 'Crear tipo de empleado',
+      '¿Está seguro de ' + (editando ? 'actualizar' : 'crear') + ' el tipo de empleado «' + nombre + '»?',
+      'guardar-tipo-empleado',
+      null
+    );
+  }
+
+  confirmarGuardarServicio() {
+    if (this.servicioForm.invalid) { this.servicioForm.markAllAsTouched(); return; }
+    const nombre = this.servicioForm.get('nombre')?.value?.trim();
+    const editando = this.editingServicio();
+    this.openConfirm(
+      editando ? 'Actualizar servicio' : 'Crear servicio',
+      '¿Está seguro de ' + (editando ? 'actualizar' : 'crear') + ' el servicio «' + nombre + '»?',
+      'guardar-servicio',
+      null
+    );
+  }
 
   especialidades = signal<any[]>([]);
   showEspModal = signal(false);
@@ -90,8 +151,8 @@ export class ComplementarioComponent implements OnInit {
   servicioForm: FormGroup = this.fb.group({
     nombre:      ['', [Validators.required, Validators.minLength(2)]],
     descripcion: ['', [Validators.required]],
-    precio:      [null, [Validators.required, Validators.min(0.01)]],
-    duracionEstimada: [20, [Validators.required, Validators.min(1)]],
+    precio:      [null, [Validators.required, Validators.min(5)]],
+    duracionEstimada: [20, [Validators.required, Validators.min(5)]],
     disponible:  [true],
     tipoEmpleadoId: [null]
   });
@@ -155,7 +216,10 @@ export class ComplementarioComponent implements OnInit {
         this.loadEspecialidades();
         this.loadingStore.hide();
       },
-      error: () => { this.loadingStore.hide(); }
+      error: (err) => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo eliminar la especialidad' });
+        this.loadingStore.hide();
+      }
     });
   }
   loadTiposEmpleado() {
@@ -213,7 +277,10 @@ export class ComplementarioComponent implements OnInit {
         this.loadTiposEmpleado();
         this.loadingStore.hide();
       },
-      error: () => this.loadingStore.hide()
+      error: (err) => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo cambiar el estado' });
+        this.loadingStore.hide();
+      }
     });
   }
 
@@ -225,7 +292,10 @@ export class ComplementarioComponent implements OnInit {
         this.loadTiposEmpleado();
         this.loadingStore.hide();
       },
-      error: () => { this.loadingStore.hide(); }
+      error: (err) => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo eliminar el tipo de empleado' });
+        this.loadingStore.hide();
+      }
     });
   }
 
@@ -284,7 +354,10 @@ export class ComplementarioComponent implements OnInit {
     this.loadingStore.show();
     this.servicioService.toggleDisponible(item.id).subscribe({
       next: () => { this.loadServicios(); this.loadingStore.hide(); },
-      error: () => this.loadingStore.hide()
+      error: (err) => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo cambiar la disponibilidad' });
+        this.loadingStore.hide();
+      }
     });
   }
 

@@ -421,12 +421,21 @@ export class EmployeeComponent implements OnInit {
     });
   }
 
-  saveEmployee() {
+  confirmarGuardarEmpleado() {
     if (this.employeeForm.invalid) {
       this.employeeForm.markAllAsTouched();
       return;
     }
+    const nombre = this.employeeForm.get('nombre')?.value?.trim();
+    const apellido = this.employeeForm.get('apellido')?.value?.trim();
+    this.openConfirm(
+      this.isEdit() ? 'Actualizar empleado' : 'Registrar empleado',
+      '¿Está seguro de ' + (this.isEdit() ? 'actualizar' : 'registrar') + ' a «' + nombre + ' ' + apellido + '»?',
+      () => this.saveEmployee()
+    );
+  }
 
+  private saveEmployee() {
     const horariosActivos: HorarioEmpleadoRequest[] = this.horarios
       .filter(h => h.activo)
       .map(h => ({ diaSemana: h.diaSemana, horaInicio: h.horaInicio, horaFin: h.horaFin, activo: true }));
