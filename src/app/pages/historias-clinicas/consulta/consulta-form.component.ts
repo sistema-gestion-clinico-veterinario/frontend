@@ -11,7 +11,7 @@ import { CardModule } from 'primeng/card';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { DrawerModule } from 'primeng/drawer';
 import { BadgeModule } from 'primeng/badge';
-import { EMPTY, Observable, Subscription, catchError, debounceTime, filter, finalize, map, of, switchMap, tap } from 'rxjs';
+import { EMPTY, Observable, Subscription, catchError, concatMap, debounceTime, filter, finalize, map, of, switchMap, tap } from 'rxjs';
 
 import { HistoriaClinicaService } from '../../../core/services/historia-clinica.service';
 import { LoadingStore } from '../../../store/loading.store';
@@ -22,6 +22,7 @@ import { PrescripcionRequest } from '../../../models/request/prescripcion-reques
 import { ArchivoClinicoResponse } from '../../../models/response/archivo-clinico-response';
 import { RecetaModalsComponent } from '../form-hc/receta-modals/receta-modals.component';
 import { ArchivoModalsComponent } from '../form-hc/archivo-modals/archivo-modals.component';
+import { Role } from '../../../core/enums/role.enum';
 
 
 @Component({
@@ -57,12 +58,18 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
   readonly canCreate = computed(() => this.authStore.hasAccess('VISTA_HISTORIAS', 'escribir'));
   readonly canModify = computed(() => this.authStore.hasAccess('VISTA_HISTORIAS', 'modificar'));
   readonly canDelete = computed(() => this.authStore.hasAccess('VISTA_HISTORIAS', 'eliminar'));
+  readonly isAdminOrSuper = computed(() => this.authStore.roles().includes(Role.ADMIN) || this.authStore.roles().includes(Role.SUPER_ADMIN));
+  readonly canCreateReceta = computed(() => this.canCreate() && (!this.isCerrada() || this.isAdminOrSuper()));
+  readonly canModifyReceta = computed(() => this.canModify() && (!this.isCerrada() || this.isAdminOrSuper()));
+  readonly canDeleteReceta = computed(() => this.canDelete() && (!this.isCerrada() || this.isAdminOrSuper()));
+  readonly canCreateArchivo = computed(() => this.canCreate() && (!this.isCerrada() || this.isAdminOrSuper()));
+  readonly canDeleteArchivo = computed(() => this.canDelete() && (!this.isCerrada() || this.isAdminOrSuper()));
 
   consulta   = signal<ConsultaResponse | null>(null);
   historia   = signal<any | null>(null); 
   tabActiva  = signal<'signos' | 'clinico' | 'antecedentes' | 'historial' | 'recetas' | 'examenes'>('signos');
   isCerrada  = signal<boolean>(false);
-  autoSaveStatus = signal<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  autoSaveStatus = signal<'idle' | 'saving' | 'saved' | 'error' | 'invalid'>('idle');
   consultaId = 0;
   displayDetalleHistorial = signal<boolean>(false);
   detalleSeleccionado      = signal<any | null>(null);
@@ -96,13 +103,13 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
   private syncingForm = false;
 
   recetaForm: FormGroup = this.fb.group({
-    medicamento:       ['', Validators.required],
-    principioActivo:   [''],
-    dosis:             ['', Validators.required],
-    frecuencia:        ['', Validators.required],
-    duracionDias:      [null],
-    viaAdministracion: ['', Validators.required],
-    instrucciones:     [''],
+    medicamento:       ['', [Validators.required, Validators.maxLength(80)]],
+    principioActivo:   ['', [Validators.maxLength(80)]],
+    dosis:             ['', [Validators.required, Validators.maxLength(80)]],
+    frecuencia:        ['', [Validators.required, Validators.maxLength(80)]],
+    duracionDias:      [null, [Validators.min(1), Validators.max(365)]],
+    viaAdministracion: ['', [Validators.required, Validators.maxLength(50)]],
+    instrucciones:     ['', [Validators.maxLength(500)]],
     fechaInicio:       ['', Validators.required],
     fechaFin:          [''],
   });
@@ -122,10 +129,10 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
     version:                 [null, Validators.required],
     tipoConsulta:            [null, Validators.required],
     motivoConsulta:          ['',   Validators.required],
-    pesoEnConsulta:          [null, [Validators.required, Validators.min(0)]],
-    temperatura:             [null, Validators.min(0)],
-    frecuenciaCardiaca:      [null, Validators.min(0)],
-    frecuenciaRespiratoria:  [null, Validators.min(0)],
+    pesoEnConsulta:          [null, [Validators.required, Validators.min(0.01), Validators.max(120)]],
+    temperatura:             [null, [Validators.min(0.1), Validators.max(45)]],
+    frecuenciaCardiaca:      [null, [Validators.min(1), Validators.max(300)]],
+    frecuenciaRespiratoria:  [null, [Validators.min(1), Validators.max(200)]],
     mucosas:                 [''],
     turgenciaPiel:           [''],
     vacunacionAlDia:         [false],
@@ -143,6 +150,11 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.setupAutosave();
+    this.route.queryParamMap.subscribe(params => {
+      if (params.get('tab') === 'recetas') {
+        this.tabActiva.set('recetas');
+      }
+    });
     this.route.params.subscribe(params => {
       this.consultaId = Number(params['consultaId']);
       if (!this.consultaId) {
@@ -219,8 +231,14 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
   private setupAutosave() {
     this.autosaveSub = this.form.valueChanges.pipe(
       debounceTime(1200),
-      filter(() => !this.syncingForm && this.puedeEditarConsulta() && this.form.dirty),
-      switchMap(() => this.guardarSilencioso(true))
+      tap(() => {
+        if (!this.syncingForm && this.puedeEditarConsulta() && this.form.dirty && this.form.invalid) {
+          this.form.markAllAsTouched();
+          this.autoSaveStatus.set('invalid');
+        }
+      }),
+      filter(() => !this.syncingForm && this.puedeEditarConsulta() && this.form.dirty && this.form.valid),
+      concatMap(() => this.guardarSilencioso(false))
     ).subscribe();
   }
 
@@ -249,7 +267,7 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
   }
 
   subirArchivo() {
-    if (!this.canCreate()) return;
+    if (!this.canCreateArchivo()) return;
     const file = this.archivoPendiente();
     if (!file) return;
     this.archivoSubiendo.set(true);
@@ -314,13 +332,13 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
   }
 
   confirmarEliminarArchivo(archivo: ArchivoClinicoResponse) {
-    if (!this.canDelete()) return;
+    if (!this.canDeleteArchivo()) return;
     this.archivoEliminando.set(archivo);
     this.showConfirmEliminarArchivo.set(true);
   }
 
   eliminarArchivo() {
-    if (!this.canDelete()) return;
+    if (!this.canDeleteArchivo()) return;
     const archivo = this.archivoEliminando();
     if (!archivo) return;
     this.hcService.eliminarArchivo(this.consultaId, archivo.id).subscribe({
@@ -350,14 +368,14 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
   }
 
   abrirNuevaReceta() {
-    if (!this.canCreate()) return;
+    if (!this.canCreateReceta()) return;
     this.recetaEditando.set(null);
     this.recetaForm.reset({ fechaInicio: new Date().toISOString().split('T')[0] });
     this.showRecetaModal.set(true);
   }
 
   abrirEditarReceta(receta: PrescripcionResponse) {
-    if (!this.canModify()) return;
+    if (!this.canModifyReceta()) return;
     this.recetaEditando.set(receta);
     this.recetaForm.patchValue({
       medicamento:       receta.medicamento,
@@ -374,12 +392,16 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
   }
 
   guardarReceta() {
-    if (this.recetaEditando() ? !this.canModify() : !this.canCreate()) return;
+    if (this.recetaEditando() ? !this.canModifyReceta() : !this.canCreateReceta()) return;
     if (this.recetaForm.invalid) {
       this.recetaForm.markAllAsTouched();
       return;
     }
     const payload: PrescripcionRequest = { ...this.recetaForm.value };
+    if (payload.fechaFin && payload.fechaInicio && payload.fechaFin < payload.fechaInicio) {
+      this.msgService.add({ severity: 'warn', summary: 'Fechas invalidas', detail: 'La fecha de fin no puede ser anterior a la fecha de inicio.' });
+      return;
+    }
     if (!payload.fechaFin) delete payload.fechaFin;
     if (!payload.principioActivo) delete payload.principioActivo;
     if (!payload.instrucciones) delete payload.instrucciones;
@@ -402,13 +424,13 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
   }
 
   confirmarEliminarReceta(receta: PrescripcionResponse) {
-    if (!this.canDelete()) return;
+    if (!this.canDeleteReceta()) return;
     this.recetaEliminando.set(receta);
     this.showConfirmEliminar.set(true);
   }
 
   eliminarReceta() {
-    if (!this.canDelete()) return;
+    if (!this.canDeleteReceta()) return;
     const receta = this.recetaEliminando();
     if (!receta) return;
     this.hcService.eliminarReceta(receta.id).subscribe({
@@ -521,17 +543,19 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
 
   private guardarSilencioso(mostrarError: boolean): Observable<boolean> {
     if (!this.canModify()) return of(false);
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      this.autoSaveStatus.set('invalid');
+      return of(false);
+    }
     const version = this.consulta()?.version;
     if (version === undefined) return of(false);
 
     this.autoSaveStatus.set('saving');
     const payload = { ...this.form.getRawValue(), version };
-    return this.hcService.updateConsulta(this.consultaId, payload).pipe(
+    return this.hcService.updateConsulta(this.consultaId, payload, true).pipe(
       tap((res) => {
-        this.consulta.set(res.data);
-        this.form.patchValue({ version: res.data.version }, { emitEvent: false });
-        this.form.markAsPristine();
-        this.autoSaveStatus.set('saved');
+        this.sincronizarConsultaGuardada(res.data);
       }),
       map(() => true),
       catchError((err) => {
@@ -566,10 +590,10 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
     if (version === undefined) return;
 
     this.loadingStore.show();
-    const payload = { ...this.form.value, version: this.consulta()?.version };
+    const payload = { ...this.form.getRawValue(), version: this.consulta()?.version };
     this.hcService.updateConsulta(this.consultaId, payload).subscribe({
       next: (res) => {
-        this.consulta.set(res.data);
+        this.sincronizarConsultaGuardada(res.data);
         this.msgService.add({ severity: 'success', summary: 'Guardado', detail: 'Consulta actualizada correctamente' });
         this.loadingStore.hide();
       },
@@ -578,6 +602,16 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
         this.loadingStore.hide();
       }
     });
+  }
+
+  reintentarGuardado() {
+    if (!this.canModify()) return;
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      this.autoSaveStatus.set('invalid');
+      return;
+    }
+    this.guardarSilencioso(true).subscribe();
   }
 
   confirmarCerrar() {
@@ -618,6 +652,16 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
         this.msgService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error al cerrar la consulta' });
       }
     });
+  }
+
+  private sincronizarConsultaGuardada(data: ConsultaResponse) {
+    this.syncingForm = true;
+    this.consulta.set(data);
+    this.isCerrada.set(data.estado === 'CERRADA');
+    this.form.patchValue({ version: data.version }, { emitEvent: false });
+    this.form.markAsPristine();
+    this.autoSaveStatus.set('saved');
+    this.syncingForm = false;
   }
 
   verConsulta(id: number) {

@@ -10,6 +10,7 @@ export interface PrescripcionResponse {
   fechaInicio: string;
   fechaFin?: string;
   veterinarioNombre?: string;
+  consultaId?: number;
   pacienteNombre?: string;
   numeroHc?: string;
   fechaCreacion?: string;

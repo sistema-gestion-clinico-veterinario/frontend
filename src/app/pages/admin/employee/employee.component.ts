@@ -79,7 +79,7 @@ export class EmployeeComponent implements OnInit {
   showResetConfirm = signal<boolean>(false);
 
   resetPasswordForm: FormGroup = this.fb.group({
-    newPassword: ['', [Validators.required, Validators.minLength(6)]],
+    newPassword: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(72), Validators.pattern(/^\S+$/)]],
     confirmPassword: ['', [Validators.required]]
   }, { validators: passwordMatchValidator });
   especialidadesList = signal<any[]>([]);

@@ -128,8 +128,8 @@ export class CitasComponent implements OnInit {
       this.messageService.add({ severity: 'warn', summary: 'OTP inválido', detail: 'El código OTP debe tener exactamente 6 dígitos.' });
       return;
     }
-    if (!email) {
-      this.messageService.add({ severity: 'warn', summary: 'Email requerido', detail: 'Ingresa tu correo electrónico para completar el pago.' });
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      this.messageService.add({ severity: 'warn', summary: 'Email invalido', detail: 'Ingresa un correo electronico valido para completar el pago.' });
       return;
     }
 
@@ -170,8 +170,8 @@ export class CitasComponent implements OnInit {
     veterinarioId: [null, [Validators.required]],
     fechaCita: [null, [Validators.required]],
     horaCita: [null, [Validators.required]],
-    motivoCita: ['', [Validators.required, Validators.minLength(5)]],
-    notas: ['']
+    motivoCita: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(250)]],
+    notas: ['', [Validators.maxLength(500)]]
   });
 
   ngOnInit() {
@@ -446,6 +446,12 @@ export class CitasComponent implements OnInit {
       const timeStr = formVal.horaCita; 
       
       isoString = `${fechaStr}T${timeStr}:00`;
+    }
+
+    if (!this.isEditing() && new Date(isoString).getTime() < Date.now() - 60_000) {
+      this.messageService.add({ severity: 'warn', summary: 'Fecha invalida', detail: 'La fecha de la cita no puede estar en el pasado.' });
+      this.loadingStore.hide();
+      return;
     }
 
     const originalCita = this.editingCitaId() ? this.citas().find(c => c.id === this.editingCitaId()) : null;

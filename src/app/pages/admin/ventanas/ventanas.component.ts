@@ -110,7 +110,10 @@ export class VentanasComponent implements OnInit {
 
   guardarVista() {
     const data = this.vistaForm();
-    if (!data.codigo || !data.nombre) {
+    const codigo = data.codigo.trim();
+    const nombre = data.nombre.trim();
+    const grupo = data.grupo.trim();
+    if (!codigo || !nombre || !grupo) {
       this.messageService.add({
         severity: 'warn',
         summary: 'Atención',
@@ -119,10 +122,23 @@ export class VentanasComponent implements OnInit {
       return;
     }
 
+    if (!/^[A-Za-z0-9_\s-]{3,80}$/.test(codigo)) {
+      this.messageService.add({ severity: 'warn', summary: 'Codigo invalido', detail: 'Use entre 3 y 80 caracteres validos.' });
+      return;
+    }
+    if (nombre.length < 2 || nombre.length > 80) {
+      this.messageService.add({ severity: 'warn', summary: 'Nombre invalido', detail: 'El nombre debe tener entre 2 y 80 caracteres.' });
+      return;
+    }
+    if (!/^[A-Za-z0-9_\s-]{1,40}$/.test(grupo)) {
+      this.messageService.add({ severity: 'warn', summary: 'Grupo invalido', detail: 'El grupo no debe superar 40 caracteres.' });
+      return;
+    }
+
     const payload = {
-      codigo: data.codigo.toUpperCase().trim().replace(/\s+/g, '_'),
-      nombre: data.nombre.trim(),
-      grupo: data.grupo,
+      codigo: codigo.toUpperCase().replace(/\s+/g, '_'),
+      nombre,
+      grupo: grupo.toUpperCase().replace(/\s+/g, '_'),
       activo: data.activo
     };
 

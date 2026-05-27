@@ -41,12 +41,12 @@ export class ProfileComponent implements OnInit {
   previewUrl = signal<string | null>(null);
 
   form: FormGroup = this.fb.group({
-    nombre:      ['', [Validators.required, Validators.minLength(2)]],
-    apellido:    ['', [Validators.required, Validators.minLength(2)]],
-    telefono:    ['', [Validators.pattern(/^\d{7,15}$/)]],
-    direccion:   [''],
-    observaciones: [''],
-    fotoUrl:     ['']
+    nombre:      ['', [Validators.required, Validators.minLength(2), Validators.maxLength(80)]],
+    apellido:    ['', [Validators.required, Validators.minLength(2), Validators.maxLength(80)]],
+    telefono:    ['', [Validators.pattern(/^\d{9}$/)]],
+    direccion:   ['', [Validators.maxLength(200)]],
+    observaciones: ['', [Validators.maxLength(500)]],
+    fotoUrl:     ['', [Validators.maxLength(500)]]
   });
 
   ngOnInit() {

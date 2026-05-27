@@ -409,8 +409,8 @@
 <div *ngIf="confirmDialog()" class="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 backdrop-blur-sm">
   <div class="bg-white rounded-xl p-6 max-w-sm w-full mx-4 border border-slate-200 shadow-2xl">
     <div class="flex items-start gap-3 mb-4">
-      <div class="w-9 h-9 rounded-full bg-amber-50 flex items-center justify-center shrink-0">
-        <i class="pi pi-exclamation-triangle text-amber-500"></i>
+      <div class="w-9 h-9 rounded-full flex items-center justify-center shrink-0" [ngClass]="confirmIconClass()">
+        <i class="pi pi-exclamation-triangle"></i>
       </div>
       <div>
         <h3 class="text-sm font-semibold text-slate-800">{{ confirmDialog()!.title }}</h3>
@@ -422,9 +422,8 @@
         class="px-4 py-2 rounded-lg border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
         Cancelar
       </button>
-      <button (click)="confirmAction()"
-        class="px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-medium hover:bg-red-700 transition-colors">
-        Confirmar
+      <button (click)="confirmAction()" [ngClass]="confirmButtonClass()">
+        {{ confirmDialog()!.confirmLabel }}
       </button>
     </div>
   </div>

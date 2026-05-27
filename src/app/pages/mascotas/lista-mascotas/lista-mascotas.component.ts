@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
@@ -68,7 +68,7 @@ export class ListaMascotasComponent implements OnInit {
   readonly especieOpciones = [
     { label: 'Perro',  value: 'PERRO'  },
     { label: 'Gato',   value: 'GATO'   },
-    { label: 'Conejo', value: 'CONEJO' },
+    { label: 'Roedor', value: 'ROEDOR' },
     { label: 'Ave',    value: 'AVE'    },
     { label: 'Reptil', value: 'REPTIL' },
     { label: 'Otro',   value: 'OTRO'   },
@@ -85,13 +85,13 @@ export class ListaMascotasComponent implements OnInit {
   ];
 
   mascotaForm: FormGroup = this.fb.group({
-    nombre:          ['',   [Validators.required]],
+    nombre:          ['',   [Validators.required, Validators.minLength(2), Validators.maxLength(80)]],
     especie:         [null, [Validators.required]],
-    raza:            ['',   [Validators.required]],
+    raza:            ['',   [Validators.required, Validators.minLength(2), Validators.maxLength(60)]],
     sexo:            [null, [Validators.required]],
-    fechaNacimiento: ['',   [Validators.required]],
-    color:           [''],
-    peso:            [null],
+    fechaNacimiento: ['',   [Validators.required, (control: AbstractControl) => this.fechaNoFuturaValidator(control)]],
+    color:           ['', [Validators.maxLength(50)]],
+    peso:            [null, [Validators.min(0.01), Validators.max(120)]],
     apoderadoId:     [null, [Validators.required]],
   });
   displayMotivoModal  = signal<boolean>(false);
@@ -116,6 +116,28 @@ export class ListaMascotasComponent implements OnInit {
   ngOnInit() {
     this.loadMascotas();
     this.loadApoderados();
+    this.mascotaForm.get('especie')?.valueChanges.subscribe(() => this.actualizarValidadoresPeso());
+  }
+
+  fechaNoFuturaValidator(control: AbstractControl): ValidationErrors | null {
+    return control.value && control.value > this.todayStr ? { fechaFutura: true } : null;
+  }
+
+  private actualizarValidadoresPeso() {
+    const pesoCtrl = this.mascotaForm.get('peso');
+    const especie = this.mascotaForm.get('especie')?.value;
+    const rangos: Record<string, { min: number; max: number }> = {
+      PERRO: { min: 0.5, max: 120 },
+      GATO: { min: 0.3, max: 20 },
+      AVE: { min: 0.02, max: 5 },
+      REPTIL: { min: 0.01, max: 100 },
+      ROEDOR: { min: 0.02, max: 10 },
+      EXOTICO: { min: 0.01, max: 120 },
+      OTRO: { min: 0.01, max: 120 }
+    };
+    const rango = rangos[especie] ?? rangos['OTRO'];
+    pesoCtrl?.setValidators([Validators.min(rango.min), Validators.max(rango.max)]);
+    pesoCtrl?.updateValueAndValidity({ emitEvent: false });
   }
 
   loadApoderados() {
@@ -210,7 +232,7 @@ export class ListaMascotasComponent implements OnInit {
       sexo:            v.sexo,
       fechaNacimiento: v.fechaNacimiento,
       color:           v.color || undefined,
-      peso:            v.peso  || undefined,
+      peso:            v.peso ?? undefined,
       apoderadoId:     v.apoderadoId,
     };
 

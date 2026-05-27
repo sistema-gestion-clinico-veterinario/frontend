@@ -66,10 +66,26 @@ export class ComplementarioComponent implements OnInit {
     return this.authStore.selectedEnterprise()?.establishmentId ?? this.authStore.companyId();
   }
   activeTab = signal<number>(0);
-  confirmDialog = signal<{title: string; message: string; action: string; item: any} | null>(null);
+  confirmDialog = signal<{
+    title: string;
+    message: string;
+    action: string;
+    item: any;
+    variant: 'primary' | 'warning' | 'danger';
+    confirmLabel: string;
+  } | null>(null);
 
-  openConfirm(title: string, message: string, action: string, item: any) {
-    this.confirmDialog.set({ title, message, action, item });
+  openConfirm(
+    title: string,
+    message: string,
+    action: string,
+    item: any,
+    variant?: 'primary' | 'warning' | 'danger',
+    confirmLabel?: string
+  ) {
+    const resolvedVariant = variant ?? (action.includes('eliminar') ? 'danger' : action.includes('estado') || action.includes('toggle') ? 'warning' : 'primary');
+    const resolvedLabel = confirmLabel ?? (resolvedVariant === 'danger' ? 'Eliminar' : 'Confirmar');
+    this.confirmDialog.set({ title, message, action, item, variant: resolvedVariant, confirmLabel: resolvedLabel });
   }
 
   cancelConfirm() {
@@ -79,6 +95,7 @@ export class ComplementarioComponent implements OnInit {
   confirmAction() {
     const ctx = this.confirmDialog();
     if (!ctx) return;
+    this.cancelConfirm();
     switch (ctx.action) {
       case 'guardar-especialidad': this.saveEspecialidad(); break;
       case 'eliminar-especialidad': this.eliminarEspecialidad(ctx.item.id); break;
@@ -89,7 +106,21 @@ export class ComplementarioComponent implements OnInit {
       case 'eliminar-servicio': this.eliminarServicio(ctx.item.id); break;
       case 'toggle-servicio': this.toggleServicioDisponible(ctx.item); break;
     }
-    this.cancelConfirm();
+  }
+
+  confirmIconClass(): string {
+    const variant = this.confirmDialog()?.variant;
+    if (variant === 'danger') return 'bg-red-50 text-red-500';
+    if (variant === 'warning') return 'bg-amber-50 text-amber-500';
+    return 'bg-blue-50 text-[#0066AA]';
+  }
+
+  confirmButtonClass(): string {
+    const variant = this.confirmDialog()?.variant;
+    const base = 'px-4 py-2 rounded-lg text-white text-sm font-medium transition-colors';
+    if (variant === 'danger') return `${base} bg-red-600 hover:bg-red-700`;
+    if (variant === 'warning') return `${base} bg-amber-600 hover:bg-amber-700`;
+    return `${base} bg-[#0066AA] hover:bg-[#005a96]`;
   }
 
   confirmarGuardarEspecialidad() {
@@ -112,7 +143,32 @@ export class ComplementarioComponent implements OnInit {
       editando ? 'Actualizar tipo de empleado' : 'Crear tipo de empleado',
       '¿Está seguro de ' + (editando ? 'actualizar' : 'crear') + ' el tipo de empleado «' + nombre + '»?',
       'guardar-tipo-empleado',
-      null
+      null,
+      'primary',
+      editando ? 'Actualizar' : 'Crear'
+    );
+  }
+
+  confirmarCambiarEstadoTipo(item: any) {
+    const nuevoEstado = !item.estado;
+    this.openConfirm(
+      nuevoEstado ? 'Activar tipo de empleado' : 'Desactivar tipo de empleado',
+      'El tipo de empleado "' + item.nombre + '" quedara ' + (nuevoEstado ? 'activo' : 'inactivo') + '.',
+      'cambiar-estado-tipo',
+      item,
+      'warning',
+      nuevoEstado ? 'Activar' : 'Desactivar'
+    );
+  }
+
+  confirmarEliminarTipoEmpleado(item: any) {
+    this.openConfirm(
+      'Eliminar tipo de empleado',
+      'Se eliminara el tipo de empleado "' + item.nombre + '". Esta accion no se puede deshacer.',
+      'eliminar-tipo-empleado',
+      item,
+      'danger',
+      'Eliminar'
     );
   }
 
@@ -149,10 +205,10 @@ export class ComplementarioComponent implements OnInit {
   showServicioModal   = signal(false);
   editingServicio     = signal<ServicioResponse | null>(null);
   servicioForm: FormGroup = this.fb.group({
-    nombre:      ['', [Validators.required, Validators.minLength(2)]],
-    descripcion: ['', [Validators.required]],
-    precio:      [null, [Validators.required, Validators.min(5)]],
-    duracionEstimada: [20, [Validators.required, Validators.min(5)]],
+    nombre:      ['', [Validators.required, Validators.minLength(2), Validators.maxLength(80)]],
+    descripcion: ['', [Validators.required, Validators.maxLength(300)]],
+    precio:      [null, [Validators.required, Validators.min(5), Validators.max(5000)]],
+    duracionEstimada: [20, [Validators.required, Validators.min(5), Validators.max(240)]],
     disponible:  [true],
     tipoEmpleadoId: [null]
   });
