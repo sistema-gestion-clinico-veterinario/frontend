@@ -28,7 +28,7 @@ export class ChangePasswordModalComponent {
   showPassword = signal(false);
 
   passwordForm = this.fb.group({
-    newPassword: ['', [Validators.required, Validators.minLength(6)]],
+    newPassword: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(72), Validators.pattern(/^\S+$/)]],
     confirmPassword: ['', [Validators.required]]
   }, {
     validators: this.passwordMatchValidator

@@ -31,8 +31,8 @@ export class ChangePasswordModalComponent {
   errorMsg = signal<string | null>(null);
 
   form = this.fb.group({
-    oldPassword: ['', Validators.required],
-    newPassword: ['', [Validators.required, Validators.minLength(6)]],
+    oldPassword: ['', [Validators.required, Validators.maxLength(72)]],
+    newPassword: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(72), Validators.pattern(/^\S+$/)]],
     confirmPassword: ['', Validators.required]
   }, { validators: passwordMatchValidator });
 

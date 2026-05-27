@@ -7,15 +7,15 @@
         Consulta y gestiona el historial de prescripciones médicas emitidas
       </p>
     </div>
-    <div class="flex flex-col md:flex-row items-start md:items-center gap-4">
-      <div class="relative w-full md:w-80">
+    <div class="flex flex-col md:flex-row items-start md:items-center gap-3">
+      <div class="relative w-full md:w-72">
         <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
         <input 
           type="text" 
           pInputText 
-          placeholder="Paciente o número de HC..." 
+          placeholder="Medicamento, paciente o HC..."
           [(ngModel)]="searchQuery"
-          (input)="onFilterChange()"
+          (keyup.enter)="onFilterChange()"
           class="w-full pl-9 pr-4 h-10 border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
         />
       </div>
@@ -23,6 +23,30 @@
         class="flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 text-sm font-medium px-4 h-10 rounded-lg transition-colors">
         <i class="pi pi-filter-slash text-xs"></i>
         Limpiar
+      </button>
+    </div>
+  </div>
+
+  <div class="mb-5 bg-white border border-slate-200 rounded-xl p-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      <input type="number" [(ngModel)]="mascotaId" (keyup.enter)="onFilterChange()" placeholder="Número de mascota"
+        class="h-10 px-3 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-blue-500/20">
+      <input type="text" [(ngModel)]="numeroMicrochip" (keyup.enter)="onFilterChange()" placeholder="Microchip de mascota"
+        class="h-10 px-3 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-blue-500/20">
+      <input type="text" [(ngModel)]="numeroDocumentoApoderado" (keyup.enter)="onFilterChange()" placeholder="Documento apoderado"
+        class="h-10 px-3 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-blue-500/20">
+      <input type="text" [(ngModel)]="numeroDocumentoEmpleado" (keyup.enter)="onFilterChange()" placeholder="Documento empleado"
+        class="h-10 px-3 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-blue-500/20">
+      <input type="text" [(ngModel)]="numeroHc" (keyup.enter)="onFilterChange()" placeholder="Número de HC"
+        class="h-10 px-3 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-blue-500/20">
+      <input type="date" [(ngModel)]="fechaDesde" (change)="onFilterChange()"
+        class="h-10 px-3 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-blue-500/20">
+      <input type="date" [(ngModel)]="fechaHasta" (change)="onFilterChange()"
+        class="h-10 px-3 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-blue-500/20">
+      <button (click)="onFilterChange()"
+        class="h-10 flex items-center justify-center gap-2 rounded-lg bg-[#0066AA] text-white text-sm font-bold hover:bg-[#0055aa] transition-colors">
+        <i class="pi pi-search text-xs"></i>
+        Buscar
       </button>
     </div>
   </div>
@@ -71,6 +95,15 @@
             <span class="text-sm text-slate-600 font-medium">{{ receta.fechaCreacion | date:'dd/MM/yyyy' }}</span>
           </td>
           <td class="px-6 py-4 text-right">
+            <button
+              type="button"
+              (click)="abrirConsulta(receta)"
+              [disabled]="!receta.consultaId"
+              class="p-2 rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-90 disabled:opacity-40 disabled:cursor-not-allowed"
+              pTooltip="Abrir consulta"
+            >
+              <i class="pi pi-external-link text-sm"></i>
+            </button>
             <button 
               (click)="imprimirReceta(receta)"
               class="p-2 rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-90"

@@ -31,8 +31,8 @@ export class LoginComponent implements OnInit {
   }
 
   loginForm = inject(FormBuilder).group({
-    email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required, Validators.minLength(6)]]
+    email: ['', [Validators.required, Validators.email, Validators.maxLength(255)]],
+    password: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(72)]]
   });
 
   get email() { return this.loginForm.get('email'); }

@@ -215,6 +215,10 @@ export class RolesComponent implements OnInit {
     let formattedName = this.editingNameValue().trim().toUpperCase();
     if (!formattedName.startsWith('ROLE_')) formattedName = 'ROLE_' + formattedName;
     formattedName = formattedName.replace(/\s+/g, '_');
+    if (!this.isValidRoleName(formattedName)) {
+      this.messageService.add({ severity: 'warn', summary: 'Nombre invalido', detail: 'Use solo letras, numeros y guion bajo; minimo 2 caracteres.' });
+      return;
+    }
 
     const nameExists = [...this.companyRoles(), ...this.systemRoles()].some(
       r => r.id !== role.id && r.name.toUpperCase() === formattedName
@@ -302,6 +306,14 @@ export class RolesComponent implements OnInit {
     let formattedName = this.newRoleName().trim().toUpperCase();
     if (!formattedName.startsWith('ROLE_')) formattedName = 'ROLE_' + formattedName;
     formattedName = formattedName.replace(/\s+/g, '_');
+    if (!this.isValidRoleName(formattedName)) {
+      this.messageService.add({ severity: 'warn', summary: 'Nombre invalido', detail: 'Use solo letras, numeros y guion bajo; minimo 2 caracteres.' });
+      return;
+    }
+    if (this.newRoleDesc().trim().length > 250) {
+      this.messageService.add({ severity: 'warn', summary: 'Descripcion extensa', detail: 'La descripcion no debe superar 250 caracteres.' });
+      return;
+    }
 
     const nameExists = [...this.companyRoles(), ...this.systemRoles()].some(
       r => r.name.toUpperCase() === formattedName
@@ -425,5 +437,9 @@ export class RolesComponent implements OnInit {
         this.loadingStore.hide();
       }
     });
+  }
+
+  private isValidRoleName(name: string): boolean {
+    return /^ROLE_[A-Z0-9_]{2,60}$/.test(name);
   }
 }

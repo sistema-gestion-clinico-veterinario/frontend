@@ -18,6 +18,7 @@ export interface ConsultaRequest {
   antecedentesPersonales?: string;
   antecedentesFamiliares?: string;
   grupoSanguineo?: string;
+  indicacionesReceta?: string;
 }
 
 export interface CerrarConsultaRequest {
