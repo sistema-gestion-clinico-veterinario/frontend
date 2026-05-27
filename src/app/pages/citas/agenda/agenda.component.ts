@@ -255,6 +255,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
       const cita = info.event.extendedProps['cita'] as CitaResponse | undefined;
       if (cita) this.verDetalleCita(cita);
     },
+    eventAllow: (dropInfo) => !this.isPastDateTime(dropInfo.start),
     eventDrop: (info) => this.onCalendarEventDrop(info)
   };
 
@@ -340,12 +341,12 @@ export class AgendaComponent implements OnInit, OnDestroy {
     version:         [null],
     mascotaId:       [null, [Validators.required]],
     veterinarioId:   [null, [Validators.required]],
-    motivoCita:      ['',   [Validators.required]],
+    motivoCita:      ['',   [Validators.required, Validators.minLength(5), Validators.maxLength(250)]],
     fechaHoraInicio: [null, [Validators.required, this.horariosValidator]],
     fechaCita:       [null],
     horaCita:        [null],
-    servicioId:      [null],
-    notas:           [''],
+    servicioId:      [null, [Validators.required]],
+    notas:           ['', [Validators.maxLength(500)]],
     esEmergencia:    [false]
   });
 
@@ -843,7 +844,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
 
     // Para nueva cita o reprogramación: validar fecha + slot
     if (!isEditing) {
-      if (!formValue.mascotaId || !formValue.veterinarioId || !formValue.motivoCita || !formValue.fechaCita || !formValue.horaCita) {
+      if (!formValue.mascotaId || !formValue.veterinarioId || !formValue.servicioId || !formValue.motivoCita || !formValue.fechaCita || !formValue.horaCita) {
         this.citaForm.markAllAsTouched();
         this.messageService.add({ severity: 'warn', summary: 'Campos incompletos', detail: 'Complete todos los campos obligatorios y seleccione un horario.' });
         return;
@@ -873,6 +874,11 @@ export class AgendaComponent implements OnInit, OnDestroy {
         const date = formValue.fechaHoraInicio;
         localIsoString = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}T${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}:00`;
       }
+    }
+
+    if (this.isPastDateTime(new Date(localIsoString))) {
+      this.messageService.add({ severity: 'warn', summary: 'Fecha invalida', detail: 'La fecha de la cita no puede estar en el pasado.' });
+      return;
     }
 
     const request: CitaRequest = {
@@ -1331,6 +1337,12 @@ export class AgendaComponent implements OnInit, OnDestroy {
       return;
     }
 
+    if (this.isPastDateTime(nuevaFecha)) {
+      info.revert();
+      this.messageService.add({ severity: 'warn', summary: 'Fecha invalida', detail: 'No puedes reprogramar una cita en una fecha pasada.' });
+      return;
+    }
+
     this.loadingStore.show();
     this.citaService.reprogramar(cita.id, {
       veterinarioId: cita.veterinarioId,
@@ -1393,6 +1405,10 @@ export class AgendaComponent implements OnInit, OnDestroy {
     const h = String(date.getHours()).padStart(2, '0');
     const min = String(date.getMinutes()).padStart(2, '0');
     return `${y}-${m}-${d}T${h}:${min}:00`;
+  }
+
+  private isPastDateTime(date: Date): boolean {
+    return date.getTime() < Date.now() - 60_000;
   }
 
   canCobrar(cita: CitaResponse): boolean {

@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { TableModule } from 'primeng/table';
 import { Toast } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
@@ -41,15 +41,15 @@ export class CompanyComponent implements OnInit {
 
   companyForm: FormGroup = this.fb.group({
     id: [null],
-    name: ['', [Validators.required]],
-    ruc: ['', [Validators.required, Validators.pattern('^[0-9]{11}$')]],
-    address: ['', [Validators.required]],
-    phone: ['', [Validators.required]],
-    email: ['', [Validators.required, Validators.email]],
+    name: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100)]],
+    ruc: ['', [Validators.required, Validators.pattern('^(10|15|17|20)[0-9]{9}$')]],
+    address: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(200)]],
+    phone: ['', [Validators.required, Validators.pattern(/^\d{9}$/)]],
+    email: ['', [Validators.required, Validators.email, Validators.maxLength(100)]],
     hasWebsite: [false],
-    website: [''],
-    description: [''],
-    businessHours: [''],
+    website: ['', [Validators.maxLength(200), Validators.pattern(/^$|^https?:\/\/.+/)]],
+    description: ['', [Validators.maxLength(500)]],
+    businessHours: ['', [Validators.maxLength(100)]],
     logoUrl: [''],
     operatingHours: this.fb.array([])
   });
@@ -66,7 +66,7 @@ export class CompanyComponent implements OnInit {
         openingTime: ['08:00', Validators.required],
         closingTime: ['18:00', Validators.required],
         isOpen: [true]
-      }));
+      }, { validators: this.rangoHorarioValidator }));
     });
   }
 
@@ -116,7 +116,7 @@ export class CompanyComponent implements OnInit {
               openingTime: [h.openingTime],
               closingTime: [h.closingTime],
               isOpen: [h.isOpen]
-            }));
+            }, { validators: this.rangoHorarioValidator }));
           });
         } else {
           this.initOperatingHours();
@@ -161,6 +161,15 @@ export class CompanyComponent implements OnInit {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Ocurrió un error al guardar' });
       }
     });
+  }
+
+  rangoHorarioValidator(control: AbstractControl): ValidationErrors | null {
+    const isOpen = control.get('isOpen')?.value;
+    const openingTime = control.get('openingTime')?.value;
+    const closingTime = control.get('closingTime')?.value;
+    if (!isOpen) return null;
+    if (!openingTime || !closingTime) return { horarioIncompleto: true };
+    return closingTime > openingTime ? null : { horarioInvalido: true };
   }
 
   confirmToggleActivo(company: CompanyListResponse) {

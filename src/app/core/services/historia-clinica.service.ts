@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { HistoriaClinicaDetalle } from '../../models/response/historia-clinica-response';
 import { ConsultaResponse } from '../../models/response/consulta-response';
@@ -9,6 +9,7 @@ import { PrescripcionResponse } from '../../models/response/prescripcion-respons
 import { ArchivoClinicoResponse } from '../../models/response/archivo-clinico-response';
 import { Page } from '../../models/response/page';
 import { ApiResponse } from '../../models/response/api-response';
+import { SKIP_GLOBAL_LOADING } from '../interceptors/api.interceptor';
 
 @Injectable({
   providedIn: 'root'
@@ -40,8 +41,11 @@ export class HistoriaClinicaService {
     return this.http.get<ApiResponse<ConsultaResponse>>(`${this.citasUrl}/${consultaId}`);
   }
 
-  updateConsulta(consultaId: number, request: ConsultaRequest) {
-    return this.http.put<ApiResponse<ConsultaResponse>>(`${this.citasUrl}/${consultaId}`, request);
+  updateConsulta(consultaId: number, request: ConsultaRequest, silent = false) {
+    const options = silent
+      ? { context: new HttpContext().set(SKIP_GLOBAL_LOADING, true) }
+      : {};
+    return this.http.put<ApiResponse<ConsultaResponse>>(`${this.citasUrl}/${consultaId}`, request, options);
   }
 
   cerrarConsulta(consultaId: number, request: CerrarConsultaRequest) {
@@ -64,9 +68,26 @@ export class HistoriaClinicaService {
     return this.http.delete<ApiResponse<void>>(`${this.recetasUrl}/${id}`);
   }
 
-  buscarRecetas(query: string, page: number = 0, size: number = 10, companyId?: number) {
-    let params = `?query=${query || ''}&page=${page}&size=${size}`;
-    if (companyId != null) params += `&companyId=${companyId}`;
+  buscarRecetas(filters: {
+    query?: string;
+    companyId?: number;
+    mascotaId?: number;
+    numeroMicrochip?: string;
+    numeroDocumentoApoderado?: string;
+    numeroDocumentoEmpleado?: string;
+    numeroHc?: string;
+    fechaDesde?: string;
+    fechaHasta?: string;
+  }, page: number = 0, size: number = 10) {
+    let params = `?query=${encodeURIComponent(filters.query || '')}&page=${page}&size=${size}`;
+    if (filters.companyId != null) params += `&companyId=${filters.companyId}`;
+    if (filters.mascotaId != null) params += `&mascotaId=${filters.mascotaId}`;
+    if (filters.numeroMicrochip) params += `&numeroMicrochip=${encodeURIComponent(filters.numeroMicrochip)}`;
+    if (filters.numeroDocumentoApoderado) params += `&numeroDocumentoApoderado=${encodeURIComponent(filters.numeroDocumentoApoderado)}`;
+    if (filters.numeroDocumentoEmpleado) params += `&numeroDocumentoEmpleado=${encodeURIComponent(filters.numeroDocumentoEmpleado)}`;
+    if (filters.numeroHc) params += `&numeroHc=${encodeURIComponent(filters.numeroHc)}`;
+    if (filters.fechaDesde) params += `&fechaDesde=${filters.fechaDesde}`;
+    if (filters.fechaHasta) params += `&fechaHasta=${filters.fechaHasta}`;
     return this.http.get<ApiResponse<Page<PrescripcionResponse>>>(`${this.recetasUrl}${params}`);
   }
 

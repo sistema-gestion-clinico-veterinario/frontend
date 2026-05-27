@@ -1,4 +1,4 @@
-import { HttpErrorResponse, HttpEvent, HttpHandlerFn, HttpRequest, HttpInterceptorFn } from '@angular/common/http';
+import { HttpContextToken, HttpErrorResponse, HttpEvent, HttpHandlerFn, HttpRequest, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject, catchError, filter, finalize, Observable, switchMap, take, throwError, timeout } from 'rxjs';
@@ -10,14 +10,18 @@ let isRefreshing = false;
 let refreshTokenSubject: BehaviorSubject<string | null> = new BehaviorSubject<string | null>(null);
 const DEFAULT_REQUEST_TIMEOUT_MS = 30000;
 const UPLOAD_REQUEST_TIMEOUT_MS = 120000;
+export const SKIP_GLOBAL_LOADING = new HttpContextToken<boolean>(() => false);
 
 export const apiInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, next: HttpHandlerFn): Observable<HttpEvent<unknown>> => {
   const authStore = inject(AuthStore);
   const loadingStore = inject(LoadingStore);
   const authService = inject(AuthService);
   const router = inject(Router);
+  const skipGlobalLoading = req.context.get(SKIP_GLOBAL_LOADING);
 
-  loadingStore.show();
+  if (!skipGlobalLoading) {
+    loadingStore.show();
+  }
 
   const token = authStore.token();
 
@@ -43,7 +47,11 @@ export const apiInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, nex
       }
       return throwError(() => error);
     }),
-    finalize(() => loadingStore.hide())
+    finalize(() => {
+      if (!skipGlobalLoading) {
+        loadingStore.hide();
+      }
+    })
   );
 };
 

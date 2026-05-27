@@ -159,12 +159,27 @@ export class ScheduleFormComponent implements OnInit {
   setEditMode(mode: 'single' | 'bulk') {
     this.scheduleForm.get('editMode')?.setValue(mode);
     
-    // Si cambia a masivo y las fechas son iguales, sugerir un rango basado en el trabajo del empleado
-    if (mode === 'bulk') {
+    if (mode === 'single') {
+      const data = this.currentData();
+      if (data) {
+        this.scheduleForm.patchValue({
+          fechaInicio: data.fecha,
+          fechaFin: data.fecha,
+          dias: data.diaSemana ? [data.diaSemana] : []
+        });
+      } else {
+        const start = this.scheduleForm.get('fechaInicio')?.value;
+        this.scheduleForm.get('fechaFin')?.setValue(start);
+        if (start) {
+          const [y, m, d] = start.split('-').map(Number);
+          const dayName = this.dayOfWeekMap[new Date(y, m - 1, d).getDay()];
+          this.scheduleForm.get('dias')?.setValue([dayName]);
+        }
+      }
+    } else if (mode === 'bulk') {
       const start = this.scheduleForm.get('fechaInicio')?.value;
       const end = this.scheduleForm.get('fechaFin')?.value;
       if (start === end && start) {
-        // Usar el fin del horario actual si existe, sino +30 días
         if (this.scheduleRange?.end && this.scheduleRange.end > start) {
           this.scheduleForm.get('fechaFin')?.setValue(this.scheduleRange.end);
         } else {
@@ -216,6 +231,23 @@ export class ScheduleFormComponent implements OnInit {
     const selectedDays = form.dias as string[];
 
     if (!this.employeeId) return;
+    if (form.fechaFin < form.fechaInicio) {
+      this.messageService.add({ severity: 'warn', summary: 'Rango invalido', detail: 'La fecha de fin no puede ser anterior a la fecha de inicio.' });
+      return;
+    }
+    const diffDays = Math.ceil((new Date(form.fechaFin + 'T00:00:00').getTime() - new Date(form.fechaInicio + 'T00:00:00').getTime()) / (1000 * 60 * 60 * 24));
+    if (diffDays > 366) {
+      this.messageService.add({ severity: 'warn', summary: 'Rango muy amplio', detail: 'El rango no debe superar 366 dias.' });
+      return;
+    }
+    if (form.horaFin <= form.horaInicio) {
+      this.messageService.add({ severity: 'warn', summary: 'Horario invalido', detail: 'La hora de fin debe ser posterior a la hora de inicio.' });
+      return;
+    }
+    if (editMode === 'bulk' && selectedDays.length === 0) {
+      this.messageService.add({ severity: 'warn', summary: 'Dias requeridos', detail: 'Seleccione al menos un dia dentro del rango.' });
+      return;
+    }
 
     // Validar contra horario de clínica
     if (!this.validarContraClinica(form)) return;

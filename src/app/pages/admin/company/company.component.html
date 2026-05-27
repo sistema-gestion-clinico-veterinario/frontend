@@ -134,20 +134,36 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div class="flex flex-col gap-1 sm:col-span-2">
               <label class="text-xs font-semibold text-slate-700 ml-0.5">Nombre o Razón Social <span class="text-rose-500">*</span></label>
-              <input type="text" formControlName="name" placeholder="Ej: Corporación Veterinaria S.A.C."
-                class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+              <input type="text" formControlName="name" placeholder="Ej: Corporación Veterinaria S.A.C." maxlength="100"
+                [ngClass]="companyForm.get('name')?.invalid && companyForm.get('name')?.touched ? 'border-rose-400' : 'border-slate-300'"
+                class="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+              <p *ngIf="companyForm.get('name')?.invalid && companyForm.get('name')?.touched" class="text-[11px] text-rose-500 ml-0.5">
+                <ng-container *ngIf="companyForm.get('name')?.errors?.['required']">El nombre es requerido</ng-container>
+                <ng-container *ngIf="companyForm.get('name')?.errors?.['minlength']">Mínimo 3 caracteres</ng-container>
+                <ng-container *ngIf="companyForm.get('name')?.errors?.['maxlength']">Máximo 100 caracteres</ng-container>
+              </p>
             </div>
 
             <div class="flex flex-col gap-1">
               <label class="text-xs font-semibold text-slate-700 ml-0.5">RUC (Registro Único) <span class="text-rose-500">*</span></label>
               <input type="text" formControlName="ruc" placeholder="11 dígitos" maxlength="11"
-                class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+                [ngClass]="companyForm.get('ruc')?.invalid && companyForm.get('ruc')?.touched ? 'border-rose-400' : 'border-slate-300'"
+                class="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+              <p *ngIf="companyForm.get('ruc')?.invalid && companyForm.get('ruc')?.touched" class="text-[11px] text-rose-500 ml-0.5">
+                <ng-container *ngIf="companyForm.get('ruc')?.errors?.['required']">El RUC es requerido</ng-container>
+                <ng-container *ngIf="companyForm.get('ruc')?.errors?.['pattern']">El RUC debe tener exactamente 11 dígitos</ng-container>
+              </p>
             </div>
 
             <div class="flex flex-col gap-1">
               <label class="text-xs font-semibold text-slate-700 ml-0.5">Teléfono de Contacto <span class="text-rose-500">*</span></label>
-              <input type="text" formControlName="phone" placeholder="Ej: 01 4455667"
-                class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+              <input type="text" formControlName="phone" placeholder="Ej: 999888777" maxlength="9"
+                [ngClass]="companyForm.get('phone')?.invalid && companyForm.get('phone')?.touched ? 'border-rose-400' : 'border-slate-300'"
+                class="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+              <p *ngIf="companyForm.get('phone')?.invalid && companyForm.get('phone')?.touched" class="text-[11px] text-rose-500 ml-0.5">
+                <ng-container *ngIf="companyForm.get('phone')?.errors?.['required']">El teléfono es requerido</ng-container>
+                <ng-container *ngIf="companyForm.get('phone')?.errors?.['pattern']">Debe tener exactamente 9 dígitos</ng-container>
+              </p>
             </div>
           </div>
         </div>
@@ -160,14 +176,25 @@
           <div class="grid grid-cols-1 gap-4">
             <div class="flex flex-col gap-1">
               <label class="text-xs font-semibold text-slate-700 ml-0.5">Correo Electrónico Institucional <span class="text-rose-500">*</span></label>
-              <input type="email" formControlName="email" placeholder="administracion@empresa.com"
-                class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+              <input type="email" formControlName="email" placeholder="administracion@empresa.com" maxlength="100"
+                [ngClass]="companyForm.get('email')?.invalid && companyForm.get('email')?.touched ? 'border-rose-400' : 'border-slate-300'"
+                class="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+              <p *ngIf="companyForm.get('email')?.invalid && companyForm.get('email')?.touched" class="text-[11px] text-rose-500 ml-0.5">
+                <ng-container *ngIf="companyForm.get('email')?.errors?.['required']">El correo es requerido</ng-container>
+                <ng-container *ngIf="companyForm.get('email')?.errors?.['email']">Ingresa un correo electrónico válido</ng-container>
+              </p>
             </div>
 
             <div class="flex flex-col gap-1">
               <label class="text-xs font-semibold text-slate-700 ml-0.5">Dirección Fiscal / Sede Principal <span class="text-rose-500">*</span></label>
-              <input type="text" formControlName="address" placeholder="Av. Principal 123, Distrito, Provincia"
-                class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+              <input type="text" formControlName="address" placeholder="Av. Principal 123, Distrito, Provincia" maxlength="200"
+                [ngClass]="companyForm.get('address')?.invalid && companyForm.get('address')?.touched ? 'border-rose-400' : 'border-slate-300'"
+                class="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+              <p *ngIf="companyForm.get('address')?.invalid && companyForm.get('address')?.touched" class="text-[11px] text-rose-500 ml-0.5">
+                <ng-container *ngIf="companyForm.get('address')?.errors?.['required']">La dirección es requerida</ng-container>
+                <ng-container *ngIf="companyForm.get('address')?.errors?.['minlength']">Mínimo 5 caracteres</ng-container>
+                <ng-container *ngIf="companyForm.get('address')?.errors?.['maxlength']">Máximo 200 caracteres</ng-container>
+              </p>
             </div>
 
             <div class="flex items-start gap-3 p-3 bg-slate-50 border border-slate-200 rounded">
@@ -180,8 +207,12 @@
 
             <div *ngIf="companyForm.get('hasWebsite')?.value" class="flex flex-col gap-1 animate-in slide-in-from-top-2 duration-200">
               <label class="text-xs font-semibold text-slate-700 ml-0.5">URL del Sitio Web</label>
-              <input type="text" formControlName="website" placeholder="https://www.ejemplo.com"
-                class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+              <input type="text" formControlName="website" placeholder="https://www.ejemplo.com" maxlength="200"
+                [ngClass]="companyForm.get('website')?.invalid && companyForm.get('website')?.touched ? 'border-rose-400' : 'border-slate-300'"
+                class="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+              <p *ngIf="companyForm.get('website')?.invalid && companyForm.get('website')?.touched" class="text-[11px] text-rose-500 ml-0.5">
+                <ng-container *ngIf="companyForm.get('website')?.errors?.['maxlength']">Máximo 200 caracteres</ng-container>
+              </p>
             </div>
           </div>
         </div>
