@@ -53,7 +53,8 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
   private readonly confirmSvc  = inject(ConfirmationService);
   private readonly sanitizer   = inject(DomSanitizer);
   readonly loadingStore        = inject(LoadingStore);
-  readonly authStore           = inject(AuthStore);
+  readonly authStore          = inject(AuthStore);
+  returnUrl = '/citas/agenda';
 
   readonly canCreate = computed(() => this.authStore.hasAccess('VISTA_HISTORIAS', 'escribir'));
   readonly canModify = computed(() => this.authStore.hasAccess('VISTA_HISTORIAS', 'modificar'));
@@ -151,6 +152,9 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.setupAutosave();
     this.route.queryParamMap.subscribe(params => {
+      if (params.get('returnUrl')) {
+        this.returnUrl = params.get('returnUrl')!;
+      }
       if (params.get('tab') === 'recetas') {
         this.tabActiva.set('recetas');
       }
@@ -159,7 +163,7 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
       this.consultaId = Number(params['consultaId']);
       if (!this.consultaId) {
         this.msgService.add({ severity: 'error', summary: 'Error', detail: 'ID de consulta no válido' });
-        this.router.navigate(['/citas/agenda']);
+        this.router.navigateByUrl(this.returnUrl);
         return;
       }
       this.loadConsulta();
@@ -646,7 +650,7 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
     ).subscribe({
       next: () => {
         this.msgService.add({ severity: 'success', summary: 'Cerrada', detail: 'La consulta fue cerrada exitosamente' });
-        setTimeout(() => this.router.navigate(['/citas/agenda']), 1500);
+        setTimeout(() => this.router.navigateByUrl(this.returnUrl), 1500);
       },
       error: (err) => {
         this.msgService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error al cerrar la consulta' });
@@ -673,7 +677,7 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
   }
 
   volver() {
-    this.router.navigate(['/citas/agenda']);
+    this.router.navigateByUrl(this.returnUrl);
   }
 
   formatFecha(fecha: string | undefined): string {

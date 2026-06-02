@@ -974,7 +974,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
         this.messageService.add({ severity: 'success', summary: 'Listo', detail: 'Atención iniciada' });
         this.loadingStore.hide();
         if (res.data) {
-          this.router.navigate(['/historias-clinicas/consulta', res.data]);
+          this.router.navigate(['/historias-clinicas/consulta', res.data], { queryParams: { returnUrl: '/citas/agenda' } });
         } else {
           this.loadCitas();
         }
@@ -1069,7 +1069,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
     }
     this.displayDetalleCita.set(false);
     if (cita.consultaId) {
-      this.router.navigate(['/historias-clinicas/consulta', cita.consultaId]);
+      this.router.navigate(['/historias-clinicas/consulta', cita.consultaId], { queryParams: { returnUrl: '/citas/agenda' } });
     } else {
       if (!this.canCreateHistoria()) {
         this.messageService.add({ severity: 'warn', summary: 'Sin permiso', detail: 'No puedes iniciar historias clÃ­nicas.' });
@@ -1080,7 +1080,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
         next: (res) => {
           this.loadingStore.hide();
           if (res.data) {
-            this.router.navigate(['/historias-clinicas/consulta', res.data]);
+            this.router.navigate(['/historias-clinicas/consulta', res.data], { queryParams: { returnUrl: '/citas/agenda' } });
           } else {
             this.loadCitas();
           }
