@@ -172,7 +172,7 @@ export class EmployeeDashboardComponent implements OnInit {
       next: (res) => {
         this.messageService.add({ severity: 'success', summary: 'Listo', detail: 'Atención iniciada con éxito.' });
         this.loadingStore.hide();
-        this.router.navigate(['/historias-clinicas/consulta', res.data]);
+        this.router.navigate(['/historias-clinicas/consulta', res.data], { queryParams: { returnUrl: '/employee/dashboard' } });
       },
       error: (err) => {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error al iniciar la atención.' });

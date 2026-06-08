@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, signal, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, ViewChild, ElementRef } from '@angular/core';
+import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ToastModule } from 'primeng/toast';
@@ -31,6 +32,7 @@ export class ProfileComponent implements OnInit {
   private readonly mediaService = inject(MediaService);
   private readonly messageService = inject(MessageService);
   private readonly authStore = inject(AuthStore);
+  private readonly sanitizer = inject(DomSanitizer);
   readonly loadingStore = inject(LoadingStore);
 
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
@@ -39,6 +41,10 @@ export class ProfileComponent implements OnInit {
   editMode = signal(false);
   uploadingPhoto = signal(false);
   previewUrl = signal<string | null>(null);
+  readonly safePreviewUrl = computed(() => {
+    const url = this.previewUrl();
+    return url ? this.sanitizer.bypassSecurityTrustUrl(url) : null;
+  });
 
   form: FormGroup = this.fb.group({
     nombre:      ['', [Validators.required, Validators.minLength(2), Validators.maxLength(80)]],

@@ -36,6 +36,7 @@ export class HistoriaClinicaMascotaComponent implements OnInit {
 
   readonly canModify = computed(() => this.authStore.hasAccess('VISTA_HISTORIAS', 'modificar'));
 
+  mascotaId        = 0;
   hc               = signal<HistoriaClinicaDetalle | null>(null);
   consultaActiva   = signal<ConsultaResumen | null>(null);
   tabActiva        = signal<'clinico' | 'recetas' | 'archivos'>('clinico');
@@ -49,8 +50,8 @@ export class HistoriaClinicaMascotaComponent implements OnInit {
 
   ngOnInit() {
     this.route.params.subscribe(params => {
-      const mascotaId = Number(params['mascotaId']);
-      this.cargarHistoria(mascotaId);
+      this.mascotaId = Number(params['mascotaId']);
+      this.cargarHistoria(this.mascotaId);
     });
   }
 
@@ -82,7 +83,7 @@ export class HistoriaClinicaMascotaComponent implements OnInit {
 
   editarConsulta(id: number) {
     if (!this.canModify()) return;
-    this.router.navigate(['/historias-clinicas/consulta', id]);
+    this.router.navigate(['/historias-clinicas/consulta', id], { queryParams: { returnUrl: '/historias-clinicas/mascota/' + this.mascotaId } });
   }
 
   volver() {

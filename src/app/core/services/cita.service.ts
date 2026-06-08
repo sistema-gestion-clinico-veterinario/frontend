@@ -48,9 +48,9 @@ export class CitaService {
     return this.http.patch<ApiResponse<CitaResponse>>(`${this.apiUrl}/${id}/reschedule`, data);
   }
 
-  getAdminDisponibilidad(empleadoId: number, fecha: string, servicioId: number) {
-    return this.http.get<ApiResponse<string[]>>(
-      `${this.apiUrl}/availability?empleadoId=${empleadoId}&fecha=${fecha}&servicioId=${servicioId}`
-    );
+  getAdminDisponibilidad(empleadoId: number, fecha: string, servicioId: number, esEmergencia?: boolean) {
+    let url = `${this.apiUrl}/availability?empleadoId=${empleadoId}&fecha=${fecha}&servicioId=${servicioId}`;
+    if (esEmergencia) url += `&esEmergencia=true`;
+    return this.http.get<ApiResponse<string[]>>(url);
   }
 }

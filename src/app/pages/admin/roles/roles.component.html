@@ -71,8 +71,9 @@
               </div>
               <p *ngIf="role.descripcion" class="text-xs text-slate-400 mt-1 ml-8 truncate">{{ role.descripcion }}</p>
             </button>
-            <div *ngIf="companyRoles().length === 0" class="px-4 py-6 text-center text-xs text-slate-400">
-              No hay roles configurados
+            <div *ngIf="companyRoles().length === 0" class="px-4 py-8 text-center">
+              <i class="pi pi-heart text-3xl text-slate-200 block mb-3"></i>
+              <p class="text-xs text-slate-400">No hay roles configurados</p>
             </div>
           </div>
         </ng-container>
@@ -95,8 +96,9 @@
               </div>
               <p *ngIf="role.descripcion" class="text-xs text-slate-400 mt-1 ml-8 truncate">{{ role.descripcion }}</p>
             </button>
-            <div *ngIf="systemRoles().length === 0" class="px-4 py-6 text-center text-xs text-slate-400">
-              No hay roles del sistema
+            <div *ngIf="systemRoles().length === 0" class="px-4 py-8 text-center">
+              <i class="pi pi-heart text-3xl text-slate-200 block mb-3"></i>
+              <p class="text-xs text-slate-400">No hay roles del sistema</p>
             </div>
           </div>
         </ng-container>

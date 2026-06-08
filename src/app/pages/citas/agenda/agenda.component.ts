@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, inject, signal, computed, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { TableModule } from 'primeng/table';
@@ -107,7 +107,17 @@ export class AgendaComponent implements OnInit, OnDestroy {
   readonly canReadHistoria   = computed(() => this.authStore.hasAccess('VISTA_HISTORIAS', 'leer'));
   readonly canCreateHistoria = computed(() => this.authStore.hasAccess('VISTA_HISTORIAS', 'escribir'));
   readonly canModifyHistoria = computed(() => this.authStore.hasAccess('VISTA_HISTORIAS', 'modificar'));
+  readonly canViewAllCitas   = computed(() => this.authStore.hasAccess('CITA_VER_TODAS', 'leer'));
 
+  readonly canBookEmergency = computed(() =>
+    this.authStore.hasAccess('VISTA_CITAS_AGENDA', 'escribir')
+  );
+
+  readonly empresaSinHorario = computed(() => {
+    const vetId = this.citaForm?.get('veterinarioId')?.value;
+    if (!vetId) return false;
+    return this.horariosActivos.length === 0;
+  });
 
   readonly totalCita = computed(() => {
     const cita = this.citaParaPago();
@@ -195,6 +205,18 @@ export class AgendaComponent implements OnInit, OnDestroy {
   showServicioSelector = signal<boolean>(false);
   showEstadoFilter = signal<boolean>(false);
   showVeterinarioFilter = signal<boolean>(false);
+
+  @HostListener('document:click')
+  closeAllDropdowns() {
+    this.showEstadoFilter.set(false);
+    this.showVeterinarioFilter.set(false);
+    this.showVeterinarioSelector.set(false);
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape() {
+    this.closeAllDropdowns();
+  }
 
   showNuevoCliente   = signal(false);
   savingNuevoCliente = signal(false);
@@ -618,7 +640,8 @@ export class AgendaComponent implements OnInit, OnDestroy {
     } else {
       fechaStr = fechaRaw as string;
     }
-    this.citaService.getAdminDisponibilidad(val.veterinarioId, fechaStr, val.servicioId).subscribe({
+    const isEmergencia = val.esEmergencia ?? false;
+    this.citaService.getAdminDisponibilidad(val.veterinarioId, fechaStr, val.servicioId, isEmergencia).subscribe({
       next: (res) => { this.availableSlots.set(res.data || []); this.loadingSlots.set(false); },
       error: ()   => { this.availableSlots.set([]); this.loadingSlots.set(false); }
     });
@@ -626,6 +649,12 @@ export class AgendaComponent implements OnInit, OnDestroy {
 
   selectTimeSlot(slot: string) {
     this.citaForm.get('horaCita')?.setValue(slot);
+  }
+
+  agendarEmergencia() {
+    this.citaForm.get('esEmergencia')?.setValue(true);
+    const fecha = this.citaForm.get('fechaCita')?.value;
+    if (fecha) this.onBookingParamsChange(fecha);
   }
 
   onVeterinarioChange(veterinarioId: number) {
@@ -974,7 +1003,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
         this.messageService.add({ severity: 'success', summary: 'Listo', detail: 'Atención iniciada' });
         this.loadingStore.hide();
         if (res.data) {
-          this.router.navigate(['/historias-clinicas/consulta', res.data]);
+          this.router.navigate(['/historias-clinicas/consulta', res.data], { queryParams: { returnUrl: '/citas/agenda' } });
         } else {
           this.loadCitas();
         }
@@ -1069,7 +1098,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
     }
     this.displayDetalleCita.set(false);
     if (cita.consultaId) {
-      this.router.navigate(['/historias-clinicas/consulta', cita.consultaId]);
+      this.router.navigate(['/historias-clinicas/consulta', cita.consultaId], { queryParams: { returnUrl: '/citas/agenda' } });
     } else {
       if (!this.canCreateHistoria()) {
         this.messageService.add({ severity: 'warn', summary: 'Sin permiso', detail: 'No puedes iniciar historias clÃ­nicas.' });
@@ -1080,7 +1109,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
         next: (res) => {
           this.loadingStore.hide();
           if (res.data) {
-            this.router.navigate(['/historias-clinicas/consulta', res.data]);
+            this.router.navigate(['/historias-clinicas/consulta', res.data], { queryParams: { returnUrl: '/citas/agenda' } });
           } else {
             this.loadCitas();
           }
@@ -1213,26 +1242,40 @@ export class AgendaComponent implements OnInit, OnDestroy {
   loadCitasCalendario() {
     const companyId = this.activeCompanyId ?? undefined;
     if (!companyId) { this.citasPorDia.set({}); return; }
-    const dias = this.vistaActual() === 'dia'
-      ? [this.fechaBase()]
-      : this.vistaActual() === 'semana' ? this.diasSemanaActual() : this.diasMesActual();
-    const fechas = [...new Set(dias.map(d => this.toDateStr(d)))];
     const veterinarioId = this.getEffectiveVeterinarioFilter();
 
     this.cargandoCal.set(true);
-    forkJoin(
-      fechas.map(fecha =>
-        this.citaService.listar(companyId, fecha, this.filterEstado || undefined, veterinarioId, 0, 50).pipe(
-          map(res => ({ fecha, citas: res.data.content })),
-          catchError(() => of({ fecha, citas: [] as CitaResponse[] }))
-        )
-      )
-    ).subscribe(results => {
+
+    if (this.vistaActual() === 'dia') {
+      const fecha = this.toDateStr(this.fechaBase());
+      this.citaService.listar(companyId, fecha, this.filterEstado || undefined, veterinarioId, 0, 50).pipe(
+        map(res => ({ fecha, citas: res.data.content })),
+        catchError(() => of({ fecha, citas: [] as CitaResponse[] }))
+      ).subscribe(({ fecha, citas }) => {
+        this.citasPorDia.set({ [fecha]: citas });
+        this.calendarEvents.set(this.toCalendarEvents(citas));
+        this.syncFullCalendar();
+        this.cargandoCal.set(false);
+      });
+      return;
+    }
+
+    // Semana / Mes: una sola llamada sin filtro de fecha, se agrupa en frontend
+    const maxSize = this.vistaActual() === 'semana' ? 100 : 200;
+    this.citaService.listar(companyId, undefined, this.filterEstado || undefined, veterinarioId, 0, maxSize).pipe(
+      catchError(() => of({ data: { content: [] as CitaResponse[] } } as any))
+    ).subscribe(res => {
+      const todas = (res as any).data?.content ?? [];
       const mapa: Record<string, CitaResponse[]> = {};
-      results.forEach(r => (mapa[r.fecha] = r.citas));
+      for (const c of todas) {
+        const d = c.fechaHoraInicio?.substring(0, 10);
+        if (d) {
+          if (!mapa[d]) mapa[d] = [];
+          mapa[d].push(c);
+        }
+      }
       this.citasPorDia.set(mapa);
-      const citas = results.flatMap(r => r.citas);
-      this.calendarEvents.set(this.toCalendarEvents(citas));
+      this.calendarEvents.set(this.toCalendarEvents(todas));
       this.syncFullCalendar();
       this.cargandoCal.set(false);
     });
@@ -1241,7 +1284,10 @@ export class AgendaComponent implements OnInit, OnDestroy {
   private getEffectiveVeterinarioFilter(): number | undefined {
     if (this.filterVeterinarioId) return this.filterVeterinarioId;
     const roles = this.authStore.roles();
-    if ((roles.includes('ROLE_VETERINARIO') || roles.includes('ROLE_EMPLEADO')) && !this.isSuperAdmin()) {
+    const isAdmin = roles.includes('ROLE_SUPER_ADMIN') || roles.includes('SUPER_ADMIN')
+                 || roles.includes('ROLE_ADMIN')       || roles.includes('ADMIN');
+    if (isAdmin) return undefined;
+    if (!this.authStore.hasAccess('CITA_VER_TODAS', 'leer')) {
       return this.authStore.empleadoId() ?? undefined;
     }
     return undefined;
