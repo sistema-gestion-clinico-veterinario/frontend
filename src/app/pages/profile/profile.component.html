@@ -18,7 +18,7 @@
             (click)="editMode() && triggerFileInput()">
             {{ userInitials }}
           </div>
-          <img *ngIf="previewUrl()" [src]="previewUrl()!" (error)="previewUrl.set(null)"
+          <img *ngIf="previewUrl()" [src]="safePreviewUrl()" (error)="previewUrl.set(null)"
             class="w-24 h-24 rounded-full object-cover border border-slate-200"
             alt="Foto de perfil" />
 
