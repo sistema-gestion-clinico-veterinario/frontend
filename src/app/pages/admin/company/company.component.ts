@@ -47,7 +47,7 @@ export class CompanyComponent implements OnInit {
     phone: ['', [Validators.required, Validators.pattern(/^\d{9}$/)]],
     email: ['', [Validators.required, Validators.email, Validators.maxLength(100)]],
     hasWebsite: [false],
-    website: ['', [Validators.maxLength(200), Validators.pattern(/^$|^https?:\/\/.+/)]],
+    website: ['', [Validators.maxLength(200)]],
     description: ['', [Validators.maxLength(500)]],
     businessHours: ['', [Validators.maxLength(100)]],
     logoUrl: [''],
@@ -135,13 +135,14 @@ export class CompanyComponent implements OnInit {
   saveCompany() {
     if (this.companyForm.invalid) {
       this.companyForm.markAllAsTouched();
+      this.messageService.add({ severity: 'warn', summary: 'Formulario inválido', detail: 'Revisa los campos resaltados en rojo.' });
       return;
     }
 
     const formValue = this.companyForm.value;
     const companyData: CompanyDTO = {
       ...formValue,
-      website: formValue.hasWebsite ? formValue.website : ''
+      website: formValue.hasWebsite && formValue.website ? (formValue.website.startsWith('http') ? formValue.website : `https://${formValue.website}`) : ''
     };
     const request = this.isEdit
       ? this.companyService.updateCompany(companyData)

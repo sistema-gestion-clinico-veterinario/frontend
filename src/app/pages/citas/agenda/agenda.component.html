@@ -103,7 +103,7 @@
           <label class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest flex items-center gap-1">
             <i class="pi pi-tag text-[10px]"></i> Estado
           </label>
-          <div class="relative">
+          <div class="relative" (click)="$event.stopPropagation()">
             <button type="button" (click)="showEstadoFilter.set(!showEstadoFilter())"
               class="w-full h-10 text-left px-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 focus:outline-none flex justify-between items-center hover:border-slate-300 transition-all">
               <span class="truncate">{{ getEstadoLabel() }}</span>
@@ -121,11 +121,11 @@
           </div>
         </div>
 
-        <div class="flex flex-col gap-1.5">
+        <div *ngIf="canViewAllCitas()" class="flex flex-col gap-1.5">
           <label class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest flex items-center gap-1">
             <i class="pi pi-user text-[10px]"></i> Veterinario
           </label>
-          <div class="relative">
+          <div class="relative" (click)="$event.stopPropagation()">
             <button type="button" (click)="showVeterinarioFilter.set(!showVeterinarioFilter())"
               class="w-full h-10 text-left px-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 focus:outline-none flex justify-between items-center hover:border-slate-300 transition-all">
               <span class="truncate">{{ getVeterinarioFilterLabel() }}</span>
@@ -606,7 +606,7 @@
 
           <div class="flex flex-col gap-1.5">
             <label class="text-xs font-semibold text-slate-600">Empleado <span class="text-rose-500">*</span></label>
-            <div class="relative">
+            <div class="relative" (click)="$event.stopPropagation()">
               <button type="button" [disabled]="!selectedServicioId()"
                 (click)="selectedServicioId() && showVeterinarioSelector.set(!showVeterinarioSelector())"
                 class="w-full h-10 text-left px-3 border rounded-xl text-xs font-semibold outline-none flex justify-between items-center transition-all"
@@ -713,7 +713,27 @@
                 {{ slot }}
               </button>
             </div>
-            <div *ngIf="availableSlots().length === 0"
+            <!-- Service allows emergency + user has permission -->
+            <div *ngIf="availableSlots().length === 0 && servicioPermiteEmergencia() && canBookEmergency()"
+              class="space-y-2">
+              <div class="bg-rose-50 border border-rose-200 p-3 rounded-xl text-rose-800 text-xs font-semibold flex items-start gap-2">
+                <i class="pi pi-exclamation-triangle text-rose-500 mt-0.5 shrink-0"></i>
+                <span>No hay horarios disponibles. Puedes agendar una cita de emergencia para este día.</span>
+              </div>
+              <button type="button" (click)="agendarEmergencia()"
+                class="w-full py-2.5 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer">
+                <i class="pi pi-exclamation-triangle text-xs"></i>
+                Agendar como Emergencia
+              </button>
+            </div>
+            <!-- Service allows emergency + user without permission -->
+            <div *ngIf="availableSlots().length === 0 && servicioPermiteEmergencia() && !canBookEmergency()"
+              class="bg-amber-50 border border-amber-200 p-3 rounded-xl text-amber-800 text-xs font-semibold flex items-start gap-2">
+              <i class="pi pi-info-circle text-amber-500 mt-0.5 shrink-0"></i>
+              <span>No hay horarios disponibles para este día. Si necesitas atención de emergencia, acude presencialmente a la clínica para solicitar una cita.</span>
+            </div>
+            <!-- Service doesn't allow emergency (regardless of permission) -->
+            <div *ngIf="availableSlots().length === 0 && !servicioPermiteEmergencia()"
               class="bg-amber-50 border border-amber-200 p-3 rounded-xl text-amber-800 text-xs font-semibold flex items-start gap-2">
               <i class="pi pi-info-circle text-amber-500 mt-0.5 shrink-0"></i>
               <span>Sin disponibilidad para este día. Selecciona otra fecha o profesional.</span>

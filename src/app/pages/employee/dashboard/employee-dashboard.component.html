@@ -181,7 +181,8 @@
 
                         <!-- Continuar consulta (Disponible si está EN_PROCESO) -->
                         <a *ngIf="cita.estado === 'EN_PROCESO'"
-                          [routerLink]="['/historias-clinicas/consulta', cita.id]" 
+                          [routerLink]="['/historias-clinicas/consulta', cita.id]"
+                          [queryParams]="{ returnUrl: '/employee/dashboard' }"
                           class="flex items-center gap-1.5 bg-violet-600 hover:bg-violet-700 text-white text-[10px] font-extrabold px-3 py-1.5 rounded-lg transition-colors cursor-pointer">
                           <i class="pi pi-pencil text-[8px]"></i>
                           Continuar
