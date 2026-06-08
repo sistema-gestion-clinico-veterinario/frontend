@@ -187,8 +187,10 @@ export function resolveDashboardRoute(roles: string[]): string {
 }
 
 export function resolveInitialRoute(roles: string[], menu: (MenuStructureDTO | MenuItemDTO)[]): string {
+  const dashboardRoute = resolveDashboardRoute(roles);
+  if (dashboardRoute) return dashboardRoute;
   const menuRoute = findFirstMenuRoute(menu);
-  return menuRoute ? normalizeInitialRoute(menuRoute) : resolveDashboardRoute(roles);
+  return menuRoute ? normalizeInitialRoute(menuRoute) : '/dashboard';
 }
 
 function findFirstMenuRoute(menu: (MenuStructureDTO | MenuItemDTO)[]): string | null {
