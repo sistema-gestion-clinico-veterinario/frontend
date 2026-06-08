@@ -713,7 +713,27 @@
                 {{ slot }}
               </button>
             </div>
-            <div *ngIf="availableSlots().length === 0"
+            <!-- Service allows emergency + user has permission -->
+            <div *ngIf="availableSlots().length === 0 && servicioPermiteEmergencia() && canBookEmergency()"
+              class="space-y-2">
+              <div class="bg-rose-50 border border-rose-200 p-3 rounded-xl text-rose-800 text-xs font-semibold flex items-start gap-2">
+                <i class="pi pi-exclamation-triangle text-rose-500 mt-0.5 shrink-0"></i>
+                <span>No hay horarios disponibles. Puedes agendar una cita de emergencia para este día.</span>
+              </div>
+              <button type="button" (click)="agendarEmergencia()"
+                class="w-full py-2.5 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer">
+                <i class="pi pi-exclamation-triangle text-xs"></i>
+                Agendar como Emergencia
+              </button>
+            </div>
+            <!-- Service allows emergency + user without permission -->
+            <div *ngIf="availableSlots().length === 0 && servicioPermiteEmergencia() && !canBookEmergency()"
+              class="bg-amber-50 border border-amber-200 p-3 rounded-xl text-amber-800 text-xs font-semibold flex items-start gap-2">
+              <i class="pi pi-info-circle text-amber-500 mt-0.5 shrink-0"></i>
+              <span>No hay horarios disponibles para este día. Si necesitas atención de emergencia, acude presencialmente a la clínica para solicitar una cita.</span>
+            </div>
+            <!-- Service doesn't allow emergency (regardless of permission) -->
+            <div *ngIf="availableSlots().length === 0 && !servicioPermiteEmergencia()"
               class="bg-amber-50 border border-amber-200 p-3 rounded-xl text-amber-800 text-xs font-semibold flex items-start gap-2">
               <i class="pi pi-info-circle text-amber-500 mt-0.5 shrink-0"></i>
               <span>Sin disponibilidad para este día. Selecciona otra fecha o profesional.</span>

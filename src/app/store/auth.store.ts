@@ -227,7 +227,10 @@ export const AuthStore = signalStore(
       // Mapeo de alias de rutas a su ruta canónica en la base de datos
       const ROUTE_ALIASES: Record<string, string> = {
         'agenda': 'citas/agenda',
+        'citas': 'citas/agenda',
         'empleado/agenda': 'citas/agenda',
+        'empleado/citas': 'citas/agenda',
+        'admin/citas': 'citas/agenda',
         'admin/citas/agenda': 'citas/agenda',
         'empleado/citas/agenda': 'citas/agenda',
         'empleado/mi-horario': 'mi-horario',
