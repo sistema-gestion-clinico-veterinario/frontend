@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, inject, signal, computed, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { TableModule } from 'primeng/table';
@@ -107,6 +107,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
   readonly canReadHistoria   = computed(() => this.authStore.hasAccess('VISTA_HISTORIAS', 'leer'));
   readonly canCreateHistoria = computed(() => this.authStore.hasAccess('VISTA_HISTORIAS', 'escribir'));
   readonly canModifyHistoria = computed(() => this.authStore.hasAccess('VISTA_HISTORIAS', 'modificar'));
+  readonly canViewAllCitas   = computed(() => this.authStore.hasAccess('CITA_VER_TODAS', 'leer'));
 
   readonly canBookEmergency = computed(() =>
     this.authStore.hasAccess('VISTA_CITAS_AGENDA', 'escribir')
@@ -204,6 +205,18 @@ export class AgendaComponent implements OnInit, OnDestroy {
   showServicioSelector = signal<boolean>(false);
   showEstadoFilter = signal<boolean>(false);
   showVeterinarioFilter = signal<boolean>(false);
+
+  @HostListener('document:click')
+  closeAllDropdowns() {
+    this.showEstadoFilter.set(false);
+    this.showVeterinarioFilter.set(false);
+    this.showVeterinarioSelector.set(false);
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape() {
+    this.closeAllDropdowns();
+  }
 
   showNuevoCliente   = signal(false);
   savingNuevoCliente = signal(false);
