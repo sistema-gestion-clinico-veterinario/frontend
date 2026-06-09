@@ -18,16 +18,20 @@ export class MenuManagementService {
     return this.http.get<ApiResponse<VistaDTO[]>>(`${this.vistaUrl}${params}`);
   }
 
-  crearVista(data: { codigo: string; nombre: string; grupo?: string; activo?: boolean }) {
+  crearVista(data: { codigo: string; nombre: string; grupo?: string; orden?: number; ordenGrupo?: number | null; activo?: boolean }) {
     return this.http.post<ApiResponse<VistaDTO>>(`${this.vistaUrl}`, data);
   }
 
-  actualizarVista(id: number, data: { nombre: string; grupo?: string; activo?: boolean }) {
+  actualizarVista(id: number, data: { nombre: string; grupo?: string; orden?: number; ordenGrupo?: number | null; activo?: boolean }) {
     return this.http.put<ApiResponse<VistaDTO>>(`${this.vistaUrl}/${id}`, data);
   }
 
   eliminarVista(id: number) {
     return this.http.delete<ApiResponse<void>>(`${this.vistaUrl}/${id}`);
+  }
+
+  reordenarVistas(items: { id: number; orden: number; grupo: string; ordenGrupo: number | null }[]) {
+    return this.http.put<ApiResponse<void>>(`${this.vistaUrl}/reorder`, items);
   }
 
   // Roles Vistas Permisos

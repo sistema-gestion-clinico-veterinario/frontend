@@ -29,7 +29,7 @@
 
   <div class="mb-5 bg-white border border-slate-200 rounded-xl p-4">
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-      <input type="number" [(ngModel)]="mascotaId" (keyup.enter)="onFilterChange()" placeholder="Número de mascota"
+      <input type="text" [(ngModel)]="nombreMascota" (keyup.enter)="onFilterChange()" placeholder="Nombre de mascota"
         class="h-10 px-3 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-blue-500/20">
       <input type="text" [(ngModel)]="numeroMicrochip" (keyup.enter)="onFilterChange()" placeholder="Microchip de mascota"
         class="h-10 px-3 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-blue-500/20">
@@ -51,90 +51,168 @@
     </div>
   </div>
 
-  <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-none">
-    <p-table 
-      [value]="recetas()" 
-      [loading]="loadingStore.isLoading()" 
-      [rowHover]="true"
-      styleClass="p-datatable-borderless"
-      [responsiveLayout]="'scroll'"
-    >
-      <ng-template pTemplate="header">
-        <tr class="border-b border-slate-100">
-          <th class="px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Historia Clínica</th>
-          <th class="px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Paciente</th>
-          <th class="px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Prescripción</th>
-          <th class="px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Veterinario</th>
-          <th class="px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Fecha Emisión</th>
-          <th class="px-6 py-4 w-20"></th>
-        </tr>
-      </ng-template>
+  <div class="flex gap-6">
+    <div class="flex-1 min-w-0 bg-white border border-slate-200 rounded-xl overflow-hidden shadow-none">
+      <p-table 
+        [value]="recetas()" 
+        [loading]="loadingStore.isLoading()" 
+        [rowHover]="true"
+        styleClass="p-datatable-borderless"
+        [responsiveLayout]="'scroll'"
+      >
+        <ng-template pTemplate="header">
+          <tr class="border-b border-slate-100">
+            <th class="px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Historia Clínica</th>
+            <th class="px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Paciente</th>
+            <th class="px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Prescripción</th>
+            <th class="px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Veterinario</th>
+            <th class="px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Fecha Emisión</th>
+            <th class="px-6 py-4 w-20"></th>
+          </tr>
+        </ng-template>
 
-      <ng-template pTemplate="body" let-receta>
-        <tr class="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors">
-          <td class="px-6 py-4">
-            <span class="text-sm font-bold text-[#0066AA]">{{ receta.numeroHc }}</span>
-          </td>
-          <td class="px-6 py-4">
-            <span class="text-sm font-medium text-slate-800">{{ receta.pacienteNombre }}</span>
-          </td>
-          <td class="px-6 py-4">
-            <div class="flex flex-col">
-              <span class="text-sm font-semibold text-slate-800">{{ receta.medicamento }}</span>
-              <span class="text-[11px] text-slate-400 font-bold uppercase tracking-tighter mt-0.5">{{ receta.principioActivo || '-' }}</span>
-              <div class="flex items-center gap-2 mt-1.5">
-                <span class="px-2 py-0.5 rounded text-[10px] bg-blue-50 text-blue-600 font-bold uppercase">{{ receta.dosis }}</span>
-                <span class="text-[10px] text-slate-400 font-medium italic">{{ receta.frecuencia }}</span>
+        <ng-template pTemplate="body" let-receta>
+          <tr class="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors"
+            [class.bg-blue-50]="selectedReceta()?.id === receta.id">
+            <td class="px-6 py-4">
+              <span class="text-sm font-bold text-[#0066AA]">{{ receta.numeroHc }}</span>
+            </td>
+            <td class="px-6 py-4">
+              <span class="text-sm font-medium text-slate-800">{{ receta.pacienteNombre }}</span>
+            </td>
+            <td class="px-6 py-4">
+              <div class="flex flex-col">
+                <span class="text-sm font-semibold text-slate-800">{{ receta.medicamento }}</span>
+                <span class="text-[11px] text-slate-400 font-bold uppercase tracking-tighter mt-0.5">{{ receta.principioActivo || '-' }}</span>
+                <div class="flex items-center gap-2 mt-1.5">
+                  <span class="px-2 py-0.5 rounded text-[10px] bg-blue-50 text-blue-600 font-bold uppercase">{{ receta.dosis }}</span>
+                  <span class="text-[10px] text-slate-400 font-medium italic">{{ receta.frecuencia }}</span>
+                </div>
               </div>
-            </div>
-          </td>
-          <td class="px-6 py-4">
-            <span class="text-sm text-slate-600">{{ receta.veterinarioNombre }}</span>
-          </td>
-          <td class="px-6 py-4">
-            <span class="text-sm text-slate-600 font-medium">{{ receta.fechaCreacion | date:'dd/MM/yyyy' }}</span>
-          </td>
-          <td class="px-6 py-4 text-right">
-            <button
-              type="button"
-              (click)="abrirConsulta(receta)"
-              [disabled]="!receta.consultaId"
-              class="p-2 rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-90 disabled:opacity-40 disabled:cursor-not-allowed"
-              pTooltip="Abrir consulta"
-            >
-              <i class="pi pi-external-link text-sm"></i>
-            </button>
-            <button 
-              (click)="imprimirReceta(receta)"
-              class="p-2 rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-90"
-              pTooltip="Imprimir Receta"
-            >
-              <i class="pi pi-print text-sm"></i>
-            </button>
-          </td>
-        </tr>
-      </ng-template>
+            </td>
+            <td class="px-6 py-4">
+              <span class="text-sm text-slate-600">{{ receta.veterinarioNombre }}</span>
+            </td>
+            <td class="px-6 py-4">
+              <span class="text-sm text-slate-600 font-medium">{{ receta.fechaCreacion | date:'dd/MM/yyyy' }}</span>
+            </td>
+            <td class="px-6 py-4">
+              <div class="flex items-center justify-end gap-1">
+                <button 
+                  (click)="verReceta(receta)"
+                  class="p-2 rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-90"
+                >
+                  <i class="pi pi-eye text-sm"></i>
+                </button>
+                <button 
+                  (click)="imprimirReceta(receta)"
+                  class="p-2 rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-90"
+                >
+                  <i class="pi pi-print text-sm"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
 
-      <ng-template pTemplate="emptymessage">
-        <tr>
-          <td colspan="6" class="py-20 text-center">
-            <i class="pi pi-file-excel text-3xl text-slate-200 block mb-3"></i>
-            <p class="text-sm text-slate-400 font-medium">No se encontraron recetas médicas registradas</p>
-          </td>
-        </tr>
-      </ng-template>
-    </p-table>
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="6" class="py-20 text-center">
+              <i class="pi pi-file-excel text-3xl text-slate-200 block mb-3"></i>
+              <p class="text-sm text-slate-400 font-medium">No se encontraron recetas médicas registradas</p>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
 
-    <div class="border-t border-slate-100">
-      <p-paginator 
-        [rows]="pageSize" 
-        [totalRecords]="totalRecords()" 
-        [first]="currentPage * pageSize"
-        (onPageChange)="onPageChange($event)"
-        [showCurrentPageReport]="true"
-        currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} recetas"
-        styleClass="p-paginator-borderless py-3"
-      ></p-paginator>
+      <div class="border-t border-slate-100">
+        <p-paginator 
+          [rows]="pageSize" 
+          [totalRecords]="totalRecords()" 
+          [first]="currentPage * pageSize || 0"
+          (onPageChange)="onPageChange($event)"
+          [showCurrentPageReport]="true"
+          currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} recetas"
+          styleClass="p-paginator-borderless py-3"
+        ></p-paginator>
+      </div>
     </div>
+
+    @if (selectedReceta(); as receta) {
+      <div class="w-96 shrink-0 bg-white border border-slate-200 rounded-xl overflow-hidden shadow-none h-fit sticky top-4">
+        <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+          <h3 class="text-sm font-bold text-slate-800">Detalle de Receta</h3>
+          <button (click)="cerrarDetalle()"
+            class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all">
+            <i class="pi pi-times text-xs"></i>
+          </button>
+        </div>
+
+        <div class="p-5 space-y-5">
+          <div>
+            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Paciente</label>
+            <p class="text-sm font-semibold text-slate-800 mt-0.5">{{ receta.pacienteNombre }}</p>
+          </div>
+
+          <div>
+            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Historia Clínica</label>
+            <p class="text-sm font-bold text-[#0066AA] mt-0.5">{{ receta.numeroHc }}</p>
+          </div>
+
+          <div class="border-t border-slate-100 pt-5">
+            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 block">Medicamento</label>
+            <p class="text-sm font-bold text-slate-800">{{ receta.medicamento }}</p>
+            <p class="text-xs text-slate-500 mt-0.5">{{ receta.principioActivo || 'Sin principio activo' }}</p>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Dosis</label>
+              <p class="text-sm font-semibold text-slate-800 mt-0.5">{{ receta.dosis }}</p>
+            </div>
+            <div>
+              <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Frecuencia</label>
+              <p class="text-sm font-semibold text-slate-800 mt-0.5">{{ receta.frecuencia }}</p>
+            </div>
+            <div>
+              <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Vía</label>
+              <p class="text-sm font-semibold text-slate-800 mt-0.5">{{ receta.viaAdministracion }}</p>
+            </div>
+            @if (receta.duracionDias) {
+              <div>
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Duración</label>
+                <p class="text-sm font-semibold text-slate-800 mt-0.5">{{ receta.duracionDias }} días</p>
+              </div>
+            }
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Fecha Inicio</label>
+              <p class="text-sm font-semibold text-slate-800 mt-0.5">{{ receta.fechaInicio | date:'dd/MM/yyyy' }}</p>
+            </div>
+            @if (receta.fechaFin) {
+              <div>
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Fecha Fin</label>
+                <p class="text-sm font-semibold text-slate-800 mt-0.5">{{ receta.fechaFin | date:'dd/MM/yyyy' }}</p>
+              </div>
+            }
+          </div>
+
+          @if (receta.instrucciones) {
+            <div>
+              <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Instrucciones</label>
+              <p class="text-sm text-slate-700 mt-0.5 leading-relaxed">{{ receta.instrucciones }}</p>
+            </div>
+          }
+
+          <div class="border-t border-slate-100 pt-5">
+            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Veterinario</label>
+            <p class="text-sm font-semibold text-slate-800 mt-0.5">{{ receta.veterinarioNombre || 'No registrado' }}</p>
+            <p class="text-xs text-slate-400 mt-1">Emitida el {{ receta.fechaCreacion | date:'dd/MM/yyyy' }}</p>
+          </div>
+        </div>
+      </div>
+    }
   </div>
 </div>

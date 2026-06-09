@@ -262,7 +262,7 @@ export class EmployeeComponent implements OnInit {
     this.empleadoService.listar(companyId, undefined, page, event.rows).subscribe({
       next: (res) => {
         this.employees.set(res.data.content);
-        this.totalRecords.set(res.data.totalElements);
+        this.totalRecords.set(res.data?.page?.totalElements ?? res.data?.totalElements ?? 0);
         this.loading.set(false);
         this.loadingStore.hide();
       },

@@ -80,7 +80,7 @@ export class CompanyComponent implements OnInit {
     this.companyService.listar(page, event.rows).subscribe({
       next: (res) => {
         this.companies = res.data.content;
-        this.totalRecords = res.data.totalElements;
+        this.totalRecords = res.data?.page?.totalElements ?? res.data?.totalElements ?? 0;
         this.loading = false;
       },
       error: () => {

@@ -5,6 +5,7 @@ export interface VistaDTO {
   ruta?: string;
   grupo?: string;
   orden?: number;
+  ordenGrupo?: number | null;
   activo: boolean;
 }
 

@@ -3,22 +3,25 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
+import { DragDropModule, CdkDragDrop } from '@angular/cdk/drag-drop';
 import { MenuManagementService } from '../../../core/services/menu-management.service';
 import { VistaDTO } from '../../../models/response/auth-login-response.model';
 import { LoadingStore } from '../../../store/loading.store';
 
-interface VistaGrupo {
-  grupo: string;
-  vistas: VistaDTO[];
+const STANDALONE_KEY = '__STANDALONE__';
+
+interface DisplayGroup {
+  key: string;
+  label: string;
+  items: VistaDTO[];
 }
 
 @Component({
   selector: 'app-ventanas',
   standalone: true,
-  imports: [CommonModule, FormsModule, ToastModule],
+  imports: [CommonModule, FormsModule, ToastModule, DragDropModule],
   providers: [MessageService],
-  templateUrl: './ventanas.component.html',
-  styleUrl: './ventanas.component.scss'
+  templateUrl: './ventanas.component.html'
 })
 export class VentanasComponent implements OnInit {
   private readonly menuService = inject(MenuManagementService);
@@ -28,33 +31,23 @@ export class VentanasComponent implements OnInit {
   vistas = signal<VistaDTO[]>([]);
   selectedVista = signal<VistaDTO | null>(null);
   isEditing = signal<boolean>(false);
+  saving = signal(false);
 
   vistaForm = signal<{
     id?: number;
     codigo: string;
     nombre: string;
     grupo: string;
+    orden: number;
+    ordenGrupo: number | null;
     activo: boolean;
   }>({
     codigo: '',
     nombre: '',
     grupo: 'GENERAL',
+    orden: 0,
+    ordenGrupo: null,
     activo: true
-  });
-
-  grupos = ['GENERAL', 'ADMIN', 'RRHH', 'CLINICA', 'APODERADO'];
-
-  vistasPorGrupo = computed(() => {
-    const vistas = this.vistas();
-    const grouped: { [key: string]: VistaDTO[] } = {};
-
-    this.grupos.forEach(g => {
-      grouped[g] = vistas.filter(v => v.grupo === g);
-    });
-
-    return Object.entries(grouped)
-      .filter(([_, items]) => items.length > 0)
-      .map(([grupo, items]) => ({ grupo, vistas: items }));
   });
 
   confirmDialog = signal<{
@@ -62,6 +55,43 @@ export class VentanasComponent implements OnInit {
     message: string;
     onConfirm: () => void;
   } | null>(null);
+
+  displayGroups = computed(() => {
+    const vistas = this.vistas();
+    const groupsMap = new Map<string, VistaDTO[]>();
+
+    for (const v of vistas) {
+      const g = v.grupo && v.grupo !== 'GENERAL' ? v.grupo : STANDALONE_KEY;
+      if (!groupsMap.has(g)) groupsMap.set(g, []);
+      groupsMap.get(g)!.push(v);
+    }
+
+    const result: DisplayGroup[] = [];
+
+    for (const [key, items] of groupsMap) {
+      if (key === STANDALONE_KEY) {
+        result.push({ key: STANDALONE_KEY, label: 'Items Sueltos', items });
+      } else {
+        result.push({ key, label: this.labelForGroup(key), items });
+      }
+    }
+
+    return result;
+  });
+
+  private labelForGroup(key: string): string {
+    const map: Record<string, string> = {
+      ADMIN: 'Administración',
+      RRHH: 'Personal',
+      CLINICA: 'Clínica',
+      APODERADO: 'Portal Apoderado'
+    };
+    return map[key] || key;
+  }
+
+  itemDropListIds = computed(() => {
+    return this.displayGroups().map(g => `items-${g.key}`);
+  });
 
   ngOnInit() {
     this.cargarVistas();
@@ -74,13 +104,90 @@ export class VentanasComponent implements OnInit {
         this.vistas.set(res.data);
         this.loadingStore.hide();
       },
-      error: (err) => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'No se pudo cargar las vistas'
-        });
+      error: () => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cargar las vistas' });
         this.loadingStore.hide();
+      }
+    });
+  }
+
+  onGroupDrop(event: CdkDragDrop<DisplayGroup[]>) {
+    const groups = [...this.displayGroups()];
+    const [moved] = groups.splice(event.previousIndex, 1);
+    groups.splice(event.currentIndex, 0, moved);
+    this.vistas.set(this.flattenGroups(groups));
+    this.saving.set(true);
+    this.saveOrder(groups);
+  }
+
+  onItemDrop(event: CdkDragDrop<VistaDTO[]>, groupKey: string) {
+    const groups = this.cloneGroups();
+
+    const targetGroup = groups.find(g => g.key === groupKey);
+    const sourceKey = event.previousContainer.id.replace('items-', '');
+    const sourceGroup = groups.find(g => g.key === sourceKey);
+
+    if (!sourceGroup || !targetGroup) return;
+
+    const prevItems = [...sourceGroup.items];
+    const [moved] = prevItems.splice(event.previousIndex, 1);
+    sourceGroup.items = prevItems;
+
+    const currItems = [...targetGroup.items];
+    currItems.splice(event.currentIndex, 0, moved);
+    targetGroup.items = currItems;
+
+    moved.grupo = groupKey === STANDALONE_KEY ? 'GENERAL' : groupKey;
+    moved.ordenGrupo = null;
+
+    if (sourceGroup.items.length === 0 && sourceGroup.key !== STANDALONE_KEY) {
+      // remove empty group from display
+    }
+
+    this.vistas.set(this.flattenGroups(groups));
+    this.saving.set(true);
+    this.saveOrder(groups);
+  }
+
+  private cloneGroups(): DisplayGroup[] {
+    return this.displayGroups().map(g => ({ ...g, items: [...g.items] }));
+  }
+
+  private flattenGroups(groups: DisplayGroup[]): VistaDTO[] {
+    return groups.flatMap(g => g.items);
+  }
+
+  private saveOrder(groups: DisplayGroup[]) {
+    const payload: { id: number; orden: number; grupo: string; ordenGrupo: number | null }[] = [];
+
+    groups.forEach((group, groupIdx) => {
+      if (group.key === STANDALONE_KEY) {
+        group.items.forEach((item, itemIdx) => {
+          payload.push({
+            id: item.id,
+            orden: (itemIdx + 1) * 10,
+            grupo: 'GENERAL',
+            ordenGrupo: null
+          });
+        });
+      } else {
+        group.items.forEach((item, itemIdx) => {
+          payload.push({
+            id: item.id,
+            orden: (itemIdx + 1) * 10,
+            grupo: group.key,
+            ordenGrupo: (groupIdx + 1) * 10
+          });
+        });
+      }
+    });
+
+    this.menuService.reordenarVistas(payload).subscribe({
+      next: () => this.saving.set(false),
+      error: () => {
+        this.saving.set(false);
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo guardar el orden' });
+        this.cargarVistas();
       }
     });
   }
@@ -93,6 +200,8 @@ export class VentanasComponent implements OnInit {
       codigo: vista.codigo,
       nombre: vista.nombre,
       grupo: vista.grupo || 'GENERAL',
+      orden: vista.orden ?? 0,
+      ordenGrupo: vista.ordenGrupo ?? null,
       activo: vista.activo
     });
   }
@@ -104,6 +213,8 @@ export class VentanasComponent implements OnInit {
       codigo: '',
       nombre: '',
       grupo: 'GENERAL',
+      orden: 0,
+      ordenGrupo: null,
       activo: true
     });
   }
@@ -114,11 +225,7 @@ export class VentanasComponent implements OnInit {
     const nombre = data.nombre.trim();
     const grupo = data.grupo.trim();
     if (!codigo || !nombre || !grupo) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Atención',
-        detail: 'Código y Nombre son obligatorios'
-      });
+      this.messageService.add({ severity: 'warn', summary: 'Atención', detail: 'Código y Nombre son obligatorios' });
       return;
     }
 
@@ -139,6 +246,8 @@ export class VentanasComponent implements OnInit {
       codigo: codigo.toUpperCase().replace(/\s+/g, '_'),
       nombre,
       grupo: grupo.toUpperCase().replace(/\s+/g, '_'),
+      orden: data.orden,
+      ordenGrupo: data.ordenGrupo,
       activo: data.activo
     };
 
@@ -146,40 +255,24 @@ export class VentanasComponent implements OnInit {
     if (data.id) {
       this.menuService.actualizarVista(data.id, payload).subscribe({
         next: () => {
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Éxito',
-            detail: 'Vista actualizada correctamente'
-          });
+          this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Vista actualizada correctamente' });
           this.cargarVistas();
           this.selectedVista.set(null);
         },
         error: (err) => {
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: err.error?.message || 'No se pudo actualizar la vista'
-          });
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo actualizar la vista' });
           this.loadingStore.hide();
         }
       });
     } else {
       this.menuService.crearVista(payload).subscribe({
         next: () => {
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Éxito',
-            detail: 'Vista creada correctamente'
-          });
+          this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Vista creada correctamente' });
           this.cargarVistas();
           this.selectedVista.set(null);
         },
         error: (err) => {
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: err.error?.message || 'No se pudo crear la vista'
-          });
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo crear la vista' });
           this.loadingStore.hide();
         }
       });
@@ -198,20 +291,12 @@ export class VentanasComponent implements OnInit {
         this.loadingStore.show();
         this.menuService.eliminarVista(v.id).subscribe({
           next: () => {
-            this.messageService.add({
-              severity: 'success',
-              summary: 'Éxito',
-              detail: 'Vista eliminada'
-            });
+            this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Vista eliminada' });
             this.selectedVista.set(null);
             this.cargarVistas();
           },
           error: (err) => {
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Error',
-              detail: err.error?.message || 'No se pudo eliminar la vista'
-            });
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo eliminar la vista' });
             this.loadingStore.hide();
           }
         });
@@ -219,19 +304,10 @@ export class VentanasComponent implements OnInit {
     });
   }
 
-  cancelConfirm() {
-    this.confirmDialog.set(null);
-  }
-
-  confirmAction() {
-    const dialog = this.confirmDialog();
-    if (dialog) dialog.onConfirm();
-  }
+  cancelConfirm() { this.confirmDialog.set(null); }
+  confirmAction() { const d = this.confirmDialog(); if (d) d.onConfirm(); }
 
   updateField(field: string, value: any) {
-    this.vistaForm.update(current => ({
-      ...current,
-      [field]: value
-    } as any));
+    this.vistaForm.update(c => ({ ...c, [field]: value }));
   }
 }
