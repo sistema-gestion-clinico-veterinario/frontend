@@ -129,7 +129,7 @@ export class ClientComponent implements OnInit {
     this.apoderadoService.listar(companyId, undefined, undefined, page, event.rows).subscribe({
       next: (res) => {
         this.clients.set(res.data.content);
-        this.totalRecords.set(res.data.totalElements);
+        this.totalRecords.set(res.data?.page?.totalElements ?? res.data?.totalElements ?? 0);
         this.loading.set(false);
         this.loadingStore.hide();
       },

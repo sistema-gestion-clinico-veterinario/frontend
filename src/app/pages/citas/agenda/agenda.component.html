@@ -804,7 +804,7 @@
         </div>
         <div>
           <h2 class="text-base font-extrabold text-slate-900">Eliminar Cita</h2>
-          <p class="text-xs text-slate-400 mt-0.5">Esta acción no se puede deshacer</p>
+          <p class="text-xs text-slate-400 mt-0.5">La cita quedará registrada como eliminada</p>
         </div>
       </div>
       <button (click)="displayDeleteModal.set(false)"
@@ -824,8 +824,8 @@
         </div>
       </div>
       <p class="text-sm text-slate-600 leading-relaxed">
-        ¿Confirma la eliminación <span class="font-bold text-red-600">permanente</span> de esta cita?
-        Una vez eliminada no podrá recuperarse.
+        ¿Confirma que desea eliminar esta cita?
+        La cita cambiará a estado <span class="font-bold text-red-600">Eliminada</span> y no se mostrará en la agenda.
       </p>
     </div>
 
@@ -837,7 +837,7 @@
       <button (click)="confirmarEliminar()" [disabled]="loadingStore.isLoading()"
         class="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-sm font-bold disabled:opacity-50 flex items-center justify-center gap-2 transition-all">
         <i *ngIf="loadingStore.isLoading()" class="pi pi-spin pi-spinner"></i>
-        {{ loadingStore.isLoading() ? 'Eliminando...' : 'Eliminar definitivamente' }}
+        {{ loadingStore.isLoading() ? 'Eliminando...' : 'Eliminar' }}
       </button>
     </div>
 

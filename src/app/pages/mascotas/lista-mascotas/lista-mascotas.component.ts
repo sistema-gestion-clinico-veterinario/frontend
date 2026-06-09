@@ -179,7 +179,7 @@ export class ListaMascotasComponent implements OnInit {
     ).subscribe({
       next: (res) => {
         this.mascotas.set(res.data.content);
-        this.totalRecords.set(res.data.totalElements);
+        this.totalRecords.set(res.data?.page?.totalElements ?? res.data?.totalElements ?? 0);
         this.loadingStore.hide();
       },
       error: () => {
@@ -314,7 +314,7 @@ export class ListaMascotasComponent implements OnInit {
   }
 
   verHistoriaClinica(mascota: MascotaResponse) {
-    this.router.navigate(['/historias-clinicas/mascota', mascota.id]);
+    this.router.navigate(['/historias-clinicas/mascota', mascota.id], { queryParams: { returnUrl: '/mascotas' } });
   }
 
   calcularEdad(fechaNacimiento: string): string {

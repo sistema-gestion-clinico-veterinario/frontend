@@ -1,16 +1,17 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TableModule } from 'primeng/table';
 import { PaginatorModule } from 'primeng/paginator';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { PagoService } from '../../../core/services/pago.service';
-import { PagoListResponse } from '../../../models/response/pago-response';
+import { PagoPortalResponse } from '../../../models/response/pago-portal-response';
 
 @Component({
   selector: 'app-mis-pagos',
   standalone: true,
-  imports: [CommonModule, FormsModule, PaginatorModule, ToastModule],
+  imports: [CommonModule, FormsModule, TableModule, PaginatorModule, ToastModule],
   providers: [MessageService],
   templateUrl: './mis-pagos.component.html',
   styleUrl: './mis-pagos.component.scss'
@@ -19,18 +20,20 @@ export class MisPagosComponent implements OnInit {
   private readonly pagoService    = inject(PagoService);
   private readonly messageService = inject(MessageService);
 
-  pagos        = signal<PagoListResponse[]>([]);
+  pagos        = signal<PagoPortalResponse[]>([]);
   isLoading    = signal<boolean>(true);
   totalRecords = signal<number>(0);
   page         = signal<number>(0);
   size         = signal<number>(10);
 
-  // Panel derecho
-  selectedPago = signal<PagoListResponse | null>(null);
+  selectedPago = signal<PagoPortalResponse | null>(null);
   showPanel    = signal<boolean>(false);
 
-  // Filtro local
   filtroEstado = signal<string>('');
+
+  totalPagado   = computed(() => this.pagos().filter(p => p.estadoPago === 'PAID').length);
+  totalPendiente = computed(() => this.pagos().filter(p => p.estadoPago === 'PENDING').length);
+  totalRechazado = computed(() => this.pagos().filter(p => p.estadoPago === 'REJECTED').length);
 
   ngOnInit() {
     this.cargar();
@@ -43,7 +46,7 @@ export class MisPagosComponent implements OnInit {
     } else {
       this.isLoading.set(true);
     }
-    this.pagoService.getMisPagos(this.page(), this.size()).subscribe({
+    this.pagoService.getPaymentHistory(this.page(), this.size()).subscribe({
       next: (res) => {
         this.pagos.set(res.data?.content ?? []);
         this.totalRecords.set((res.data as any)?.page?.totalElements ?? res.data?.totalElements ?? 0);
@@ -56,13 +59,13 @@ export class MisPagosComponent implements OnInit {
     });
   }
 
-  get pagosFiltrados(): PagoListResponse[] {
+  get pagosFiltrados(): PagoPortalResponse[] {
     const estado = this.filtroEstado();
     if (!estado) return this.pagos();
-    return this.pagos().filter(p => p.estado === estado);
+    return this.pagos().filter(p => p.estadoPago === estado);
   }
 
-  verDetalle(pago: PagoListResponse) {
+  verDetalle(pago: PagoPortalResponse) {
     this.selectedPago.set(pago);
     this.showPanel.set(true);
   }
@@ -70,6 +73,12 @@ export class MisPagosComponent implements OnInit {
   cerrarPanel() {
     this.showPanel.set(false);
     this.selectedPago.set(null);
+  }
+
+  onPageChange(event: any) {
+    this.page.set(event.page ?? 0);
+    this.size.set(event.rows ?? 10);
+    this.cargar(event);
   }
 
   estadoBadge(estado: string | null): string {

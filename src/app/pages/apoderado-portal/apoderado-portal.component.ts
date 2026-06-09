@@ -75,7 +75,7 @@ export class ApoderadoPortalComponent implements OnInit {
   loadCitas() {
     this.apoderadoService.getPortalCitas().subscribe({
       next: (res) => {
-        this.citas.set(res.data);
+        this.citas.set(res.data?.content ?? res.data ?? []);
         this.loadingStore.hide();
       },
       error: () => {

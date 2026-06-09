@@ -71,7 +71,7 @@ export class HistoriaClinicaService {
   buscarRecetas(filters: {
     query?: string;
     companyId?: number;
-    mascotaId?: number;
+    nombreMascota?: string;
     numeroMicrochip?: string;
     numeroDocumentoApoderado?: string;
     numeroDocumentoEmpleado?: string;
@@ -81,7 +81,7 @@ export class HistoriaClinicaService {
   }, page: number = 0, size: number = 10) {
     let params = `?query=${encodeURIComponent(filters.query || '')}&page=${page}&size=${size}`;
     if (filters.companyId != null) params += `&companyId=${filters.companyId}`;
-    if (filters.mascotaId != null) params += `&mascotaId=${filters.mascotaId}`;
+    if (filters.nombreMascota) params += `&nombreMascota=${encodeURIComponent(filters.nombreMascota)}`;
     if (filters.numeroMicrochip) params += `&numeroMicrochip=${encodeURIComponent(filters.numeroMicrochip)}`;
     if (filters.numeroDocumentoApoderado) params += `&numeroDocumentoApoderado=${encodeURIComponent(filters.numeroDocumentoApoderado)}`;
     if (filters.numeroDocumentoEmpleado) params += `&numeroDocumentoEmpleado=${encodeURIComponent(filters.numeroDocumentoEmpleado)}`;

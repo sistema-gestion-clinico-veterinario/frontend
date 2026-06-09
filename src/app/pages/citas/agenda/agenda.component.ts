@@ -476,7 +476,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
     ).subscribe({
       next: (res) => {
         this.citas.set(res.data.content);
-        this.totalRecords.set(res.data.totalElements);
+        this.totalRecords.set(res.data?.page?.totalElements ?? res.data?.totalElements ?? 0);
         // Sincronizar citasPorDia para que la vista 'día' muestre las citas correctamente
         if (this.vistaActual() === 'dia' && this.filterFecha) {
           const mapa: Record<string, CitaResponse[]> = {};
@@ -641,7 +641,8 @@ export class AgendaComponent implements OnInit, OnDestroy {
       fechaStr = fechaRaw as string;
     }
     const isEmergencia = val.esEmergencia ?? false;
-    this.citaService.getAdminDisponibilidad(val.veterinarioId, fechaStr, val.servicioId, isEmergencia).subscribe({
+    const excludeId = this.isReprogramando() ? val.id : undefined;
+    this.citaService.getAdminDisponibilidad(val.veterinarioId, fechaStr, val.servicioId, isEmergencia, excludeId).subscribe({
       next: (res) => { this.availableSlots.set(res.data || []); this.loadingSlots.set(false); },
       error: ()   => { this.availableSlots.set([]); this.loadingSlots.set(false); }
     });
@@ -753,7 +754,6 @@ export class AgendaComponent implements OnInit, OnDestroy {
     this.availableSlots.set([]);
     this.selectedServicioId.set(cita.servicioId ?? null);
     this.filterEmpleadosByServicio(cita.servicioId ?? null);
-    this.onVeterinarioChange(cita.veterinarioId);
 
     const fechaDate = new Date(cita.fechaHoraInicio);
     const fechaStr  = `${fechaDate.getFullYear()}-${String(fechaDate.getMonth()+1).padStart(2,'0')}-${String(fechaDate.getDate()).padStart(2,'0')}`;
@@ -771,6 +771,9 @@ export class AgendaComponent implements OnInit, OnDestroy {
       notas: cita.notas,
       esEmergencia: cita.esEmergencia
     });
+
+    this.onVeterinarioChange(cita.veterinarioId);
+    this.onBookingParamsChange();
     this.selectedClienteId.set(cita.apoderadoId);
     this.showClienteSelector.set(false);
     this.clienteSearch.set('');
@@ -962,7 +965,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
   }
 
   canCancel(cita: CitaResponse): boolean {
-    if (cita.estado === EstadoCita.COMPLETADA || cita.estado === EstadoCita.CANCELADA || cita.estado === EstadoCita.EN_PROCESO) {
+    if (cita.estado === EstadoCita.COMPLETADA || cita.estado === EstadoCita.CANCELADA || cita.estado === EstadoCita.EN_PROCESO || cita.estado === EstadoCita.ELIMINADA) {
       return false;
     }
     const fechaInicio = new Date(cita.fechaHoraInicio);
@@ -974,7 +977,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
   }
 
   canEdit(cita: CitaResponse): boolean {
-    if (cita.estado === EstadoCita.COMPLETADA || cita.estado === EstadoCita.CANCELADA || cita.estado === EstadoCita.EN_PROCESO) {
+    if (cita.estado === EstadoCita.COMPLETADA || cita.estado === EstadoCita.CANCELADA || cita.estado === EstadoCita.EN_PROCESO || cita.estado === EstadoCita.ELIMINADA) {
       return false;
     }
     const fechaInicio = new Date(cita.fechaHoraInicio);
@@ -1074,7 +1077,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
     this.citaService.eliminarCita(cita.id).subscribe({
       next: () => {
         this.suppressSseToast = true;
-        this.messageService.add({ severity: 'success', summary: 'Listo', detail: 'Cita registrada eliminada correctamente' });
+        this.messageService.add({ severity: 'success', summary: 'Listo', detail: 'Cita eliminada correctamente' });
         this.displayDeleteModal.set(false);
         this.loadCitas();
         if (this.vistaActual() !== 'lista') this.loadCitasCalendario();
@@ -1459,7 +1462,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
 
   canCobrar(cita: CitaResponse): boolean {
     if (!cita.servicioId) return false;
-    if (cita.estado === EstadoCita.CANCELADA || cita.estado === EstadoCita.NO_ASISTIO) return false;
+    if (cita.estado === EstadoCita.CANCELADA || cita.estado === EstadoCita.NO_ASISTIO || cita.estado === EstadoCita.ELIMINADA) return false;
     const total = cita.totalServicio ?? 0;
     const pagado = cita.montoPagado ?? 0;
     return total <= 0 || pagado < total;

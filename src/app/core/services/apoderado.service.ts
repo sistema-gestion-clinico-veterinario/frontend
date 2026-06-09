@@ -65,12 +65,13 @@ export class ApoderadoService {
   }
 
   getPortalCitas() {
-    return this.http.get<ApiResponse<any[]>>(`${environment.apiUrl}/clients/portal/appointments`);
+    return this.http.get<ApiResponse<Page<any>>>(`${environment.apiUrl}/clients/portal/appointments`);
   }
 
-  getPortalCitasFiltradas(mascotaId?: number) {
-    const params = mascotaId ? `?mascotaId=${mascotaId}` : '';
-    return this.http.get<ApiResponse<any[]>>(`${environment.apiUrl}/clients/portal/appointments${params}`);
+  getPortalCitasFiltradas(mascotaId?: number, page: number = 0, size: number = 10) {
+    let params = `?page=${page}&size=${size}`;
+    if (mascotaId) params += `&mascotaId=${mascotaId}`;
+    return this.http.get<ApiResponse<Page<any>>>(`${environment.apiUrl}/clients/portal/appointments${params}`);
   }
 
   getPortalRecetas() {
