@@ -1,5 +1,5 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
-import { CommonModule, Location } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ToastModule } from 'primeng/toast';
@@ -27,7 +27,6 @@ import { DiagnosticoIaComponent } from './diagnostico-ia/diagnostico-ia.componen
 export class HistoriaClinicaMascotaComponent implements OnInit {
   private readonly route      = inject(ActivatedRoute);
   private readonly router     = inject(Router);
-  private readonly location   = inject(Location);
   private readonly hcService  = inject(HistoriaClinicaService);
   private readonly msgService = inject(MessageService);
   private readonly sanitizer  = inject(DomSanitizer);
@@ -36,6 +35,7 @@ export class HistoriaClinicaMascotaComponent implements OnInit {
 
   readonly canModify = computed(() => this.authStore.hasAccess('VISTA_HISTORIAS', 'modificar'));
 
+  returnUrl        = '/historias-clinicas';
   mascotaId        = 0;
   hc               = signal<HistoriaClinicaDetalle | null>(null);
   consultaActiva   = signal<ConsultaResumen | null>(null);
@@ -49,6 +49,9 @@ export class HistoriaClinicaMascotaComponent implements OnInit {
   previewCargando  = signal<boolean>(false);
 
   ngOnInit() {
+    this.route.queryParamMap.subscribe(qp => {
+      if (qp.get('returnUrl')) this.returnUrl = qp.get('returnUrl')!;
+    });
     this.route.params.subscribe(params => {
       this.mascotaId = Number(params['mascotaId']);
       this.cargarHistoria(this.mascotaId);
@@ -87,7 +90,7 @@ export class HistoriaClinicaMascotaComponent implements OnInit {
   }
 
   volver() {
-    this.location.back();
+    this.router.navigateByUrl(this.returnUrl);
   }
 
   formatFecha(fecha: string): string {

@@ -80,40 +80,16 @@ export class PasswordChangeComponent {
 
     this.authService.changePassword({ oldPassword: oldPassword!, newPassword: newPassword! }).subscribe({
       next: () => {
-        this.authStore.setAuth({
-          token: this.authStore.token()!,
-          refreshToken: this.authStore.refreshToken(),
-          roles: this.authStore.roles(),
-          companyId: this.authStore.companyId(),
-          companyName: this.authStore.companyName(),
-          nombreCompleto: this.authStore.nombreCompleto(),
-          userType: this.authStore.userType(),
-          empleadoId: this.authStore.empleadoId(),
-          passwordChanged: true,
-          needsCompanySelection: this.authStore.needsCompanySelection(),
-          selectedEnterprise: this.authStore.selectedEnterprise(),
-          menu: this.authStore.menu(),
-          assignedRoles: this.authStore.assignedRoles()
-        });
-
         this.messageService.add({
           severity: 'success',
           summary: 'Contraseña Actualizada',
-          detail: 'Tu contraseña ha sido cambiada con éxito. Redirigiendo...'
+          detail: 'Tu contraseña ha sido cambiada con éxito. Cerrando sesión...'
         });
 
         setTimeout(() => {
           this.isSubmitting.set(false);
-          const roles = this.authStore.roles() ?? [];
-          if (roles.includes('ROLE_SUPER_ADMIN')) {
-            this.router.navigateByUrl('/admin/company');
-          } else if (roles.includes('ROLE_CLIENTE') || roles.includes('ROLE_APODERADO')) {
-            this.router.navigateByUrl('/apoderado/dashboard');
-          } else if (roles.includes('ROLE_ADMIN')) {
-            this.router.navigateByUrl('/admin/dashboard');
-          } else {
-            this.router.navigateByUrl('/empleado/dashboard');
-          }
+          this.authStore.logout();
+          this.router.navigateByUrl('/login', { replaceUrl: true });
         }, 1500);
       },
       error: (err) => {

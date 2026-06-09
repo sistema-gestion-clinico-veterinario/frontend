@@ -182,7 +182,7 @@ export class EmployeeDashboardComponent implements OnInit {
   }
 
   verHistorialClinico(cita: any) {
-    this.router.navigate(['/historias-clinicas/mascota', cita.mascotaId]);
+    this.router.navigate(['/historias-clinicas/mascota', cita.mascotaId], { queryParams: { returnUrl: '/employee/dashboard' } });
   }
 
   formatTime(dateStr: string): string {

@@ -56,7 +56,7 @@ export class ListaHcComponent implements OnInit {
     }).subscribe({
       next: (res) => {
         this.historias.set(res.data.content);
-        this.totalRecords.set(res.data.totalElements);
+        this.totalRecords.set(res.data?.page?.totalElements ?? res.data?.totalElements ?? 0);
         this.loadingStore.hide();
       },
       error: () => this.loadingStore.hide()
@@ -76,6 +76,6 @@ export class ListaHcComponent implements OnInit {
   }
 
   verDetalle(mascotaId: number) {
-    this.router.navigate(['/historias-clinicas/mascota', mascotaId]);
+    this.router.navigate(['/historias-clinicas/mascota', mascotaId], { queryParams: { returnUrl: '/historias-clinicas' } });
   }
 }

@@ -32,8 +32,12 @@ export class SidebarComponent {
   userName = computed(() => this.authStore.nombreCompleto() ?? 'Usuario');
   companyName = computed(() => this.authStore.companyName() ?? '');
 
-  toggleSection(ventanaId: number | undefined) {
-    const key = String(ventanaId ?? 'default');
+  private sectionKey(structure: MenuSection): string {
+    return structure.ventanaNombre || structure.grupo || 'default';
+  }
+
+  toggleSection(structure: MenuSection) {
+    const key = this.sectionKey(structure);
     this.expandedSections.update(state => ({
       ...state,
       [key]: !state[key]
@@ -41,7 +45,7 @@ export class SidebarComponent {
   }
 
   isSectionExpanded(structure: MenuSection): boolean {
-    const key = String(structure.ventanaId ?? 'default');
+    const key = this.sectionKey(structure);
     const userToggled = this.expandedSections()[key];
     if (userToggled !== undefined) {
       return userToggled;

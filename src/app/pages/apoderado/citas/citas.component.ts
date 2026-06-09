@@ -1,16 +1,16 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { TableModule } from 'primeng/table';
+import { PaginatorModule } from 'primeng/paginator';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { DropdownModule } from 'primeng/dropdown';
 import { ToastModule } from 'primeng/toast';
 import { CalendarModule } from 'primeng/calendar';
-import { MessageService, ConfirmationService } from 'primeng/api';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { MessageService } from 'primeng/api';
 import { ApoderadoService } from '../../../core/services/apoderado.service';
 import { PagoService } from '../../../core/services/pago.service';
 import { AuthStore } from '../../../store/auth.store';
@@ -32,16 +32,16 @@ interface HorarioResumen {
     ReactiveFormsModule,
     FormsModule,
     TableModule,
+    PaginatorModule,
     ButtonModule,
     DialogModule,
     InputTextModule,
     DropdownModule,
     ToastModule,
     CalendarModule,
-    RouterModule,
-    ConfirmDialogModule
+    RouterModule
   ],
-  providers: [MessageService, ConfirmationService],
+  providers: [MessageService],
   templateUrl: './citas.component.html',
   styleUrl: './citas.component.scss'
 })
@@ -50,7 +50,6 @@ export class CitasComponent implements OnInit {
   private readonly apoderadoService = inject(ApoderadoService);
   private readonly pagoService = inject(PagoService);
   private readonly messageService = inject(MessageService);
-  private readonly confirmationService = inject(ConfirmationService);
   private readonly route = inject(ActivatedRoute);
   readonly authStore = inject(AuthStore);
   readonly loadingStore = inject(LoadingStore);
@@ -63,6 +62,24 @@ export class CitasComponent implements OnInit {
   vets = signal<any[]>([]);
   availableSlots = signal<string[]>([]);
   horariosVeterinario = signal<any[]>([]);
+
+  // Dropdown options for pet filter
+  petFilterOptions = computed(() => {
+    const pets = this.mascotas();
+    return [
+      { label: 'Todas las mascotas', value: null, initial: 'T' },
+      ...pets.map((m: any) => ({
+        label: m.nombreCompleto,
+        value: m.id,
+        initial: (m.nombreCompleto || '?').charAt(0).toUpperCase()
+      }))
+    ];
+  });
+
+  // Computed stats
+  activeCitasCount = computed(() => this.citas().filter(c => c.estado === 'PENDIENTE' || c.estado === 'CONFIRMADA' || c.estado === 'PROGRAMADA' || c.estado === 'REPROGRAMADA').length);
+  completedCitasCount = computed(() => this.citas().filter(c => c.estado === 'COMPLETADA' || c.estado === 'ATENDIDA').length);
+  pendingPaymentCount = computed(() => this.citas().filter(c => this.canPagar(c)).length);
   
   // View Modes & Filters
   citasViewMode = signal<'list' | 'grid'>('list');
@@ -70,11 +87,20 @@ export class CitasComponent implements OnInit {
   loadingSlots = signal<boolean>(false);
   today = new Date();
 
+  // Pagination
+  currentPage = signal<number>(0);
+  totalRecords = signal<number>(0);
+  pageSize = signal<number>(10);
+
   // Modals & States
   displayCitaModal = signal<boolean>(false);
   isEditing = signal<boolean>(false);
   isRescheduling = signal<boolean>(false);
   editingCitaId = signal<number | null>(null);
+  displayConfirmModal = signal<boolean>(false);
+  confirmMsg = signal<string>('');
+  confirmHeader = signal<string>('');
+  private pendingRequest: any = null;
 
   // ── PAGO YAPE ──────────────────────────────────────────────────
   displayPagoModal = signal<boolean>(false);
@@ -205,9 +231,13 @@ export class CitasComponent implements OnInit {
 
   private executeLoadCitas() {
     const filterId = this.selectedPetFilter();
-    this.apoderadoService.getPortalCitasFiltradas(filterId || undefined).subscribe({
+    const page = this.currentPage();
+    const size = this.pageSize();
+    this.apoderadoService.getPortalCitasFiltradas(filterId || undefined, page, size).subscribe({
       next: (res) => {
-        this.citas.set(res.data);
+        const data = res.data;
+        this.citas.set(data?.content ?? []);
+        this.totalRecords.set(data?.page?.totalElements ?? data?.totalElements ?? 0);
         this.loadingStore.hide();
       },
       error: (err: any) => {
@@ -217,8 +247,18 @@ export class CitasComponent implements OnInit {
     });
   }
 
+  onPageChange(event: any) {
+    this.currentPage.set(event.page ?? 0);
+    this.pageSize.set(event.rows ?? 10);
+    this.loadCitas();
+  }
+
   filterCitasByPet(petId: number | null) {
     this.selectedPetFilter.set(petId);
+    this.loadCitas();
+  }
+
+  onPetFilterChange(event: any) {
     this.loadCitas();
   }
 
@@ -327,21 +367,29 @@ export class CitasComponent implements OnInit {
     this.displayCitaModal.set(true);
   }
 
+  private toUtc5Ms(dateStr: string): number {
+    return new Date(dateStr + '-05:00').getTime();
+  }
+
+  private nowUtc5Ms(): number {
+    return new Date().getTime();
+  }
+
   canUpdateDetails(cita: any): boolean {
     if (!cita) return false;
+    if (!this.authStore.hasAccess('VISTA_MIS_CITAS', 'modificar')) return false;
     const editableStates = ['PENDIENTE', 'CONFIRMADA', 'PROGRAMADA', 'REPROGRAMADA'];
-    return editableStates.includes(cita.estado);
+    if (!editableStates.includes(cita.estado)) return false;
+    const diffMs = this.toUtc5Ms(cita.fechaHoraInicio) - this.nowUtc5Ms();
+    return diffMs >= 4 * 60 * 60 * 1000;
   }
 
   canReschedule(cita: any): boolean {
     if (!cita) return false;
     const editableStates = ['PENDIENTE', 'CONFIRMADA', 'PROGRAMADA', 'REPROGRAMADA'];
     if (!editableStates.includes(cita.estado)) return false;
-    
-    const startTime = new Date(cita.fechaHoraInicio).getTime();
-    const now = new Date().getTime();
-    const sixHoursInMs = 6 * 60 * 60 * 1000;
-    return (startTime - now) >= sixHoursInMs;
+    const diffMs = this.toUtc5Ms(cita.fechaHoraInicio) - this.nowUtc5Ms();
+    return diffMs >= 6 * 60 * 60 * 1000;
   }
 
   canCancel(cita: any): boolean {
@@ -349,31 +397,7 @@ export class CitasComponent implements OnInit {
   }
 
   cancelCita(cita: any) {
-    if (!this.canCancel(cita)) {
-      this.messageService.add({ severity: 'warn', summary: 'Restricción', detail: 'No se puede cancelar la cita con menos de 2 horas de anticipación.' });
-      return;
-    }
-
-    this.confirmationService.confirm({
-      message: '¿Está seguro de que desea cancelar esta cita? El veterinario y usted recibirán notificaciones de cancelación.',
-      header: 'Confirmar Cancelación de Citas',
-      icon: 'pi pi-exclamation-triangle',
-      acceptLabel: 'Sí, cancelar',
-      rejectLabel: 'No, volver',
-      accept: () => {
-        this.loadingStore.show();
-        this.apoderadoService.cancelarPortalCita(cita.id, '').subscribe({
-          next: () => {
-            this.messageService.add({ severity: 'success', summary: 'Cita Cancelada', detail: 'La cita ha sido cancelada exitosamente.' });
-            this.loadCitas();
-          },
-          error: (err: any) => {
-            this.messageService.add({ severity: 'error', summary: 'Error al Cancelar', detail: err.error?.message || 'No se pudo cancelar la cita.' });
-            this.loadingStore.hide();
-          }
-        });
-      }
-    });
+    this.messageService.add({ severity: 'warn', summary: 'Restricción', detail: 'No se puede cancelar la cita con menos de 2 horas de anticipación.' });
   }
 
   editCitaDetails(cita: any) {
@@ -393,7 +417,11 @@ export class CitasComponent implements OnInit {
       notas: cita.notas || ''
     });
 
-    this.onVeterinarioChange();
+    this.citaForm.get('servicioId')?.disable();
+    this.citaForm.get('veterinarioId')?.disable();
+    this.citaForm.get('fechaCita')?.disable();
+    this.citaForm.get('horaCita')?.disable();
+
     this.displayCitaModal.set(true);
   }
 
@@ -437,8 +465,7 @@ export class CitasComponent implements OnInit {
       return;
     }
 
-    this.loadingStore.show();
-    const formVal = this.citaForm.value;
+    const formVal = this.citaForm.getRawValue();
 
     let isoString = '';
     if (!this.isEditing()) {
@@ -465,6 +492,26 @@ export class CitasComponent implements OnInit {
       esEmergencia: originalCita ? originalCita.esEmergencia : false
     };
 
+    this.pendingRequest = request;
+    this.confirmHeader.set(this.isEditing() ? 'Confirmar Edición' : this.isRescheduling() ? 'Confirmar Reprogramación' : 'Confirmar Cita');
+    this.confirmMsg.set(this.isEditing() ? 'Se actualizarán los datos de la cita.' : this.isRescheduling() ? 'Se reprogramará la cita.' : 'Se agendará una nueva cita.');
+    this.displayConfirmModal.set(true);
+  }
+
+  onConfirmAccept() {
+    this.displayConfirmModal.set(false);
+    const req = this.pendingRequest;
+    this.pendingRequest = null;
+    if (req) this.executeSaveCita(req);
+  }
+
+  onConfirmReject() {
+    this.displayConfirmModal.set(false);
+    this.pendingRequest = null;
+  }
+
+  private executeSaveCita(request: any) {
+    this.loadingStore.show();
     if (this.isEditing()) {
       this.apoderadoService.updatePortalCita(this.editingCitaId()!, request).subscribe({
         next: () => {
@@ -527,6 +574,20 @@ export class CitasComponent implements OnInit {
       case 'ATENDIDA': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
       case 'EN_PROCESO': return 'bg-violet-50 text-violet-700 border-violet-200';
       default: return 'bg-slate-50 text-slate-700 border-slate-200';
+    }
+  }
+
+  getEstadoDotClass(estado: string): string {
+    switch (estado) {
+      case 'PENDIENTE': return 'bg-amber-400';
+      case 'CONFIRMADA': return 'bg-blue-400';
+      case 'EN_ATENCION': return 'bg-purple-400';
+      case 'COMPLETADA': return 'bg-green-400';
+      case 'CANCELADA': return 'bg-red-400';
+      case 'ELIMINADA': return 'bg-slate-300';
+      case 'ATENDIDA': return 'bg-emerald-400';
+      case 'EN_PROCESO': return 'bg-violet-400';
+      default: return 'bg-slate-400';
     }
   }
 
