@@ -51,6 +51,11 @@ export class MyScheduleComponent implements OnInit {
     this.generateCalendar();
   }
 
+  private matchFecha(fecha: string, date: Date): boolean {
+    const [y, m, d] = fecha.split('-').map(Number);
+    return new Date(y, m - 1, d).toDateString() === date.toDateString();
+  }
+
   generateCalendar() {
     this.calendarDays = [];
     const today = new Date();
@@ -70,7 +75,7 @@ export class MyScheduleComponent implements OnInit {
       for (let i = 1; i <= lastDay.getDate(); i++) {
         const date = new Date(year, month, i);
         const isToday = date.toDateString() === today.toDateString();
-        const dayShifts = this.horarios.filter(h => new Date(h.fecha).toDateString() === date.toDateString());
+        const dayShifts = this.horarios.filter(h => this.matchFecha(h.fecha, date));
         this.calendarDays.push({ day: i, otherMonth: false, isToday, shifts: dayShifts, date: date });
       }
 
@@ -85,13 +90,13 @@ export class MyScheduleComponent implements OnInit {
         const d = new Date(startOfWeek);
         d.setDate(startOfWeek.getDate() + i);
         const isToday = d.toDateString() === today.toDateString();
-        const dayShifts = this.horarios.filter(h => new Date(h.fecha).toDateString() === d.toDateString());
+        const dayShifts = this.horarios.filter(h => this.matchFecha(h.fecha, d));
         this.calendarDays.push({ day: d.getDate(), otherMonth: d.getMonth() !== this.currentDate.getMonth(), isToday, shifts: dayShifts, date: d });
       }
     } else if (this.viewMode === 'day') {
       const d = new Date(this.currentDate);
       const isToday = d.toDateString() === today.toDateString();
-      const dayShifts = this.horarios.filter(h => new Date(h.fecha).toDateString() === d.toDateString());
+      const dayShifts = this.horarios.filter(h => this.matchFecha(h.fecha, d));
       this.calendarDays.push({ day: d.getDate(), otherMonth: false, isToday, shifts: dayShifts, date: d });
     }
   }
