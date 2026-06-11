@@ -274,5 +274,88 @@
 
       </div>
     </div>
+
+    <!-- 💳 MIS PAGOS -->
+    <div *ngIf="canViewMisPagos()" class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+      <div class="px-6 py-5 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
+        <div>
+          <h2 class="text-xs font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
+            <i class="pi pi-wallet text-emerald-600"></i>
+            Mis Pagos
+          </h2>
+          <p class="text-[10px] text-slate-400 font-medium mt-0.5">Historial de transacciones</p>
+        </div>
+        <a routerLink="/apoderado/mis-pagos"
+          class="text-[10px] font-extrabold text-[#0066AA] hover:underline flex items-center gap-1">
+          Ver todos <i class="pi pi-arrow-right text-[8px]"></i>
+        </a>
+      </div>
+
+      <div class="p-6">
+        <ng-container *ngIf="!loadingPagos(); else loadingTpl">
+          <div *ngIf="pagos().length > 0; else emptyTpl" class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="border-b border-slate-200">
+                  <th class="pb-3 text-[9px] font-black text-slate-400 uppercase tracking-wider">Mascota / Servicio</th>
+                  <th class="pb-3 text-[9px] font-black text-slate-400 uppercase tracking-wider">Fecha</th>
+                  <th class="pb-3 text-[9px] font-black text-slate-400 uppercase tracking-wider">Método</th>
+                  <th class="pb-3 text-[9px] font-black text-slate-400 uppercase tracking-wider text-right">Monto</th>
+                  <th class="pb-3 text-[9px] font-black text-slate-400 uppercase tracking-wider text-right">Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let p of pagos()"
+                  class="border-b border-slate-100 last:border-0 hover:bg-slate-50/30 transition-colors">
+                  <td class="py-3.5">
+                    <div class="flex items-center gap-3">
+                      <div class="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm shrink-0"
+                        [class]="p.estado === 'PAID' || p.estado === 'COMPLETADO' ? 'bg-emerald-50 text-emerald-700' : p.estado === 'REJECTED' || p.estado === 'CANCELLED' ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-700'">
+                        {{ (p.mascotaNombre || '?').charAt(0).toUpperCase() }}
+                      </div>
+                      <div>
+                        <p class="text-xs font-bold text-slate-800">{{ p.mascotaNombre || '—' }}</p>
+                        <p class="text-[10px] text-slate-400 font-medium">{{ p.servicioNombre || '—' }}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="py-3.5">
+                    <p class="text-xs font-semibold text-slate-700">{{ formatFechaSimple(p.fechaPago) }}</p>
+                  </td>
+                  <td class="py-3.5">
+                    <span *ngIf="p.metodoPago" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-semibold"
+                      [class]="p.metodoPago === 'YAPE' || p.metodoPago === 'PLIN' ? 'bg-purple-50 text-purple-700' : 'bg-slate-100 text-slate-600'">
+                      <i [class]="p.metodoPago === 'YAPE' || p.metodoPago === 'PLIN' ? 'pi pi-mobile' : 'pi pi-wallet'" class="text-[9px]"></i>
+                      {{ metodoPagoLabel(p.metodoPago) }}
+                    </span>
+                    <span *ngIf="!p.metodoPago" class="text-[11px] text-slate-400 italic">—</span>
+                  </td>
+                  <td class="py-3.5 text-xs font-black text-slate-700 text-right">{{ formatMonto(p.monto) }}</td>
+                  <td class="py-3.5 text-right">
+                    <span [class]="'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold border ' + pagoEstadoBadge(p.estado)">
+                      <span class="w-1.5 h-1.5 rounded-full"
+                        [class]="p.estado === 'PAID' || p.estado === 'COMPLETADO' ? 'bg-emerald-500' : p.estado === 'REJECTED' || p.estado === 'CANCELLED' ? 'bg-red-500' : 'bg-amber-500'"></span>
+                      {{ pagoEstadoLabel(p.estado) }}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <ng-template #emptyTpl>
+            <div class="py-8 text-center">
+              <i class="pi pi-wallet text-2xl text-slate-200 block mb-2"></i>
+              <p class="text-sm text-slate-400 font-medium">No tienes pagos registrados</p>
+            </div>
+          </ng-template>
+        </ng-container>
+        <ng-template #loadingTpl>
+          <div class="flex justify-center py-6">
+            <i class="pi pi-spin pi-spinner text-slate-300 text-lg"></i>
+          </div>
+        </ng-template>
+      </div>
+    </div>
+
   </div>
 </div>

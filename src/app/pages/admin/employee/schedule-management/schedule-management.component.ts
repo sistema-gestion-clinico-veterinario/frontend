@@ -104,7 +104,7 @@ export class ScheduleManagementComponent implements OnInit {
     for (let i = 1; i <= lastDay.getDate(); i++) {
       const date = new Date(year, month, i);
       const isToday = date.toDateString() === today.toDateString();
-      const dayShifts = this.horarios.filter(h => new Date(h.fecha).toDateString() === date.toDateString());
+      const dayShifts = this.horarios.filter(h => this.matchFecha(h.fecha, date));
       days.push({ day: i, otherMonth: false, isToday, date, shifts: dayShifts });
     }
 
@@ -129,6 +129,11 @@ export class ScheduleManagementComponent implements OnInit {
   }
 
 
+
+  private matchFecha(fecha: string, date: Date): boolean {
+    const [y, m, d] = fecha.split('-').map(Number);
+    return new Date(y, m - 1, d).toDateString() === date.toDateString();
+  }
 
   selectedShiftDateFormatted: string = '';
 

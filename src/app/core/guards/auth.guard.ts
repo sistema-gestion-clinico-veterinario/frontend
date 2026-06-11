@@ -5,8 +5,6 @@ import { AuthStore } from '../../store/auth.store';
 import { AuthService } from '../services/auth.service';
 import { resolveDashboardRoute, resolveInitialRoute } from '../../layouts/main-layout/navbar/navbar.component';
 
-let sessionSynced = false;
-
 export const AuthGuard: CanActivateFn = (route, state) => {
   const authStore = inject(AuthStore);
   const authService = inject(AuthService);
@@ -14,11 +12,12 @@ export const AuthGuard: CanActivateFn = (route, state) => {
   const token = authStore.token();
   const refreshToken = authStore.refreshToken();
 
-  if (!token && !refreshToken) {
+  if (!refreshToken) {
     return router.createUrlTree(['/login']);
   }
 
-  if (!sessionSynced && refreshToken) {
+  // No access token but have refresh token — need fresh pair
+  if (!token) {
     return authService.refreshToken(refreshToken).pipe(
       map(({ data }) => {
         authStore.setAuth({
@@ -38,21 +37,16 @@ export const AuthGuard: CanActivateFn = (route, state) => {
           menu: data.menu,
           originalMenu: data.menu
         });
-        sessionSynced = true;
         return validateAccess(route, authStore, router);
       }),
       catchError(() => {
-        sessionSynced = false;
         authStore.logout();
         return of(router.createUrlTree(['/login']));
       })
     );
   }
 
-  if (!token) {
-    return router.createUrlTree(['/login']);
-  }
-
+  // Access token exists — let interceptor handle expiry transparently
   return validateAccess(route, authStore, router);
 };
 
