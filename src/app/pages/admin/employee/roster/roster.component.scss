@@ -82,3 +82,173 @@
   .cal-day-name-full  { display: block; }
   .cal-day-name-short { display: none; }
 }
+
+/* ── CALENDARIO RESPONSIVE ─────────────────────────────────────────── */
+.roster-calendar {
+  overflow-x: hidden;
+}
+
+.roster-calendar-weekdays {
+  width: 100%;
+}
+
+.roster-calendar-days {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.roster-calendar-day {
+  min-height: auto;
+  padding-top: 0.25rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  background: #ffffff;
+}
+
+.roster-calendar-day,
+.roster-calendar-day * {
+  text-shadow: none !important;
+}
+
+.roster-calendar-day .shadow,
+.roster-calendar-day .shadow-md,
+.roster-calendar-day .shadow-lg,
+.roster-calendar-day .shadow-xl,
+.roster-calendar-day .shadow-2xl {
+  box-shadow: none !important;
+}
+
+.roster-calendar-day-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.roster-calendar-day-header {
+  gap: 0.75rem;
+}
+
+.roster-calendar-day-header p {
+  margin: 0;
+}
+
+.roster-calendar-day .pi-clock,
+.roster-calendar-day .pi-angle-double-right {
+  font-size: 0.75rem;
+}
+
+.roster-detail-panel {
+  width: min(100%, 400px);
+  max-width: 100%;
+}
+
+@media (max-width: 900px) {
+  .roster-detail-panel {
+    width: 100% !important;
+    max-width: 100% !important;
+    left: 0;
+    border-left: none;
+    border-top: 1px solid #e2e8f0;
+  }
+  .roster-detail-panel .roster-detail-header,
+  .roster-detail-panel .roster-detail-body {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .roster-detail-panel {
+    height: 100%;
+  }
+  .roster-detail-panel .roster-detail-header,
+  .roster-detail-panel .roster-detail-body {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+}
+
+@container roster (max-width: 760px) {
+  .roster-calendar-weekdays {
+    display: none;
+  }
+
+  .roster-calendar-days {
+    grid-template-columns: 1fr;
+  }
+
+  .roster-calendar-day {
+    border-right: none;
+    min-height: auto;
+    background: transparent;
+    padding: 0;
+  }
+
+  .roster-calendar-day-card {
+    display: grid;
+    grid-template-columns: minmax(72px, auto) 1fr;
+    gap: 1rem;
+    align-items: start;
+    padding: 1rem;
+    border-radius: 1.5rem;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+  }
+
+  .roster-calendar-day-badge {
+    display: grid;
+    align-items: start;
+    gap: 0.5rem;
+    min-width: 72px;
+  }
+
+  .roster-calendar-day-badge-number {
+    width: 56px;
+    height: 56px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 1rem;
+  }
+
+  .roster-calendar-day-badge-meta {
+    display: none;
+  }
+
+  .roster-calendar-day-content {
+    padding: 0;
+  }
+
+  .roster-calendar-day-header {
+    gap: 0.75rem;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .roster-calendar-day-label {
+    display: block;
+    margin-top: 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+}
+
+@container roster (max-width: 520px) {
+  .roster-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .roster-calendar-day {
+    padding: 0.75rem;
+  }
+
+  .roster-calendar-day-label {
+    font-size: 0.65rem;
+  }
+
+  .roster-calendar-day-header {
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+}
