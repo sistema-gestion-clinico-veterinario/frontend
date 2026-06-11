@@ -16,7 +16,7 @@
     </div>
   </div>
 
-  <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-none">
+  <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
     <p-table [value]="clients()" [lazy]="true" (onLazyLoad)="loadClients($event)" [paginator]="true" [rows]="10"
       [totalRecords]="totalRecords()" [loading]="loading()" responsiveLayout="stack" breakpoint="960px" [rowHover]="true"
       styleClass="p-datatable-borderless">
@@ -118,7 +118,7 @@
 </div>
 
 <div *ngIf="displayModal()" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-  <div class="bg-white w-full max-w-2xl rounded-lg shadow-2xl flex flex-col max-h-[95vh]">
+  <div class="bg-white w-full max-w-2xl rounded-lg  flex flex-col max-h-[95vh]">
   
     <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50 rounded-t-lg">
       <h2 class="text-lg font-bold text-slate-800">
@@ -243,7 +243,7 @@
             Descartar cambios
           </button>
           <button type="submit" [disabled]="loadingStore.isLoading()"
-            class="px-8 py-2.5 text-sm font-bold text-white bg-[#0066AA] hover:bg-[#004488] rounded shadow-sm disabled:opacity-50 transition-all flex items-center justify-center gap-2 min-w-[160px]">
+            class="px-8 py-2.5 text-sm font-bold text-white bg-[#0066AA] hover:bg-[#004488] rounded disabled:opacity-50 transition-all flex items-center justify-center gap-2 min-w-[160px]">
             <i *ngIf="loadingStore.isLoading()" class="pi pi-spin pi-spinner text-xs"></i>
             {{ loadingStore.isLoading() ? 'Procesando...' : (isEdit() ? 'Actualizar Cliente' : 'Confirmar Registro') }}
           </button>

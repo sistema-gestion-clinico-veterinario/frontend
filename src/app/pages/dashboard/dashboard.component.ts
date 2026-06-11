@@ -18,6 +18,8 @@ import { CitaService } from '../../core/services/cita.service';
 import { MascotaService } from '../../core/services/mascota.service';
 import { RoleService } from '../../core/services/role.service';
 import { ApoderadoService } from '../../core/services/apoderado.service';
+import { PagoService } from '../../core/services/pago.service';
+import { PagoListResponse } from '../../models/response/pago-response';
 
 @Component({
   selector: 'app-dashboard',
@@ -38,6 +40,7 @@ export class DashboardComponent implements OnInit {
   private mascotaService   = inject(MascotaService);
   private roleService      = inject(RoleService);
   private apoderadoService = inject(ApoderadoService);
+  private pagoService      = inject(PagoService);
   private destroyRef       = inject(DestroyRef);
 
   userName        = this.authStore.nombreCompleto() ?? '';
@@ -67,6 +70,8 @@ export class DashboardComponent implements OnInit {
   schedulesReport     = signal<any[]>([]);
   allAppointments     = signal<any[]>([]);
   chartPeriod         = signal<'day' | 'week' | 'month'>('day');
+  pagos               = signal<PagoListResponse[]>([]);
+  loadingPagos        = signal(false);
 
   // ─── Reacciona solo cuando selectedEnterprise cambia realmente ───
   constructor() {
@@ -290,6 +295,40 @@ export class DashboardComponent implements OnInit {
     return this.canView('VISTA_AUDITORIA_ADMIN');
   }
 
+  canViewPayments(): boolean {
+    return this.canView('VISTA_PAGOS');
+  }
+
+  pagoEstadoBadge(estado: string): string {
+    switch (estado) {
+      case 'PAID':
+      case 'COMPLETADO':     return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      case 'PENDING':
+      case 'PENDING_TRANSFER': return 'bg-amber-50 text-amber-700 border-amber-200';
+      case 'REJECTED':
+      case 'CANCELLED':      return 'bg-red-50 text-red-600 border-red-200';
+      default:               return 'bg-slate-50 text-slate-600 border-slate-200';
+    }
+  }
+
+  pagoEstadoLabel(estado: string): string {
+    const map: Record<string, string> = {
+      PAID: 'Pagado',
+      COMPLETADO: 'Completado',
+      PENDING: 'Pendiente',
+      PENDING_TRANSFER: 'Transf. Pendiente',
+      REJECTED: 'Rechazado',
+      CANCELLED: 'Anulado'
+    };
+    return map[estado] ?? estado;
+  }
+
+  formatFechaSimple(dateStr: string): string {
+    if (!dateStr) return '—';
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' });
+  }
+
   // ─── Métodos de carga ────────────────────────────────────────────
 
   loadAllDashboardData(companyId?: number) {
@@ -314,6 +353,9 @@ export class DashboardComponent implements OnInit {
     }
     if (this.canViewHorarios()) {
       this.loadSchedulesReport(companyId);
+    }
+    if (this.canViewPayments()) {
+      this.loadPagos(companyId);
     }
   }
 
@@ -377,6 +419,17 @@ export class DashboardComponent implements OnInit {
   loadSchedulesReport(companyId?: number) {
     this.empleadoService.getSchedulesReport(companyId).subscribe({
       next: (res) => { this.schedulesReport.set(res.data ?? []); }
+    });
+  }
+
+  loadPagos(companyId?: number) {
+    this.loadingPagos.set(true);
+    this.pagoService.listarHistorialPorEmpresa(0, 5, companyId).subscribe({
+      next: (res) => {
+        this.pagos.set(res.data?.content ?? []);
+        this.loadingPagos.set(false);
+      },
+      error: () => this.loadingPagos.set(false)
     });
   }
 

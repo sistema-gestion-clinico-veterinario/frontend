@@ -22,8 +22,20 @@ export class PagoService {
     return this.http.get<ApiResponse<PagoResponse>>(`${this.url}/appointment/${citaId}`);
   }
 
-  listarTodos(page: number = 0, size: number = 10) {
-    return this.http.get<ApiResponse<Page<PagoListResponse>>>(`${this.url}?page=${page}&size=${size}`);
+  listarTodos(page: number = 0, size: number = 10, companyId?: number) {
+    let url = `${this.url}?page=${page}&size=${size}`;
+    if (companyId != null) {
+      url += `&companyId=${companyId}`;
+    }
+    return this.http.get<ApiResponse<Page<PagoListResponse>>>(url);
+  }
+
+  listarHistorialPorEmpresa(page: number = 0, size: number = 10, companyId?: number) {
+    let url = `${this.url}/history?page=${page}&size=${size}`;
+    if (companyId != null) {
+      url += `&companyId=${companyId}`;
+    }
+    return this.http.get<ApiResponse<Page<PagoListResponse>>>(url);
   }
 
   getMisPagos(page: number = 0, size: number = 10) {
