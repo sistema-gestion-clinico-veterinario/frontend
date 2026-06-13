@@ -1,0 +1,49 @@
+.mascotas-paginator {
+  width: 100%;
+}
+
+:host ::ng-deep .mascotas-paginator.p-paginator {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  justify-content: center;
+  padding-inline: 0.5rem;
+}
+
+:host ::ng-deep .mascotas-paginator .p-paginator-pages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  justify-content: center;
+}
+
+:host ::ng-deep .mascotas-paginator .p-paginator-page,
+:host ::ng-deep .mascotas-paginator .p-paginator-first,
+:host ::ng-deep .mascotas-paginator .p-paginator-prev,
+:host ::ng-deep .mascotas-paginator .p-paginator-next,
+:host ::ng-deep .mascotas-paginator .p-paginator-last {
+  border-radius: 0.5rem;
+  min-height: 2rem;
+  min-width: 2rem;
+}
+
+@media (max-width: 640px) {
+  :host ::ng-deep .mascotas-paginator.p-paginator {
+    justify-content: space-between;
+    padding: 0.75rem;
+  }
+
+  :host ::ng-deep .mascotas-paginator .p-paginator-first,
+  :host ::ng-deep .mascotas-paginator .p-paginator-last,
+  :host ::ng-deep .mascotas-paginator .p-paginator-pages {
+    display: none;
+  }
+
+  :host ::ng-deep .mascotas-paginator .p-paginator-prev,
+  :host ::ng-deep .mascotas-paginator .p-paginator-next {
+    flex: 0 0 2.5rem;
+    min-height: 2.5rem;
+    min-width: 2.5rem;
+  }
+}

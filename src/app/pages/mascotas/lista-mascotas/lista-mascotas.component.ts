@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { DropdownModule } from 'primeng/dropdown';
 import { PaginatorModule } from 'primeng/paginator';
@@ -31,7 +31,8 @@ import { HasPermissionDirective } from '../../../core/directives/has-permission.
     HasPermissionDirective
   ],
   providers: [MessageService],
-  templateUrl: './lista-mascotas.component.html'
+  templateUrl: './lista-mascotas.component.html',
+  styleUrl: './lista-mascotas.component.scss'
 })
 export class ListaMascotasComponent implements OnInit {
   private readonly mascotaService   = inject(MascotaService);
@@ -39,6 +40,7 @@ export class ListaMascotasComponent implements OnInit {
   private readonly companyService   = inject(CompanyService);
   private readonly messageService   = inject(MessageService);
   private readonly router           = inject(Router);
+  private readonly route            = inject(ActivatedRoute);
   readonly authStore                = inject(AuthStore);
   readonly loadingStore             = inject(LoadingStore);
 
@@ -85,7 +87,8 @@ export class ListaMascotasComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.loadMascotas();
+    const page = Number(this.route.snapshot.queryParamMap.get('page'));
+    this.loadMascotas(Number.isInteger(page) && page > 0 ? page : 0);
   }
 
   loadMascotas(page: number = 0) {
@@ -119,8 +122,26 @@ export class ListaMascotasComponent implements OnInit {
     });
   }
 
-  onFilterChange()  { this.loadMascotas(0); }
-  onPageChange(e: any) { this.loadMascotas(e.page); }
+  onFilterChange()  {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { page: null },
+      queryParamsHandling: 'merge',
+      replaceUrl: true
+    });
+    this.loadMascotas(0);
+  }
+
+  onPageChange(e: any) {
+    const page = Number(e.page) || 0;
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { page: page > 0 ? page : null },
+      queryParamsHandling: 'merge',
+      replaceUrl: true
+    });
+    this.loadMascotas(page);
+  }
 
   onSearch(event: KeyboardEvent) {
     if (event.key === 'Enter') this.loadMascotas(0);
@@ -131,7 +152,10 @@ export class ListaMascotasComponent implements OnInit {
   }
 
   irAEditar(mascota: MascotaResponse) {
-    this.router.navigate(['/mascotas/form', mascota.id], { state: mascota });
+    this.router.navigate(['/mascotas/form', mascota.uuid], {
+      queryParams: { returnPage: this.currentPage > 0 ? this.currentPage : null },
+      state: mascota
+    });
   }
 
   toggleEstado(mascota: MascotaResponse) {

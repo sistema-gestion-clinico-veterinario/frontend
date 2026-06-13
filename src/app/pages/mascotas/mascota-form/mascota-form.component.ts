@@ -28,7 +28,8 @@ import { AuthStore } from '../../../store/auth.store';
     ToastModule
   ],
   providers: [MessageService],
-  templateUrl: './mascota-form.component.html'
+  templateUrl: './mascota-form.component.html',
+  styleUrl: './mascota-form.component.scss'
 })
 export class MascotaFormComponent implements OnInit, OnDestroy {
   private readonly fb               = inject(FormBuilder);
@@ -46,6 +47,7 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
 
   isEdit     = signal<boolean>(false);
   editingId  = signal<number | null>(null);
+  returnPage = 0;
   apoderados = signal<{ label: string; value: number }[]>([]);
   razas      = signal<{ label: string; value: number }[]>([]);
   razaFilterText    = signal<string>('');
@@ -64,6 +66,7 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
   ncDireccion = signal('');
   ncReferencias = signal('');
   previewUrl          = signal<string | null>(null);
+  photoError          = signal(false);
   selectedFile        = signal<File | null>(null);
   uploadingPhoto      = signal<boolean>(false);
 
@@ -116,21 +119,34 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    const id = this.route.snapshot.paramMap.get('id');
-    if (id) {
+    const page = Number(this.route.snapshot.queryParamMap.get('returnPage'));
+    this.returnPage = Number.isInteger(page) && page > 0 ? page : 0;
+
+    const uuid = this.route.snapshot.paramMap.get('uuid');
+    if (uuid) {
       this.isEdit.set(true);
-      this.editingId.set(+id);
+      this.loadApoderados();
+      this.loadRazas();
       const state = this.router.getCurrentNavigation()?.extras.state as MascotaResponse | undefined;
       if (state) {
+        this.editingId.set(state.id);
         this.patchForm(state);
       } else {
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cargar la mascota' });
-        this.goBack();
-        return;
+        this.mascotaService.obtenerPorUuid(uuid).subscribe({
+          next: (res) => {
+            this.editingId.set(res.data.id);
+            this.patchForm(res.data);
+          },
+          error: () => {
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cargar la mascota' });
+            this.goBack();
+          }
+        });
       }
+    } else {
+      this.loadApoderados();
+      this.loadRazas();
     }
-    this.loadApoderados();
-    this.loadRazas();
     this.mascotaForm.get('especie')?.valueChanges.subscribe(() => {
       this.actualizarValidadoresPeso();
       this.loadRazas();
@@ -152,11 +168,14 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
       apoderadoId:     m.apoderadoId,
     });
     if (m.razaNombre) this.razaFilterText.set(m.razaNombre);
+    this.photoError.set(false);
     this.previewUrl.set(this.mediaService.resolveUrl(m.fotoUrl));
   }
 
   goBack() {
-    this.router.navigate(['/mascotas']);
+    this.router.navigate(['/mascotas'], {
+      queryParams: { page: this.returnPage > 0 ? this.returnPage : null }
+    });
   }
 
   fechaNoFuturaValidator(control: AbstractControl): ValidationErrors | null {
@@ -211,9 +230,15 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
     if (this.previewUrl() && this.previewUrl()!.startsWith('blob:')) {
       URL.revokeObjectURL(this.previewUrl()!);
     }
+    this.photoError.set(false);
     this.selectedFile.set(file);
     this.previewUrl.set(URL.createObjectURL(file));
     input.value = '';
+  }
+
+  onPhotoError() {
+    this.photoError.set(true);
+    this.previewUrl.set(null);
   }
 
   removePhoto() {

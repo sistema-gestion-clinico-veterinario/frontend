@@ -68,11 +68,7 @@
       </button>
 
     </div>
-    <div *ngIf="totalRecords() > 0"
-      class="mt-3 pt-3 border-t border-slate-100 flex items-center gap-1.5 text-xs text-slate-400 font-medium">
-      <i class="pi pi-info-circle text-slate-300"></i>
-      <span>{{ totalRecords() }} mascota{{ totalRecords() !== 1 ? 's' : '' }} encontrada{{ totalRecords() !== 1 ? 's' : '' }}</span>
-    </div>
+
   </div>
 
 
@@ -89,113 +85,94 @@
 
 
     <div *ngIf="mascotas().length > 0"
-      class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 mb-6">
+      class="bg-white border border-slate-200 rounded-xl overflow-hidden mb-6">
 
-      <div *ngFor="let mascota of mascotas()"
-        class="bg-white border border-slate-200 rounded-xl overflow-hidden flex flex-col">
-
-        <div class="p-4 pb-3">
-          <div class="flex items-start justify-between gap-3">
-            <div class="flex items-center gap-3 min-w-0">
-              <div [class]="'w-12 h-12 rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0 ' + especieAvatarClass(mascota.especie)">
-                <img *ngIf="mascota.fotoUrl" [src]="mediaService.resolveUrl(mascota.fotoUrl)" class="w-full h-full object-cover" />
-                <span *ngIf="!mascota.fotoUrl" class="text-xl font-extrabold">{{ mascota.nombreCompleto.charAt(0).toUpperCase() }}</span>
-              </div>
-              <div class="min-w-0">
-                <p class="text-base font-extrabold text-slate-900 leading-tight truncate">
-                  {{ mascota.nombreCompleto }}
-                </p>
-                <div class="flex items-center gap-1.5 mt-1.5 flex-wrap">
-                  <span [class]="'text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider ' + especieBadgeClass(mascota.especie)">
-                    {{ especieLabel(mascota.especie) }}
-                  </span>
-                  <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider bg-slate-100 text-slate-500">
-                    {{ sexoLabel(mascota.sexo) }}
-                  </span>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-slate-50 border-b border-slate-200">
+            <tr>
+              <th class="text-left px-4 py-3 font-bold text-slate-500 text-[11px] uppercase tracking-wider">Paciente</th>
+              <th class="text-left px-4 py-3 font-bold text-slate-500 text-[11px] uppercase tracking-wider">Especie</th>
+              <th class="text-left px-4 py-3 font-bold text-slate-500 text-[11px] uppercase tracking-wider">Raza</th>
+              <th class="text-left px-4 py-3 font-bold text-slate-500 text-[11px] uppercase tracking-wider">Sexo</th>
+              <th class="text-left px-4 py-3 font-bold text-slate-500 text-[11px] uppercase tracking-wider">Edad</th>
+              <th class="text-left px-4 py-3 font-bold text-slate-500 text-[11px] uppercase tracking-wider">Propietario</th>
+              <th class="text-center px-4 py-3 font-bold text-slate-500 text-[11px] uppercase tracking-wider">Estado</th>
+              <th class="text-center px-4 py-3 font-bold text-slate-500 text-[11px] uppercase tracking-wider">Acciones</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <tr *ngFor="let mascota of mascotas()" class="hover:bg-slate-50/50 transition-colors">
+              <td class="px-4 py-3">
+                <div class="flex items-center gap-3 min-w-0">
+                  <div [class]="'w-9 h-9 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0 ' + especieAvatarClass(mascota.especie)">
+                    <img *ngIf="mascota.fotoUrl" [src]="mediaService.resolveUrl(mascota.fotoUrl)" class="w-full h-full object-cover" />
+                    <span *ngIf="!mascota.fotoUrl" class="text-sm font-extrabold">{{ mascota.nombreCompleto.charAt(0).toUpperCase() }}</span>
+                  </div>
+                  <span class="font-bold text-slate-800 truncate max-w-[160px]">{{ mascota.nombreCompleto }}</span>
                 </div>
-              </div>
-            </div>
-            <button *appHasPermission="'VISTA_MASCOTAS:modificar'" (click)="irAEditar(mascota)"
-              [disabled]="!mascota.activo"
-              [title]="!mascota.activo ? 'La mascota está inactiva' : 'Editar'"
-              class="p-2 rounded-lg text-slate-300 hover:text-[#0066AA] hover:bg-blue-50 flex-shrink-0 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-slate-300">
-              <i class="pi pi-pencil text-sm"></i>
-            </button>
-          </div>
-        </div>
-
-        <div class="border-t border-slate-100 mx-4"></div>
-        <div class="p-4 pt-3 flex flex-col flex-1 gap-3">
-          <div class="grid grid-cols-3 gap-2">
-            <div class="text-center">
-              <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Edad</p>
-              <p class="text-sm font-extrabold text-slate-700">{{ calcularEdad(mascota.fechaNacimiento) }}</p>
-            </div>
-            <div class="text-center border-x border-slate-100">
-              <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Peso</p>
-              <p class="text-sm font-extrabold text-slate-700">
-                {{ mascota.peso ? mascota.peso + ' kg' : '—' }}
-              </p>
-            </div>
-            <div class="text-center">
-              <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Raza</p>
-              <p class="text-xs font-extrabold text-slate-700 truncate" [title]="mascota.razaNombre">
-                {{ mascota.razaNombre || '—' }}
-              </p>
-            </div>
-          </div>
-          <div class="flex items-center gap-2 text-xs text-slate-500">
-            <i class="pi pi-user text-slate-300 shrink-0"></i>
-            <span class="font-medium truncate">{{ mascota.apoderadoNombreCompleto }}</span>
-          </div>
-          <div class="bg-slate-50 rounded-lg px-3 py-2.5">
-            <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">
-              Último diagnóstico
-            </p>
-            <p class="text-xs font-medium leading-snug"
-              [class]="mascota.ultimoDiagnostico ? 'text-slate-600' : 'text-slate-300 italic'">
-              {{ mascota.ultimoDiagnostico || 'Sin diagnóstico registrado' }}
-            </p>
-          </div>
-          <div class="flex items-center gap-2 mt-auto">
-
-            <button
-              *ngIf="mascota.tieneHistoriaClinica"
-              (click)="verHistoriaClinica(mascota)"
-              class="flex-1 flex items-center justify-center gap-1.5 bg-blue-50 text-[#0066AA] text-xs font-bold h-9 rounded-lg">
-              <i class="pi pi-file-edit text-xs"></i>
-              Ver HC
-            </button>
-            <span
-              *ngIf="!mascota.tieneHistoriaClinica"
-              class="flex-1 flex items-center justify-center gap-1.5 bg-slate-50 text-slate-300 text-xs font-bold h-9 rounded-lg cursor-default select-none">
-              <i class="pi pi-file text-xs"></i>
-              Sin HC
-            </span>
-            <button *appHasPermission="'VISTA_MASCOTAS:modificar'" (click)="toggleEstado(mascota)"
-              [class]="mascota.activo
-                ? 'bg-emerald-50 text-emerald-700'
-                : 'bg-red-50 text-red-500'"
-              class="flex items-center gap-1.5 px-3 h-9 rounded-lg text-xs font-bold flex-shrink-0">
-              <span
-                [class]="mascota.activo ? 'bg-emerald-500' : 'bg-red-400'"
-                class="w-1.5 h-1.5 rounded-full"></span>
-              {{ mascota.activo ? 'Activo' : 'Inactivo' }}
-            </button>
-
-          </div>
-        </div>
+              </td>
+              <td class="px-4 py-3">
+                <span [class]="'text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider ' + especieBadgeClass(mascota.especie)">
+                  {{ especieLabel(mascota.especie) }}
+                </span>
+              </td>
+              <td class="px-4 py-3 text-slate-600 font-medium">{{ mascota.razaNombre || '—' }}</td>
+              <td class="px-4 py-3 text-slate-600 font-medium">{{ sexoLabel(mascota.sexo) }}</td>
+              <td class="px-4 py-3 text-slate-600 font-medium">{{ calcularEdad(mascota.fechaNacimiento) }}</td>
+              <td class="px-4 py-3 text-slate-600 font-medium truncate max-w-[180px]" [title]="mascota.apoderadoNombreCompleto">{{ mascota.apoderadoNombreCompleto }}</td>
+              <td class="px-4 py-3 text-center">
+                <span [class]="mascota.activo
+                  ? 'text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider bg-emerald-50 text-emerald-700'
+                  : 'text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider bg-red-50 text-red-500'">
+                  {{ mascota.activo ? 'Activo' : 'Inactivo' }}
+                </span>
+              </td>
+              <td class="px-4 py-3">
+                <div class="flex items-center justify-center gap-1">
+                  <button *appHasPermission="'VISTA_MASCOTAS:modificar'" (click)="irAEditar(mascota)"
+                    [disabled]="!mascota.activo"
+                    [title]="!mascota.activo ? 'Mascota inactiva' : 'Editar'"
+                    class="p-2 rounded-lg text-slate-300 hover:text-[#0066AA] hover:bg-blue-50 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-slate-300">
+                    <i class="pi pi-pencil text-xs"></i>
+                  </button>
+                  <button (click)="verHistoriaClinica(mascota)"
+                    title="Ver Historia Clínica"
+                    class="p-2 rounded-lg text-slate-300 hover:text-[#0066AA] hover:bg-blue-50">
+                    <i class="pi pi-file-edit text-xs"></i>
+                  </button>
+                  <button *appHasPermission="'VISTA_MASCOTAS:modificar'" (click)="toggleEstado(mascota)"
+                    [class]="mascota.activo
+                      ? 'p-2 rounded-lg text-emerald-400 hover:text-emerald-600 hover:bg-emerald-50'
+                      : 'p-2 rounded-lg text-red-300 hover:text-red-500 hover:bg-red-50'"
+                    [title]="mascota.activo ? 'Desactivar' : 'Activar'">
+                    <i [class]="mascota.activo ? 'pi pi-ban text-xs' : 'pi pi-check-circle text-xs'"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
     </div>
 
-    <div *ngIf="totalRecords() > pageSize" class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+    <div *ngIf="totalRecords() > 0"
+      class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+      <div class="flex flex-col gap-1 border-b border-slate-100 px-3 py-3 text-center sm:hidden">
+        <span class="text-[11px] font-black uppercase tracking-wider text-slate-400">Paginacion</span>
+        <span class="text-xs font-bold text-slate-700">
+          {{ totalRecords() }} {{ totalRecords() === 1 ? 'registro' : 'registros' }}
+        </span>
+      </div>
       <p-paginator
         [rows]="pageSize"
         [totalRecords]="totalRecords()"
         [first]="currentPage * pageSize"
+        [showCurrentPageReport]="false"
+        [showFirstLastIcon]="true"
         (onPageChange)="onPageChange($event)"
-        styleClass="!border-none !bg-transparent !py-3"
+        styleClass="mascotas-paginator !border-none !bg-transparent !py-3"
       ></p-paginator>
     </div>
 

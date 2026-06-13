@@ -29,6 +29,14 @@ export class MascotaService {
     return this.http.get<ApiResponse<Page<MascotaResponse>>>(`${this.apiUrl}${query}`);
   }
 
+  obtenerPorId(id: number) {
+    return this.http.get<ApiResponse<MascotaResponse>>(`${this.apiUrl}/${id}`);
+  }
+
+  obtenerPorUuid(uuid: string) {
+    return this.http.get<ApiResponse<MascotaResponse>>(`${this.apiUrl}/uuid/${uuid}`);
+  }
+
   crear(data: MascotaRequest) {
     return this.http.post<ApiResponse<MascotaResponse>>(this.apiUrl, data);
   }

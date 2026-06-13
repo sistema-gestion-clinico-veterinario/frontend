@@ -1,5 +1,6 @@
 export interface MascotaResponse {
   id: number;
+  uuid: string;
   nombreCompleto: string;
   especie: string;
   raza: string;

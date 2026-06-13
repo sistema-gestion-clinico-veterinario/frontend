@@ -116,7 +116,7 @@ export const routes: Routes = [
             loadComponent: () => import('./pages/mascotas/mascota-form/mascota-form.component').then((m) => m.MascotaFormComponent)
           },
           {
-            path: 'form/:id',
+            path: 'form/:uuid',
             loadComponent: () => import('./pages/mascotas/mascota-form/mascota-form.component').then((m) => m.MascotaFormComponent)
           }
         ]
@@ -134,7 +134,7 @@ export const routes: Routes = [
             loadComponent: () => import('./pages/mascotas/mascota-form/mascota-form.component').then((m) => m.MascotaFormComponent)
           },
           {
-            path: 'form/:id',
+            path: 'form/:uuid',
             loadComponent: () => import('./pages/mascotas/mascota-form/mascota-form.component').then((m) => m.MascotaFormComponent)
           }
         ]
@@ -152,7 +152,7 @@ export const routes: Routes = [
             loadComponent: () => import('./pages/mascotas/mascota-form/mascota-form.component').then((m) => m.MascotaFormComponent)
           },
           {
-            path: 'form/:id',
+            path: 'form/:uuid',
             loadComponent: () => import('./pages/mascotas/mascota-form/mascota-form.component').then((m) => m.MascotaFormComponent)
           }
         ]

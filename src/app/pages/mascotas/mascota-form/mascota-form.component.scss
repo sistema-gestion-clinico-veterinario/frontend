@@ -1,0 +1,17 @@
+.pet-photo-frame {
+  background: transparent;
+  border: 0;
+  border-radius: 0.875rem;
+  box-shadow: none;
+}
+
+.pet-photo-frame img {
+  border-radius: 0.875rem;
+  display: block;
+}
+
+@media (max-width: 639px) {
+  .pet-photo-frame img {
+    max-height: 320px;
+  }
+}
