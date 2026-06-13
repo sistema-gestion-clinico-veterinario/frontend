@@ -106,17 +106,56 @@ export const routes: Routes = [
       {
         path: 'mascotas',
         data: { ventana: 'VISTA_MASCOTAS' },
-        loadComponent: () => import('./pages/mascotas/lista-mascotas/lista-mascotas.component').then((m) => m.ListaMascotasComponent)
+        children: [
+          {
+            path: '',
+            loadComponent: () => import('./pages/mascotas/lista-mascotas/lista-mascotas.component').then((m) => m.ListaMascotasComponent)
+          },
+          {
+            path: 'form',
+            loadComponent: () => import('./pages/mascotas/mascota-form/mascota-form.component').then((m) => m.MascotaFormComponent)
+          },
+          {
+            path: 'form/:id',
+            loadComponent: () => import('./pages/mascotas/mascota-form/mascota-form.component').then((m) => m.MascotaFormComponent)
+          }
+        ]
       },
       {
         path: 'admin/mascotas',
         data: { ventana: 'VISTA_MASCOTAS' },
-        loadComponent: () => import('./pages/mascotas/lista-mascotas/lista-mascotas.component').then((m) => m.ListaMascotasComponent)
+        children: [
+          {
+            path: '',
+            loadComponent: () => import('./pages/mascotas/lista-mascotas/lista-mascotas.component').then((m) => m.ListaMascotasComponent)
+          },
+          {
+            path: 'form',
+            loadComponent: () => import('./pages/mascotas/mascota-form/mascota-form.component').then((m) => m.MascotaFormComponent)
+          },
+          {
+            path: 'form/:id',
+            loadComponent: () => import('./pages/mascotas/mascota-form/mascota-form.component').then((m) => m.MascotaFormComponent)
+          }
+        ]
       },
       {
         path: 'empleado/mascotas',
         data: { ventana: 'VISTA_MASCOTAS' },
-        loadComponent: () => import('./pages/mascotas/lista-mascotas/lista-mascotas.component').then((m) => m.ListaMascotasComponent)
+        children: [
+          {
+            path: '',
+            loadComponent: () => import('./pages/mascotas/lista-mascotas/lista-mascotas.component').then((m) => m.ListaMascotasComponent)
+          },
+          {
+            path: 'form',
+            loadComponent: () => import('./pages/mascotas/mascota-form/mascota-form.component').then((m) => m.MascotaFormComponent)
+          },
+          {
+            path: 'form/:id',
+            loadComponent: () => import('./pages/mascotas/mascota-form/mascota-form.component').then((m) => m.MascotaFormComponent)
+          }
+        ]
       },
       {
         path: 'recetas',

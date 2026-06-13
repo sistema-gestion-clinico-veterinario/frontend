@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, HostListener, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, HostListener, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
@@ -50,7 +50,7 @@ function passwordMatchValidator(control: AbstractControl): ValidationErrors | nu
   providers: [MessageService],
   templateUrl: './employee.component.html'
 })
-export class EmployeeComponent implements OnInit {
+export class EmployeeComponent implements OnInit, OnDestroy {
   private readonly fb = inject(FormBuilder);
   private readonly empleadoService = inject(EmpleadoService);
   private readonly mediaService = inject(MediaService);
@@ -66,6 +66,7 @@ export class EmployeeComponent implements OnInit {
 
   uploadingPhoto = signal(false);
   photoPreview = signal<string | null>(null);
+  selectedFile = signal<File | null>(null);
 
   confirmDialog = signal<{ title: string; message: string; onConfirm: () => void } | null>(null);
 
@@ -351,28 +352,22 @@ export class EmployeeComponent implements OnInit {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (e) => this.photoPreview.set(e.target?.result as string);
-    reader.readAsDataURL(file);
-
-    this.uploadingPhoto.set(true);
-    this.mediaService.upload(file).subscribe({
-      next: (url) => {
-        this.employeeForm.patchValue({ fotoUrl: url });
-        this.uploadingPhoto.set(false);
-        this.messageService.add({ severity: 'success', summary: 'Foto cargada', detail: 'Guarda el formulario para aplicar' });
-      },
-      error: () => {
-        this.photoPreview.set(null);
-        this.uploadingPhoto.set(false);
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo subir la imagen' });
-      }
-    });
-
+    if (this.photoPreview() && this.photoPreview()!.startsWith('blob:')) {
+      URL.revokeObjectURL(this.photoPreview()!);
+    }
+    this.selectedFile.set(file);
+    this.photoPreview.set(URL.createObjectURL(file));
     input.value = '';
   }
 
+  ngOnDestroy() {
+    if (this.photoPreview() && this.photoPreview()!.startsWith('blob:')) {
+      URL.revokeObjectURL(this.photoPreview()!);
+    }
+  }
+
   openNew() {
+    this.selectedFile.set(null);
     this.photoPreview.set(null);
     this.employeeForm.reset({
       tipoDocumento: 'DNI',
@@ -389,6 +384,7 @@ export class EmployeeComponent implements OnInit {
 
   editEmployee(employee: EmpleadoListResponse) {
     this.isEdit.set(true);
+    this.selectedFile.set(null);
     this.photoPreview.set(this.mediaService.resolveUrl(employee.fotoUrl));
     this.loadingStore.show();
     this.empleadoService.getById(employee.id).subscribe({
@@ -436,36 +432,57 @@ export class EmployeeComponent implements OnInit {
   }
 
   private saveEmployee() {
-    const horariosActivos: HorarioEmpleadoRequest[] = this.horarios
-      .filter(h => h.activo)
-      .map(h => ({ diaSemana: h.diaSemana, horaInicio: h.horaInicio, horaFin: h.horaFin, activo: true }));
+    const doSave = (fotoUrl?: string) => {
+      const horariosActivos: HorarioEmpleadoRequest[] = this.horarios
+        .filter(h => h.activo)
+        .map(h => ({ diaSemana: h.diaSemana, horaInicio: h.horaInicio, horaFin: h.horaFin, activo: true }));
 
-    const data: EmpleadoRequest = { ...this.employeeForm.value, horarios: horariosActivos };
-    const request = this.isEdit()
-      ? this.empleadoService.actualizar(data.id!, data)
-      : this.empleadoService.registrar(data);
+      const data: EmpleadoRequest = { ...this.employeeForm.value, horarios: horariosActivos };
+      if (fotoUrl) data.fotoUrl = fotoUrl;
+      const request = this.isEdit()
+        ? this.empleadoService.actualizar(data.id!, data)
+        : this.empleadoService.registrar(data);
 
-    this.loadingStore.show();
-    request.subscribe({
-      next: () => {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Éxito',
-          detail: this.isEdit() ? 'Empleado actualizado' : 'Empleado registrado'
-        });
-        this.displayModal.set(false);
-        this.loadEmployees();
-        this.loadingStore.hide();
-      },
-      error: (err) => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: err.error?.message || 'Ocurrió un error al guardar'
-        });
-        this.loadingStore.hide();
-      }
-    });
+      this.loadingStore.show();
+      request.subscribe({
+        next: () => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Éxito',
+            detail: this.isEdit() ? 'Empleado actualizado' : 'Empleado registrado'
+          });
+          this.displayModal.set(false);
+          this.loadEmployees();
+          this.loadingStore.hide();
+        },
+        error: (err) => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: err.error?.message || 'Ocurrió un error al guardar'
+          });
+          this.loadingStore.hide();
+        }
+      });
+    };
+
+    const file = this.selectedFile();
+    if (file) {
+      this.uploadingPhoto.set(true);
+      this.mediaService.upload(file).subscribe({
+        next: (url) => {
+          this.selectedFile.set(null);
+          this.uploadingPhoto.set(false);
+          doSave(url);
+        },
+        error: () => {
+          this.uploadingPhoto.set(false);
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo subir la imagen' });
+        }
+      });
+    } else {
+      doSave();
+    }
   }
 
   toggleStatus(employee: EmpleadoListResponse) {

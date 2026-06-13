@@ -9,6 +9,7 @@ export interface MascotaResponse {
   fechaNacimiento: string;
   color?: string;
   peso?: number;
+  fotoUrl?: string;
   activo: boolean;
   apoderadoId: number;
   apoderadoNombreCompleto: string;

@@ -533,7 +533,7 @@
             <div class="grid grid-cols-2 gap-2.5">
               <div class="flex flex-col gap-1">
                 <label class="text-[10px] font-semibold text-slate-500">Especie <span class="text-rose-500">*</span></label>
-                <select [ngModel]="nmEspecie()" (ngModelChange)="nmEspecie.set($event); loadRazasAgenda(); nmRazaId.set(null)" [ngModelOptions]="{standalone: true}"
+                <select [ngModel]="nmEspecie()" (ngModelChange)="onAgendaEspecieChange($event)" [ngModelOptions]="{standalone: true}"
                   class="w-full h-9 px-3 border border-slate-200 rounded-lg text-xs font-semibold outline-none focus:border-emerald-400 bg-white transition-all cursor-pointer appearance-none">
                   <option value="PERRO">Perro</option>
                   <option value="GATO">Gato</option>

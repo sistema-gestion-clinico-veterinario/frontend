@@ -78,6 +78,7 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
   archivos           = signal<ArchivoClinicoResponse[]>([]);
   archivoSubiendo    = signal<boolean>(false);
   archivoPendiente   = signal<File | null>(null);
+  archivoPreviewUrl  = signal<string | null>(null);
   tipoSeleccionado   = signal<string>('LABORATORIO');
   descripcionArchivo = signal<string>('');
   archivoEliminando  = signal<ArchivoClinicoResponse | null>(null);
@@ -172,6 +173,7 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.autosaveSub?.unsubscribe();
+    if (this.archivoPreviewUrl()) URL.revokeObjectURL(this.archivoPreviewUrl()!);
   }
 
   loadConsulta() {
@@ -264,9 +266,14 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
 
   onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
-    if (input.files?.[0]) {
-      this.archivoPendiente.set(input.files[0]);
+    const file = input.files?.[0];
+    if (!file) return;
+
+    if (this.archivoPreviewUrl()) {
+      URL.revokeObjectURL(this.archivoPreviewUrl()!);
     }
+    this.archivoPendiente.set(file);
+    this.archivoPreviewUrl.set(URL.createObjectURL(file));
     input.value = '';
   }
 
@@ -278,6 +285,8 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
     this.hcService.subirArchivo(this.consultaId, file, this.tipoSeleccionado(), this.descripcionArchivo() || undefined).subscribe({
       next: () => {
         this.msgService.add({ severity: 'success', summary: 'Examen', detail: 'Archivo subido correctamente' });
+        if (this.archivoPreviewUrl()) URL.revokeObjectURL(this.archivoPreviewUrl()!);
+        this.archivoPreviewUrl.set(null);
         this.archivoPendiente.set(null);
         this.descripcionArchivo.set('');
         this.archivoSubiendo.set(false);

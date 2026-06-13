@@ -6,5 +6,6 @@ export interface MascotaRequest {
   fechaNacimiento: string; 
   color?: string;
   peso?: number;
+  fotoUrl?: string;
   apoderadoId: number;
 }

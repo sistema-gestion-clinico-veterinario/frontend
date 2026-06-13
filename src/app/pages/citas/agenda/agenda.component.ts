@@ -834,6 +834,12 @@ export class AgendaComponent implements OnInit, OnDestroy {
     });
   }
 
+  onAgendaEspecieChange(especie: string) {
+    this.nmEspecie.set(especie);
+    this.loadRazasAgenda();
+    this.nmRazaId.set(null);
+  }
+
   toggleNuevaMascota() {
     const willShow = !this.showNuevaMascota();
     this.showNuevaMascota.set(willShow);

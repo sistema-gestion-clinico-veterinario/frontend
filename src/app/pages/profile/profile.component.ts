@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, computed, ViewChild, ElementRef } from '@angular/core';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -26,7 +26,7 @@ interface HorarioResumen {
   providers: [MessageService],
   templateUrl: './profile.component.html'
 })
-export class ProfileComponent implements OnInit {
+export class ProfileComponent implements OnInit, OnDestroy {
   private readonly fb = inject(FormBuilder);
   private readonly profileService = inject(ProfileService);
   private readonly mediaService = inject(MediaService);
@@ -41,6 +41,7 @@ export class ProfileComponent implements OnInit {
   editMode = signal(false);
   uploadingPhoto = signal(false);
   previewUrl = signal<string | null>(null);
+  selectedFile = signal<File | null>(null);
   readonly safePreviewUrl = computed(() => {
     const url = this.previewUrl();
     return url ? this.sanitizer.bypassSecurityTrustUrl(url) : null;
@@ -114,28 +115,18 @@ export class ProfileComponent implements OnInit {
       return;
     }
 
-    // Show local preview immediately
-    const reader = new FileReader();
-    reader.onload = (e) => this.previewUrl.set(e.target?.result as string);
-    reader.readAsDataURL(file);
-
-    // Upload to server
-    this.uploadingPhoto.set(true);
-    this.mediaService.upload(file).subscribe({
-      next: (url) => {
-        this.form.patchValue({ fotoUrl: url });
-        this.uploadingPhoto.set(false);
-        this.messageService.add({ severity: 'success', summary: 'Foto cargada', detail: 'La foto se subió correctamente. Guarda los cambios para aplicar.' });
-      },
-      error: () => {
-        this.previewUrl.set(this.mediaService.resolveUrl(this.profile()?.fotoUrl));
-        this.uploadingPhoto.set(false);
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo subir la imagen' });
-      }
-    });
-
-    // Reset input so same file can be selected again
+    if (this.previewUrl() && this.previewUrl()!.startsWith('blob:')) {
+      URL.revokeObjectURL(this.previewUrl()!);
+    }
+    this.selectedFile.set(file);
+    this.previewUrl.set(URL.createObjectURL(file));
     input.value = '';
+  }
+
+  ngOnDestroy() {
+    if (this.previewUrl() && this.previewUrl()!.startsWith('blob:')) {
+      URL.revokeObjectURL(this.previewUrl()!);
+    }
   }
 
   save() {
@@ -151,20 +142,43 @@ export class ProfileComponent implements OnInit {
       return;
     }
 
-    this.loadingStore.show();
-    this.profileService.updateProfile(this.form.value).subscribe({
-      next: (res) => {
-        this.profile.set(res.data);
-        this.patchForm(res.data);
-        this.editMode.set(false);
-        this.messageService.add({ severity: 'success', summary: 'Perfil actualizado', detail: 'Tus datos han sido guardados correctamente' });
-        this.loadingStore.hide();
-      },
-      error: (err) => {
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo actualizar el perfil' });
-        this.loadingStore.hide();
-      }
-    });
+    const doSave = (fotoUrl?: string) => {
+      this.loadingStore.show();
+      const payload = { ...this.form.value };
+      if (fotoUrl) payload.fotoUrl = fotoUrl;
+
+      this.profileService.updateProfile(payload).subscribe({
+        next: (res) => {
+          this.profile.set(res.data);
+          this.patchForm(res.data);
+          this.editMode.set(false);
+          this.messageService.add({ severity: 'success', summary: 'Perfil actualizado', detail: 'Tus datos han sido guardados correctamente' });
+          this.loadingStore.hide();
+        },
+        error: (err) => {
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo actualizar el perfil' });
+          this.loadingStore.hide();
+        }
+      });
+    };
+
+    const file = this.selectedFile();
+    if (file) {
+      this.uploadingPhoto.set(true);
+      this.mediaService.upload(file).subscribe({
+        next: (url) => {
+          this.selectedFile.set(null);
+          this.uploadingPhoto.set(false);
+          doSave(url);
+        },
+        error: () => {
+          this.uploadingPhoto.set(false);
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo subir la imagen' });
+        }
+      });
+    } else {
+      doSave();
+    }
   }
 
   get roleLabel(): string {
