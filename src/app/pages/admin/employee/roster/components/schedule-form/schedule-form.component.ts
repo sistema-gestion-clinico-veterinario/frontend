@@ -73,7 +73,19 @@ export class ScheduleFormComponent implements OnInit {
     return days;
   });
 
-  @Input() visible = false;
+  private _visible = false;
+
+  @Input() set visible(value: boolean) {
+    this._visible = value;
+    if (!value) {
+      this.resetFormState();
+    }
+  }
+
+  get visible(): boolean {
+    return this._visible;
+  }
+
   @Input() employeeId: number | null = null;
   @Input() employeeName: string = '';
   @Input() set initialData(data: any) {
@@ -106,15 +118,7 @@ export class ScheduleFormComponent implements OnInit {
         });
       }
     } else {
-      this.currentData.set(null);
-      this.selectedStartDate.set('');
-      this.selectedEndDate.set('');
-      this.scheduleForm.reset({
-        horaInicio: '',
-        horaFin: '',
-        dias: [],
-        editMode: 'single'
-      });
+      this.resetFormState();
     }
   }
   @Output() close = new EventEmitter<void>();
@@ -132,6 +136,21 @@ export class ScheduleFormComponent implements OnInit {
   });
 
   readonly dayOfWeekMap = ['DOMINGO', 'LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO'];
+
+  private resetFormState() {
+    this.currentData.set(null);
+    this.selectedStartDate.set('');
+    this.selectedEndDate.set('');
+    this.loading.set(false);
+    this.scheduleForm.reset({
+      fechaInicio: '',
+      fechaFin: '',
+      horaInicio: '',
+      horaFin: '',
+      dias: [],
+      editMode: 'single'
+    });
+  }
 
   readonly diasSemana = [
     { key: 'LUNES', label: 'L' },

@@ -173,8 +173,8 @@
     [employeeName]="selectedEmployeeName()"
     [initialData]="selectedShift()"
     [scheduleRange]="scheduleRange()"
-    (close)="showSidebar.set(false)"
-    (saved)="loadSchedule(selectedEmployeeId()!)">
+    (close)="closeScheduleSidebar()"
+    (saved)="handleScheduleSaved()">
   </app-schedule-form>
 
   <!-- Estado vacío -->
@@ -193,7 +193,7 @@
     <ng-container *ngIf="viewMode() === 'day'">
       
       <!-- Cabecera del día -->
-      <div class="flex items-center gap-4 px-6 py-4 border-b border-slate-100 bg-white">
+      <div class="flex items-center gap-4 px-6 py-2 border-b border-slate-100 bg-white">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 bg-[#0066AA] rounded-xl flex flex-col items-center justify-center text-white">
             <span class="text-[10px] uppercase font-bold leading-none">{{ currentDate().getDate() }}</span>
@@ -287,11 +287,11 @@
 
     <!-- ============ VISTA SEMANA / MES ============ -->
     <ng-container *ngIf="viewMode() !== 'day'">
-      <div class="roster-calendar">
+      <div class="roster-calendar" [class.roster-calendar-month]="viewMode() === 'month'">
         <!-- Cabecera de días -->
-        <div class="roster-calendar-weekdays grid grid-cols-7 border-b border-slate-100 bg-slate-50/50">
+        <div class="roster-calendar-weekdays grid grid-cols-7">
           <div *ngFor="let i of [0,1,2,3,4,5,6]"
-            class="py-2 text-center text-[9px] font-bold uppercase tracking-wider border-r border-slate-100 last:border-r-0"
+            class="roster-calendar-weekday"
             [class.text-rose-500]="i === 0"
             [class.text-slate-500]="i !== 0">
             <span class="cal-day-name-full">{{ ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'][i] }}</span>
@@ -301,46 +301,20 @@
 
         <!-- Grid de celdas -->
         <div class="roster-calendar-days grid grid-cols-7">
-
           <div *ngFor="let item of calendarDays()"
             (click)="onDayClick(item)"
-            class="roster-calendar-day border-r border-b border-slate-100 last:border-r-0 relative group hover:bg-slate-50/50 transition-all"
-            [ngClass]="{'bg-slate-50/50': item.otherMonth, 'bg-white': !item.otherMonth}"
+            class="roster-calendar-day relative"
+            [ngClass]="{'roster-calendar-day-muted': item.otherMonth, 'roster-calendar-day-active': !item.otherMonth, 'roster-calendar-day-today': item.isToday}"
             [class.cursor-pointer]="canCreate() && !item.otherMonth"
             [class.cursor-default]="!canCreate() || item.otherMonth"
-            [style.min-height]="viewMode() === 'month' ? '70px' : '160px'">
+            [style.min-height]="viewMode() === 'month' ? '132px' : '176px'">
 
             <div class="roster-calendar-day-card">
-              <div class="roster-calendar-day-badge">
-                <div class="roster-calendar-day-badge-number"
-                     [class.text-slate-300]="item.otherMonth"
-                     [class.text-slate-600]="!item.otherMonth && !item.isToday"
-                     [class.text-white]="item.isToday"
-                     [class.bg-[#0066AA]]="item.isToday"
-                     [class.bg-slate-100]="!item.isToday">
-                  {{ item.day }}
-                </div>
-                <div class="roster-calendar-day-badge-meta">
-                  <span class="text-[9px] font-bold uppercase tracking-[0.25em] leading-none text-slate-500">
-                    {{ item.date | date:'EEE' }}
-                  </span>
-                  <span class="text-[9px] leading-none text-slate-400">
-                    {{ item.date | date:'dd MMM' }}
-                  </span>
-                </div>
-                <span *ngIf="item.shifts?.length > 0"
-                  class="roster-calendar-day-badge-chip inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-100 text-[9px] font-semibold text-slate-700">
-                  <i class="pi pi-clock text-[10px]"></i>
-                  {{ item.shifts.length }} turno{{ item.shifts.length === 1 ? '' : 's' }}
-                </span>
-              </div>
-
               <div class="roster-calendar-day-content">
-                <!-- Encabezado del día -->
-                <div class="roster-calendar-day-header flex items-start justify-between px-3 pt-3 pb-1 gap-3">
-                  <div class="flex items-center gap-3 min-w-0">
+                <div class="roster-calendar-day-header">
+                  <div class="roster-calendar-day-title">
                     <span
-                      class="text-[11px] font-bold w-8 h-8 flex items-center justify-center rounded-xl border"
+                      class="roster-calendar-date-pill"
                       [class.text-slate-300]="item.otherMonth"
                       [class.text-slate-600]="!item.otherMonth && !item.isToday"
                       [class.text-white]="item.isToday"
@@ -349,72 +323,69 @@
                       [class.border-transparent]="item.isToday">
                       {{ item.day }}
                     </span>
-                    <div class="min-w-0">
-                      <p class="text-[9px] font-bold uppercase tracking-[0.25em] leading-none"
+                    <div class="roster-calendar-day-meta">
+                      <p class="roster-calendar-day-name"
                          [class.text-slate-400]="item.otherMonth"
                          [class.text-slate-600]="!item.otherMonth">
-                        {{ item.date | date:'EEE' }}
+                        {{ formatCalendarDayName(item.date) }}
                       </p>
-                      <p class="text-[9px] leading-none text-slate-400 truncate">
-                        {{ item.date | date:'dd MMM' }}
+                      <p class="roster-calendar-day-subtitle">
+                        {{ item.otherMonth ? formatCalendarMonthName(item.date) : (item.shifts?.length ? (item.totalHours + ' h') : 'Libre') }}
                       </p>
                     </div>
                   </div>
                   <span *ngIf="item.shifts?.length > 0"
-                    class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-100 text-[9px] font-semibold text-slate-700">
-                    <i class="pi pi-clock text-[10px]"></i>
+                    class="roster-calendar-shift-count">
+                    <i class="pi pi-briefcase roster-calendar-count-icon"></i>
                     {{ item.shifts.length }} turno{{ item.shifts.length === 1 ? '' : 's' }}
                   </span>
                 </div>
 
-                <div class="roster-calendar-day-label px-3 pb-2 text-[9px] uppercase tracking-[0.22em] text-slate-500 flex items-center justify-between">
-                  <span>{{ item.otherMonth ? 'Fuera de mes' : (item.shifts?.length ? 'Asignado' : 'Libre') }}</span>
-                  <span *ngIf="item.otherMonth" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 text-[8px] text-slate-500">
-                    <i class="pi pi-angle-double-right"></i>
-                    Otro mes
-                  </span>
+                <div class="roster-calendar-shifts">
+                  <div *ngFor="let shift of (viewMode() === 'month' ? (item.shifts | slice:0:3) : item.shifts)" (click)="verDetalle(shift); $event.stopPropagation()"
+                    class="roster-calendar-shift-chip"
+                    [class.roster-calendar-shift-selected]="selectedShift()?.id === shift.id">
+                    <div class="roster-calendar-shift-main">
+                      <i class="pi pi-clock roster-calendar-shift-icon"></i>
+                      <span class="roster-calendar-shift-label">Turno</span>
+                      <span class="roster-calendar-shift-time">{{ shift.horaInicio?.substring(0,5) }}</span>
+                      <span class="roster-calendar-shift-separator">-</span>
+                      <span class="roster-calendar-shift-time">{{ shift.horaFin?.substring(0,5) }}</span>
+                    </div>
+                    <div class="roster-calendar-shift-actions">
+                      <button *ngIf="canModify()" (click)="editShift(shift); $event.stopPropagation()"
+                        class="roster-calendar-shift-action roster-calendar-shift-action-edit"
+                        title="Editar">
+                        <i class="pi pi-pencil text-[8px]"></i>
+                      </button>
+                      <button *ngIf="canDelete()" (click)="deleteShift(shift); $event.stopPropagation()"
+                        class="roster-calendar-shift-action roster-calendar-shift-action-delete"
+                        title="Eliminar">
+                        <i class="pi pi-trash text-[8px]"></i>
+                      </button>
+                    </div>
+                  </div>
+
+                  <button *ngIf="viewMode() === 'month' && item.shifts?.length > 3"
+                    type="button"
+                    (click)="onDayClick(item); $event.stopPropagation()"
+                    class="roster-calendar-more-chip">
+                    <i class="pi pi-list roster-calendar-more-icon"></i>
+                    +{{ item.shifts.length - 3 }} turno{{ item.shifts.length - 3 === 1 ? '' : 's' }}
+                  </button>
+
+                  <div *ngIf="!item.shifts?.length && !item.otherMonth"
+                    class="roster-calendar-free-state">
+                    <i class="pi pi-plus roster-calendar-free-icon" *ngIf="canCreate()"></i>
+                    <span>{{ canCreate() ? 'Agregar turno' : 'Libre' }}</span>
+                  </div>
                 </div>
 
-                <!-- Lista de turnos Compacta -->
-            <div class="px-1.5 pb-2 space-y-1">
-              <div *ngFor="let shift of item.shifts" (click)="verDetalle(shift); $event.stopPropagation()"
-                class="flex items-center justify-between px-2 py-1 rounded-md border border-slate-200 bg-slate-50/50 group/item hover:border-[#0066AA] hover:bg-slate-50 cursor-pointer transition-all"
-                [class.ring-2]="selectedShift()?.id === shift.id"
-                [class.ring-[#0066AA]]="selectedShift()?.id === shift.id"
-                [class.ring-offset-1]="selectedShift()?.id === shift.id"
-                [class.z-20]="selectedShift()?.id === shift.id">
-                <div class="flex items-center gap-1.5 min-w-0">
-                  <i class="pi pi-clock text-[8px] text-[#0066AA]"></i>
-                  <span class="text-[9px] font-bold text-slate-700 truncate">
-                    {{ shift.horaInicio }} – {{ shift.horaFin }}
-                  </span>
-                </div>
-                <div class="flex items-center gap-0.5">
-                  <button *ngIf="canModify()" (click)="editShift(shift); $event.stopPropagation()"
-                    class="flex-shrink-0 w-4 h-4 items-center justify-center rounded-md text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 opacity-0 group-hover/item:opacity-100 transition-all flex"
-                    title="Editar">
-                    <i class="pi pi-pencil text-[8px]"></i>
-                  </button>
-                  <button *ngIf="canDelete()" (click)="deleteShift(shift); $event.stopPropagation()"
-                    class="flex-shrink-0 w-4 h-4 items-center justify-center rounded-md text-red-400 hover:text-red-600 hover:bg-red-50 opacity-0 group-hover/item:opacity-100 transition-all flex"
-                    title="Eliminar">
-                    <i class="pi pi-trash text-[8px]"></i>
-                  </button>
-                </div>
-              </div>
-
-              <div *ngIf="!item.shifts?.length && !item.otherMonth && viewMode() !== 'month'"
-                class="flex flex-col items-center justify-center pt-8 opacity-20">
-                <i class="pi pi-calendar-minus text-lg"></i>
-                <p class="text-[9px] font-bold mt-1 uppercase tracking-tighter">Libre</p>
               </div>
             </div>
-
           </div>
         </div>
       </div>
-    </div>
-  </div>
     </ng-container>
 
   </div>

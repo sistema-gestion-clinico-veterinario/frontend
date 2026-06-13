@@ -337,7 +337,8 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
       const prevMonthEnd = new Date(date.getFullYear(), date.getMonth(), 0).getDate();
 
       for (let i = startDay - 1; i >= 0; i--) {
-        days.push({ day: prevMonthEnd - i, otherMonth: true });
+        const current = new Date(date.getFullYear(), date.getMonth() - 1, prevMonthEnd - i);
+        days.push(this.buildCalendarDay(current, true, []));
       }
 
       for (let i = 1; i <= end.getDate(); i++) {
@@ -347,7 +348,13 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
         const dayShifts = this.shifts().filter((s: any) =>
           s.fecha === dateStr || (!s.fecha && s.diaSemana === dayOfWeek)
         );
-        days.push({ day: i, date: current, isToday: this.isToday(current), shifts: dayShifts });
+        days.push(this.buildCalendarDay(current, false, dayShifts));
+      }
+
+      const remainingSlots = (7 - (days.length % 7)) % 7;
+      for (let i = 1; i <= remainingSlots; i++) {
+        const current = new Date(date.getFullYear(), date.getMonth() + 1, i);
+        days.push(this.buildCalendarDay(current, true, []));
       }
     } else if (this.viewMode() === 'week') {
       const startOfWeek = new Date(date);
@@ -361,7 +368,7 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
         const dayShifts = this.shifts().filter((s: any) =>
           s.fecha === dateStr || (!s.fecha && s.diaSemana === dayOfWeek)
         );
-        days.push({ day: current.getDate(), date: current, isToday: this.isToday(current), shifts: dayShifts });
+        days.push(this.buildCalendarDay(current, false, dayShifts));
       }
     } else {
       const dateStr   = date.toISOString().split('T')[0];
@@ -369,7 +376,7 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
       const dayShifts = this.shifts().filter((s: any) =>
         s.fecha === dateStr || (!s.fecha && s.diaSemana === dayOfWeek)
       );
-      days.push({ day: date.getDate(), date, isToday: this.isToday(date), shifts: dayShifts });
+      days.push(this.buildCalendarDay(date, false, dayShifts));
     }
 
     this.calendarDays.set(days);
@@ -377,6 +384,18 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
     if (this.viewMode() === 'day') {
       this.generateDayHourView();
     }
+  }
+
+  private buildCalendarDay(date: Date, otherMonth: boolean, shifts: any[]) {
+    const sortedShifts = [...shifts].sort((a, b) => (a.horaInicio || '').localeCompare(b.horaInicio || ''));
+    return {
+      day: date.getDate(),
+      date,
+      otherMonth,
+      isToday: this.isToday(date),
+      shifts: sortedShifts,
+      totalHours: this.calculateTotalHours(sortedShifts)
+    };
   }
 
   generateDayHourView() {
@@ -406,6 +425,14 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
 
   isToday(d: Date): boolean {
     return d.toDateString() === new Date().toDateString();
+  }
+
+  formatCalendarDayName(date: Date): string {
+    return ['Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'][date.getDay()];
+  }
+
+  formatCalendarMonthName(date: Date): string {
+    return ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Set', 'Oct', 'Nov', 'Dic'][date.getMonth()];
   }
 
   get hasWorkingHours(): boolean {
@@ -446,6 +473,19 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
     if (!this.canModify()) return;
     this.selectedShift.set(shift);
     this.showSidebar.set(true);
+  }
+
+  closeScheduleSidebar() {
+    this.showSidebar.set(false);
+    this.selectedShift.set(null);
+  }
+
+  handleScheduleSaved() {
+    const employeeId = this.selectedEmployeeId();
+    if (employeeId) {
+      this.loadSchedule(employeeId);
+    }
+    this.closeScheduleSidebar();
   }
 
   openAddForm(date?: string) {

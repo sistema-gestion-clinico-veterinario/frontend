@@ -1,161 +1,282 @@
 <p-toast position="top-right" />
 
-<div class="p-4 min-h-screen bg-slate-50 font-['Barlow']">
-  <div class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-    <div>
-      <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Gestión de Vistas</h1>
-      <p class="text-slate-500 font-medium mt-1 flex items-center gap-2">
-        <span class="w-2 h-2 rounded-full bg-[#0066AA]"></span>
-        Arrastra para ordenar grupos e items
-      </p>
-    </div>
-    <div class="flex items-center gap-3">
-      <span *ngIf="saving()" class="text-xs text-blue-600 font-medium flex items-center gap-1">
-        <i class="pi pi-spin pi-spinner"></i> Guardando...
-      </span>
-      <button (click)="nuevaVista()" class="px-4 py-2.5 rounded-xl bg-[#0066AA] text-white hover:bg-[#0055AA] transition-colors font-semibold text-sm flex items-center gap-2 shadow-sm active:scale-95">
-        <i class="pi pi-plus"></i> Nueva Vista
-      </button>
-    </div>
-  </div>
-
-  <div class="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
-    <!-- Drag-drop list (7 cols) -->
-    <div class="xl:col-span-7 bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-      <div class="px-4 py-3 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
-        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Estructura del Menú</p>
-        <span class="text-xs font-semibold text-[#0066AA] bg-blue-50 px-2 py-0.5 rounded">{{ vistas().length }} vistas</span>
+<div class="min-h-screen bg-white font-['Barlow']">
+  <div class="max-w-[1600px] mx-auto p-4 md:p-6 lg:p-8">
+    
+    <!-- ==================== ENCABEZADO ==================== -->
+    <div class="mb-8 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+      <div>
+        <h1 class="text-3xl font-extrabold text-[#072A4B] tracking-tight">Gestión de Vistas</h1>
+        <p class="text-sm text-[#6B8799] mt-1">Organiza el menú de superadmin de forma clara y ordenada.</p>
       </div>
 
-      <div *ngIf="displayGroups().length === 0" class="py-12 text-center">
-        <i class="pi pi-heart text-3xl text-slate-200 block mb-3"></i>
-        <p class="text-sm font-medium text-slate-400">No hay vistas disponibles</p>
+      <div class="flex items-center gap-4">
+        <span *ngIf="saving()" class="flex items-center gap-2 text-sm text-[#6B8799] bg-white px-3 py-1.5 rounded-lg border border-[#E6EEF8]">
+          <i class="pi pi-spin pi-spinner text-[#0066AA]"></i> Guardando...
+        </span>
+        <button (click)="nuevaVista()" 
+                class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#0066AA] text-white hover:bg-[#005599] font-semibold text-sm">
+          <i class="pi pi-plus text-xs"></i>
+          Nueva Vista
+        </button>
       </div>
+    </div>
 
-      <div cdkDropListGroup class="p-4 space-y-2">
-        <!-- Groups + Standalone items -->
-        <div cdkDropList [cdkDropListData]="displayGroups()" (cdkDropListDropped)="onGroupDrop($event)" class="space-y-2">
+    <!-- ==================== TARJETAS DE ESTADÍSTICAS ==================== -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div class="bg-white p-4 rounded-lg border border-[#E6EEF8] flex items-center gap-4">
+        <div class="flex h-11 w-11 items-center justify-center rounded-lg bg-[#EBF3FA] text-[#0066AA]">
+          <i class="pi pi-list text-lg"></i>
+        </div>
+        <div>
+          <div class="text-xs uppercase tracking-wider text-[#6B8799] font-medium">Total Vistas</div>
+          <div class="text-2xl font-bold text-[#072A4B]">{{ totalVistas() }}</div>
+        </div>
+      </div>
+      <div class="bg-white p-4 rounded-lg border border-[#E6EEF8] flex items-center gap-4">
+        <div class="flex h-11 w-11 items-center justify-center rounded-lg bg-[#ECFDF5] text-emerald-600">
+          <i class="pi pi-check-circle text-lg"></i>
+        </div>
+        <div>
+          <div class="text-xs uppercase tracking-wider text-[#6B8799] font-medium">Activas</div>
+          <div class="text-2xl font-bold text-emerald-700">{{ activeVistas() }}</div>
+        </div>
+      </div>
+      <div class="bg-white p-4 rounded-lg border border-[#E6EEF8] flex items-center gap-4">
+        <div class="flex h-11 w-11 items-center justify-center rounded-lg bg-[#FFF1F2] text-rose-600">
+          <i class="pi pi-times-circle text-lg"></i>
+        </div>
+        <div>
+          <div class="text-xs uppercase tracking-wider text-[#6B8799] font-medium">Inactivas</div>
+          <div class="text-2xl font-bold text-rose-600">{{ inactiveVistas() }}</div>
+        </div>
+      </div>
+      <div class="bg-white p-4 rounded-lg border border-[#E6EEF8] flex items-center gap-4">
+        <div class="flex h-11 w-11 items-center justify-center rounded-lg bg-[#F3E8FF] text-purple-600">
+          <i class="pi pi-folder text-lg"></i>
+        </div>
+        <div>
+          <div class="text-xs uppercase tracking-wider text-[#6B8799] font-medium">Grupos</div>
+          <div class="text-2xl font-bold text-[#072A4B]">{{ groupsCount() }}</div>
+        </div>
+      </div>
+    </div>
 
-          <div *ngFor="let group of displayGroups(); let groupIdx = index" cdkDrag>
+    <!-- ==================== CONTENIDO PRINCIPAL ==================== -->
+    <div class="grid gap-6 xl:grid-cols-[7fr_5fr]">
+      
+      <!-- ==================== COLUMNA IZQUIERDA: ACORDEÓN DE VISTAS ==================== -->
+      <div class="space-y-6">
+        <!-- Estado vacío -->
+        <div *ngIf="displayGroups().length === 0" 
+             class="py-16 text-center border border-dashed border-[#CBD5E1] rounded-lg bg-white">
+          <div class="flex justify-center mb-4">
+            <div class="flex h-16 w-16 items-center justify-center rounded-lg bg-[#F3F9FF]">
+              <i class="pi pi-inbox text-3xl text-[#5B9ED3]"></i>
+            </div>
+          </div>
+          <p class="text-sm font-medium text-[#5B9ED3]">No hay vistas creadas todavía</p>
+          <p class="text-xs text-[#6B8799] mt-1">Haz clic en "Nueva Vista" para empezar a construir tu menú.</p>
+        </div>
 
-            <!-- Group header (only for real groups, not standalone) -->
-            <div *ngIf="group.key !== '__STANDALONE__'"
-                 class="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 mb-1 cursor-move"
-                 cdkDragHandle>
-              <i class="pi pi-bars text-xs text-slate-300"></i>
-              <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">{{ group.label }}</span>
+        <!-- Acordeón de grupos -->
+        <div *ngIf="displayGroups().length > 0" class="space-y-3">
+          <div *ngFor="let group of displayGroups(); let groupIdx = index" 
+               class="rounded-lg border border-[#E2E8F0] bg-white overflow-hidden">
+            
+            <!-- Cabecera del acordeón (clickeable) -->
+            <div (click)="toggleGroup(group.key)" 
+                 class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-6 py-4 bg-white border-b border-[#E2E8F0] cursor-pointer hover:bg-[#F8FAFC] select-none">
+              <div class="flex items-center gap-3">
+                <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-[#EBF3FA] text-[#0066AA]">
+                  <i class="pi pi-folder text-sm"></i>
+                </div>
+                <div>
+                  <p class="text-sm font-semibold text-slate-800">
+                    {{ group.key === '__STANDALONE__' ? 'Items Sueltos' : group.label }}
+                  </p>
+                  <p class="text-xs text-slate-500">{{ group.items.length }} vista{{ group.items.length === 1 ? '' : 's' }}</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-3">
+      
+                <i class="pi text-slate-400 text-sm" 
+                   [ngClass]="isGroupExpanded(group.key) ? 'pi-chevron-up' : 'pi-chevron-down'"></i>
+              </div>
             </div>
 
-            <!-- Item list inside group / standalone -->
-            <div cdkDropList
-              [id]="'items-' + group.key"
-              [cdkDropListData]="group.items"
-              [cdkDropListConnectedTo]="itemDropListIds()"
-              (cdkDropListDropped)="onItemDrop($event, group.key)"
-              class="space-y-1"
-            >
-              <div *ngFor="let vista of group.items; let itemIdx = index"
-                   cdkDrag
-                   (click)="selectVista(vista)"
-                   [class.bg-blue-50]="selectedVista()?.id === vista.id"
-                   [class.border-l-[3px]!]="selectedVista()?.id === vista.id"
-                   [class.border-[#0066AA]!]="selectedVista()?.id === vista.id"
-                   class="flex items-center gap-2 px-3 py-2.5 rounded-lg border border-transparent cursor-pointer hover:bg-slate-50 transition-colors bg-white"
-              >
-                <i class="pi pi-bars text-xs text-slate-300 cursor-grab cdk-drag-handle"></i>
-                <div class="flex-1 min-w-0">
-                  <p class="text-sm font-semibold text-slate-700 truncate">{{ vista.nombre }}</p>
-                  <p class="text-[10px] text-slate-400 font-mono truncate">{{ vista.codigo }}</p>
+            <!-- Contenido del acordeón (colapsable) -->
+            <div *ngIf="isGroupExpanded(group.key)">
+              <div cdkDropList
+                   [id]="'items-' + group.key"
+                   [cdkDropListData]="group.items"
+                   [cdkDropListConnectedTo]="itemDropListIds()"
+                   (cdkDropListDropped)="onItemDrop($event, group.key)"
+                   class="p-3 space-y-1">
+                
+                <div *ngFor="let vista of group.items; let itemIdx = index"
+                     cdkDrag
+                     (click)="selectVista(vista)"
+                     [ngClass]="selectedVista()?.id === vista.id ? 'bg-[#F3F9FF] border-[#0066AA] ring-1 ring-[#0066AA]' : 'bg-white border-transparent hover:bg-[#F8FAFC] hover:border-slate-200'"
+                     class="group flex items-center justify-between gap-4 rounded-lg border p-3 cursor-pointer">
+                  
+                  <div class="flex items-center gap-3 min-w-0">
+                    <span class="flex h-10 w-10 items-center justify-center rounded-lg bg-[#F8FAFC] text-slate-400 group-hover:text-slate-600 cursor-grab active:cursor-grabbing" 
+                          cdkDragHandle>
+                      <i class="pi pi-grip-vertical text-sm"></i>
+                    </span>
+                    <div class="min-w-0">
+                      <p class="text-sm font-medium text-slate-900 truncate">{{ vista.nombre }}</p>
+                      <p class="text-xs text-slate-500 truncate font-mono">{{ vista.codigo }}</p>
+                    </div>
+                  </div>
+                  
+                  <div class="flex items-center gap-2">
+                    <span class="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-lg"
+                          [ngClass]="vista.activo ? 'bg-emerald-50 text-emerald-700' : 'bg-[#F8FAFC] text-slate-500'">
+                      {{ vista.activo ? 'Activo' : 'Inactivo' }}
+                    </span>
+                    <button (click)="$event.stopPropagation(); selectVista(vista)" 
+                            class="p-2 text-slate-400 hover:text-[#0066AA] hover:bg-[#F3F9FF] rounded-lg" 
+                            title="Editar vista">
+                      <i class="pi pi-pencil text-sm"></i>
+                    </button>
+                    <button (click)="$event.stopPropagation(); selectVista(vista); eliminarVista()" 
+                            class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg" 
+                            title="Eliminar vista">
+                      <i class="pi pi-trash text-sm"></i>
+                    </button>
+                  </div>
                 </div>
-                <span *ngIf="!vista.activo" class="text-[10px] bg-rose-100 text-rose-600 px-1.5 py-0.5 rounded font-medium shrink-0">Inactivo</span>
               </div>
             </div>
           </div>
+        </div>
 
+        <!-- Pista de arrastre -->
+        <div *ngIf="displayGroups().length > 0" 
+             class="flex items-center gap-2 text-xs text-slate-400 px-2">
+          <i class="pi pi-info-circle"></i>
+          <span>Arrastra las vistas para reordenarlas o moverlas entre grupos.</span>
         </div>
       </div>
 
-      <div *ngIf="displayGroups().length > 0" class="px-4 pb-3 text-[10px] text-slate-400">
-        Arrastra items entre grupos o hacia el área de items sueltos para cambiar su grupo.
-      </div>
-    </div>
-
-    <!-- Form (5 cols) -->
-    <div class="xl:col-span-5 bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-      <div class="px-4 py-3 border-b border-slate-100 bg-slate-50">
-        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-          {{ isEditing() ? 'Editar Vista' : 'Nueva Vista' }}
-        </p>
-      </div>
-
-      <div class="p-6 space-y-4">
-        <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-2">Código</label>
-          <input type="text" [ngModel]="vistaForm().codigo" (ngModelChange)="updateField('codigo', $event)" placeholder="VISTA_EJEMPLO"
-            class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#0066AA]" />
+      <!-- ==================== COLUMNA DERECHA: FORMULARIO ==================== -->
+      <div class="bg-white rounded-lg border border-[#E2E8F0] overflow-hidden h-fit sticky top-6">
+        <div class="px-6 py-4 border-b border-[#EAF4FF] bg-white flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <i class="pi text-[#0066AA]" [ngClass]="isEditing() ? 'pi-pencil' : 'pi-plus-circle'"></i>
+            <p class="text-sm font-semibold text-[#072A4B]">
+              {{ isEditing() ? 'Editar Vista' : 'Nueva Vista' }}
+            </p>
+          </div>
+          <span *ngIf="isEditing()" class="text-[10px] bg-[#EBF3FA] text-[#0066AA] px-2 py-0.5 rounded-lg font-medium">
+            Editando
+          </span>
         </div>
 
-        <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-2">Nombre</label>
-          <input type="text" [ngModel]="vistaForm().nombre" (ngModelChange)="updateField('nombre', $event)" placeholder="Mi Vista"
-            class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#0066AA]" />
-        </div>
+        <div class="p-6 space-y-5">
+          <div class="space-y-4">
+            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Información Principal</h3>
+            
+            <div>
+              <label class="block text-xs font-semibold text-[#0B3B57] mb-1.5">Código Único</label>
+              <input type="text" [ngModel]="vistaForm().codigo" (ngModelChange)="updateField('codigo', $event)" 
+                     placeholder="Ej: USUARIOS_LISTAR"
+                     class="w-full px-3 py-2.5 rounded-lg border border-[#E2E8F0] text-sm focus:outline-none focus:ring-2 focus:ring-[#0066AA]/20 focus:border-[#0066AA] font-mono" />
+            </div>
 
-        <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-2">Grupo</label>
-          <input type="text" [ngModel]="vistaForm().grupo" (ngModelChange)="updateField('grupo', $event)" placeholder="GENERAL"
-            class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#0066AA]" />
-          <p class="text-[10px] text-slate-400 mt-1">GENERAL = item suelto. Cualquier otro nombre crea o asigna a un grupo.</p>
-        </div>
+            <div>
+              <label class="block text-xs font-semibold text-[#0B3B57] mb-1.5">Nombre a Mostrar</label>
+              <input type="text" [ngModel]="vistaForm().nombre" (ngModelChange)="updateField('nombre', $event)" 
+                     placeholder="Ej: Gestión de Usuarios"
+                     class="w-full px-3 py-2.5 rounded-lg border border-[#E2E8F0] text-sm focus:outline-none focus:ring-2 focus:ring-[#0066AA]/20 focus:border-[#0066AA]" />
+            </div>
+          </div>
 
-        <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-2">Orden (individual)</label>
-          <input type="number" [ngModel]="vistaForm().orden" (ngModelChange)="updateField('orden', $event)" placeholder="0" min="0"
-            class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#0066AA]" />
-          <p class="text-[10px] text-slate-400 mt-1">Se reasigna automáticamente al arrastrar.</p>
-        </div>
+          <div class="space-y-4 pt-2">
+            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Organización</h3>
+            
+            <div>
+              <label class="block text-xs font-semibold text-[#0B3B57] mb-1.5">Grupo</label>
+              <input type="text" [ngModel]="vistaForm().grupo" (ngModelChange)="updateField('grupo', $event)" 
+                     placeholder="Ej: ADMINISTRACION"
+                     class="w-full px-3 py-2.5 rounded-lg border border-[#E2E8F0] text-sm focus:outline-none focus:ring-2 focus:ring-[#0066AA]/20 focus:border-[#0066AA]" />
+              <p class="text-[11px] text-[#5B9ED3] mt-1.5 flex items-center gap-1">
+                <i class="pi pi-info-circle text-xs"></i>
+                Usa "GENERAL" para que sea un item suelto sin agrupar.
+              </p>
+            </div>
 
-        <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-2">Orden del Grupo</label>
-          <input type="number" [ngModel]="vistaForm().ordenGrupo" (ngModelChange)="updateField('ordenGrupo', $event)" placeholder="—"
-            class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#0066AA]" />
-          <p class="text-[10px] text-slate-400 mt-1">Se reasigna automáticamente al arrastrar.</p>
-        </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-[#0B3B57] mb-1.5">Orden Individual</label>
+                <input type="number" [ngModel]="vistaForm().orden" (ngModelChange)="updateField('orden', $event)" 
+                       placeholder="0" min="0"
+                       class="w-full px-3 py-2.5 rounded-lg border border-[#E2E8F0] text-sm focus:outline-none focus:ring-2 focus:ring-[#0066AA]/20 focus:border-[#0066AA]" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-[#0B3B57] mb-1.5">Orden del Grupo</label>
+                <input type="number" [ngModel]="vistaForm().ordenGrupo" (ngModelChange)="updateField('ordenGrupo', $event)" 
+                       placeholder="Auto"
+                       class="w-full px-3 py-2.5 rounded-lg border border-[#E2E8F0] text-sm focus:outline-none focus:ring-2 focus:ring-[#0066AA]/20 focus:border-[#0066AA]" />
+              </div>
+            </div>
+            <p class="text-[11px] text-[#5B9ED3] flex items-center gap-1">
+              <i class="pi pi-sort-alt text-xs"></i>
+              Estos valores se actualizan automáticamente al arrastrar.
+            </p>
+          </div>
 
-        <div class="flex items-center gap-2">
-          <input type="checkbox" [ngModel]="vistaForm().activo" (ngModelChange)="updateField('activo', $event)" class="w-4 h-4 rounded" />
-          <label class="text-sm font-medium text-slate-700">Activo</label>
-        </div>
+          <div class="pt-2">
+            <label class="flex items-center gap-3 p-3 bg-white rounded-lg border border-[#E2E8F0] cursor-pointer hover:bg-[#F8FAFC]">
+              <input type="checkbox" [ngModel]="vistaForm().activo" (ngModelChange)="updateField('activo', $event)" 
+                     class="w-4 h-4 rounded text-[#0066AA] focus:ring-[#0066AA]" />
+              <span class="text-sm font-medium text-[#0B3B57]">Vista Activa</span>
+            </label>
+          </div>
 
-        <div class="flex gap-3 pt-4">
-          <button (click)="guardarVista()"
-            class="flex-1 px-4 py-2 bg-[#0066AA] text-white rounded-lg hover:bg-[#0055AA] font-semibold text-sm transition-colors">
-            {{ isEditing() ? 'Actualizar' : 'Crear' }}
-          </button>
-          <button *ngIf="isEditing()" (click)="eliminarVista()"
-            class="px-4 py-2 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100 font-semibold text-sm transition-colors border border-rose-200">
-            Eliminar
-          </button>
-          <button (click)="nuevaVista()"
-            class="px-4 py-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 font-semibold text-sm transition-colors">
-            Limpiar
-          </button>
+          <div class="flex flex-col sm:flex-row gap-3 pt-4 border-t border-[#EAF4FF]">
+            <button (click)="guardarVista()"
+                    class="flex-1 px-5 py-3 bg-[#0066AA] text-white rounded-lg hover:bg-[#005599] font-semibold text-sm flex items-center justify-center gap-2">
+              <i class="pi text-xs" [ngClass]="isEditing() ? 'pi-check' : 'pi-plus'"></i>
+              {{ isEditing() ? 'Actualizar Vista' : 'Crear Vista' }}
+            </button>
+            <button *ngIf="isEditing()" (click)="eliminarVista()"
+                    class="px-5 py-3 bg-white text-rose-600 rounded-lg hover:bg-rose-50 font-semibold text-sm border border-rose-200 flex items-center justify-center gap-2">
+              <i class="pi pi-trash text-xs"></i>
+              Eliminar
+            </button>
+            <button (click)="nuevaVista()"
+                    class="px-5 py-3 bg-white text-[#16609A] rounded-lg hover:bg-[#EAF6FF] font-semibold text-sm border border-[#E2E8F0] flex items-center justify-center gap-2">
+              <i class="pi pi-refresh text-xs"></i>
+              Limpiar
+            </button>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Confirm Dialog -->
-<div *ngIf="confirmDialog() as dialog" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-  <div class="bg-white rounded-xl shadow-lg p-6 max-w-sm w-full">
-    <h3 class="text-lg font-semibold text-slate-900 mb-2">{{ dialog.title }}</h3>
-    <p class="text-slate-600 mb-6">{{ dialog.message }}</p>
-    <div class="flex gap-3 justify-end">
-      <button (click)="cancelConfirm()" class="px-4 py-2 text-slate-700 bg-slate-100 rounded-lg hover:bg-slate-200 font-semibold text-sm">
+<!-- ==================== DIÁLOGO DE CONFIRMACIÓN ==================== -->
+<div *ngIf="confirmDialog() as dialog" 
+     class="fixed inset-0 bg-slate-900/60 flex items-center justify-center z-50 p-4">
+  <div class="bg-white rounded-lg p-6 max-w-sm w-full border border-[#E6EEF8]">
+    <div class="flex justify-center mb-4">
+      <div class="flex h-14 w-14 items-center justify-center rounded-lg bg-rose-50">
+        <i class="pi pi-exclamation-triangle text-2xl text-rose-500"></i>
+      </div>
+    </div>
+    <h3 class="text-lg font-semibold text-[#072A4B] text-center mb-2">{{ dialog.title }}</h3>
+    <p class="text-[#475569] text-sm text-center mb-6">{{ dialog.message }}</p>
+    <div class="flex gap-3">
+      <button (click)="cancelConfirm()" 
+              class="flex-1 px-4 py-2.5 text-slate-700 bg-[#F8FAFC] rounded-lg hover:bg-slate-100 font-semibold text-sm">
         Cancelar
       </button>
-      <button (click)="confirmAction()" class="px-4 py-2 text-white bg-rose-600 rounded-lg hover:bg-rose-700 font-semibold text-sm">
+      <button (click)="confirmAction()" 
+              class="flex-1 px-4 py-2.5 text-white bg-rose-600 rounded-lg hover:bg-rose-700 font-semibold text-sm">
         Eliminar
       </button>
     </div>
