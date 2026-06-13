@@ -27,6 +27,7 @@ export class VentanasComponent implements OnInit {
   private readonly menuService = inject(MenuManagementService);
   private readonly messageService = inject(MessageService);
   readonly loadingStore = inject(LoadingStore);
+expandedGroups = signal<Set<string>>(new Set());
 
   vistas = signal<VistaDTO[]>([]);
   selectedVista = signal<VistaDTO | null>(null);
@@ -93,6 +94,42 @@ export class VentanasComponent implements OnInit {
     return this.displayGroups().map(g => `items-${g.key}`);
   });
 
+  totalVistas = computed(() => this.vistas().length);
+  activeVistas = computed(() => this.vistas().filter(v => v.activo).length);
+  inactiveVistas = computed(() => this.vistas().filter(v => !v.activo).length);
+  groupsCount = computed(() => this.displayGroups().filter(g => g.key !== STANDALONE_KEY).length);
+  standaloneCount = computed(() => this.displayGroups().find(g => g.key === STANDALONE_KEY)?.items.length ?? 0);
+  groupOptions = computed(() => this.displayGroups().filter(g => g.key !== STANDALONE_KEY).map(g => g.key));
+
+  openGroup = signal<string | null>(null);
+
+ toggleGroup(groupKey: string) {
+  this.expandedGroups.update(groups => {
+    const newGroups = new Set(groups);
+    if (newGroups.has(groupKey)) {
+      newGroups.delete(groupKey);
+    } else {
+      newGroups.add(groupKey);
+    }
+    return newGroups;
+  });
+}
+isGroupExpanded(groupKey: string): boolean {
+  return this.expandedGroups().has(groupKey);
+}
+
+// Expandir todos los grupos
+expandAllItems() {
+  const allKeys = this.displayGroups().map(g => g.key);
+  this.expandedGroups.set(new Set(allKeys));
+}
+
+// Añadir vista a un grupo específico
+addVistaToGroup(groupKey: string) {
+  this.nuevaVista();
+  this.updateField('grupo', groupKey === '__STANDALONE__' ? 'GENERAL' : groupKey);
+}
+
   ngOnInit() {
     this.cargarVistas();
   }
@@ -109,15 +146,6 @@ export class VentanasComponent implements OnInit {
         this.loadingStore.hide();
       }
     });
-  }
-
-  onGroupDrop(event: CdkDragDrop<DisplayGroup[]>) {
-    const groups = [...this.displayGroups()];
-    const [moved] = groups.splice(event.previousIndex, 1);
-    groups.splice(event.currentIndex, 0, moved);
-    this.vistas.set(this.flattenGroups(groups));
-    this.saving.set(true);
-    this.saveOrder(groups);
   }
 
   onItemDrop(event: CdkDragDrop<VistaDTO[]>, groupKey: string) {
