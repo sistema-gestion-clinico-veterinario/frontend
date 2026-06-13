@@ -292,7 +292,7 @@
           </div>
         </div>
 
-        <!-- 👥 APODERADOS REGISTRADOS (CLIENTES) -->
+            <!-- 👥 APODERADOS REGISTRADOS (CLIENTES) -->
         <div *ngIf="canViewClientes()" class="bg-white rounded-2xl border border-slate-100 p-0 overflow-hidden">
           <div class="px-3 sm:px-6 py-2.5 sm:py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
             <div class="min-w-0">
@@ -371,6 +371,35 @@
           </div>
         </div>
 
+        <div *ngIf="isSuperAdmin || canView('VISTA_COMPANY')" class="bg-white rounded-2xl border border-slate-100 p-0 overflow-hidden">
+          <div class="px-3 sm:px-6 py-2.5 sm:py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+            <div class="min-w-0">
+              <h2 class="text-[9px] sm:text-xs font-black text-slate-800 uppercase tracking-widest flex items-center gap-1.5 sm:gap-2">
+                <span class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-blue-500"></span>
+                Mantenedor de Empresas
+              </h2>
+              <p class="text-[8px] sm:text-[10px] text-slate-400 font-medium mt-0.5 truncate">Gestiona las empresas y sedes del sistema</p>
+            </div>
+            <a routerLink="/admin/company" class="text-[8px] sm:text-[9px] font-black text-[#0066AA] hover:underline uppercase tracking-wider shrink-0 ml-2">
+              Gestionar
+            </a>
+          </div>
+
+          <div class="p-3 sm:p-6">
+            <div *ngIf="companies().length > 0; else noCompanies" class="space-y-2">
+              <div *ngFor="let c of companies().slice(0,3)" class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-bold text-slate-800 truncate">{{ c.name }}</p>
+                  <p class="text-xs text-slate-400 truncate">RUC: {{ c.ruc }}</p>
+                </div>
+                <span [class]="'px-2 py-0.5 rounded text-[10px] font-bold ' + (c.activo ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-red-50 text-red-600 border border-red-100')">{{ c.activo ? 'Activo' : 'Inactivo' }}</span>
+              </div>
+            </div>
+            <ng-template #noCompanies>
+              <div class="text-sm text-slate-500">Accede al mantenedor para crear, editar o desactivar empresas.</div>
+            </ng-template>
+          </div>
+        </div>
         <!-- 🐾 MASCOTAS REGISTRADAS -->
         <div *ngIf="canViewMascotas()" class="bg-white rounded-2xl border border-slate-100 p-0 overflow-hidden">
           <div class="px-3 sm:px-6 py-2.5 sm:py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">

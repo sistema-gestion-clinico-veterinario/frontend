@@ -357,6 +357,9 @@ export class DashboardComponent implements OnInit {
     if (this.canViewPayments()) {
       this.loadPagos(companyId);
     }
+    if (this.isSuperAdmin || this.canView('VISTA_COMPANY')) {
+      this.loadCompanies();
+    }
   }
 
   loadStats(companyId?: number) {
@@ -430,6 +433,13 @@ export class DashboardComponent implements OnInit {
         this.loadingPagos.set(false);
       },
       error: () => this.loadingPagos.set(false)
+    });
+  }
+
+  loadCompanies() {
+    this.companyService.listar(0, 1000).subscribe({
+      next: (res: any) => { this.companies.set(res.data?.content ?? []); },
+      error: () => { this.companies.set([]); }
     });
   }
 
