@@ -13,8 +13,11 @@ import { MessageService } from 'primeng/api';
 import { MascotaService } from '../../../core/services/mascota.service';
 import { ApoderadoService } from '../../../core/services/apoderado.service';
 import { CompanyService } from '../../../core/services/company.service';
+import { RazaService } from '../../../core/services/raza.service';
 import { MascotaResponse } from '../../../models/response/mascota-response';
 import { MascotaRequest } from '../../../models/request/mascota-request';
+import { RazaResponse } from '../../../models/response/raza-response';
+import { RazaRequest } from '../../../models/request/raza-request';
 import { LoadingStore } from '../../../store/loading.store';
 import { AuthStore } from '../../../store/auth.store';
 import { Role } from '../../../core/enums/role.enum';
@@ -43,6 +46,7 @@ export class ListaMascotasComponent implements OnInit {
   private readonly fb               = inject(FormBuilder);
   private readonly mascotaService   = inject(MascotaService);
   private readonly apoderadoService = inject(ApoderadoService);
+  private readonly razaService      = inject(RazaService);
   private readonly companyService   = inject(CompanyService);
   private readonly messageService   = inject(MessageService);
   private readonly router           = inject(Router);
@@ -59,6 +63,11 @@ export class ListaMascotasComponent implements OnInit {
   isEdit       = signal<boolean>(false);
   editingId    = signal<number | null>(null);
   apoderados = signal<{ label: string; value: number }[]>([]);
+  razas = signal<{ label: string; value: number }[]>([]);
+  razaFilterText = signal<string>('');
+  razaDropdownOpen = signal<boolean>(false);
+  displayRazaModal = signal<boolean>(false);
+  savingRaza = signal<boolean>(false);
   searchNombre      = '';
   filterEspecie: string | null   = null;
   filterActivo:  boolean | null  = null;
@@ -87,12 +96,17 @@ export class ListaMascotasComponent implements OnInit {
   mascotaForm: FormGroup = this.fb.group({
     nombre:          ['',   [Validators.required, Validators.minLength(2), Validators.maxLength(80)]],
     especie:         [null, [Validators.required]],
-    raza:            ['',   [Validators.required, Validators.minLength(2), Validators.maxLength(60)]],
+    razaId:          [null, [Validators.required]],
     sexo:            [null, [Validators.required]],
     fechaNacimiento: ['',   [Validators.required, (control: AbstractControl) => this.fechaNoFuturaValidator(control)]],
     color:           ['', [Validators.maxLength(50)]],
     peso:            [null, [Validators.min(0.01), Validators.max(120)]],
     apoderadoId:     [null, [Validators.required]],
+  });
+
+  razaForm: FormGroup = this.fb.group({
+    nombre:      ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
+    descripcion: ['', [Validators.maxLength(300)]],
   });
   displayMotivoModal  = signal<boolean>(false);
   pendingDeactivation = signal<MascotaResponse | null>(null);
@@ -116,7 +130,12 @@ export class ListaMascotasComponent implements OnInit {
   ngOnInit() {
     this.loadMascotas();
     this.loadApoderados();
-    this.mascotaForm.get('especie')?.valueChanges.subscribe(() => this.actualizarValidadoresPeso());
+    this.loadRazas();
+    this.mascotaForm.get('especie')?.valueChanges.subscribe(() => {
+      this.actualizarValidadoresPeso();
+      this.loadRazas();
+      this.mascotaForm.get('razaId')?.setValue(null);
+    });
   }
 
   fechaNoFuturaValidator(control: AbstractControl): ValidationErrors | null {
@@ -138,6 +157,56 @@ export class ListaMascotasComponent implements OnInit {
     const rango = rangos[especie] ?? rangos['OTRO'];
     pesoCtrl?.setValidators([Validators.min(rango.min), Validators.max(rango.max)]);
     pesoCtrl?.updateValueAndValidity({ emitEvent: false });
+  }
+
+  get razasFiltradas() {
+    const filtro = this.razaFilterText().toLowerCase();
+    return this.razas().filter(r => r.label.toLowerCase().includes(filtro));
+  }
+
+  loadRazas() {
+    const especie = this.mascotaForm.get('especie')?.value;
+    this.razaService.listarPorEspecie(especie || undefined).subscribe({
+      next: (res) => {
+        this.razas.set(res.data.map(r => ({ label: r.nombre, value: r.id })));
+      }
+    });
+  }
+
+  openRazaModal() {
+    this.razaForm.reset({ nombre: '', descripcion: '' });
+    this.displayRazaModal.set(true);
+  }
+
+  saveRaza() {
+    if (this.razaForm.invalid) {
+      this.razaForm.markAllAsTouched();
+      return;
+    }
+    const especie = this.mascotaForm.get('especie')?.value;
+    if (!especie) {
+      this.messageService.add({ severity: 'warn', summary: 'Atención', detail: 'Primero seleccione una especie' });
+      return;
+    }
+    const request: RazaRequest = {
+      nombre: this.razaForm.value.nombre,
+      descripcion: this.razaForm.value.descripcion || undefined,
+      especie
+    };
+    this.savingRaza.set(true);
+    this.razaService.crear(request).subscribe({
+      next: (res) => {
+        this.messageService.add({ severity: 'success', summary: 'Listo', detail: 'Raza creada correctamente' });
+        this.displayRazaModal.set(false);
+        this.loadRazas();
+        this.mascotaForm.get('razaId')?.setValue(res.data.id);
+        this.savingRaza.set(false);
+      },
+      error: (err) => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error al crear la raza' });
+        this.savingRaza.set(false);
+      }
+    });
   }
 
   loadApoderados() {
@@ -206,10 +275,11 @@ export class ListaMascotasComponent implements OnInit {
   editMascota(mascota: MascotaResponse) {
     this.isEdit.set(true);
     this.editingId.set(mascota.id);
+    this.loadRazas();
     this.mascotaForm.patchValue({
       nombre:          mascota.nombreCompleto,
       especie:         mascota.especie,
-      raza:            mascota.raza,
+      razaId:          mascota.razaId,
       sexo:            mascota.sexo,
       fechaNacimiento: mascota.fechaNacimiento,
       color:           mascota.color ?? '',
@@ -228,7 +298,7 @@ export class ListaMascotasComponent implements OnInit {
     const request: MascotaRequest = {
       nombreCompleto:  v.nombre,
       especie:         v.especie,
-      raza:            v.raza,
+      razaId:          v.razaId,
       sexo:            v.sexo,
       fechaNacimiento: v.fechaNacimiento,
       color:           v.color || undefined,

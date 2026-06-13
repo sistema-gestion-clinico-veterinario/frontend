@@ -14,6 +14,8 @@ import { CitaService } from '../../../core/services/cita.service';
 import { EmpleadoService } from '../../../core/services/empleado.service';
 import { ApoderadoService } from '../../../core/services/apoderado.service';
 import { MascotaService } from '../../../core/services/mascota.service';
+import { RazaService } from '../../../core/services/raza.service';
+import { RazaResponse } from '../../../models/response/raza-response';
 import { CompanyService } from '../../../core/services/company.service';
 import { ServicioService } from '../../../core/services/servicio.service';
 import { PagoService } from '../../../core/services/pago.service';
@@ -89,6 +91,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
   private readonly empleadoService   = inject(EmpleadoService);
   private readonly apoderadoService  = inject(ApoderadoService);
   private readonly mascotaService    = inject(MascotaService);
+  private readonly razaService       = inject(RazaService);
   private readonly companyService    = inject(CompanyService);
   private readonly servicioService   = inject(ServicioService);
   private readonly pagoService       = inject(PagoService);
@@ -232,9 +235,10 @@ export class AgendaComponent implements OnInit, OnDestroy {
   savingNuevaMascota = signal(false);
   nmNombre    = signal('');
   nmEspecie   = signal('PERRO');
-  nmRaza      = signal('');
+  nmRazaId    = signal<number | null>(null);
   nmSexo      = signal('MACHO');
   nmFechaNac  = signal('');
+  razasAgenda = signal<RazaResponse[]>([]);
   today: Date                     = new Date();
   filterFecha: string             = this.toDateStr(new Date());
   filterEstado: EstadoCita | null = null;
@@ -716,7 +720,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
     this.ncTipoDoc.set('DNI'); this.ncNumDoc.set(''); this.ncGenero.set('MASCULINO');
     this.showNuevaMascota.set(false);
     this.nmNombre.set(''); this.nmEspecie.set('PERRO');
-    this.nmRaza.set(''); this.nmSexo.set('MACHO'); this.nmFechaNac.set('');
+    this.nmRazaId.set(null); this.nmSexo.set('MACHO'); this.nmFechaNac.set('');
     this.displayModal.set(true);
   }
 
@@ -824,6 +828,21 @@ export class AgendaComponent implements OnInit, OnDestroy {
     });
   }
 
+  loadRazasAgenda() {
+    this.razaService.listarPorEspecie(this.nmEspecie()).subscribe({
+      next: (res) => this.razasAgenda.set(res.data)
+    });
+  }
+
+  toggleNuevaMascota() {
+    const willShow = !this.showNuevaMascota();
+    this.showNuevaMascota.set(willShow);
+    this.showMascotaSelector.set(false);
+    if (willShow) {
+      this.loadRazasAgenda();
+    }
+  }
+
   crearNuevaMascota() {
     const apoderadoId = this.selectedClienteId();
     if (!apoderadoId) {
@@ -831,9 +850,9 @@ export class AgendaComponent implements OnInit, OnDestroy {
       return;
     }
     const nombre = this.nmNombre().trim();
-    const raza   = this.nmRaza().trim();
+    const razaId = this.nmRazaId();
     const fecha  = this.nmFechaNac().trim();
-    if (!nombre || !raza || !fecha) {
+    if (!nombre || !razaId || !fecha) {
       this.messageService.add({ severity: 'warn', summary: 'Campos incompletos', detail: 'Complete nombre, raza y fecha de nacimiento.' });
       return;
     }
@@ -846,7 +865,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
     this.mascotaService.crear({
       nombreCompleto: nombre,
       especie: this.nmEspecie(),
-      raza,
+      razaId,
       sexo: this.nmSexo(),
       fechaNacimiento: fecha,
       apoderadoId
@@ -858,7 +877,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
         this.filteredMascotas.update(list => [item, ...list]);
         this.selectMascota(item);
         this.nmNombre.set(''); this.nmEspecie.set('PERRO');
-        this.nmRaza.set(''); this.nmSexo.set('MACHO'); this.nmFechaNac.set('');
+        this.nmRazaId.set(null); this.nmSexo.set('MACHO'); this.nmFechaNac.set('');
         this.showNuevaMascota.set(false);
         this.savingNuevaMascota.set(false);
         this.messageService.add({ severity: 'success', summary: 'Mascota registrada', detail: `${nombre} registrado correctamente.` });

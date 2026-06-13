@@ -1,7 +1,7 @@
 export interface MascotaRequest {
   nombreCompleto: string;
   especie: string;
-  raza: string;
+  razaId: number;
   sexo: string;
   fechaNacimiento: string; 
   color?: string;

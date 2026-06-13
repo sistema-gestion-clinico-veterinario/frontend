@@ -486,7 +486,7 @@
             </label>
             <ng-container *ngIf="!isReprogramando()">
               <button *ngIf="selectedClienteId()" type="button"
-                (click)="showNuevaMascota.set(!showNuevaMascota()); showMascotaSelector.set(false)"
+                (click)="toggleNuevaMascota()"
                 class="text-[10px] font-bold flex items-center gap-1 px-2 py-1 rounded-lg transition-all"
                 [class]="showNuevaMascota() ? 'bg-slate-100 text-slate-500 hover:bg-slate-200' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'">
                 <i [class]="showNuevaMascota() ? 'pi pi-times' : 'pi pi-plus'" class="text-[9px]"></i>
@@ -533,7 +533,7 @@
             <div class="grid grid-cols-2 gap-2.5">
               <div class="flex flex-col gap-1">
                 <label class="text-[10px] font-semibold text-slate-500">Especie <span class="text-rose-500">*</span></label>
-                <select [ngModel]="nmEspecie()" (ngModelChange)="nmEspecie.set($event)" [ngModelOptions]="{standalone: true}"
+                <select [ngModel]="nmEspecie()" (ngModelChange)="nmEspecie.set($event); loadRazasAgenda(); nmRazaId.set(null)" [ngModelOptions]="{standalone: true}"
                   class="w-full h-9 px-3 border border-slate-200 rounded-lg text-xs font-semibold outline-none focus:border-emerald-400 bg-white transition-all cursor-pointer appearance-none">
                   <option value="PERRO">Perro</option>
                   <option value="GATO">Gato</option>
@@ -555,9 +555,18 @@
             <div class="grid grid-cols-2 gap-2.5">
               <div class="flex flex-col gap-1">
                 <label class="text-[10px] font-semibold text-slate-500">Raza <span class="text-rose-500">*</span></label>
-                <input type="text" [ngModel]="nmRaza()" (ngModelChange)="nmRaza.set($event)" [ngModelOptions]="{standalone: true}"
-                  placeholder="Ej: Labrador"
-                  class="w-full h-9 px-3 border border-slate-200 rounded-lg text-xs font-semibold outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/10 bg-white placeholder:text-slate-300 transition-all">
+                <div class="flex gap-1.5">
+                  <select [ngModel]="nmRazaId()" (ngModelChange)="nmRazaId.set($event); $any($event)" [ngModelOptions]="{standalone: true}"
+                    class="flex-1 h-9 px-3 border border-slate-200 rounded-lg text-xs font-semibold outline-none focus:border-emerald-400 bg-white transition-all cursor-pointer appearance-none">
+                    <option [ngValue]="null" disabled>Seleccione</option>
+                    <option *ngFor="let r of razasAgenda()" [ngValue]="r.id">{{ r.nombre }}</option>
+                  </select>
+                  <button type="button" (click)="loadRazasAgenda()"
+                    class="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-200 text-slate-400 hover:text-emerald-600 hover:border-emerald-400 transition-all flex-shrink-0"
+                    title="Recargar razas">
+                    <i class="pi pi-refresh text-xs"></i>
+                  </button>
+                </div>
               </div>
               <div class="flex flex-col gap-1">
                 <label class="text-[10px] font-semibold text-slate-500">Fecha de Nac. <span class="text-rose-500">*</span></label>
