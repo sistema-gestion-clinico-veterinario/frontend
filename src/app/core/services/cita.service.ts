@@ -54,4 +54,8 @@ export class CitaService {
     if (excludeCitaId !== undefined) url += `&excludeCitaId=${excludeCitaId}`;
     return this.http.get<ApiResponse<string[]>>(url);
   }
+
+  getServiciosNoMedicos(mascotaId: number) {
+    return this.http.get<ApiResponse<CitaResponse[]>>(`${this.apiUrl}/mascota/${mascotaId}/servicios`);
+  }
 }

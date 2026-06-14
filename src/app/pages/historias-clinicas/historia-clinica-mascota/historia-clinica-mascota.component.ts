@@ -6,6 +6,7 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 
 import { HistoriaClinicaService } from '../../../core/services/historia-clinica.service';
+import { CitaService } from '../../../core/services/cita.service';
 import { LoadingStore } from '../../../store/loading.store';
 import { AuthStore } from '../../../store/auth.store';
 import {
@@ -14,6 +15,7 @@ import {
   ArchivoClinico
 } from '../../../models/response/historia-clinica-response';
 import { ArchivoClinicoResponse } from '../../../models/response/archivo-clinico-response';
+import { CitaResponse } from '../../../models/response/cita-response';
 import { ArchivoModalsComponent } from '../form-hc/archivo-modals/archivo-modals.component';
 import { DiagnosticoIaComponent } from './diagnostico-ia/diagnostico-ia.component';
 
@@ -25,23 +27,26 @@ import { DiagnosticoIaComponent } from './diagnostico-ia/diagnostico-ia.componen
   templateUrl: './historia-clinica-mascota.component.html'
 })
 export class HistoriaClinicaMascotaComponent implements OnInit {
-  private readonly route      = inject(ActivatedRoute);
-  private readonly router     = inject(Router);
-  private readonly hcService  = inject(HistoriaClinicaService);
-  private readonly msgService = inject(MessageService);
-  private readonly sanitizer  = inject(DomSanitizer);
-  readonly loadingStore       = inject(LoadingStore);
-  readonly authStore          = inject(AuthStore);
+  private readonly route        = inject(ActivatedRoute);
+  private readonly router       = inject(Router);
+  private readonly hcService    = inject(HistoriaClinicaService);
+  private readonly citaService  = inject(CitaService);
+  private readonly msgService   = inject(MessageService);
+  private readonly sanitizer    = inject(DomSanitizer);
+  readonly loadingStore         = inject(LoadingStore);
+  readonly authStore            = inject(AuthStore);
 
   readonly canModify = computed(() => this.authStore.hasAccess('VISTA_HISTORIAS', 'modificar'));
 
-  returnUrl        = '/historias-clinicas';
-  mascotaId        = 0;
-  numeroHc         = '';
-  hc               = signal<HistoriaClinicaDetalle | null>(null);
-  consultaActiva   = signal<ConsultaResumen | null>(null);
-  tabActiva        = signal<'clinico' | 'recetas' | 'archivos'>('clinico');
-  noTieneHc        = signal<boolean>(false);
+  returnUrl           = '/historias-clinicas';
+  mascotaId           = 0;
+  numeroHc            = '';
+  hc                  = signal<HistoriaClinicaDetalle | null>(null);
+  consultaActiva      = signal<ConsultaResumen | null>(null);
+  tabActiva           = signal<'clinico' | 'recetas' | 'archivos' | 'servicios'>('clinico');
+  noTieneHc           = signal<boolean>(false);
+  serviciosNoMedicos  = signal<CitaResponse[]>([]);
+  loadingServicios    = signal(false);
 
   previewArchivo   = signal<ArchivoClinicoResponse | null>(null);
   previewUrl       = signal<SafeResourceUrl | string>('');
@@ -83,7 +88,25 @@ export class HistoriaClinicaMascotaComponent implements OnInit {
 
   seleccionarConsulta(consulta: ConsultaResumen) {
     this.consultaActiva.set(consulta);
-    this.tabActiva.set('clinico');
+    if (this.tabActiva() === 'servicios') this.tabActiva.set('clinico');
+  }
+
+  seleccionarTab(tab: 'clinico' | 'recetas' | 'archivos' | 'servicios') {
+    this.tabActiva.set(tab);
+    if (tab === 'servicios' && this.mascotaId && this.serviciosNoMedicos().length === 0) {
+      this.cargarServicios();
+    }
+  }
+
+  cargarServicios() {
+    this.loadingServicios.set(true);
+    this.citaService.getServiciosNoMedicos(this.mascotaId).subscribe({
+      next: (res) => {
+        this.serviciosNoMedicos.set(res.data ?? []);
+        this.loadingServicios.set(false);
+      },
+      error: () => this.loadingServicios.set(false)
+    });
   }
 
   editarConsulta(id: number) {
@@ -124,6 +147,32 @@ export class HistoriaClinicaMascotaComponent implements OnInit {
       DESPARASITACION: 'Desparasitación'
     };
     return map[tipo] ?? tipo;
+  }
+
+  estadoCitaBadge(estado: string): string {
+    const map: Record<string, string> = {
+      COMPLETADA: 'bg-green-50 text-green-700',
+      CANCELADA: 'bg-red-50 text-red-600',
+      ELIMINADA: 'bg-red-50 text-red-600',
+      EN_PROCESO: 'bg-blue-50 text-blue-700',
+      PROGRAMADA: 'bg-slate-100 text-slate-600',
+      CONFIRMADA: 'bg-indigo-50 text-indigo-700',
+      PENDIENTE: 'bg-amber-50 text-amber-700',
+      REPROGRAMADA: 'bg-orange-50 text-orange-600',
+      SALA_DE_ESPERA: 'bg-cyan-50 text-cyan-700',
+      NO_ASISTIO: 'bg-slate-100 text-slate-500',
+    };
+    return map[estado] ?? 'bg-slate-100 text-slate-600';
+  }
+
+  estadoCitaLabel(estado: string): string {
+    const map: Record<string, string> = {
+      COMPLETADA: 'Completada', CANCELADA: 'Cancelada', EN_PROCESO: 'En proceso',
+      PROGRAMADA: 'Programada', CONFIRMADA: 'Confirmada', PENDIENTE: 'Pendiente',
+      REPROGRAMADA: 'Reprogramada', SALA_DE_ESPERA: 'En espera',
+      NO_ASISTIO: 'No asistió', ELIMINADA: 'Eliminada', OTRO: 'Otro',
+    };
+    return map[estado] ?? estado;
   }
 
   tipoArchivoLabel(tipo: string): string {

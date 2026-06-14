@@ -7,6 +7,7 @@ export interface VistaDTO {
   orden?: number;
   ordenGrupo?: number | null;
   activo: boolean;
+  icono?: string;
 }
 
 export interface MenuItemDTO extends VistaDTO {

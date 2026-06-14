@@ -55,12 +55,23 @@ export const apiInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, nex
   );
 };
 
+const getStoredAuth = (): any => {
+  try {
+    const raw = window.localStorage.getItem('auth');
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+};
+
 const handle401Error = (req: HttpRequest<any>, next: HttpHandlerFn, authStore: any, authService: AuthService, router: Router): Observable<HttpEvent<any>> => {
   if (!isRefreshing) {
     isRefreshing = true;
     refreshTokenSubject.next(null);
 
-    const refreshToken = authStore.refreshToken();
+    const storedAuth = getStoredAuth();
+    const refreshToken = storedAuth?.refreshToken ?? authStore.refreshToken();
+
     if (refreshToken) {
       return authService.refreshToken(refreshToken).pipe(
         switchMap((res: any) => {
@@ -92,6 +103,14 @@ const handle401Error = (req: HttpRequest<any>, next: HttpHandlerFn, authStore: a
         }),
         catchError((err) => {
           isRefreshing = false;
+          const sentToken = req.headers.get('Authorization')?.replace('Bearer ', '');
+          const freshAuth = getStoredAuth();
+          const freshToken = freshAuth?.token;
+          if (freshToken && freshToken !== sentToken) {
+            authStore.setAuth(freshAuth);
+            refreshTokenSubject.next(freshToken);
+            return next(req.clone({ setHeaders: { 'Authorization': `Bearer ${freshToken}` } }));
+          }
           refreshTokenSubject.error(err);
           refreshTokenSubject = new BehaviorSubject<string | null>(null);
           authStore.logout();

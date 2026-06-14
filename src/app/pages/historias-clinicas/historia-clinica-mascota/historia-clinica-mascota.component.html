@@ -95,14 +95,9 @@
         </div>
       </div>
       <div class="flex-1 min-w-0">
-        <div *ngIf="!consultaActiva()"
-          class="bg-white border border-slate-200 rounded-xl py-20 text-center px-6">
-          <i class="pi pi-arrow-left text-2xl text-slate-200 block mb-3"></i>
-          <p class="text-xs text-slate-400 font-medium">Selecciona una consulta para ver su detalle</p>
-        </div>
-        <div *ngIf="consultaActiva()" class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+        <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
 
-          <div class="px-5 py-4 border-b border-slate-100">
+          <div *ngIf="consultaActiva() && tabActiva() !== 'servicios'" class="px-5 py-4 border-b border-slate-100">
             <div class="flex items-start justify-between gap-3">
               <div>
                 <p class="text-base font-extrabold text-slate-900 leading-snug">
@@ -127,36 +122,53 @@
           </div>
           <div class="flex border-b border-slate-100 px-5">
             <button
-              (click)="tabActiva.set('clinico')"
+              (click)="seleccionarTab('clinico')"
               [class]="tabActiva() === 'clinico'
                 ? 'py-3 text-xs font-extrabold text-[#0066AA] border-b-2 border-[#0066AA] mr-6'
                 : 'py-3 text-xs font-bold text-slate-400 border-b-2 border-transparent mr-6 hover:text-slate-600'">
               Clínico
             </button>
             <button
-              (click)="tabActiva.set('recetas')"
+              (click)="seleccionarTab('recetas')"
               [class]="tabActiva() === 'recetas'
                 ? 'py-3 text-xs font-extrabold text-[#0066AA] border-b-2 border-[#0066AA] mr-6'
                 : 'py-3 text-xs font-bold text-slate-400 border-b-2 border-transparent mr-6 hover:text-slate-600'">
               Recetas
-              <span *ngIf="consultaActiva()!.prescripciones.length > 0"
+              <span *ngIf="consultaActiva() && consultaActiva()!.prescripciones.length > 0"
                 class="ml-1 bg-blue-100 text-[#0066AA] rounded-full px-1.5 py-0.5 text-[10px]">
                 {{ consultaActiva()!.prescripciones.length }}
               </span>
             </button>
             <button
-              (click)="tabActiva.set('archivos')"
+              (click)="seleccionarTab('archivos')"
               [class]="tabActiva() === 'archivos'
-                ? 'py-3 text-xs font-extrabold text-[#0066AA] border-b-2 border-[#0066AA]'
-                : 'py-3 text-xs font-bold text-slate-400 border-b-2 border-transparent hover:text-slate-600'">
+                ? 'py-3 text-xs font-extrabold text-[#0066AA] border-b-2 border-[#0066AA] mr-6'
+                : 'py-3 text-xs font-bold text-slate-400 border-b-2 border-transparent mr-6 hover:text-slate-600'">
               Archivos
-              <span *ngIf="consultaActiva()!.archivos.length > 0"
+              <span *ngIf="consultaActiva() && consultaActiva()!.archivos.length > 0"
                 class="ml-1 bg-blue-100 text-[#0066AA] rounded-full px-1.5 py-0.5 text-[10px]">
                 {{ consultaActiva()!.archivos.length }}
               </span>
             </button>
+            <button
+              (click)="seleccionarTab('servicios')"
+              [class]="tabActiva() === 'servicios'
+                ? 'py-3 text-xs font-extrabold text-[#0066AA] border-b-2 border-[#0066AA]'
+                : 'py-3 text-xs font-bold text-slate-400 border-b-2 border-transparent hover:text-slate-600'">
+              Servicios
+              <span *ngIf="serviciosNoMedicos().length > 0"
+                class="ml-1 bg-blue-100 text-[#0066AA] rounded-full px-1.5 py-0.5 text-[10px]">
+                {{ serviciosNoMedicos().length }}
+              </span>
+            </button>
           </div>
-          <div *ngIf="tabActiva() === 'clinico'" class="p-5 flex flex-col gap-5">
+
+          <div *ngIf="tabActiva() !== 'servicios' && !consultaActiva()"
+            class="py-20 text-center px-6">
+            <i class="pi pi-arrow-left text-2xl text-slate-200 block mb-3"></i>
+            <p class="text-xs text-slate-400 font-medium">Selecciona una consulta para ver su detalle</p>
+          </div>
+          <div *ngIf="consultaActiva() && tabActiva() === 'clinico'" class="p-5 flex flex-col gap-5">
             <div>
               <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-3">Signos vitales</p>
               <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -241,7 +253,7 @@
               <p class="text-xs font-medium">Sin información clínica registrada</p>
             </div>
           </div>
-          <div *ngIf="tabActiva() === 'recetas'" class="p-5">
+          <div *ngIf="consultaActiva() && tabActiva() === 'recetas'" class="p-5">
 
             <div *ngIf="consultaActiva()!.prescripciones.length === 0"
               class="py-12 text-center text-slate-300">
@@ -289,7 +301,7 @@
               </div>
             </div>
           </div>
-          <div *ngIf="tabActiva() === 'archivos'" class="p-5">
+          <div *ngIf="consultaActiva() && tabActiva() === 'archivos'" class="p-5">
 
             <div *ngIf="consultaActiva()!.archivos.length === 0"
               class="py-12 text-center text-slate-300">
@@ -323,6 +335,42 @@
                 </div>
                 <i class="pi pi-eye text-xs text-slate-300 group-hover:text-[#0066AA] shrink-0"></i>
               </button>
+            </div>
+          </div>
+
+          <div *ngIf="tabActiva() === 'servicios'" class="p-5">
+            <div *ngIf="loadingServicios()" class="py-12 text-center text-slate-300">
+              <i class="pi pi-spin pi-spinner text-2xl block mb-2"></i>
+              <p class="text-xs font-medium">Cargando servicios...</p>
+            </div>
+            <div *ngIf="!loadingServicios() && serviciosNoMedicos().length === 0"
+              class="py-12 text-center text-slate-300">
+              <i class="pi pi-scissors text-2xl block mb-2"></i>
+              <p class="text-xs font-medium">Sin servicios no médicos registrados</p>
+            </div>
+            <div *ngIf="!loadingServicios() && serviciosNoMedicos().length > 0" class="flex flex-col gap-3">
+              <div *ngFor="let s of serviciosNoMedicos()"
+                class="border border-slate-200 rounded-xl p-4 flex items-start gap-4">
+                <div class="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center shrink-0">
+                  <i class="pi pi-scissors text-violet-500 text-sm"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2 flex-wrap mb-1">
+                    <p class="text-sm font-extrabold text-slate-800">{{ s.servicioNombre || s.motivoCita || 'Servicio' }}</p>
+                    <span [class]="'text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ' + estadoCitaBadge(s.estado)">
+                      {{ estadoCitaLabel(s.estado) }}
+                    </span>
+                  </div>
+                  <p class="text-xs text-slate-500">{{ formatFechaHora(s.fechaHoraInicio) }}</p>
+                  <p *ngIf="s.veterinarioNombre" class="text-xs text-slate-400 mt-0.5">
+                    <i class="pi pi-user mr-1 text-[10px]"></i>{{ s.veterinarioNombre }}
+                  </p>
+                  <p *ngIf="s.notas" class="text-xs text-slate-400 mt-1 italic">{{ s.notas }}</p>
+                </div>
+                <div *ngIf="s.montoPagado" class="text-right shrink-0">
+                  <p class="text-sm font-extrabold text-green-600">S/ {{ s.montoPagado | number:'1.2-2' }}</p>
+                </div>
+              </div>
             </div>
           </div>
 

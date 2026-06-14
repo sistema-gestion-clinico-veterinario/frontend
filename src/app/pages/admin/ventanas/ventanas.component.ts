@@ -34,6 +34,25 @@ expandedGroups = signal<Set<string>>(new Set());
   isEditing = signal<boolean>(false);
   saving = signal(false);
 
+  readonly ICONOS_DISPONIBLES = [
+    'pi-home','pi-calendar','pi-users','pi-user','pi-cog','pi-chart-bar','pi-chart-line',
+    'pi-file','pi-file-edit','pi-list','pi-inbox','pi-folder','pi-folder-open',
+    'pi-heart','pi-star','pi-shield','pi-lock','pi-key','pi-dollar','pi-money-bill',
+    'pi-briefcase','pi-building','pi-tag','pi-tags','pi-bookmark',
+    'pi-bell','pi-envelope','pi-phone','pi-map','pi-map-marker',
+    'pi-check','pi-check-circle','pi-times','pi-info-circle','pi-exclamation-triangle',
+    'pi-pencil','pi-trash','pi-eye','pi-print','pi-download','pi-upload','pi-share-alt',
+    'pi-search','pi-filter','pi-sort-alt','pi-sliders-h',
+    'pi-table','pi-th-large','pi-bars','pi-sitemap',
+    'pi-box','pi-shopping-cart','pi-credit-card','pi-receipt',
+    'pi-image','pi-camera','pi-video','pi-microphone',
+    'pi-globe','pi-link','pi-external-link','pi-history',
+    'pi-car','pi-palette','pi-wrench','pi-bolt',
+  ];
+
+  showIconPicker  = signal(false);
+  showAvanzado    = signal(false);
+
   vistaForm = signal<{
     id?: number;
     codigo: string;
@@ -42,13 +61,15 @@ expandedGroups = signal<Set<string>>(new Set());
     orden: number;
     ordenGrupo: number | null;
     activo: boolean;
+    icono: string;
   }>({
     codigo: '',
     nombre: '',
     grupo: 'GENERAL',
     orden: 0,
     ordenGrupo: null,
-    activo: true
+    activo: true,
+    icono: ''
   });
 
   confirmDialog = signal<{
@@ -139,6 +160,7 @@ addVistaToGroup(groupKey: string) {
     this.menuService.listarVistas().subscribe({
       next: (res) => {
         this.vistas.set(res.data);
+        this.expandAllItems();
         this.loadingStore.hide();
       },
       error: () => {
@@ -223,6 +245,7 @@ addVistaToGroup(groupKey: string) {
   selectVista(vista: VistaDTO) {
     this.selectedVista.set(vista);
     this.isEditing.set(true);
+    this.showIconPicker.set(false);
     this.vistaForm.set({
       id: vista.id,
       codigo: vista.codigo,
@@ -230,21 +253,29 @@ addVistaToGroup(groupKey: string) {
       grupo: vista.grupo || 'GENERAL',
       orden: vista.orden ?? 0,
       ordenGrupo: vista.ordenGrupo ?? null,
-      activo: vista.activo
+      activo: vista.activo,
+      icono: vista.icono ?? ''
     });
   }
 
   nuevaVista() {
     this.selectedVista.set(null);
     this.isEditing.set(false);
+    this.showIconPicker.set(false);
     this.vistaForm.set({
       codigo: '',
       nombre: '',
       grupo: 'GENERAL',
       orden: 0,
       ordenGrupo: null,
-      activo: true
+      activo: true,
+      icono: ''
     });
+  }
+
+  seleccionarIcono(icono: string) {
+    this.updateField('icono', this.vistaForm().icono === icono ? '' : icono);
+    this.showIconPicker.set(false);
   }
 
   guardarVista() {
@@ -276,7 +307,8 @@ addVistaToGroup(groupKey: string) {
       grupo: grupo.toUpperCase().replace(/\s+/g, '_'),
       orden: data.orden,
       ordenGrupo: data.ordenGrupo,
-      activo: data.activo
+      activo: data.activo,
+      icono: data.icono || null
     };
 
     this.loadingStore.show();
