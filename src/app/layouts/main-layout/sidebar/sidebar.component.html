@@ -1,5 +1,5 @@
 <aside
-  class="flex h-full flex-col bg-white transition-all duration-500 ease-in-out overflow-hidden border-r border-slate-100"
+  class="flex h-full flex-col bg-white transition-all duration-500 ease-in-out overflow-hidden border-r border-slate-300"
   [class.w-64]="!collapsed()"
   [class.w-20]="collapsed()"
 >
@@ -51,7 +51,9 @@
               class="relative block"
             >
               <div class="flex items-center w-full" [class.gap-3]="!collapsed()" [class.justify-center]="collapsed()">
-                <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-[#EFF6FF] text-[#0066AA] flex-shrink-0">
+                <div [ngClass]="rla.isActive
+                  ? 'flex h-8 w-8 items-center justify-center rounded-lg bg-[#0066AA] text-white flex-shrink-0'
+                  : 'flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-400 flex-shrink-0'">
                   <i [class]="vistaIcon(vista.codigo) + ' text-sm'"></i>
                 </div>
                 <span *ngIf="!collapsed()" class="flex-1 text-left whitespace-nowrap text-sm">
@@ -72,7 +74,9 @@
           class="relative block"
         >
           <div class="flex items-center w-full" [class.gap-3]="!collapsed()" [class.justify-center]="collapsed()">
-            <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-[#EFF6FF] text-[#0066AA] flex-shrink-0">
+            <div [ngClass]="rlaItem.isActive
+              ? 'flex h-8 w-8 items-center justify-center rounded-lg bg-[#0066AA] text-white flex-shrink-0'
+              : 'flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-400 flex-shrink-0'">
               <i [class]="vistaIcon(structure.vistas[0].codigo) + ' text-sm'"></i>
             </div>
             <span *ngIf="!collapsed()" class="flex-1 text-left whitespace-nowrap text-sm">
@@ -102,9 +106,16 @@
 
 <style>
   .custom-scrollbar::-webkit-scrollbar { width: 0; }
-  .active-link {
-    background-color: #EFF6FF !important;
-    color: #0066AA !important;
-    border: 0 !important;
+  .active-link { color: #0066AA !important; }
+  .active-nav-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 55%;
+    border-radius: 0 4px 4px 0;
+    background-color: #0066AA;
   }
 </style>

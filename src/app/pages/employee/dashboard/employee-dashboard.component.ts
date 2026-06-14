@@ -4,6 +4,7 @@ import { Router, RouterModule } from '@angular/router';
 import { AuthStore } from '../../../store/auth.store';
 import { CitaService } from '../../../core/services/cita.service';
 import { ProfileService } from '../../../core/services/profile.service';
+import { HistoriaClinicaService } from '../../../core/services/historia-clinica.service';
 import { LoadingStore } from '../../../store/loading.store';
 import { Role } from '../../../core/enums/role.enum';
 import { ToastModule } from 'primeng/toast';
@@ -22,6 +23,7 @@ export class EmployeeDashboardComponent implements OnInit {
   private authStore = inject(AuthStore);
   private citaService = inject(CitaService);
   private profileService = inject(ProfileService);
+  private hcService = inject(HistoriaClinicaService);
   private loadingStore = inject(LoadingStore);
   private router = inject(Router);
   private messageService = inject(MessageService);
@@ -182,7 +184,10 @@ export class EmployeeDashboardComponent implements OnInit {
   }
 
   verHistorialClinico(cita: any) {
-    this.router.navigate(['/historias-clinicas/mascota', cita.mascotaId], { queryParams: { returnUrl: '/employee/dashboard' } });
+    this.hcService.getPorMascota(cita.mascotaId).subscribe({
+      next: (res) => this.router.navigate(['/historias-clinicas/mascota', res.data.numeroHc], { queryParams: { returnUrl: '/employee/dashboard' } }),
+      error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se encontró la historia clínica de esta mascota.' })
+    });
   }
 
   formatTime(dateStr: string): string {

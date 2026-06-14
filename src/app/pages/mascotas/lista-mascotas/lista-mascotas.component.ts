@@ -11,6 +11,7 @@ import { MessageService } from 'primeng/api';
 import { MascotaService } from '../../../core/services/mascota.service';
 import { MediaService } from '../../../core/services/media.service';
 import { CompanyService } from '../../../core/services/company.service';
+import { HistoriaClinicaService } from '../../../core/services/historia-clinica.service';
 import { MascotaResponse } from '../../../models/response/mascota-response';
 import { LoadingStore } from '../../../store/loading.store';
 import { AuthStore } from '../../../store/auth.store';
@@ -39,6 +40,7 @@ export class ListaMascotasComponent implements OnInit {
   readonly mediaService     = inject(MediaService);
   private readonly companyService   = inject(CompanyService);
   private readonly messageService   = inject(MessageService);
+  private readonly hcService        = inject(HistoriaClinicaService);
   private readonly router           = inject(Router);
   private readonly route            = inject(ActivatedRoute);
   readonly authStore                = inject(AuthStore);
@@ -210,7 +212,10 @@ export class ListaMascotasComponent implements OnInit {
   }
 
   verHistoriaClinica(mascota: MascotaResponse) {
-    this.router.navigate(['/historias-clinicas/mascota', mascota.id], { queryParams: { returnUrl: '/mascotas' } });
+    this.hcService.getPorMascota(mascota.id).subscribe({
+      next: (res) => this.router.navigate(['/historias-clinicas/mascota', res.data.numeroHc], { queryParams: { returnUrl: '/mascotas' } }),
+      error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se encontró la historia clínica de esta mascota.' })
+    });
   }
 
   calcularEdad(fechaNacimiento: string): string {

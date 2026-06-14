@@ -37,6 +37,7 @@ export class HistoriaClinicaMascotaComponent implements OnInit {
 
   returnUrl        = '/historias-clinicas';
   mascotaId        = 0;
+  numeroHc         = '';
   hc               = signal<HistoriaClinicaDetalle | null>(null);
   consultaActiva   = signal<ConsultaResumen | null>(null);
   tabActiva        = signal<'clinico' | 'recetas' | 'archivos'>('clinico');
@@ -53,15 +54,16 @@ export class HistoriaClinicaMascotaComponent implements OnInit {
       if (qp.get('returnUrl')) this.returnUrl = qp.get('returnUrl')!;
     });
     this.route.params.subscribe(params => {
-      this.mascotaId = Number(params['mascotaId']);
-      this.cargarHistoria(this.mascotaId);
+      this.numeroHc = params['numeroHc'];
+      this.cargarHistoria(this.numeroHc);
     });
   }
 
-  cargarHistoria(mascotaId: number) {
+  cargarHistoria(numeroHc: string) {
     this.loadingStore.show();
-    this.hcService.getPorMascota(mascotaId).subscribe({
+    this.hcService.getPorNumeroHc(numeroHc).subscribe({
       next: (res) => {
+        this.mascotaId = res.data.mascotaId;
         this.hc.set(res.data);
         if (res.data.consultas.length > 0) {
           this.consultaActiva.set(res.data.consultas[0]);
@@ -86,7 +88,7 @@ export class HistoriaClinicaMascotaComponent implements OnInit {
 
   editarConsulta(id: number) {
     if (!this.canModify()) return;
-    this.router.navigate(['/historias-clinicas/consulta', id], { queryParams: { returnUrl: '/historias-clinicas/mascota/' + this.mascotaId } });
+    this.router.navigate(['/historias-clinicas/consulta', id], { queryParams: { returnUrl: '/historias-clinicas/mascota/' + this.numeroHc } });
   }
 
   volver() {

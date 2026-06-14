@@ -1,4 +1,4 @@
-import { Component, Input, inject, signal, OnChanges } from '@angular/core';
+import { Component, Input, inject, signal, OnChanges, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Subscription, firstValueFrom } from 'rxjs';
@@ -10,12 +10,67 @@ import {
   ConsultaResumen,
   ArchivoClinico,
 } from '../../../../models/response/historia-clinica-response';
+import { MarkdownPipe } from './markdown.pipe';
 
 @Component({
   selector: 'app-diagnostico-ia',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, MarkdownPipe],
   templateUrl: './diagnostico-ia.component.html',
+  encapsulation: ViewEncapsulation.None,
+  styles: [`
+    .ia-report h2 {
+      font-size: 0.68rem;
+      font-weight: 800;
+      color: #0066AA;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin: 1rem 0 0.35rem;
+      padding-bottom: 0.25rem;
+      border-bottom: 1.5px solid #e2e8f0;
+    }
+    .ia-report h2:first-child { margin-top: 0; }
+    .ia-report h3 {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin: 0.65rem 0 0.2rem;
+    }
+    .ia-report p {
+      font-size: 0.72rem;
+      color: #475569;
+      line-height: 1.65;
+      margin: 0.2rem 0;
+    }
+    .ia-report ul {
+      margin: 0.3rem 0 0.3rem 0;
+      padding-left: 1.1rem;
+      list-style-type: disc;
+    }
+    .ia-report li {
+      font-size: 0.72rem;
+      color: #475569;
+      line-height: 1.6;
+      margin: 0.15rem 0;
+    }
+    .ia-report li.sub {
+      margin-left: 1rem;
+      list-style-type: circle;
+    }
+    .ia-report b {
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .ia-report em { font-style: italic; }
+    .ia-report code {
+      font-family: monospace;
+      font-size: 0.65rem;
+      background: #f1f5f9;
+      padding: 1px 5px;
+      border-radius: 3px;
+      color: #0f172a;
+    }
+  `],
 })
 export class DiagnosticoIaComponent implements OnChanges {
   @Input() hc!: HistoriaClinicaDetalle;
@@ -31,6 +86,7 @@ export class DiagnosticoIaComponent implements OnChanges {
   error      = signal<string | null>(null);
   texto      = signal('');
   escenario  = signal('');
+  copiado    = signal(false);
 
   get ultimaConsulta(): ConsultaResumen | null {
     return this.hc?.consultas?.[0] ?? null;
@@ -58,10 +114,18 @@ export class DiagnosticoIaComponent implements OnChanges {
     this.texto.set('');
     this.error.set('');
     this.escenario.set('');
+    this.copiado.set(false);
   }
 
   abrir(): void  { this.abierto.set(true); }
   cerrar(): void { this.abierto.set(false); }
+
+  copiarTexto(): void {
+    navigator.clipboard.writeText(this.texto()).then(() => {
+      this.copiado.set(true);
+      setTimeout(() => this.copiado.set(false), 2000);
+    });
+  }
 
   async analizar(): Promise<void> {
     const uc = this.ultimaConsulta;

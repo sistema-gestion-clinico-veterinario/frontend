@@ -181,7 +181,7 @@ export const routes: Routes = [
             loadComponent: () => import('./pages/historias-clinicas/lista-hc/lista-hc.component').then((m) => m.ListaHcComponent)
           },
           {
-            path: 'mascota/:mascotaId',
+            path: 'mascota/:numeroHc',
             loadComponent: () => import('./pages/historias-clinicas/historia-clinica-mascota/historia-clinica-mascota.component').then((m) => m.HistoriaClinicaMascotaComponent)
           },
           {
@@ -199,7 +199,7 @@ export const routes: Routes = [
             loadComponent: () => import('./pages/historias-clinicas/lista-hc/lista-hc.component').then((m) => m.ListaHcComponent)
           },
           {
-            path: 'mascota/:mascotaId',
+            path: 'mascota/:numeroHc',
             loadComponent: () => import('./pages/historias-clinicas/historia-clinica-mascota/historia-clinica-mascota.component').then((m) => m.HistoriaClinicaMascotaComponent)
           },
           {
@@ -217,7 +217,7 @@ export const routes: Routes = [
             loadComponent: () => import('./pages/historias-clinicas/lista-hc/lista-hc.component').then((m) => m.ListaHcComponent)
           },
           {
-            path: 'mascota/:mascotaId',
+            path: 'mascota/:numeroHc',
             loadComponent: () => import('./pages/historias-clinicas/historia-clinica-mascota/historia-clinica-mascota.component').then((m) => m.HistoriaClinicaMascotaComponent)
           },
           {
@@ -342,6 +342,16 @@ export const routes: Routes = [
         path: 'pagos',
         data: { ventana: 'VISTA_PAGOS' },
         loadComponent: () => import('./pages/admin/pagos/historial-pagos/historial-pagos.component').then((m) => m.HistorialPagosComponent)
+      },
+      {
+        path: 'admin/caja',
+        data: { ventana: 'VISTA_CAJA' },
+        loadComponent: () => import('./pages/admin/caja/caja.component').then((m) => m.CajaComponent)
+      },
+      {
+        path: 'caja',
+        data: { ventana: 'VISTA_CAJA' },
+        loadComponent: () => import('./pages/admin/caja/caja.component').then((m) => m.CajaComponent)
       },
       {
         path: 'laboratorio',

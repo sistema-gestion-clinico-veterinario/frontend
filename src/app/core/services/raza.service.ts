@@ -12,12 +12,15 @@ export class RazaService {
   private readonly http    = inject(HttpClient);
   private readonly apiUrl  = `${environment.apiUrl}/breeds`;
 
-  listarPorEspecie(especie?: string) {
-    let query = especie ? `?especie=${especie}` : '';
+  listarPorEspecie(especie?: string, companyId?: number) {
+    const params: string[] = [];
+    if (especie) params.push(`especie=${especie}`);
+    if (companyId != null) params.push(`companyId=${companyId}`);
+    const query = params.length ? `?${params.join('&')}` : '';
     return this.http.get<ApiResponse<RazaResponse[]>>(`${this.apiUrl}${query}`);
   }
 
-  crear(data: RazaRequest) {
-    return this.http.post<ApiResponse<RazaResponse>>(this.apiUrl, data);
+  crear(data: RazaRequest, companyId: number) {
+    return this.http.post<ApiResponse<RazaResponse>>(`${this.apiUrl}?companyId=${companyId}`, data);
   }
 }

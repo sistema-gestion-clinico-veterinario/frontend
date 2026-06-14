@@ -75,7 +75,7 @@ export class ListaHcComponent implements OnInit {
     this.cargarHistorias(0);
   }
 
-  verDetalle(mascotaId: number) {
-    this.router.navigate(['/historias-clinicas/mascota', mascotaId], { queryParams: { returnUrl: '/historias-clinicas' } });
+  verDetalle(numeroHc: string) {
+    this.router.navigate(['/historias-clinicas/mascota', numeroHc], { queryParams: { returnUrl: '/historias-clinicas' } });
   }
 }

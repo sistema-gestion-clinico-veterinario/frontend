@@ -1,0 +1,180 @@
+<p-toast position="top-right" />
+
+<div class="p-6 space-y-6">
+
+  <!-- Header -->
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-xl font-bold text-slate-800">Caja</h1>
+      <p class="text-sm text-slate-500 mt-0.5">Control de ingresos, egresos y devoluciones</p>
+    </div>
+    <button (click)="abrirEgreso()"
+            class="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#0066AA] text-white text-sm font-medium hover:bg-[#005599] transition-colors">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+      </svg>
+      Registrar egreso
+    </button>
+  </div>
+
+  <!-- Resumen cards -->
+  @if (resumen()) {
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm">
+        <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Ingresos</p>
+        <p class="text-2xl font-bold text-green-600 mt-1">{{ formatMonto(resumen()!.totalIngresos) }}</p>
+      </div>
+      <div class="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm">
+        <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Egresos</p>
+        <p class="text-2xl font-bold text-red-500 mt-1">{{ formatMonto(resumen()!.totalEgresos) }}</p>
+      </div>
+      <div class="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm">
+        <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Devoluciones</p>
+        <p class="text-2xl font-bold text-amber-500 mt-1">{{ formatMonto(resumen()!.totalDevoluciones) }}</p>
+      </div>
+      <div class="rounded-2xl p-4 shadow-sm"
+           [class]="resumen()!.saldo >= 0 ? 'bg-[#0066AA] text-white' : 'bg-red-500 text-white'">
+        <p class="text-xs font-medium opacity-80 uppercase tracking-wide">Saldo</p>
+        <p class="text-2xl font-bold mt-1">{{ formatMonto(resumen()!.saldo) }}</p>
+      </div>
+    </div>
+  }
+
+  <!-- Filtros -->
+  <div class="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm">
+    <div class="flex flex-wrap gap-3 items-end">
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-medium text-slate-500">Desde</label>
+        <input type="date" [(ngModel)]="filtroDesde"
+               class="border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0066AA]/30" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-medium text-slate-500">Hasta</label>
+        <input type="date" [(ngModel)]="filtroHasta"
+               class="border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0066AA]/30" />
+      </div>
+      <button (click)="aplicarFiltros()"
+              class="px-4 py-2 rounded-xl bg-[#0066AA] text-white text-sm font-medium hover:bg-[#005599] transition-colors">
+        Filtrar
+      </button>
+      <button (click)="limpiarFiltros()"
+              class="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 text-sm hover:bg-slate-50 transition-colors">
+        Limpiar
+      </button>
+    </div>
+  </div>
+
+  <!-- Tabla -->
+  <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="bg-slate-50 border-b border-slate-100">
+            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Tipo</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Concepto</th>
+            <th class="px-4 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wide">Monto</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Descripción</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Fecha</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Registrado por</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (loading()) {
+            @for (i of [1,2,3,4,5]; track i) {
+              <tr class="border-b border-slate-50">
+                <td class="px-4 py-3" colspan="6">
+                  <div class="h-4 bg-slate-100 rounded animate-pulse w-full"></div>
+                </td>
+              </tr>
+            }
+          } @else if (movimientos().length === 0) {
+            <tr>
+              <td colspan="6" class="px-4 py-12 text-center text-slate-400 text-sm">
+                No hay movimientos registrados
+              </td>
+            </tr>
+          } @else {
+            @for (m of movimientos(); track m.id) {
+              <tr class="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
+                <td class="px-4 py-3">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                        [class]="tipoBadge(m.tipo)">
+                    {{ tipoLabel(m.tipo) }}
+                  </span>
+                </td>
+                <td class="px-4 py-3 text-slate-600">{{ conceptoLabel(m.concepto) }}</td>
+                <td class="px-4 py-3 text-right font-semibold"
+                    [class]="m.tipo === 'INGRESO' ? 'text-green-600' : m.tipo === 'EGRESO' ? 'text-red-500' : 'text-amber-600'">
+                  {{ formatMonto(m.monto) }}
+                </td>
+                <td class="px-4 py-3 text-slate-500 max-w-xs truncate">{{ m.descripcion ?? '—' }}</td>
+                <td class="px-4 py-3 text-slate-500 whitespace-nowrap">{{ formatFecha(m.fecha) }}</td>
+                <td class="px-4 py-3 text-slate-500 text-xs">{{ m.registradoPor ?? '—' }}</td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (totalRecords() > pageSize()) {
+      <div class="border-t border-slate-100">
+        <p-paginator
+          [rows]="pageSize()"
+          [totalRecords]="totalRecords()"
+          [first]="currentPage() * pageSize()"
+          (onPageChange)="cargar($event)"
+          styleClass="!border-none !bg-transparent !py-3" />
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Modal egreso -->
+@if (showEgresoModal()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 overflow-hidden">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+        <h2 class="font-semibold text-slate-800">Registrar egreso</h2>
+        <button (click)="showEgresoModal.set(false)"
+                class="text-slate-400 hover:text-slate-600 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      <div class="px-6 py-5 space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1.5">Monto (S/)</label>
+          <input type="number" step="0.01" min="0.01" [(ngModel)]="egresoForm.monto"
+                 placeholder="0.00"
+                 class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0066AA]/30" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1.5">Categoría</label>
+          <select [(ngModel)]="egresoForm.concepto"
+                  class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0066AA]/30">
+            <option value="GASTO_OPERATIVO">Gasto operativo</option>
+            <option value="OTRO">Otro</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1.5">Descripción</label>
+          <textarea [(ngModel)]="egresoForm.descripcion" rows="3"
+                    placeholder="Describe el motivo del egreso..."
+                    class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#0066AA]/30"></textarea>
+        </div>
+      </div>
+      <div class="flex gap-3 px-6 pb-5">
+        <button (click)="showEgresoModal.set(false)"
+                class="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50 transition-colors">
+          Cancelar
+        </button>
+        <button (click)="guardarEgreso()" [disabled]="savingEgreso()"
+                class="flex-1 py-2.5 rounded-xl bg-red-500 text-white text-sm font-medium hover:bg-red-600 transition-colors disabled:opacity-60">
+          {{ savingEgreso() ? 'Guardando...' : 'Registrar egreso' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

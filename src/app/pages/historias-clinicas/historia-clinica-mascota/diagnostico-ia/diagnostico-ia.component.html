@@ -151,34 +151,62 @@
         <!-- Estado: Streaming / Respuesta -->
         <div *ngIf="texto() || streaming()" class="flex flex-col gap-4">
 
-          <!-- Badge de escenario -->
-          <div *ngIf="escenario()" class="flex items-center gap-2">
-            <span class="text-[10px] font-extrabold px-2.5 py-1 rounded-full
-                         bg-[#0066AA]/10 text-[#0066AA] border border-[#0066AA]/20">
-              {{ escenarioLabel }}
-            </span>
-            <span *ngIf="streaming()"
-              class="text-[10px] font-bold text-slate-400 animate-pulse">
-              Generando…
-            </span>
-          </div>
-
           <!-- Skeleton mientras llega el primer chunk -->
-          <div *ngIf="streaming() && !texto()" class="flex flex-col gap-3 animate-pulse">
-            <div class="h-3 bg-slate-100 rounded-full w-3/4"></div>
-            <div class="h-3 bg-slate-100 rounded-full w-full"></div>
-            <div class="h-3 bg-slate-100 rounded-full w-5/6"></div>
-            <div class="h-3 bg-slate-100 rounded-full w-2/3 mt-1"></div>
-            <div class="h-3 bg-slate-100 rounded-full w-4/5"></div>
+          <div *ngIf="streaming() && !texto()" class="flex flex-col gap-2.5">
+            <div *ngIf="escenario()" class="flex items-center gap-2 mb-1">
+              <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full
+                           bg-[#0066AA]/10 text-[#0066AA] border border-[#0066AA]/15">
+                {{ escenarioLabel }}
+              </span>
+              <span class="text-[10px] text-slate-400 font-medium animate-pulse">Analizando…</span>
+            </div>
+            <div class="flex flex-col gap-2 animate-pulse">
+              <div class="h-2.5 bg-slate-100 rounded-full w-2/3"></div>
+              <div class="h-2.5 bg-slate-100 rounded-full w-full"></div>
+              <div class="h-2.5 bg-slate-100 rounded-full w-5/6"></div>
+              <div class="h-2.5 bg-slate-100 rounded-full w-3/4 mt-1"></div>
+              <div class="h-2.5 bg-slate-100 rounded-full w-4/5"></div>
+              <div class="h-2.5 bg-slate-100 rounded-full w-full"></div>
+            </div>
           </div>
 
-          <!-- Texto generado -->
-          <div *ngIf="texto()"
-            class="bg-slate-50 rounded-xl p-4 border border-slate-100">
-            <pre class="text-xs text-slate-700 whitespace-pre-wrap font-['Barlow'] leading-relaxed">{{ texto() }}<span *ngIf="streaming()" class="inline-block w-0.5 h-3 bg-[#0066AA] ml-0.5 animate-pulse align-middle"></span></pre>
+          <!-- Reporte generado -->
+          <div *ngIf="texto()" class="rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+
+            <!-- Header del reporte -->
+            <div class="flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border-b border-slate-200">
+              <span *ngIf="escenario()"
+                class="text-[10px] font-extrabold px-2.5 py-1 rounded-full
+                       bg-[#0066AA]/10 text-[#0066AA] border border-[#0066AA]/15">
+                {{ escenarioLabel }}
+              </span>
+              <button (click)="copiarTexto()"
+                class="flex items-center gap-1.5 text-[10px] font-bold transition-colors"
+                [ngClass]="copiado() ? 'text-green-600' : 'text-slate-400 hover:text-slate-700'">
+                <i class="text-[10px]" [ngClass]="copiado() ? 'pi pi-check' : 'pi pi-copy'"></i>
+                {{ copiado() ? 'Copiado' : 'Copiar' }}
+              </button>
+            </div>
+
+            <!-- Contenido markdown -->
+            <div class="ia-report px-4 py-4 max-h-[55vh] overflow-y-auto"
+                 [innerHTML]="texto() | mdHtml">
+            </div>
+
+            <!-- Indicador de generación en curso -->
+            <div *ngIf="streaming()"
+              class="flex items-center gap-2 px-4 py-2.5 border-t border-slate-100 bg-slate-50/80">
+              <span class="flex gap-0.5">
+                <span class="w-1 h-1 rounded-full bg-[#0066AA] animate-bounce" style="animation-delay:0ms"></span>
+                <span class="w-1 h-1 rounded-full bg-[#0066AA] animate-bounce" style="animation-delay:120ms"></span>
+                <span class="w-1 h-1 rounded-full bg-[#0066AA] animate-bounce" style="animation-delay:240ms"></span>
+              </span>
+              <span class="text-[10px] text-slate-400 font-medium">Generando…</span>
+            </div>
+
           </div>
 
-          <!-- Botón re-analizar (solo al terminar) -->
+          <!-- Botón re-analizar -->
           <button *ngIf="!streaming()"
             (click)="analizar()"
             class="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-slate-200

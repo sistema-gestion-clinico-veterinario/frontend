@@ -11,6 +11,7 @@ import { TextareaModule } from 'primeng/textarea';
 import { ToastModule } from 'primeng/toast';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { CitaService } from '../../../core/services/cita.service';
+import { CajaService } from '../../../core/services/caja.service';
 import { EmpleadoService } from '../../../core/services/empleado.service';
 import { ApoderadoService } from '../../../core/services/apoderado.service';
 import { MascotaService } from '../../../core/services/mascota.service';
@@ -95,6 +96,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
   private readonly companyService    = inject(CompanyService);
   private readonly servicioService   = inject(ServicioService);
   private readonly pagoService       = inject(PagoService);
+  private readonly cajaService       = inject(CajaService);
   private readonly messageService    = inject(MessageService);
   private readonly confirmationService = inject(ConfirmationService);
   private readonly router            = inject(Router);
@@ -839,7 +841,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
   }
 
   loadRazasAgenda() {
-    this.razaService.listarPorEspecie(this.nmEspecie()).subscribe({
+    this.razaService.listarPorEspecie(this.nmEspecie(), this.activeCompanyId ?? undefined).subscribe({
       next: (res) => this.razasAgenda.set(res.data)
     });
   }
@@ -1089,12 +1091,35 @@ export class AgendaComponent implements OnInit, OnDestroy {
             this.loadCitas();
             if (this.vistaActual() !== 'lista') this.loadCitasCalendario();
             this.loadingStore.hide();
+            if ((cita.montoPagado ?? 0) > 0) {
+              setTimeout(() => {
+                this.confirmationService.confirm({
+                  message: `Esta cita tenía S/ ${(cita.montoPagado ?? 0).toFixed(2)} pagado. ¿Registrar la devolución en caja?`,
+                  header: 'Devolución de pago',
+                  icon: 'pi pi-wallet',
+                  acceptLabel: 'Sí, registrar devolución',
+                  rejectLabel: 'No, omitir',
+                  accept: () => this.registrarDevolucionCita(cita)
+                });
+              }, 400);
+            }
           },
           error: (err) => {
             this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo cancelar la cita' });
             this.loadingStore.hide();
           }
         });
+      }
+    });
+  }
+
+  private registrarDevolucionCita(cita: CitaResponse) {
+    this.cajaService.registrarDevolucion(cita.id).subscribe({
+      next: () => {
+        this.messageService.add({ severity: 'success', summary: 'Devolución registrada', detail: `Se registró la devolución de S/ ${(cita.montoPagado ?? 0).toFixed(2)} en caja.` });
+      },
+      error: (err) => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: err?.error?.message || 'No se pudo registrar la devolución.' });
       }
     });
   }

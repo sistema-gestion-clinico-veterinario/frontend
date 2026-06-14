@@ -36,13 +36,13 @@ export class RouteMapperService {
     VISTA_RECETAS_EMPLEADO: '/empleado/recetas',
 
     VISTA_HISTORIAS: '/historias-clinicas',
-    VISTA_HISTORIAS_MASCOTA: '/historias-clinicas/mascota/:mascotaId',
+    VISTA_HISTORIAS_MASCOTA: '/historias-clinicas/mascota/:numeroHc',
     VISTA_HISTORIAS_CONSULTA: '/historias-clinicas/consulta/:consultaId',
     VISTA_HISTORIAS_ADMIN: '/admin/historias-clinicas',
-    VISTA_HISTORIAS_MASCOTA_ADMIN: '/admin/historias-clinicas/mascota/:mascotaId',
+    VISTA_HISTORIAS_MASCOTA_ADMIN: '/admin/historias-clinicas/mascota/:numeroHc',
     VISTA_HISTORIAS_CONSULTA_ADMIN: '/admin/historias-clinicas/consulta/:consultaId',
     VISTA_HISTORIAS_EMPLEADO: '/empleado/historias-clinicas',
-    VISTA_HISTORIAS_MASCOTA_EMP: '/empleado/historias-clinicas/mascota/:mascotaId',
+    VISTA_HISTORIAS_MASCOTA_EMP: '/empleado/historias-clinicas/mascota/:numeroHc',
     VISTA_HISTORIAS_CONSULTA_EMP: '/empleado/historias-clinicas/consulta/:consultaId',
 
     VISTA_CITAS_AGENDA: '/citas/agenda',
@@ -80,6 +80,9 @@ export class RouteMapperService {
 
     VISTA_PAGOS: '/admin/pagos',
     VISTA_PAGOS_ADMIN: '/admin/pagos',
+
+    VISTA_CAJA: '/admin/caja',
+    VISTA_CAJA_ADMIN: '/admin/caja',
   };
 
   getRoute(codigo: string): string | null {

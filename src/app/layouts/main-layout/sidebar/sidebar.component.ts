@@ -129,7 +129,7 @@ export class SidebarComponent implements OnInit {
     const base = `flex items-center rounded-xl transition-all duration-200 ease-in-out ${isCollapsed ? 'justify-center w-11 h-11 mx-auto' : 'px-3 py-2.5'}`;
 
     if (isActive) {
-      return `${base} bg-[#EFF6FF] text-[#0066AA] font-semibold`;
+      return `${base} bg-blue-50 text-[#0066AA] font-semibold${isCollapsed ? '' : ' active-nav-item'}`;
     }
 
     return `${base} text-[#64748B] hover:bg-slate-50 hover:text-[#0F172A]`;

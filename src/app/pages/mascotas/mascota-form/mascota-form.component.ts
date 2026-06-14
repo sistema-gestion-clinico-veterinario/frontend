@@ -332,7 +332,7 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
 
   loadRazas() {
     const especie = this.mascotaForm.get('especie')?.value;
-    this.razaService.listarPorEspecie(especie || undefined).subscribe({
+    this.razaService.listarPorEspecie(especie || undefined, this.activeCompanyId ?? undefined).subscribe({
       next: (res) => {
         this.razas.set(res.data.map(r => ({ label: r.nombre, value: r.id })));
       }
@@ -360,7 +360,7 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
       especie
     };
     this.savingRaza.set(true);
-    this.razaService.crear(request).subscribe({
+    this.razaService.crear(request, this.activeCompanyId!).subscribe({
       next: (res) => {
         this.messageService.add({ severity: 'success', summary: 'Listo', detail: 'Raza creada correctamente' });
         this.displayRazaModal.set(false);

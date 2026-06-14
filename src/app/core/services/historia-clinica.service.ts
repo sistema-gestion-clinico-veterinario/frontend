@@ -37,6 +37,10 @@ export class HistoriaClinicaService {
     return this.http.get<ApiResponse<HistoriaClinicaDetalle>>(`${this.hcUrl}/pet/${mascotaId}`);
   }
 
+  getPorNumeroHc(numeroHc: string) {
+    return this.http.get<ApiResponse<HistoriaClinicaDetalle>>(`${this.hcUrl}/numero/${encodeURIComponent(numeroHc)}`);
+  }
+
   getConsulta(consultaId: number) {
     return this.http.get<ApiResponse<ConsultaResponse>>(`${this.citasUrl}/${consultaId}`);
   }
