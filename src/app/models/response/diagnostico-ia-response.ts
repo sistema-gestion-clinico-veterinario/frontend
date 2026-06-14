@@ -1,33 +1,12 @@
-export interface DiagnosticoIaRequest {
-  mascotaNombre: string;
-  especie?: string;
-  raza?: string;
-  edadMeses?: number;
-  totalConsultas: number;
-  ultimaConsulta: {
-    fecha: string;
-    motivo: string;
-    tipo: string;
-    pesoKg?: number;
-    temperatura?: number;
-    frecuenciaCardiaca?: number;
-    frecuenciaRespiratoria?: number;
-    anamnesis?: string;
-    examenFisico?: string;
-    observaciones?: string;
-    diagnosticosRegistrados: string[];
-    tratamientosRegistrados: string[];
-    medicamentos: string[];
-    tieneHemograma: boolean;
-    tieneRadiografia: boolean;
-    tieneEcografia: boolean;
-  };
-}
+export type SseEvento =
+  | { type: 'meta';        escenario: string; modelo: string }
+  | { type: 'chunk';       text: string }
+  | { type: 'continuando'; parte: number }
+  | { type: 'done' };
 
-export interface DiagnosticoIaResponse {
-  diagnosticoPrincipal: string;
-  hallazgosClaves: string[];
-  recomendaciones: string[];
-  nivelConfianza: 'ALTO' | 'MEDIO' | 'BAJO';
-  basadoEn: string[];
-}
+export const ESCENARIO_LABEL: Record<string, string> = {
+  HC_solo:                  'Historia Clínica',
+  HC_Hemograma:             'HC + Hemograma',
+  HC_Radiografia:           'HC + Radiografía',
+  HC_Hemograma_Radiografia: 'HC + Hemograma + Radiografía',
+};

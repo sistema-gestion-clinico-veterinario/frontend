@@ -342,6 +342,21 @@ export const routes: Routes = [
         path: 'pagos',
         data: { ventana: 'VISTA_PAGOS' },
         loadComponent: () => import('./pages/admin/pagos/historial-pagos/historial-pagos.component').then((m) => m.HistorialPagosComponent)
+      },
+      {
+        path: 'laboratorio',
+        data: { ventana: 'VISTA_LABORATORIO' },
+        loadComponent: () => import('./pages/laboratorio/laboratorio.component').then((m) => m.LaboratorioComponent)
+      },
+      {
+        path: 'admin/laboratorio',
+        data: { ventana: 'VISTA_LABORATORIO' },
+        loadComponent: () => import('./pages/laboratorio/laboratorio.component').then((m) => m.LaboratorioComponent)
+      },
+      {
+        path: 'empleado/laboratorio',
+        data: { ventana: 'VISTA_LABORATORIO' },
+        loadComponent: () => import('./pages/laboratorio/laboratorio.component').then((m) => m.LaboratorioComponent)
       }
     ]
   },
