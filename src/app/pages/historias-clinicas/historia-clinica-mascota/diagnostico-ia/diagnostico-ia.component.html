@@ -79,14 +79,14 @@
               ? 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-[11px] font-bold text-amber-700'
               : 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 border border-slate-200 text-[11px] font-bold text-slate-400'">
               <i [class]="tieneHemograma ? 'pi pi-check-circle text-[10px]' : 'pi pi-circle text-[10px]'"></i>
-              Hemograma
+              {{ archivosLab.length > 1 ? archivosLab.length + ' Hemogramas' : 'Hemograma' }}
             </span>
 
             <span [class]="tieneRadiografia
               ? 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-violet-50 border border-violet-200 text-[11px] font-bold text-violet-700'
               : 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 border border-slate-200 text-[11px] font-bold text-slate-400'">
               <i [class]="tieneRadiografia ? 'pi pi-check-circle text-[10px]' : 'pi pi-circle text-[10px]'"></i>
-              Radiografía
+              {{ archivosRadio.length > 1 ? archivosRadio.length + ' Radiografías' : 'Radiografía' }}
             </span>
 
             <span *ngIf="tieneEcografia"

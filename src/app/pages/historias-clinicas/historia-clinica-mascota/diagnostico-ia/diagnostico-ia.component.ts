@@ -1,14 +1,15 @@
 import { Component, Input, inject, signal, OnChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Subscription } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { Subscription, firstValueFrom } from 'rxjs';
 import { DiagnosticoIaService } from '../../../../core/services/diagnostico-ia.service';
+import { MediaService } from '../../../../core/services/media.service';
 import { ESCENARIO_LABEL } from '../../../../models/response/diagnostico-ia-response';
 import {
   HistoriaClinicaDetalle,
   ConsultaResumen,
   ArchivoClinico,
 } from '../../../../models/response/historia-clinica-response';
-import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'app-diagnostico-ia',
@@ -19,7 +20,9 @@ import { environment } from '../../../../../environments/environment';
 export class DiagnosticoIaComponent implements OnChanges {
   @Input() hc!: HistoriaClinicaDetalle;
 
-  private readonly iaService = inject(DiagnosticoIaService);
+  private readonly iaService    = inject(DiagnosticoIaService);
+  private readonly http         = inject(HttpClient);
+  private readonly mediaService = inject(MediaService);
   private streamSub: Subscription | null = null;
 
   abierto    = signal(false);
@@ -33,16 +36,16 @@ export class DiagnosticoIaComponent implements OnChanges {
     return this.hc?.consultas?.[0] ?? null;
   }
 
-  get archivoLab(): ArchivoClinico | null {
-    return this.ultimaConsulta?.archivos.find(a => a.tipo === 'LABORATORIO') ?? null;
+  get archivosLab(): ArchivoClinico[] {
+    return this.ultimaConsulta?.archivos.filter(a => a.tipo === 'LABORATORIO') ?? [];
   }
 
-  get archivoRadio(): ArchivoClinico | null {
-    return this.ultimaConsulta?.archivos.find(a => a.tipo === 'RADIOGRAFIA') ?? null;
+  get archivosRadio(): ArchivoClinico[] {
+    return this.ultimaConsulta?.archivos.filter(a => a.tipo === 'RADIOGRAFIA') ?? [];
   }
 
-  get tieneHemograma(): boolean  { return !!this.archivoLab; }
-  get tieneRadiografia(): boolean { return !!this.archivoRadio; }
+  get tieneHemograma(): boolean  { return this.archivosLab.length > 0; }
+  get tieneRadiografia(): boolean { return this.archivosRadio.length > 0; }
   get tieneEcografia(): boolean {
     return this.ultimaConsulta?.archivos.some(a => a.tipo === 'ECOGRAFIA') ?? false;
   }
@@ -119,12 +122,12 @@ export class DiagnosticoIaComponent implements OnChanges {
     if (this.hc.sexo)          fd.append('sexo', this.hc.sexo);
     if (uc.pesoEnConsulta)     fd.append('peso', `${uc.pesoEnConsulta} kg`);
 
-    if (this.archivoLab) {
-      const file = await this.fetchAsFile(this.archivoLab);
+    for (const archivo of this.archivosLab) {
+      const file = await this.fetchAsFile(archivo);
       fd.append('archivo_hemograma', file, file.name);
     }
-    if (this.archivoRadio) {
-      const file = await this.fetchAsFile(this.archivoRadio);
+    for (const archivo of this.archivosRadio) {
+      const file = await this.fetchAsFile(archivo);
       fd.append('archivo_radiografia', file, file.name);
     }
 
@@ -132,12 +135,10 @@ export class DiagnosticoIaComponent implements OnChanges {
   }
 
   private async fetchAsFile(archivo: ArchivoClinico): Promise<File> {
-    const url = archivo.url.startsWith('http')
-      ? archivo.url
-      : `${environment.apiUrl}/${archivo.url}`;
-    const res  = await fetch(url);
-    if (!res.ok) throw new Error(`No se pudo descargar ${archivo.nombre}`);
-    const blob = await res.blob();
+    const url  = this.mediaService.resolveUrl(archivo.url)!;
+    const blob = await firstValueFrom(
+      this.http.get(url, { responseType: 'blob' })
+    );
     return new File([blob], archivo.nombre, {
       type: archivo.tipoMime ?? blob.type ?? 'application/octet-stream',
     });
