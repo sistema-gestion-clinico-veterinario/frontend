@@ -27,6 +27,19 @@
     </div>
   </div>
 
+  <!-- Warning: fuera de horario -->
+  <div *ngIf="!isCurrentlyOpen()"
+    class="mx-6 sm:mx-8 lg:mx-10 mt-6 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex items-start gap-3">
+    <i class="pi pi-exclamation-triangle text-amber-500 text-lg mt-0.5"></i>
+    <div class="text-sm text-amber-800 leading-relaxed">
+      <strong class="font-bold">En este momento no nos encontramos en horario de atención.</strong>
+      Si tu mascota se encuentra en una emergencia, puedes comunicarte al
+      <a *ngIf="companyPhone()" [href]="'tel:' + companyPhone()"
+        class="font-bold text-amber-900 underline hover:text-amber-700">{{ companyPhone() }}</a>
+      <span *ngIf="!companyPhone()">teléfono de la clínica</span>.
+    </div>
+  </div>
+
   <!-- CONTENIDO -->
   <div class="px-6 sm:px-8 lg:px-10 py-7 space-y-6">
 

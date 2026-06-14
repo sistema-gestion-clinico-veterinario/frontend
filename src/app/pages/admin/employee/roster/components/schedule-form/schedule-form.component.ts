@@ -204,7 +204,10 @@ export class ScheduleFormComponent implements OnInit {
         } else {
           const date = new Date(start + 'T00:00:00');
           date.setDate(date.getDate() + 30);
-          const nextDate = date.toISOString().split('T')[0];
+          const y = date.getFullYear();
+          const m = String(date.getMonth() + 1).padStart(2, '0');
+          const d = String(date.getDate()).padStart(2, '0');
+          const nextDate = `${y}-${m}-${d}`;
           this.scheduleForm.get('fechaFin')?.setValue(nextDate);
         }
       }

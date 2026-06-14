@@ -84,7 +84,7 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
 
   currentDateIso = computed(() => {
     const d = this.currentDate();
-    return d.toISOString().split('T')[0];
+    return this.formatLocalDate(d);
   });
 
   printableWeeks = computed(() => {
@@ -97,8 +97,9 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
       const d    = new Date(s.fecha + 'T00:00:00');
       const day  = d.getDay();
       const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-      const monday    = new Date(d.setDate(diff));
-      const mondayStr = monday.toISOString().split('T')[0];
+      const monday    = new Date(d);
+      monday.setDate(diff);
+      const mondayStr = this.formatLocalDate(monday);
       if (!weeksMap.has(mondayStr)) weeksMap.set(mondayStr, []);
       weeksMap.get(mondayStr)?.push(s);
     });
@@ -133,7 +134,7 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
       for (let i = 0; i < 7; i++) {
         const currentDay    = new Date(mondayDate);
         currentDay.setDate(mondayDate.getDate() + i);
-        const currentDayStr = currentDay.toISOString().split('T')[0];
+        const currentDayStr = this.formatLocalDate(currentDay);
         const dayShifts     = weekShifts.filter((s: any) => s.fecha === currentDayStr);
         days.push({
           name: dayNames[i],
@@ -165,13 +166,13 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
       startOfWeek.setDate(current.getDate() - current.getDay());
       const endOfWeek = new Date(startOfWeek);
       endOfWeek.setDate(startOfWeek.getDate() + 6);
-      const startStr = startOfWeek.toISOString().split('T')[0];
-      const endStr   = endOfWeek.toISOString().split('T')[0];
+      const startStr = this.formatLocalDate(startOfWeek);
+      const endStr   = this.formatLocalDate(endOfWeek);
       return this.calculateTotalHours(shifts.filter(s => s.fecha >= startStr && s.fecha <= endStr));
     }
 
     if (mode === 'day') {
-      const dateStr = current.toISOString().split('T')[0];
+      const dateStr = this.formatLocalDate(current);
       return this.calculateTotalHours(shifts.filter(s => s.fecha === dateStr));
     }
 
@@ -183,8 +184,8 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
     const current = this.currentDate();
     const year    = current.getFullYear();
     const month   = current.getMonth();
-    const startStr = new Date(year, month, 1).toISOString().split('T')[0];
-    const endStr   = new Date(year, month + 1, 0).toISOString().split('T')[0];
+    const startStr = this.formatLocalDate(new Date(year, month, 1));
+    const endStr   = this.formatLocalDate(new Date(year, month + 1, 0));
     return this.calculateTotalHours(shifts.filter(s => s.fecha >= startStr && s.fecha <= endStr));
   });
 
@@ -277,6 +278,14 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
     return Math.round(total * 100) / 100;
   }
 
+  /** Formats a Date as YYYY-MM-DD using LOCAL timezone (avoids UTC shift from toISOString). */
+  private formatLocalDate(d: Date): string {
+    const year  = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day   = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
   loadEmployeeList(companyId: number) {
     this.empleadoService.listar(companyId, undefined, 0, 1000).subscribe({
       next: (res) => {
@@ -343,7 +352,7 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
 
       for (let i = 1; i <= end.getDate(); i++) {
         const current   = new Date(date.getFullYear(), date.getMonth(), i);
-        const dateStr   = current.toISOString().split('T')[0];
+        const dateStr   = this.formatLocalDate(current);
         const dayOfWeek = dayOfWeekMap[current.getDay()];
         const dayShifts = this.shifts().filter((s: any) =>
           s.fecha === dateStr || (!s.fecha && s.diaSemana === dayOfWeek)
@@ -363,7 +372,7 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
       for (let i = 0; i < 7; i++) {
         const current   = new Date(startOfWeek);
         current.setDate(startOfWeek.getDate() + i);
-        const dateStr   = current.toISOString().split('T')[0];
+        const dateStr   = this.formatLocalDate(current);
         const dayOfWeek = dayOfWeekMap[current.getDay()];
         const dayShifts = this.shifts().filter((s: any) =>
           s.fecha === dateStr || (!s.fecha && s.diaSemana === dayOfWeek)
@@ -371,7 +380,7 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
         days.push(this.buildCalendarDay(current, false, dayShifts));
       }
     } else {
-      const dateStr   = date.toISOString().split('T')[0];
+      const dateStr   = this.formatLocalDate(date);
       const dayOfWeek = dayOfWeekMap[date.getDay()];
       const dayShifts = this.shifts().filter((s: any) =>
         s.fecha === dateStr || (!s.fecha && s.diaSemana === dayOfWeek)
@@ -400,7 +409,7 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
 
   generateDayHourView() {
     const date         = new Date(this.currentDate());
-    const dateStr      = date.toISOString().split('T')[0];
+    const dateStr      = this.formatLocalDate(date);
     const dayOfWeekMap = ['DOMINGO', 'LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO'];
     const dayOfWeek    = dayOfWeekMap[date.getDay()];
     const dayShifts    = this.shifts().filter((s: any) =>
@@ -500,7 +509,7 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
 
   onDayClick(item: any) {
     if (!this.canCreate() || item.otherMonth) return;
-    const dateStr = item.date.toISOString().split('T')[0];
+    const dateStr = this.formatLocalDate(item.date);
     this.openAddForm(dateStr);
   }
 
@@ -586,8 +595,8 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
     const endOfLastWeek = new Date(startOfLastWeek);
     endOfLastWeek.setDate(startOfLastWeek.getDate() + 6);
 
-    const startStr       = startOfLastWeek.toISOString().split('T')[0];
-    const endStr         = endOfLastWeek.toISOString().split('T')[0];
+    const startStr       = this.formatLocalDate(startOfLastWeek);
+    const endStr         = this.formatLocalDate(endOfLastWeek);
     const lastWeekShifts = this.shifts().filter(s => s.fecha >= startStr && s.fecha <= endStr);
 
     if (lastWeekShifts.length === 0) {
@@ -602,8 +611,8 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
       acceptLabel: 'Sí, copiar',
       rejectLabel: 'Cancelar',
       accept: () => {
-        const sourceStr = startOfLastWeek.toISOString().split('T')[0];
-        const targetStr = startOfThisWeek.toISOString().split('T')[0];
+        const sourceStr = this.formatLocalDate(startOfLastWeek);
+        const targetStr = this.formatLocalDate(startOfThisWeek);
         this.loading.set(true);
         this.empleadoService.cloneWeek(id, sourceStr, targetStr).subscribe({
           next: () => {
@@ -624,7 +633,7 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
     const current   = new Date(this.currentDate());
     const tomorrow  = new Date(current);
     tomorrow.setDate(current.getDate() + 1);
-    this.cloneTargetDate.set(tomorrow.toISOString().split('T')[0]);
+    this.cloneTargetDate.set(this.formatLocalDate(tomorrow));
     this.showCloneDayModal.set(true);
   }
 
@@ -637,7 +646,7 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
     const id        = this.selectedEmployeeId();
     if (!id) return;
 
-    const sourceStr = this.currentDate().toISOString().split('T')[0];
+    const sourceStr = this.formatLocalDate(this.currentDate());
     const targetStr = this.cloneTargetDate();
 
     if (!targetStr) {
@@ -690,8 +699,8 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
       end.setDate(start.getDate() + 6);
     }
 
-    this.cleanStartDate.set(start.toISOString().split('T')[0]);
-    this.cleanEndDate.set(end.toISOString().split('T')[0]);
+    this.cleanStartDate.set(this.formatLocalDate(start));
+    this.cleanEndDate.set(this.formatLocalDate(end));
     this.selectedCleanDays.set(new Set<string>());
     this.showCleanModal.set(true);
   }
@@ -991,7 +1000,7 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
     const blob     = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
     const link     = document.createElement('a');
     link.href      = URL.createObjectURL(blob);
-    link.download  = `Horario_${empName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.xlsx`;
+    link.download  = `Horario_${empName.replace(/\s+/g, '_')}_${this.formatLocalDate(new Date())}.xlsx`;
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();

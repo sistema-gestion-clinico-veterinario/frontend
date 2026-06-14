@@ -62,6 +62,8 @@ export class CitasComponent implements OnInit {
   vets = signal<any[]>([]);
   availableSlots = signal<string[]>([]);
   horariosVeterinario = signal<any[]>([]);
+  companyPhone = signal<string>('');
+  isCurrentlyOpen = signal<boolean>(true);
 
   // Dropdown options for pet filter
   petFilterOptions = computed(() => {
@@ -211,6 +213,19 @@ export class CitasComponent implements OnInit {
     this.loadMascotas();
     this.loadCitas();
     this.loadPortalServices();
+    this.loadCompanyInfo();
+  }
+
+  private loadCompanyInfo() {
+    this.apoderadoService.getPortalPerfil().subscribe({
+      next: (res) => {
+        const data = res.data as any;
+        if (data) {
+          this.companyPhone.set(data.companyPhone ?? '');
+          this.isCurrentlyOpen.set(data.currentlyOpen !== false);
+        }
+      }
+    });
   }
 
   loadMascotas() {

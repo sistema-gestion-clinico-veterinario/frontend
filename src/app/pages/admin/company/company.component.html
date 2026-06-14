@@ -1,119 +1,316 @@
-<div class="p-4 min-h-screen bg-slate-50">
+<div class="p-3 sm:p-4 min-h-screen bg-slate-50">
 
-  <div class="flex items-start justify-between mb-8">
-    <div>
-      <h1 class="text-2xl font-semibold text-slate-800">Administración de empresas</h1>
-      <p class="text-sm text-slate-400 mt-1">Gestiona y supervisa todas las sedes registradas en el sistema</p>
-    </div>
-    <button *ngIf="authStore.isSuperAdmin()" (click)="openNew()"
-      class="flex items-center gap-2 bg-[#0066AA] hover:bg-[#005a96] text-white text-sm font-medium px-5 h-10 rounded-lg transition-colors">
-      <i class="pi pi-plus text-xs"></i>
-      Registrar empresa
-    </button>
-  </div>
-
-  <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-
-    <div *ngIf="loading" class="flex items-center justify-center py-20">
-      <i class="pi pi-spin pi-spinner text-2xl text-slate-300"></i>
-    </div>
-
-    <table *ngIf="!loading" class="w-full">
-      <thead>
-        <tr class="border-b border-slate-100">
-          <th class="text-left px-6 py-3 text-xs font-medium text-slate-400 uppercase tracking-wider">Empresa</th>
-          <th class="text-left px-6 py-3 text-xs font-medium text-slate-400 uppercase tracking-wider">RUC</th>
-          <th class="text-left px-6 py-3 text-xs font-medium text-slate-400 uppercase tracking-wider">Contacto</th>
-          <th class="text-left px-6 py-3 text-xs font-medium text-slate-400 uppercase tracking-wider">Estado</th>
-          <th class="px-6 py-3"></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let company of companies"
-          class="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors">
-          <td class="px-6 py-4">
-            <div class="flex items-center gap-3">
-              <div
-                class="w-9 h-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-sm font-semibold flex-shrink-0">
-                {{ company.name.charAt(0) }}
-              </div>
-              <div>
-                <p class="text-sm font-medium text-slate-800">{{ company.name }}</p>
-                <p class="text-xs text-slate-400 truncate max-w-[220px]">{{ company.address }}</p>
-              </div>
-            </div>
-          </td>
-          <td class="px-6 py-4 text-sm font-medium text-slate-600 tracking-wide">
-            {{ company.ruc }}
-          </td>
-          <td class="px-6 py-4">
-            <p class="text-sm text-slate-700">{{ company.email }}</p>
-            <p class="text-xs text-slate-400 mt-0.5">{{ company.phone }}</p>
-          </td>
-          <td class="px-6 py-4">
-            <span [ngClass]="company.activo ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-500'"
-              class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium">
-              <span [ngClass]="company.activo ? 'bg-green-500' : 'bg-red-400'" class="w-1.5 h-1.5 rounded-full"></span>
-              {{ company.activo ? 'Activo' : 'Inactivo' }}
-            </span>
-          </td>
-          <td class="px-6 py-4 text-right">
-            <div class="flex items-center justify-end gap-1">
-              <button *ngIf="authStore.isSuperAdmin()" (click)="confirmToggleActivo(company)"
-                [title]="company.activo ? 'Desactivar empresa' : 'Activar empresa'"
-                [ngClass]="company.activo ? 'text-green-500 hover:bg-red-50 hover:text-red-500' : 'text-red-400 hover:bg-green-50 hover:text-green-600'"
-                class="p-2 rounded-lg transition-all">
-                <i [ngClass]="company.activo ? 'pi pi-lock-open' : 'pi pi-lock'" class="text-sm"></i>
-              </button>
-              <button *appHasPermission="'VISTA_COMPANY:modificar'" (click)="editCompany(company)"
-                class="p-2 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-all">
-                <i class="pi pi-pencil text-sm"></i>
-              </button>
-            </div>
-          </td>
-        </tr>
-
-        <tr *ngIf="companies.length === 0">
-          <td colspan="5" class="py-20 text-center">
-            <i class="pi pi-building text-3xl text-slate-200 block mb-3"></i>
-            <p class="text-sm text-slate-400">No hay empresas registradas</p>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-    <div class="flex items-center justify-between px-6 py-3 border-t border-slate-100">
-      <p class="text-xs text-slate-400">Mostrando {{ companies.length }} de {{ totalRecords }} empresas</p>
-      <div class="flex items-center gap-1">
-        <button
-          class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 text-xs transition-colors">
-          <i class="pi pi-angle-double-left"></i>
-        </button>
-        <button
-          class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 text-xs transition-colors">
-          <i class="pi pi-angle-left"></i>
-        </button>
-        <button
-          class="w-8 h-8 flex items-center justify-center rounded-lg bg-[#0066AA] text-white text-xs font-medium">1</button>
-        <button
-          class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 text-xs transition-colors">
-          <i class="pi pi-angle-right"></i>
-        </button>
-        <button
-          class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 text-xs transition-colors">
-          <i class="pi pi-angle-double-right"></i>
-        </button>
+  <!-- ======================== -->
+  <!-- SUPERADMIN: COMPANY LIST -->
+  <!-- ======================== -->
+  <ng-container *ngIf="isSuperAdmin()">
+    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-6 sm:mb-8">
+      <div>
+        <h1 class="text-xl sm:text-2xl font-semibold text-slate-800">Administración de empresas</h1>
+        <p class="text-xs sm:text-sm text-slate-400 mt-1">Gestiona y supervisa todas las sedes registradas en el sistema</p>
       </div>
+      <button (click)="openNew()"
+        class="flex items-center justify-center gap-2 bg-[#0066AA] hover:bg-[#005a96] text-white text-sm font-medium px-5 h-10 rounded-lg transition-colors shrink-0">
+        <i class="pi pi-plus text-xs"></i>
+        Registrar empresa
+      </button>
     </div>
 
-  </div>
+    <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+
+      <div *ngIf="loading" class="flex items-center justify-center py-20">
+        <i class="pi pi-spin pi-spinner text-2xl text-slate-300"></i>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table *ngIf="!loading" class="w-full min-w-[600px]">
+          <thead>
+            <tr class="border-b border-slate-100">
+              <th class="text-left px-4 sm:px-6 py-3 text-xs font-medium text-slate-400 uppercase tracking-wider">Empresa</th>
+              <th class="text-left px-4 sm:px-6 py-3 text-xs font-medium text-slate-400 uppercase tracking-wider">RUC</th>
+              <th class="text-left px-4 sm:px-6 py-3 text-xs font-medium text-slate-400 uppercase tracking-wider">Contacto</th>
+              <th class="text-left px-4 sm:px-6 py-3 text-xs font-medium text-slate-400 uppercase tracking-wider">Estado</th>
+              <th class="px-4 sm:px-6 py-3"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let company of companies"
+              class="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors">
+              <td class="px-4 sm:px-6 py-4">
+                <div class="flex items-center gap-3">
+                  <div
+                    class="w-9 h-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-sm font-semibold flex-shrink-0">
+                    {{ company.name.charAt(0) }}
+                  </div>
+                  <div>
+                    <p class="text-sm font-medium text-slate-800">{{ company.name }}</p>
+                    <p class="text-xs text-slate-400 truncate max-w-[140px] sm:max-w-[220px]">{{ company.address }}</p>
+                  </div>
+                </div>
+              </td>
+              <td class="px-4 sm:px-6 py-4 text-sm font-medium text-slate-600 tracking-wide">
+                {{ company.ruc }}
+              </td>
+              <td class="px-4 sm:px-6 py-4">
+                <p class="text-sm text-slate-700 truncate max-w-[160px]">{{ company.email }}</p>
+                <p class="text-xs text-slate-400 mt-0.5">{{ company.phone }}</p>
+              </td>
+              <td class="px-4 sm:px-6 py-4">
+                <span [ngClass]="company.activo ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-500'"
+                  class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium">
+                  <span [ngClass]="company.activo ? 'bg-green-500' : 'bg-red-400'" class="w-1.5 h-1.5 rounded-full"></span>
+                  {{ company.activo ? 'Activo' : 'Inactivo' }}
+                </span>
+              </td>
+              <td class="px-4 sm:px-6 py-4 text-right">
+                <div class="flex items-center justify-end gap-1">
+                  <button (click)="confirmToggleActivo(company)"
+                    [title]="company.activo ? 'Desactivar empresa' : 'Activar empresa'"
+                    [ngClass]="company.activo ? 'text-green-500 hover:bg-red-50 hover:text-red-500' : 'text-red-400 hover:bg-green-50 hover:text-green-600'"
+                    class="p-2 rounded-lg transition-all">
+                    <i [ngClass]="company.activo ? 'pi pi-lock-open' : 'pi pi-lock'" class="text-sm"></i>
+                  </button>
+                  <button *appHasPermission="'VISTA_COMPANY:modificar'" (click)="editCompany(company)"
+                    class="p-2 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-all">
+                    <i class="pi pi-pencil text-sm"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <tr *ngIf="companies.length === 0">
+              <td colspan="5" class="py-20 text-center">
+                <i class="pi pi-building text-3xl text-slate-200 block mb-3"></i>
+                <p class="text-sm text-slate-400">No hay empresas registradas</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-4 sm:px-6 py-3 border-t border-slate-100">
+        <p class="text-xs text-slate-400">Mostrando {{ companies.length }} de {{ totalRecords }} empresas</p>
+        <div class="flex items-center gap-1">
+          <button
+            class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 text-xs transition-colors">
+            <i class="pi pi-angle-double-left"></i>
+          </button>
+          <button
+            class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 text-xs transition-colors">
+            <i class="pi pi-angle-left"></i>
+          </button>
+          <button
+            class="w-8 h-8 flex items-center justify-center rounded-lg bg-[#0066AA] text-white text-xs font-medium">1</button>
+          <button
+            class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 text-xs transition-colors">
+            <i class="pi pi-angle-right"></i>
+          </button>
+          <button
+            class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 text-xs transition-colors">
+            <i class="pi pi-angle-double-right"></i>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </ng-container>
+
+  <!-- ======================== -->
+  <!-- NON-SUPERADMIN: COMPANY PROFILE -->
+  <!-- ======================== -->
+  <ng-container *ngIf="!isSuperAdmin()">
+    <div class="max-w-full mx-auto space-y-6 sm:space-y-8">
+      <div>
+        <h1 class="text-xl sm:text-2xl font-semibold text-slate-800">Mi Empresa</h1>
+        <p class="text-xs sm:text-sm text-slate-400 mt-1">Gestión de tu sede o establecimiento</p>
+      </div>
+
+      <!-- ========================= -->
+      <!-- PERFIL -->
+      <!-- ========================= -->
+      <section>
+        <div class="flex items-center gap-2 mb-3 sm:mb-4">
+          <i class="pi pi-building text-slate-400"></i>
+          <h2 class="text-sm sm:text-base font-bold text-slate-700">Información de la Empresa</h2>
+        </div>
+
+        <div *ngIf="loadingOwnCompany()" class="flex items-center justify-center py-16 bg-white border border-slate-200 rounded-xl">
+          <i class="pi pi-spin pi-spinner text-2xl text-slate-300"></i>
+        </div>
+
+        <div *ngIf="!loadingOwnCompany() && ownCompany" class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+
+          <!-- Header with logo & edit -->
+          <div class="px-4 sm:px-6 py-4 sm:py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100">
+            <div class="flex items-center gap-3 sm:gap-4">
+              <div class="relative shrink-0">
+                <img *ngIf="resolveLogoUrl(ownCompany.logoUrl)" [src]="resolveLogoUrl(ownCompany.logoUrl)" alt="Logo"
+                  class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl object-cover border border-slate-200 shadow-sm" />
+                <div *ngIf="!resolveLogoUrl(ownCompany.logoUrl)" class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 text-white flex items-center justify-center text-lg sm:text-xl font-bold shadow-sm">
+                  {{ (ownCompany.name || 'E').charAt(0) }}
+                </div>
+              </div>
+              <div class="min-w-0">
+                <h2 class="text-base sm:text-lg font-semibold text-slate-800 truncate">{{ ownCompany.name }}</h2>
+                <p class="text-xs text-slate-400">RUC: {{ ownCompany.ruc }}</p>
+              </div>
+            </div>
+            <button *appHasPermission="'VISTA_COMPANY:modificar'" (click)="openEditOwnCompany()"
+              class="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors shrink-0 w-full sm:w-auto">
+              <i class="pi pi-pencil text-xs"></i>
+              Editar
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-3 divide-y lg:divide-y-0 lg:divide-x divide-slate-100">
+
+            <!-- Left column: Contact, Location, Web -->
+            <div class="lg:col-span-2">
+              <!-- Contact info -->
+              <div class="px-4 sm:px-6 py-4 sm:py-5 border-b border-slate-100">
+                <div class="flex items-center gap-2 mb-3 sm:mb-4">
+                  <i class="pi pi-address-book text-slate-400 text-sm"></i>
+                  <span class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Contacto</span>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
+                  <div class="flex items-center gap-3">
+                    <i class="pi pi-envelope text-slate-300 text-sm w-4 shrink-0"></i>
+                    <div class="min-w-0">
+                      <p class="text-[10px] sm:text-xs text-slate-400">Correo Electrónico</p>
+                      <p class="text-sm font-medium text-slate-800 truncate">{{ ownCompany.email || '—' }}</p>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <i class="pi pi-phone text-slate-300 text-sm w-4 shrink-0"></i>
+                    <div>
+                      <p class="text-[10px] sm:text-xs text-slate-400">Teléfono</p>
+                      <p class="text-sm font-medium text-slate-800">{{ ownCompany.phone || '—' }}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Location -->
+              <div class="px-4 sm:px-6 py-4 sm:py-5 border-b border-slate-100">
+                <div class="flex items-center gap-2 mb-3 sm:mb-4">
+                  <i class="pi pi-map-marker text-slate-400 text-sm"></i>
+                  <span class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Ubicación</span>
+                </div>
+                <p class="text-sm text-slate-700">{{ ownCompany.address || '—' }}</p>
+              </div>
+
+              <!-- Web & Description -->
+              <div *ngIf="ownCompany.website || ownCompany.description" class="px-4 sm:px-6 py-4 sm:py-5">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
+                  <div *ngIf="ownCompany.website">
+                    <div class="flex items-center gap-3">
+                      <i class="pi pi-globe text-slate-300 text-sm w-4 shrink-0"></i>
+                      <div class="min-w-0">
+                        <p class="text-[10px] sm:text-xs text-slate-400">Sitio Web</p>
+                        <p class="text-sm font-medium text-blue-600 truncate">{{ ownCompany.website }}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div *ngIf="ownCompany.description" class="sm:col-span-2">
+                    <div class="flex items-start gap-3">
+                      <i class="pi pi-info-circle text-slate-300 text-sm w-4 shrink-0 mt-0.5"></i>
+                      <div class="min-w-0">
+                        <p class="text-[10px] sm:text-xs text-slate-400">Descripción</p>
+                        <p class="text-sm text-slate-700">{{ ownCompany.description }}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right column: Operating Hours -->
+            <div *ngIf="ownCompany.operatingHours?.length" class="px-4 sm:px-6 py-4 sm:py-5">
+              <div class="flex items-center gap-2 mb-3 sm:mb-4">
+                <i class="pi pi-clock text-slate-400 text-sm"></i>
+                <span class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Horarios</span>
+              </div>
+              <div class="divide-y divide-slate-100">
+                <div *ngFor="let h of sortOperatingHours(ownCompany.operatingHours!)"
+                  class="flex items-center gap-2 sm:gap-3 py-2 sm:py-2.5 first:pt-0 last:pb-0">
+                  <span class="text-xs sm:text-sm font-semibold text-slate-700 w-20 sm:w-24 shrink-0">{{ h.diaSemana }}</span>
+                  <span *ngIf="h.isOpen" class="text-xs sm:text-sm text-slate-600">
+                    {{ h.openingTime | slice:0:5 }} — {{ h.closingTime | slice:0:5 }}
+                  </span>
+                  <span *ngIf="!h.isOpen" class="text-xs text-slate-400">—</span>
+                  <span *ngIf="h.isOpen"
+                    class="ml-auto inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-50 text-emerald-600">
+                    <span class="w-1 h-1 rounded-full bg-emerald-500"></span>
+                    <span class="hidden sm:inline">Abierto</span>
+                    <span class="sm:hidden">A</span>
+                  </span>
+                  <span *ngIf="!h.isOpen"
+                    class="ml-auto inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-400">
+                    <span class="w-1 h-1 rounded-full bg-slate-300"></span>
+                    <span class="hidden sm:inline">Cerrado</span>
+                    <span class="sm:hidden">C</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div *ngIf="!loadingOwnCompany() && !ownCompany" class="bg-white border border-slate-200 rounded-xl py-16 text-center">
+          <i class="pi pi-building text-3xl text-slate-200 block mb-3"></i>
+          <p class="text-sm text-slate-400">No se encontró información de tu empresa</p>
+        </div>
+      </section>
+
+      <!-- ========================= -->
+      <!-- ROLES -->
+      <!-- ========================= -->
+      <section>
+        <div class="flex items-center gap-2 mb-3 sm:mb-4">
+          <i class="pi pi-shield text-slate-400"></i>
+          <h2 class="text-sm sm:text-base font-bold text-slate-700">Roles de la Empresa</h2>
+        </div>
+
+        <div *ngIf="loadingRoles()" class="flex items-center justify-center py-16 bg-white border border-slate-200 rounded-xl">
+          <i class="pi pi-spin pi-spinner text-2xl text-slate-300"></i>
+        </div>
+
+        <div *ngIf="!loadingRoles() && companyRoles.length === 0" class="bg-white border border-slate-200 rounded-xl py-16 text-center">
+          <i class="pi pi-shield text-3xl text-slate-200 block mb-3"></i>
+          <p class="text-sm text-slate-400">No hay roles configurados para esta empresa</p>
+        </div>
+
+        <div *ngIf="!loadingRoles() && companyRoles.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+          <div *ngFor="let role of companyRoles"
+            class="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 hover:border-blue-200 transition-all">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-sm font-bold shrink-0">
+                {{ role.name === 'ROLE_ADMIN' ? 'A' : (role.name.replace('ROLE_', '').charAt(0)) }}
+              </div>
+              <div class="min-w-0">
+                <p class="text-sm font-semibold text-slate-800 truncate">{{ role.name.replace('ROLE_', '') }}</p>
+                <p *ngIf="role.descripcion" class="text-xs text-slate-400 mt-0.5 truncate">{{ role.descripcion }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </ng-container>
+
 </div>
-<div *ngIf="displayModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-  <div class="bg-white w-full max-w-2xl rounded-lg flex flex-col max-h-[95vh]">
+
+<!-- ======================== -->
+<!-- CREATE/EDIT MODAL (shared) -->
+<!-- ======================== -->
+<div *ngIf="displayModal" class="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/50 backdrop-blur-sm">
+  <div class="bg-white w-full sm:max-w-2xl rounded-t-xl sm:rounded-lg flex flex-col max-h-[90vh] sm:max-h-[95vh]">
   
-    <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50 rounded-t-lg">
-      <h2 class="text-lg font-bold text-slate-800">
-        {{ isEdit ? 'Modificar Registro de Empresa' : 'Registro de Nueva Entidad' }}
+    <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50 rounded-t-xl sm:rounded-t-lg">
+      <h2 class="text-sm sm:text-lg font-bold text-slate-800">
+        {{ isEdit ? (isSuperAdmin() ? 'Modificar Registro de Empresa' : 'Editar Mi Empresa') : 'Registro de Nueva Entidad' }}
       </h2>
       <button (click)="displayModal = false" class="text-slate-400 hover:text-slate-600 transition-colors p-2">
         <i class="pi pi-times"></i>
@@ -121,7 +318,7 @@
     </div>
 
 
-    <div class="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-slate-200">
+    <div class="flex-1 overflow-y-auto p-4 sm:p-6 scrollbar-thin scrollbar-thumb-slate-200">
       <form [formGroup]="companyForm" (ngSubmit)="saveCompany()" class="space-y-6">
         
 
@@ -164,6 +361,30 @@
                 <ng-container *ngIf="companyForm.get('phone')?.errors?.['required']">El teléfono es requerido</ng-container>
                 <ng-container *ngIf="companyForm.get('phone')?.errors?.['pattern']">Debe tener exactamente 9 dígitos</ng-container>
               </p>
+            </div>
+
+            <!-- Logo -->
+            <div class="sm:col-span-2">
+              <label class="text-xs font-semibold text-slate-700 ml-0.5 block mb-2">Logo de la empresa</label>
+              <div class="flex items-center gap-4">
+                <div class="relative w-20 h-20 rounded-xl border-2 border-dashed border-slate-300 flex items-center justify-center overflow-hidden bg-slate-50">
+                  <img *ngIf="logoFile()?.preview" [src]="logoFile()!.preview" class="w-full h-full object-cover" />
+                  <img *ngIf="!logoFile() && resolveLogoUrl(companyForm.get('logoUrl')?.value)" [src]="resolveLogoUrl(companyForm.get('logoUrl')?.value)" class="w-full h-full object-cover" />
+                  <i *ngIf="!logoFile() && !resolveLogoUrl(companyForm.get('logoUrl')?.value)" class="pi pi-image text-2xl text-slate-300"></i>
+                </div>
+                <div class="flex flex-col gap-2">
+                  <label class="cursor-pointer inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors">
+                    <i class="pi pi-upload text-xs"></i>
+                    Subir logo
+                    <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" (change)="onLogoSelected($event)" class="hidden" />
+                  </label>
+                  <button *ngIf="logoFile() || companyForm.get('logoUrl')?.value" type="button" (click)="removeLogo()"
+                    class="text-xs text-rose-500 hover:text-rose-700 font-medium text-left">
+                    Eliminar logo
+                  </button>
+                  <p class="text-[11px] text-slate-400">PNG, JPG, WEBP o GIF. Máximo 5 MB.</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -214,6 +435,16 @@
                 <ng-container *ngIf="companyForm.get('website')?.errors?.['maxlength']">Máximo 200 caracteres</ng-container>
               </p>
             </div>
+
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-semibold text-slate-700 ml-0.5">Descripción <span class="text-slate-400 font-normal">(opcional)</span></label>
+              <textarea formControlName="description" placeholder="Breve descripción de la empresa..." maxlength="500" rows="3"
+                [ngClass]="companyForm.get('description')?.invalid && companyForm.get('description')?.touched ? 'border-rose-400' : 'border-slate-300'"
+                class="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none resize-none transition-all"></textarea>
+              <p *ngIf="companyForm.get('description')?.errors?.['maxlength']" class="text-[11px] text-rose-500 ml-0.5">
+                Máximo 500 caracteres
+              </p>
+            </div>
           </div>
         </div>
 
@@ -235,7 +466,7 @@
                       <i [ngClass]="hour.get('isOpen')?.value ? 'pi pi-check-circle' : 'pi pi-minus-circle'" class="text-[11px]"></i>
                       {{ hour.get('isOpen')?.value ? 'Abierto' : 'Cerrado' }}
                     </button>
-                    <span class="text-sm font-bold text-slate-700 w-24 uppercase tracking-tighter">{{ daysOfWeek[i] }}</span>
+                    <span class="text-sm font-bold text-slate-700 w-24 uppercase tracking-tighter">{{ hour.get('diaSemana')?.value }}</span>
                   </div>
 
                   <div class="grid grid-cols-2 gap-3" *ngIf="hour.get('isOpen')?.value">
@@ -276,6 +507,9 @@
   </div>
 </div>
 
+<!-- ======================== -->
+<!-- TOGGLE-ACTIVE CONFIRM (superadmin only) -->
+<!-- ======================== -->
 <div *ngIf="companyPendingStatus" class="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
   <div class="bg-white w-full max-w-md rounded-lg  overflow-hidden">
     <div class="px-6 py-4 border-b border-slate-100">

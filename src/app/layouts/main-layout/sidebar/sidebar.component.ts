@@ -1,9 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, input, computed, signal, output } from '@angular/core';
+import { Component, inject, input, computed, signal, output, OnInit } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthStore } from '../../../store/auth.store';
 import { MenuItemDTO, MenuStructureDTO } from '../../../models/response/auth-login-response.model';
 import { RouteMapperService } from '../../../core/services/route-mapper.service';
+import { CompanyService } from '../../../core/services/company.service';
+import { MediaService } from '../../../core/services/media.service';
 
 interface MenuItemWithRuta extends MenuItemDTO {
   ruta: string;
@@ -19,18 +21,34 @@ interface MenuSection extends MenuStructureDTO {
   imports: [CommonModule, RouterLink, RouterLinkActive],
   templateUrl: './sidebar.component.html'
 })
-export class SidebarComponent {
+export class SidebarComponent implements OnInit {
   collapsed = input(false);
   toggleSidebar = output<void>();
 
   private authStore = inject(AuthStore);
   private router = inject(Router);
   private routeMapper = inject(RouteMapperService);
+  private companyService = inject(CompanyService);
+  private mediaService = inject(MediaService);
 
   expandedSections = signal<Record<string, boolean>>({});
+  companyLogoUrl = signal<string | null>(null);
 
   userName = computed(() => this.authStore.nombreCompleto() ?? 'Usuario');
   companyName = computed(() => this.authStore.companyName() ?? '');
+
+  ngOnInit() {
+    const companyId = this.authStore.companyId();
+    if (companyId) {
+      this.companyService.getById(companyId).subscribe({
+        next: (res) => {
+          if (res.data?.logoUrl) {
+            this.companyLogoUrl.set(this.mediaService.resolveUrl(res.data.logoUrl));
+          }
+        }
+      });
+    }
+  }
 
   private sectionKey(structure: MenuSection): string {
     return structure.ventanaNombre || structure.grupo || 'default';

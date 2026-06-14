@@ -56,6 +56,11 @@ export class MyScheduleComponent implements OnInit {
     return new Date(y, m - 1, d).toDateString() === date.toDateString();
   }
 
+  /** Formats a Date as YYYY-MM-DD using LOCAL timezone (avoids UTC shift from toISOString). */
+  private toLocalDateStr(d: Date): string {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+
   generateCalendar() {
     this.calendarDays = [];
     const today = new Date();
@@ -161,8 +166,9 @@ export class MyScheduleComponent implements OnInit {
       const d = new Date(s.fecha + 'T00:00:00');
       const day = d.getDay();
       const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-      const monday = new Date(d.setDate(diff));
-      const mondayStr = monday.toISOString().split('T')[0];
+      const monday = new Date(d);
+      monday.setDate(diff);
+      const mondayStr = this.toLocalDateStr(monday);
       
       if (!weeksMap.has(mondayStr)) {
         weeksMap.set(mondayStr, []);
@@ -205,7 +211,7 @@ export class MyScheduleComponent implements OnInit {
       for (let i = 0; i < 7; i++) {
         const currentDay = new Date(mondayDate);
         currentDay.setDate(mondayDate.getDate() + i);
-        const currentDayStr = currentDay.toISOString().split('T')[0];
+        const currentDayStr = this.toLocalDateStr(currentDay);
         
         const dayShifts = weekShifts.filter((s: any) => s.fecha === currentDayStr);
         days.push({
@@ -450,7 +456,7 @@ export class MyScheduleComponent implements OnInit {
       const blob   = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
       const link   = document.createElement('a');
       link.href    = URL.createObjectURL(blob);
-      link.download = `Mi_Horario_${new Date().toISOString().split('T')[0]}.xlsx`;
+      link.download = `Mi_Horario_${this.toLocalDateStr(new Date())}.xlsx`;
       link.style.visibility = 'hidden';
       document.body.appendChild(link);
       link.click();

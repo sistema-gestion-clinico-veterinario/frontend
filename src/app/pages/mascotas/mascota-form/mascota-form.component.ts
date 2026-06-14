@@ -4,6 +4,7 @@ import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators, A
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { ToastModule } from 'primeng/toast';
+import { DialogModule } from 'primeng/dialog';
 import { MessageService } from 'primeng/api';
 
 import { MascotaService } from '../../../core/services/mascota.service';
@@ -25,7 +26,8 @@ import { AuthStore } from '../../../store/auth.store';
     FormsModule,
     RouterModule,
     ButtonModule,
-    ToastModule
+    ToastModule,
+    DialogModule
   ],
   providers: [MessageService],
   templateUrl: './mascota-form.component.html',
@@ -69,6 +71,8 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
   photoError          = signal(false);
   selectedFile        = signal<File | null>(null);
   uploadingPhoto      = signal<boolean>(false);
+  isDragging          = signal<boolean>(false);
+  zoomModalOpen       = signal<boolean>(false);
 
   readonly especieOpciones = [
     { label: 'Perro',  value: 'PERRO'  },
@@ -222,10 +226,32 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
     this.razaDropdownOpen.set(false);
   }
 
+  readonly maxFileSize = 5 * 1024 * 1024; // 5 MB
+
+  readonly allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+  readonly allowedExtensions = ['.jpg', '.jpeg', '.jpe', '.png', '.webp', '.gif'];
+
+  private isValidFileType(file: File): boolean {
+    return this.allowedTypes.includes(file.type) ||
+           this.allowedExtensions.some(ext => file.name.toLowerCase().endsWith(ext));
+  }
+
   onPhotoSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) return;
+
+    if (!this.isValidFileType(file)) {
+      this.messageService.add({ severity: 'warn', summary: 'Formato no permitido', detail: 'Solo se permiten archivos JPG, PNG, WEBP o GIF' });
+      input.value = '';
+      return;
+    }
+
+    if (file.size > this.maxFileSize) {
+      this.messageService.add({ severity: 'warn', summary: 'Archivo muy grande', detail: 'El tamaño máximo permitido es 5 MB' });
+      input.value = '';
+      return;
+    }
 
     if (this.previewUrl() && this.previewUrl()!.startsWith('blob:')) {
       URL.revokeObjectURL(this.previewUrl()!);
@@ -234,6 +260,44 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
     this.selectedFile.set(file);
     this.previewUrl.set(URL.createObjectURL(file));
     input.value = '';
+  }
+
+  onDragOver(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragging.set(true);
+  }
+
+  onDragLeave(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragging.set(false);
+  }
+
+  onDrop(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragging.set(false);
+
+    const file = event.dataTransfer?.files?.[0];
+    if (!file) return;
+
+    if (!this.isValidFileType(file)) {
+      this.messageService.add({ severity: 'warn', summary: 'Formato no permitido', detail: 'Solo se permiten archivos JPG, PNG, WEBP o GIF' });
+      return;
+    }
+
+    if (file.size > this.maxFileSize) {
+      this.messageService.add({ severity: 'warn', summary: 'Archivo muy grande', detail: 'El tamaño máximo permitido es 5 MB' });
+      return;
+    }
+
+    if (this.previewUrl() && this.previewUrl()!.startsWith('blob:')) {
+      URL.revokeObjectURL(this.previewUrl()!);
+    }
+    this.photoError.set(false);
+    this.selectedFile.set(file);
+    this.previewUrl.set(URL.createObjectURL(file));
   }
 
   onPhotoError() {
@@ -248,6 +312,16 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
     this.selectedFile.set(null);
     this.mascotaForm.patchValue({ fotoUrl: '' });
     this.previewUrl.set(null);
+  }
+
+  openZoomModal() {
+    if (this.previewUrl()) {
+      this.zoomModalOpen.set(true);
+    }
+  }
+
+  closeZoomModal() {
+    this.zoomModalOpen.set(false);
   }
 
   ngOnDestroy() {

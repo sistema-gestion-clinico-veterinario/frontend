@@ -27,6 +27,8 @@ export class ApoderadoDashboardComponent implements OnInit {
 
   userName    = this.authStore.nombreCompleto() ?? '';
   companyName = this.authStore.companyName() ?? '';
+  companyPhone = signal<string>('');
+  isCurrentlyOpen = signal<boolean>(true);
 
   mascotas = signal<any[]>([]);
   citas    = signal<any[]>([]);
@@ -67,6 +69,19 @@ export class ApoderadoDashboardComponent implements OnInit {
 
   ngOnInit() {
     this.loadDashboard();
+    this.loadCompanyInfo();
+  }
+
+  private loadCompanyInfo() {
+    this.apoderadoService.getPortalPerfil().subscribe({
+      next: (res) => {
+        const data = res.data as any;
+        if (data) {
+          this.companyPhone.set(data.companyPhone ?? '');
+          this.isCurrentlyOpen.set(data.currentlyOpen !== false);
+        }
+      }
+    });
   }
 
   loadDashboard() {

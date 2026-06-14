@@ -5,11 +5,13 @@
 >
   <div class="flex h-20 shrink-0 items-center border-b border-slate-50 transition-all" [class.px-7]="!collapsed()" [class.justify-center]="collapsed()">
     <div class="flex items-center gap-3 cursor-pointer group">
-      <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#0F172A] text-white transition-transform group-hover:scale-105">
+      <img *ngIf="companyLogoUrl()" [src]="companyLogoUrl()" alt="Logo"
+        class="h-11 w-11 shrink-0 rounded-2xl object-cover border border-slate-200 transition-transform group-hover:scale-105" />
+      <div *ngIf="!companyLogoUrl()" class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#0F172A] text-white transition-transform group-hover:scale-105">
         <i class="pi pi-heart-fill text-lg"></i>
       </div>
       <div *ngIf="!collapsed()" class="flex flex-col">
-        <span class="text-[18px] font-semibold text-[#0F172A] leading-none mb-1">VargasVet</span>
+        <span class="text-[18px] font-semibold text-[#0F172A] leading-none mb-1">{{ companyName() || 'VargasVet' }}</span>
         <span class="text-[9px] font-medium text-[#94A3B8] uppercase tracking-[0.22em]">Veterinary Center</span>
       </div>
     </div>

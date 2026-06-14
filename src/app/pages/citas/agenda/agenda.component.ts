@@ -148,6 +148,14 @@ export class AgendaComponent implements OnInit, OnDestroy {
     const total = this.totalCita();
     return total === 0 || recibido >= total / 2;
   });
+
+  readonly pagoInsuficienteParaAtencion = computed(() => {
+    const cita = this.citaDetalle();
+    if (!cita?.totalServicio || cita.totalServicio <= 0) return false;
+    const pagado = cita.montoPagado ?? 0;
+    return pagado < cita.totalServicio / 2;
+  });
+
   citas            = signal<CitaResponse[]>([]);
   private loadTimeout: any = null;
   private lastLazyEvent: any = { first: 0, rows: 10 };
@@ -188,11 +196,6 @@ export class AgendaComponent implements OnInit, OnDestroy {
   selectedServicioId   = signal<number | null>(null);
   empleadosDelServicio = signal<{ label: string; value: number }[]>([]);
 
-  servicioPermiteEmergencia = computed(() => {
-    const id = this.selectedServicioId();
-    if (!id) return false;
-    return this.serviciosConDetalle().find(s => s.id === id)?.permiteEmergencia ?? false;
-  });
   showClienteSelector = signal<boolean>(false);
   clienteSearch       = signal<string>('');
   filteredClientes    = computed(() => {
@@ -383,7 +386,18 @@ export class AgendaComponent implements OnInit, OnDestroy {
     this.loadTodosEmpleados();
     this.loadClientes();
     this.loadAllMascotas();
-    this.citaForm.get('esEmergencia')?.valueChanges.subscribe(() => {
+    this.citaForm.get('esEmergencia')?.valueChanges.subscribe((isEmergencia: boolean) => {
+      if (isEmergencia) {
+        const now = new Date();
+        const dateStr = this.toDateStr(now);
+        const hours = String(now.getHours()).padStart(2, '0');
+        const mins = String(now.getMinutes()).padStart(2, '0');
+        this.citaForm.patchValue({ fechaCita: dateStr, horaCita: `${hours}:${mins}` });
+        this.availableSlots.set([]);
+      } else {
+        this.citaForm.patchValue({ horaCita: null });
+        this.onBookingParamsChange();
+      }
       this.citaForm.get('fechaHoraInicio')?.updateValueAndValidity();
     });
     this.setupWebSocket();
@@ -596,8 +610,6 @@ export class AgendaComponent implements OnInit, OnDestroy {
     this.citaForm.get('horaCita')?.setValue(null);
     this.showServicioSelector.set(false);
     this.filterEmpleadosByServicio(srv?.value ?? null);
-    const permiteEmergencia = this.serviciosConDetalle().find(s => s.id === srv?.value)?.permiteEmergencia ?? false;
-    if (!permiteEmergencia) this.citaForm.get('esEmergencia')?.setValue(false);
     this.onBookingParamsChange();
   }
 
@@ -658,8 +670,6 @@ export class AgendaComponent implements OnInit, OnDestroy {
 
   agendarEmergencia() {
     this.citaForm.get('esEmergencia')?.setValue(true);
-    const fecha = this.citaForm.get('fechaCita')?.value;
-    if (fecha) this.onBookingParamsChange(fecha);
   }
 
   onVeterinarioChange(veterinarioId: number) {
@@ -1023,6 +1033,16 @@ export class AgendaComponent implements OnInit, OnDestroy {
       this.messageService.add({ severity: 'warn', summary: 'Sin permiso', detail: 'No puedes iniciar historias clÃ­nicas.' });
       return;
     }
+    if (cita.totalServicio && cita.totalServicio > 0) {
+      const pagado = cita.montoPagado ?? 0;
+      if (pagado < cita.totalServicio / 2) {
+        this.messageService.add({
+          severity: 'error', summary: 'Pago insuficiente',
+          detail: `Para iniciar la atención se debe haber abonado al menos el 50% del costo. Total: S/ ${cita.totalServicio.toFixed(2)} — Pagado: S/ ${pagado.toFixed(2)} — Mínimo requerido: S/ ${(cita.totalServicio / 2).toFixed(2)}`
+        });
+        return;
+      }
+    }
     this.displayDetalleCita.set(false);
     this.loadingStore.show();
     this.citaService.iniciarAtencion(cita.id).subscribe({
@@ -1357,7 +1377,6 @@ export class AgendaComponent implements OnInit, OnDestroy {
       end: cita.fechaHoraFin,
       editable: this.canReprogram(cita) && this.authStore.hasAccess('VISTA_CITAS_AGENDA', 'modificar'),
       backgroundColor: this.calendarBgColor(cita.estado),
-      borderColor: this.calendarColor(cita.estado),
       textColor: '#1e293b',
       extendedProps: { cita }
     }));
@@ -1365,7 +1384,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
 
   private renderCalendarEvent(info: EventContentArg) {
     const cita = info.event.extendedProps['cita'] as CitaResponse | undefined;
-    const accent = info.event.borderColor || '#0066AA';
+    const accent = cita ? this.calendarColor(cita.estado) : '#0066AA';
     const timeHtml = info.timeText
       ? `<span class="agenda-event-time" style="color:${accent}">${info.timeText}</span>`
       : '';
