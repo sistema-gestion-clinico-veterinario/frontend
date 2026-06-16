@@ -104,9 +104,15 @@
             </span>
           </div>
 
-          <div class="mt-3 pt-3 border-t border-slate-200">
-            <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">Última consulta</p>
-            <p class="text-xs font-bold text-slate-700 leading-snug">{{ todasConsultas[0].motivoConsulta }}</p>
+          <div class="mt-3 pt-3 border-t border-slate-200 flex items-center justify-between gap-3">
+            <div>
+              <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">Última consulta</p>
+              <p class="text-xs font-bold text-slate-700 leading-snug">{{ todasConsultas[0].motivoConsulta }}</p>
+            </div>
+            <span class="shrink-0 text-[10px] font-extrabold px-2.5 py-1 rounded-full
+                         bg-[#0066AA]/10 text-[#0066AA] border border-[#0066AA]/15 whitespace-nowrap">
+              {{ escenarioPrevio }}
+            </span>
           </div>
         </div>
 

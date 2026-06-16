@@ -114,6 +114,13 @@ export class DiagnosticoIaComponent implements OnChanges {
     return ESCENARIO_LABEL[this.escenario()] ?? this.escenario();
   }
 
+  get escenarioPrevio(): string {
+    if (this.tieneHemograma && this.tieneRadiografia) return 'HC + Hemograma + Radiografía';
+    if (this.tieneHemograma)                          return 'HC + Hemograma';
+    if (this.tieneRadiografia)                        return 'HC + Radiografía';
+    return 'Historia Clínica';
+  }
+
   ngOnChanges(): void {
     this.texto.set('');
     this.error.set('');
