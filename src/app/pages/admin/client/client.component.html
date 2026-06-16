@@ -61,17 +61,12 @@
             </button>
           </td>
           <td class="px-6 py-4 text-right">
-            <div class="flex items-center justify-end gap-1">
-              <button *appHasPermission="'VISTA_CLIENTES:modificar'"
-                (click)="editClient(client)"
-                [disabled]="!client.activo"
-                [title]="!client.activo ? 'El cliente está inactivo' : 'Editar'"
-                class="p-2 rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-90 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-slate-400">
-                <i class="pi pi-pencil text-sm"></i>
-              </button>
-              <button *appHasPermission="'VISTA_CLIENTES:eliminar'" (click)="deleteClient(client)"
-                class="p-2 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-all active:scale-90">
-                <i class="pi pi-trash text-sm"></i>
+            <div class="flex items-center justify-end">
+              <p-menu #clientMenu [model]="clientActionItems(client)" [popup]="true" appendTo="body"></p-menu>
+              <button type="button" (click)="clientMenu.toggle($event)" *ngIf="clientActionItems(client).length > 0"
+                aria-label="Abrir acciones"
+                class="w-9 h-9 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-95">
+                <i class="pi pi-ellipsis-h text-sm"></i>
               </button>
             </div>
           </td>

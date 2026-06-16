@@ -9,7 +9,8 @@ import { InputTextModule } from 'primeng/inputtext';
 import { DropdownModule } from 'primeng/dropdown';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { ToastModule } from 'primeng/toast';
-import { MessageService } from 'primeng/api';
+import { MenuModule } from 'primeng/menu';
+import { MenuItem, MessageService } from 'primeng/api';
 import { forkJoin } from 'rxjs';
 import { EmpleadoService } from '../../../core/services/empleado.service';
 import { MediaService } from '../../../core/services/media.service';
@@ -45,6 +46,7 @@ function passwordMatchValidator(control: AbstractControl): ValidationErrors | nu
     DropdownModule,
     MultiSelectModule,
     ToastModule,
+    MenuModule,
     HasPermissionDirective
   ],
   providers: [MessageService],
@@ -332,6 +334,39 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     return map[name] ?? name.replace('ROLE_', '');
   }
 
+  canEmployeeAction(tipo: 'modificar' | 'eliminar'): boolean {
+    return this.authStore.isSuperAdmin() || this.authStore.hasAccess('VISTA_EMPLEADOS', tipo);
+  }
+
+  employeeActionItems(employee: EmpleadoListResponse): MenuItem[] {
+    const items: MenuItem[] = [
+      {
+        label: 'Restablecer contraseña',
+        icon: 'pi pi-lock',
+        disabled: !employee.activo,
+        command: () => this.openPasswordResetModal(employee)
+      }
+    ];
+
+    if (this.canEmployeeAction('modificar')) {
+      items.push({
+        label: 'Editar',
+        icon: 'pi pi-pencil',
+        disabled: !employee.activo,
+        command: () => this.editEmployee(employee)
+      });
+    }
+
+    if (this.canEmployeeAction('eliminar')) {
+      items.push({
+        label: 'Eliminar',
+        icon: 'pi pi-trash',
+        command: () => this.deleteEmployee(employee)
+      });
+    }
+
+    return items;
+  }
 
   triggerPhotoInput() {
     this.empFileInput.nativeElement.click();
