@@ -1,20 +1,20 @@
-<div class="p-4 min-h-screen bg-slate-50 font-['Barlow']">
+<div class="p-3 sm:p-4 min-h-screen bg-slate-50 font-['Barlow']">
   <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-10">
     <div>
-      <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Gestión de Personal</h1>
-      <p class="text-slate-500 font-medium mt-1 flex items-center gap-2">
+      <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Gestión de Personal</h1>
+      <p class="text-sm sm:text-base text-slate-500 font-medium mt-1 flex items-start sm:items-center gap-2">
         <span class="w-2 h-2 rounded-full bg-[#0066AA]"></span>
         Administra los accesos y perfiles de los empleados de la organización
       </p>
     </div>
-    <div class="flex flex-col md:flex-row items-start md:items-center gap-3">
+    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
       <a routerLink="/admin/empleados/horarios"
-        class="flex items-center gap-2 bg-white border border-slate-200 hover:border-[#0066AA] hover:text-[#0066AA] text-slate-600 text-sm font-medium px-5 h-10 rounded-lg transition-all">
+        class="flex items-center justify-center gap-2 bg-white border border-slate-200 hover:border-[#0066AA] hover:text-[#0066AA] text-slate-600 text-sm font-medium px-5 h-10 rounded-lg transition-all">
         <i class="pi pi-calendar text-xs"></i>
         Gestión de Horarios
       </a>
       <button *appHasPermission="'VISTA_EMPLEADOS:escribir'" (click)="openNew()"
-        class="flex items-center gap-2 bg-[#0066AA] hover:bg-[#005a96] text-white text-sm font-medium px-5 h-10 rounded-lg transition-colors">
+        class="flex items-center justify-center gap-2 bg-[#0066AA] hover:bg-[#005a96] text-white text-sm font-medium px-5 h-10 rounded-lg transition-colors">
         <i class="pi pi-plus text-xs"></i>
         Registrar empleado
       </button>
@@ -23,7 +23,7 @@
 
   <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-none">
     <p-table [value]="employees()" [lazy]="true" (onLazyLoad)="loadEmployees($event)" [paginator]="true" [rows]="10"
-      [totalRecords]="totalRecords()" [loading]="loading()" responsiveLayout="stack" breakpoint="960px" [rowHover]="true"
+      [totalRecords]="totalRecords()" [loading]="loading()" responsiveLayout="stack" breakpoint="768px" [rowHover]="true"
       styleClass="p-datatable-borderless">
       <ng-template pTemplate="header">
         <tr class="border-b border-slate-100">
@@ -138,8 +138,8 @@
   </div>
 </div>
 
-<div *ngIf="displayModal()" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-  <div class="bg-white w-full max-w-2xl rounded-lg shadow-2xl flex flex-col max-h-[95vh]">
+<div *ngIf="displayModal()" class="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/50 backdrop-blur-sm">
+  <div class="bg-white w-full sm:max-w-2xl rounded-t-2xl sm:rounded-lg shadow-2xl flex flex-col max-h-[95dvh]">
     <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50 rounded-t-lg">
       <h2 class="text-lg font-bold text-slate-800">
         {{ isEdit() ? 'Modificar Registro de Personal' : 'Registro de Nuevo Empleado' }}

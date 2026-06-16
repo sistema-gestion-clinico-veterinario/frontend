@@ -24,6 +24,7 @@ interface MenuSection extends MenuStructureDTO {
 export class SidebarComponent implements OnInit {
   collapsed = input(false);
   toggleSidebar = output<void>();
+  navigate = output<void>();
 
   private authStore = inject(AuthStore);
   private router = inject(Router);

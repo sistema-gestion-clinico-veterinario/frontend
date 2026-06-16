@@ -47,6 +47,7 @@
               routerLinkActive="active-link"
               #rla="routerLinkActive"
               [routerLinkActiveOptions]="{ exact: true }"
+              (click)="navigate.emit()"
               [class]="navItemClass(rla.isActive)"
               class="relative block"
             >
@@ -70,6 +71,7 @@
           routerLinkActive="active-link"
           #rlaItem="routerLinkActive"
           [routerLinkActiveOptions]="{ exact: true }"
+          (click)="navigate.emit()"
           [class]="navItemClass(rlaItem.isActive)"
           class="relative block"
         >
