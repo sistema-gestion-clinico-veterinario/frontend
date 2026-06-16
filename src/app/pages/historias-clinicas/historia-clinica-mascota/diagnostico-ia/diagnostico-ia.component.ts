@@ -322,6 +322,7 @@ export class DiagnosticoIaComponent implements OnChanges {
     fd.append('motivo_consulta', historialCompleto);
     fd.append('especie', this.hc.especie ?? 'Perro');
     fd.append('edad',    edadStr);
+    if (this.hc.mascotaNombre) fd.append('nombre_paciente', this.hc.mascotaNombre);
     if (this.hc.sexo) fd.append('sexo', this.hc.sexo);
 
     const conPeso = consultas.find(c => c.pesoEnConsulta);
