@@ -51,7 +51,7 @@ export class HistoriaClinicaMascotaComponent implements OnInit {
   previewArchivo   = signal<ArchivoClinicoResponse | null>(null);
   previewUrl       = signal<SafeResourceUrl | string>('');
   previewRawUrl    = signal<string>('');
-  previewTipo      = signal<'imagen' | 'pdf' | 'dcm' | null>(null);
+  previewTipo      = signal<'imagen' | 'pdf' | 'dcm' | 'docx' | null>(null);
   previewCargando  = signal<boolean>(false);
 
   ngOnInit() {
@@ -182,6 +182,7 @@ export class HistoriaClinicaMascotaComponent implements OnInit {
       LABORATORIO: 'Laboratorio',
       RADIOGRAFIA: 'Radiografía',
       ECOGRAFIA: 'Ecografía',
+      DOCUMENTO: 'Documento',
       OTRO: 'Otro'
     };
     return map[tipo] ?? tipo;
@@ -194,6 +195,7 @@ export class HistoriaClinicaMascotaComponent implements OnInit {
       case 'ECOGRAFIA':   return 'bg-teal-50 text-teal-700';
       case 'PDF':         return 'bg-red-50 text-red-600';
       case 'IMAGEN':      return 'bg-blue-50 text-blue-700';
+      case 'DOCUMENTO':   return 'bg-indigo-50 text-indigo-700';
       default:            return 'bg-slate-100 text-slate-500';
     }
   }
@@ -213,6 +215,13 @@ export class HistoriaClinicaMascotaComponent implements OnInit {
     if (ext === 'dcm') {
       this.previewArchivo.set(archivo as unknown as ArchivoClinicoResponse);
       this.previewTipo.set('dcm');
+      this.previewUrl.set('');
+      return;
+    }
+
+    if (ext === 'docx' || ext === 'doc') {
+      this.previewArchivo.set(archivo as unknown as ArchivoClinicoResponse);
+      this.previewTipo.set('docx');
       this.previewUrl.set('');
       return;
     }

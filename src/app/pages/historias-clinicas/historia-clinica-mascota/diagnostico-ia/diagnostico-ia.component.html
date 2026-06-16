@@ -180,12 +180,19 @@
                        bg-[#0066AA]/10 text-[#0066AA] border border-[#0066AA]/15">
                 {{ escenarioLabel }}
               </span>
-              <button (click)="copiarTexto()"
-                class="flex items-center gap-1.5 text-[10px] font-bold transition-colors"
-                [ngClass]="copiado() ? 'text-green-600' : 'text-slate-400 hover:text-slate-700'">
-                <i class="text-[10px]" [ngClass]="copiado() ? 'pi pi-check' : 'pi pi-copy'"></i>
-                {{ copiado() ? 'Copiado' : 'Copiar' }}
-              </button>
+              <div class="flex items-center gap-2">
+                <button (click)="copiarTexto()"
+                  class="flex items-center gap-1.5 text-[10px] font-bold transition-colors"
+                  [ngClass]="copiado() ? 'text-green-600' : 'text-slate-400 hover:text-slate-700'">
+                  <i class="text-[10px]" [ngClass]="copiado() ? 'pi pi-check' : 'pi pi-copy'"></i>
+                  {{ copiado() ? 'Copiado' : 'Copiar' }}
+                </button>
+                <button (click)="descargarComoWord()" [disabled]="descargando()"
+                  class="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 hover:text-[#0066AA] transition-colors disabled:opacity-50">
+                  <i class="text-[10px]" [ngClass]="descargando() ? 'pi pi-spin pi-spinner' : 'pi pi-file-word'"></i>
+                  Word
+                </button>
+              </div>
             </div>
 
             <!-- Contenido markdown -->

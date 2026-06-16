@@ -53,6 +53,23 @@
         </div>
       </ng-container>
 
+      <ng-container *ngIf="previewTipo === 'docx'">
+        <div class="flex flex-col items-center gap-3 px-8 py-8 text-center">
+          <div class="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center">
+            <i class="pi pi-file-word text-blue-600 text-xl"></i>
+          </div>
+          <p class="text-sm font-bold text-slate-700">Documento Word</p>
+          <p class="text-xs text-slate-500 leading-relaxed">
+            Los archivos <strong>.docx</strong> / <strong>.doc</strong> no tienen vista previa.<br>
+            Descárgalo para abrirlo en Microsoft Word o Google Docs.
+          </p>
+          <button type="button" (click)="descargar.emit(previewArchivo); cerrar.emit()"
+            class="mt-1 flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 transition-all">
+            <i class="pi pi-download"></i> Descargar documento
+          </button>
+        </div>
+      </ng-container>
+
     </div>
   </div>
 </div>
