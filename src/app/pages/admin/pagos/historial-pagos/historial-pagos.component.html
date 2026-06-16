@@ -11,144 +11,12 @@
         Registro completo de transacciones por servicios veterinarios
       </p>
     </div>
-    <!-- Filtros -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full md:w-auto">
-      <div class="relative w-full">
-        <select [ngModel]="filtroEstado()" (ngModelChange)="filtroEstado.set($event); onFiltroChange()"
-          class="w-full appearance-none pl-3 pr-8 py-2 text-sm border border-slate-200 rounded-lg bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0066AA]/20 focus:border-[#0066AA] transition-all cursor-pointer">
-          <option value="">Todos los estados</option>
-          <option value="PAID">Pagado</option>
-          <option value="PENDING">Pendiente</option>
-          <option value="PENDING_TRANSFER">Transf. Pendiente</option>
-          <option value="REJECTED">Rechazado</option>
-        </select>
-        <i class="pi pi-chevron-down text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] pointer-events-none"></i>
-      </div>
-      <div class="relative w-full">
-        <select [ngModel]="filtroMetodo()" (ngModelChange)="filtroMetodo.set($event); onFiltroChange()"
-          class="w-full appearance-none pl-3 pr-8 py-2 text-sm border border-slate-200 rounded-lg bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0066AA]/20 focus:border-[#0066AA] transition-all cursor-pointer">
-          <option value="">Todos los métodos</option>
-          <option value="EFECTIVO">Efectivo</option>
-          <option value="YAPE">Yape</option>
-        </select>
-        <i class="pi pi-chevron-down text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] pointer-events-none"></i>
-      </div>
-    </div>
-  </div>
-
-  <!-- ─── LAYOUT: tabla + panel ─── -->
-  <div class="flex flex-col xl:flex-row gap-4 items-stretch xl:items-start">
-
-    <!-- TABLA -->
-    <div class="flex-1 min-w-0 bg-white border border-slate-200 rounded-xl overflow-hidden">
-      <p-table
-        [value]="pagosFiltrados()"
-        [lazy]="true"
-        (onLazyLoad)="cargar($event)"
-        [paginator]="true"
-        [rows]="pageSize()"
-        [totalRecords]="totalRecords()"
-        [loading]="loading()"
-        responsiveLayout="stack"
-        breakpoint="768px"
-        [rowHover]="true"
-        styleClass="p-datatable-borderless">
-
-        <ng-template pTemplate="header">
-          <tr class="border-b border-slate-100">
-            <th class="text-left px-5 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Mascota / Cliente</th>
-            <th class="text-left px-5 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Servicio</th>
-            <th class="text-left px-5 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Fecha</th>
-            <th class="text-left px-5 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Método</th>
-            <th class="text-right px-5 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Monto</th>
-            <th class="text-left px-5 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Estado</th>
-            <th class="px-5 py-4 w-12"></th>
-          </tr>
-        </ng-template>
-
-        <ng-template pTemplate="body" let-pago>
-          <tr class="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors cursor-pointer"
-              (click)="verDetalle(pago)">
-
-            <!-- Mascota / Cliente -->
-            <td class="px-5 py-4">
-              <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-lg bg-[#e8f1f8] flex items-center justify-center text-[#0066AA] font-bold text-sm flex-shrink-0">
-                  {{ (pago.mascotaNombre || '?').charAt(0).toUpperCase() }}
-                </div>
-                <div>
-                  <p class="text-sm font-semibold text-slate-800 leading-tight">{{ pago.mascotaNombre || '—' }}</p>
-                  <p class="text-xs text-slate-400 mt-0.5">{{ pago.clienteNombre || '—' }}</p>
-                </div>
-              </div>
-            </td>
-
-            <!-- Servicio / Vet -->
-            <td class="px-5 py-4">
-              <p class="text-sm text-slate-700 leading-tight font-medium">{{ pago.servicioNombre || '—' }}</p>
-              <p class="text-xs text-slate-400 mt-0.5">{{ pago.veterinarioNombre || '—' }}</p>
-            </td>
-
-            <!-- Fecha -->
-            <td class="px-5 py-4">
-              <p class="text-sm text-slate-600">{{ formatFecha(pago.fechaPago) }}</p>
-            </td>
-
-            <!-- Método -->
-            <td class="px-5 py-4">
-              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold"
-                [ngClass]="pago.metodoPago === 'YAPE' ? 'bg-purple-50 text-purple-700' : 'bg-slate-100 text-slate-600'">
-                <i [class]="pago.metodoPago === 'YAPE' ? 'pi pi-mobile' : 'pi pi-wallet'" class="text-[10px]"></i>
-                {{ metodoPagoLabel(pago.metodoPago) }}
-              </span>
-            </td>
-
-            <!-- Monto -->
-            <td class="px-5 py-4 text-right">
-              <p class="text-sm font-bold text-slate-800">{{ formatMonto(pago.monto) }}</p>
-            </td>
-
-            <!-- Estado -->
-            <td class="px-5 py-4">
-              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold"
-                [ngClass]="estadoBadge(pago.estado)">
-                <span class="w-1.5 h-1.5 rounded-full"
-                  [ngClass]="{'bg-green-500': pago.estado === 'PAID', 'bg-amber-400': pago.estado === 'PENDING', 'bg-blue-500': pago.estado === 'PENDING_TRANSFER', 'bg-red-500': pago.estado === 'REJECTED'}">
-                </span>
-                {{ estadoLabel(pago.estado) }}
-              </span>
-            </td>
-
-            <!-- Acción -->
-            <td class="px-5 py-4">
-              <button class="p-2 rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-90">
-                <i class="pi pi-eye text-sm"></i>
-              </button>
-            </td>
-          </tr>
-        </ng-template>
-
-        <ng-template pTemplate="emptymessage">
-          <tr>
-            <td colspan="7">
-              <div class="flex flex-col items-center justify-center py-16 text-center">
-                <div class="w-14 h-14 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-center mb-4">
-                  <i class="pi pi-credit-card text-2xl text-slate-300"></i>
-                </div>
-                <p class="text-sm font-semibold text-slate-600 mb-1">Sin registros</p>
-                <p class="text-xs text-slate-400">No se encontraron pagos con los filtros aplicados.</p>
-              </div>
-            </td>
-          </tr>
-        </ng-template>
-      </p-table>
-    </div>
-
-    <!-- ─── PANEL DERECHO ─── -->
+    <!-- â”€â”€â”€ MODAL: detalle de pago â”€â”€â”€ -->
     <div *ngIf="showPanel() && selectedPago()"
-      class="w-full xl:w-[360px] xl:flex-shrink-0 bg-white border border-slate-200 rounded-xl overflow-hidden animate-in slide-in-from-right duration-300">
-
-      <!-- Header -->
+      class="fixed inset-0 z-[130] flex items-end sm:items-center justify-center bg-slate-900/40 p-0 sm:p-4"
+      (click)="cerrarPanel()">
+      <div class="w-full max-h-[92dvh] sm:max-w-lg bg-white border border-slate-200 rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-200"
+        (click)="$event.stopPropagation()"><!-- Header -->
       <div class="bg-slate-50 border-b border-slate-200 px-5 py-4 flex items-center justify-between">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-base"
@@ -263,6 +131,8 @@
           class="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-all cursor-pointer">
           Cerrar
         </button>
+      </div>
+
       </div>
     </div>
 
