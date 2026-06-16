@@ -49,13 +49,17 @@ export class HistorialPagosComponent implements OnInit {
     this.cargar();
   }
 
+  get companyId(): number | undefined {
+    return this.authStore.selectedEnterprise()?.establishmentId ?? this.authStore.companyId() ?? undefined;
+  }
+
   cargar(event?: any) {
     if (event) {
       this.currentPage.set(event.first / event.rows);
       this.pageSize.set(event.rows);
     }
     this.loading.set(true);
-    this.pagoService.listarTodos(this.currentPage(), this.pageSize()).subscribe({
+    this.pagoService.listarTodos(this.currentPage(), this.pageSize(), this.companyId).subscribe({
       next: (res) => {
         this.pagos.set(res.data?.content ?? []);
         this.totalRecords.set((res.data as any)?.page?.totalElements ?? res.data?.totalElements ?? 0);

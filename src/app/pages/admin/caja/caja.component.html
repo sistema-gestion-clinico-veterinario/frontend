@@ -1,15 +1,15 @@
 <p-toast position="top-right" />
 
-<div class="p-6 space-y-6">
+<div class="p-3 sm:p-6 space-y-6">
 
   <!-- Header -->
-  <div class="flex items-center justify-between">
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
     <div>
       <h1 class="text-xl font-bold text-slate-800">Caja</h1>
       <p class="text-sm text-slate-500 mt-0.5">Control de ingresos, egresos y devoluciones</p>
     </div>
     <button (click)="abrirEgreso()"
-            class="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#0066AA] text-white text-sm font-medium hover:bg-[#005599] transition-colors">
+            class="flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-[#0066AA] text-white text-sm font-medium hover:bg-[#005599] transition-colors w-full sm:w-auto">
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
       </svg>
@@ -19,7 +19,7 @@
 
   <!-- Resumen cards -->
   @if (resumen()) {
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
       <div class="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm">
         <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Ingresos</p>
         <p class="text-2xl font-bold text-green-600 mt-1">{{ formatMonto(resumen()!.totalIngresos) }}</p>
@@ -42,23 +42,23 @@
 
   <!-- Filtros -->
   <div class="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm">
-    <div class="flex flex-wrap gap-3 items-end">
-      <div class="flex flex-col gap-1">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-wrap gap-3 items-end">
+      <div class="flex flex-col gap-1 w-full lg:w-auto">
         <label class="text-xs font-medium text-slate-500">Desde</label>
         <input type="date" [(ngModel)]="filtroDesde"
-               class="border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0066AA]/30" />
+               class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0066AA]/30" />
       </div>
-      <div class="flex flex-col gap-1">
+      <div class="flex flex-col gap-1 w-full lg:w-auto">
         <label class="text-xs font-medium text-slate-500">Hasta</label>
         <input type="date" [(ngModel)]="filtroHasta"
-               class="border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0066AA]/30" />
+               class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0066AA]/30" />
       </div>
       <button (click)="aplicarFiltros()"
-              class="px-4 py-2 rounded-xl bg-[#0066AA] text-white text-sm font-medium hover:bg-[#005599] transition-colors">
+              class="px-4 py-2 rounded-xl bg-[#0066AA] text-white text-sm font-medium hover:bg-[#005599] transition-colors w-full lg:w-auto">
         Filtrar
       </button>
       <button (click)="limpiarFiltros()"
-              class="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 text-sm hover:bg-slate-50 transition-colors">
+              class="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 text-sm hover:bg-slate-50 transition-colors w-full lg:w-auto">
         Limpiar
       </button>
     </div>
@@ -66,7 +66,42 @@
 
   <!-- Tabla -->
   <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-    <div class="overflow-x-auto">
+    <div class="md:hidden divide-y divide-slate-100">
+      @if (loading()) {
+        @for (i of [1,2,3]; track i) {
+          <div class="p-4">
+            <div class="h-20 bg-slate-100 rounded-xl animate-pulse"></div>
+          </div>
+        }
+      } @else if (movimientos().length === 0) {
+        <div class="px-4 py-12 text-center text-slate-400 text-sm">
+          No hay movimientos registrados
+        </div>
+      } @else {
+        @for (m of movimientos(); track m.id) {
+          <div class="p-4 space-y-3">
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium" [class]="tipoBadge(m.tipo)">
+                  {{ tipoLabel(m.tipo) }}
+                </span>
+                <p class="text-sm font-semibold text-slate-700 mt-2">{{ conceptoLabel(m.concepto) }}</p>
+              </div>
+              <p class="text-sm font-bold shrink-0" [class]="m.tipo === 'INGRESO' ? 'text-green-600' : m.tipo === 'EGRESO' ? 'text-red-500' : 'text-amber-600'">
+                {{ formatMonto(m.monto) }}
+              </p>
+            </div>
+            <p class="text-sm text-slate-500">{{ m.descripcion ?? '—' }}</p>
+            <div class="flex flex-col gap-1 text-xs text-slate-400">
+              <span>{{ formatFecha(m.fecha) }}</span>
+              <span>{{ m.registradoPor ?? '—' }}</span>
+            </div>
+          </div>
+        }
+      }
+    </div>
+
+    <div class="hidden md:block overflow-x-auto">
       <table class="w-full text-sm">
         <thead>
           <tr class="bg-slate-50 border-b border-slate-100">
@@ -132,8 +167,8 @@
 
 <!-- Modal egreso -->
 @if (showEgresoModal()) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 overflow-hidden">
+  <div class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm p-0 sm:p-4">
+    <div class="bg-white rounded-t-2xl sm:rounded-2xl shadow-xl w-full max-w-md mx-0 sm:mx-4 overflow-hidden">
       <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
         <h2 class="font-semibold text-slate-800">Registrar egreso</h2>
         <button (click)="showEgresoModal.set(false)"
