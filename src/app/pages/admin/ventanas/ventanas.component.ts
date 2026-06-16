@@ -3,7 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-import { DragDropModule, CdkDragDrop } from '@angular/cdk/drag-drop';
+import { CdkDrag, CdkDropList, CdkDropListGroup, CdkDragHandle, CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
+import { forkJoin } from 'rxjs';
 import { MenuManagementService } from '../../../core/services/menu-management.service';
 import { VistaDTO } from '../../../models/response/auth-login-response.model';
 import { LoadingStore } from '../../../store/loading.store';
@@ -19,7 +20,7 @@ interface DisplayGroup {
 @Component({
   selector: 'app-ventanas',
   standalone: true,
-  imports: [CommonModule, FormsModule, ToastModule, DragDropModule],
+  imports: [CommonModule, FormsModule, ToastModule, CdkDrag, CdkDropList, CdkDropListGroup, CdkDragHandle],
   providers: [MessageService],
   templateUrl: './ventanas.component.html'
 })
@@ -52,6 +53,10 @@ expandedGroups = signal<Set<string>>(new Set());
 
   showIconPicker  = signal(false);
   showAvanzado    = signal(false);
+  showInactive    = signal(true);
+  filterText      = signal('');
+  editingGroupKey  = signal<string | null>(null);
+  editingGroupName = signal('');
 
   vistaForm = signal<{
     id?: number;
@@ -79,9 +84,15 @@ expandedGroups = signal<Set<string>>(new Set());
   } | null>(null);
 
   displayGroups = computed(() => {
-    const vistas = this.vistas();
-    const groupsMap = new Map<string, VistaDTO[]>();
+    const all = this.vistas();
+    const withActive = this.showInactive() ? all : all.filter(v => v.activo);
+    const text = this.filterText().toLowerCase().trim();
+    const vistas = text
+      ? withActive.filter(v =>
+          v.nombre.toLowerCase().includes(text) || v.codigo.toLowerCase().includes(text))
+      : withActive;
 
+    const groupsMap = new Map<string, VistaDTO[]>();
     for (const v of vistas) {
       const g = v.grupo && v.grupo !== 'GENERAL' ? v.grupo : STANDALONE_KEY;
       if (!groupsMap.has(g)) groupsMap.set(g, []);
@@ -89,15 +100,9 @@ expandedGroups = signal<Set<string>>(new Set());
     }
 
     const result: DisplayGroup[] = [];
-
     for (const [key, items] of groupsMap) {
-      if (key === STANDALONE_KEY) {
-        result.push({ key: STANDALONE_KEY, label: 'Items Sueltos', items });
-      } else {
-        result.push({ key, label: this.labelForGroup(key), items });
-      }
+      result.push({ key, label: key === STANDALONE_KEY ? 'Sin grupo' : this.labelForGroup(key), items });
     }
-
     return result;
   });
 
@@ -111,9 +116,6 @@ expandedGroups = signal<Set<string>>(new Set());
     return map[key] || key;
   }
 
-  itemDropListIds = computed(() => {
-    return this.displayGroups().map(g => `items-${g.key}`);
-  });
 
   totalVistas = computed(() => this.vistas().length);
   activeVistas = computed(() => this.vistas().filter(v => v.activo).length);
@@ -170,28 +172,22 @@ addVistaToGroup(groupKey: string) {
     });
   }
 
-  onItemDrop(event: CdkDragDrop<VistaDTO[]>, groupKey: string) {
+  onItemDrop(event: CdkDragDrop<VistaDTO[]>, targetGroupKey: string) {
     const groups = this.cloneGroups();
 
-    const targetGroup = groups.find(g => g.key === groupKey);
-    const sourceKey = event.previousContainer.id.replace('items-', '');
-    const sourceGroup = groups.find(g => g.key === sourceKey);
-
-    if (!sourceGroup || !targetGroup) return;
-
-    const prevItems = [...sourceGroup.items];
-    const [moved] = prevItems.splice(event.previousIndex, 1);
-    sourceGroup.items = prevItems;
-
-    const currItems = [...targetGroup.items];
-    currItems.splice(event.currentIndex, 0, moved);
-    targetGroup.items = currItems;
-
-    moved.grupo = groupKey === STANDALONE_KEY ? 'GENERAL' : groupKey;
-    moved.ordenGrupo = null;
-
-    if (sourceGroup.items.length === 0 && sourceGroup.key !== STANDALONE_KEY) {
-      // remove empty group from display
+    if (event.previousContainer === event.container) {
+      const group = groups.find(g => g.key === targetGroupKey);
+      if (!group) return;
+      moveItemInArray(group.items, event.previousIndex, event.currentIndex);
+    } else {
+      const sourceGroupKey: string = event.item.data?.groupKey ?? targetGroupKey;
+      const sourceGroup = groups.find(g => g.key === sourceGroupKey);
+      const targetGroup = groups.find(g => g.key === targetGroupKey);
+      if (!sourceGroup || !targetGroup) return;
+      const [moved] = sourceGroup.items.splice(event.previousIndex, 1);
+      moved.grupo = targetGroupKey === STANDALONE_KEY ? 'GENERAL' : targetGroupKey;
+      moved.ordenGrupo = null;
+      targetGroup.items.splice(event.currentIndex, 0, moved);
     }
 
     this.vistas.set(this.flattenGroups(groups));
@@ -273,6 +269,28 @@ addVistaToGroup(groupKey: string) {
     });
   }
 
+  getVistaIcon(vista: VistaDTO): string {
+    return vista.icono || this.iconoFallback(vista.codigo);
+  }
+
+  private iconoFallback(codigo: string): string {
+    const map: Record<string, string> = {
+      VISTA_DASHBOARD: 'pi-home', VISTA_COMPANY: 'pi-building',
+      VISTA_AUDITORIA_ADMIN: 'pi-list-check', VISTA_ROLES: 'pi-shield',
+      VISTA_VENTANAS: 'pi-sitemap', VISTA_COMPLEMENTARIO: 'pi-database',
+      VISTA_PAGOS: 'pi-wallet', VISTA_CAJA: 'pi-money-bill',
+      VISTA_EMPLEADOS: 'pi-users', VISTA_HORARIOS: 'pi-calendar-clock',
+      VISTA_MI_HORARIO: 'pi-clock', VISTA_CLIENTES: 'pi-address-book',
+      VISTA_MASCOTAS: 'pi-heart', VISTA_RECETAS: 'pi-file-edit',
+      VISTA_HISTORIAS: 'pi-folder-open', VISTA_CITAS_AGENDA: 'pi-calendar',
+      VISTA_APODERADO_DASHBOARD: 'pi-chart-line', VISTA_MIS_MASCOTAS: 'pi-heart-fill',
+      VISTA_MIS_CITAS: 'pi-calendar-plus', VISTA_MI_HISTORIAL: 'pi-book',
+      VISTA_MIS_RECETAS: 'pi-file-edit', VISTA_MIS_PAGOS: 'pi-credit-card',
+      VISTA_PROFILE: 'pi-user',
+    };
+    return map[codigo] || 'pi-circle';
+  }
+
   seleccionarIcono(icono: string) {
     this.updateField('icono', this.vistaForm().icono === icono ? '' : icono);
     this.showIconPicker.set(false);
@@ -315,25 +333,27 @@ addVistaToGroup(groupKey: string) {
     if (data.id) {
       this.menuService.actualizarVista(data.id, payload).subscribe({
         next: () => {
+          this.loadingStore.hide();
           this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Vista actualizada correctamente' });
-          this.cargarVistas();
           this.selectedVista.set(null);
+          this.cargarVistas();
         },
         error: (err) => {
-          this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo actualizar la vista' });
           this.loadingStore.hide();
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo actualizar la vista' });
         }
       });
     } else {
       this.menuService.crearVista(payload).subscribe({
         next: () => {
+          this.loadingStore.hide();
           this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Vista creada correctamente' });
-          this.cargarVistas();
           this.selectedVista.set(null);
+          this.cargarVistas();
         },
         error: (err) => {
-          this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo crear la vista' });
           this.loadingStore.hide();
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo crear la vista' });
         }
       });
     }
@@ -351,13 +371,14 @@ addVistaToGroup(groupKey: string) {
         this.loadingStore.show();
         this.menuService.eliminarVista(v.id).subscribe({
           next: () => {
+            this.loadingStore.hide();
             this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Vista eliminada' });
             this.selectedVista.set(null);
             this.cargarVistas();
           },
           error: (err) => {
-            this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo eliminar la vista' });
             this.loadingStore.hide();
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo eliminar la vista' });
           }
         });
       }
@@ -366,6 +387,39 @@ addVistaToGroup(groupKey: string) {
 
   cancelConfirm() { this.confirmDialog.set(null); }
   confirmAction() { const d = this.confirmDialog(); if (d) d.onConfirm(); }
+
+  startRenameGroup(group: DisplayGroup) {
+    if (group.key === STANDALONE_KEY) return;
+    this.editingGroupKey.set(group.key);
+    this.editingGroupName.set(group.key);
+  }
+
+  confirmRenameGroup(oldKey: string) {
+    const newKey = this.editingGroupName().trim().toUpperCase().replace(/\s+/g, '_');
+    this.editingGroupKey.set(null);
+    if (!newKey || newKey === oldKey) return;
+    const toUpdate = this.vistas().filter(v => v.grupo === oldKey);
+    if (!toUpdate.length) return;
+    this.loadingStore.show();
+    forkJoin(toUpdate.map(v =>
+      this.menuService.actualizarVista(v.id, {
+        nombre: v.nombre, grupo: newKey,
+        orden: v.orden, ordenGrupo: v.ordenGrupo, activo: v.activo, icono: v.icono || null
+      })
+    )).subscribe({
+      next: () => {
+        this.loadingStore.hide();
+        this.messageService.add({ severity: 'success', summary: 'Éxito', detail: `Grupo renombrado a "${newKey}"` });
+        this.cargarVistas();
+      },
+      error: () => {
+        this.loadingStore.hide();
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo renombrar el grupo' });
+      }
+    });
+  }
+
+  cancelRenameGroup() { this.editingGroupKey.set(null); }
 
   updateField(field: string, value: any) {
     this.vistaForm.update(c => ({ ...c, [field]: value }));

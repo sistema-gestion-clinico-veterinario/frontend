@@ -22,7 +22,7 @@ export class MenuManagementService {
     return this.http.post<ApiResponse<VistaDTO>>(`${this.vistaUrl}`, data);
   }
 
-  actualizarVista(id: number, data: { nombre: string; grupo?: string; orden?: number; ordenGrupo?: number | null; activo?: boolean }) {
+  actualizarVista(id: number, data: { nombre: string; grupo?: string; orden?: number; ordenGrupo?: number | null; activo?: boolean; icono?: string | null }) {
     return this.http.put<ApiResponse<VistaDTO>>(`${this.vistaUrl}/${id}`, data);
   }
 

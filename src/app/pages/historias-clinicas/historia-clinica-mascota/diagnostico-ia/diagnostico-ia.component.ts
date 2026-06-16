@@ -88,22 +88,26 @@ export class DiagnosticoIaComponent implements OnChanges {
   escenario  = signal('');
   copiado    = signal(false);
 
-  get ultimaConsulta(): ConsultaResumen | null {
-    return this.hc?.consultas?.[0] ?? null;
+  get todasConsultas(): ConsultaResumen[] {
+    return this.hc?.consultas ?? [];
   }
 
   get archivosLab(): ArchivoClinico[] {
-    return this.ultimaConsulta?.archivos.filter(a => a.tipo === 'LABORATORIO') ?? [];
+    return this.todasConsultas.flatMap(c => c.archivos.filter(a => a.tipo === 'LABORATORIO'));
   }
 
   get archivosRadio(): ArchivoClinico[] {
-    return this.ultimaConsulta?.archivos.filter(a => a.tipo === 'RADIOGRAFIA') ?? [];
+    return this.todasConsultas.flatMap(c => c.archivos.filter(a => a.tipo === 'RADIOGRAFIA'));
   }
 
   get tieneHemograma(): boolean  { return this.archivosLab.length > 0; }
   get tieneRadiografia(): boolean { return this.archivosRadio.length > 0; }
   get tieneEcografia(): boolean {
-    return this.ultimaConsulta?.archivos.some(a => a.tipo === 'ECOGRAFIA') ?? false;
+    return this.todasConsultas.some(c => c.archivos.some(a => a.tipo === 'ECOGRAFIA'));
+  }
+
+  get totalDiagnosticos(): number {
+    return this.todasConsultas.reduce((acc, c) => acc + c.diagnosticos.length, 0);
   }
 
   get escenarioLabel(): string {
@@ -128,8 +132,7 @@ export class DiagnosticoIaComponent implements OnChanges {
   }
 
   async analizar(): Promise<void> {
-    const uc = this.ultimaConsulta;
-    if (!uc) return;
+    if (!this.todasConsultas.length) return;
 
     this.streamSub?.unsubscribe();
     this.analizando.set(true);
@@ -140,7 +143,7 @@ export class DiagnosticoIaComponent implements OnChanges {
 
     let formData: FormData;
     try {
-      formData = await this.buildFormData(uc);
+      formData = await this.buildFormData();
     } catch {
       this.error.set('No se pudieron cargar los archivos de la consulta.');
       this.analizando.set(false);
@@ -163,28 +166,34 @@ export class DiagnosticoIaComponent implements OnChanges {
     });
   }
 
-  private async buildFormData(uc: ConsultaResumen): Promise<FormData> {
+  private async buildFormData(): Promise<FormData> {
     const fd = new FormData();
+    const consultas = this.todasConsultas;
 
     const edadMeses = this.hc.edadAproximadaMeses ?? 0;
     const edadStr   = edadMeses >= 12
       ? `${Math.floor(edadMeses / 12)} año(s)${edadMeses % 12 ? ` y ${edadMeses % 12} mes(es)` : ''}`
       : `${edadMeses} mes(es)`;
 
-    const motivoCompleto = [
+    const historialCompleto = consultas.map((uc, i) => [
+      `=== CONSULTA ${i + 1} — ${this.formatFecha(uc.fechaConsulta)} ===`,
       uc.motivoConsulta,
       uc.anamnesis      ? `Anamnesis: ${uc.anamnesis}` : '',
       uc.examenFisico   ? `Examen físico: ${uc.examenFisico}` : '',
       uc.observaciones  ? `Observaciones: ${uc.observaciones}` : '',
-      uc.diagnosticos.length  ? `Diagnósticos registrados: ${uc.diagnosticos.map(d => d.nombre).join(', ')}` : '',
-      uc.prescripciones.length ? `Medicación actual: ${uc.prescripciones.map(p => `${p.medicamento} ${p.dosis}`).join(', ')}` : '',
-    ].filter(Boolean).join('\n\n');
+      uc.pesoEnConsulta ? `Peso: ${uc.pesoEnConsulta} kg` : '',
+      uc.temperatura    ? `Temperatura: ${uc.temperatura}°C` : '',
+      uc.diagnosticos.length   ? `Diagnósticos: ${uc.diagnosticos.map(d => d.nombre).join(', ')}` : '',
+      uc.prescripciones.length ? `Medicación: ${uc.prescripciones.map(p => `${p.medicamento} ${p.dosis}`).join(', ')}` : '',
+    ].filter(Boolean).join('\n')).join('\n\n');
 
-    fd.append('motivo_consulta', motivoCompleto);
+    fd.append('motivo_consulta', historialCompleto);
     fd.append('especie', this.hc.especie ?? 'Perro');
     fd.append('edad',    edadStr);
-    if (this.hc.sexo)          fd.append('sexo', this.hc.sexo);
-    if (uc.pesoEnConsulta)     fd.append('peso', `${uc.pesoEnConsulta} kg`);
+    if (this.hc.sexo) fd.append('sexo', this.hc.sexo);
+
+    const conPeso = consultas.find(c => c.pesoEnConsulta);
+    if (conPeso?.pesoEnConsulta) fd.append('peso', `${conPeso.pesoEnConsulta} kg`);
 
     for (const archivo of this.archivosLab) {
       const file = await this.fetchAsFile(archivo);

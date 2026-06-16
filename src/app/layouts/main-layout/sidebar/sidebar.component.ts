@@ -37,6 +37,25 @@ export class SidebarComponent implements OnInit {
   userName = computed(() => this.authStore.nombreCompleto() ?? 'Usuario');
   companyName = computed(() => this.authStore.companyName() ?? '');
 
+  userInitials = computed(() => {
+    const name = this.authStore.nombreCompleto() ?? '';
+    return name.split(' ').slice(0, 2).map(n => n[0] ?? '').join('').toUpperCase() || 'U';
+  });
+
+  userRole = computed(() => {
+    const roles = this.authStore.roles() ?? [];
+    const role = roles[0] ?? '';
+    const map: Record<string, string> = {
+      ADMIN: 'Administrador', ROLE_ADMIN: 'Administrador',
+      SUPER_ADMIN: 'Super Admin', ROLE_SUPER_ADMIN: 'Super Admin',
+      VETERINARIO: 'Veterinario', ROLE_VETERINARIO: 'Veterinario',
+      RECEPCIONISTA: 'Recepcionista', ROLE_RECEPCIONISTA: 'Recepcionista',
+      APODERADO: 'Apoderado', ROLE_APODERADO: 'Apoderado',
+      GROMMER: 'Groomer', ROLE_GROMMER: 'Groomer',
+    };
+    return map[role] || role;
+  });
+
   ngOnInit() {
     const companyId = this.authStore.companyId();
     if (companyId) {
@@ -56,20 +75,14 @@ export class SidebarComponent implements OnInit {
 
   toggleSection(structure: MenuSection) {
     const key = this.sectionKey(structure);
-    this.expandedSections.update(state => ({
-      ...state,
-      [key]: !state[key]
-    }));
+    this.expandedSections.update(state => ({ ...state, [key]: !state[key] }));
   }
 
   isSectionExpanded(structure: MenuSection): boolean {
     const key = this.sectionKey(structure);
-    const userToggled = this.expandedSections()[key];
-    if (userToggled !== undefined) {
-      return userToggled;
-    }
+    const toggled = this.expandedSections()[key];
+    if (toggled !== undefined) return toggled;
 
-    // Collapse by default, but auto-expand if one of the inner views is active
     const currentUrl = this.router.url.split('?')[0];
     return structure.vistas.some(vista => {
       const vRuta = vista.ruta.startsWith('/') ? vista.ruta : '/' + vista.ruta;
@@ -83,71 +96,50 @@ export class SidebarComponent implements OnInit {
     const structures: MenuSection[] = [];
 
     for (const item of menu) {
-      const isMenuStructure = (obj: any): obj is MenuStructureDTO => {
-        return obj && typeof obj === 'object' && 'vistas' in obj && Array.isArray(obj.vistas);
-      };
+      const isMenuStructure = (obj: any): obj is MenuStructureDTO =>
+        obj && typeof obj === 'object' && 'vistas' in obj && Array.isArray(obj.vistas);
 
       if (isMenuStructure(item)) {
         const vistasConRuta: MenuItemWithRuta[] = item.vistas
-          .filter(vista => vista.leer !== false)
-          .map(vista => ({
-            ...vista,
-            ruta: vista.ruta || this.routeMapper.getRoute(vista.codigo) || '/'
-          }));
+          .filter(v => v.leer !== false)
+          .map(v => ({ ...v, ruta: v.ruta || this.routeMapper.getRoute(v.codigo) || '/' }));
 
-        if (vistasConRuta.length === 0) {
-          continue;
-        }
-
-        structures.push({
-          ...item,
-          vistas: vistasConRuta
-        });
+        if (vistasConRuta.length === 0) continue;
+        structures.push({ ...item, vistas: vistasConRuta });
       } else {
         const vistaItem = item as MenuItemDTO;
-        if (vistaItem.leer === false) {
-          continue;
-        }
+        if (vistaItem.leer === false) continue;
         structures.push({
           ventanaId: undefined,
           ventanaNombre: vistaItem.nombre,
           grupo: vistaItem.grupo,
           orden: vistaItem.orden || 0,
-          vistas: [{
-            ...vistaItem,
-            ruta: vistaItem.ruta || this.routeMapper.getRoute(vistaItem.codigo) || '/'
-          }]
+          vistas: [{ ...vistaItem, ruta: vistaItem.ruta || this.routeMapper.getRoute(vistaItem.codigo) || '/' }]
         });
       }
     }
-
     return structures.sort((a, b) => (a.orden || 0) - (b.orden || 0));
   });
 
   navItemClass(isActive: boolean): string {
-    const isCollapsed = this.collapsed();
-    const base = `flex items-center rounded-xl transition-all duration-200 ease-in-out ${isCollapsed ? 'justify-center w-11 h-11 mx-auto' : 'px-3 py-2.5'}`;
-
-    if (isActive) {
-      return `${base} bg-blue-50 text-[#0066AA] font-semibold${isCollapsed ? '' : ' active-nav-item'}`;
+    if (this.collapsed()) {
+      return isActive
+        ? 'flex items-center justify-center mx-auto w-10 h-10 rounded-md bg-slate-100 transition-colors duration-150'
+        : 'flex items-center justify-center mx-auto w-10 h-10 rounded-md hover:bg-slate-50 transition-colors duration-150';
     }
+    return isActive
+      ? 'flex items-center border-l-2 border-[#0057B8] bg-slate-50 pl-[16px] pr-4 py-[9px] transition-colors duration-150'
+      : 'flex items-center border-l-2 border-transparent pl-[16px] pr-4 py-[9px] hover:bg-slate-50 transition-colors duration-150';
+  }
 
-    return `${base} text-[#64748B] hover:bg-slate-50 hover:text-[#0F172A]`;
+  getIcon(vista: MenuItemWithRuta): string {
+    if (vista.icono) return `pi ${vista.icono}`;
+    return this.vistaIcon(vista.codigo);
   }
 
   sectionIcon(structure: MenuSection): string {
-    const code = structure.ventanaCodigo || structure.grupo || structure.ventanaNombre;
-    const icons: Record<string, string> = {
-      ADMINISTRACION: 'pi pi-cog',
-      ADMIN: 'pi pi-cog',
-      PERSONAL: 'pi pi-id-card',
-      RRHH: 'pi pi-id-card',
-      CLINICA: 'pi pi-heart',
-      PORTAL_APODERADO: 'pi pi-user',
-      APODERADO: 'pi pi-user'
-    };
-
-    return icons[code || ''] || 'pi pi-folder';
+    const first = structure.vistas[0];
+    return first ? this.getIcon(first) : 'pi pi-folder';
   }
 
   vistaIcon(codigo: string): string {
@@ -159,6 +151,7 @@ export class SidebarComponent implements OnInit {
       VISTA_VENTANAS: 'pi pi-sitemap',
       VISTA_COMPLEMENTARIO: 'pi pi-database',
       VISTA_PAGOS: 'pi pi-wallet',
+      VISTA_CAJA: 'pi pi-money-bill',
       VISTA_EMPLEADOS: 'pi pi-users',
       VISTA_HORARIOS: 'pi pi-calendar-clock',
       VISTA_MI_HORARIO: 'pi pi-clock',
@@ -173,9 +166,8 @@ export class SidebarComponent implements OnInit {
       VISTA_MI_HISTORIAL: 'pi pi-book',
       VISTA_MIS_RECETAS: 'pi pi-file-edit',
       VISTA_MIS_PAGOS: 'pi pi-credit-card',
-      VISTA_PROFILE: 'pi pi-user'
+      VISTA_PROFILE: 'pi pi-user',
     };
-
     return icons[codigo] || 'pi pi-circle';
   }
 

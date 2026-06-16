@@ -112,7 +112,9 @@ export class AgendaComponent implements OnInit, OnDestroy {
   readonly canReadHistoria   = computed(() => this.authStore.hasAccess('VISTA_HISTORIAS', 'leer'));
   readonly canCreateHistoria = computed(() => this.authStore.hasAccess('VISTA_HISTORIAS', 'escribir'));
   readonly canModifyHistoria = computed(() => this.authStore.hasAccess('VISTA_HISTORIAS', 'modificar'));
-  readonly canViewAllCitas   = computed(() => this.authStore.hasAccess('CITA_VER_TODAS', 'leer'));
+  readonly canViewAllCitas   = computed(() =>
+    this.canManage() || this.authStore.hasAccess('CITA_VER_TODAS', 'leer')
+  );
 
   readonly canBookEmergency = computed(() =>
     this.authStore.hasAccess('VISTA_CITAS_AGENDA', 'escribir')
