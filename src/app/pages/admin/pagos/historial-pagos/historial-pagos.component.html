@@ -137,4 +137,94 @@
     </div>
 
   </div>
+
+  <!-- ─── FILTROS ─── -->
+  <div class="bg-white rounded-2xl border border-slate-200 p-4 flex flex-wrap gap-3 items-center">
+    <select
+      [value]="filtroEstado()"
+      (change)="filtroEstado.set($any($event.target).value)"
+      class="text-sm border border-slate-200 rounded-lg px-3 py-2 text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-[#0066AA]/20 cursor-pointer">
+      <option value="">Todos los estados</option>
+      <option value="PAID">Pagado</option>
+      <option value="PENDING">Pendiente</option>
+      <option value="PENDING_TRANSFER">Transf. Pendiente</option>
+      <option value="REJECTED">Rechazado</option>
+      <option value="REFUNDED">Reembolsado</option>
+    </select>
+    <select
+      [value]="filtroMetodo()"
+      (change)="filtroMetodo.set($any($event.target).value)"
+      class="text-sm border border-slate-200 rounded-lg px-3 py-2 text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-[#0066AA]/20 cursor-pointer">
+      <option value="">Todos los métodos</option>
+      <option value="EFECTIVO">Efectivo</option>
+      <option value="YAPE">Yape</option>
+    </select>
+    <span class="ml-auto text-xs text-slate-400 font-medium">
+      {{ pagosFiltrados().length }} registro(s)
+    </span>
+  </div>
+
+  <!-- ─── TABLA ─── -->
+  <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+
+    <div *ngIf="loading()" class="flex items-center justify-center py-16">
+      <div class="w-8 h-8 border-2 border-[#0066AA] border-t-transparent rounded-full animate-spin"></div>
+    </div>
+
+    <div *ngIf="!loading() && pagosFiltrados().length === 0"
+      class="flex flex-col items-center justify-center py-16 gap-3">
+      <div class="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center text-xl text-slate-400">—</div>
+      <p class="text-sm font-semibold text-slate-500">Sin registros de pago</p>
+    </div>
+
+    <div *ngIf="!loading() && pagosFiltrados().length > 0" class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="bg-slate-50 border-b border-slate-200">
+            <th class="text-left px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">#</th>
+            <th class="text-left px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Mascota / Cliente</th>
+            <th class="text-left px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Servicio</th>
+            <th class="text-left px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Método</th>
+            <th class="text-right px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Monto</th>
+            <th class="text-left px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Estado</th>
+            <th class="text-left px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Fecha</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let pago of pagosFiltrados()"
+            (click)="verDetalle(pago)"
+            class="border-b border-slate-100 last:border-0 hover:bg-slate-50 cursor-pointer transition-colors">
+            <td class="px-4 py-3 text-xs text-slate-400 font-medium">#{{ pago.citaId || pago.id }}</td>
+            <td class="px-4 py-3">
+              <p class="text-xs font-semibold text-slate-800 leading-tight">{{ pago.mascotaNombre || '—' }}</p>
+              <p class="text-[11px] text-slate-400 mt-0.5">{{ pago.clienteNombre || '—' }}</p>
+            </td>
+            <td class="px-4 py-3 text-xs text-slate-600 max-w-[160px] truncate">{{ pago.servicioNombre || '—' }}</td>
+            <td class="px-4 py-3 text-xs text-slate-600">{{ metodoPagoLabel(pago.metodoPago) }}</td>
+            <td class="px-4 py-3 text-xs font-bold text-slate-800 text-right">{{ formatMonto(pago.monto) }}</td>
+            <td class="px-4 py-3">
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold"
+                [ngClass]="estadoBadge(pago.estado)">
+                {{ estadoLabel(pago.estado) }}
+              </span>
+            </td>
+            <td class="px-4 py-3 text-xs text-slate-500 whitespace-nowrap">{{ formatFecha(pago.fechaPago) }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ─── PAGINADOR ─── -->
+  <div *ngIf="totalRecords() > pageSize()" class="flex justify-center pb-2">
+    <p-paginator
+      [rows]="pageSize()"
+      [totalRecords]="totalRecords()"
+      [first]="currentPage() * pageSize()"
+      (onPageChange)="cargar($event)"
+      [rowsPerPageOptions]="[10, 20, 50]"
+      styleClass="border-0 shadow-none bg-transparent">
+    </p-paginator>
+  </div>
+
 </div>
