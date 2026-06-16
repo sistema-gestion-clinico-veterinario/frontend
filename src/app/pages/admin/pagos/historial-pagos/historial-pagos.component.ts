@@ -93,6 +93,7 @@ export class HistorialPagosComponent implements OnInit {
       case 'PENDING':          return 'bg-amber-50 text-amber-700 border border-amber-200';
       case 'PENDING_TRANSFER': return 'bg-blue-50 text-blue-700 border border-blue-200';
       case 'REJECTED':         return 'bg-red-50 text-red-700 border border-red-200';
+      case 'REFUNDED':         return 'bg-purple-50 text-purple-700 border border-purple-200';
       default:                 return 'bg-slate-50 text-slate-600 border border-slate-200';
     }
   }
@@ -103,6 +104,7 @@ export class HistorialPagosComponent implements OnInit {
       case 'PENDING':          return 'Pendiente';
       case 'PENDING_TRANSFER': return 'Transf. Pendiente';
       case 'REJECTED':         return 'Rechazado';
+      case 'REFUNDED':         return 'Reembolsado';
       default:                 return estado ?? '—';
     }
   }

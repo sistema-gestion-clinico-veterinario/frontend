@@ -518,9 +518,6 @@ export class AgendaComponent implements OnInit, OnDestroy {
       next: (res) => {
         this.veterinarios.set(
           res.data.content
-            .filter((e: any) => e.tiposEmpleado && e.tiposEmpleado.some((t: any) => 
-              (typeof t === 'string' ? t : t.nombre).toUpperCase() === 'VETERINARIO'
-            ))
             .map((e: any) => ({ label: `${e.nombre} ${e.apellido}`, value: e.id }))
         );
       }

@@ -35,7 +35,9 @@ export class CajaComponent implements OnInit {
   egresoForm = { monto: null as number | null, descripcion: '', concepto: 'GASTO_OPERATIVO' as 'GASTO_OPERATIVO' | 'OTRO' };
   savingEgreso = signal(false);
 
-  get companyId(): number { return this.authStore.companyId() ?? 0; }
+  get companyId(): number {
+    return this.authStore.selectedEnterprise()?.establishmentId ?? this.authStore.companyId() ?? 0;
+  }
 
   ngOnInit() { this.cargar(); }
 

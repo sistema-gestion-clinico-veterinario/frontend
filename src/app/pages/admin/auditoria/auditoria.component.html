@@ -208,7 +208,7 @@
     </div>
 
     <!-- Paginador -->
-    <div class="border-t border-slate-200 px-4 py-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 bg-white">
+    <div class="audit-paginator border-t border-slate-200 px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 bg-white">
       <p class="text-xs text-slate-500">
         Total: <span class="font-semibold text-slate-700">{{ totalRecords() }}</span> registros
       </p>
@@ -219,7 +219,8 @@
         (onPageChange)="loadLogs($event.page)"
         [showCurrentPageReport]="false"
         [showPageLinks]="true"
-        styleClass="!border-none !bg-transparent !py-3">
+        [pageLinkSize]="3"
+        styleClass="audit-paginator-control !border-none !bg-transparent !py-0">
       </p-paginator>
     </div>
 
