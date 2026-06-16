@@ -149,16 +149,10 @@ export class AgendaComponent implements OnInit, OnDestroy {
   readonly esPagoValido = computed(() => {
     if (this.metodoPago() !== 'EFECTIVO') return true;
     const recibido = this.montoRecibido() ?? 0;
-    const total = this.totalCita();
-    return total === 0 || recibido >= total / 2;
+    return recibido > 0;
   });
 
-  readonly pagoInsuficienteParaAtencion = computed(() => {
-    const cita = this.citaDetalle();
-    if (!cita?.totalServicio || cita.totalServicio <= 0) return false;
-    const pagado = cita.montoPagado ?? 0;
-    return pagado < cita.totalServicio / 2;
-  });
+  readonly pagoInsuficienteParaAtencion = computed(() => false);
 
   citas            = signal<CitaResponse[]>([]);
   private loadTimeout: any = null;
@@ -1037,16 +1031,6 @@ export class AgendaComponent implements OnInit, OnDestroy {
       this.messageService.add({ severity: 'warn', summary: 'Sin permiso', detail: 'No puedes iniciar historias clÃ­nicas.' });
       return;
     }
-    if (cita.totalServicio && cita.totalServicio > 0) {
-      const pagado = cita.montoPagado ?? 0;
-      if (pagado < cita.totalServicio / 2) {
-        this.messageService.add({
-          severity: 'error', summary: 'Pago insuficiente',
-          detail: `Para iniciar la atención se debe haber abonado al menos el 50% del costo. Total: S/ ${cita.totalServicio.toFixed(2)} — Pagado: S/ ${pagado.toFixed(2)} — Mínimo requerido: S/ ${(cita.totalServicio / 2).toFixed(2)}`
-        });
-        return;
-      }
-    }
     this.displayDetalleCita.set(false);
     this.loadingStore.show();
     this.citaService.iniciarAtencion(cita.id).subscribe({
@@ -1536,7 +1520,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
     if (cita.estado === EstadoCita.CANCELADA || cita.estado === EstadoCita.NO_ASISTIO || cita.estado === EstadoCita.ELIMINADA) return false;
     const total = cita.totalServicio ?? 0;
     const pagado = cita.montoPagado ?? 0;
-    return total <= 0 || pagado < total;
+    return total > 0 && pagado <= 0;
   }
 
   abrirCaja(cita: CitaResponse) {
@@ -1558,8 +1542,8 @@ export class AgendaComponent implements OnInit, OnDestroy {
       if (!this.esPagoValido()) {
         this.messageService.add({
           severity: 'warn',
-          summary: 'Monto insuficiente',
-          detail: `El mínimo aceptado es S/ ${(this.totalCita() / 2).toFixed(2)} (50% del total)`
+          summary: 'Monto requerido',
+          detail: 'Ingrese el monto recibido'
         });
         return;
       }

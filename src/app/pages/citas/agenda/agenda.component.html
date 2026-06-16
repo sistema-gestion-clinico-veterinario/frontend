@@ -927,7 +927,7 @@
               class="w-full pl-9 pr-3 h-11 border border-slate-300 rounded-xl text-sm font-bold text-slate-800 focus:ring-2 focus:ring-[#0066AA]/20 focus:border-[#0066AA] outline-none transition-all" />
           </div>
           <p class="text-[11px] text-slate-400 font-medium">
-            Mínimo: S/ {{ (totalCita() / 2) | number:'1.2-2' }} (50% del total)
+            Total del servicio: S/ {{ totalCita() | number:'1.2-2' }}
           </p>
         </div>
 
@@ -952,7 +952,7 @@
             class="flex items-start gap-2.5 px-4 py-3 bg-rose-50 border border-rose-200 rounded-xl">
             <i class="pi pi-exclamation-triangle text-rose-500 shrink-0 mt-0.5"></i>
             <p class="text-xs font-bold text-rose-600">
-              Monto insuficiente. Mínimo: S/ {{ (totalCita() / 2) | number:'1.2-2' }}
+              Ingrese el monto recibido.
             </p>
           </div>
         </ng-container>
@@ -1151,32 +1151,12 @@
 
   </div>
 
-  <!-- Advertencia pago insuficiente -->
-  <div *ngIf="pagoInsuficienteParaAtencion()"
-    class="px-5 pt-3 pb-0 bg-rose-50 border-t border-rose-200">
-    <div class="flex items-start gap-2.5">
-      <i class="pi pi-exclamation-triangle text-rose-500 shrink-0 mt-0.5"></i>
-      <p class="text-xs font-bold text-rose-700">
-        Para iniciar la atención se debe haber abonado al menos el 50% del costo.
-        Total: S/ {{ (citaDetalle()?.totalServicio ?? 0) | number:'1.2-2' }} —
-        Pagado: S/ {{ (citaDetalle()?.montoPagado ?? 0) | number:'1.2-2' }} —
-        Mínimo requerido: S/ {{ ((citaDetalle()?.totalServicio ?? 0) / 2) | number:'1.2-2' }}
-      </p>
-    </div>
-  </div>
-
   <!-- Footer: acciones -->
   <div class="px-5 py-4 border-t border-slate-100 space-y-2 bg-slate-50/60">
     <div class="flex gap-2">
       <ng-container *ngIf="canCreateHistoria() && (citaDetalle()?.estado === 'PROGRAMADA' || citaDetalle()?.estado === 'CONFIRMADA' || citaDetalle()?.estado === 'SALA_DE_ESPERA' || citaDetalle()?.estado === 'REPROGRAMADA')">
-        <button (click)="iniciarCita(citaDetalle()!)" [disabled]="pagoInsuficienteParaAtencion()"
-          class="flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-bold rounded-xl transition-all"
-          [class.bg-emerald-500]="!pagoInsuficienteParaAtencion()"
-          [class.hover:bg-emerald-600]="!pagoInsuficienteParaAtencion()"
-          [class.text-white]="!pagoInsuficienteParaAtencion()"
-          [class.bg-slate-300]="pagoInsuficienteParaAtencion()"
-          [class.text-slate-500]="pagoInsuficienteParaAtencion()"
-          [class.cursor-not-allowed]="pagoInsuficienteParaAtencion()">
+        <button (click)="iniciarCita(citaDetalle()!)"
+          class="flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-bold rounded-xl transition-all bg-emerald-500 hover:bg-emerald-600 text-white">
           <i class="pi pi-play text-xs"></i> Iniciar atención
         </button>
       </ng-container>
