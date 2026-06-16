@@ -324,6 +324,10 @@ export class RolesComponent implements OnInit {
     }
 
     const section = this.activeSection();
+    if (section === 'empresa' && !this.activeCompanyId) {
+      this.messageService.add({ severity: 'warn', summary: 'Sin empresa seleccionada', detail: 'Selecciona una empresa antes de crear un rol empresarial.' });
+      return;
+    }
     this.showCreateModal.set(false);
     this.confirmDialog.set({
       title: 'Crear nuevo rol',
