@@ -169,7 +169,7 @@
               <th class="text-left px-5 py-3 text-[10px] font-extrabold text-slate-400 uppercase tracking-wider hidden md:table-cell">Veterinario</th>
               <th class="text-left px-5 py-3 text-[10px] font-extrabold text-slate-400 uppercase tracking-wider hidden lg:table-cell">Motivo</th>
               <th class="text-left px-5 py-3 text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Estado</th>
-              <th class="text-center px-5 py-3 text-[10px] font-extrabold text-slate-400 uppercase tracking-wider w-44">Acciones</th>
+              <th class="text-center px-5 py-3 text-[10px] font-extrabold text-slate-400 uppercase tracking-wider w-20">Acciones</th>
             </tr>
           </ng-template>
 
@@ -226,55 +226,12 @@
 
               <!-- Acciones -->
               <td class="px-5 py-3.5">
-                <div class="flex items-center justify-center gap-1 flex-wrap">
-                  <ng-container *ngIf="canEdit(cita)">
-                    <button *appHasPermission="'VISTA_CITAS_AGENDA:modificar'" (click)="editarCita(cita)" pTooltip="Editar" tooltipPosition="top"
-                      class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 text-slate-500 hover:bg-blue-50 hover:text-[#0066AA] transition-all">
-                      <i class="pi pi-pencil text-xs"></i>
-                    </button>
-                  </ng-container>
-                  <ng-container *ngIf="canReprogram(cita)">
-                    <button *appHasPermission="'VISTA_CITAS_AGENDA:modificar'" (click)="reprogramarCita(cita)" pTooltip="Reprogramar" tooltipPosition="top"
-                      class="w-8 h-8 flex items-center justify-center rounded-lg bg-sky-50 text-sky-600 hover:bg-sky-100 transition-all">
-                      <i class="pi pi-calendar-plus text-xs"></i>
-                    </button>
-                  </ng-container>
-                  <ng-container *ngIf="canCreateHistoria() && (cita.estado === 'PROGRAMADA' || cita.estado === 'CONFIRMADA' || cita.estado === 'SALA_DE_ESPERA' || cita.estado === 'REPROGRAMADA')">
-                    <button (click)="iniciarCita(cita)" pTooltip="Iniciar consulta" tooltipPosition="top"
-                      class="w-8 h-8 flex items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-all">
-                      <i class="pi pi-play text-xs"></i>
-                    </button>
-                  </ng-container>
-                  <ng-container *ngIf="canReadHistoria() && cita.estado === 'EN_PROCESO'">
-                    <button (click)="continuarConsulta(cita)" pTooltip="Continuar consulta" tooltipPosition="top"
-                      class="w-8 h-8 flex items-center justify-center rounded-lg bg-amber-50 text-amber-600 hover:bg-amber-100 transition-all">
-                      <i class="pi pi-eye text-xs"></i>
-                    </button>
-                  </ng-container>
-                  <ng-container *ngIf="canReadHistoria() && (cita.estado === 'COMPLETADA' || cita.consultaId) && cita.estado !== 'EN_PROCESO'">
-                    <button (click)="continuarConsulta(cita)" pTooltip="Ver consulta" tooltipPosition="top"
-                      class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 text-slate-500 hover:bg-slate-200 transition-all">
-                      <i class="pi pi-file-edit text-xs"></i>
-                    </button>
-                  </ng-container>
-                  <ng-container *ngIf="canCobrar(cita)">
-                    <button (click)="abrirCaja(cita)" pTooltip="Cobrar" tooltipPosition="top"
-                      class="w-8 h-8 flex items-center justify-center rounded-lg bg-green-50 text-green-600 hover:bg-green-100 transition-all">
-                      <i class="pi pi-wallet text-xs"></i>
-                    </button>
-                  </ng-container>
-                  <ng-container *ngIf="canCancel(cita)">
-                    <button *appHasPermission="'VISTA_CITAS_AGENDA:modificar'" (click)="cancelarCita(cita)" pTooltip="Cancelar" tooltipPosition="top"
-                      class="w-8 h-8 flex items-center justify-center rounded-lg bg-rose-50 text-rose-500 hover:bg-rose-100 transition-all">
-                      <i class="pi pi-times text-xs"></i>
-                    </button>
-                  </ng-container>
-                  <ng-container *ngIf="cita.estado === 'CANCELADA'">
-                    <button *appHasPermission="'VISTA_CITAS_AGENDA:eliminar'" (click)="eliminarCita(cita)" pTooltip="Eliminar" tooltipPosition="top"
-                      class="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-500 hover:bg-red-100 transition-all">
-                      <i class="pi pi-trash text-xs"></i>
-                    </button>
-                  </ng-container>
+                <div class="flex items-center justify-center">
+                  <p-menu #citaMenu [model]="citaActionItems(cita)" [popup]="true" appendTo="body"></p-menu>
+                  <button type="button" (click)="citaMenu.toggle($event)" pTooltip="Acciones" tooltipPosition="top"
+                    class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 text-slate-500 hover:bg-blue-50 hover:text-[#0066AA] transition-all">
+                    <i class="pi pi-ellipsis-h text-sm"></i>
+                  </button>
                 </div>
               </td>
 
@@ -1037,7 +994,7 @@
 </div>
 <!-- Panel -->
 <div *ngIf="displayDetalleCita() && citaDetalle()"
-  class="fixed inset-y-0 right-0 w-[400px] max-w-full bg-white border-l border-slate-200 z-[115] flex flex-col animate-in slide-in-from-right duration-300">
+  class="fixed inset-y-0 right-0 w-full sm:w-[400px] bg-white border-l border-slate-200 z-[115] flex flex-col animate-in slide-in-from-right duration-300">
 
   <!-- Cabecera -->
   <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-white">

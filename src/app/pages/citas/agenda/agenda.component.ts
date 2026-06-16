@@ -9,7 +9,7 @@ import { SelectModule } from 'primeng/select';
 import { DatePickerModule } from 'primeng/datepicker';
 import { TextareaModule } from 'primeng/textarea';
 import { ToastModule } from 'primeng/toast';
-import { MessageService, ConfirmationService } from 'primeng/api';
+import { MessageService, ConfirmationService, MenuItem } from 'primeng/api';
 import { CitaService } from '../../../core/services/cita.service';
 import { CajaService } from '../../../core/services/caja.service';
 import { EmpleadoService } from '../../../core/services/empleado.service';
@@ -43,6 +43,7 @@ import interactionPlugin from '@fullcalendar/interaction';
 import { DropdownModule } from 'primeng/dropdown';
 import { CalendarModule } from 'primeng/calendar';
 import { TooltipModule } from 'primeng/tooltip';
+import { MenuModule } from 'primeng/menu';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 export type Vista = 'lista' | 'dia' | 'semana' | 'mes';
@@ -75,6 +76,7 @@ interface HorarioResumen {
     DropdownModule,
     CalendarModule,
     TooltipModule,
+    MenuModule,
 
     ConfirmDialogModule,
     ToastModule,
@@ -1019,6 +1021,52 @@ export class AgendaComponent implements OnInit, OnDestroy {
     const diferenciaHoras = diferenciaMs / (1000 * 60 * 60);
     
     return diferenciaHoras >= 1;
+  }
+
+  citaActionItems(cita: CitaResponse): MenuItem[] {
+    const canModifyCita = this.authStore.hasAccess('VISTA_CITAS_AGENDA', 'modificar');
+    const canDeleteCita = this.authStore.hasAccess('VISTA_CITAS_AGENDA', 'eliminar');
+    const items: MenuItem[] = [
+      {
+        label: 'Ver detalle',
+        icon: 'pi pi-eye',
+        command: () => this.verDetalleCita(cita)
+      }
+    ];
+
+    if (this.canEdit(cita) && canModifyCita) {
+      items.push({ label: 'Editar', icon: 'pi pi-pencil', command: () => this.editarCita(cita) });
+    }
+
+    if (this.canReprogram(cita) && canModifyCita) {
+      items.push({ label: 'Reprogramar', icon: 'pi pi-calendar-plus', command: () => this.reprogramarCita(cita) });
+    }
+
+    if (this.canCreateHistoria() && (cita.estado === 'PROGRAMADA' || cita.estado === 'CONFIRMADA' || cita.estado === 'SALA_DE_ESPERA' || cita.estado === 'REPROGRAMADA')) {
+      items.push({ label: 'Iniciar consulta', icon: 'pi pi-play', command: () => this.iniciarCita(cita) });
+    }
+
+    if (this.canReadHistoria() && cita.estado === 'EN_PROCESO') {
+      items.push({ label: 'Continuar consulta', icon: 'pi pi-eye', command: () => this.continuarConsulta(cita) });
+    }
+
+    if (this.canReadHistoria() && (cita.estado === 'COMPLETADA' || cita.consultaId) && cita.estado !== 'EN_PROCESO') {
+      items.push({ label: 'Ver consulta', icon: 'pi pi-file-edit', command: () => this.continuarConsulta(cita) });
+    }
+
+    if (this.canCobrar(cita)) {
+      items.push({ label: 'Cobrar', icon: 'pi pi-wallet', command: () => this.abrirCaja(cita) });
+    }
+
+    if (this.canCancel(cita) && canModifyCita) {
+      items.push({ label: 'Cancelar', icon: 'pi pi-times', command: () => this.cancelarCita(cita) });
+    }
+
+    if (cita.estado === 'CANCELADA' && canDeleteCita) {
+      items.push({ label: 'Eliminar', icon: 'pi pi-trash', command: () => this.eliminarCita(cita) });
+    }
+
+    return items;
   }
 
   verDetalleCita(cita: CitaResponse) {

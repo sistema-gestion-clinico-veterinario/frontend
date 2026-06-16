@@ -6,7 +6,8 @@ import { ButtonModule } from 'primeng/button';
 import { DropdownModule } from 'primeng/dropdown';
 import { PaginatorModule } from 'primeng/paginator';
 import { ToastModule } from 'primeng/toast';
-import { MessageService } from 'primeng/api';
+import { MenuModule } from 'primeng/menu';
+import { MenuItem, MessageService } from 'primeng/api';
 
 import { MascotaService } from '../../../core/services/mascota.service';
 import { MediaService } from '../../../core/services/media.service';
@@ -29,6 +30,7 @@ import { HasPermissionDirective } from '../../../core/directives/has-permission.
     DropdownModule,
     PaginatorModule,
     ToastModule,
+    MenuModule,
     HasPermissionDirective
   ],
   providers: [MessageService],
@@ -83,6 +85,36 @@ export class ListaMascotasComponent implements OnInit {
 
   motivoBaja = signal<string | null>(null);
   otroMotivo = signal<string>('');
+
+  canMascotaModify(): boolean {
+    return this.authStore.isSuperAdmin() || this.authStore.hasAccess('VISTA_MASCOTAS', 'modificar');
+  }
+
+  mascotaActionItems(mascota: MascotaResponse): MenuItem[] {
+    const items: MenuItem[] = [
+      {
+        label: 'Ver historia clínica',
+        icon: 'pi pi-file-edit',
+        command: () => this.verHistoriaClinica(mascota)
+      }
+    ];
+
+    if (this.canMascotaModify()) {
+      items.unshift({
+        label: 'Editar',
+        icon: 'pi pi-pencil',
+        disabled: !mascota.activo,
+        command: () => this.irAEditar(mascota)
+      });
+      items.push({
+        label: mascota.activo ? 'Desactivar' : 'Activar',
+        icon: mascota.activo ? 'pi pi-ban' : 'pi pi-check-circle',
+        command: () => this.toggleEstado(mascota)
+      });
+    }
+
+    return items;
+  }
 
   get activeCompanyId(): number | null {
     return this.authStore.selectedEnterprise()?.establishmentId ?? this.authStore.companyId();

@@ -1,8 +1,8 @@
-<div class="p-8 min-h-screen bg-slate-50 font-['Barlow']">
+<div class="p-3 sm:p-4 lg:p-8 min-h-screen bg-slate-50 font-['Barlow']">
 
   <!-- Header -->
   <div class="mb-8">
-    <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Análisis de Laboratorio IA</h1>
+    <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Análisis de Laboratorio IA</h1>
     <p class="text-slate-500 font-medium mt-1 flex items-center gap-2">
       <span class="w-2 h-2 rounded-full bg-[#0066AA]"></span>
       Extracción automática de hemogramas desde PDF o imagen de voucher
@@ -15,7 +15,7 @@
     <div class="xl:col-span-1 flex flex-col gap-4">
 
       <!-- Drop zone -->
-      <div class="bg-white border border-slate-200 rounded-xl p-6">
+      <div class="bg-white border border-slate-200 rounded-xl p-4 sm:p-6">
         <h2 class="text-sm font-bold text-slate-700 mb-4">Archivo de laboratorio</h2>
 
         <div
@@ -23,7 +23,7 @@
           (dragleave)="arrastrar.set(false)"
           (drop)="onDrop($event)"
           [class]="arrastrar() ? 'border-[#0066AA] bg-blue-50' : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'"
-          class="border-2 border-dashed rounded-xl p-8 flex flex-col items-center gap-3 text-center cursor-pointer transition-all"
+          class="border-2 border-dashed rounded-xl p-5 sm:p-8 flex flex-col items-center gap-3 text-center cursor-pointer transition-all"
           (click)="fileInput.click()">
 
           <div [class]="arrastrar() ? 'bg-blue-100 text-[#0066AA]' : 'bg-slate-100 text-slate-400'"
@@ -52,7 +52,7 @@
       </div>
 
       <!-- Especie -->
-      <div class="bg-white border border-slate-200 rounded-xl p-6">
+      <div class="bg-white border border-slate-200 rounded-xl p-4 sm:p-6">
         <h2 class="text-sm font-bold text-slate-700 mb-3">Especie</h2>
         <div class="flex gap-2">
           <button *ngFor="let e of ESPECIES" (click)="especie.set(e)"
@@ -79,7 +79,7 @@
 
       <!-- Estado vacío -->
       <ng-container *ngIf="!resultado() && !cargando()">
-        <div class="bg-white border border-slate-200 rounded-xl flex flex-col items-center justify-center py-24 text-center">
+        <div class="bg-white border border-slate-200 rounded-xl flex flex-col items-center justify-center py-14 sm:py-24 px-4 text-center">
           <div class="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mb-4">
             <i class="pi pi-chart-bar text-3xl text-slate-300"></i>
           </div>
@@ -101,7 +101,7 @@
       <ng-container *ngIf="resultado() as res">
 
         <!-- Cabecera del resultado -->
-        <div class="bg-white border border-slate-200 rounded-xl px-6 py-4 flex flex-wrap gap-4 items-center justify-between">
+        <div class="bg-white border border-slate-200 rounded-xl px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:flex-wrap gap-4 sm:items-center sm:justify-between">
           <div>
             <p class="text-xs text-slate-400 font-medium uppercase tracking-wide">{{ res.fuente }}</p>
             <p class="text-sm font-bold text-slate-800 mt-0.5">
@@ -132,8 +132,8 @@
         </div>
 
         <!-- Hematología -->
-        <div *ngIf="tieneSeccion('hematologia') && res.hematologia" class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-          <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+        <div *ngIf="tieneSeccion('hematologia') && res.hematologia" class="bg-white border border-slate-200 rounded-xl overflow-x-auto">
+          <div class="px-4 sm:px-6 py-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <div>
               <h2 class="text-sm font-bold text-slate-800">Hematología</h2>
               <p class="text-xs text-slate-400 mt-0.5">{{ res.hematologia.parametros.length }} parámetros</p>
@@ -142,7 +142,7 @@
               {{ res.hematologia.analizador }}
             </span>
           </div>
-          <table class="w-full text-sm">
+          <table class="w-full min-w-[620px] text-sm">
             <thead>
               <tr class="border-b border-slate-100">
                 <th class="text-left px-6 py-3 text-xs font-medium text-slate-400 uppercase tracking-wider w-2/5">Test</th>
@@ -175,8 +175,8 @@
         </div>
 
         <!-- Química -->
-        <div *ngIf="tieneSeccion('quimica') && res.quimica" class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-          <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+        <div *ngIf="tieneSeccion('quimica') && res.quimica" class="bg-white border border-slate-200 rounded-xl overflow-x-auto">
+          <div class="px-4 sm:px-6 py-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <div>
               <h2 class="text-sm font-bold text-slate-800">Química Sanguínea</h2>
               <p class="text-xs text-slate-400 mt-0.5">{{ res.quimica.parametros.length }} parámetros</p>
@@ -185,7 +185,7 @@
               {{ res.quimica.analizador }}
             </span>
           </div>
-          <table class="w-full text-sm">
+          <table class="w-full min-w-[620px] text-sm">
             <thead>
               <tr class="border-b border-slate-100">
                 <th class="text-left px-6 py-3 text-xs font-medium text-slate-400 uppercase tracking-wider w-2/5">Test</th>
