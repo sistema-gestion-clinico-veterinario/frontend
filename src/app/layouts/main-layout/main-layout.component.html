@@ -1,11 +1,19 @@
-<div class="flex h-screen overflow-hidden bg-slate-50">
-  <app-sidebar [collapsed]="sidebarCollapsed()" (toggleSidebar)="toggleSidebar()" />
+<div class="flex h-dvh overflow-hidden bg-slate-50">
+  <div class="hidden lg:block shrink-0">
+    <app-sidebar [collapsed]="sidebarCollapsed()" (toggleSidebar)="toggleSidebar()" />
+  </div>
+
+  <div *ngIf="mobileSidebarOpen()" class="fixed inset-0 z-[180] lg:hidden">
+    <button type="button" class="absolute inset-0 bg-slate-900/40" (click)="closeMobileSidebar()" aria-label="Cerrar menu"></button>
+    <div class="relative z-[181] h-full w-72 max-w-[86vw] bg-white">
+      <app-sidebar [collapsed]="false" (toggleSidebar)="closeMobileSidebar()" (navigate)="closeMobileSidebar()" />
+    </div>
+  </div>
 
   <div class="flex flex-1 flex-col overflow-hidden min-w-0">
     <app-navbar (toggleSidebar)="toggleSidebar()" />
-    <main class="flex-1 overflow-auto p-6">
+    <main class="flex-1 overflow-auto p-3 sm:p-4 lg:p-6">
       <router-outlet />
     </main>
   </div>
 </div>
-

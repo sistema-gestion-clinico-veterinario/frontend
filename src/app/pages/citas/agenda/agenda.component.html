@@ -1,8 +1,8 @@
 <div class="min-h-screen bg-slate-50 font-['Barlow']">
 
   <!-- ══════════════ TOP BAR ══════════════ -->
-  <div class="bg-white/95 backdrop-blur-sm border-b border-slate-100 shadow-sm px-4 sm:px-6 py-4 sticky top-0 z-30 rounded-b-2xl">
-    <div class="flex items-center justify-between gap-4 flex-wrap">
+  <div class="bg-white/95 backdrop-blur-sm border-b border-slate-100 shadow-sm px-3 sm:px-6 py-3 sm:py-4 sticky top-0 z-30 rounded-b-2xl">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
 
       <div class="flex items-center gap-3">
         <div class="w-10 h-10 rounded-xl bg-[#0066AA] flex items-center justify-center shrink-0">
@@ -14,9 +14,9 @@
         </div>
       </div>
 
-      <div class="flex items-center gap-2 flex-wrap">
+      <div class="flex w-full sm:w-auto items-center justify-between sm:justify-end gap-2">
         <!-- View switcher -->
-        <div class="flex items-center bg-slate-100 rounded-xl p-1 gap-0.5">
+        <div class="flex min-w-0 flex-1 sm:flex-none items-center bg-slate-100 rounded-xl p-1 gap-0.5 overflow-x-auto">
           <button (click)="cambiarVista('lista')"
             [class.bg-white]="vistaActual()==='lista'"
             [class.text-[#0066AA]]="vistaActual()==='lista'"
@@ -56,7 +56,7 @@
         </div>
 
         <button *appHasPermission="'VISTA_CITAS_AGENDA:escribir'" (click)="openNew()"
-          class="flex items-center gap-1.5 bg-[#0066AA] hover:bg-[#005a96] text-white font-bold rounded-xl px-4 py-2 text-sm transition-all shadow-sm active:scale-95">
+          class="shrink-0 flex items-center gap-1.5 bg-[#0066AA] hover:bg-[#005a96] text-white font-bold rounded-xl px-3 sm:px-4 py-2 text-sm transition-all shadow-sm active:scale-95">
           <i class="pi pi-plus text-sm"></i>
           <span class="hidden sm:inline">Nueva Cita</span>
         </button>
@@ -64,17 +64,17 @@
     </div>
   </div>
 
-  <div class="p-4 sm:p-6 space-y-4">
+  <div class="p-3 sm:p-6 space-y-4">
 
     <!-- ══════════════ NAVEGADOR CALENDARIO (día/semana/mes) ══════════════ -->
     <div *ngIf="vistaActual() !== 'lista'"
-      class="bg-white border border-slate-200 rounded-xl px-4 py-3 flex items-center justify-between gap-3">
+      class="bg-white border border-slate-200 rounded-xl px-3 sm:px-4 py-3 flex items-center justify-between gap-2 sm:gap-3">
       <button (click)="navegarCalendario(-1)"
         class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:border-[#0066AA] hover:text-[#0066AA] transition-all">
         <i class="pi pi-chevron-left text-xs"></i>
       </button>
       <div class="flex items-center gap-3">
-        <p class="text-sm font-extrabold text-slate-800 capitalize">{{ tituloCalendario() }}</p>
+        <p class="text-xs sm:text-sm font-extrabold text-slate-800 capitalize text-center">{{ tituloCalendario() }}</p>
         <button (click)="irAHoy()"
           class="text-xs font-bold text-[#0066AA] border border-[#0066AA]/30 bg-blue-50 px-2.5 py-1 rounded-lg hover:bg-[#0066AA] hover:text-white transition-all">
           Hoy
@@ -88,8 +88,8 @@
 
     <!-- ══════════════ FILTROS (lista / día) ══════════════ -->
     <div *ngIf="vistaActual() === 'lista' || vistaActual() === 'dia'"
-      class="bg-white border border-slate-200 rounded-xl p-4">
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      class="bg-white border border-slate-200 rounded-xl p-3 sm:p-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
 
         <div class="flex flex-col gap-1.5">
           <label class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest flex items-center gap-1">
@@ -160,7 +160,7 @@
         <p-table [value]="citas()" [lazy]="true" (onLazyLoad)="loadCitas($event)"
           [paginator]="true" [rows]="10" [totalRecords]="totalRecords()"
           [loading]="loadingStore.isLoading()" [rowHover]="true"
-          styleClass="p-datatable-borderless" responsiveLayout="scroll">
+          styleClass="p-datatable-borderless" responsiveLayout="stack" breakpoint="768px">
 
           <ng-template pTemplate="header">
             <tr class="border-b border-slate-100 bg-slate-50">
@@ -301,17 +301,19 @@
 
     <!-- ══════════════ CALENDARIO FULLCALENDAR ══════════════ -->
     <ng-container *ngIf="vistaActual() !== 'lista'">
-      <div class="agenda-calendar-shell bg-white border border-slate-200 rounded-xl overflow-hidden p-3 sm:p-4">
+      <div class="agenda-calendar-shell bg-white border border-slate-200 rounded-xl overflow-x-auto p-3 sm:p-4">
         <div *ngIf="cargandoCal()" class="py-16 flex flex-col items-center gap-3 text-slate-400">
           <i class="pi pi-refresh pi-spin text-2xl"></i>
           <span class="text-sm font-medium">Cargando agenda...</span>
         </div>
 
+        <div class="min-w-[720px] md:min-w-0">
         <full-calendar
           *ngIf="!cargandoCal()"
           #fullCalendar
           [options]="calendarOptions">
         </full-calendar>
+        </div>
       </div>
     </ng-container>
 

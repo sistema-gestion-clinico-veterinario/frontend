@@ -1,13 +1,13 @@
-<div class="p-4 min-h-screen bg-slate-50 font-['Barlow']">
+<div class="p-3 sm:p-4 min-h-screen bg-slate-50 font-['Barlow']">
   <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-10">
     <div>
-      <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Buscador de Recetas</h1>
+      <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Buscador de Recetas</h1>
       <p class="text-slate-500 font-medium mt-1 flex items-center gap-2">
         <span class="w-2 h-2 rounded-full bg-[#0066AA]"></span>
         Consulta y gestiona el historial de prescripciones médicas emitidas
       </p>
     </div>
-    <div class="flex flex-col md:flex-row items-start md:items-center gap-3">
+    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
       <div class="relative w-full md:w-72">
         <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
         <input 
@@ -20,7 +20,7 @@
         />
       </div>
       <button (click)="resetFiltros()"
-        class="flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 text-sm font-medium px-4 h-10 rounded-lg transition-colors">
+        class="flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 text-sm font-medium px-4 h-10 rounded-lg transition-colors">
         <i class="pi pi-filter-slash text-xs"></i>
         Limpiar
       </button>
@@ -51,14 +51,15 @@
     </div>
   </div>
 
-  <div class="flex gap-6">
+  <div class="flex flex-col xl:flex-row gap-4 xl:gap-6">
     <div class="flex-1 min-w-0 bg-white border border-slate-200 rounded-xl overflow-hidden shadow-none">
       <p-table 
         [value]="recetas()" 
         [loading]="loadingStore.isLoading()" 
         [rowHover]="true"
         styleClass="p-datatable-borderless"
-        [responsiveLayout]="'scroll'"
+        responsiveLayout="stack"
+        breakpoint="768px"
       >
         <ng-template pTemplate="header">
           <tr class="border-b border-slate-100">
@@ -139,7 +140,7 @@
     </div>
 
     @if (selectedReceta(); as receta) {
-      <div class="w-96 shrink-0 bg-white border border-slate-200 rounded-xl overflow-hidden shadow-none h-fit sticky top-4">
+      <div class="w-full xl:w-96 xl:shrink-0 bg-white border border-slate-200 rounded-xl overflow-hidden shadow-none h-fit xl:sticky xl:top-4">
         <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100">
           <h3 class="text-sm font-bold text-slate-800">Detalle de Receta</h3>
           <button (click)="cerrarDetalle()"
