@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TableModule } from 'primeng/table';
 import { ToastModule } from 'primeng/toast';
+import { PaginatorModule } from 'primeng/paginator';
 import { MessageService } from 'primeng/api';
 import { PagoService } from '../../../../core/services/pago.service';
 import { PagoListResponse } from '../../../../models/response/pago-response';
@@ -12,7 +13,7 @@ import { AuthStore } from '../../../../store/auth.store';
 @Component({
   selector: 'app-historial-pagos',
   standalone: true,
-  imports: [CommonModule, FormsModule, TableModule, ToastModule],
+  imports: [CommonModule, FormsModule, TableModule, ToastModule, PaginatorModule],
   providers: [MessageService],
   templateUrl: './historial-pagos.component.html',
   styleUrl: './historial-pagos.component.scss'
