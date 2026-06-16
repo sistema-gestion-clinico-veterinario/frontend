@@ -1,1 +1,21 @@
-/* Estilos locales para Auditoria Component */
+:host ::ng-deep .audit-paginator-control .p-paginator {
+  justify-content: center;
+  gap: 0.15rem;
+  flex-wrap: nowrap;
+}
+
+:host ::ng-deep .audit-paginator-control .p-paginator-page,
+:host ::ng-deep .audit-paginator-control .p-paginator-first,
+:host ::ng-deep .audit-paginator-control .p-paginator-prev,
+:host ::ng-deep .audit-paginator-control .p-paginator-next,
+:host ::ng-deep .audit-paginator-control .p-paginator-last {
+  min-width: 2rem;
+  height: 2rem;
+  margin: 0;
+}
+
+@media (max-width: 420px) {
+  :host ::ng-deep .audit-paginator-control .p-paginator {
+    width: 100%;
+  }
+}
