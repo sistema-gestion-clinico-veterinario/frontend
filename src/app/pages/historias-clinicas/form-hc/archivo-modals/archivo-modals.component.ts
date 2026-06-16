@@ -13,7 +13,7 @@ import { ArchivoClinicoResponse } from '../../../../models/response/archivo-clin
 export class ArchivoModalsComponent {
   @Input() previewArchivo: ArchivoClinicoResponse | null = null;
   @Input() previewUrl: SafeResourceUrl | string = '';
-  @Input() previewTipo: 'imagen' | 'pdf' | 'dcm' | null = null;
+  @Input() previewTipo: 'imagen' | 'pdf' | 'dcm' | 'docx' | null = null;
   @Input() showConfirmEliminar = false;
   @Input() archivoEliminando: ArchivoClinicoResponse | null = null;
 
