@@ -1,15 +1,15 @@
 <p-toast></p-toast>
 
-<div class="p-4 flex flex-col gap-8 animate-fade-in">
+<div class="p-3 sm:p-4 flex flex-col gap-5 sm:gap-8 animate-fade-in">
   <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
     <div class="flex flex-col gap-2">
-      <h1 class="text-4xl font-extrabold text-slate-800 tracking-tight">Gestión de Clientes</h1>
-      <p class="text-slate-500 font-medium">Administra los propietarios de mascotas y sus datos de contacto</p>
+      <h1 class="text-2xl sm:text-4xl font-extrabold text-slate-800 tracking-tight">Gestión de Clientes</h1>
+      <p class="text-sm sm:text-base text-slate-500 font-medium">Administra los propietarios de mascotas y sus datos de contacto</p>
     </div>
 
-    <div class="flex flex-wrap items-center gap-4">
+    <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
       <button *appHasPermission="'VISTA_CLIENTES:escribir'" (click)="openNew()"
-        class="flex items-center gap-2 bg-[#0066AA] hover:bg-[#005a96] text-white text-sm font-medium px-5 h-10 rounded-lg transition-colors">
+        class="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#0066AA] hover:bg-[#005a96] text-white text-sm font-medium px-5 h-10 rounded-lg transition-colors">
         <i class="pi pi-plus text-xs"></i>
         Registrar cliente
       </button>
@@ -18,7 +18,7 @@
 
   <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
     <p-table [value]="clients()" [lazy]="true" (onLazyLoad)="loadClients($event)" [paginator]="true" [rows]="10"
-      [totalRecords]="totalRecords()" [loading]="loading()" responsiveLayout="stack" breakpoint="960px" [rowHover]="true"
+      [totalRecords]="totalRecords()" [loading]="loading()" responsiveLayout="stack" breakpoint="768px" [rowHover]="true"
       styleClass="p-datatable-borderless">
       <ng-template pTemplate="header">
         <tr class="border-b border-slate-100">
@@ -117,8 +117,8 @@
   </div>
 </div>
 
-<div *ngIf="displayModal()" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-  <div class="bg-white w-full max-w-2xl rounded-lg  flex flex-col max-h-[95vh]">
+<div *ngIf="displayModal()" class="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/50 backdrop-blur-sm">
+  <div class="bg-white w-full sm:max-w-2xl rounded-t-2xl sm:rounded-lg flex flex-col max-h-[95dvh]">
   
     <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50 rounded-t-lg">
       <h2 class="text-lg font-bold text-slate-800">
