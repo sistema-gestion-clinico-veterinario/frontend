@@ -230,7 +230,9 @@ export class HistoriaClinicaMascotaComponent implements OnInit {
     this.hcService.obtenerContenidoArchivo(consultaId, archivo.id).subscribe({
       next: (blob) => {
         if (this.previewRawUrl()) URL.revokeObjectURL(this.previewRawUrl());
-        const objectUrl = URL.createObjectURL(blob);
+        const mime = archivo.tipoMime || blob.type || 'application/octet-stream';
+        const typedBlob = blob.type && blob.type !== 'application/octet-stream' ? blob : new Blob([blob], { type: mime });
+        const objectUrl = URL.createObjectURL(typedBlob);
         this.previewRawUrl.set(objectUrl);
         this.previewUrl.set(ext === 'pdf'
           ? this.sanitizer.bypassSecurityTrustResourceUrl(objectUrl)
