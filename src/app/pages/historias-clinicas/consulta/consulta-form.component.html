@@ -469,9 +469,9 @@
                   class="flex items-center gap-2 w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-sm text-slate-500 cursor-pointer hover:border-[#0066AA] hover:text-[#0066AA] transition-all">
                   <i class="pi pi-upload text-[11px]"></i>
                   <span class="truncate">{{ archivoPendiente() ? archivoPendiente()!.name : 'Elegir archivo...' }}</span>
-                  <input type="file" class="hidden" accept=".dcm,.pdf,.jpg,.jpeg,.png" (change)="onFileSelected($event)">
+                  <input type="file" class="hidden" accept=".dcm,.pdf,.jpg,.jpeg,.png,.docx,.doc" (change)="onFileSelected($event)">
                 </label>
-                <p class="text-[10px] text-slate-400 mt-1">Formatos aceptados: .dcm, .pdf, .jpg, .png &nbsp;·&nbsp; Máx. 20 MB</p>
+                <p class="text-[10px] text-slate-400 mt-1">Formatos: .dcm, .pdf, .jpg, .png, .docx, .doc &nbsp;·&nbsp; Máx. 20 MB</p>
               </div>
               <div class="w-full sm:w-40">
                 <label class="block text-xs font-bold text-slate-600 mb-1.5">Tipo</label>

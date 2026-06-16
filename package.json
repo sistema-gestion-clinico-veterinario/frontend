@@ -25,6 +25,7 @@
     "@fullcalendar/timegrid": "^6.1.17",
     "@ngrx/signals": "^19.2.1",
     "@primeng/themes": "^19.1.4",
+    "docx": "^9.6.1",
     "exceljs": "^4.4.0",
     "primeflex": "^4.0.0",
     "primeicons": "^7.0.0",

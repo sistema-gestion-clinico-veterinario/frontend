@@ -86,13 +86,14 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
   previewArchivo     = signal<ArchivoClinicoResponse | null>(null);
   previewUrl         = signal<SafeResourceUrl | string>('');
   previewRawUrl      = signal<string>('');
-  previewTipo        = signal<'imagen' | 'pdf' | 'dcm' | null>(null);
+  previewTipo        = signal<'imagen' | 'pdf' | 'dcm' | 'docx' | null>(null);
 
   readonly tiposArchivo = [
     { label: 'Laboratorio',  value: 'LABORATORIO' },
     { label: 'Radiografía',  value: 'RADIOGRAFIA' },
     { label: 'Ecografía',    value: 'ECOGRAFIA'   },
     { label: 'Imagen',       value: 'IMAGEN'      },
+    { label: 'Documento',    value: 'DOCUMENTO'   },
     { label: 'Otro',         value: 'OTRO'        },
   ];
 
@@ -304,6 +305,12 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
     if (ext === 'dcm') {
       this.previewArchivo.set(archivo);
       this.previewTipo.set('dcm');
+      this.previewUrl.set('');
+      return;
+    }
+    if (ext === 'docx' || ext === 'doc') {
+      this.previewArchivo.set(archivo);
+      this.previewTipo.set('docx');
       this.previewUrl.set('');
       return;
     }

@@ -131,6 +131,138 @@ export class DiagnosticoIaComponent implements OnChanges {
     });
   }
 
+  descargando = signal(false);
+
+  async descargarComoWord(): Promise<void> {
+    if (this.descargando()) return;
+    this.descargando.set(true);
+    try {
+      const { Document, Packer, Paragraph, TextRun, HeadingLevel, BorderStyle } = await import('docx');
+
+      const nombre  = this.hc.mascotaNombre ?? 'Paciente';
+      const especie = this.hc.especie       ?? '—';
+      const raza    = this.hc.raza          ?? '—';
+      const sexo    = this.hc.sexo          ?? '—';
+      const fecha   = new Date().toLocaleDateString('es-PE', { day: '2-digit', month: 'long', year: 'numeric' });
+
+      const encabezado: InstanceType<typeof Paragraph>[] = [
+        new Paragraph({
+          text: 'Informe de Diagnóstico IA',
+          heading: HeadingLevel.HEADING_1,
+          spacing: { after: 120 },
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({ text: 'Paciente: ', bold: true }),
+            new TextRun({ text: nombre }),
+            new TextRun({ text: '   •   ', color: 'AAAAAA' }),
+            new TextRun({ text: 'Especie: ', bold: true }),
+            new TextRun({ text: especie }),
+            new TextRun({ text: '   •   ', color: 'AAAAAA' }),
+            new TextRun({ text: 'Raza: ', bold: true }),
+            new TextRun({ text: raza }),
+          ],
+          spacing: { after: 60 },
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({ text: 'Sexo: ', bold: true }),
+            new TextRun({ text: sexo }),
+            new TextRun({ text: '   •   ', color: 'AAAAAA' }),
+            new TextRun({ text: 'Fecha de análisis: ', bold: true }),
+            new TextRun({ text: fecha }),
+            ...(this.escenario() ? [
+              new TextRun({ text: '   •   ', color: 'AAAAAA' }),
+              new TextRun({ text: 'Tipo de análisis: ', bold: true }),
+              new TextRun({ text: this.escenarioLabel }),
+            ] : []),
+          ],
+          spacing: { after: 200 },
+        }),
+        new Paragraph({
+          border: { bottom: { color: 'CCCCCC', space: 1, style: BorderStyle.SINGLE, size: 4 } },
+          spacing: { after: 240 },
+        }),
+      ];
+
+      const contenido: InstanceType<typeof Paragraph>[] = [];
+      for (const rawLine of this.texto().split('\n')) {
+        const line = rawLine.replace(/\r$/, '');
+        if (line.startsWith('## ')) {
+          contenido.push(new Paragraph({
+            text: line.slice(3).trim(),
+            heading: HeadingLevel.HEADING_2,
+            spacing: { before: 240, after: 80 },
+          }));
+        } else if (line.startsWith('### ')) {
+          contenido.push(new Paragraph({
+            text: line.slice(4).trim(),
+            heading: HeadingLevel.HEADING_3,
+            spacing: { before: 160, after: 60 },
+          }));
+        } else if (line.startsWith('- ') || line.startsWith('* ')) {
+          contenido.push(new Paragraph({
+            bullet: { level: 0 },
+            children: this.parseLine(line.slice(2), TextRun),
+            spacing: { after: 40 },
+          }));
+        } else if (line.trim() === '') {
+          contenido.push(new Paragraph({ text: '', spacing: { after: 80 } }));
+        } else {
+          contenido.push(new Paragraph({
+            children: this.parseLine(line, TextRun),
+            spacing: { after: 80 },
+          }));
+        }
+      }
+
+      const pie = new Paragraph({
+        children: [new TextRun({
+          text: 'Este análisis es orientativo y generado por inteligencia artificial. '
+              + 'No reemplaza el criterio clínico del médico veterinario ni constituye un diagnóstico definitivo.',
+          italics: true,
+          color: '999999',
+          size: 18,
+        })],
+        border: { top: { color: 'CCCCCC', space: 1, style: BorderStyle.SINGLE, size: 4 } },
+        spacing: { before: 240 },
+      });
+
+      const doc = new Document({
+        sections: [{
+          properties: {
+            page: { margin: { top: 1440, right: 1080, bottom: 1440, left: 1080 } },
+          },
+          children: [...encabezado, ...contenido, pie],
+        }],
+      });
+
+      const blob = await Packer.toBlob(doc);
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href     = url;
+      a.download = `diagnostico_ia_${nombre.replace(/\s+/g, '_')}.docx`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } finally {
+      this.descargando.set(false);
+    }
+  }
+
+  private parseLine(text: string, TextRun: any): any[] {
+    const parts: any[] = [];
+    const regex = /\*\*(.+?)\*\*/g;
+    let last = 0;
+    let m: RegExpExecArray | null;
+    while ((m = regex.exec(text)) !== null) {
+      if (m.index > last) parts.push(new TextRun({ text: text.slice(last, m.index) }));
+      parts.push(new TextRun({ text: m[1], bold: true }));
+      last = m.index + m[0].length;
+    }
+    if (last < text.length) parts.push(new TextRun({ text: text.slice(last) }));
+    return parts.length ? parts : [new TextRun({ text: ' ' })];
+  }
+
   async analizar(): Promise<void> {
     if (!this.todasConsultas.length) return;
 
