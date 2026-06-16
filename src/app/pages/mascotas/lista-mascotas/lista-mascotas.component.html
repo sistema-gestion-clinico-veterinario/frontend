@@ -121,24 +121,12 @@
                 <span class="font-bold text-slate-700">{{ sexoLabel(mascota.sexo) }}</span>
               </div>
             </div>
-            <div class="flex items-center justify-end gap-1 mt-3 pt-3 border-t border-slate-100">
-              <button *appHasPermission="'VISTA_MASCOTAS:modificar'" (click)="irAEditar(mascota)"
-                [disabled]="!mascota.activo"
-                [title]="!mascota.activo ? 'Mascota inactiva' : 'Editar'"
-                class="w-9 h-9 flex items-center justify-center rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-slate-400">
-                <i class="pi pi-pencil text-xs"></i>
-              </button>
-              <button (click)="verHistoriaClinica(mascota)"
-                title="Ver Historia Clinica"
+            <div class="flex items-center justify-end mt-3 pt-3 border-t border-slate-100">
+              <p-menu #mascotaMobileMenu [model]="mascotaActionItems(mascota)" [popup]="true" appendTo="body"></p-menu>
+              <button type="button" (click)="mascotaMobileMenu.toggle($event)"
+                aria-label="Abrir acciones"
                 class="w-9 h-9 flex items-center justify-center rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50">
-                <i class="pi pi-file-edit text-xs"></i>
-              </button>
-              <button *appHasPermission="'VISTA_MASCOTAS:modificar'" (click)="toggleEstado(mascota)"
-                [class]="mascota.activo
-                  ? 'w-9 h-9 flex items-center justify-center rounded-lg text-emerald-500 hover:text-emerald-600 hover:bg-emerald-50'
-                  : 'w-9 h-9 flex items-center justify-center rounded-lg text-red-400 hover:text-red-500 hover:bg-red-50'"
-                [title]="mascota.activo ? 'Desactivar' : 'Activar'">
-                <i [class]="mascota.activo ? 'pi pi-ban text-xs' : 'pi pi-check-circle text-xs'"></i>
+                <i class="pi pi-ellipsis-h text-xs"></i>
               </button>
             </div>
           </div>
@@ -189,27 +177,13 @@
                   {{ mascota.activo ? 'Activo' : 'Inactivo' }}
                 </span>
               </td>
-              <td class="px-4 py-3">
-                <div class="flex items-center justify-center gap-1">
-                  <button *appHasPermission="'VISTA_MASCOTAS:modificar'" (click)="irAEditar(mascota)"
-                    [disabled]="!mascota.activo"
-                    [title]="!mascota.activo ? 'Mascota inactiva' : 'Editar'"
-                    class="p-2 rounded-lg text-slate-300 hover:text-[#0066AA] hover:bg-blue-50 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-slate-300">
-                    <i class="pi pi-pencil text-xs"></i>
-                  </button>
-                  <button (click)="verHistoriaClinica(mascota)"
-                    title="Ver Historia Clínica"
-                    class="p-2 rounded-lg text-slate-300 hover:text-[#0066AA] hover:bg-blue-50">
-                    <i class="pi pi-file-edit text-xs"></i>
-                  </button>
-                  <button *appHasPermission="'VISTA_MASCOTAS:modificar'" (click)="toggleEstado(mascota)"
-                    [class]="mascota.activo
-                      ? 'p-2 rounded-lg text-emerald-400 hover:text-emerald-600 hover:bg-emerald-50'
-                      : 'p-2 rounded-lg text-red-300 hover:text-red-500 hover:bg-red-50'"
-                    [title]="mascota.activo ? 'Desactivar' : 'Activar'">
-                    <i [class]="mascota.activo ? 'pi pi-ban text-xs' : 'pi pi-check-circle text-xs'"></i>
-                  </button>
-                </div>
+              <td class="px-4 py-3 text-center">
+                <p-menu #mascotaMenu [model]="mascotaActionItems(mascota)" [popup]="true" appendTo="body"></p-menu>
+                <button type="button" (click)="mascotaMenu.toggle($event)"
+                  aria-label="Abrir acciones"
+                  class="w-9 h-9 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-95">
+                  <i class="pi pi-ellipsis-h text-xs"></i>
+                </button>
               </td>
             </tr>
           </tbody>

@@ -7,7 +7,8 @@ import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { DropdownModule } from 'primeng/dropdown';
 import { ToastModule } from 'primeng/toast';
-import { MessageService } from 'primeng/api';
+import { MenuModule } from 'primeng/menu';
+import { MenuItem, MessageService } from 'primeng/api';
 import { ApoderadoService } from '../../../core/services/apoderado.service';
 import { CompanyService } from '../../../core/services/company.service';
 import { ApoderadoListResponse } from '../../../models/response/apoderado-list-response';
@@ -30,6 +31,7 @@ import { HasPermissionDirective } from '../../../core/directives/has-permission.
     InputTextModule,
     DropdownModule,
     ToastModule,
+    MenuModule,
     HasPermissionDirective
   ],
   providers: [MessageService],
@@ -66,6 +68,33 @@ export class ClientComponent implements OnInit {
 
   cancelConfirm() {
     this.confirmDialog.set(null);
+  }
+
+  canClientAction(tipo: 'modificar' | 'eliminar'): boolean {
+    return this.authStore.isSuperAdmin() || this.authStore.hasAccess('VISTA_CLIENTES', tipo);
+  }
+
+  clientActionItems(client: ApoderadoListResponse): MenuItem[] {
+    const items: MenuItem[] = [];
+
+    if (this.canClientAction('modificar')) {
+      items.push({
+        label: 'Editar',
+        icon: 'pi pi-pencil',
+        disabled: !client.activo,
+        command: () => this.editClient(client)
+      });
+    }
+
+    if (this.canClientAction('eliminar')) {
+      items.push({
+        label: 'Eliminar',
+        icon: 'pi pi-trash',
+        command: () => this.deleteClient(client)
+      });
+    }
+
+    return items;
   }
 
   tipoDocumentos = [

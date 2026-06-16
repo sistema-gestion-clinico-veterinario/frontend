@@ -78,22 +78,12 @@
             </button>
           </td>
           <td class="px-6 py-4 text-right">
-            <div class="flex items-center justify-end gap-1">
-              <button (click)="openPasswordResetModal(employee)"
-                [disabled]="!employee.activo"
-                [title]="!employee.activo ? 'El empleado está inactivo' : 'Restablecer contraseña'"
-                class="p-2 rounded-lg text-slate-400 hover:text-amber-500 hover:bg-amber-50 transition-all active:scale-90 disabled:opacity-40 disabled:cursor-not-allowed">
-                <i class="pi pi-lock text-sm"></i>
-              </button>
-              <button *appHasPermission="'VISTA_EMPLEADOS:modificar'" (click)="editEmployee(employee)"
-                [disabled]="!employee.activo"
-                [title]="!employee.activo ? 'El empleado está inactivo' : 'Editar'"
-                class="p-2 rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-90 disabled:opacity-40 disabled:cursor-not-allowed">
-                <i class="pi pi-pencil text-sm"></i>
-              </button>
-              <button *appHasPermission="'VISTA_EMPLEADOS:eliminar'" (click)="deleteEmployee(employee)"
-                class="p-2 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-all active:scale-90">
-                <i class="pi pi-trash text-sm"></i>
+            <div class="flex items-center justify-end">
+              <p-menu #employeeMenu [model]="employeeActionItems(employee)" [popup]="true" appendTo="body"></p-menu>
+              <button type="button" (click)="employeeMenu.toggle($event)"
+                aria-label="Abrir acciones"
+                class="w-9 h-9 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-95">
+                <i class="pi pi-ellipsis-h text-sm"></i>
               </button>
             </div>
           </td>
