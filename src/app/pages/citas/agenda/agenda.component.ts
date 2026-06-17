@@ -46,6 +46,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { MenuModule } from 'primeng/menu';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
+import { InputFilterDirective } from '../../../core/directives/input-filter.directive';
 export type Vista = 'lista' | 'dia' | 'semana' | 'mes';
 
 interface CitaWsEvent {
@@ -81,7 +82,8 @@ interface HorarioResumen {
     ConfirmDialogModule,
     ToastModule,
     FullCalendarModule,
-    HasPermissionDirective
+    HasPermissionDirective,
+    InputFilterDirective
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './agenda.component.html'
@@ -802,6 +804,28 @@ export class AgendaComponent implements OnInit, OnDestroy {
 
     if (!nombre || !apellido || !telefono || !correo || !numDoc) {
       this.messageService.add({ severity: 'warn', summary: 'Campos incompletos', detail: 'Complete todos los campos del nuevo cliente.' });
+      return;
+    }
+    if (!/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/.test(nombre) || !/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/.test(apellido)) {
+      this.messageService.add({ severity: 'warn', summary: 'Nombre inválido', detail: 'Nombres y apellidos solo aceptan letras y espacios.' });
+      return;
+    }
+    if (!/^\d{9}$/.test(telefono)) {
+      this.messageService.add({ severity: 'warn', summary: 'Teléfono inválido', detail: 'Debe tener exactamente 9 dígitos.' });
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) {
+      this.messageService.add({ severity: 'warn', summary: 'Correo inválido', detail: 'Ingrese un correo electrónico válido.' });
+      return;
+    }
+
+    const documentoValido = this.ncTipoDoc() === 'DNI'
+      ? /^\d{8}$/.test(numDoc)
+      : this.ncTipoDoc() === 'CARNET_EXTRANJERIA'
+        ? /^[a-zA-Z]\d{8}$/.test(numDoc)
+        : /^\d{9}$/.test(numDoc);
+    if (!documentoValido) {
+      this.messageService.add({ severity: 'warn', summary: 'Documento inválido', detail: 'Verifique el formato del documento.' });
       return;
     }
 

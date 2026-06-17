@@ -138,14 +138,14 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label class="block text-sm font-medium text-slate-600 mb-1">Nombres <span class="text-red-500">*</span></label>
-                <input formControlName="nombre" type="text" placeholder="Tu nombre"
+                <input formControlName="nombre" appInputFilter="letters" type="text" placeholder="Tu nombre"
                   [ngClass]="{ 'border-red-400 ring-1 ring-red-400': isInvalid('nombre') }"
                   class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#0066AA]/20 focus:border-[#0066AA] outline-none transition-all" />
                 <p *ngIf="isInvalid('nombre')" class="text-xs text-red-500 mt-1">El nombre es obligatorio</p>
               </div>
               <div>
                 <label class="block text-sm font-medium text-slate-600 mb-1">Apellidos <span class="text-red-500">*</span></label>
-                <input formControlName="apellido" type="text" placeholder="Tu apellido"
+                <input formControlName="apellido" appInputFilter="letters" type="text" placeholder="Tu apellido"
                   [ngClass]="{ 'border-red-400 ring-1 ring-red-400': isInvalid('apellido') }"
                   class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#0066AA]/20 focus:border-[#0066AA] outline-none transition-all" />
                 <p *ngIf="isInvalid('apellido')" class="text-xs text-red-500 mt-1">El apellido es obligatorio</p>
@@ -160,7 +160,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label class="block text-sm font-medium text-slate-600 mb-1">Teléfono</label>
-                <input formControlName="telefono" type="tel" placeholder="Ej: 987654321" maxlength="15"
+                <input formControlName="telefono" appInputFilter="digits" [appInputFilterMaxLength]="9" type="tel" inputmode="numeric" placeholder="Ej: 987654321" maxlength="9"
                   [ngClass]="{ 'border-red-400 ring-1 ring-red-400': isInvalid('telefono') }"
                   class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#0066AA]/20 focus:border-[#0066AA] outline-none transition-all" />
                 <p *ngIf="isInvalid('telefono')" class="text-xs text-red-500 mt-1">Solo dígitos (7-15)</p>
