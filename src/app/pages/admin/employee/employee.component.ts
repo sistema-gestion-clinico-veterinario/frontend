@@ -24,6 +24,7 @@ import { LoadingStore } from '../../../store/loading.store';
 import { AuthStore } from '../../../store/auth.store';
 import { Role } from '../../../core/enums/role.enum';
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
+import { InputFilterDirective } from '../../../core/directives/input-filter.directive';
 
 function passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
   const newPassword = control.get('newPassword')?.value;
@@ -47,7 +48,8 @@ function passwordMatchValidator(control: AbstractControl): ValidationErrors | nu
     MultiSelectModule,
     ToastModule,
     MenuModule,
-    HasPermissionDirective
+    HasPermissionDirective,
+    InputFilterDirective
   ],
   providers: [MessageService],
   templateUrl: './employee.component.html'
