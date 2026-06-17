@@ -80,13 +80,14 @@ export class DiagnosticoIaComponent implements OnChanges {
   private readonly mediaService = inject(MediaService);
   private streamSub: Subscription | null = null;
 
-  abierto    = signal(false);
-  analizando = signal(false);
-  streaming  = signal(false);
-  error      = signal<string | null>(null);
-  texto      = signal('');
-  escenario  = signal('');
-  copiado    = signal(false);
+  abierto            = signal(false);
+  analizando         = signal(false);
+  streaming          = signal(false);
+  error              = signal<string | null>(null);
+  texto              = signal('');
+  escenario          = signal('');
+  copiado            = signal(false);
+  imageQualityIssues = signal<string[]>([]);
 
   get todasConsultas(): ConsultaResumen[] {
     return this.hc?.consultas ?? [];
@@ -126,6 +127,7 @@ export class DiagnosticoIaComponent implements OnChanges {
     this.error.set('');
     this.escenario.set('');
     this.copiado.set(false);
+    this.imageQualityIssues.set([]);
   }
 
   abrir(): void  { this.abierto.set(true); }
@@ -279,6 +281,7 @@ export class DiagnosticoIaComponent implements OnChanges {
     this.texto.set('');
     this.error.set(null);
     this.escenario.set('');
+    this.imageQualityIssues.set([]);
 
     let formData: FormData;
     try {
@@ -294,7 +297,12 @@ export class DiagnosticoIaComponent implements OnChanges {
 
     this.streamSub = this.iaService.analizarStream(formData).subscribe({
       next: evt => {
-        if (evt.type === 'meta')   this.escenario.set(evt.escenario);
+        if (evt.type === 'meta') {
+          this.escenario.set(evt.escenario);
+          if (evt.image_quality && !evt.image_quality.parece_radiografia) {
+            this.imageQualityIssues.set(evt.image_quality.issues ?? []);
+          }
+        }
         if (evt.type === 'chunk')  this.texto.update(t => t + evt.text);
       },
       error: () => {

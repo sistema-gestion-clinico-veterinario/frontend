@@ -16,6 +16,7 @@ import { MascotaRequest } from '../../../models/request/mascota-request';
 import { RazaRequest } from '../../../models/request/raza-request';
 import { LoadingStore } from '../../../store/loading.store';
 import { AuthStore } from '../../../store/auth.store';
+import { InputFilterDirective } from '../../../core/directives/input-filter.directive';
 
 @Component({
   selector: 'app-mascota-form',
@@ -27,7 +28,8 @@ import { AuthStore } from '../../../store/auth.store';
     RouterModule,
     ButtonModule,
     ToastModule,
-    DialogModule
+    DialogModule,
+    InputFilterDirective
   ],
   providers: [MessageService],
   templateUrl: './mascota-form.component.html',
@@ -100,7 +102,7 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
   ];
 
   mascotaForm: FormGroup = this.fb.group({
-    nombre:          ['',   [Validators.required, Validators.minLength(2), Validators.maxLength(80)]],
+    nombre:          ['',   [Validators.required, Validators.minLength(2), Validators.maxLength(80), Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/)]],
     especie:         [null, [Validators.required]],
     razaId:          [null, [Validators.required]],
     sexo:            [null, [Validators.required]],
@@ -112,7 +114,7 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
   });
 
   razaForm: FormGroup = this.fb.group({
-    nombre:      ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
+    nombre:      ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100), Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/)]],
     descripcion: ['', [Validators.maxLength(300)]],
   });
 
@@ -396,8 +398,26 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
       this.messageService.add({ severity: 'warn', summary: 'Campos incompletos', detail: 'Complete todos los campos obligatorios.' });
       return;
     }
+    if (!/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/.test(nombre) || !/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/.test(apellido)) {
+      this.messageService.add({ severity: 'warn', summary: 'Nombre inválido', detail: 'Nombres y apellidos solo aceptan letras y espacios.' });
+      return;
+    }
     if (!/^[0-9]{9}$/.test(telefono)) {
       this.messageService.add({ severity: 'warn', summary: 'Teléfono inválido', detail: 'Debe tener 9 dígitos.' });
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) {
+      this.messageService.add({ severity: 'warn', summary: 'Correo inválido', detail: 'Ingrese un correo electrónico válido.' });
+      return;
+    }
+
+    const documentoValido = this.ncTipoDoc() === 'DNI'
+      ? /^\d{8}$/.test(numDoc)
+      : this.ncTipoDoc() === 'CARNET_EXTRANJERIA'
+        ? /^[a-zA-Z]\d{8}$/.test(numDoc)
+        : /^\d{9}$/.test(numDoc);
+    if (!documentoValido) {
+      this.messageService.add({ severity: 'warn', summary: 'Documento inválido', detail: 'Verifique el formato del documento.' });
       return;
     }
 

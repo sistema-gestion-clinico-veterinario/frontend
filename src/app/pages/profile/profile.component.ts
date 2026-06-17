@@ -10,6 +10,7 @@ import { ProfileResponse } from '../../models/response/profile-response';
 import { HorarioEmpleadoResponse } from '../../models/response/horario-empleado-response';
 import { LoadingStore } from '../../store/loading.store';
 import { AuthStore } from '../../store/auth.store';
+import { InputFilterDirective } from '../../core/directives/input-filter.directive';
 
 interface HorarioResumen {
   diaSemana: string;
@@ -22,7 +23,7 @@ interface HorarioResumen {
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ToastModule],
+  imports: [CommonModule, ReactiveFormsModule, ToastModule, InputFilterDirective],
   providers: [MessageService],
   templateUrl: './profile.component.html'
 })
@@ -48,8 +49,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
   });
 
   form: FormGroup = this.fb.group({
-    nombre:      ['', [Validators.required, Validators.minLength(2), Validators.maxLength(80)]],
-    apellido:    ['', [Validators.required, Validators.minLength(2), Validators.maxLength(80)]],
+    nombre:      ['', [Validators.required, Validators.minLength(2), Validators.maxLength(80), Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/)]],
+    apellido:    ['', [Validators.required, Validators.minLength(2), Validators.maxLength(80), Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/)]],
     telefono:    ['', [Validators.pattern(/^\d{9}$/)]],
     direccion:   ['', [Validators.maxLength(200)]],
     observaciones: ['', [Validators.maxLength(500)]],

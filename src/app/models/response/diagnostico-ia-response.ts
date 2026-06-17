@@ -1,5 +1,5 @@
 export type SseEvento =
-  | { type: 'meta';        escenario: string; modelo: string }
+  | { type: 'meta'; escenario: string; modelo: string; image_quality?: { parece_radiografia: boolean; issues: string[] } }
   | { type: 'chunk';       text: string }
   | { type: 'continuando'; parte: number }
   | { type: 'done' };
