@@ -131,7 +131,13 @@ export class DiagnosticoIaComponent implements OnChanges {
   }
 
   abrir(): void  { this.abierto.set(true); }
-  cerrar(): void { this.abierto.set(false); }
+  cerrar(): void {
+    this.abierto.set(false);
+    if (this.streaming()) {
+      this.streamSub?.unsubscribe();
+      this.streaming.set(false);
+    }
+  }
 
   copiarTexto(): void {
     navigator.clipboard.writeText(this.texto()).then(() => {
@@ -323,7 +329,7 @@ export class DiagnosticoIaComponent implements OnChanges {
       : `${edadMeses} mes(es)`;
 
     const historialCompleto = consultas.map((uc, i) => [
-      `=== CONSULTA ${i + 1} — ${this.formatFecha(uc.fechaConsulta)} ===`,
+      `=== CONSULTA ${i + 1} | FECHA: ${this.formatFechaLarga(uc.fechaConsulta)} ===`,
       uc.motivoConsulta,
       uc.anamnesis      ? `Anamnesis: ${uc.anamnesis}` : '',
       uc.examenFisico   ? `Examen físico: ${uc.examenFisico}` : '',
@@ -369,6 +375,13 @@ export class DiagnosticoIaComponent implements OnChanges {
     if (!fecha) return '—';
     return new Date(fecha).toLocaleDateString('es-PE', {
       day: '2-digit', month: 'short', year: 'numeric',
+    });
+  }
+
+  private formatFechaLarga(fecha: string): string {
+    if (!fecha) return 'fecha desconocida';
+    return new Date(fecha).toLocaleDateString('es-PE', {
+      day: '2-digit', month: 'long', year: 'numeric',
     });
   }
 }
