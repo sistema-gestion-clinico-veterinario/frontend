@@ -23,7 +23,7 @@ export class ProcessLoadingPanelComponent implements OnDestroy {
 
   constructor() {
     effect(() => {
-      if (this.loadingStore.isLoading()) {
+      if (this.loadingStore.showProcessPanel()) {
         this.scheduleShow();
       } else {
         this.hidePanel();
@@ -48,7 +48,7 @@ export class ProcessLoadingPanelComponent implements OnDestroy {
 
     this.showDelayId = setTimeout(() => {
       this.showDelayId = null;
-      if (!this.loadingStore.isLoading()) return;
+      if (!this.loadingStore.showProcessPanel()) return;
 
       this.visible.set(true);
       this.startProgress();

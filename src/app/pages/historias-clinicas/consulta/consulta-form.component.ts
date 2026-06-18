@@ -283,6 +283,11 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
     const file = this.archivoPendiente();
     if (!file) return;
     this.archivoSubiendo.set(true);
+    this.loadingStore.show({
+      title: 'Estamos subiendo tu documento',
+      steps: ['Subiendo archivo', 'Validando contenido', 'Actualizando historia clínica', 'Terminando'],
+      showProcessPanel: true,
+    });
     this.hcService.subirArchivo(this.consultaId, file, this.tipoSeleccionado(), this.descripcionArchivo() || undefined).subscribe({
       next: () => {
         this.msgService.add({ severity: 'success', summary: 'Examen', detail: 'Archivo subido correctamente' });
@@ -291,11 +296,13 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
         this.archivoPendiente.set(null);
         this.descripcionArchivo.set('');
         this.archivoSubiendo.set(false);
+        this.loadingStore.hide({ showProcessPanel: true });
         this.loadArchivos();
       },
       error: (err) => {
         this.msgService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo subir el archivo' });
         this.archivoSubiendo.set(false);
+        this.loadingStore.hide({ showProcessPanel: true });
       }
     });
   }
