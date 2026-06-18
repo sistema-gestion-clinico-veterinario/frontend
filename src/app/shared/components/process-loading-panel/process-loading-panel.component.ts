@@ -10,6 +10,7 @@ import { LoadingStore } from '../../../store/loading.store';
 })
 export class ProcessLoadingPanelComponent implements OnDestroy {
   readonly loadingStore = inject(LoadingStore);
+  readonly visible = signal(false);
   readonly currentStep = signal(0);
   readonly progress = computed(() => {
     const total = this.loadingStore.processSteps().length || 1;
@@ -17,19 +18,21 @@ export class ProcessLoadingPanelComponent implements OnDestroy {
   });
 
   private timerId: ReturnType<typeof setInterval> | null = null;
+  private showDelayId: ReturnType<typeof setTimeout> | null = null;
+  private readonly showDelayMs = 850;
 
   constructor() {
     effect(() => {
       if (this.loadingStore.isLoading()) {
-        this.startProgress();
+        this.scheduleShow();
       } else {
-        this.stopProgress();
+        this.hidePanel();
       }
     });
   }
 
   ngOnDestroy() {
-    this.stopProgress();
+    this.hidePanel();
   }
 
   isCompleted(index: number): boolean {
@@ -38,6 +41,27 @@ export class ProcessLoadingPanelComponent implements OnDestroy {
 
   isActive(index: number): boolean {
     return index === this.currentStep();
+  }
+
+  private scheduleShow() {
+    if (this.visible() || this.showDelayId) return;
+
+    this.showDelayId = setTimeout(() => {
+      this.showDelayId = null;
+      if (!this.loadingStore.isLoading()) return;
+
+      this.visible.set(true);
+      this.startProgress();
+    }, this.showDelayMs);
+  }
+
+  private hidePanel() {
+    if (this.showDelayId) {
+      clearTimeout(this.showDelayId);
+      this.showDelayId = null;
+    }
+    this.visible.set(false);
+    this.stopProgress();
   }
 
   private startProgress() {

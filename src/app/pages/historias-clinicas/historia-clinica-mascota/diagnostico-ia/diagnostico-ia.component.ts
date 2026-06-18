@@ -1,9 +1,10 @@
 import { Component, Input, inject, signal, OnChanges, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
 import { Subscription, firstValueFrom } from 'rxjs';
 import { DiagnosticoIaService } from '../../../../core/services/diagnostico-ia.service';
 import { MediaService } from '../../../../core/services/media.service';
+import { SKIP_GLOBAL_LOADING } from '../../../../core/interceptors/api.interceptor';
 import { ESCENARIO_LABEL } from '../../../../models/response/diagnostico-ia-response';
 import {
   HistoriaClinicaDetalle,
@@ -364,7 +365,10 @@ export class DiagnosticoIaComponent implements OnChanges {
   private async fetchAsFile(archivo: ArchivoClinico): Promise<File> {
     const url  = this.mediaService.resolveUrl(archivo.url)!;
     const blob = await firstValueFrom(
-      this.http.get(url, { responseType: 'blob' })
+      this.http.get(url, {
+        responseType: 'blob',
+        context: new HttpContext().set(SKIP_GLOBAL_LOADING, true),
+      })
     );
     return new File([blob], archivo.nombre, {
       type: archivo.tipoMime ?? blob.type ?? 'application/octet-stream',
