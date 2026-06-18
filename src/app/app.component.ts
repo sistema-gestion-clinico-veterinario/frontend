@@ -1,15 +1,12 @@
-import { Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { LoadingStore } from './store/loading.store';
+import { ProcessLoadingPanelComponent } from './shared/components/process-loading-panel/process-loading-panel.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet],
+  imports: [RouterOutlet, ProcessLoadingPanelComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
-export class AppComponent {
-  readonly loadingStore = inject(LoadingStore);
-}
+export class AppComponent {}
