@@ -78,7 +78,6 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
   archivos           = signal<ArchivoClinicoResponse[]>([]);
   archivoSubiendo    = signal<boolean>(false);
   archivoPendiente   = signal<File | null>(null);
-  archivoPreviewUrl  = signal<string | null>(null);
   tipoSeleccionado   = signal<string>('LABORATORIO');
   descripcionArchivo = signal<string>('');
   archivoEliminando  = signal<ArchivoClinicoResponse | null>(null);
@@ -86,14 +85,13 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
   previewArchivo     = signal<ArchivoClinicoResponse | null>(null);
   previewUrl         = signal<SafeResourceUrl | string>('');
   previewRawUrl      = signal<string>('');
-  previewTipo        = signal<'imagen' | 'pdf' | 'dcm' | 'docx' | null>(null);
+  previewTipo        = signal<'imagen' | 'pdf' | 'dcm' | null>(null);
 
   readonly tiposArchivo = [
     { label: 'Laboratorio',  value: 'LABORATORIO' },
     { label: 'Radiografía',  value: 'RADIOGRAFIA' },
     { label: 'Ecografía',    value: 'ECOGRAFIA'   },
     { label: 'Imagen',       value: 'IMAGEN'      },
-    { label: 'Documento',    value: 'DOCUMENTO'   },
     { label: 'Otro',         value: 'OTRO'        },
   ];
 
@@ -174,7 +172,6 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.autosaveSub?.unsubscribe();
-    if (this.archivoPreviewUrl()) URL.revokeObjectURL(this.archivoPreviewUrl()!);
   }
 
   loadConsulta() {
@@ -267,14 +264,9 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
 
   onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
-    if (!file) return;
-
-    if (this.archivoPreviewUrl()) {
-      URL.revokeObjectURL(this.archivoPreviewUrl()!);
+    if (input.files?.[0]) {
+      this.archivoPendiente.set(input.files[0]);
     }
-    this.archivoPendiente.set(file);
-    this.archivoPreviewUrl.set(URL.createObjectURL(file));
     input.value = '';
   }
 
@@ -286,8 +278,6 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
     this.hcService.subirArchivo(this.consultaId, file, this.tipoSeleccionado(), this.descripcionArchivo() || undefined).subscribe({
       next: () => {
         this.msgService.add({ severity: 'success', summary: 'Examen', detail: 'Archivo subido correctamente' });
-        if (this.archivoPreviewUrl()) URL.revokeObjectURL(this.archivoPreviewUrl()!);
-        this.archivoPreviewUrl.set(null);
         this.archivoPendiente.set(null);
         this.descripcionArchivo.set('');
         this.archivoSubiendo.set(false);
@@ -308,18 +298,10 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
       this.previewUrl.set('');
       return;
     }
-    if (ext === 'docx' || ext === 'doc') {
-      this.previewArchivo.set(archivo);
-      this.previewTipo.set('docx');
-      this.previewUrl.set('');
-      return;
-    }
     this.hcService.obtenerContenidoArchivo(this.consultaId, archivo.id).subscribe({
       next: (blob) => {
         if (this.previewRawUrl()) URL.revokeObjectURL(this.previewRawUrl());
-        const mime = archivo.tipoMime || blob.type || 'application/octet-stream';
-        const typedBlob = blob.type && blob.type !== 'application/octet-stream' ? blob : new Blob([blob], { type: mime });
-        const objectUrl = URL.createObjectURL(typedBlob);
+        const objectUrl = URL.createObjectURL(blob);
         this.previewRawUrl.set(objectUrl);
         this.previewUrl.set(ext === 'pdf'
           ? this.sanitizer.bypassSecurityTrustResourceUrl(objectUrl)
