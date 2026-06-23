@@ -71,19 +71,16 @@ export class EmployeeDashboardComponent implements OnInit {
     return 'bg-slate-100 text-slate-600 border border-slate-200';
   }
 
-  // Today's shift computed property
-  todayShiftLabel = computed(() => {
+  // Today's shifts computed property (puede haber más de un turno el mismo día)
+  todayShifts = computed(() => {
     const schedules = this.horariosList();
-    if (!schedules || schedules.length === 0) return 'No Asignado';
+    if (!schedules || schedules.length === 0) return [];
 
     const todayStr = this.today.toISOString().split('T')[0];
-    const todaySchedule = schedules.find(h => {
-      if (!h.fecha || !h.activo) return false;
-      return h.fecha.startsWith(todayStr) || h.fecha === todayStr;
-    });
-
-    if (!todaySchedule) return 'Día Libre / No Labora';
-    return `${todaySchedule.horaInicio.substring(0, 5)} - ${todaySchedule.horaFin.substring(0, 5)}`;
+    return schedules
+      .filter(h => h.fecha && h.activo && (h.fecha.startsWith(todayStr) || h.fecha === todayStr))
+      .sort((a, b) => a.horaInicio.localeCompare(b.horaInicio))
+      .map(h => `${h.horaInicio.substring(0, 5)} - ${h.horaFin.substring(0, 5)}`);
   });
 
   // KPIs computed properties

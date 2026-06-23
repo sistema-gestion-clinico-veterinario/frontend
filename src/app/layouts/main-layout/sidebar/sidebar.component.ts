@@ -36,7 +36,8 @@ export class SidebarComponent implements OnInit {
   companyLogoUrl = signal<string | null>(null);
 
   userName = computed(() => this.authStore.nombreCompleto() ?? 'Usuario');
-  companyName = computed(() => this.authStore.companyName() ?? '');
+  companyName = computed(() => this.authStore.selectedEnterprise()?.name ?? this.authStore.companyName() ?? '');
+  loadingEnterprise = computed(() => this.authStore.loadingEnterprise());
 
   userInitials = computed(() => {
     const name = this.authStore.nombreCompleto() ?? '';
