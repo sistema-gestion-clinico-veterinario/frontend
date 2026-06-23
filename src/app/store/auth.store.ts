@@ -24,6 +24,7 @@ interface AuthState {
   originalMenu: (MenuItemDTO | MenuStructureDTO)[];
   simulatedRoleId: number | null;
   allowedRoutes: string[];
+  loadingEnterprise: boolean;
 }
 
 export interface AuthPayload {
@@ -59,6 +60,7 @@ const createInitialState = (useStorage = true): AuthState => {
           assignedRoles: parsed.assignedRoles ?? parsed.roles ?? [],
           originalRoles: parsed.originalRoles ?? parsed.roles ?? [],
           allowedRoutes: parsed.allowedRoutes ?? Array.from(extractAllowedRoutes(menu)),
+          loadingEnterprise: false,
         } as AuthState;
       } catch {
       }
@@ -83,6 +85,7 @@ const createInitialState = (useStorage = true): AuthState => {
     originalMenu: [],
     simulatedRoleId: null,
     allowedRoutes: [],
+    loadingEnterprise: false,
   };
 };
 
@@ -118,6 +121,7 @@ export const AuthStore = signalStore(
         originalMenu: auth.originalMenu ?? auth.menu ?? [],
         simulatedRoleId: auth.simulatedRoleId ?? null,
         allowedRoutes,
+        loadingEnterprise: false,
       };
       patchState(store, state);
       saveToStorage(state);
@@ -132,6 +136,10 @@ export const AuthStore = signalStore(
       patchState(store, { selectedEnterprise: enterprise });
       const current = buildCurrentState(store);
       saveToStorage({ ...current, selectedEnterprise: enterprise });
+    },
+
+    setLoadingEnterprise(loadingEnterprise: boolean) {
+      patchState(store, { loadingEnterprise });
     },
 
     setMenu(menu: MenuItemDTO[]) {
@@ -298,6 +306,7 @@ function buildCurrentState(store: any): AuthState {
     originalMenu: store.originalMenu(),
     simulatedRoleId: store.simulatedRoleId(),
     allowedRoutes: store.allowedRoutes(),
+    loadingEnterprise: store.loadingEnterprise(),
   };
 }
 

@@ -264,7 +264,7 @@
           </div>
 
           <!-- Picker grid -->
-          <div *ngIf="showIconPicker()" class="mt-2 border border-slate-200 rounded-xl overflow-hidden shadow-md">
+          <div *ngIf="showIconPicker()" class="mt-2 border border-slate-200 rounded-xl overflow-hidden">
             <div class="grid grid-cols-6 sm:grid-cols-9 p-2 gap-0.5 max-h-44 overflow-y-auto">
               <button *ngFor="let ic of ICONOS_DISPONIBLES" type="button"
                       (click)="seleccionarIcono(ic)"
@@ -306,7 +306,7 @@
                    [ngModel]="vistaForm().activo" (ngModelChange)="updateField('activo', $event)" />
             <div class="w-10 h-6 rounded-full transition-colors"
                  [ngClass]="vistaForm().activo ? 'bg-[#0066AA]' : 'bg-slate-200'">
-              <div class="absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all"
+              <div class="absolute top-1 w-4 h-4 bg-white rounded-full border border-slate-200 transition-all"
                    [ngClass]="vistaForm().activo ? 'left-5' : 'left-1'"></div>
             </div>
           </div>
@@ -363,7 +363,7 @@
 <!-- DIÁLOGO DE CONFIRMACIÓN -->
 <div *ngIf="confirmDialog() as dialog"
      class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-0 sm:p-4">
-  <div class="bg-white rounded-t-2xl sm:rounded-2xl p-6 max-w-sm w-full shadow-xl">
+  <div class="bg-white rounded-t-2xl sm:rounded-2xl p-6 max-w-sm w-full border border-slate-200">
     <div class="w-12 h-12 rounded-2xl bg-rose-50 flex items-center justify-center mx-auto mb-4">
       <i class="pi pi-trash text-xl text-rose-500"></i>
     </div>

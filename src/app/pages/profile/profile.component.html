@@ -228,22 +228,33 @@
           <h3 class="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
             <i class="pi pi-clock text-[#0066AA]"></i> Horario de trabajo
           </h3>
-          <div class="space-y-2 max-h-72 overflow-y-auto pr-1">
-            <div *ngFor="let h of horariosResumen"
-              class="rounded-xl bg-slate-50/70 border border-slate-100 px-3 py-2.5">
-              <div class="flex items-center justify-between gap-2">
-                <span class="text-xs font-extrabold text-slate-700">{{ formatDiaSemana(h.diaSemana) }}</span>
-                <span class="text-xs font-extrabold text-[#0066AA] whitespace-nowrap">{{ h.horaInicio }} - {{ h.horaFin }}</span>
-              </div>
-              <div class="mt-1.5 flex items-center justify-between gap-2">
-                <span class="flex items-center gap-1.5 text-[10px] font-semibold text-slate-400 min-w-0">
-                  <i class="pi pi-calendar text-[10px] shrink-0"></i>
-                  <span class="truncate">{{ h.rangoFechas }}</span>
-                </span>
-                <span *ngIf="h.totalFechas > 1"
-                  class="text-[10px] font-bold text-slate-400 whitespace-nowrap">
-                  {{ h.totalFechas }} fechas
-                </span>
+
+          <!-- Semana completa, Lunes a Domingo, siempre las 7 filas -->
+          <div class="space-y-1.5">
+            <div *ngFor="let dia of semanaCompleta"
+              class="flex items-start gap-3 rounded-xl px-3 py-2.5"
+              [ngClass]="dia.bloques.length ? 'bg-slate-50/70 border border-slate-100' : ''">
+
+              <span class="text-xs font-extrabold w-[72px] shrink-0 pt-0.5"
+                [class.text-slate-700]="dia.bloques.length"
+                [class.text-slate-300]="!dia.bloques.length">
+                {{ dia.label }}
+              </span>
+
+              <!-- Día libre -->
+              <span *ngIf="!dia.bloques.length"
+                class="text-[10px] font-semibold text-slate-300 pt-0.5">Libre</span>
+
+              <!-- Bloques de horario del día -->
+              <div *ngIf="dia.bloques.length" class="flex-1 flex flex-col gap-1.5 min-w-0">
+                <div *ngFor="let b of dia.bloques" class="flex items-center justify-between gap-2 flex-wrap">
+                  <span class="text-xs font-extrabold text-[#0066AA] whitespace-nowrap">{{ b.horaInicio }} - {{ b.horaFin }}</span>
+                  <span class="flex items-center gap-1.5 text-[10px] font-semibold text-slate-400 min-w-0">
+                    <i class="pi pi-calendar text-[10px] shrink-0"></i>
+                    <span class="truncate">{{ b.rangoFechas }}</span>
+                    <span *ngIf="b.totalFechas > 1" class="font-bold whitespace-nowrap">· {{ b.totalFechas }} fechas</span>
+                  </span>
+                </div>
               </div>
             </div>
           </div>

@@ -219,6 +219,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
     this.showEstadoFilter.set(false);
     this.showVeterinarioFilter.set(false);
     this.showVeterinarioSelector.set(false);
+    this.showMesPicker.set(false);
   }
 
   @HostListener('document:keydown.escape')
@@ -255,6 +256,9 @@ export class AgendaComponent implements OnInit, OnDestroy {
   }
   vistaActual  = signal<Vista>('lista');
   fechaBase    = signal<Date>(new Date());
+  showMesPicker = signal(false);
+  pickerYear    = signal(new Date().getFullYear());
+  readonly mesesPicker = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Set','Oct','Nov','Dic'];
   citasPorDia  = signal<Record<string, CitaResponse[]>>({});
   calendarEvents = signal<EventInput[]>([]);
   cargandoCal  = signal<boolean>(false);
@@ -1338,6 +1342,27 @@ export class AgendaComponent implements OnInit, OnDestroy {
       this.fechaBase.set(base);
       this.loadCitasCalendario();
     }
+  }
+
+  toggleMesPicker() {
+    if (!this.showMesPicker()) this.pickerYear.set(this.fechaBase().getFullYear());
+    this.showMesPicker.update(v => !v);
+  }
+
+  pickerYearPrev() { this.pickerYear.update(y => y - 1); }
+  pickerYearNext() { this.pickerYear.update(y => y + 1); }
+
+  seleccionarMesPicker(mesIndex: number) {
+    const nueva = new Date(this.pickerYear(), mesIndex, 1);
+    this.fechaBase.set(nueva);
+    this.filterFecha = this.toDateStr(nueva);
+    this.showMesPicker.set(false);
+    this.refreshCurrentView();
+  }
+
+  esMesPickerActivo(mesIndex: number): boolean {
+    const b = this.fechaBase();
+    return b.getMonth() === mesIndex && b.getFullYear() === this.pickerYear();
   }
 
   irAHoy() {
