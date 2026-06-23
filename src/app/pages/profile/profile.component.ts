@@ -20,6 +20,14 @@ interface HorarioResumen {
   totalFechas: number;
 }
 
+interface HorarioDiaGrupo {
+  diaSemana: string;
+  label: string;
+  bloques: { horaInicio: string; horaFin: string; rangoFechas: string; totalFechas: number }[];
+}
+
+const DIAS_SEMANA_ORDEN = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO', 'DOMINGO'];
+
 @Component({
   selector: 'app-profile',
   standalone: true,
@@ -215,14 +223,35 @@ export class ProfileComponent implements OnInit, OnDestroy {
     return this.buildHorarioResumen(horarios);
   }
 
+  get semanaCompleta(): HorarioDiaGrupo[] {
+    const resumen = this.horariosResumen;
+    const groups = new Map<string, HorarioDiaGrupo>();
+
+    for (const h of resumen) {
+      if (!groups.has(h.diaSemana)) {
+        groups.set(h.diaSemana, { diaSemana: h.diaSemana, label: this.formatDiaSemana(h.diaSemana), bloques: [] });
+      }
+      groups.get(h.diaSemana)!.bloques.push({
+        horaInicio: h.horaInicio,
+        horaFin: h.horaFin,
+        rangoFechas: h.rangoFechas,
+        totalFechas: h.totalFechas
+      });
+    }
+
+    return DIAS_SEMANA_ORDEN.map(dia =>
+      groups.get(dia) ?? { diaSemana: dia, label: this.formatDiaSemana(dia), bloques: [] }
+    );
+  }
+
   formatDiaSemana(dia: string): string {
     const labels: Record<string, string> = {
       LUNES: 'Lunes',
       MARTES: 'Martes',
-      MIERCOLES: 'Miercoles',
+      MIERCOLES: 'Miércoles',
       JUEVES: 'Jueves',
       VIERNES: 'Viernes',
-      SABADO: 'Sabado',
+      SABADO: 'Sábado',
       DOMINGO: 'Domingo'
     };
     return labels[dia] ?? dia;

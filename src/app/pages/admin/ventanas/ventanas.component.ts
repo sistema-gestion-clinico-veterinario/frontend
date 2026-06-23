@@ -141,12 +141,6 @@ isGroupExpanded(groupKey: string): boolean {
   return this.expandedGroups().has(groupKey);
 }
 
-// Expandir todos los grupos
-expandAllItems() {
-  const allKeys = this.displayGroups().map(g => g.key);
-  this.expandedGroups.set(new Set(allKeys));
-}
-
 // Añadir vista a un grupo específico
 addVistaToGroup(groupKey: string) {
   this.nuevaVista();
@@ -162,7 +156,6 @@ addVistaToGroup(groupKey: string) {
     this.menuService.listarVistas().subscribe({
       next: (res) => {
         this.vistas.set(res.data);
-        this.expandAllItems();
         this.loadingStore.hide();
       },
       error: () => {

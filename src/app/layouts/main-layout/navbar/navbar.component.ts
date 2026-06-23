@@ -74,6 +74,7 @@ export class NavbarComponent implements OnInit {
 
   ngOnInit() {
     if (this.isSuperAdmin) {
+      this.authStore.setLoadingEnterprise(true);
       this.companyService.listar(0, 1000).subscribe({
         next: (res) => {
           const companies = res.data?.content ?? [];
@@ -90,9 +91,11 @@ export class NavbarComponent implements OnInit {
           } else if (currentSelected) {
             this.loadCompanyRoles(currentSelected.establishmentId);
           }
+          this.authStore.setLoadingEnterprise(false);
         },
         error: () => {
           this.companies.set([]);
+          this.authStore.setLoadingEnterprise(false);
         }
       });
     }

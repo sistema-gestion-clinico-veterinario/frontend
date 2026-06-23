@@ -73,12 +73,40 @@
         class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:border-[#0066AA] hover:text-[#0066AA] transition-all">
         <i class="pi pi-chevron-left text-xs"></i>
       </button>
-      <div class="flex items-center gap-3">
-        <p class="text-xs sm:text-sm font-extrabold text-slate-800 capitalize text-center">{{ tituloCalendario() }}</p>
+      <div class="flex items-center gap-3 relative" (click)="$event.stopPropagation()">
+        <button type="button" (click)="toggleMesPicker()"
+          class="flex items-center gap-1.5 text-xs sm:text-sm font-extrabold text-slate-800 capitalize text-center hover:text-[#0066AA] transition-colors">
+          {{ tituloCalendario() }}
+          <i class="pi pi-chevron-down text-[9px] text-slate-400"></i>
+        </button>
         <button (click)="irAHoy()"
           class="text-xs font-bold text-[#0066AA] border border-[#0066AA]/30 bg-blue-50 px-2.5 py-1 rounded-lg hover:bg-[#0066AA] hover:text-white transition-all">
           Hoy
         </button>
+
+        <!-- Selector rápido de mes/año -->
+        <div *ngIf="showMesPicker()"
+          class="absolute z-50 top-full mt-2 left-1/2 -translate-x-1/2 w-64 bg-white border border-slate-200 rounded-xl p-3">
+          <div class="flex items-center justify-between mb-2">
+            <button type="button" (click)="pickerYearPrev()"
+              class="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-50 hover:text-[#0066AA] transition-colors">
+              <i class="pi pi-chevron-left text-xs"></i>
+            </button>
+            <span class="text-sm font-extrabold text-slate-800">{{ pickerYear() }}</span>
+            <button type="button" (click)="pickerYearNext()"
+              class="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-50 hover:text-[#0066AA] transition-colors">
+              <i class="pi pi-chevron-right text-xs"></i>
+            </button>
+          </div>
+          <div class="grid grid-cols-4 gap-1.5">
+            <button *ngFor="let m of mesesPicker; let i = index" type="button"
+              (click)="seleccionarMesPicker(i)"
+              [ngClass]="esMesPickerActivo(i) ? 'bg-[#0066AA] text-white' : 'text-slate-600 hover:bg-slate-50'"
+              class="py-1.5 rounded-lg text-xs font-bold transition-colors">
+              {{ m }}
+            </button>
+          </div>
+        </div>
       </div>
       <button (click)="navegarCalendario(1)"
         class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:border-[#0066AA] hover:text-[#0066AA] transition-all">
