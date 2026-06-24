@@ -19,8 +19,8 @@ export class ApoderadoService {
     if (companyId !== undefined && companyId !== null) {
       params += `&companyId=${companyId}`;
     }
-    if (nombre) params += `&nombre=${nombre}`;
-    if (numeroDocumento) params += `&numeroDocumento=${numeroDocumento}`;
+    if (nombre) params += `&nombre=${encodeURIComponent(nombre)}`;
+    if (numeroDocumento) params += `&numeroDocumento=${encodeURIComponent(numeroDocumento)}`;
     return this.http.get<ApiResponse<Page<ApoderadoListResponse>>>(`${this.apiUrl}${params}`);
   }
 

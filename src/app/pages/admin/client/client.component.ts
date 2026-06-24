@@ -1,4 +1,6 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, DestroyRef, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Subject, debounceTime } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { TableModule } from 'primeng/table';
@@ -47,6 +49,7 @@ export class ClientComponent implements OnInit {
   private readonly messageService = inject(MessageService);
   readonly authStore = inject(AuthStore);
   readonly loadingStore = inject(LoadingStore);
+  private readonly destroyRef = inject(DestroyRef);
 
   clients = signal<ApoderadoListResponse[]>([]);
   loading = signal<boolean>(false);
@@ -54,7 +57,13 @@ export class ClientComponent implements OnInit {
   isEdit = signal<boolean>(false);
   totalRecords = signal<number>(0);
   confirmDialog = signal<{ title: string; message: string; onConfirm: () => void } | null>(null);
-  
+
+  searchNombre = signal('');
+  searchDocumento = signal('');
+  private pageSize = 10;
+  private readonly searchTrigger = new Subject<void>();
+
+
   get activeCompanyId(): number | null {
     return this.authStore.selectedEnterprise()?.establishmentId ?? this.authStore.companyId();
   }
@@ -133,6 +142,11 @@ export class ClientComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.searchTrigger.pipe(
+      debounceTime(400),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(() => this.loadClients({ first: 0, rows: this.pageSize }));
+
     this.clientForm.get('tipoDocumento')?.valueChanges.subscribe(tipo => {
       const doc = this.clientForm.get('numeroDocumento');
       if (tipo === 'DNI') {
@@ -149,15 +163,29 @@ export class ClientComponent implements OnInit {
     });
   }
 
-  loadClients(event: any = { first: 0, rows: 10 }) {
+  onSearchChange() {
+    this.searchTrigger.next();
+  }
+
+  clearSearch() {
+    this.searchNombre.set('');
+    this.searchDocumento.set('');
+    this.loadClients({ first: 0, rows: this.pageSize });
+  }
+
+  loadClients(event: any = { first: 0, rows: this.pageSize }) {
     const companyId = this.activeCompanyId;
     if (!companyId) return;
 
+    this.pageSize = event.rows;
     const page = Math.floor(event.first / event.rows);
     this.loading.set(true);
     this.loadingStore.show();
 
-    this.apoderadoService.listar(companyId, undefined, undefined, page, event.rows).subscribe({
+    const nombre = this.searchNombre().trim() || undefined;
+    const numeroDocumento = this.searchDocumento().trim() || undefined;
+
+    this.apoderadoService.listar(companyId, nombre, numeroDocumento, page, event.rows).subscribe({
       next: (res) => {
         this.clients.set(res.data.content);
         this.totalRecords.set(res.data?.page?.totalElements ?? res.data?.totalElements ?? 0);
