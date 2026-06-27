@@ -233,6 +233,14 @@ export class CompanyComponent implements OnInit {
     request.subscribe({
       next: () => {
         this.logoFile.set(null);
+        if (logoUrl && !this.isSuperAdmin()) {
+          const current = this.authStore.selectedEnterprise();
+          this.authStore.setSelectedEnterprise({
+            establishmentId: current?.establishmentId ?? (this.authStore.companyId() ?? 0),
+            name: current?.name ?? formValue.name ?? '',
+            logoUrl
+          });
+        }
         this.messageService.add({
           severity: 'success',
           summary: 'Éxito',
@@ -263,11 +271,9 @@ export class CompanyComponent implements OnInit {
   }
 
   readonly logoFile = signal<{ file: File; preview: string } | null>(null);
+  isDragOver = signal(false);
 
-  onLogoSelected(event: Event) {
-    const input = event.target as HTMLInputElement;
-    if (!input.files?.length) return;
-    const file = input.files[0];
+  private processLogoFile(file: File) {
     const validTypes = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
     const maxSize = 5 * 1024 * 1024;
     if (!validTypes.includes(file.type)) {
@@ -283,6 +289,34 @@ export class CompanyComponent implements OnInit {
       this.logoFile.set({ file, preview: reader.result as string });
     };
     reader.readAsDataURL(file);
+  }
+
+  onLogoSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
+    this.processLogoFile(input.files[0]);
+    input.value = '';
+  }
+
+  onDragOver(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOver.set(true);
+  }
+
+  onDragLeave(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOver.set(false);
+  }
+
+  onDrop(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOver.set(false);
+    if (event.dataTransfer?.files?.length) {
+      this.processLogoFile(event.dataTransfer.files[0]);
+    }
   }
 
   removeLogo() {

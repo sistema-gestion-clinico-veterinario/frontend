@@ -21,7 +21,7 @@
     </div>
   </div>
 
-  <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-none">
+  <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
     <p-table [value]="employees()" [lazy]="true" (onLazyLoad)="loadEmployees($event)" [paginator]="true" [rows]="10"
       [totalRecords]="totalRecords()" [loading]="loading()" responsiveLayout="stack" breakpoint="768px" [rowHover]="true"
       styleClass="p-datatable-borderless">
@@ -129,7 +129,7 @@
 </div>
 
 <div *ngIf="displayModal()" class="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/50 backdrop-blur-sm">
-  <div class="bg-white w-full sm:max-w-2xl rounded-t-2xl sm:rounded-lg shadow-2xl flex flex-col max-h-[95dvh]">
+  <div class="bg-white w-full sm:max-w-2xl rounded-t-2xl sm:rounded-lg  flex flex-col max-h-[95dvh]">
     <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50 rounded-t-lg">
       <h2 class="text-lg font-bold text-slate-800">
         {{ isEdit() ? 'Modificar Registro de Personal' : 'Registro de Nuevo Empleado' }}
@@ -246,7 +246,7 @@
                 <i class="pi pi-chevron-down text-[10px] text-slate-400"></i>
               </button>
               <div *ngIf="openDropdown() === 'roles'"
-                class="absolute z-[110] top-full left-0 w-full mt-1 bg-white border border-slate-200 shadow-xl rounded-lg overflow-hidden animate-in fade-in zoom-in-95 duration-100">
+                class="absolute z-[110] top-full left-0 w-full mt-1 bg-white border border-slate-200 rounded-lg overflow-hidden animate-in fade-in zoom-in-95 duration-100">
                 <div class="p-2 border-b border-slate-100 bg-slate-50">
                   <div class="relative">
                     <i class="pi pi-search absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400"></i>
@@ -279,7 +279,7 @@
                 <i class="pi pi-chevron-down text-[10px] text-slate-400"></i>
               </button>
               <div *ngIf="openDropdown() === 'tipos'"
-                class="absolute z-[110] top-full left-0 w-full mt-1 bg-white border border-slate-200 shadow-xl rounded-lg overflow-hidden animate-in fade-in zoom-in-95 duration-100">
+                class="absolute z-[110] top-full left-0 w-full mt-1 bg-white border border-slate-200  rounded-lg overflow-hidden animate-in fade-in zoom-in-95 duration-100">
                 <div class="p-2 border-b border-slate-100 bg-slate-50">
                   <div class="relative">
                     <i class="pi pi-search absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400"></i>
@@ -354,7 +354,7 @@
                 <i class="pi pi-chevron-down text-[10px] text-slate-400"></i>
               </button>
               <div *ngIf="openDropdown() === 'especialidades'"
-                class="absolute z-[110] top-full left-0 w-full mt-1 bg-white border border-slate-200 shadow-xl rounded-lg overflow-hidden animate-in fade-in zoom-in-95 duration-100">
+                class="absolute z-[110] top-full left-0 w-full mt-1 bg-white border border-slate-200 rounded-lg overflow-hidden animate-in fade-in zoom-in-95 duration-100">
                 <div class="p-2 border-b border-slate-100 bg-slate-50">
                   <div class="relative">
                     <i class="pi pi-search absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400"></i>
