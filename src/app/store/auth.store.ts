@@ -4,6 +4,7 @@ import { MenuItemDTO, MenuStructureDTO } from '../models/response/auth-login-res
 interface Enterprise {
   establishmentId: number;
   name: string;
+  logoUrl?: string;
 }
 
 interface AuthState {

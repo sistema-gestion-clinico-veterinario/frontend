@@ -33,7 +33,7 @@ export class SidebarComponent implements OnInit {
   private mediaService = inject(MediaService);
 
   expandedSections = signal<Record<string, boolean>>({});
-  companyLogoUrl = signal<string | null>(null);
+  companyLogoUrl = computed(() => this.authStore.selectedEnterprise()?.logoUrl ? this.mediaService.resolveUrl(this.authStore.selectedEnterprise()?.logoUrl) : null);
 
   userName = computed(() => this.authStore.nombreCompleto() ?? 'Usuario');
   companyName = computed(() => this.authStore.selectedEnterprise()?.name ?? this.authStore.companyName() ?? '');
@@ -64,7 +64,12 @@ export class SidebarComponent implements OnInit {
       this.companyService.getById(companyId).subscribe({
         next: (res) => {
           if (res.data?.logoUrl) {
-            this.companyLogoUrl.set(this.mediaService.resolveUrl(res.data.logoUrl));
+            const current = this.authStore.selectedEnterprise();
+            this.authStore.setSelectedEnterprise({
+              establishmentId: current?.establishmentId ?? companyId,
+              name: current?.name ?? res.data.name ?? '',
+              logoUrl: res.data.logoUrl
+            });
           }
         }
       });

@@ -12,8 +12,7 @@
       </div>
       <div *ngIf="!collapsed()" class="flex flex-col gap-1">
         <span *ngIf="loadingEnterprise()" class="h-4 w-28 rounded bg-slate-100 animate-pulse"></span>
-        <span *ngIf="!loadingEnterprise()" class="text-[18px] font-semibold text-[#0F172A] leading-none mb-1">{{ companyName() || 'VargasVet' }}</span>
-        <span class="text-[9px] font-medium text-[#94A3B8] uppercase tracking-[0.22em]">Veterinary Center</span>
+        <span *ngIf="!loadingEnterprise()" class="text-[18px] font-semibold text-[#0F172A] leading-none mb-1">{{ companyName() || '' }}</span>
       </div>
     </div>
   </div>
