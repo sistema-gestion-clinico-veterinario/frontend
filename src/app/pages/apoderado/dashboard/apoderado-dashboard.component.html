@@ -27,7 +27,7 @@
     </div>
   </div>
 
-  <!-- Warning: fuera de horario -->
+
   <div *ngIf="!isCurrentlyOpen()"
     class="mx-6 sm:mx-8 lg:mx-10 mt-6 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex items-start gap-3">
     <i class="pi pi-exclamation-triangle text-amber-500 text-lg mt-0.5"></i>
@@ -40,10 +40,9 @@
     </div>
   </div>
 
-  <!-- CONTENIDO -->
+
   <div class="px-6 sm:px-8 lg:px-10 py-7 space-y-6">
 
-    <!-- KPI CARDS -->
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
 
       <div class="bg-white rounded-2xl border border-slate-200 p-5 flex items-center gap-4 hover:border-slate-300 transition-colors">
@@ -95,7 +94,6 @@
     <!-- GRID PRINCIPAL -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
 
-      <!-- COLUMNA IZQUIERDA (2/3) -->
       <div class="lg:col-span-2 space-y-6">
 
         <!-- PRÓXIMAS CITAS -->
@@ -198,7 +196,7 @@
                   <i class="pi pi-heart-fill text-sm text-pink-500"></i>
                 </div>
                 <div class="min-w-0 flex-1">
-                  <p class="text-xs font-extrabold text-slate-800 truncate">{{ mascota.nombre }}</p>
+                  <p class="text-xs font-extrabold text-slate-800 truncate">{{ mascota.nombreCompleto }}</p>
                   <p class="text-[10px] text-slate-400 font-medium truncate">
                     {{ mascota.especie }} · {{ mascota.raza || '—' }}
                   </p>
