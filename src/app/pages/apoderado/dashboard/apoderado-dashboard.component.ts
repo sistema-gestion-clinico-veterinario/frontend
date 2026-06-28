@@ -72,26 +72,21 @@ export class ApoderadoDashboardComponent implements OnInit {
     this.loadCompanyInfo();
   }
 
-  private loadCompanyInfo() {
-    this.apoderadoService.getPortalPerfil().subscribe({
-      next: (res) => {
-        const data = res.data as any;
-        if (data) {
-          this.companyPhone.set(data.companyPhone ?? '');
-          this.isCurrentlyOpen.set(data.currentlyOpen !== false);
-        }
+private loadCompanyInfo() {
+  this.apoderadoService.getPortalPerfil().subscribe({
+    next: (res) => {
+      const data = res.data as any;
+      if (data) {
+        this.companyPhone.set(data.companyPhone ?? '');
+        this.isCurrentlyOpen.set(data.currentlyOpen !== false);
+        this.mascotas.set(data.mascotas ?? []);
       }
-    });
-  }
+    }
+  });
+}
 
   loadDashboard() {
     this.loadingStore.show();
-
-    this.apoderadoService.getPortalMascotas().subscribe({
-      next: (res) => this.mascotas.set(res.data ?? []),
-      error: () => {}
-    });
-
     this.apoderadoService.getPortalCitas().subscribe({
       next: (res) => {
         this.citas.set(res.data?.content ?? res.data ?? []);
