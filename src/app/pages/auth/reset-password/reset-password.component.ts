@@ -65,6 +65,11 @@ export class ResetPasswordComponent implements OnInit {
   }
 
   submit() {
+    const rawPwd = this.resetForm.getRawValue().password ?? '';
+    if (rawPwd !== rawPwd.trim()) {
+      this.errorMessage = 'La contraseña no debe contener espacios.';
+      return;
+    }
     if (this.resetForm.invalid || !this.token) {
       this.resetForm.markAllAsTouched();
       return;

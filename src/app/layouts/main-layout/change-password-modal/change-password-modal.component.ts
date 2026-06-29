@@ -65,6 +65,12 @@ export class ChangePasswordModalComponent {
   }
 
   submit() {
+    const raw = this.form.getRawValue();
+    if ((raw.oldPassword ?? '') !== (raw.oldPassword ?? '').trim() ||
+        (raw.newPassword ?? '') !== (raw.newPassword ?? '').trim()) {
+      this.errorMsg.set('Las contraseñas no deben contener espacios.');
+      return;
+    }
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
     this.isSubmitting.set(true);
     this.errorMsg.set(null);

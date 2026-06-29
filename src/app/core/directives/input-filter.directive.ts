@@ -1,7 +1,7 @@
 import { Directive, ElementRef, HostListener, Input, Optional, Self, inject } from '@angular/core';
 import { NgControl } from '@angular/forms';
 
-type InputFilterMode = 'letters' | 'digits';
+type InputFilterMode = 'letters' | 'digits' | 'alphanumeric';
 
 @Directive({
   selector: '[appInputFilter]',
@@ -47,11 +47,25 @@ export class InputFilterDirective {
   }
 
   private sanitize(value: string): string {
-    const pattern = this.mode === 'digits'
-      ? /\D/g
-      : /[^A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]/g;
-
-    const sanitized = value.replace(pattern, '');
+    let sanitized = '';
+    if (this.mode === 'digits') {
+      sanitized = value.replace(/\D/g, '');
+    } else if (this.mode === 'alphanumeric') {
+      for (let i = 0; i < value.length; i++) {
+        const ch = value[i];
+        if (i === 0) {
+          if (/[A-Za-z0-9]/.test(ch)) {
+            sanitized += ch.toUpperCase();
+          }
+        } else {
+          if (/\d/.test(ch)) {
+            sanitized += ch;
+          }
+        }
+      }
+    } else {
+      sanitized = value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]/g, '');
+    }
     return this.appInputFilterMaxLength ? sanitized.slice(0, this.appInputFilterMaxLength) : sanitized;
   }
 }

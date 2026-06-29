@@ -490,7 +490,6 @@ export class AgendaComponent implements OnInit, OnDestroy {
     const fechaStr  = this.filterFecha || undefined;
     const veterinarioId = this.getEffectiveVeterinarioFilter();
 
-    this.loadingStore.show();
     this.citaService.listar(
       companyId,
       fechaStr,
@@ -510,11 +509,9 @@ export class AgendaComponent implements OnInit, OnDestroy {
           const [y, m, d] = this.filterFecha.split('-').map(Number);
           this.fechaBase.set(new Date(y, m - 1, d));
         }
-        this.loadingStore.hide();
       },
       error: () => {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar las citas' });
-        this.loadingStore.hide();
       }
     });
   }
@@ -990,7 +987,6 @@ export class AgendaComponent implements OnInit, OnDestroy {
         });
         this.displayModal.set(false);
         this.loadCitas();
-        this.loadingStore.hide();
       },
       error: (err: any) => {
         this.messageService.add({ 
@@ -998,7 +994,6 @@ export class AgendaComponent implements OnInit, OnDestroy {
           summary: 'Error', 
           detail: err.error?.message || 'Error al procesar la cita' 
         });
-        this.loadingStore.hide();
       }
     };
 
@@ -1010,17 +1005,14 @@ export class AgendaComponent implements OnInit, OnDestroy {
         acceptLabel: 'Sí, reprogramar',
         rejectLabel: 'No, volver',
         accept: () => {
-          this.loadingStore.show();
           this.citaService.reprogramar(id, request).subscribe(observer);
         },
         reject: () => {
         }
       });
     } else if (id) {
-      this.loadingStore.show();
       this.citaService.actualizar(id, request).subscribe(observer);
     } else {
-      this.loadingStore.show();
       this.citaService.crear(request).subscribe(observer);
     }
   }
@@ -1106,12 +1098,10 @@ export class AgendaComponent implements OnInit, OnDestroy {
       return;
     }
     this.displayDetalleCita.set(false);
-    this.loadingStore.show();
     this.citaService.iniciarAtencion(cita.id).subscribe({
       next: (res) => {
         this.suppressSseToast = true;
         this.messageService.add({ severity: 'success', summary: 'Listo', detail: 'Atención iniciada' });
-        this.loadingStore.hide();
         if (res.data) {
           this.router.navigate(['/historias-clinicas/consulta', res.data], { queryParams: { returnUrl: '/citas/agenda' } });
         } else {
@@ -1120,7 +1110,6 @@ export class AgendaComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error al iniciar atención' });
-        this.loadingStore.hide();
       }
     });
   }
@@ -1143,14 +1132,12 @@ export class AgendaComponent implements OnInit, OnDestroy {
       acceptLabel: 'Sí, cancelar',
       rejectLabel: 'No, volver',
       accept: () => {
-        this.loadingStore.show();
         this.citaService.cancelarCita(cita.id, '').subscribe({
           next: () => {
             this.suppressSseToast = true;
             this.messageService.add({ severity: 'success', summary: 'Listo', detail: 'Cita cancelada correctamente.' });
             this.loadCitas();
             if (this.vistaActual() !== 'lista') this.loadCitasCalendario();
-            this.loadingStore.hide();
             if ((cita.montoPagado ?? 0) > 0) {
               setTimeout(() => {
                 this.confirmationService.confirm({
@@ -1166,7 +1153,6 @@ export class AgendaComponent implements OnInit, OnDestroy {
           },
           error: (err) => {
             this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo cancelar la cita' });
-            this.loadingStore.hide();
           }
         });
       }
@@ -1203,7 +1189,6 @@ export class AgendaComponent implements OnInit, OnDestroy {
     const cita = this.selectedCitaToDelete();
     if (!cita) return;
 
-    this.loadingStore.show();
     this.citaService.eliminarCita(cita.id).subscribe({
       next: () => {
         this.suppressSseToast = true;
@@ -1211,7 +1196,6 @@ export class AgendaComponent implements OnInit, OnDestroy {
         this.displayDeleteModal.set(false);
         this.loadCitas();
         if (this.vistaActual() !== 'lista') this.loadCitasCalendario();
-        this.loadingStore.hide();
       },
       error: (err) => {
         this.messageService.add({ 
@@ -1219,7 +1203,6 @@ export class AgendaComponent implements OnInit, OnDestroy {
           summary: 'Error', 
           detail: err.error?.message || 'No se pudo eliminar la cita' 
         });
-        this.loadingStore.hide();
       }
     });
   }
@@ -1237,10 +1220,8 @@ export class AgendaComponent implements OnInit, OnDestroy {
         this.messageService.add({ severity: 'warn', summary: 'Sin permiso', detail: 'No puedes iniciar historias clÃ­nicas.' });
         return;
       }
-      this.loadingStore.show();
       this.citaService.iniciarAtencion(cita.id).subscribe({
         next: (res) => {
-          this.loadingStore.hide();
           if (res.data) {
             this.router.navigate(['/historias-clinicas/consulta', res.data], { queryParams: { returnUrl: '/citas/agenda' } });
           } else {
@@ -1249,7 +1230,6 @@ export class AgendaComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo recuperar la consulta activa' });
-          this.loadingStore.hide();
         }
       });
     }
@@ -1542,7 +1522,6 @@ export class AgendaComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.loadingStore.show();
     this.citaService.reprogramar(cita.id, {
       veterinarioId: cita.veterinarioId,
       fechaHoraInicio: this.toLocalDateTimeString(nuevaFecha),
@@ -1553,7 +1532,6 @@ export class AgendaComponent implements OnInit, OnDestroy {
         this.messageService.add({ severity: 'success', summary: 'Listo', detail: 'Cita reprogramada correctamente.' });
         this.loadCitas();
         this.loadCitasCalendario();
-        this.loadingStore.hide();
       },
       error: (err) => {
         info.revert();
@@ -1562,7 +1540,6 @@ export class AgendaComponent implements OnInit, OnDestroy {
           summary: 'No se pudo reprogramar',
           detail: err.error?.message || 'El nuevo horario no está disponible.'
         });
-        this.loadingStore.hide();
       }
     });
   }
@@ -1676,17 +1653,14 @@ export class AgendaComponent implements OnInit, OnDestroy {
           })
     };
 
-    this.loadingStore.show();
     this.pagoService.registrar(request).subscribe({
       next: () => {
         this.messageService.add({ severity: 'success', summary: 'Pago registrado', detail: `Pago con ${this.metodoPago() === 'EFECTIVO' ? 'efectivo' : 'Yape'} registrado correctamente` });
         this.displayCajaModal.set(false);
         this.loadCitas();
-        this.loadingStore.hide();
       },
       error: (err) => {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo registrar el pago' });
-        this.loadingStore.hide();
       }
     });
   }

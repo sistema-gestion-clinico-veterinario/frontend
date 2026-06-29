@@ -8,12 +8,15 @@ import { PaginatorModule } from 'primeng/paginator';
 import { ToastModule } from 'primeng/toast';
 import { MenuModule } from 'primeng/menu';
 import { MenuItem, MessageService } from 'primeng/api';
+import { forkJoin } from 'rxjs';
 
 import { MascotaService } from '../../../core/services/mascota.service';
+import { ApoderadoService } from '../../../core/services/apoderado.service';
 import { MediaService } from '../../../core/services/media.service';
 import { CompanyService } from '../../../core/services/company.service';
 import { HistoriaClinicaService } from '../../../core/services/historia-clinica.service';
 import { MascotaResponse } from '../../../models/response/mascota-response';
+import { ApoderadoRequest } from '../../../models/request/apoderado-request';
 import { LoadingStore } from '../../../store/loading.store';
 import { AuthStore } from '../../../store/auth.store';
 import { Role } from '../../../core/enums/role.enum';
@@ -39,6 +42,7 @@ import { HasPermissionDirective } from '../../../core/directives/has-permission.
 })
 export class ListaMascotasComponent implements OnInit {
   private readonly mascotaService   = inject(MascotaService);
+  private readonly apoderadoService = inject(ApoderadoService);
   readonly mediaService     = inject(MediaService);
   private readonly companyService   = inject(CompanyService);
   private readonly messageService   = inject(MessageService);
@@ -75,6 +79,9 @@ export class ListaMascotasComponent implements OnInit {
 
   displayMotivoModal  = signal<boolean>(false);
   pendingDeactivation = signal<MascotaResponse | null>(null);
+  displayDetailModal = signal<boolean>(false);
+  selectedPetDetail = signal<MascotaResponse | null>(null);
+  selectedOwnerDetail = signal<ApoderadoRequest | null>(null);
 
   readonly motivoBajaOpciones = [
     { label: 'Fallecimiento',        value: 'FALLECIMIENTO' },
@@ -90,8 +97,32 @@ export class ListaMascotasComponent implements OnInit {
     return this.authStore.isSuperAdmin() || this.authStore.hasAccess('VISTA_MASCOTAS', 'modificar');
   }
 
+  viewPetDetail(mascota: MascotaResponse) {
+    this.loadingStore.show();
+    forkJoin({
+      pet: this.mascotaService.obtenerPorId(mascota.id),
+      owner: this.apoderadoService.getById(mascota.apoderadoId)
+    }).subscribe({
+      next: (res) => {
+        this.selectedPetDetail.set(res.pet.data);
+        this.selectedOwnerDetail.set(res.owner.data);
+        this.displayDetailModal.set(true);
+        this.loadingStore.hide();
+      },
+      error: () => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cargar la información de la mascota' });
+        this.loadingStore.hide();
+      }
+    });
+  }
+
   mascotaActionItems(mascota: MascotaResponse): MenuItem[] {
     const items: MenuItem[] = [
+      {
+        label: 'Ver Detalles',
+        icon: 'pi pi-eye',
+        command: () => this.viewPetDetail(mascota)
+      },
       {
         label: 'Ver historia clínica',
         icon: 'pi pi-file-edit',
@@ -135,7 +166,6 @@ export class ListaMascotasComponent implements OnInit {
 
     this.currentPage = page;
 
-    this.loadingStore.show();
     this.mascotaService.listar(
       companyId,
       this.searchNombre  || undefined,
@@ -147,11 +177,9 @@ export class ListaMascotasComponent implements OnInit {
       next: (res) => {
         this.mascotas.set(res.data.content);
         this.totalRecords.set(res.data?.page?.totalElements ?? res.data?.totalElements ?? 0);
-        this.loadingStore.hide();
       },
       error: () => {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar las mascotas' });
-        this.loadingStore.hide();
       }
     });
   }
@@ -164,6 +192,13 @@ export class ListaMascotasComponent implements OnInit {
       replaceUrl: true
     });
     this.loadMascotas(0);
+  }
+
+  clearFilters() {
+    this.searchNombre = '';
+    this.filterEspecie = null;
+    this.filterActivo = null;
+    this.onFilterChange();
   }
 
   onPageChange(e: any) {

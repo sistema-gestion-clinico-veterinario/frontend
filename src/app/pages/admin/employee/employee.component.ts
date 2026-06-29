@@ -20,7 +20,6 @@ import { TipoEmpleadoService } from '../../../core/services/tipo-empleado.servic
 import { RoleService } from '../../../core/services/role.service';
 import { EmpleadoListResponse } from '../../../models/response/empleado-list-response';
 import { EmpleadoRequest, HorarioEmpleadoRequest } from '../../../models/request/empleado-request';
-import { LoadingStore } from '../../../store/loading.store';
 import { AuthStore } from '../../../store/auth.store';
 import { Role } from '../../../core/enums/role.enum';
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
@@ -65,7 +64,6 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   private readonly tipoEmpleadoService = inject(TipoEmpleadoService);
   private readonly roleService = inject(RoleService);
   readonly authStore = inject(AuthStore);
-  readonly loadingStore = inject(LoadingStore);
 
   @ViewChild('empFileInput') empFileInput!: ElementRef<HTMLInputElement>;
 
@@ -76,7 +74,6 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   confirmDialog = signal<{ title: string; message: string; onConfirm: () => void } | null>(null);
 
   employees = signal<EmpleadoListResponse[]>([]);
-  loading = signal<boolean>(false);
   displayModal = signal<boolean>(false);
   isEdit = signal<boolean>(false);
   showPasswordResetModal = signal<boolean>(false);
@@ -93,6 +90,8 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   totalRecords = signal<number>(0);
   openDropdown = signal<string | null>(null);
   searchFilter = signal<string>('');
+  displayDetailModal = signal<boolean>(false);
+  selectedEmployeeDetail = signal<EmpleadoRequest | null>(null);
 
   public toggleDropdown(name: string, event?: Event) {
     if (event) event.stopPropagation();
@@ -101,6 +100,29 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     } else {
       this.openDropdown.set(name);
       this.searchFilter.set('');
+    }
+  }
+
+  onDocInput(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const tipo = this.employeeForm.get('tipoDocumento')?.value;
+    const raw = input.value;
+    let filtered = '';
+    if (tipo === 'DNI' || tipo === 'CARNET_EXTRANJERIA') {
+      filtered = raw.replace(/\D/g, '');
+    } else if (tipo === 'PASAPORTE') {
+      for (let i = 0; i < raw.length; i++) {
+        const ch = raw[i];
+        if (i === 0 && /[A-Za-z]/.test(ch)) {
+          filtered += ch.toUpperCase();
+        } else if (i > 0 && /\d/.test(ch)) {
+          filtered += ch;
+        }
+      }
+    }
+    if (input.value !== filtered) {
+      input.value = filtered;
+      this.employeeForm.get('numeroDocumento')?.setValue(filtered, { emitEvent: false });
     }
   }
 
@@ -262,20 +284,14 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     if (!companyId) return;
 
     const page = event.first / event.rows;
-    this.loading.set(true);
-    this.loadingStore.show();
 
     this.empleadoService.listar(companyId, undefined, page, event.rows).subscribe({
       next: (res) => {
         this.employees.set(res.data.content);
         this.totalRecords.set(res.data?.page?.totalElements ?? res.data?.totalElements ?? 0);
-        this.loading.set(false);
-        this.loadingStore.hide();
       },
       error: () => {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar los empleados' });
-        this.loading.set(false);
-        this.loadingStore.hide();
       }
     });
   }
@@ -337,19 +353,39 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     return map[name] ?? name.replace('ROLE_', '');
   }
 
-  canEmployeeAction(tipo: 'modificar' | 'eliminar'): boolean {
+  canEmployeeAction(tipo: 'leer' | 'modificar' | 'eliminar'): boolean {
     return this.authStore.isSuperAdmin() || this.authStore.hasAccess('VISTA_EMPLEADOS', tipo);
   }
 
-  employeeActionItems(employee: EmpleadoListResponse): MenuItem[] {
-    const items: MenuItem[] = [
-      {
-        label: 'Restablecer contraseña',
-        icon: 'pi pi-lock',
-        disabled: !employee.activo,
-        command: () => this.openPasswordResetModal(employee)
+  viewEmployeeDetail(employee: EmpleadoListResponse) {
+    this.empleadoService.getById(employee.id).subscribe({
+      next: (res) => {
+        this.selectedEmployeeDetail.set(res.data);
+        this.displayDetailModal.set(true);
+      },
+      error: () => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cargar la información del empleado' });
       }
-    ];
+    });
+  }
+
+  employeeActionItems(employee: EmpleadoListResponse): MenuItem[] {
+    const items: MenuItem[] = [];
+
+    if (this.canEmployeeAction('leer')) {
+      items.push({
+        label: 'Ver Detalles',
+        icon: 'pi pi-eye',
+        command: () => this.viewEmployeeDetail(employee)
+      });
+    }
+
+    items.push({
+      label: 'Restablecer contraseña',
+      icon: 'pi pi-lock',
+      disabled: !employee.activo,
+      command: () => this.openPasswordResetModal(employee)
+    });
 
     if (this.canEmployeeAction('modificar')) {
       items.push({
@@ -424,7 +460,6 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     this.isEdit.set(true);
     this.selectedFile.set(null);
     this.photoPreview.set(this.mediaService.resolveUrl(employee.fotoUrl));
-    this.loadingStore.show();
     this.empleadoService.getById(employee.id).subscribe({
       next: (res) => {
         this.employeeForm.patchValue(res.data);
@@ -446,11 +481,9 @@ export class EmployeeComponent implements OnInit, OnDestroy {
           }
         });
         this.displayModal.set(true);
-        this.loadingStore.hide();
       },
       error: () => {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cargar la información del empleado' });
-        this.loadingStore.hide();
       }
     });
   }
@@ -481,7 +514,6 @@ export class EmployeeComponent implements OnInit, OnDestroy {
         ? this.empleadoService.actualizar(data.id!, data)
         : this.empleadoService.registrar(data);
 
-      this.loadingStore.show();
       request.subscribe({
         next: () => {
           this.messageService.add({
@@ -491,7 +523,6 @@ export class EmployeeComponent implements OnInit, OnDestroy {
           });
           this.displayModal.set(false);
           this.loadEmployees();
-          this.loadingStore.hide();
         },
         error: (err) => {
           this.messageService.add({
@@ -499,7 +530,6 @@ export class EmployeeComponent implements OnInit, OnDestroy {
             summary: 'Error',
             detail: err.error?.message || 'Ocurrió un error al guardar'
           });
-          this.loadingStore.hide();
         }
       });
     };
@@ -547,16 +577,13 @@ export class EmployeeComponent implements OnInit, OnDestroy {
       'Eliminar empleado',
       `¿Estás seguro de que deseas eliminar a ${employee.nombre} ${employee.apellido}? Esta acción no se puede deshacer.`,
       () => {
-        this.loadingStore.show();
         this.empleadoService.eliminar(employee.id).subscribe({
           next: () => {
             this.messageService.add({ severity: 'success', summary: 'Eliminado', detail: 'Empleado eliminado correctamente' });
             this.loadEmployees();
-            this.loadingStore.hide();
           },
           error: (err) => {
             this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo eliminar el empleado' });
-            this.loadingStore.hide();
           }
         });
       }
@@ -572,6 +599,11 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   }
 
   submitPasswordReset() {
+    const rawPwd = this.resetPasswordForm.getRawValue().newPassword ?? '';
+    if (rawPwd !== rawPwd.trim()) {
+      this.messageService.add({ severity: 'error', summary: 'Error', detail: 'La contraseña no debe contener espacios.' });
+      return;
+    }
     if (this.resetPasswordForm.invalid) {
       this.resetPasswordForm.markAllAsTouched();
       return;
@@ -586,17 +618,14 @@ export class EmployeeComponent implements OnInit, OnDestroy {
       this.messageService.add({ severity: 'error', summary: 'Error', detail: 'El empleado no tiene un usuario o correo asignado en el sistema' });
       return;
     }
-    this.loading.set(true);
     this.empleadoService.resetPassword(emp.userId ?? null, newPassword!, emp.email).subscribe({
       next: () => {
         this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Contraseña restablecida correctamente' });
         this.showPasswordResetModal.set(false);
         this.resetPasswordForm.reset();
-        this.loading.set(false);
       },
       error: (err) => {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo restablecer la contraseña' });
-        this.loading.set(false);
       }
     });
   }

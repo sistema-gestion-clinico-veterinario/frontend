@@ -23,7 +23,7 @@
 
   <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
     <p-table [value]="employees()" [lazy]="true" (onLazyLoad)="loadEmployees($event)" [paginator]="true" [rows]="10"
-      [totalRecords]="totalRecords()" [loading]="loading()" responsiveLayout="stack" breakpoint="768px" [rowHover]="true"
+      [totalRecords]="totalRecords()" responsiveLayout="stack" breakpoint="768px" [rowHover]="true"
       styleClass="p-datatable-borderless">
       <ng-template pTemplate="header">
         <tr class="border-b border-slate-100">
@@ -204,6 +204,7 @@
                   <option *ngFor="let t of tipoDocumentos" [value]="t.value">{{ t.label }}</option>
                 </select>
                 <input type="text" formControlName="numeroDocumento" placeholder="Número de documento"
+                  (input)="onDocInput($event)"
                   [maxlength]="employeeForm.get('tipoDocumento')?.value === 'DNI' ? 8 : 9"
                   [ngClass]="employeeForm.get('numeroDocumento')?.invalid && employeeForm.get('numeroDocumento')?.touched ? 'border-rose-400' : 'border-slate-300'"
                   class="flex-1 px-3 py-2 border rounded-r text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all font-bold" />
@@ -247,7 +248,7 @@
                 </span>
                 <i class="pi pi-chevron-down text-[10px] text-slate-400"></i>
               </button>
-              <div *ngIf="openDropdown() === 'roles'"
+              <div *ngIf="openDropdown() === 'roles'" (click)="$event.stopPropagation()"
                 class="absolute z-[110] top-full left-0 w-full mt-1 bg-white border border-slate-200 rounded-lg overflow-hidden animate-in fade-in zoom-in-95 duration-100">
                 <div class="p-2 border-b border-slate-100 bg-slate-50">
                   <div class="relative">
@@ -280,7 +281,7 @@
                 </span>
                 <i class="pi pi-chevron-down text-[10px] text-slate-400"></i>
               </button>
-              <div *ngIf="openDropdown() === 'tipos'"
+              <div *ngIf="openDropdown() === 'tipos'" (click)="$event.stopPropagation()"
                 class="absolute z-[110] top-full left-0 w-full mt-1 bg-white border border-slate-200  rounded-lg overflow-hidden animate-in fade-in zoom-in-95 duration-100">
                 <div class="p-2 border-b border-slate-100 bg-slate-50">
                   <div class="relative">
@@ -357,7 +358,7 @@
                 </span>
                 <i class="pi pi-chevron-down text-[10px] text-slate-400"></i>
               </button>
-              <div *ngIf="openDropdown() === 'especialidades'"
+              <div *ngIf="openDropdown() === 'especialidades'" (click)="$event.stopPropagation()"
                 class="absolute z-[110] top-full left-0 w-full mt-1 bg-white border border-slate-200 rounded-lg overflow-hidden animate-in fade-in zoom-in-95 duration-100">
                 <div class="p-2 border-b border-slate-100 bg-slate-50">
                   <div class="relative">
@@ -386,10 +387,9 @@
             class="px-5 py-2.5 text-sm font-semibold text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded transition-all">
             Descartar cambios
           </button>
-          <button type="submit" [disabled]="loading()"
+          <button type="submit"
             class="px-8 py-2.5 text-sm font-bold text-white bg-[#0066AA] hover:bg-[#004488] rounded shadow-sm disabled:opacity-50 transition-all flex items-center justify-center gap-2 min-w-[160px]">
-            <i *ngIf="loading()" class="pi pi-spin pi-spinner text-xs"></i>
-            {{ loading() ? 'Procesando...' : (isEdit() ? 'Actualizar Registro' : 'Confirmar Personal') }}
+            {{ isEdit() ? 'Actualizar Registro' : 'Confirmar Personal' }}
           </button>
         </div>
       </form>
@@ -398,6 +398,117 @@
 </div>
 
 <p-toast position="bottom-right"></p-toast>
+
+<!-- Detail Modal -->
+<div *ngIf="displayDetailModal()" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm font-['Barlow']" (click)="displayDetailModal.set(false)">
+  <div class="bg-white w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl border border-slate-100 flex flex-col" (click)="$event.stopPropagation()">
+    <!-- Header -->
+    <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between shrink-0">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 bg-blue-50 text-[#0066AA] rounded-lg flex items-center justify-center">
+          <i class="pi pi-user text-base"></i>
+        </div>
+        <h2 class="text-sm font-bold text-slate-800">Detalles del Empleado</h2>
+      </div>
+      <button (click)="displayDetailModal.set(false)"
+        class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+        title="Cerrar">
+        <i class="pi pi-times text-xs"></i>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="p-6 space-y-6" *ngIf="selectedEmployeeDetail() as emp">
+      <!-- Avatar + Name -->
+      <div class="flex items-center gap-4">
+        <div class="w-16 h-16 rounded-xl bg-blue-50 flex items-center justify-center text-[#0066AA] font-bold text-2xl overflow-hidden shrink-0">
+          <img *ngIf="emp.fotoUrl" [src]="resolvePhotoUrl(emp.fotoUrl)" class="w-full h-full object-cover">
+          <span *ngIf="!emp.fotoUrl">{{ emp.nombre.charAt(0) }}{{ emp.apellido.charAt(0) }}</span>
+        </div>
+        <div>
+          <p class="text-lg font-bold text-slate-800">{{ emp.nombre }} {{ emp.apellido }}</p>
+          <p class="text-xs text-slate-400 font-medium">{{ emp.numeroColegiatura ? 'Colegiatura: ' + emp.numeroColegiatura : 'Sin colegiatura' }}</p>
+        </div>
+      </div>
+
+      <!-- Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
+        <!-- Documento -->
+        <div>
+          <label class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Documento</label>
+          <p class="text-sm font-semibold text-slate-800 mt-0.5">{{ emp.tipoDocumento }}: {{ emp.numeroDocumento }}</p>
+        </div>
+        <!-- Email -->
+        <div>
+          <label class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Correo Electrónico</label>
+          <p class="text-sm font-semibold text-slate-800 mt-0.5">{{ emp.email }}</p>
+        </div>
+        <!-- Teléfono -->
+        <div>
+          <label class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Teléfono</label>
+          <p class="text-sm font-semibold text-slate-800 mt-0.5">{{ emp.telefono }}</p>
+        </div>
+        <!-- Género -->
+        <div>
+          <label class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Género</label>
+          <p class="text-sm font-semibold text-slate-800 mt-0.5">{{ emp.genero === 'M' ? 'Masculino' : emp.genero === 'F' ? 'Femenino' : emp.genero }}</p>
+        </div>
+        <!-- Dirección -->
+        <div class="sm:col-span-2">
+          <label class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Dirección</label>
+          <p class="text-sm font-semibold text-slate-800 mt-0.5">{{ emp.direccion || 'No registrada' }}</p>
+        </div>
+        <!-- Roles -->
+        <div class="sm:col-span-2" *ngIf="emp.roles?.length">
+          <label class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Roles</label>
+          <div class="flex flex-wrap gap-1.5 mt-1.5">
+            <span *ngFor="let r of emp.roles" class="px-2.5 py-0.5 rounded text-[11px] bg-slate-100 text-slate-600 font-bold uppercase tracking-wider">{{ r }}</span>
+          </div>
+        </div>
+        <!-- Tipos de Empleado -->
+        <div class="sm:col-span-2" *ngIf="emp.tiposEmpleado?.length">
+          <label class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Tipos de Empleado</label>
+          <div class="flex flex-wrap gap-1.5 mt-1.5">
+            <span *ngFor="let t of emp.tiposEmpleado" class="px-2.5 py-0.5 rounded text-[11px] bg-indigo-50 text-indigo-600 font-bold uppercase tracking-wider">{{ t }}</span>
+          </div>
+        </div>
+        <!-- Especialidades -->
+        <div class="sm:col-span-2" *ngIf="emp.especialidades?.length">
+          <label class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Especialidades Médicas</label>
+          <div class="flex flex-wrap gap-1.5 mt-1.5">
+            <span *ngFor="let e of emp.especialidades" class="px-2.5 py-0.5 rounded text-[11px] bg-blue-50 text-blue-600 font-bold uppercase tracking-wider">{{ e }}</span>
+          </div>
+        </div>
+        <!-- Observaciones -->
+        <div class="sm:col-span-2" *ngIf="emp.observaciones">
+          <label class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Observaciones</label>
+          <p class="text-sm text-slate-700 mt-0.5 bg-slate-50 rounded-lg p-3 border border-slate-100">{{ emp.observaciones }}</p>
+        </div>
+        <!-- Estado -->
+        <div class="sm:col-span-2">
+          <label class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Estado</label>
+          <div class="mt-1.5">
+            <span [class]="emp.estado !== false ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-500'"
+              class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium">
+              <span [class]="emp.estado !== false ? 'bg-green-500' : 'bg-red-400'" class="w-1.5 h-1.5 rounded-full"></span>
+              {{ emp.estado !== false ? 'Activo' : 'Inactivo' }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+
+    </div>
+
+    <!-- Footer -->
+    <div class="px-6 py-4 border-t border-slate-100 flex justify-end shrink-0">
+      <button (click)="displayDetailModal.set(false)"
+        class="px-5 py-2.5 text-sm font-semibold text-white bg-[#0066AA] hover:bg-[#004488] rounded-lg transition-colors">
+        Cerrar
+      </button>
+    </div>
+  </div>
+</div>
 
 <!-- Password Reset Modal -->
 <div *ngIf="showPasswordResetModal()" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm font-['Barlow']">

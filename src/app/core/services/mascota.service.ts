@@ -1,10 +1,11 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { MascotaResponse } from '../../models/response/mascota-response';
 import { MascotaRequest } from '../../models/request/mascota-request';
 import { Page } from '../../models/response/page';
 import { ApiResponse } from '../../models/response/api-response';
+import { SKIP_GLOBAL_LOADING } from '../interceptors/api.interceptor';
 
 @Injectable({
   providedIn: 'root'
@@ -19,14 +20,17 @@ export class MascotaService {
     especie?:   string,
     page:       number  = 0,
     size:       number  = 12,
-    activo?:    boolean
+    activo?:    boolean,
+    skipLoading: boolean = false
   ) {
     let query = `?page=${page}&size=${size}`;
     if (companyId !== undefined && companyId !== null) query += `&companyId=${companyId}`;
     if (nombre)  query += `&nombre=${encodeURIComponent(nombre)}`;
     if (especie) query += `&especie=${especie}`;
     if (activo  !== undefined && activo !== null) query += `&activo=${activo}`;
-    return this.http.get<ApiResponse<Page<MascotaResponse>>>(`${this.apiUrl}${query}`);
+
+    const context = skipLoading ? new HttpContext().set(SKIP_GLOBAL_LOADING, true) : undefined;
+    return this.http.get<ApiResponse<Page<MascotaResponse>>>(`${this.apiUrl}${query}`, { context });
   }
 
   obtenerPorId(id: number) {
