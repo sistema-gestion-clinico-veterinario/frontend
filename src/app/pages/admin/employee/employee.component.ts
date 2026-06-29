@@ -25,6 +25,7 @@ import { AuthStore } from '../../../store/auth.store';
 import { Role } from '../../../core/enums/role.enum';
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 import { InputFilterDirective } from '../../../core/directives/input-filter.directive';
+import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
 
 function passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
   const newPassword = control.get('newPassword')?.value;
@@ -85,7 +86,7 @@ export class EmployeeComponent implements OnInit, OnDestroy {
 
   resetPasswordForm: FormGroup = this.fb.group({
     newPassword: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(72), Validators.pattern(/^\S+$/)]],
-    confirmPassword: ['', [Validators.required]]
+    confirmPassword: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(72), Validators.pattern(/^\S+$/)]]
   }, { validators: passwordMatchValidator });
   especialidadesList = signal<any[]>([]);
   tiposEmpleadoList = signal<any[]>([]);
@@ -177,19 +178,19 @@ export class EmployeeComponent implements OnInit, OnDestroy {
 
   employeeForm: FormGroup = this.fb.group({
     id: [null],
-    nombre: ['', [Validators.required, Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/)]],
-    apellido: ['', [Validators.required, Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/)]],
-    email: ['', [Validators.required, Validators.email]],
+    nombre: ['', [Validators.required, Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/), noLeadingTrailingSpaceValidator()]],
+    apellido: ['', [Validators.required, Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/), noLeadingTrailingSpaceValidator()]],
+    email: ['', [Validators.required, Validators.email, Validators.pattern(/^\S+@\S+\.\S+$/)]],
     numeroDocumento: ['', [Validators.required, Validators.pattern(/^\d{8}$/)]],
     tipoDocumento: ['DNI', [Validators.required]],
     telefono: ['', [Validators.required, Validators.pattern(/^\d{9}$/)]],
-    direccion: ['', [Validators.required]],
+    direccion: ['', [Validators.required, noLeadingTrailingSpaceValidator()]],
     roles: [[], [(c: AbstractControl) => c.value?.length ? null : { required: true }]],
     companyId: [null],
     genero: ['MASCULINO', [Validators.required]],
-    observaciones: [''],
+    observaciones: ['', [noLeadingTrailingSpaceValidator()]],
     fotoUrl: [''],
-    numeroColegiatura: [''],
+    numeroColegiatura: ['', [noLeadingTrailingSpaceValidator()]],
     especialidades: [[]],
     tiposEmpleado: [[]]
   });

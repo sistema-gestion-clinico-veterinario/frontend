@@ -12,6 +12,7 @@ import { CompanyDTO, CompanyOperatingHourDTO } from '../../../models/request/com
 import { Role } from '../../../models/response/permission';
 import { AuthStore } from '../../../store/auth.store';
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
+import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
 
 @Component({
   selector: 'app-company',
@@ -59,15 +60,15 @@ export class CompanyComponent implements OnInit {
 
   companyForm: FormGroup = this.fb.group({
     id: [null],
-    name: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100)]],
+    name: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100), noLeadingTrailingSpaceValidator()]],
     ruc: ['', [Validators.required, Validators.pattern('^(10|15|17|20)[0-9]{9}$')]],
-    address: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(200)]],
+    address: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(200), noLeadingTrailingSpaceValidator()]],
     phone: ['', [Validators.required, Validators.pattern(/^\d{9}$/)]],
-    email: ['', [Validators.required, Validators.email, Validators.maxLength(100)]],
+    email: ['', [Validators.required, Validators.email, Validators.pattern(/^\S+@\S+\.\S+$/), Validators.maxLength(100)]],
     hasWebsite: [false],
-    website: ['', [Validators.maxLength(200)]],
-    description: ['', [Validators.maxLength(500)]],
-    businessHours: ['', [Validators.maxLength(100)]],
+    website: ['', [Validators.maxLength(200), noLeadingTrailingSpaceValidator()]],
+    description: ['', [Validators.maxLength(500), noLeadingTrailingSpaceValidator()]],
+    businessHours: ['', [Validators.maxLength(100), noLeadingTrailingSpaceValidator()]],
     logoUrl: [''],
     operatingHours: this.fb.array([])
   });

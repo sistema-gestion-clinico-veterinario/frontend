@@ -6,6 +6,7 @@ import { finalize, timeout } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
 import { AuthStore } from '../../../store/auth.store';
 import { resolveInitialRoute } from '../../../layouts/main-layout/navbar/navbar.component';
+import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
 
 @Component({
   selector: 'app-login',
@@ -31,8 +32,8 @@ export class LoginComponent implements OnInit {
   }
 
   loginForm = inject(FormBuilder).group({
-    email: ['', [Validators.required, Validators.email, Validators.maxLength(255)]],
-    password: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(72)]]
+    email: ['', [Validators.required, Validators.email, Validators.pattern(/^\S+@\S+\.\S+$/), Validators.maxLength(255)]],
+    password: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(72), noLeadingTrailingSpaceValidator()]]
   });
 
   get email() { return this.loginForm.get('email'); }

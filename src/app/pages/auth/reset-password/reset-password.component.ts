@@ -24,7 +24,7 @@ export class ResetPasswordComponent implements OnInit {
 
   resetForm = this.fb.group({
     password: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(72), Validators.pattern(/^\S+$/)]],
-    confirmPassword: ['', [Validators.required]]
+    confirmPassword: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(72), Validators.pattern(/^\S+$/)]]
   }, { validators: this.passwordMatchValidator });
 
   isTokenValid = true;

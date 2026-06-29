@@ -60,20 +60,24 @@ export class SidebarComponent implements OnInit {
 
   ngOnInit() {
     const companyId = this.authStore.companyId();
-    if (companyId) {
-      this.companyService.getById(companyId).subscribe({
-        next: (res) => {
-          if (res.data?.logoUrl) {
-            const current = this.authStore.selectedEnterprise();
-            this.authStore.setSelectedEnterprise({
-              establishmentId: current?.establishmentId ?? companyId,
-              name: current?.name ?? res.data.name ?? '',
-              logoUrl: res.data.logoUrl
-            });
-          }
+    if (!companyId) return;
+
+    const current = this.authStore.selectedEnterprise();
+    const yaTieneLogo = current?.establishmentId === companyId && current?.logoUrl !== undefined;
+    if (yaTieneLogo) return;
+
+    this.companyService.getById(companyId).subscribe({
+      next: (res) => {
+        if (res.data?.logoUrl) {
+          const enterprise = this.authStore.selectedEnterprise();
+          this.authStore.setSelectedEnterprise({
+            establishmentId: enterprise?.establishmentId ?? companyId,
+            name: enterprise?.name ?? res.data.name ?? '',
+            logoUrl: res.data.logoUrl
+          });
         }
-      });
-    }
+      }
+    });
   }
 
   private sectionKey(structure: MenuSection): string {
