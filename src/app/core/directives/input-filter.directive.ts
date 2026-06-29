@@ -15,6 +15,18 @@ export class InputFilterDirective {
 
   constructor(@Optional() @Self() private readonly ngControl: NgControl | null) {}
 
+  @HostListener('keydown', ['$event'])
+  onKeyDown(event: KeyboardEvent) {
+    if (event.key !== ' ') return;
+    const input = this.element.nativeElement;
+    const pos = input.selectionStart ?? 0;
+    // Bloquear espacio al inicio del campo
+    if (pos === 0) { event.preventDefault(); return; }
+    // Bloquear doble espacio consecutivo
+    const charBefore = input.value[pos - 1];
+    if (charBefore === ' ') { event.preventDefault(); }
+  }
+
   @HostListener('beforeinput', ['$event'])
   onBeforeInput(event: InputEvent) {
     if (!event.data) return;

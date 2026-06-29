@@ -18,6 +18,7 @@ import { LoadingStore } from '../../../store/loading.store';
 import { AuthStore } from '../../../store/auth.store';
 import { InputFilterDirective } from '../../../core/directives/input-filter.directive';
 import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
+import { normalizeText } from '../../../core/utils/normalize-text.util';
 
 @Component({
   selector: 'app-mascota-form',
@@ -108,15 +109,15 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
     razaId:          [null, [Validators.required]],
     sexo:            [null, [Validators.required]],
     fechaNacimiento: ['',   [Validators.required, (control: AbstractControl) => this.fechaNoFuturaValidator(control)]],
-    color:           ['', [Validators.maxLength(50), noLeadingTrailingSpaceValidator()]],
-    peso:            [null, [Validators.min(0), Validators.max(500)]],
+    color:           ['', [Validators.maxLength(50), Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/)]],
+    peso:            [null, [Validators.min(0), Validators.max(150)]],
     fotoUrl:         [''],
     apoderadoId:     [null, [Validators.required]],
   });
 
   razaForm: FormGroup = this.fb.group({
     nombre:      ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100), Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/), noLeadingTrailingSpaceValidator()]],
-    descripcion: ['', [Validators.maxLength(300), noLeadingTrailingSpaceValidator()]],
+    descripcion: ['', [Validators.maxLength(300)]],
   });
 
 
@@ -358,8 +359,8 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
       return;
     }
     const request: RazaRequest = {
-      nombre: this.razaForm.value.nombre,
-      descripcion: this.razaForm.value.descripcion || undefined,
+      nombre: normalizeText(this.razaForm.value.nombre),
+      descripcion: normalizeText(this.razaForm.value.descripcion) || undefined,
       especie
     };
     this.savingRaza.set(true);
@@ -388,12 +389,12 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
   }
 
   crearCliente() {
-    const nombre   = this.ncNombre().trim();
-    const apellido = this.ncApellido().trim();
+    const nombre   = normalizeText(this.ncNombre());
+    const apellido = normalizeText(this.ncApellido());
     const telefono = this.ncTelefono().trim();
     const correo   = this.ncCorreo().trim();
     const numDoc   = this.ncNumDoc().trim();
-    const direccion = this.ncDireccion().trim();
+    const direccion = normalizeText(this.ncDireccion());
 
     if (!nombre || !apellido || !telefono || !correo || !numDoc || !direccion) {
       this.messageService.add({ severity: 'warn', summary: 'Campos incompletos', detail: 'Complete todos los campos obligatorios.' });
@@ -414,7 +415,7 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
 
     const documentoValido = this.ncTipoDoc() === 'DNI'
       ? /^\d{8}$/.test(numDoc)
-      : this.ncTipoDoc() === 'CARNET_EXTRANJERIA'
+      : this.ncTipoDoc() === 'PASAPORTE'
         ? /^[a-zA-Z]\d{8}$/.test(numDoc)
         : /^\d{9}$/.test(numDoc);
     if (!documentoValido) {
@@ -438,7 +439,7 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
       email: correo,
       genero: this.ncGenero(),
       direccion,
-      referencias: this.ncReferencias().trim() || undefined,
+      referencias: normalizeText(this.ncReferencias()) || undefined,
       companyId
     }).subscribe({
       next: (res) => {
@@ -484,12 +485,12 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
     const doSave = (fotoUrl?: string) => {
       const v = this.mascotaForm.value;
       const request: MascotaRequest = {
-        nombreCompleto:  v.nombre,
+        nombreCompleto:  normalizeText(v.nombre),
         especie:         v.especie,
         razaId:          v.razaId,
         sexo:            v.sexo,
         fechaNacimiento: v.fechaNacimiento,
-        color:           v.color || undefined,
+        color:           normalizeText(v.color) || undefined,
         peso:            v.peso ?? undefined,
         fotoUrl:         fotoUrl || v.fotoUrl || undefined,
         apoderadoId:     v.apoderadoId,

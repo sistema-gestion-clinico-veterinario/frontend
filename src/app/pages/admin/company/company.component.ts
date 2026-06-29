@@ -14,6 +14,7 @@ import { Role } from '../../../models/response/permission';
 import { AuthStore } from '../../../store/auth.store';
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
+import { normalizeText } from '../../../core/utils/normalize-text.util';
 
 @Component({
   selector: 'app-company',
@@ -69,13 +70,13 @@ export class CompanyComponent implements OnInit {
     id: [null],
     name: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100), noLeadingTrailingSpaceValidator()]],
     ruc: ['', [Validators.required, Validators.pattern('^(10|15|17|20)[0-9]{9}$')]],
-    address: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(200), noLeadingTrailingSpaceValidator()]],
+    address: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(200), Validators.pattern(/^[a-zA-Z0-9áéíóúÁÉÍÓÚüÜñÑ\s\.,#\-\/°:]+$/), noLeadingTrailingSpaceValidator()]],
     phone: ['', [Validators.required, Validators.pattern(/^\d{9}$/)]],
     email: ['', [Validators.required, Validators.email, Validators.pattern(/^\S+@\S+\.\S+$/), Validators.maxLength(100)]],
     hasWebsite: [false],
-    website: ['', [Validators.maxLength(200), noLeadingTrailingSpaceValidator()]],
-    description: ['', [Validators.maxLength(500), noLeadingTrailingSpaceValidator()]],
-    businessHours: ['', [Validators.maxLength(100), noLeadingTrailingSpaceValidator()]],
+    website: ['', [Validators.maxLength(200)]],
+    description: ['', [Validators.maxLength(500)]],
+    businessHours: ['', [Validators.maxLength(100)]],
     logoUrl: [''],
     operatingHours: this.fb.array([])
   });
@@ -270,8 +271,15 @@ export class CompanyComponent implements OnInit {
 
     const companyData: CompanyDTO = {
       ...formValue,
+      name:          normalizeText(formValue.name),
+      address:       normalizeText(formValue.address),
+      email:         formValue.email?.trim(),
+      description:   normalizeText(formValue.description),
+      businessHours: normalizeText(formValue.businessHours),
       logoUrl: logoUrl || '',
-      website: formValue.hasWebsite && formValue.website ? (formValue.website.startsWith('http') ? formValue.website : `https://${formValue.website}`) : ''
+      website: formValue.hasWebsite && formValue.website
+        ? (formValue.website.trim().startsWith('http') ? formValue.website.trim() : `https://${formValue.website.trim()}`)
+        : ''
     };
 
     const request = this.isEdit
