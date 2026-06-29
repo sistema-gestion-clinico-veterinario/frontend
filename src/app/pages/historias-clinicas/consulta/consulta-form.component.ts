@@ -24,6 +24,7 @@ import { RecetaModalsComponent } from '../form-hc/receta-modals/receta-modals.co
 import { ArchivoModalsComponent } from '../form-hc/archivo-modals/archivo-modals.component';
 import { Role } from '../../../core/enums/role.enum';
 import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
+import { normalizeText } from '../../../core/utils/normalize-text.util';
 
 
 @Component({
@@ -105,13 +106,13 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
   private syncingForm = false;
 
   recetaForm: FormGroup = this.fb.group({
-    medicamento:       ['', [Validators.required, Validators.maxLength(80), noLeadingTrailingSpaceValidator()]],
-    principioActivo:   ['', [Validators.maxLength(80), noLeadingTrailingSpaceValidator()]],
-    dosis:             ['', [Validators.required, Validators.maxLength(80), noLeadingTrailingSpaceValidator()]],
-    frecuencia:        ['', [Validators.required, Validators.maxLength(80), noLeadingTrailingSpaceValidator()]],
+    medicamento:       ['', [Validators.required, Validators.maxLength(80)]],
+    principioActivo:   ['', [Validators.maxLength(80)]],
+    dosis:             ['', [Validators.required, Validators.maxLength(80)]],
+    frecuencia:        ['', [Validators.required, Validators.maxLength(80)]],
     duracionDias:      [null, [Validators.min(1), Validators.max(365)]],
     viaAdministracion: ['', [Validators.required, Validators.maxLength(50)]],
-    instrucciones:     ['', [Validators.maxLength(500), noLeadingTrailingSpaceValidator()]],
+    instrucciones:     ['', [Validators.maxLength(500)]],
     fechaInicio:       ['', Validators.required],
     fechaFin:          [''],
   });
@@ -131,7 +132,7 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
     version:                 [null, Validators.required],
     tipoConsulta:            [null, Validators.required],
     motivoConsulta:          ['',   Validators.required],
-    pesoEnConsulta:          [null, [Validators.required, Validators.min(0.01), Validators.max(120)]],
+    pesoEnConsulta:          [null, [Validators.required, Validators.min(0.01), Validators.max(150)]],
     temperatura:             [null, [Validators.min(0.1), Validators.max(45)]],
     frecuenciaCardiaca:      [null, [Validators.min(1), Validators.max(300)]],
     frecuenciaRespiratoria:  [null, [Validators.min(1), Validators.max(200)]],
@@ -241,7 +242,8 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
     const trimmed: Record<string, any> = { ...value };
     for (const key of Object.keys(trimmed)) {
       if (typeof trimmed[key] === 'string') {
-        trimmed[key] = trimmed[key].trim();
+        // Normalizar: colapsar espacios internos múltiples y eliminar extremos
+        trimmed[key] = trimmed[key].replace(/\s+/g, ' ').trim();
       }
     }
     return trimmed as T;
@@ -416,7 +418,15 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
       this.recetaForm.markAllAsTouched();
       return;
     }
-    const payload: PrescripcionRequest = { ...this.recetaForm.value };
+    const rawPayload = this.recetaForm.value;
+    const payload: PrescripcionRequest = {
+      ...rawPayload,
+      medicamento:     normalizeText(rawPayload.medicamento),
+      principioActivo: normalizeText(rawPayload.principioActivo),
+      dosis:           normalizeText(rawPayload.dosis),
+      frecuencia:      normalizeText(rawPayload.frecuencia),
+      instrucciones:   normalizeText(rawPayload.instrucciones)
+    };
     if (payload.fechaFin && payload.fechaInicio && payload.fechaFin < payload.fechaInicio) {
       this.msgService.add({ severity: 'warn', summary: 'Fechas invalidas', detail: 'La fecha de fin no puede ser anterior a la fecha de inicio.' });
       return;

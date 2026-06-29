@@ -25,6 +25,7 @@ import { Role } from '../../../core/enums/role.enum';
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 import { InputFilterDirective } from '../../../core/directives/input-filter.directive';
 import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
+import { normalizeText } from '../../../core/utils/normalize-text.util';
 
 function passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
   const newPassword = control.get('newPassword')?.value;
@@ -206,13 +207,13 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     numeroDocumento: ['', [Validators.required, Validators.pattern(/^\d{8}$/)]],
     tipoDocumento: ['DNI', [Validators.required]],
     telefono: ['', [Validators.required, Validators.pattern(/^\d{9}$/)]],
-    direccion: ['', [Validators.required, noLeadingTrailingSpaceValidator()]],
+    direccion: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9áéíóúÁÉÍÓÚüÜñÑ\s\.,#\-\/°:]+$/), noLeadingTrailingSpaceValidator()]],
     roles: [[], [(c: AbstractControl) => c.value?.length ? null : { required: true }]],
     companyId: [null],
     genero: ['MASCULINO', [Validators.required]],
-    observaciones: ['', [noLeadingTrailingSpaceValidator()]],
+    observaciones: [''],
     fotoUrl: [''],
-    numeroColegiatura: ['', [noLeadingTrailingSpaceValidator()]],
+    numeroColegiatura: [''],
     especialidades: [[]],
     tiposEmpleado: [[]]
   });
@@ -508,7 +509,17 @@ export class EmployeeComponent implements OnInit, OnDestroy {
         .filter(h => h.activo)
         .map(h => ({ diaSemana: h.diaSemana, horaInicio: h.horaInicio, horaFin: h.horaFin, activo: true }));
 
-      const data: EmpleadoRequest = { ...this.employeeForm.value, horarios: horariosActivos };
+      const rawData = this.employeeForm.value;
+      const data: EmpleadoRequest = {
+        ...rawData,
+        nombre:            normalizeText(rawData.nombre),
+        apellido:          normalizeText(rawData.apellido),
+        email:             rawData.email?.trim(),
+        direccion:         normalizeText(rawData.direccion),
+        observaciones:     normalizeText(rawData.observaciones),
+        numeroColegiatura: normalizeText(rawData.numeroColegiatura),
+        horarios: horariosActivos
+      };
       if (fotoUrl) data.fotoUrl = fotoUrl;
       const request = this.isEdit()
         ? this.empleadoService.actualizar(data.id!, data)
