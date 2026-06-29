@@ -29,7 +29,7 @@ export class ChangePasswordModalComponent {
 
   passwordForm = this.fb.group({
     newPassword: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(72), Validators.pattern(/^\S+$/)]],
-    confirmPassword: ['', [Validators.required]]
+    confirmPassword: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(72), Validators.pattern(/^\S+$/)]]
   }, {
     validators: this.passwordMatchValidator
   });
@@ -44,6 +44,11 @@ export class ChangePasswordModalComponent {
   }
 
   onSubmit() {
+    const rawPwd = this.passwordForm.getRawValue().newPassword ?? '';
+    if (rawPwd !== rawPwd.trim()) {
+      this.messageService.add({ severity: 'error', summary: 'Error', detail: 'La contraseña no debe contener espacios.' });
+      return;
+    }
     if (this.passwordForm.invalid) {
       this.passwordForm.markAllAsTouched();
       return;

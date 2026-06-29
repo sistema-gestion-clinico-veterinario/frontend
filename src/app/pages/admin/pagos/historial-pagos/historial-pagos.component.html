@@ -167,17 +167,13 @@
   <!-- ─── TABLA ─── -->
   <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
 
-    <div *ngIf="loading()" class="flex items-center justify-center py-16">
-      <div class="w-8 h-8 border-2 border-[#0066AA] border-t-transparent rounded-full animate-spin"></div>
-    </div>
-
-    <div *ngIf="!loading() && pagosFiltrados().length === 0"
+    <div *ngIf="pagosFiltrados().length === 0"
       class="flex flex-col items-center justify-center py-16 gap-3">
       <div class="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center text-xl text-slate-400">—</div>
       <p class="text-sm font-semibold text-slate-500">Sin registros de pago</p>
     </div>
 
-    <div *ngIf="!loading() && pagosFiltrados().length > 0" class="overflow-x-auto">
+    <div *ngIf="pagosFiltrados().length > 0" class="overflow-x-auto">
       <table class="w-full text-sm">
         <thead>
           <tr class="bg-slate-50 border-b border-slate-200">

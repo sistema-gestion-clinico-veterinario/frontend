@@ -2,8 +2,9 @@ import { Component, OnInit, inject, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { TableModule } from 'primeng/table';
+import { MenuModule } from 'primeng/menu';
 import { Toast } from 'primeng/toast';
-import { MessageService } from 'primeng/api';
+import { MessageService, MenuItem } from 'primeng/api';
 import { CompanyService } from '../../../core/services/company.service';
 import { MediaService } from '../../../core/services/media.service';
 import { RoleService } from '../../../core/services/role.service';
@@ -21,6 +22,7 @@ import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-lea
     CommonModule,
     ReactiveFormsModule,
     TableModule,
+    MenuModule,
     Toast,
     HasPermissionDirective
   ],
@@ -47,12 +49,17 @@ export class CompanyComponent implements OnInit {
   totalRecords: number = 0;
   companyPendingStatus: CompanyListResponse | null = null;
 
+  // Detalle
+  displayDetailPanel = signal(false);
+  selectedCompanyDetail = signal<CompanyDTO | null>(null);
+
   companyRoles: Role[] = [];
   loadingRoles = signal(false);
 
   daysOfWeek = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO', 'DOMINGO'];
 
-  sortOperatingHours(hours: CompanyOperatingHourDTO[]): CompanyOperatingHourDTO[] {
+  sortOperatingHours(hours: CompanyOperatingHourDTO[] | undefined): CompanyOperatingHourDTO[] {
+    if (!hours) return [];
     return [...hours].sort(
       (a, b) => this.daysOfWeek.indexOf(a.diaSemana) - this.daysOfWeek.indexOf(b.diaSemana)
     );
@@ -144,6 +151,46 @@ export class CompanyComponent implements OnInit {
       },
       error: () => this.loadingRoles.set(false)
     });
+  }
+
+  viewCompanyDetail(company: CompanyListResponse) {
+    this.companyService.getById(company.id).subscribe({
+      next: (res) => {
+        this.selectedCompanyDetail.set(res.data);
+        this.displayDetailPanel.set(true);
+      },
+      error: () => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cargar la información de la empresa' });
+      }
+    });
+  }
+
+  companyActionItems(company: CompanyListResponse): MenuItem[] {
+    const canModify = this.authStore.isSuperAdmin() || this.authStore.hasAccess('VISTA_COMPANY', 'modificar');
+    const items: MenuItem[] = [
+      {
+        label: 'Ver información',
+        icon: 'pi pi-eye',
+        command: () => this.viewCompanyDetail(company)
+      }
+    ];
+    if (canModify) {
+      items.push({
+        label: 'Editar',
+        icon: 'pi pi-pencil',
+        command: () => this.editCompany(company)
+      });
+      items.push({
+        separator: true
+      });
+      items.push({
+        label: company.activo ? 'Desactivar' : 'Activar',
+        icon: company.activo ? 'pi pi-lock' : 'pi pi-lock-open',
+        styleClass: company.activo ? 'text-red-500' : 'text-green-600',
+        command: () => this.confirmToggleActivo(company)
+      });
+    }
+    return items;
   }
 
   openEditOwnCompany() {

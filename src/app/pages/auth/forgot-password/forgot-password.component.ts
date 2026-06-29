@@ -26,6 +26,12 @@ export class ForgotPasswordComponent {
   get email() { return this.forgotForm.get('email'); }
 
   submit() {
+    const rawEmail = this.forgotForm.getRawValue().email ?? '';
+    if (rawEmail !== rawEmail.trim()) {
+      this.errorMessage = 'El correo no debe contener espacios al inicio o al final.';
+      return;
+    }
+
     if (this.forgotForm.invalid) {
       this.forgotForm.markAllAsTouched();
       return;

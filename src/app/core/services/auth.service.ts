@@ -13,16 +13,11 @@ export class AuthService {
   constructor(private http: HttpClient) {}
 
   login(credentials: LoginRequest): Observable<AuthLoginResponse> {
-    const payload = {
-      ...credentials,
-      email: credentials.email.trim(),
-      password: credentials.password.trim()
-    };
-    return this.http.post<AuthLoginResponse>(`${this.baseUrl}/login`, payload);
+    return this.http.post<AuthLoginResponse>(`${this.baseUrl}/login`, credentials);
   }
 
   setupAccount(token: string, password: string): Observable<ApiResponse<void>> {
-    return this.http.post<ApiResponse<void>>(`${this.baseUrl}/setup-account`, { token, password: password.trim() });
+    return this.http.post<ApiResponse<void>>(`${this.baseUrl}/setup-account`, { token, password });
   }
 
   verifyEmail(token: string): Observable<ApiResponse<void>> {
@@ -30,15 +25,11 @@ export class AuthService {
   }
 
   resendVerification(email: string): Observable<ApiResponse<void>> {
-    const trimmed = email.trim();
-    return this.http.post<ApiResponse<void>>(`${this.baseUrl}/resend-verification?email=${encodeURIComponent(trimmed)}`, {});
+    return this.http.post<ApiResponse<void>>(`${this.baseUrl}/resend-verification?email=${encodeURIComponent(email)}`, {});
   }
 
   changePassword(payload: { oldPassword: string; newPassword: string }): Observable<ApiResponse<void>> {
-    return this.http.post<ApiResponse<void>>(`${this.baseUrl}/change-password`, {
-      oldPassword: payload.oldPassword.trim(),
-      newPassword: payload.newPassword.trim()
-    });
+    return this.http.post<ApiResponse<void>>(`${this.baseUrl}/change-password`, payload);
   }
 
   refreshToken(refreshToken: string): Observable<AuthLoginResponse> {
@@ -50,7 +41,7 @@ export class AuthService {
   }
 
   forgotPassword(email: string): Observable<ApiResponse<void>> {
-    return this.http.post<ApiResponse<void>>(`${this.baseUrl}/forgot-password`, { email: email.trim() });
+    return this.http.post<ApiResponse<void>>(`${this.baseUrl}/forgot-password`, { email });
   }
 
   validateResetToken(token: string): Observable<ApiResponse<void>> {
@@ -58,6 +49,6 @@ export class AuthService {
   }
 
   resetPassword(token: string, newPassword: string): Observable<ApiResponse<void>> {
-    return this.http.post<ApiResponse<void>>(`${this.baseUrl}/reset-password`, { token, newPassword: newPassword.trim() });
+    return this.http.post<ApiResponse<void>>(`${this.baseUrl}/reset-password`, { token, newPassword });
   }
 }

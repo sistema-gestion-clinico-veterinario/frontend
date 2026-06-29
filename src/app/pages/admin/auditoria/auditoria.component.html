@@ -102,17 +102,9 @@
   <!-- Tabla de Logs -->
   <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
 
-    <!-- Loading state -->
-    <div *ngIf="loading()" class="flex items-center justify-center py-16 gap-3 text-slate-500 text-sm">
-      <svg class="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
-      </svg>
-      Cargando registros...
-    </div>
 
     <!-- Tabla principal -->
-    <div *ngIf="!loading()" class="md:hidden divide-y divide-slate-100">
+    <div class="md:hidden divide-y divide-slate-100">
       <div *ngIf="logs().length === 0" class="px-4 py-12 text-center text-slate-400">
         <i class="pi pi-inbox text-3xl block mb-3"></i>
         <p class="font-medium text-slate-600 text-sm">No se encontraron registros de auditoría</p>
@@ -144,7 +136,7 @@
       </div>
     </div>
 
-    <div *ngIf="!loading()" class="hidden md:block overflow-x-auto">
+    <div class="hidden md:block overflow-x-auto">
       <table class="w-full text-sm">
         <thead class="bg-slate-50 border-b border-slate-200">
           <tr>

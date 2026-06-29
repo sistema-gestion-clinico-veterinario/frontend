@@ -22,7 +22,7 @@ export class VerifyEmailComponent {
 
   passwordForm = this.fb.group({
     password: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(72), Validators.pattern(/^\S+$/)]],
-    confirmPassword: ['', [Validators.required]]
+    confirmPassword: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(72), Validators.pattern(/^\S+$/)]]
   }, { validators: this.passwordsMatch });
 
   resendForm = this.fb.group({
@@ -36,6 +36,11 @@ export class VerifyEmailComponent {
   }
 
   submitPassword() {
+    const rawPwd = this.passwordForm.getRawValue().password ?? '';
+    if (rawPwd !== rawPwd.trim()) {
+      this.errorMsg.set('La contraseña no debe contener espacios.');
+      return;
+    }
     if (this.passwordForm.invalid || !this.token) return;
     this.estado.set('enviando');
     this.authService.setupAccount(this.token, this.passwordForm.value.password!).subscribe({
@@ -48,6 +53,11 @@ export class VerifyEmailComponent {
   }
 
   reenviar() {
+    const rawEmail = this.resendForm.getRawValue().email ?? '';
+    if (rawEmail !== rawEmail.trim()) {
+      this.errorMsg.set('El correo no debe contener espacios.');
+      return;
+    }
     if (this.resendForm.invalid) {
       this.resendForm.markAllAsTouched();
       return;

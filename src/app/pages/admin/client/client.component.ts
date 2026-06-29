@@ -1,6 +1,6 @@
 import { Component, OnInit, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Subject, debounceTime } from 'rxjs';
+import { Subject, debounceTime, forkJoin } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { TableModule } from 'primeng/table';
@@ -12,9 +12,12 @@ import { ToastModule } from 'primeng/toast';
 import { MenuModule } from 'primeng/menu';
 import { MenuItem, MessageService } from 'primeng/api';
 import { ApoderadoService } from '../../../core/services/apoderado.service';
+import { MascotaService } from '../../../core/services/mascota.service';
+import { MediaService } from '../../../core/services/media.service';
 import { CompanyService } from '../../../core/services/company.service';
 import { ApoderadoListResponse } from '../../../models/response/apoderado-list-response';
 import { ApoderadoRequest } from '../../../models/request/apoderado-request';
+import { MascotaResponse } from '../../../models/response/mascota-response';
 import { LoadingStore } from '../../../store/loading.store';
 import { AuthStore } from '../../../store/auth.store';
 import { Role } from '../../../core/enums/role.enum';
@@ -46,6 +49,8 @@ import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-lea
 export class ClientComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly apoderadoService = inject(ApoderadoService);
+  private readonly mascotaService = inject(MascotaService);
+  readonly mediaService = inject(MediaService);
   private readonly companyService = inject(CompanyService);
   private readonly messageService = inject(MessageService);
   readonly authStore = inject(AuthStore);
@@ -53,17 +58,49 @@ export class ClientComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
 
   clients = signal<ApoderadoListResponse[]>([]);
-  loading = signal<boolean>(false);
   displayModal = signal<boolean>(false);
   isEdit = signal<boolean>(false);
   totalRecords = signal<number>(0);
   confirmDialog = signal<{ title: string; message: string; onConfirm: () => void } | null>(null);
+  displayDetailModal = signal<boolean>(false);
+  selectedClientDetail = signal<ApoderadoRequest | null>(null);
+  clientPets = signal<MascotaResponse[]>([]);
 
   searchNombre = signal('');
   searchDocumento = signal('');
   private pageSize = 10;
   private readonly searchTrigger = new Subject<void>();
 
+
+  especieLabel(especie: string): string {
+    const m: Record<string, string> = {
+      PERRO: 'Perro', GATO: 'Gato', AVE: 'Ave',
+      CONEJO: 'Conejo', REPTIL: 'Reptil', OTRO: 'Otro'
+    };
+    return m[especie?.toUpperCase()] ?? especie;
+  }
+
+  especieBadgeClass(especie: string): string {
+    switch (especie?.toUpperCase()) {
+      case 'PERRO':  return 'bg-blue-50 text-blue-700';
+      case 'GATO':   return 'bg-violet-50 text-violet-700';
+      case 'AVE':    return 'bg-amber-50 text-amber-700';
+      case 'CONEJO': return 'bg-green-50 text-green-700';
+      case 'REPTIL': return 'bg-teal-50 text-teal-700';
+      default:       return 'bg-slate-100 text-slate-500';
+    }
+  }
+
+  especieAvatarClass(especie: string): string {
+    switch (especie?.toUpperCase()) {
+      case 'PERRO':  return 'bg-blue-100 text-blue-700';
+      case 'GATO':   return 'bg-violet-100 text-violet-700';
+      case 'AVE':    return 'bg-amber-100 text-amber-700';
+      case 'CONEJO': return 'bg-green-100 text-green-700';
+      case 'REPTIL': return 'bg-teal-100 text-teal-700';
+      default:       return 'bg-slate-100 text-slate-500';
+    }
+  }
 
   get activeCompanyId(): number | null {
     return this.authStore.selectedEnterprise()?.establishmentId ?? this.authStore.companyId();
@@ -82,12 +119,20 @@ export class ClientComponent implements OnInit {
     this.confirmDialog.set(null);
   }
 
-  canClientAction(tipo: 'modificar' | 'eliminar'): boolean {
+  canClientAction(tipo: 'leer' | 'modificar' | 'eliminar'): boolean {
     return this.authStore.isSuperAdmin() || this.authStore.hasAccess('VISTA_CLIENTES', tipo);
   }
 
   clientActionItems(client: ApoderadoListResponse): MenuItem[] {
     const items: MenuItem[] = [];
+
+    if (this.canClientAction('leer')) {
+      items.push({
+        label: 'Ver Detalles',
+        icon: 'pi pi-eye',
+        command: () => this.viewClientDetail(client)
+      });
+    }
 
     if (this.canClientAction('modificar')) {
       items.push({
@@ -142,6 +187,29 @@ export class ClientComponent implements OnInit {
     return 'El DNI debe tener exactamente 8 dígitos';
   }
 
+  onDocInput(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const tipo = this.clientForm.get('tipoDocumento')?.value;
+    const raw = input.value;
+    let filtered = '';
+    if (tipo === 'DNI' || tipo === 'CARNET_EXTRANJERIA') {
+      filtered = raw.replace(/\D/g, '');
+    } else if (tipo === 'PASAPORTE') {
+      for (let i = 0; i < raw.length; i++) {
+        const ch = raw[i];
+        if (i === 0 && /[A-Za-z]/.test(ch)) {
+          filtered += ch.toUpperCase();
+        } else if (i > 0 && /\d/.test(ch)) {
+          filtered += ch;
+        }
+      }
+    }
+    if (input.value !== filtered) {
+      input.value = filtered;
+      this.clientForm.get('numeroDocumento')?.setValue(filtered, { emitEvent: false });
+    }
+  }
+
   ngOnInit() {
     this.searchTrigger.pipe(
       debounceTime(400),
@@ -180,8 +248,6 @@ export class ClientComponent implements OnInit {
 
     this.pageSize = event.rows;
     const page = Math.floor(event.first / event.rows);
-    this.loading.set(true);
-    this.loadingStore.show();
 
     const nombre = this.searchNombre().trim() || undefined;
     const numeroDocumento = this.searchDocumento().trim() || undefined;
@@ -190,13 +256,9 @@ export class ClientComponent implements OnInit {
       next: (res) => {
         this.clients.set(res.data.content);
         this.totalRecords.set(res.data?.page?.totalElements ?? res.data?.totalElements ?? 0);
-        this.loading.set(false);
-        this.loadingStore.hide();
       },
       error: () => {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar los propietarios' });
-        this.loading.set(false);
-        this.loadingStore.hide();
       }
     });
   }
@@ -211,6 +273,28 @@ export class ClientComponent implements OnInit {
     });
     this.isEdit.set(false);
     this.displayModal.set(true);
+  }
+
+  viewClientDetail(client: ApoderadoListResponse) {
+    const companyId = this.activeCompanyId;
+    if (!companyId) return;
+    this.loadingStore.show();
+    forkJoin({
+      detail: this.apoderadoService.getById(client.id),
+      pets: this.mascotaService.listar(companyId, undefined, undefined, 0, 500, undefined)
+    }).subscribe({
+      next: (res) => {
+        const allPets = res.pets.data?.content ?? [];
+        this.clientPets.set(allPets.filter(p => p.apoderadoId === client.id));
+        this.selectedClientDetail.set(res.detail.data);
+        this.displayDetailModal.set(true);
+        this.loadingStore.hide();
+      },
+      error: () => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cargar la información del cliente' });
+        this.loadingStore.hide();
+      }
+    });
   }
 
   editClient(client: ApoderadoListResponse) {
