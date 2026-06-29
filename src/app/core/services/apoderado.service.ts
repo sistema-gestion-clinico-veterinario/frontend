@@ -1,11 +1,12 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
 import { ApiResponse } from '../../models/response/api-response';
 import { Page } from '../../models/response/page';
 import { ApoderadoListResponse } from '../../models/response/apoderado-list-response';
 import { environment } from '../../../environments/environment';
 import { ApoderadoRequest } from '../../models/request/apoderado-request';
 import { UserProfileDTO } from '../../models/response/user-profile-dto';
+import { SKIP_GLOBAL_LOADING } from '../interceptors/api.interceptor';
 
 @Injectable({
   providedIn: 'root'
@@ -14,14 +15,16 @@ export class ApoderadoService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = `${environment.apiUrl}/clients/guardians`;
 
-  listar(companyId?: number, nombre?: string, numeroDocumento?: string, page: number = 0, size: number = 10) {
+  listar(companyId?: number, nombre?: string, numeroDocumento?: string, page: number = 0, size: number = 10, skipLoading: boolean = false) {
     let params = `?page=${page}&size=${size}`;
     if (companyId !== undefined && companyId !== null) {
       params += `&companyId=${companyId}`;
     }
     if (nombre) params += `&nombre=${encodeURIComponent(nombre)}`;
     if (numeroDocumento) params += `&numeroDocumento=${encodeURIComponent(numeroDocumento)}`;
-    return this.http.get<ApiResponse<Page<ApoderadoListResponse>>>(`${this.apiUrl}${params}`);
+
+    const context = skipLoading ? new HttpContext().set(SKIP_GLOBAL_LOADING, true) : undefined;
+    return this.http.get<ApiResponse<Page<ApoderadoListResponse>>>(`${this.apiUrl}${params}`, { context });
   }
 
   getById(id: number) {

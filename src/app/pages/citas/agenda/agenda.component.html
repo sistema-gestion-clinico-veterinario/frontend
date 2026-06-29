@@ -187,7 +187,7 @@
       <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
         <p-table [value]="citas()" [lazy]="true" (onLazyLoad)="loadCitas($event)"
           [paginator]="true" [rows]="10" [totalRecords]="totalRecords()"
-          [loading]="loadingStore.isLoading()" [rowHover]="true"
+          [rowHover]="true"
           styleClass="p-datatable-borderless" responsiveLayout="stack" breakpoint="768px">
 
           <ng-template pTemplate="header">

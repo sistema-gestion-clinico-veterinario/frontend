@@ -158,7 +158,6 @@ export class RolesComponent implements OnInit {
   savePermisos() {
     const role = this.selectedRole();
     if (!role) return;
-    this.loadingStore.show();
     this.roleService.saveVentanas(role.id, this.ventanaPermisos()).subscribe({
       next: (res) => {
         this.ventanaPermisos.set(res.data);
@@ -168,7 +167,6 @@ export class RolesComponent implements OnInit {
       },
       error: (err) => {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo guardar' });
-        this.loadingStore.hide();
       }
     });
   }
@@ -233,7 +231,6 @@ export class RolesComponent implements OnInit {
       message: `¿Guardar cambios en el rol "${this.roleLabel(role.name)}"?`,
       variant: 'primary',
       onConfirm: () => {
-        this.loadingStore.show();
         this.roleService.actualizar(role.id, {
           name: formattedName,
           descripcion: role.descripcion,
@@ -249,11 +246,9 @@ export class RolesComponent implements OnInit {
             this.isEditingName.set(false);
             this.editingNameValue.set('');
             this.messageService.add({ severity: 'success', summary: 'Guardado', detail: 'Rol actualizado correctamente' });
-            this.loadingStore.hide();
           },
           error: (err) => {
             this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo guardar' });
-            this.loadingStore.hide();
           }
         });
       }
@@ -334,7 +329,6 @@ export class RolesComponent implements OnInit {
       message: `¿Crear el rol "${this.roleLabel(formattedName)}"?`,
       variant: 'primary',
       onConfirm: () => {
-        this.loadingStore.show();
         this.roleService.crear({
           name: formattedName,
           descripcion: this.newRoleDesc() || undefined,
@@ -348,11 +342,9 @@ export class RolesComponent implements OnInit {
             }
             this.selectRole(res.data);
             this.messageService.add({ severity: 'success', summary: 'Creado', detail: 'Rol creado exitosamente' });
-            this.loadingStore.hide();
           },
           error: (err) => {
             this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo crear el rol' });
-            this.loadingStore.hide();
           }
         });
       }
@@ -371,7 +363,6 @@ export class RolesComponent implements OnInit {
       title: 'Eliminar Rol',
       message: `¿Eliminar el rol ${this.roleLabel(role.name)}? Esta acción no se puede deshacer.`,
       onConfirm: () => {
-        this.loadingStore.show();
         this.roleService.eliminar(role.id).subscribe({
           next: () => {
             if (this.activeSection() === 'empresa') {
@@ -381,11 +372,9 @@ export class RolesComponent implements OnInit {
             }
             this.selectedRole.set(null);
             this.messageService.add({ severity: 'success', summary: 'Eliminado', detail: 'Rol eliminado exitosamente' });
-            this.loadingStore.hide();
           },
           error: (err) => {
             this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo eliminar el rol' });
-            this.loadingStore.hide();
           }
         });
       }
@@ -406,7 +395,6 @@ export class RolesComponent implements OnInit {
     const refreshToken = this.authStore.refreshToken();
 
     if (activeRole !== roleName || !refreshToken) {
-      this.loadingStore.hide();
       return;
     }
 
@@ -434,12 +422,8 @@ export class RolesComponent implements OnInit {
         if (!this.authStore.hasRouteAccess(this.router.url)) {
           this.router.navigateByUrl(resolveInitialRoute(data.roles ?? [], data.menu ?? []), { replaceUrl: true });
         }
-
-        this.loadingStore.hide();
       },
-      error: () => {
-        this.loadingStore.hide();
-      }
+      error: () => {}
     });
   }
 

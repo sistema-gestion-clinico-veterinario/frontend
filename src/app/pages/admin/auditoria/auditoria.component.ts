@@ -39,7 +39,6 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
 
   logs = signal<AuditLog[]>([]);
   totalRecords = signal<number>(0);
-  loading = signal<boolean>(false);
   companies = signal<CompanyListResponse[]>([]);
 
   // Filtros
@@ -183,7 +182,6 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
   }
 
   private executeLoadLogs(page: number, initialLoad = false) {
-    this.loading.set(true);
 
     const formattedStart = this.startDateFilter ? `${this.startDateFilter}T00:00:00` : undefined;
     const formattedEnd = this.endDateFilter ? `${this.endDateFilter}T23:59:59` : undefined;
@@ -212,12 +210,10 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
         const total = data.totalElements ?? data.page?.totalElements ?? 0;
         this.logs.set(data.content ?? []);
         this.totalRecords.set(total);
-        this.loading.set(false);
         this.setupWebSocket(targetCompanyId);
       },
       error: () => {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron obtener los registros de auditoría' });
-        this.loading.set(false);
       }
     });
   }

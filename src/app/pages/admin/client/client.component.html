@@ -1,5 +1,181 @@
 <p-toast></p-toast>
 
+<!-- Detail Modal -->
+<!-- Detail Modal -->
+<div *ngIf="displayDetailModal()" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm font-['Barlow']" (click)="displayDetailModal.set(false)">
+  <div class="bg-slate-50 w-full max-w-4xl max-h-[92vh] overflow-y-auto rounded-lg border border-slate-200 flex flex-col transition-all duration-300" (click)="$event.stopPropagation()">
+    <!-- Header -->
+    <div class="px-8 py-6 bg-white border-b border-slate-200 flex items-center justify-between shrink-0">
+      <div class="flex items-center gap-3.5">
+        <div class="w-10 h-10 bg-[#0066AA]/10 text-[#0066AA] rounded-md flex items-center justify-center">
+          <i class="pi pi-user text-lg"></i>
+        </div>
+        <div>
+          <h2 class="text-base font-extrabold text-slate-800">Ficha del Propietario</h2>
+          <p class="text-xs text-slate-400 font-medium mt-0.5">Consulta la información del cliente y sus pacientes registrados</p>
+        </div>
+      </div>
+      <button (click)="displayDetailModal.set(false)"
+        class="w-9 h-9 flex items-center justify-center rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all duration-200"
+        title="Cerrar">
+        <i class="pi pi-times text-sm"></i>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="p-8 flex-1" *ngIf="selectedClientDetail() as cli">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- Left Side: Profile & Details -->
+        <div class="lg:col-span-7 space-y-6">
+          
+          <!-- Profile Badge -->
+          <div class="bg-white rounded-lg p-5 border border-slate-200 flex items-center gap-5">
+            <div class="w-20 h-20 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center font-extrabold text-3xl overflow-hidden shrink-0">
+              <span>{{ cli.nombre.charAt(0) }}{{ cli.apellido.charAt(0) }}</span>
+            </div>
+            <div class="min-w-0">
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#0066AA]/10 text-[#0066AA] mb-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#0066AA]"></span>
+                Propietario Activo
+              </span>
+              <h3 class="text-xl font-black text-slate-800 truncate leading-tight">{{ cli.nombre }} {{ cli.apellido }}</h3>
+              <p class="text-xs text-slate-400 mt-1 flex items-center gap-1">
+                <i class="pi pi-id-card text-slate-400"></i>
+                {{ cli.tipoDocumento }}: {{ cli.numeroDocumento }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Contact Details -->
+          <div class="bg-white rounded-lg p-6 border border-slate-200 space-y-4">
+            <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2">Información de Contacto</h4>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <a [href]="'mailto:' + cli.email" class="group flex items-start gap-3 p-3 rounded-md hover:bg-slate-50 transition-all duration-200 border border-transparent hover:border-slate-200">
+                <div class="w-8 h-8 rounded-md bg-slate-100 text-slate-600 flex items-center justify-center shrink-0 transition-colors group-hover:bg-[#0066AA]/10 group-hover:text-[#0066AA]">
+                  <i class="pi pi-envelope text-xs"></i>
+                </div>
+                <div class="min-w-0">
+                  <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wide">Correo Electrónico</span>
+                  <span class="text-sm font-semibold text-slate-700 block truncate mt-0.5">{{ cli.email }}</span>
+                </div>
+              </a>
+
+              <a [href]="'tel:' + cli.telefono" class="group flex items-start gap-3 p-3 rounded-md hover:bg-slate-50 transition-all duration-200 border border-transparent hover:border-slate-200">
+                <div class="w-8 h-8 rounded-md bg-slate-100 text-slate-600 flex items-center justify-center shrink-0 transition-colors group-hover:bg-[#0066AA]/10 group-hover:text-[#0066AA]">
+                  <i class="pi pi-phone text-xs"></i>
+                </div>
+                <div class="min-w-0">
+                  <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wide">Teléfono Celular</span>
+                  <span class="text-sm font-bold text-slate-800 block mt-0.5">{{ cli.telefono }}</span>
+                </div>
+              </a>
+
+              <div class="flex items-start gap-3 p-3 sm:col-span-2">
+                <div class="w-8 h-8 rounded-md bg-slate-100 text-slate-600 flex items-center justify-center shrink-0">
+                  <i class="pi pi-map-marker text-xs"></i>
+                </div>
+                <div class="min-w-0">
+                  <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wide">Dirección Domiciliaria</span>
+                  <span class="text-sm font-semibold text-slate-700 block mt-0.5 leading-relaxed">{{ cli.direccion || 'No registrada' }}</span>
+                </div>
+              </div>
+
+              <div class="flex items-start gap-3 p-3" *ngIf="cli.genero">
+                <div class="w-8 h-8 rounded-md bg-slate-100 text-slate-600 flex items-center justify-center shrink-0">
+                  <i class="pi pi-user text-xs"></i>
+                </div>
+                <div class="min-w-0">
+                  <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wide">Género</span>
+                  <span class="text-sm font-semibold text-slate-700 block mt-0.5">{{ cli.genero === 'MASCULINO' ? 'Masculino' : cli.genero === 'FEMENINO' ? 'Femenino' : cli.genero }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Extra Notes -->
+          <div class="bg-white rounded-lg p-6 border border-slate-200 space-y-4" *ngIf="cli.referencias || cli.observaciones">
+            <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2">Anotaciones Adicionales</h4>
+            
+            <div class="space-y-4">
+              <div *ngIf="cli.referencias" class="flex flex-col gap-1.5 border-l-4 border-slate-300 pl-4 py-1">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Referencias de ubicación</span>
+                <p class="text-sm text-slate-600 leading-relaxed">{{ cli.referencias }}</p>
+              </div>
+
+              <div *ngIf="cli.observaciones" class="flex flex-col gap-1.5 border-l-4 border-[#0066AA]/40 pl-4 py-1">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Observaciones Administrativas</span>
+                <p class="text-sm text-slate-600 leading-relaxed italic">{{ cli.observaciones }}</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right Side: Pets List -->
+        <div class="lg:col-span-5 space-y-5">
+          <div class="bg-white rounded-lg p-6 border border-slate-200 flex flex-col h-full">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4 shrink-0">
+              <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest">Pacientes Relacionados</h4>
+              <span class="bg-[#0066AA]/10 text-[#0066AA] text-xs font-extrabold px-2.5 py-0.5 rounded-full">
+                {{ clientPets().length }}
+              </span>
+            </div>
+
+            <div class="flex-1 overflow-y-auto max-h-[45vh] pr-1 space-y-3 scrollbar-thin">
+              <div *ngIf="clientPets().length; else noPets" class="space-y-3">
+                <div *ngFor="let p of clientPets()" 
+                  class="group flex items-center gap-3.5 p-3 bg-slate-50/50 hover:bg-slate-50 rounded-lg border border-slate-200 hover:border-[#0066AA]/30 transition-all duration-200">
+                  
+                  <div [class]="'w-11 h-11 rounded-md flex items-center justify-center text-base font-extrabold overflow-hidden shrink-0 ' + especieAvatarClass(p.especie)">
+                    <img *ngIf="p.fotoUrl" [src]="mediaService.resolveUrl(p.fotoUrl)" class="w-full h-full object-cover">
+                    <span *ngIf="!p.fotoUrl">{{ p.nombreCompleto.charAt(0).toUpperCase() }}</span>
+                  </div>
+
+                  <div class="flex-1 min-w-0">
+                    <h5 class="text-sm font-bold text-slate-800 truncate leading-tight">{{ p.nombreCompleto }}</h5>
+                    <p class="text-[11px] text-slate-400 mt-1 flex items-center gap-1.5">
+                      <span [class]="'text-[9px] font-extrabold px-1.5 py-0.5 rounded uppercase tracking-wider ' + especieBadgeClass(p.especie)">
+                        {{ especieLabel(p.especie) }}
+                      </span>
+                      <span class="truncate">{{ p.razaNombre || 'Sin raza' }}</span>
+                    </p>
+                  </div>
+
+                  <div class="shrink-0 flex flex-col items-end gap-1.5">
+                    <span [class]="p.activo ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-red-50 text-red-500 border-red-200'"
+                      class="text-[9px] font-black px-2 py-0.5 border rounded-full uppercase tracking-wider">
+                      {{ p.activo ? 'Activo' : 'De Baja' }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <ng-template #noPets>
+                <div class="py-12 text-center flex flex-col items-center justify-center gap-2">
+                  <div class="w-12 h-12 bg-slate-100 text-slate-300 rounded-full flex items-center justify-center">
+                    <i class="pi pi-heart text-lg"></i>
+                  </div>
+                  <p class="text-xs text-slate-400 font-medium italic">Este propietario no cuenta con mascotas registradas.</p>
+                </div>
+              </ng-template>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="px-8 py-5 bg-white border-t border-slate-200 flex justify-end shrink-0 rounded-b-lg">
+      <button (click)="displayDetailModal.set(false)"
+        class="px-6 py-2.5 text-sm font-bold text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-md transition-all duration-200">
+        Cerrar Ventana
+      </button>
+    </div>
+  </div>
+</div>
+
 <div class="p-3 sm:p-4 flex flex-col gap-5 sm:gap-8 animate-fade-in">
   <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
     <div class="flex flex-col gap-2">
@@ -20,15 +196,22 @@
     <div class="relative flex-1">
       <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-300 text-sm pointer-events-none"></i>
       <input type="text" placeholder="Buscar por nombre o apellido..."
-        [ngModel]="searchNombre()" (ngModelChange)="searchNombre.set($event); onSearchChange()"
+        [ngModel]="searchNombre()" (ngModelChange)="searchNombre.set($event)"
+        (keyup.enter)="onSearchChange()"
         class="w-full h-10 pl-9 pr-3 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" />
     </div>
     <div class="relative flex-1 sm:max-w-xs">
       <i class="pi pi-id-card absolute left-3 top-1/2 -translate-y-1/2 text-slate-300 text-sm pointer-events-none"></i>
-      <input type="text" placeholder="Buscar por DNI..." appInputFilter="digits" maxlength="15"
-        [ngModel]="searchDocumento()" (ngModelChange)="searchDocumento.set($event); onSearchChange()"
+      <input type="text" placeholder="Documento de identidad..." appInputFilter="alphanumeric" maxlength="15"
+        [ngModel]="searchDocumento()" (ngModelChange)="searchDocumento.set($event)"
+        (keyup.enter)="onSearchChange()"
         class="w-full h-10 pl-9 pr-3 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" />
     </div>
+    <button type="button" (click)="onSearchChange()"
+      class="shrink-0 flex items-center justify-center gap-1.5 px-4 h-10 rounded-lg bg-[#0066AA] text-white text-sm font-medium hover:bg-[#005a96] transition-colors">
+      <i class="pi pi-search text-xs"></i>
+      <span class="hidden sm:inline">Buscar</span>
+    </button>
     <button *ngIf="searchNombre() || searchDocumento()" type="button" (click)="clearSearch()"
       class="shrink-0 flex items-center justify-center gap-1.5 px-3 h-10 rounded-lg border border-slate-200 text-slate-500 text-sm font-medium hover:bg-slate-50 transition-colors">
       <i class="pi pi-times text-xs"></i> Limpiar
@@ -37,7 +220,7 @@
 
   <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
     <p-table [value]="clients()" [lazy]="true" (onLazyLoad)="loadClients($event)" [paginator]="true" [rows]="10"
-      [totalRecords]="totalRecords()" [loading]="loading()" responsiveLayout="stack" breakpoint="768px" [rowHover]="true"
+      [totalRecords]="totalRecords()" responsiveLayout="stack" breakpoint="768px" [rowHover]="true"
       styleClass="p-datatable-borderless">
       <ng-template pTemplate="header">
         <tr class="border-b border-slate-100">
@@ -57,7 +240,9 @@
                 <span>{{ client.nombre.charAt(0) }}</span>
               </div>
               <div>
-                <p class="text-sm font-medium text-slate-800 leading-tight">{{ client.nombre }} {{ client.apellido }}</p>
+                <p (click)="viewClientDetail(client)" class="text-sm font-semibold text-slate-800 hover:text-[#0066AA] cursor-pointer transition-all duration-200 leading-tight">
+                  {{ client.nombre }} {{ client.apellido }}
+                </p>
                 <p class="text-xs text-slate-400 mt-0.5">Cliente registrado</p>
               </div>
             </div>
@@ -194,6 +379,7 @@
                   <option *ngFor="let t of tipoDocumentos" [value]="t.value">{{ t.label }}</option>
                 </select>
                 <input type="text" formControlName="numeroDocumento" placeholder="Número"
+                  (input)="onDocInput($event)"
                   [maxlength]="clientForm.get('tipoDocumento')?.value === 'DNI' ? 8 : 9"
                   [ngClass]="clientForm.get('numeroDocumento')?.invalid && clientForm.get('numeroDocumento')?.touched ? 'border-rose-400' : 'border-slate-300'"
                   class="flex-1 px-3 py-2 border rounded-r text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all font-bold" />

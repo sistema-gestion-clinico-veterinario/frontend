@@ -1,12 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
 import { Router, RouterModule } from '@angular/router';
 import { finalize, timeout } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
 import { AuthStore } from '../../../store/auth.store';
 import { resolveInitialRoute } from '../../../layouts/main-layout/navbar/navbar.component';
-import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
 
 @Component({
   selector: 'app-login',
@@ -32,8 +32,8 @@ export class LoginComponent implements OnInit {
   }
 
   loginForm = inject(FormBuilder).group({
-    email: ['', [Validators.required, Validators.email, Validators.pattern(/^\S+@\S+\.\S+$/), Validators.maxLength(255)]],
-    password: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(72), noLeadingTrailingSpaceValidator()]]
+    email: ['', [Validators.required, Validators.email, Validators.pattern(/^\S+@\S+\.\S+$/), noLeadingTrailingSpaceValidator(), Validators.maxLength(255)]],
+    password: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(72), Validators.pattern(/^\S+$/)]]
   });
 
   get email() { return this.loginForm.get('email'); }
@@ -47,6 +47,25 @@ export class LoginComponent implements OnInit {
   }
 
   submit() {
+    const rawEmail = (document.getElementById('email') as HTMLInputElement)?.value ?? '';
+    const rawPassword = (document.getElementById('password') as HTMLInputElement)?.value ?? '';
+    this.loginForm.get('email')?.setValue(rawEmail, { emitEvent: false });
+    this.loginForm.get('password')?.setValue(rawPassword, { emitEvent: false });
+
+    const hasUntrimmedEmail = rawEmail !== rawEmail.trim();
+    const hasSpacesPassword = /\s/.test(rawPassword);
+
+    if (hasUntrimmedEmail || hasSpacesPassword) {
+      if (hasUntrimmedEmail) {
+        this.authError = 'El correo no debe contener espacios al inicio o al final.';
+        this.loginForm.get('email')?.markAsTouched();
+      } else {
+        this.authError = 'La contraseña no debe contener espacios.';
+        this.loginForm.get('password')?.markAsTouched();
+      }
+      return;
+    }
+
     if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
       return;
@@ -55,7 +74,7 @@ export class LoginComponent implements OnInit {
     this.authError = null;
     this.isSubmitting = true;
 
-    this.authService.login(this.loginForm.value as { email: string; password: string }).pipe(
+    this.authService.login({ email: rawEmail, password: rawPassword }).pipe(
       timeout(15000),
       finalize(() => this.isSubmitting = false)
     ).subscribe({

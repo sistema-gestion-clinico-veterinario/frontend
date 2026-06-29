@@ -16,6 +16,10 @@ export class AuthService {
     return this.http.post<AuthLoginResponse>(`${this.baseUrl}/login`, credentials);
   }
 
+  setupAccount(token: string, password: string): Observable<ApiResponse<void>> {
+    return this.http.post<ApiResponse<void>>(`${this.baseUrl}/setup-account`, { token, password });
+  }
+
   verifyEmail(token: string): Observable<ApiResponse<void>> {
     return this.http.get<ApiResponse<void>>(`${this.baseUrl}/verify/${token}`);
   }

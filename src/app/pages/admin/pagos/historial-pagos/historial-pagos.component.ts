@@ -7,7 +7,6 @@ import { PaginatorModule } from 'primeng/paginator';
 import { MessageService } from 'primeng/api';
 import { PagoService } from '../../../../core/services/pago.service';
 import { PagoListResponse } from '../../../../models/response/pago-response';
-import { LoadingStore } from '../../../../store/loading.store';
 import { AuthStore } from '../../../../store/auth.store';
 
 @Component({
@@ -21,10 +20,8 @@ import { AuthStore } from '../../../../store/auth.store';
 export class HistorialPagosComponent implements OnInit {
   private readonly pagoService  = inject(PagoService);
   private readonly messageService = inject(MessageService);
-  readonly loadingStore          = inject(LoadingStore);
   readonly authStore             = inject(AuthStore);
   pagos          = signal<PagoListResponse[]>([]);
-  loading        = signal<boolean>(false);
   totalRecords   = signal<number>(0);
   currentPage    = signal<number>(0);
   pageSize       = signal<number>(10);
@@ -59,16 +56,13 @@ export class HistorialPagosComponent implements OnInit {
       this.currentPage.set(event.first / event.rows);
       this.pageSize.set(event.rows);
     }
-    this.loading.set(true);
     this.pagoService.listarTodos(this.currentPage(), this.pageSize(), this.companyId).subscribe({
       next: (res) => {
         this.pagos.set(res.data?.content ?? []);
         this.totalRecords.set((res.data as any)?.page?.totalElements ?? res.data?.totalElements ?? 0);
-        this.loading.set(false);
       },
       error: () => {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cargar el historial de pagos.' });
-        this.loading.set(false);
       }
     });
   }
