@@ -24,6 +24,7 @@ import { Role } from '../../../core/enums/role.enum';
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 import { InputFilterDirective } from '../../../core/directives/input-filter.directive';
 import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
+import { normalizeText } from '../../../core/utils/normalize-text.util';
 
 @Component({
   selector: 'app-client',
@@ -173,11 +174,11 @@ export class ClientComponent implements OnInit {
     numeroDocumento: ['', [Validators.required, Validators.pattern(/^\d{8}$/)]],
     tipoDocumento: ['DNI', [Validators.required]],
     telefono: ['', [Validators.required, Validators.pattern(/^\d{9}$/)]],
-    direccion: ['', [Validators.required, noLeadingTrailingSpaceValidator()]],
+    direccion: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9áéíóúÁÉÍÓÚüÜñÑ\s\.,#\-\/°:]+$/), noLeadingTrailingSpaceValidator()]],
     companyId: [null],
     genero: ['MASCULINO', [Validators.required]],
-    referencias: ['', [noLeadingTrailingSpaceValidator()]],
-    observaciones: ['', [noLeadingTrailingSpaceValidator()]]
+    referencias: [''],
+    observaciones: ['']
   });
 
   get documentoErrorMsg(): string {
@@ -320,7 +321,16 @@ export class ClientComponent implements OnInit {
       return;
     }
 
-    const data: ApoderadoRequest = this.clientForm.value;
+    const rawData = this.clientForm.value;
+    const data: ApoderadoRequest = {
+      ...rawData,
+      nombre:        normalizeText(rawData.nombre),
+      apellido:      normalizeText(rawData.apellido),
+      email:         rawData.email?.trim(),
+      direccion:     normalizeText(rawData.direccion),
+      referencias:   normalizeText(rawData.referencias),
+      observaciones: normalizeText(rawData.observaciones)
+    };
     const request = this.isEdit() 
       ? this.apoderadoService.actualizar(data.id!, data)
       : this.apoderadoService.registrar(data);

@@ -48,6 +48,7 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 import { InputFilterDirective } from '../../../core/directives/input-filter.directive';
 import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
+import { normalizeText } from '../../../core/utils/normalize-text.util';
 export type Vista = 'lista' | 'dia' | 'semana' | 'mes';
 
 interface CitaWsEvent {
@@ -377,12 +378,12 @@ export class AgendaComponent implements OnInit, OnDestroy {
     version:         [null],
     mascotaId:       [null, [Validators.required]],
     veterinarioId:   [null, [Validators.required]],
-    motivoCita:      ['',   [Validators.required, Validators.minLength(5), Validators.maxLength(250), noLeadingTrailingSpaceValidator()]],
+    motivoCita:      ['',   [Validators.required, Validators.minLength(5), Validators.maxLength(250)]],
     fechaHoraInicio: [null, [Validators.required, this.horariosValidator]],
     fechaCita:       [null],
     horaCita:        [null],
     servicioId:      [null, [Validators.required]],
-    notas:           ['', [Validators.maxLength(500), noLeadingTrailingSpaceValidator()]],
+    notas:           ['', [Validators.maxLength(500)]],
     esEmergencia:    [false]
   });
 
@@ -798,8 +799,8 @@ export class AgendaComponent implements OnInit, OnDestroy {
   }
 
   crearNuevoCliente() {
-    const nombre   = this.ncNombre().trim();
-    const apellido = this.ncApellido().trim();
+    const nombre   = normalizeText(this.ncNombre());
+    const apellido = normalizeText(this.ncApellido());
     const telefono = this.ncTelefono().trim();
     const correo   = this.ncCorreo().trim();
     const numDoc   = this.ncNumDoc().trim();
@@ -823,7 +824,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
 
     const documentoValido = this.ncTipoDoc() === 'DNI'
       ? /^\d{8}$/.test(numDoc)
-      : this.ncTipoDoc() === 'CARNET_EXTRANJERIA'
+      : this.ncTipoDoc() === 'PASAPORTE'
         ? /^[a-zA-Z]\d{8}$/.test(numDoc)
         : /^\d{9}$/.test(numDoc);
     if (!documentoValido) {
@@ -888,11 +889,15 @@ export class AgendaComponent implements OnInit, OnDestroy {
       this.messageService.add({ severity: 'warn', summary: 'Sin dueño', detail: 'Selecciona o crea un cliente primero.' });
       return;
     }
-    const nombre = this.nmNombre().trim();
+    const nombre = normalizeText(this.nmNombre());
     const razaId = this.nmRazaId();
     const fecha  = this.nmFechaNac().trim();
     if (!nombre || !razaId || !fecha) {
       this.messageService.add({ severity: 'warn', summary: 'Campos incompletos', detail: 'Complete nombre, raza y fecha de nacimiento.' });
+      return;
+    }
+    if (!/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/.test(nombre)) {
+      this.messageService.add({ severity: 'warn', summary: 'Nombre inválido', detail: 'El nombre de la mascota solo acepta letras y espacios.' });
       return;
     }
     if (fecha > this.toDateStr(this.today)) {
@@ -973,6 +978,8 @@ export class AgendaComponent implements OnInit, OnDestroy {
 
     const request: CitaRequest = {
       ...formValue,
+      motivoCita: normalizeText(formValue.motivoCita),
+      notas: normalizeText(formValue.notas),
       fechaHoraInicio: localIsoString
     };
     

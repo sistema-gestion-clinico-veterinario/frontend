@@ -12,6 +12,7 @@ import { LoadingStore } from '../../store/loading.store';
 import { AuthStore } from '../../store/auth.store';
 import { InputFilterDirective } from '../../core/directives/input-filter.directive';
 import { noLeadingTrailingSpaceValidator } from '../../core/validators/no-leading-trailing-space.validator';
+import { normalizeText } from '../../core/utils/normalize-text.util';
 
 interface HorarioResumen {
   diaSemana: string;
@@ -58,12 +59,12 @@ export class ProfileComponent implements OnInit, OnDestroy {
   });
 
   form: FormGroup = this.fb.group({
-    nombre:      ['', [Validators.required, Validators.minLength(2), Validators.maxLength(80), Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/), noLeadingTrailingSpaceValidator()]],
-    apellido:    ['', [Validators.required, Validators.minLength(2), Validators.maxLength(80), Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/), noLeadingTrailingSpaceValidator()]],
-    telefono:    ['', [Validators.pattern(/^\d{9}$/)]],
-    direccion:   ['', [Validators.maxLength(200), noLeadingTrailingSpaceValidator()]],
-    observaciones: ['', [Validators.maxLength(500), noLeadingTrailingSpaceValidator()]],
-    fotoUrl:     ['', [Validators.maxLength(500)]]
+    nombre:        ['', [Validators.required, Validators.minLength(2), Validators.maxLength(80), Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/), noLeadingTrailingSpaceValidator()]],
+    apellido:      ['', [Validators.required, Validators.minLength(2), Validators.maxLength(80), Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/), noLeadingTrailingSpaceValidator()]],
+    telefono:      ['', [Validators.pattern(/^\d{9}$/)]],
+    direccion:     ['', [Validators.maxLength(200)]],
+    observaciones: ['', [Validators.maxLength(500)]],
+    fotoUrl:       ['', [Validators.maxLength(500)]]
   });
 
   ngOnInit() {
@@ -154,7 +155,15 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
     const doSave = (fotoUrl?: string) => {
       this.loadingStore.show();
-      const payload = { ...this.form.value };
+      const raw = this.form.value;
+      const payload = {
+        ...raw,
+        nombre:        normalizeText(raw.nombre),
+        apellido:      normalizeText(raw.apellido),
+        telefono:      raw.telefono?.trim(),
+        direccion:     normalizeText(raw.direccion),
+        observaciones: normalizeText(raw.observaciones)
+      };
       if (fotoUrl) payload.fotoUrl = fotoUrl;
 
       this.profileService.updateProfile(payload).subscribe({
