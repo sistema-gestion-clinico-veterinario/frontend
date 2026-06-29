@@ -24,7 +24,7 @@ export class VerifyEmailComponent implements OnInit {
   resendError   = signal<string>('');
 
   resendForm = this.fb.group({
-    email: ['', [Validators.required, Validators.email]]
+    email: ['', [Validators.required, Validators.email, Validators.pattern(/^\S+@\S+\.\S+$/)]]
   });
 
   ngOnInit() {

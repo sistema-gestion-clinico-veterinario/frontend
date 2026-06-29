@@ -27,6 +27,7 @@ import { ServicioResponse } from '../../../models/response/servicio-response';
 import { LoadingStore } from '../../../store/loading.store';
 import { AuthStore } from '../../../store/auth.store';
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
+import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
 
 
 @Component({
@@ -188,15 +189,15 @@ export class ComplementarioComponent implements OnInit {
   showEspModal = signal(false);
   editingEsp = signal<any | null>(null);
   espForm: FormGroup = this.fb.group({
-    nombre: ['', [Validators.required, Validators.minLength(2)]],
-    descripcion: ['']
+    nombre: ['', [Validators.required, Validators.minLength(2), noLeadingTrailingSpaceValidator()]],
+    descripcion: ['', [noLeadingTrailingSpaceValidator()]]
   });
   tiposEmpleado = signal<any[]>([]);
   showTipoModal = signal(false);
   editingTipo = signal<any | null>(null);
   tipoForm: FormGroup = this.fb.group({
-    nombre: ['', [Validators.required, Validators.minLength(2)]],
-    descripcion: [''],
+    nombre: ['', [Validators.required, Validators.minLength(2), noLeadingTrailingSpaceValidator()]],
+    descripcion: ['', [noLeadingTrailingSpaceValidator()]],
     permiteEspecialidades: [false]
   });
 
@@ -205,8 +206,8 @@ export class ComplementarioComponent implements OnInit {
   showServicioModal   = signal(false);
   editingServicio     = signal<ServicioResponse | null>(null);
   servicioForm: FormGroup = this.fb.group({
-    nombre:      ['', [Validators.required, Validators.minLength(2), Validators.maxLength(80)]],
-    descripcion: ['', [Validators.required, Validators.maxLength(300)]],
+    nombre:      ['', [Validators.required, Validators.minLength(2), Validators.maxLength(80), noLeadingTrailingSpaceValidator()]],
+    descripcion: ['', [Validators.required, Validators.maxLength(300), noLeadingTrailingSpaceValidator()]],
     precio:      [null, [Validators.required, Validators.min(5), Validators.max(5000)]],
     duracionEstimada: [20, [Validators.required, Validators.min(5), Validators.max(240)]],
     disponible:  [true],
