@@ -162,6 +162,7 @@
               <p *ngIf="clientForm.get('nombre')?.invalid && clientForm.get('nombre')?.touched" class="text-[11px] text-rose-500 ml-0.5">
                 <ng-container *ngIf="clientForm.get('nombre')?.errors?.['required']">El nombre es requerido</ng-container>
                 <ng-container *ngIf="clientForm.get('nombre')?.errors?.['pattern']">Solo se permiten letras y espacios</ng-container>
+                <ng-container *ngIf="clientForm.get('nombre')?.errors?.['leadingTrailingSpace']">No debe tener espacios al inicio o al final</ng-container>
               </p>
             </div>
 
@@ -173,6 +174,7 @@
               <p *ngIf="clientForm.get('apellido')?.invalid && clientForm.get('apellido')?.touched" class="text-[11px] text-rose-500 ml-0.5">
                 <ng-container *ngIf="clientForm.get('apellido')?.errors?.['required']">Los apellidos son requeridos</ng-container>
                 <ng-container *ngIf="clientForm.get('apellido')?.errors?.['pattern']">Solo se permiten letras y espacios</ng-container>
+                <ng-container *ngIf="clientForm.get('apellido')?.errors?.['leadingTrailingSpace']">No debe tener espacios al inicio o al final</ng-container>
               </p>
             </div>
 
@@ -218,7 +220,7 @@
                 class="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
               <p *ngIf="clientForm.get('email')?.invalid && clientForm.get('email')?.touched" class="text-[11px] text-rose-500 ml-0.5">
                 <ng-container *ngIf="clientForm.get('email')?.errors?.['required']">El correo es requerido</ng-container>
-                <ng-container *ngIf="clientForm.get('email')?.errors?.['email']">Ingresa un correo electrónico válido</ng-container>
+                <ng-container *ngIf="clientForm.get('email')?.errors?.['email'] || clientForm.get('email')?.errors?.['pattern']">Ingresa un correo electrónico válido, sin espacios</ng-container>
               </p>
             </div>
 
@@ -239,14 +241,19 @@
                 [ngClass]="clientForm.get('direccion')?.invalid && clientForm.get('direccion')?.touched ? 'border-rose-400' : 'border-slate-300'"
                 class="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
               <p *ngIf="clientForm.get('direccion')?.invalid && clientForm.get('direccion')?.touched" class="text-[11px] text-rose-500 ml-0.5">
-                La dirección es requerida
+                <ng-container *ngIf="clientForm.get('direccion')?.errors?.['required']">La dirección es requerida</ng-container>
+                <ng-container *ngIf="clientForm.get('direccion')?.errors?.['leadingTrailingSpace']">No debe tener espacios al inicio o al final</ng-container>
               </p>
             </div>
 
             <div class="flex flex-col gap-1 sm:col-span-2">
               <label class="text-xs font-semibold text-slate-700 ml-0.5">Referencias Adicionales</label>
               <input type="text" formControlName="referencias" placeholder="Ej: Frente al parque, edificio color crema"
-                class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+                [ngClass]="clientForm.get('referencias')?.invalid && clientForm.get('referencias')?.touched ? 'border-rose-400' : 'border-slate-300'"
+                class="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+              <p *ngIf="clientForm.get('referencias')?.invalid && clientForm.get('referencias')?.touched" class="text-[11px] text-rose-500 ml-0.5">
+                No debe tener espacios al inicio o al final
+              </p>
             </div>
           </div>
         </div>

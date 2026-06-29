@@ -141,14 +141,16 @@
                 <input formControlName="nombre" appInputFilter="letters" type="text" placeholder="Tu nombre"
                   [ngClass]="{ 'border-red-400 ring-1 ring-red-400': isInvalid('nombre') }"
                   class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#0066AA]/20 focus:border-[#0066AA] outline-none transition-all" />
-                <p *ngIf="isInvalid('nombre')" class="text-xs text-red-500 mt-1">El nombre es obligatorio</p>
+                <p *ngIf="isInvalid('nombre') && form.get('nombre')?.errors?.['required']" class="text-xs text-red-500 mt-1">El nombre es obligatorio</p>
+                <p *ngIf="isInvalid('nombre') && form.get('nombre')?.errors?.['leadingTrailingSpace']" class="text-xs text-red-500 mt-1">No debe tener espacios al inicio o al final</p>
               </div>
               <div>
                 <label class="block text-sm font-medium text-slate-600 mb-1">Apellidos <span class="text-red-500">*</span></label>
                 <input formControlName="apellido" appInputFilter="letters" type="text" placeholder="Tu apellido"
                   [ngClass]="{ 'border-red-400 ring-1 ring-red-400': isInvalid('apellido') }"
                   class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#0066AA]/20 focus:border-[#0066AA] outline-none transition-all" />
-                <p *ngIf="isInvalid('apellido')" class="text-xs text-red-500 mt-1">El apellido es obligatorio</p>
+                <p *ngIf="isInvalid('apellido') && form.get('apellido')?.errors?.['required']" class="text-xs text-red-500 mt-1">El apellido es obligatorio</p>
+                <p *ngIf="isInvalid('apellido') && form.get('apellido')?.errors?.['leadingTrailingSpace']" class="text-xs text-red-500 mt-1">No debe tener espacios al inicio o al final</p>
               </div>
             </div>
 
@@ -169,11 +171,13 @@
                 <label class="block text-sm font-medium text-slate-600 mb-1">Dirección</label>
                 <input formControlName="direccion" type="text" placeholder="Tu dirección"
                   class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#0066AA]/20 focus:border-[#0066AA] outline-none transition-all" />
+                <p *ngIf="isInvalid('direccion') && form.get('direccion')?.errors?.['leadingTrailingSpace']" class="text-xs text-red-500 mt-1">No debe tener espacios al inicio o al final</p>
               </div>
               <div class="sm:col-span-2" *ngIf="profile()?.empleado">
                 <label class="block text-sm font-medium text-slate-600 mb-1">Observaciones</label>
                 <textarea formControlName="observaciones" rows="3" placeholder="Observaciones adicionales..."
                   class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#0066AA]/20 focus:border-[#0066AA] outline-none transition-all resize-none"></textarea>
+                <p *ngIf="isInvalid('observaciones') && form.get('observaciones')?.errors?.['leadingTrailingSpace']" class="text-xs text-red-500 mt-1">No debe tener espacios al inicio o al final</p>
               </div>
             </div>
 

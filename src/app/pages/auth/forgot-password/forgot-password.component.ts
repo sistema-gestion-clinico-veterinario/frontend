@@ -20,7 +20,7 @@ export class ForgotPasswordComponent {
   errorMessage = '';
 
   forgotForm = this.fb.group({
-    email: ['', [Validators.required, Validators.email, Validators.maxLength(255)]]
+    email: ['', [Validators.required, Validators.email, Validators.pattern(/^\S+@\S+\.\S+$/), Validators.maxLength(255)]]
   });
 
   get email() { return this.forgotForm.get('email'); }

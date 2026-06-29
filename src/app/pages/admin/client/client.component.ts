@@ -20,6 +20,7 @@ import { AuthStore } from '../../../store/auth.store';
 import { Role } from '../../../core/enums/role.enum';
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 import { InputFilterDirective } from '../../../core/directives/input-filter.directive';
+import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
 
 @Component({
   selector: 'app-client',
@@ -121,17 +122,17 @@ export class ClientComponent implements OnInit {
 
   clientForm: FormGroup = this.fb.group({
     id: [null],
-    nombre: ['', [Validators.required, Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/)]],
-    apellido: ['', [Validators.required, Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/)]],
-    email: ['', [Validators.required, Validators.email]],
+    nombre: ['', [Validators.required, Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/), noLeadingTrailingSpaceValidator()]],
+    apellido: ['', [Validators.required, Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/), noLeadingTrailingSpaceValidator()]],
+    email: ['', [Validators.required, Validators.email, Validators.pattern(/^\S+@\S+\.\S+$/)]],
     numeroDocumento: ['', [Validators.required, Validators.pattern(/^\d{8}$/)]],
     tipoDocumento: ['DNI', [Validators.required]],
     telefono: ['', [Validators.required, Validators.pattern(/^\d{9}$/)]],
-    direccion: ['', [Validators.required]],
+    direccion: ['', [Validators.required, noLeadingTrailingSpaceValidator()]],
     companyId: [null],
     genero: ['MASCULINO', [Validators.required]],
-    referencias: [''],
-    observaciones: ['']
+    referencias: ['', [noLeadingTrailingSpaceValidator()]],
+    observaciones: ['', [noLeadingTrailingSpaceValidator()]]
   });
 
   get documentoErrorMsg(): string {

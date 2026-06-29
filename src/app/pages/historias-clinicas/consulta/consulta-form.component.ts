@@ -23,6 +23,7 @@ import { ArchivoClinicoResponse } from '../../../models/response/archivo-clinico
 import { RecetaModalsComponent } from '../form-hc/receta-modals/receta-modals.component';
 import { ArchivoModalsComponent } from '../form-hc/archivo-modals/archivo-modals.component';
 import { Role } from '../../../core/enums/role.enum';
+import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
 
 
 @Component({
@@ -104,13 +105,13 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
   private syncingForm = false;
 
   recetaForm: FormGroup = this.fb.group({
-    medicamento:       ['', [Validators.required, Validators.maxLength(80)]],
-    principioActivo:   ['', [Validators.maxLength(80)]],
-    dosis:             ['', [Validators.required, Validators.maxLength(80)]],
-    frecuencia:        ['', [Validators.required, Validators.maxLength(80)]],
+    medicamento:       ['', [Validators.required, Validators.maxLength(80), noLeadingTrailingSpaceValidator()]],
+    principioActivo:   ['', [Validators.maxLength(80), noLeadingTrailingSpaceValidator()]],
+    dosis:             ['', [Validators.required, Validators.maxLength(80), noLeadingTrailingSpaceValidator()]],
+    frecuencia:        ['', [Validators.required, Validators.maxLength(80), noLeadingTrailingSpaceValidator()]],
     duracionDias:      [null, [Validators.min(1), Validators.max(365)]],
     viaAdministracion: ['', [Validators.required, Validators.maxLength(50)]],
-    instrucciones:     ['', [Validators.maxLength(500)]],
+    instrucciones:     ['', [Validators.maxLength(500), noLeadingTrailingSpaceValidator()]],
     fechaInicio:       ['', Validators.required],
     fechaFin:          [''],
   });
@@ -230,6 +231,20 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
     this.hcService.getPorMascota(mascotaId).subscribe({
       next: (res) => this.historia.set(res.data)
     });
+  }
+
+  // Recorta espacios al inicio/final de los campos de texto antes de persistir.
+  // No se usa un validador que rechace al escribir porque el autosave (debounce 1200ms)
+  // se dispararía como "inválido" cada vez que el usuario hace una pausa justo después
+  // de un espacio mientras redacta texto clínico largo (anamnesis, examen físico, etc.).
+  private trimStringFields<T extends Record<string, any>>(value: T): T {
+    const trimmed: Record<string, any> = { ...value };
+    for (const key of Object.keys(trimmed)) {
+      if (typeof trimmed[key] === 'string') {
+        trimmed[key] = trimmed[key].trim();
+      }
+    }
+    return trimmed as T;
   }
 
   private setupAutosave() {
@@ -556,7 +571,7 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
     if (version === undefined) return of(false);
 
     this.autoSaveStatus.set('saving');
-    const payload = { ...this.form.getRawValue(), version };
+    const payload = this.trimStringFields({ ...this.form.getRawValue(), version });
     return this.hcService.updateConsulta(this.consultaId, payload, true).pipe(
       tap((res) => {
         this.sincronizarConsultaGuardada(res.data);
@@ -594,7 +609,7 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
     if (version === undefined) return;
 
     this.loadingStore.show();
-    const payload = { ...this.form.getRawValue(), version: this.consulta()?.version };
+    const payload = this.trimStringFields({ ...this.form.getRawValue(), version: this.consulta()?.version });
     this.hcService.updateConsulta(this.consultaId, payload).subscribe({
       next: (res) => {
         this.sincronizarConsultaGuardada(res.data);

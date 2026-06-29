@@ -17,6 +17,7 @@ import { RazaRequest } from '../../../models/request/raza-request';
 import { LoadingStore } from '../../../store/loading.store';
 import { AuthStore } from '../../../store/auth.store';
 import { InputFilterDirective } from '../../../core/directives/input-filter.directive';
+import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
 
 @Component({
   selector: 'app-mascota-form',
@@ -102,20 +103,20 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
   ];
 
   mascotaForm: FormGroup = this.fb.group({
-    nombre:          ['',   [Validators.required, Validators.minLength(2), Validators.maxLength(80), Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/)]],
+    nombre:          ['',   [Validators.required, Validators.minLength(2), Validators.maxLength(80), Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/), noLeadingTrailingSpaceValidator()]],
     especie:         [null, [Validators.required]],
     razaId:          [null, [Validators.required]],
     sexo:            [null, [Validators.required]],
     fechaNacimiento: ['',   [Validators.required, (control: AbstractControl) => this.fechaNoFuturaValidator(control)]],
-    color:           ['', [Validators.maxLength(50)]],
+    color:           ['', [Validators.maxLength(50), noLeadingTrailingSpaceValidator()]],
     peso:            [null, [Validators.min(0), Validators.max(500)]],
     fotoUrl:         [''],
     apoderadoId:     [null, [Validators.required]],
   });
 
   razaForm: FormGroup = this.fb.group({
-    nombre:      ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100), Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/)]],
-    descripcion: ['', [Validators.maxLength(300)]],
+    nombre:      ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100), Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/), noLeadingTrailingSpaceValidator()]],
+    descripcion: ['', [Validators.maxLength(300), noLeadingTrailingSpaceValidator()]],
   });
 
 

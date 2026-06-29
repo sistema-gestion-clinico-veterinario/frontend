@@ -47,6 +47,7 @@ import { MenuModule } from 'primeng/menu';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 import { InputFilterDirective } from '../../../core/directives/input-filter.directive';
+import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
 export type Vista = 'lista' | 'dia' | 'semana' | 'mes';
 
 interface CitaWsEvent {
@@ -376,12 +377,12 @@ export class AgendaComponent implements OnInit, OnDestroy {
     version:         [null],
     mascotaId:       [null, [Validators.required]],
     veterinarioId:   [null, [Validators.required]],
-    motivoCita:      ['',   [Validators.required, Validators.minLength(5), Validators.maxLength(250)]],
+    motivoCita:      ['',   [Validators.required, Validators.minLength(5), Validators.maxLength(250), noLeadingTrailingSpaceValidator()]],
     fechaHoraInicio: [null, [Validators.required, this.horariosValidator]],
     fechaCita:       [null],
     horaCita:        [null],
     servicioId:      [null, [Validators.required]],
-    notas:           ['', [Validators.maxLength(500)]],
+    notas:           ['', [Validators.maxLength(500), noLeadingTrailingSpaceValidator()]],
     esEmergencia:    [false]
   });
 
