@@ -220,11 +220,11 @@ export class RolesComponent implements OnInit {
       return;
     }
 
-    const nameExists = [...this.companyRoles(), ...this.systemRoles()].some(
-      r => r.id !== role.id && r.name.toUpperCase() === formattedName
-    );
+    const nameExists = this.activeSection() === 'empresa'
+      ? this.companyRoles().some(r => r.id !== role.id && r.name.toUpperCase() === formattedName)
+      : this.systemRoles().some(r => r.id !== role.id && r.name.toUpperCase() === formattedName);
     if (nameExists) {
-      this.messageService.add({ severity: 'error', summary: 'Nombre duplicado', detail: 'Ya existe un rol con ese nombre' });
+      this.messageService.add({ severity: 'error', summary: 'Nombre duplicado', detail: 'Ya existe un rol con ese nombre en esta empresa' });
       return;
     }
 
@@ -261,6 +261,7 @@ export class RolesComponent implements OnInit {
   discard() {
     this.isEditingName.set(false);
     this.editingNameValue.set('');
+    this.editingDescValue.set('');
   }
 
   isDirty(): boolean {
@@ -270,7 +271,9 @@ export class RolesComponent implements OnInit {
     let formattedName = this.editingNameValue().trim().toUpperCase();
     if (!formattedName.startsWith('ROLE_')) formattedName = 'ROLE_' + formattedName;
     formattedName = formattedName.replace(/\s+/g, '_');
-    return formattedName !== role.name;
+    const nameChanged = formattedName !== role.name;
+    const descChanged = this.editingDescValue().trim() !== (role.descripcion ?? '');
+    return nameChanged || descChanged;
   }
 
   roleLabel(name: string): string {
@@ -313,15 +316,15 @@ export class RolesComponent implements OnInit {
       return;
     }
 
-    const nameExists = [...this.companyRoles(), ...this.systemRoles()].some(
-      r => r.name.toUpperCase() === formattedName
-    );
+    const section = this.activeSection();
+    const nameExists = section === 'empresa'
+      ? this.companyRoles().some(r => r.name.toUpperCase() === formattedName)
+      : this.systemRoles().some(r => r.name.toUpperCase() === formattedName);
     if (nameExists) {
       this.messageService.add({ severity: 'error', summary: 'Nombre duplicado', detail: 'Ya existe un rol con ese nombre' });
       return;
     }
 
-    const section = this.activeSection();
     if (section === 'empresa' && !this.activeCompanyId) {
       this.messageService.add({ severity: 'warn', summary: 'Sin empresa seleccionada', detail: 'Selecciona una empresa antes de crear un rol empresarial.' });
       return;
