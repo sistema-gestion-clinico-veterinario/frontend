@@ -106,7 +106,7 @@ export class LoginComponent implements OnInit {
       error: (error) => {
         this.authError = error?.name === 'TimeoutError' || error?.status === 0
           ? 'No se pudo conectar con el servidor. Intenta nuevamente en unos segundos.'
-          : 'Correo o contraseña incorrectos.';
+          : error.error?.message || 'Correo o contraseña incorrectos.';
       },
     });
   }

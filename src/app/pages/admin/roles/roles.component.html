@@ -206,10 +206,18 @@
                     class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors">
                     Descartar
                   </button>
-                  <button *appHasPermission="'VISTA_ROLES:modificar'" (click)="savePermisos()"
-                    class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-[#0066AA] text-white hover:bg-[#0055AA] transition-colors">
+                  <button *appHasPermission="'VISTA_ROLES:modificar'"
+                    [disabled]="!selectedRole()?.activo"
+                    [title]="!selectedRole()?.activo ? 'No se pueden asignar permisos a un rol inactivo' : ''"
+                    (click)="savePermisos()"
+                    class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-[#0066AA] text-white hover:bg-[#0055AA] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                     <i class="pi pi-save mr-1"></i>Guardar permisos
                   </button>
+                </div>
+                <div *ngIf="!selectedRole()?.activo" class="mt-2">
+                  <p class="text-xs text-rose-600 font-semibold flex items-center gap-1">
+                    <i class="pi pi-exclamation-triangle"></i>Este rol está inactivo. Debes activarlo para asignar permisos.
+                  </p>
                 </div>
               </div>
 
@@ -300,7 +308,7 @@
     <input type="checkbox"
       [checked]="getPermiso(v, campo)"
       (change)="togglePermiso(v, campo)"
-      [disabled]="!hasModifyAccess()"
+      [disabled]="!hasModifyAccess() || !selectedRole()?.activo"
       class="w-4 h-4 accent-[#0066AA] cursor-pointer disabled:opacity-50"
     />
   </div>

@@ -132,42 +132,51 @@ export class RolesComponent implements OnInit {
   }
 
   togglePermiso(v: RolVentanaPermiso, campo: 'leer' | 'escribir' | 'modificar' | 'eliminar') {
-    this.ventanaPermisos.update(list =>
-      list.map(item => item.ventanaId === v.ventanaId ? { ...item, [campo]: !item[campo] } : item)
-    );
-    this.permisosModificados.set(true);
-  }
-
-  toggleLeerActiva(v: RolVentanaPermiso, checked: boolean) {
+    const nuevoValor = !v[campo];
     this.ventanaPermisos.update(list =>
       list.map(item => {
         if (item.ventanaId === v.ventanaId) {
-          return {
-            ...item,
-            leer: checked,
-            escribir:  checked ? item.escribir  : false,
-            modificar: checked ? item.modificar : false,
-            eliminar:  checked ? item.eliminar  : false
-          };
+          if (campo === 'leer' && !nuevoValor) {
+            return { ...item, leer: false, escribir: false, modificar: false, eliminar: false };
+          }
+          if (campo !== 'leer' && nuevoValor && !item.leer) {
+            return { ...item, leer: true, [campo]: true };
+          }
+          return { ...item, [campo]: nuevoValor };
         }
         return item;
       })
     );
     this.permisosModificados.set(true);
+    if (campo !== 'leer' && nuevoValor && !v.leer) {
+      this.messageService.add({ severity: 'info', summary: 'Permiso Ver requerido', detail: `Se activó "Ver" automáticamente, ya que "Crear/Editar/Eliminar" lo requieren.` });
+    }
   }
 
   savePermisos() {
     const role = this.selectedRole();
     if (!role) return;
-    this.roleService.saveVentanas(role.id, this.ventanaPermisos()).subscribe({
-      next: (res) => {
-        this.ventanaPermisos.set(res.data);
-        this.permisosModificados.set(false);
-        this.messageService.add({ severity: 'success', summary: 'Guardado', detail: 'Permisos actualizados correctamente' });
-        this.refreshCurrentSessionIfActiveRoleChanged(role.name);
-      },
-      error: (err) => {
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo guardar' });
+    if (!role.activo) {
+      this.messageService.add({ severity: 'error', summary: 'Rol inactivo', detail: 'No se pueden asignar permisos a un rol inactivo' });
+      return;
+    }
+    this.confirmDialog.set({
+      title: 'Guardar permisos',
+      message: `¿Guardar los cambios de permisos para el rol "${this.roleLabel(role.name)}"?`,
+      variant: 'primary',
+      onConfirm: () => {
+        this.confirmDialog.set(null);
+        this.roleService.saveVentanas(role.id, this.ventanaPermisos()).subscribe({
+          next: (res) => {
+            this.ventanaPermisos.set(res.data);
+            this.permisosModificados.set(false);
+            this.messageService.add({ severity: 'success', summary: 'Guardado', detail: 'Permisos actualizados correctamente' });
+            this.refreshCurrentSessionIfActiveRoleChanged(role.name);
+          },
+          error: (err) => {
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo guardar' });
+          }
+        });
       }
     });
   }
@@ -358,23 +367,34 @@ export class RolesComponent implements OnInit {
   }
 
   toggleActivo(role: Role) {
-    this.roleService.toggleActivo(role.id).subscribe({
-      next: (res) => {
-        const updated = res.data;
-        if (this.activeSection() === 'empresa') {
-          this.companyRoles.update(list => list.map(r => r.id === role.id ? updated : r));
-        } else {
-          this.systemRoles.update(list => list.map(r => r.id === role.id ? updated : r));
-        }
-        this.selectedRole.set(updated);
-        this.messageService.add({
-          severity: updated.activo ? 'success' : 'warn',
-          summary: updated.activo ? 'Rol activado' : 'Rol desactivado',
-          detail: `El rol "${this.roleLabel(updated.name)}" fue ${updated.activo ? 'activado' : 'desactivado'}`
+    const accion = role.activo ? 'desactivar' : 'activar';
+    this.confirmDialog.set({
+      title: `Confirmar ${accion}`,
+      variant: role.activo ? 'danger' : 'primary',
+      message: role.activo
+        ? `¿Estás seguro de desactivar el rol "${this.roleLabel(role.name)}"? Los usuarios con este rol no podrán acceder al sistema.`
+        : `¿Estás seguro de activar el rol "${this.roleLabel(role.name)}"?`,
+      onConfirm: () => {
+        this.confirmDialog.set(null);
+        this.roleService.toggleActivo(role.id).subscribe({
+          next: (res) => {
+            const updated = res.data;
+            if (this.activeSection() === 'empresa') {
+              this.companyRoles.update(list => list.map(r => r.id === role.id ? updated : r));
+            } else {
+              this.systemRoles.update(list => list.map(r => r.id === role.id ? updated : r));
+            }
+            this.selectedRole.set(updated);
+            this.messageService.add({
+              severity: updated.activo ? 'success' : 'warn',
+              summary: updated.activo ? 'Rol activado' : 'Rol desactivado',
+              detail: `El rol "${this.roleLabel(updated.name)}" fue ${updated.activo ? 'activado' : 'desactivado'}`
+            });
+          },
+          error: () => {
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cambiar el estado del rol' });
+          }
         });
-      },
-      error: () => {
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cambiar el estado del rol' });
       }
     });
   }

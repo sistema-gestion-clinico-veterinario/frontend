@@ -2,6 +2,8 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, output, signal, HostListener } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { MessageService } from 'primeng/api';
+import { ToastModule } from 'primeng/toast';
 import { AuthStore } from '../../../store/auth.store';
 import { CompanyService } from '../../../core/services/company.service';
 import { RoleService } from '../../../core/services/role.service';
@@ -13,7 +15,8 @@ import { MenuItemDTO, MenuStructureDTO } from '../../../models/response/auth-log
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, ToastModule],
+  providers: [MessageService],
   templateUrl: './navbar.component.html'
 })
 export class NavbarComponent implements OnInit {
@@ -23,6 +26,7 @@ export class NavbarComponent implements OnInit {
   private companyService = inject(CompanyService);
   private roleService = inject(RoleService);
   private authService = inject(AuthService);
+  private messageService = inject(MessageService);
   private router = inject(Router);
 
   companies = signal<{label: string, value: number}[]>([]);
@@ -154,6 +158,11 @@ export class NavbarComponent implements OnInit {
           });
 
           this.router.navigateByUrl(resolveInitialRoute(res.data.roles ?? [], res.data.menu ?? []), { replaceUrl: true });
+        },
+        error: (err) => {
+          const msg = err.error?.message || 'No se pudo cambiar el rol';
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: msg });
+          this.activeRoleDropdownOpen.set(false);
         }
       });
     }
