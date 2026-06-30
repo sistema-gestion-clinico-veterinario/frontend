@@ -357,6 +357,28 @@ export class RolesComponent implements OnInit {
     });
   }
 
+  toggleActivo(role: Role) {
+    this.roleService.toggleActivo(role.id).subscribe({
+      next: (res) => {
+        const updated = res.data;
+        if (this.activeSection() === 'empresa') {
+          this.companyRoles.update(list => list.map(r => r.id === role.id ? updated : r));
+        } else {
+          this.systemRoles.update(list => list.map(r => r.id === role.id ? updated : r));
+        }
+        this.selectedRole.set(updated);
+        this.messageService.add({
+          severity: updated.activo ? 'success' : 'warn',
+          summary: updated.activo ? 'Rol activado' : 'Rol desactivado',
+          detail: `El rol "${this.roleLabel(updated.name)}" fue ${updated.activo ? 'activado' : 'desactivado'}`
+        });
+      },
+      error: () => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cambiar el estado del rol' });
+      }
+    });
+  }
+
   canDeleteRole(role: Role | null): boolean {
     if (!role) return false;
     if (!this.isAdminOrSuperAdmin()) return false;
@@ -434,6 +456,6 @@ export class RolesComponent implements OnInit {
   }
 
   private isValidRoleName(name: string): boolean {
-    return /^ROLE_[A-Z0-9_Ñ]{2,60}$/.test(name);
+    return /^ROLE_[A-Z_Ñ]{2,60}$/.test(name);
   }
 }

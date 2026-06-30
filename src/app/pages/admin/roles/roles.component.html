@@ -122,6 +122,20 @@
                   <i class="pi pi-pencil mr-1"></i>Renombrar
                 </button>
               </ng-container>
+              <ng-container *ngIf="canRenameRole(selectedRole())">
+                <button *appHasPermission="'VISTA_ROLES:modificar'"
+                  (click)="toggleActivo(selectedRole()!)"
+                  [class.bg-emerald-50]="selectedRole()!.activo"
+                  [class.text-emerald-600]="selectedRole()!.activo"
+                  [class.border-emerald-100]="selectedRole()!.activo"
+                  [class.bg-rose-50]="!selectedRole()!.activo"
+                  [class.text-rose-600]="!selectedRole()!.activo"
+                  [class.border-rose-100]="!selectedRole()!.activo"
+                  class="px-3 py-1.5 text-xs font-semibold rounded-lg border hover:opacity-80 transition-colors">
+                  <i [class.pi-check-circle]="selectedRole()!.activo" [class.pi-ban]="!selectedRole()!.activo" class="pi mr-1"></i>
+                  {{ selectedRole()!.activo ? 'Activo' : 'Inactivo' }}
+                </button>
+              </ng-container>
               <ng-container *ngIf="canDeleteRole(selectedRole())">
                 <button *appHasPermission="'VISTA_ROLES:eliminar'"
                   (click)="deleteRole(selectedRole()!)"
