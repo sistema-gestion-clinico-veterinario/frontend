@@ -57,6 +57,7 @@ export class RolesComponent implements OnInit {
   confirmDialog       = signal<{ title: string; message: string; onConfirm: () => void; variant?: 'danger' | 'primary' } | null>(null);
   isEditingName       = signal<boolean>(false);
   editingNameValue    = signal<string>('');
+  editingDescValue    = signal<string>('');
 
   ngOnInit() {
     const activeId = this.authStore.selectedEnterprise()?.establishmentId
@@ -198,6 +199,7 @@ export class RolesComponent implements OnInit {
     if (!role) return;
     const cleanName = role.name.startsWith('ROLE_') ? role.name.substring(5) : role.name;
     this.editingNameValue.set(cleanName);
+    this.editingDescValue.set(role.descripcion ?? '');
     this.isEditingName.set(true);
   }
 
@@ -231,9 +233,10 @@ export class RolesComponent implements OnInit {
       message: `¿Guardar cambios en el rol "${this.roleLabel(role.name)}"?`,
       variant: 'primary',
       onConfirm: () => {
+        const descripcion = this.editingDescValue().trim() || undefined;
         this.roleService.actualizar(role.id, {
           name: formattedName,
-          descripcion: role.descripcion,
+          descripcion,
           companyId: role.companyId ?? undefined
         }).subscribe({
           next: (res) => {
@@ -428,6 +431,6 @@ export class RolesComponent implements OnInit {
   }
 
   private isValidRoleName(name: string): boolean {
-    return /^ROLE_[A-Z0-9_]{2,60}$/.test(name);
+    return /^ROLE_[A-Z0-9_Ñ]{2,60}$/.test(name);
   }
 }
