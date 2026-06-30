@@ -388,7 +388,7 @@
             <select formControlName="tipoEmpleadoId"
               class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 bg-white transition-all appearance-none font-bold text-slate-700">
               <option [value]="null">Cualquier cargo (Servicio General)</option>
-              <option *ngFor="let t of tiposEmpleado()" [value]="t.id">{{ t.nombre }}</option>
+              <option *ngFor="let t of tiposEmpleadoActivos()" [value]="t.id">{{ t.nombre }}</option>
             </select>
             <i class="pi pi-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 pointer-events-none"></i>
           </div>
