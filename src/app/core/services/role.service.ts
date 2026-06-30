@@ -61,6 +61,10 @@ export class RoleService {
     return this.http.put<ApiResponse<Role>>(`${this.apiUrl}/${id}`, data);
   }
 
+  toggleActivo(id: number) {
+    return this.http.patch<ApiResponse<Role>>(`${this.apiUrl}/${id}/toggle-active`, {});
+  }
+
   eliminar(id: number) {
     return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`);
   }
