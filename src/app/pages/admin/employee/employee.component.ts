@@ -310,7 +310,9 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   loadTypesEmpleado(companyId?: number) {
     this.tipoEmpleadoService.listar(companyId).subscribe({
       next: (res) => {
-        const list = res.data.content.map(t => ({ label: t.nombre, value: t.nombre }));
+        const list = (res.data.content || [])
+          .filter(t => t.estado !== false)
+          .map(t => ({ label: t.nombre, value: t.nombre }));
         this.tiposEmpleadoList.set(list);
       }
     });

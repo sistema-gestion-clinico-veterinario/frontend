@@ -194,6 +194,7 @@ export class ComplementarioComponent implements OnInit {
     descripcion: ['', [noLeadingTrailingSpaceValidator()]]
   });
   tiposEmpleado = signal<any[]>([]);
+  tiposEmpleadoActivos = computed(() => this.tiposEmpleado().filter(t => t.estado !== false));
   showTipoModal = signal(false);
   editingTipo = signal<any | null>(null);
   tipoForm: FormGroup = this.fb.group({
