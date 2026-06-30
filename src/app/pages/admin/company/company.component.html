@@ -623,4 +623,28 @@
   </div>
 </div>
 
+<!-- ======================== -->
+<!-- SAVE CONFIRM DIALOG -->
+<!-- ======================== -->
+<div *ngIf="confirmDialog()" class="fixed inset-0 z-[130] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+  <div class="bg-white w-full max-w-md rounded-lg overflow-hidden">
+    <div class="px-6 py-4 border-b border-slate-100">
+      <h3 class="text-base font-bold text-slate-800">{{ confirmDialog()!.title }}</h3>
+    </div>
+    <div class="p-6">
+      <p class="text-sm text-slate-600 leading-relaxed">{{ confirmDialog()!.message }}</p>
+    </div>
+    <div class="px-6 py-4 bg-slate-50 flex justify-end gap-3">
+      <button type="button" (click)="cancelConfirm()"
+        class="px-4 py-2 text-sm font-semibold text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded transition-all">
+        Cancelar
+      </button>
+      <button type="button" (click)="confirmDialog()!.onConfirm()"
+        class="px-5 py-2 text-sm font-bold text-white bg-[#0066AA] hover:bg-[#004488] rounded transition-all">
+        {{ isEdit ? 'Actualizar' : 'Registrar' }}
+      </button>
+    </div>
+  </div>
+</div>
+
 <p-toast position="bottom-right"></p-toast>
