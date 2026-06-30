@@ -10,5 +10,6 @@ export interface Role {
   id: number;
   name: string;
   descripcion?: string;
+  activo: boolean;
   companyId: number | null;
 }
