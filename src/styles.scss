@@ -233,3 +233,13 @@
     }
   }
 }
+
+/* ─── Loader animation ─── */
+@keyframes loaderFlip {
+  0% { transform: rotateY(0deg); }
+  50% { transform: rotateY(180deg); }
+  100% { transform: rotateY(360deg); }
+}
+.loader-pulse {
+  animation: loaderFlip 1.8s ease-in-out infinite;
+}

@@ -1,4 +1,5 @@
 import { Component, OnInit, inject, computed, signal } from '@angular/core';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { TableModule } from 'primeng/table';
@@ -37,12 +38,21 @@ export class CompanyComponent implements OnInit {
   private readonly messageService = inject(MessageService);
   private readonly mediaService = inject(MediaService);
   private readonly roleService = inject(RoleService);
+  private readonly sanitizer = inject(DomSanitizer);
   readonly authStore = inject(AuthStore);
 
   readonly isSuperAdmin = computed(() => this.authStore.isSuperAdmin());
 
+  readonly mapUrl = computed<SafeResourceUrl>(() => {
+    const addr = this.ownCompany()?.address;
+    if (!addr) return this.sanitizer.bypassSecurityTrustResourceUrl('');
+    return this.sanitizer.bypassSecurityTrustResourceUrl(
+      `https://www.google.com/maps?q=${encodeURIComponent(addr)}&output=embed`
+    );
+  });
+
   companies: CompanyListResponse[] = [];
-  ownCompany: CompanyDTO | null = null;
+  ownCompany = signal<CompanyDTO | null>(null);
   loadingOwnCompany = signal(false);
   displayModal: boolean = false;
   isEdit: boolean = false;
@@ -135,7 +145,7 @@ export class CompanyComponent implements OnInit {
     }
     this.companyService.getById(companyId).subscribe({
       next: (res) => {
-        this.ownCompany = res.data;
+        this.ownCompany.set(res.data);
         this.loadingOwnCompany.set(false);
       },
       error: () => {
@@ -197,8 +207,8 @@ export class CompanyComponent implements OnInit {
   }
 
   openEditOwnCompany() {
-    if (!this.ownCompany?.id) return;
-    this.editCompany({ id: this.ownCompany.id } as CompanyListResponse);
+    if (!this.ownCompany()?.id) return;
+    this.editCompany({ id: this.ownCompany()!.id } as CompanyListResponse);
   }
 
   openNew() {
@@ -296,6 +306,7 @@ export class CompanyComponent implements OnInit {
 
         request.subscribe({
           next: () => {
+            this.confirmDialog.set(null);
             this.logoFile.set(null);
             if (logoUrl && !this.isSuperAdmin()) {
               const current = this.authStore.selectedEnterprise();
@@ -319,6 +330,7 @@ export class CompanyComponent implements OnInit {
             }
           },
           error: () => {
+            this.confirmDialog.set(null);
             this.loading = false;
             this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Ocurrió un error al guardar' });
           }
