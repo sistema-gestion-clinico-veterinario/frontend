@@ -412,7 +412,11 @@ export class ComplementarioComponent implements OnInit {
   toggleServicioDisponible(item: ServicioResponse) {
     this.loadingStore.show();
     this.servicioService.toggleDisponible(item.id).subscribe({
-      next: () => { this.loadServicios(); this.loadingStore.hide(); },
+      next: () => {
+        this.loadServicios();
+        this.loadingStore.hide();
+        this.messageService.add({ severity: 'success', summary: 'Actualizado', detail: 'Disponibilidad del servicio actualizada' });
+      },
       error: (err) => {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo cambiar la disponibilidad' });
         this.loadingStore.hide();
