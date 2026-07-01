@@ -122,33 +122,30 @@
       <!-- ========================= -->
       <section>
         <div class="flex items-center gap-2 mb-3 sm:mb-4">
-          <i class="pi pi-building text-slate-400"></i>
+          <i class="pi pi-building text-slate-500"></i>
           <h2 class="text-sm sm:text-base font-bold text-slate-700">Información de la Empresa</h2>
         </div>
 
-        <div *ngIf="loadingOwnCompany()" class="flex items-center justify-center py-16 bg-white border border-slate-200 rounded-xl">
-          <i class="pi pi-spin pi-spinner text-2xl text-slate-300"></i>
-        </div>
-
-        <div *ngIf="!loadingOwnCompany() && ownCompany" class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+        <ng-container *ngIf="ownCompany() as company">
+        <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
 
           <!-- Header with logo & edit -->
-          <div class="px-4 sm:px-6 py-4 sm:py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100">
+          <div class="px-4 sm:px-6 py-4 sm:py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100 bg-slate-50/50">
             <div class="flex items-center gap-3 sm:gap-4">
               <div class="relative shrink-0">
-                <img *ngIf="resolveLogoUrl(ownCompany.logoUrl)" [src]="resolveLogoUrl(ownCompany.logoUrl)" alt="Logo"
-                  class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl object-cover border border-slate-200" />
-                <div *ngIf="!resolveLogoUrl(ownCompany.logoUrl)" class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 text-white flex items-center justify-center text-lg sm:text-xl font-bold">
-                  {{ (ownCompany.name || 'E').charAt(0) }}
+                <img *ngIf="resolveLogoUrl(company.logoUrl)" [src]="resolveLogoUrl(company.logoUrl)" alt="Logo"
+                   class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl object-cover border border-slate-200" />
+                <div *ngIf="!resolveLogoUrl(company.logoUrl)" class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 text-white flex items-center justify-center text-lg sm:text-xl font-bold">
+                  {{ (company.name || 'E').charAt(0) }}
                 </div>
               </div>
               <div class="min-w-0">
-                <h2 class="text-base sm:text-lg font-semibold text-slate-800 truncate">{{ ownCompany.name }}</h2>
-                <p class="text-xs text-slate-400">RUC: {{ ownCompany.ruc }}</p>
+                <h2 class="text-base sm:text-lg font-semibold text-slate-800 truncate">{{ company.name }}</h2>
+                <p class="text-xs text-slate-400">RUC: {{ company.ruc }}</p>
               </div>
             </div>
             <button *appHasPermission="'VISTA_COMPANY:modificar'" (click)="openEditOwnCompany()"
-              class="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors shrink-0 w-full sm:w-auto">
+              class="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors shrink-0 w-full sm:w-auto active:scale-95">
               <i class="pi pi-pencil text-xs"></i>
               Editar
             </button>
@@ -156,100 +153,106 @@
 
           <div class="grid grid-cols-1 lg:grid-cols-3 divide-y lg:divide-y-0 lg:divide-x divide-slate-100">
 
-            <!-- Left column: Contact, Location, Web -->
-            <div class="lg:col-span-2">
-              <!-- Contact info -->
-              <div class="px-4 sm:px-6 py-4 sm:py-5 border-b border-slate-100">
+            <!-- Left: Contact + Location + Web/Description + Hours -->
+            <div class="lg:col-span-2 px-4 sm:px-6 py-4 sm:py-5 flex flex-col">
+              <div>
                 <div class="flex items-center gap-2 mb-3 sm:mb-4">
-                  <i class="pi pi-address-book text-slate-400 text-sm"></i>
+                  <div class="w-5 h-5 rounded bg-blue-50 text-blue-600 flex items-center justify-center">
+                    <i class="pi pi-address-book text-[10px]"></i>
+                  </div>
                   <span class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Contacto</span>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
                   <div class="flex items-center gap-3">
-                    <i class="pi pi-envelope text-slate-300 text-sm w-4 shrink-0"></i>
+                    <i class="pi pi-envelope text-slate-400 text-sm w-4 shrink-0"></i>
                     <div class="min-w-0">
                       <p class="text-[10px] sm:text-xs text-slate-400">Correo Electrónico</p>
-                      <p class="text-sm font-medium text-slate-800 truncate">{{ ownCompany.email || '—' }}</p>
+                      <p class="text-sm font-medium text-slate-800 truncate">{{ company.email || '—' }}</p>
                     </div>
                   </div>
                   <div class="flex items-center gap-3">
-                    <i class="pi pi-phone text-slate-300 text-sm w-4 shrink-0"></i>
+                    <i class="pi pi-phone text-slate-400 text-sm w-4 shrink-0"></i>
                     <div>
                       <p class="text-[10px] sm:text-xs text-slate-400">Teléfono</p>
-                      <p class="text-sm font-medium text-slate-800">{{ ownCompany.phone || '—' }}</p>
+                      <p class="text-sm font-medium text-slate-800">{{ company.phone || '—' }}</p>
                     </div>
                   </div>
                 </div>
               </div>
-
-              <!-- Location -->
-              <div class="px-4 sm:px-6 py-4 sm:py-5 border-b border-slate-100">
-                <div class="flex items-center gap-2 mb-3 sm:mb-4">
-                  <i class="pi pi-map-marker text-slate-400 text-sm"></i>
-                  <span class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Ubicación</span>
-                </div>
-                <p class="text-sm text-slate-700">{{ ownCompany.address || '—' }}</p>
-              </div>
-
-              <!-- Web & Description -->
-              <div *ngIf="ownCompany.website || ownCompany.description" class="px-4 sm:px-6 py-4 sm:py-5">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
-                  <div *ngIf="ownCompany.website">
-                    <div class="flex items-center gap-3">
-                      <i class="pi pi-globe text-slate-300 text-sm w-4 shrink-0"></i>
-                      <div class="min-w-0">
-                        <p class="text-[10px] sm:text-xs text-slate-400">Sitio Web</p>
-                        <p class="text-sm font-medium text-blue-600 truncate">{{ ownCompany.website }}</p>
-                      </div>
-                    </div>
+              <div class="mt-5 pt-5 border-t border-slate-100">
+                <div class="flex items-center gap-2 mb-2">
+                  <div class="w-5 h-5 rounded bg-amber-50 text-amber-600 flex items-center justify-center">
+                    <i class="pi pi-map-marker text-[10px]"></i>
                   </div>
-                  <div *ngIf="ownCompany.description" class="sm:col-span-2">
-                    <div class="flex items-start gap-3">
-                      <i class="pi pi-info-circle text-slate-300 text-sm w-4 shrink-0 mt-0.5"></i>
-                      <div class="min-w-0">
-                        <p class="text-[10px] sm:text-xs text-slate-400">Descripción</p>
-                        <p class="text-sm text-slate-700">{{ ownCompany.description }}</p>
-                      </div>
-                    </div>
+                  <span class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Dirección</span>
+                </div>
+                <p class="text-sm text-slate-700 py-1.5">{{ company.address || '—' }}</p>
+              </div>
+              <div *ngIf="company.website || company.description" class="mt-5 pt-5 border-t border-slate-100">
+                <div *ngIf="company.website" class="flex items-center gap-3 py-1.5">
+                  <i class="pi pi-globe text-slate-400 text-sm w-4 shrink-0"></i>
+                  <div>
+                    <p class="text-[10px] text-slate-400">Sitio Web</p>
+                    <p class="text-sm font-medium text-blue-600 truncate">{{ company.website }}</p>
+                  </div>
+                </div>
+                <div *ngIf="company.description" class="flex items-start gap-3 py-1.5">
+                  <i class="pi pi-info-circle text-slate-400 text-sm w-4 shrink-0 mt-0.5"></i>
+                  <div>
+                    <p class="text-[10px] text-slate-400">Descripción</p>
+                    <p class="text-sm text-slate-700">{{ company.description }}</p>
+                  </div>
+                </div>
+              </div>
+              <div *ngIf="company.operatingHours?.length" class="mt-auto pt-5 border-t border-slate-100">
+                <div class="flex items-center gap-2 mb-3">
+                  <div class="w-5 h-5 rounded bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                    <i class="pi pi-clock text-[10px]"></i>
+                  </div>
+                  <span class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Horarios</span>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-1">
+                  <div *ngFor="let h of sortOperatingHours(company.operatingHours!)"
+                    class="flex items-center gap-2 py-1">
+                    <span class="text-xs font-semibold text-slate-700 w-20 shrink-0">{{ h.diaSemana }}</span>
+                    <span *ngIf="h.isOpen" class="text-xs text-slate-600">
+                      {{ h.openingTime | slice:0:5 }} — {{ h.closingTime | slice:0:5 }}
+                    </span>
+                    <span *ngIf="!h.isOpen" class="text-xs text-slate-400">—</span>
+                    <span *ngIf="h.isOpen"
+                      class="ml-auto inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-50 text-emerald-600">
+                      <span class="w-1 h-1 rounded-full bg-emerald-500"></span>
+                      Abierto
+                    </span>
+                    <span *ngIf="!h.isOpen"
+                      class="ml-auto inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-400">
+                      <span class="w-1 h-1 rounded-full bg-slate-300"></span>
+                      Cerrado
+                    </span>
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- Right column: Operating Hours -->
-            <div *ngIf="ownCompany.operatingHours?.length" class="px-4 sm:px-6 py-4 sm:py-5">
-              <div class="flex items-center gap-2 mb-3 sm:mb-4">
-                <i class="pi pi-clock text-slate-400 text-sm"></i>
-                <span class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Horarios</span>
-              </div>
-              <div class="divide-y divide-slate-100">
-                <div *ngFor="let h of sortOperatingHours(ownCompany.operatingHours!)"
-                  class="flex items-center gap-2 sm:gap-3 py-2 sm:py-2.5 first:pt-0 last:pb-0">
-                  <span class="text-xs sm:text-sm font-semibold text-slate-700 w-20 sm:w-24 shrink-0">{{ h.diaSemana }}</span>
-                  <span *ngIf="h.isOpen" class="text-xs sm:text-sm text-slate-600">
-                    {{ h.openingTime | slice:0:5 }} — {{ h.closingTime | slice:0:5 }}
-                  </span>
-                  <span *ngIf="!h.isOpen" class="text-xs text-slate-400">—</span>
-                  <span *ngIf="h.isOpen"
-                    class="ml-auto inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-50 text-emerald-600">
-                    <span class="w-1 h-1 rounded-full bg-emerald-500"></span>
-                    <span class="hidden sm:inline">Abierto</span>
-                    <span class="sm:hidden">A</span>
-                  </span>
-                  <span *ngIf="!h.isOpen"
-                    class="ml-auto inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-400">
-                    <span class="w-1 h-1 rounded-full bg-slate-300"></span>
-                    <span class="hidden sm:inline">Cerrado</span>
-                    <span class="sm:hidden">C</span>
-                  </span>
-                </div>
+            <!-- Right: Map (full column) -->
+            <div class="px-4 sm:px-6 py-4 sm:py-5">
+              <div class="h-full min-h-[350px]">
+                <iframe
+                  [src]="mapUrl()"
+                  width="100%" height="100%" style="border:0;"
+                  allowfullscreen="" loading="lazy"
+                  referrerpolicy="no-referrer-when-downgrade">
+                </iframe>
               </div>
             </div>
 
           </div>
-        </div>
 
-        <div *ngIf="!loadingOwnCompany() && !ownCompany" class="bg-white border border-slate-200 rounded-xl py-16 text-center">
+
+        </div>
+</ng-container>
+
+        <div *ngIf="!loadingOwnCompany() && !ownCompany()" class="bg-white border border-slate-200 rounded-xl py-16 text-center">
           <i class="pi pi-building text-3xl text-slate-200 block mb-3"></i>
           <p class="text-sm text-slate-400">No se encontró información de tu empresa</p>
         </div>
@@ -260,12 +263,8 @@
       <!-- ========================= -->
       <section>
         <div class="flex items-center gap-2 mb-3 sm:mb-4">
-          <i class="pi pi-shield text-slate-400"></i>
+          <i class="pi pi-shield text-slate-500"></i>
           <h2 class="text-sm sm:text-base font-bold text-slate-700">Roles de la Empresa</h2>
-        </div>
-
-        <div *ngIf="loadingRoles()" class="flex items-center justify-center py-16 bg-white border border-slate-200 rounded-xl">
-          <i class="pi pi-spin pi-spinner text-2xl text-slate-300"></i>
         </div>
 
         <div *ngIf="!loadingRoles() && companyRoles.length === 0" class="bg-white border border-slate-200 rounded-xl py-16 text-center">
@@ -512,7 +511,7 @@
 <!-- COMPANY DETAIL MODAL (superadmin/admin) -->
 <!-- ======================== -->
 <div *ngIf="displayDetailPanel()" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm font-['Barlow']" (click)="displayDetailPanel.set(false)">
-  <div class="bg-white w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl border border-slate-100 flex flex-col" (click)="$event.stopPropagation()">
+  <div class="bg-white w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-100 flex flex-col" (click)="$event.stopPropagation()">
     <!-- Header -->
     <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between shrink-0">
       <div class="flex items-center gap-3">
@@ -626,22 +625,25 @@
 <!-- ======================== -->
 <!-- SAVE CONFIRM DIALOG -->
 <!-- ======================== -->
-<div *ngIf="confirmDialog()" class="fixed inset-0 z-[130] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-  <div class="bg-white w-full max-w-md rounded-lg overflow-hidden">
-    <div class="px-6 py-4 border-b border-slate-100">
-      <h3 class="text-base font-bold text-slate-800">{{ confirmDialog()!.title }}</h3>
+<div *ngIf="confirmDialog()" class="fixed inset-0 z-[130] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/50 backdrop-blur-sm">
+  <div class="bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-xl overflow-hidden">
+    <div class="px-5 sm:px-6 pt-8 sm:pt-6 pb-2 flex flex-col items-center text-center">
+      <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-blue-50 text-[#0066AA] flex items-center justify-center mb-3 sm:mb-4">
+        <i class="pi pi-info-circle text-xl sm:text-2xl"></i>
+      </div>
+      <h3 class="text-base sm:text-lg font-bold text-slate-800">{{ confirmDialog()!.title }}</h3>
     </div>
-    <div class="p-6">
-      <p class="text-sm text-slate-600 leading-relaxed">{{ confirmDialog()!.message }}</p>
+    <div class="px-5 sm:px-6 py-4 sm:py-5">
+      <p class="text-sm sm:text-base text-slate-500 text-center leading-relaxed">{{ confirmDialog()!.message }}</p>
     </div>
-    <div class="px-6 py-4 bg-slate-50 flex justify-end gap-3">
+    <div class="px-5 sm:px-6 py-4 bg-slate-50 flex flex-col-reverse sm:flex-row sm:justify-end gap-2 sm:gap-3 rounded-b-2xl sm:rounded-b-xl">
       <button type="button" (click)="cancelConfirm()"
-        class="px-4 py-2 text-sm font-semibold text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded transition-all">
+        class="w-full sm:w-auto px-4 py-3 sm:py-2.5 text-sm font-semibold text-slate-600 hover:text-slate-800 hover:bg-slate-200 rounded-xl sm:rounded-lg transition-all">
         Cancelar
       </button>
       <button type="button" (click)="confirmDialog()!.onConfirm()"
-        class="px-5 py-2 text-sm font-bold text-white bg-[#0066AA] hover:bg-[#004488] rounded transition-all">
-        {{ isEdit ? 'Actualizar' : 'Registrar' }}
+        class="w-full sm:w-auto px-6 py-3 sm:py-2.5 text-sm font-bold text-white bg-[#0066AA] hover:bg-[#004488] rounded-xl sm:rounded-lg transition-all">
+        {{ isEdit ? 'Actualizar' : 'Confirmar' }}
       </button>
     </div>
   </div>
