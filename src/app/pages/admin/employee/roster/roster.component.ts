@@ -1,10 +1,13 @@
 import { Component, OnInit, inject, signal, ViewChild, ElementRef, AfterViewChecked, OnDestroy, computed } from '@angular/core';
+import jsPDF from 'jspdf';
 import ExcelJS from 'exceljs';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { EmpleadoService } from '../../../../core/services/empleado.service';
 import { EmpleadoListResponse } from '../../../../models/response/empleado-list-response';
 import { AuthStore } from '../../../../store/auth.store';
+import { CompanyService } from '../../../../core/services/company.service';
+import { CompanyDTO } from '../../../../models/request/company-dto';
 
 import { DropdownModule } from 'primeng/dropdown';
 import { ButtonModule } from 'primeng/button';
@@ -28,9 +31,11 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
   private timeUpdateTimer?: any;
   private readonly empleadoService = inject(EmpleadoService);
   private readonly authStore = inject(AuthStore);
+  private readonly companyService = inject(CompanyService);
   private readonly messageService = inject(MessageService);
   private readonly confirmationService = inject(ConfirmationService);
 
+  company             = signal<CompanyDTO | null>(null);
   employees           = signal<{label: string, value: number}[]>([]);
   selectedEmployeeId  = signal<number | null>(null);
   showSidebar         = signal<boolean>(false);
@@ -210,14 +215,16 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
   constructor() {}
 
   ngOnInit() {
-    // Carga inicial de empleados una sola vez
     const companyId = this.authStore.selectedEnterprise()?.establishmentId
                    ?? this.authStore.companyId();
     if (companyId) {
       this.loadEmployeeList(companyId);
     }
 
-    // Timer para la línea de hora actual en vista día
+    this.companyService.getCompany().subscribe({
+      next: (res) => { if (res.data) this.company.set(res.data); }
+    });
+
     this.timeUpdateTimer = setInterval(() => {
       if (this.viewMode() === 'day') {
         this.updateTimeOffset();
@@ -765,88 +772,245 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
     });
   }
 
-  exportPdf() {
+  async exportPdf() {
     const empName = this.selectedEmployeeName();
     if (!empName) {
       this.messageService.add({ severity: 'warn', summary: 'Atención', detail: 'Selecciona un empleado para exportar' });
       return;
     }
 
-    this.messageService.add({ severity: 'success', summary: 'Generando Reporte', detail: `Preparando PDF de ${empName}...` });
+    const weeks = this.printableWeeks();
+    const empCargo = this.selectedEmployeeCargo();
+    const totalHrs = this.totalShiftsHours();
+    const dateStr = this.currentDateFormatted();
+    const co = this.company();
 
-    const printContent = document.getElementById('print-area');
-    if (!printContent) {
-      this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se encontró el contenedor de impresión' });
-      return;
+    const pdf = new jsPDF('l', 'mm', 'a4');
+    const pageW = 297;
+    const pageH = 210;
+    const margin = 15;
+    const contentW = pageW - 2 * margin;
+
+    const dark: [number, number, number] = [15, 23, 42];
+    const gray: [number, number, number] = [71, 85, 105];
+    const lightGray: [number, number, number] = [203, 213, 225];
+    const white: [number, number, number] = [255, 255, 255];
+    const headerBg: [number, number, number] = [248, 250, 252];
+
+    const col1W = 42;
+    const dayColW = (contentW - col1W) / 7;
+
+    let y = margin;
+
+    const companyName = co?.name || this.authStore.selectedEnterprise()?.name || 'Empresa';
+    const companyRuc = co?.ruc || '';
+    const companyAddr = co?.address || '';
+    const companyPhone = co?.phone || '';
+
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(22);
+    pdf.setTextColor(...dark);
+    pdf.text(companyName, margin, y + 7);
+
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(7);
+    pdf.setTextColor(...gray);
+    pdf.text('CUADRANTE CONSOLIDADO DE TRABAJO', margin, y + 12);
+
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(8);
+    pdf.setTextColor(...gray);
+    pdf.text('Reporte de Personal', pageW - margin, y + 3, { align: 'right' });
+    pdf.setFont('helvetica', 'bold');
+    pdf.text(companyName, pageW - margin, y + 7, { align: 'right' });
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(7);
+    pdf.setTextColor(148, 163, 184);
+    if (companyRuc) pdf.text('RUC: ' + companyRuc, pageW - margin, y + 11, { align: 'right' });
+    pdf.text('Emitido: ' + dateStr, pageW - margin, y + (companyRuc ? 15 : 11), { align: 'right' });
+
+    y += companyRuc ? 20 : 16;
+    pdf.setDrawColor(...dark);
+    pdf.setLineWidth(0.5);
+    pdf.line(margin, y, pageW - margin, y);
+    y += 8;
+
+    pdf.setDrawColor(200, 200, 200);
+    pdf.setLineWidth(0.3);
+    const cardH = companyAddr || companyPhone ? 24 : 18;
+    pdf.rect(margin, y, contentW, cardH);
+    const thirdW = contentW / 3;
+
+    const cardFields = [
+      { label: 'COLABORADOR', value: empName },
+      { label: 'CARGO / FUNCIÓN', value: empCargo },
+      { label: 'TOTAL HORAS REGISTRADAS', value: totalHrs + ' hrs' },
+    ];
+    cardFields.forEach((f, i) => {
+      const fx = margin + i * thirdW + 5;
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(6);
+      pdf.setTextColor(...gray);
+      pdf.text(f.label, fx, y + 5);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(i === 2 ? 11 : 10);
+      pdf.setTextColor(...dark);
+      pdf.text(f.value, fx, y + 12);
+    });
+
+    if (companyAddr || companyPhone) {
+      const infoParts: string[] = [];
+      if (companyAddr) infoParts.push('Dir: ' + companyAddr);
+      if (companyPhone) infoParts.push('Tel: ' + companyPhone);
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(6);
+      pdf.setTextColor(...gray);
+      pdf.text(infoParts.join('  |  '), margin + 5, y + 20);
     }
 
-    const iframe = document.createElement('iframe');
-    iframe.style.position = 'absolute';
-    iframe.style.width    = '0px';
-    iframe.style.height   = '0px';
-    iframe.style.border   = 'none';
-    document.body.appendChild(iframe);
+    y += cardH + 6;
 
-    const doc = iframe.contentWindow?.document || iframe.contentDocument;
-    if (doc) {
-      doc.open();
-      doc.write(`
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <title>Cuadrante de Horario - ${empName}</title>
-            <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap">
-            <style>
-              body { font-family: 'Outfit', sans-serif; color: #0f172a; background-color: #ffffff; margin: 0; padding: 40px; -webkit-print-color-adjust: exact; }
-              .print-header-container { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #0f172a; padding-bottom: 20px; margin-bottom: 30px; }
-              .print-logo-title { display: flex; flex-direction: column; }
-              .print-logo-text { font-size: 26px; font-weight: 800; color: #0f172a; letter-spacing: -0.5px; line-height: 1; }
-              .print-subtitle { font-size: 9px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 1.5px; margin-top: 4px; }
-              .print-report-info { text-align: right; font-size: 11px; color: #475569; line-height: 1.5; }
-              .print-employee-card { background: #ffffff; border: 1px solid #0f172a; border-radius: 0 !important; padding: 16px 20px; margin-bottom: 30px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-              .print-card-field { display: flex; flex-direction: column; }
-              .print-field-label { font-size: 9px; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
-              .print-field-value { font-size: 14px; font-weight: 600; color: #0f172a; }
-              .print-highlight-value { color: #000000; font-size: 16px; font-weight: 800; }
-              .print-matrix-table-container { border: 1px solid #0f172a; border-radius: 0 !important; overflow: hidden; margin-bottom: 30px; background: #ffffff; }
-              .print-table { width: 100%; border-collapse: collapse; }
-              .print-table th { background: #f8fafc !important; color: #0f172a !important; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; padding: 12px; text-align: center; border: 1px solid #0f172a; }
-              .print-table th:first-child { text-align: left; border-left: none; }
-              .print-table th:last-child { border-right: none; }
-              .print-table td { border: 1px solid #0f172a; padding: 8px; vertical-align: middle; text-align: center; font-size: 11px; border-radius: 0 !important; }
-              .print-table td:first-child { border-left: none; }
-              .print-table td:last-child { border-right: none; }
-              .print-table tr:last-child td { border-bottom: none; }
-              .print-week-cell { background: #f8fafc !important; text-align: left; width: 130px; font-weight: 800; color: #0f172a; padding-left: 12px; }
-              .print-week-dates { font-size: 10px; color: #475569; font-weight: 700; }
-              .print-week-dates-sub { font-size: 9px; color: #64748b; font-weight: 600; }
-              .print-shift-cell { background: #ffffff; }
-              .print-empty-cell { color: #cbd5e1; font-size: 12px; font-weight: 500; background: #ffffff !important; }
-              .print-matrix-shift-box { background: #ffffff !important; border: 1px solid #0f172a !important; border-radius: 0 !important; padding: 6px; text-align: center; display: inline-block; width: 100%; box-sizing: border-box; }
-              .print-time-range { font-size: 10px; font-weight: 800; color: #000000; }
-              .print-duration-tag { font-size: 8px; font-weight: 700; text-transform: uppercase; color: #475569; margin-top: 2px; }
-              .print-empty-state-row { padding: 30px; text-align: center; color: #64748b; font-size: 12px; font-weight: 500; background: #ffffff !important; }
-              .print-footer-notes { margin-top: 50px; border-top: 1px solid #0f172a; padding-top: 20px; font-size: 10px; color: #64748b; text-align: center; font-weight: 500; line-height: 1.6; }
-              @media print {
-                body { padding: 10px; }
-                .print-matrix-table-container { border-radius: 0 !important; }
-                .print-table th { background: #f8fafc !important; color: #0f172a !important; print-color-adjust: exact; }
-                .print-matrix-shift-box { background: #ffffff !important; border: 1px solid #0f172a !important; border-radius: 0 !important; print-color-adjust: exact; }
-                .print-week-cell { background: #f8fafc !important; print-color-adjust: exact; }
-                .print-empty-cell { background: #ffffff !important; print-color-adjust: exact; }
+    const drawTableHeader = (hy: number) => {
+      pdf.setFillColor(...headerBg);
+      pdf.rect(margin, hy, contentW, 8, 'F');
+      pdf.setDrawColor(...dark);
+      pdf.setLineWidth(0.4);
+      pdf.rect(margin, hy, contentW, 8);
+      pdf.setLineWidth(0.25);
+      pdf.line(margin + col1W, hy, margin + col1W, hy + 8);
+
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(6);
+      pdf.setTextColor(...dark);
+      pdf.text('PERIODO / SEMANA', margin + 3, hy + 5);
+      dayHeaders.forEach((d, i) => {
+        pdf.text(d, margin + col1W + i * dayColW + dayColW / 2, hy + 5, { align: 'center' });
+      });
+      dayHeaders.forEach((_, i) => {
+        pdf.setDrawColor(...dark);
+        pdf.line(margin + col1W + i * dayColW, hy, margin + col1W + i * dayColW, hy + 8);
+      });
+    };
+
+    const dayHeaders = ['LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES', 'SÁBADO', 'DOMINGO'];
+    drawTableHeader(y);
+    y += 8;
+
+    const checkPage = (needed: number) => {
+      if (y + needed > pageH - margin - 18) {
+        pdf.addPage();
+        y = margin;
+        drawTableHeader(y);
+        y += 8;
+      }
+    };
+
+    const drawShiftBox = (timeRange: string, duration: string, bx: number, by: number, bw: number) => {
+      const parts = (timeRange || '').split(' - ');
+      const startTime = parts[0] || '--:--';
+      const endTime = parts[1] || '';
+
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(7);
+      pdf.setTextColor(30, 30, 30);
+      if (endTime) {
+        pdf.text(startTime + ' - ' + endTime, bx + bw / 2, by + 5, { align: 'center' });
+      } else {
+        pdf.text(startTime, bx + bw / 2, by + 5, { align: 'center' });
+      }
+
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(5);
+      pdf.setTextColor(120, 120, 120);
+      pdf.text(duration + 'h', bx + bw / 2, by + 9, { align: 'center' });
+    };
+
+    if (weeks.length === 0) {
+      checkPage(12);
+      pdf.setFont('helvetica', 'italic');
+      pdf.setFontSize(8);
+      pdf.setTextColor(...gray);
+      pdf.text('No hay turnos planificados asignados a este colaborador en el sistema.', margin + contentW / 2, y + 8, { align: 'center' });
+      y += 14;
+    } else {
+      let rowIdx = 0;
+      weeks.forEach((week: any) => {
+        const maxShifts = Math.max(...week.days.map((d: any) => d.shifts.length), 0);
+        const rowH = Math.max(11, maxShifts * 12 + 2);
+        checkPage(rowH + 2);
+
+        const rowBg: [number, number, number] = rowIdx % 2 === 0 ? [255, 255, 255] : [248, 250, 252];
+
+        pdf.setFillColor(...rowBg);
+        pdf.rect(margin, y, contentW, rowH, 'F');
+
+        pdf.setDrawColor(...dark);
+        pdf.setLineWidth(0.4);
+        pdf.rect(margin, y, contentW, rowH);
+        pdf.setLineWidth(0.25);
+        pdf.line(margin + col1W, y, margin + col1W, y + rowH);
+
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(7);
+        pdf.setTextColor(...dark);
+        pdf.text(week.title, margin + 3, y + 4);
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(6);
+        pdf.setTextColor(...gray);
+        pdf.text(week.subtitle, margin + 3, y + 8);
+
+        week.days.forEach((day: any, i: number) => {
+          const cx = margin + col1W + i * dayColW;
+          pdf.setDrawColor(...dark);
+          pdf.setLineWidth(0.25);
+          pdf.line(cx, y, cx, y + rowH);
+
+          if (day.shifts.length > 0) {
+            const shiftsCount = day.shifts.length;
+            day.shifts.forEach((shift: any, si: number) => {
+              drawShiftBox(
+                shift.timeRange || '--:--',
+                shift.duration || '?',
+                cx,
+                y + 1 + si * 12,
+                dayColW
+              );
+              if (si < shiftsCount - 1) {
+                pdf.setDrawColor(209, 213, 219);
+                pdf.setLineWidth(0.15);
+                pdf.line(cx + 3, y + 1 + (si + 1) * 12 - 1, cx + dayColW - 3, y + 1 + (si + 1) * 12 - 1);
               }
-            </style>
-          </head>
-          <body>${printContent.innerHTML}</body>
-        </html>
-      `);
-      doc.close();
-      setTimeout(() => {
-        iframe.contentWindow?.focus();
-        iframe.contentWindow?.print();
-        document.body.removeChild(iframe);
-      }, 500);
+            });
+          } else {
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(8);
+            pdf.setTextColor(...lightGray);
+            pdf.text('-', cx + dayColW / 2, y + rowH / 2 + 1, { align: 'center' });
+          }
+        });
+        pdf.setDrawColor(...dark);
+        pdf.setLineWidth(0.4);
+        pdf.line(margin + contentW, y, margin + contentW, y + rowH);
+
+        y += rowH;
+        rowIdx++;
+      });
     }
+
+    const footerY = pageH - margin - 8;
+    pdf.setDrawColor(...dark);
+    pdf.setLineWidth(0.3);
+    pdf.line(margin, footerY - 4, pageW - margin, footerY - 4);
+    pdf.setFont('helvetica', 'italic');
+    pdf.setFontSize(6);
+    pdf.setTextColor(...gray);
+    pdf.text(
+      'Este cuadrante representa la planificación de turnos vigente. Toda modificación posterior deberá ser autorizada por la Gerencia de Operaciones de ' + companyName + '.',
+      pageW / 2, footerY,
+      { align: 'center', maxWidth: contentW }
+    );
+
+    pdf.save(`Cuadrante_Horario_${empName.replace(/\s+/g, '_')}.pdf`);
   }
 
   async exportExcel() {

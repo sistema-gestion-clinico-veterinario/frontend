@@ -36,7 +36,9 @@
             ],
             "scripts": [],
             "allowedCommonJsDependencies": [
-              "exceljs"
+              "exceljs",
+              "jspdf",
+              "html2canvas"
             ]
           },
           "configurations": {
