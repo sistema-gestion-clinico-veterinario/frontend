@@ -78,8 +78,8 @@ export class ChangePasswordModalComponent {
     this.authService.changePassword({ oldPassword: oldPassword!, newPassword: newPassword! }).subscribe({
       next: () => {
         this.authStore.setAuth({
-          token: this.authStore.token()!,
-          refreshToken: this.authStore.refreshToken(),
+          token: null,
+          refreshToken: null,
           roles: this.authStore.roles(),
           companyId: this.authStore.companyId(),
           companyName: this.authStore.companyName(),

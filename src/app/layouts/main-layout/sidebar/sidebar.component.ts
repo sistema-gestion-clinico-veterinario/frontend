@@ -6,6 +6,7 @@ import { MenuItemDTO, MenuStructureDTO } from '../../../models/response/auth-log
 import { RouteMapperService } from '../../../core/services/route-mapper.service';
 import { CompanyService } from '../../../core/services/company.service';
 import { MediaService } from '../../../core/services/media.service';
+import { AuthService } from '../../../core/services/auth.service';
 
 interface MenuItemWithRuta extends MenuItemDTO {
   ruta: string;
@@ -31,6 +32,7 @@ export class SidebarComponent implements OnInit {
   private routeMapper = inject(RouteMapperService);
   private companyService = inject(CompanyService);
   private mediaService = inject(MediaService);
+  private authService = inject(AuthService);
 
   expandedSections = signal<Record<string, boolean>>({});
   companyLogoUrl = computed(() => this.authStore.selectedEnterprise()?.logoUrl ? this.mediaService.resolveUrl(this.authStore.selectedEnterprise()?.logoUrl) : null);
@@ -183,6 +185,7 @@ export class SidebarComponent implements OnInit {
   }
 
   logout() {
+    this.authService.logout().subscribe({ error: () => {} });
     this.authStore.logout();
     this.router.navigateByUrl('/login', { replaceUrl: true });
   }

@@ -25,7 +25,7 @@ export class LoginComponent implements OnInit {
   showPassword = false;
 
   ngOnInit() {
-    if (this.authStore.token()) {
+    if (this.authStore.roles().length > 0) {
       const roles = this.authStore.roles() ?? [];
       this.router.navigateByUrl(resolveInitialRoute(roles, this.authStore.menu() ?? []));
     }
@@ -80,8 +80,8 @@ export class LoginComponent implements OnInit {
     ).subscribe({
       next: ({ data }) => {
         this.authStore.setAuth({
-          token: data.token,
-          refreshToken: data.refreshToken,
+          token: null,
+          refreshToken: null,
           roles: data.roles,
           companyId: data.companyId,
           companyName: data.companyName,
