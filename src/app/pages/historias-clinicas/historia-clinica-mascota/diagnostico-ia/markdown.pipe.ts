@@ -39,7 +39,13 @@ export class MarkdownPipe implements PipeTransform {
   }
 
   private inline(s: string): string {
-    return s
+    const htmlEscaped = s
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#x27;');
+    return htmlEscaped
       .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
       .replace(/\*([^*]+?)\*/g, '<em>$1</em>')
       .replace(/`(.+?)`/g, '<code>$1</code>');

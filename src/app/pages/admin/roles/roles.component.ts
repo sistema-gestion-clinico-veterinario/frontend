@@ -440,17 +440,16 @@ export class RolesComponent implements OnInit {
 
   private refreshCurrentSessionIfActiveRoleChanged(roleName: string) {
     const activeRole = this.authStore.roles()[0];
-    const refreshToken = this.authStore.refreshToken();
 
-    if (activeRole !== roleName || !refreshToken) {
+    if (activeRole !== roleName) {
       return;
     }
 
-    this.authService.refreshToken(refreshToken).subscribe({
+    this.authService.refreshToken().subscribe({
       next: ({ data }) => {
         this.authStore.setAuth({
-          token: data.token,
-          refreshToken: data.refreshToken,
+          token: null,
+          refreshToken: null,
           roles: data.roles,
           assignedRoles: data.assignedRoles ?? this.authStore.assignedRoles(),
           originalRoles: data.assignedRoles ?? this.authStore.assignedRoles(),

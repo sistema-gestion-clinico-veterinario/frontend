@@ -128,7 +128,7 @@ export class CitasComponent implements OnInit {
     this.yapePhone.set('');
     this.yapeOtp.set('');
     // Pre-llenar con el email del apoderado autenticado
-    this.yapeEmail.set(this.authStore.token() ? (this.authStore as any).email?.() ?? '' : '');
+    this.yapeEmail.set(this.authStore.nombreCompleto() ? (this.authStore as any).email?.() ?? '' : '');
     this.displayPagoModal.set(true);
   }
 

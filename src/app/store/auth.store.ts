@@ -56,6 +56,8 @@ const createInitialState = (useStorage = true): AuthState => {
         const menu = parsed.menu ?? [];
         return {
           ...parsed,
+          token: null,
+          refreshToken: null,
           simulatedRoleId: parsed.simulatedRoleId ?? null,
           originalMenu: parsed.originalMenu ?? parsed.menu ?? [],
           assignedRoles: parsed.assignedRoles ?? parsed.roles ?? [],
@@ -92,7 +94,8 @@ const createInitialState = (useStorage = true): AuthState => {
 
 const saveToStorage = (state: AuthState) => {
   if (typeof window !== 'undefined') {
-    window.localStorage.setItem('auth', JSON.stringify(state));
+    const { token, refreshToken, ...safe } = state;
+    window.localStorage.setItem('auth', JSON.stringify(safe));
   }
 };
 

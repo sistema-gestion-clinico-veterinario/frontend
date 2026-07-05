@@ -9,45 +9,40 @@ export const AuthGuard: CanActivateFn = (route, state) => {
   const authStore = inject(AuthStore);
   const authService = inject(AuthService);
   const router = inject(Router);
-  const token = authStore.token();
-  const refreshToken = authStore.refreshToken();
 
-  if (!refreshToken) {
+  const hasSession = authStore.roles().length > 0 || authStore.nombreCompleto() !== null;
+
+  if (!hasSession) {
     return router.createUrlTree(['/login']);
   }
 
-  // No access token but have refresh token — need fresh pair
-  if (!token) {
-    return authService.refreshToken(refreshToken).pipe(
-      map(({ data }) => {
-        authStore.setAuth({
-          token: data.token,
-          refreshToken: data.refreshToken,
-          roles: data.roles,
-          assignedRoles: data.assignedRoles ?? data.roles,
-          originalRoles: data.assignedRoles ?? data.roles,
-          companyId: data.companyId,
-          companyName: data.companyName,
-          nombreCompleto: data.nombreCompleto,
-          userType: data.userType,
-          empleadoId: data.empleadoId ?? null,
-          passwordChanged: data.passwordChanged,
-          needsCompanySelection: data.needsCompanySelection,
-          selectedEnterprise: authStore.selectedEnterprise(),
-          menu: data.menu,
-          originalMenu: data.menu
-        });
-        return validateAccess(route, authStore, router);
-      }),
-      catchError(() => {
-        authStore.logout();
-        return of(router.createUrlTree(['/login']));
-      })
-    );
-  }
-
-  // Access token exists — let interceptor handle expiry transparently
-  return validateAccess(route, authStore, router);
+  // Attempt refresh to get latest profile data and verify cookie session is still valid
+  return authService.refreshToken().pipe(
+    map(({ data }) => {
+      authStore.setAuth({
+        token: null,
+        refreshToken: null,
+        roles: data.roles,
+        assignedRoles: data.assignedRoles ?? data.roles,
+        originalRoles: data.assignedRoles ?? data.roles,
+        companyId: data.companyId,
+        companyName: data.companyName,
+        nombreCompleto: data.nombreCompleto,
+        userType: data.userType,
+        empleadoId: data.empleadoId ?? null,
+        passwordChanged: data.passwordChanged,
+        needsCompanySelection: data.needsCompanySelection,
+        selectedEnterprise: authStore.selectedEnterprise(),
+        menu: data.menu,
+        originalMenu: data.menu
+      });
+      return validateAccess(route, authStore, router);
+    }),
+    catchError(() => {
+      authStore.logout();
+      return of(router.createUrlTree(['/login']));
+    })
+  );
 };
 
 function validateAccess(route: ActivatedRouteSnapshot, authStore: any, router: Router) {
@@ -107,4 +102,3 @@ function isRoleDashboardRoute(pattern: string, roles: string[]): boolean {
 
   return false;
 }
-
