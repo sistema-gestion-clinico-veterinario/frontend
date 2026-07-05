@@ -393,7 +393,7 @@
 </div>
 
 <!-- Contenedor Exclusivo de Impresión (Oculto en pantalla, visible al imprimir) -->
-<div id="print-area" class="hidden print:block font-sans p-10 text-[#0f172a] bg-white">
+<div id="print-area" class="hidden print:block" style="display:none;">
   <style>
     @media print {
       body {
@@ -438,7 +438,7 @@
       .print-employee-card {
         background: #ffffff;
         border: 1px solid #0f172a;
-        border-radius: 0 !important; /* Totalmente cuadrado */
+        border-radius: 0 !important;
         padding: 16px 20px;
         margin-bottom: 30px;
         display: grid;
@@ -469,7 +469,7 @@
       }
       .print-matrix-table-container {
         border: 1px solid #0f172a;
-        border-radius: 0 !important; /* Totalmente cuadrado */
+        border-radius: 0 !important;
         overflow: hidden;
         margin-bottom: 30px;
         background: #ffffff;
@@ -546,7 +546,7 @@
       .print-matrix-shift-box {
         background: #ffffff !important;
         border: 1px solid #0f172a !important;
-        border-radius: 0 !important; /* Totalmente cuadrado */
+        border-radius: 0 !important;
         padding: 6px;
         text-align: center;
         display: inline-block;
