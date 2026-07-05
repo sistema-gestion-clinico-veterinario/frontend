@@ -22,6 +22,7 @@ export class ScheduleFormComponent implements OnInit {
 
   companyInfo = signal<any>(null);
   currentData = signal<any>(null);
+  preselectedDate = signal<string>('');
   selectedStartDate = signal<string>('');
   selectedEndDate = signal<string>('');
 
@@ -106,14 +107,17 @@ export class ScheduleFormComponent implements OnInit {
       } else {
         // Si no tiene ID, es una preselección de fecha para crear
         this.currentData.set(null);
+        this.preselectedDate.set(data.fecha || '');
         this.selectedStartDate.set(data.fecha || '');
         this.selectedEndDate.set(data.fecha || '');
+        const [y, m, d] = data.fecha.split('-').map(Number);
+        const dayName = this.dayOfWeekMap[new Date(y, m - 1, d).getDay()];
         this.scheduleForm.reset({
           fechaInicio: data.fecha,
           fechaFin: data.fecha,
           horaInicio: '',
           horaFin: '',
-          dias: [],
+          dias: [dayName],
           editMode: 'single'
         });
       }
@@ -139,6 +143,7 @@ export class ScheduleFormComponent implements OnInit {
 
   private resetFormState() {
     this.currentData.set(null);
+    this.preselectedDate.set('');
     this.selectedStartDate.set('');
     this.selectedEndDate.set('');
     this.loading.set(false);

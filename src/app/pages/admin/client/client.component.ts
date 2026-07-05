@@ -331,27 +331,37 @@ export class ClientComponent implements OnInit {
       referencias:   normalizeText(rawData.referencias),
       observaciones: normalizeText(rawData.observaciones)
     };
-    const request = this.isEdit() 
+
+    const action = this.isEdit() ? 'actualizar' : 'registrar';
+    this.openConfirm(
+      this.isEdit() ? 'Modificar cliente' : 'Registrar cliente',
+      `¿Confirmas que deseas ${action} a ${data.nombre} ${data.apellido}?`,
+      () => this.submitClient(data)
+    );
+  }
+
+  private submitClient(data: ApoderadoRequest) {
+    const request = this.isEdit()
       ? this.apoderadoService.actualizar(data.id!, data)
       : this.apoderadoService.registrar(data);
 
     this.loadingStore.show();
     request.subscribe({
       next: () => {
-        this.messageService.add({ 
-          severity: 'success', 
-          summary: 'Éxito', 
-          detail: this.isEdit() ? 'Datos actualizados' : 'Propietario registrado' 
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Éxito',
+          detail: this.isEdit() ? 'Datos actualizados' : 'Propietario registrado'
         });
         this.displayModal.set(false);
         this.loadClients();
         this.loadingStore.hide();
       },
       error: (err) => {
-        this.messageService.add({ 
-          severity: 'error', 
-          summary: 'Error', 
-          detail: err.error?.message || 'Ocurrió un error al guardar' 
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: err.error?.message || 'Ocurrió un error al guardar'
         });
         this.loadingStore.hide();
       }
