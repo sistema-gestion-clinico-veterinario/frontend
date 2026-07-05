@@ -7,7 +7,7 @@ import { LoadingStore } from '../../store/loading.store';
 import { AuthService } from '../services/auth.service';
 
 let isRefreshing = false;
-let refreshTokenSubject: BehaviorSubject<string | null> = new BehaviorSubject<string | null>(null);
+let refreshTokenSubject: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
 const DEFAULT_REQUEST_TIMEOUT_MS = 30000;
 const UPLOAD_REQUEST_TIMEOUT_MS = 120000;
 export const SKIP_GLOBAL_LOADING = new HttpContextToken<boolean>(() => false);
@@ -23,16 +23,10 @@ export const apiInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, nex
     loadingStore.show();
   }
 
-  const token = authStore.token();
-
-  let authReq = req;
-  if (token) {
-    authReq = req.clone({
-      setHeaders: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
-  }
+  // Send cookies (HttpOnly tokens) with every request
+  const authReq = req.clone({
+    withCredentials: true
+  });
 
   const requestTimeout = req.url.includes('/media/upload')
     ? UPLOAD_REQUEST_TIMEOUT_MS
@@ -55,85 +49,51 @@ export const apiInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, nex
   );
 };
 
-const getStoredAuth = (): any => {
-  try {
-    const raw = window.localStorage.getItem('auth');
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
-};
-
 const handle401Error = (req: HttpRequest<any>, next: HttpHandlerFn, authStore: any, authService: AuthService, router: Router): Observable<HttpEvent<any>> => {
   if (!isRefreshing) {
     isRefreshing = true;
-    refreshTokenSubject.next(null);
+    refreshTokenSubject.next(false);
 
-    const storedAuth = getStoredAuth();
-    const refreshToken = storedAuth?.refreshToken ?? authStore.refreshToken();
-
-    if (refreshToken) {
-      return authService.refreshToken(refreshToken).pipe(
-        switchMap((res: any) => {
-          isRefreshing = false;
-          authStore.setAuth({
-            token: res.data.token,
-            refreshToken: res.data.refreshToken,
-            roles: res.data.roles,
-            companyId: res.data.companyId,
-            companyName: res.data.companyName,
-            nombreCompleto: res.data.nombreCompleto,
-            userType: res.data.userType,
-            empleadoId: res.data.empleadoId ?? null,
-            passwordChanged: res.data.passwordChanged,
-            needsCompanySelection: res.data.needsCompanySelection,
-            selectedEnterprise: authStore.selectedEnterprise(),
-            menu: res.data.menu,
-            simulatedRoleId: authStore.simulatedRoleId(),
-            originalMenu: res.data.menu,
-            originalRoles: res.data.assignedRoles ?? res.data.roles,
-            assignedRoles: res.data.assignedRoles ?? authStore.assignedRoles()
-          });
-          refreshTokenSubject.next(res.data.token);
-          return next(req.clone({
-            setHeaders: {
-              'Authorization': `Bearer ${res.data.token}`
-            }
-          }));
-        }),
-        catchError((err) => {
-          isRefreshing = false;
-          const sentToken = req.headers.get('Authorization')?.replace('Bearer ', '');
-          const freshAuth = getStoredAuth();
-          const freshToken = freshAuth?.token;
-          if (freshToken && freshToken !== sentToken) {
-            authStore.setAuth(freshAuth);
-            refreshTokenSubject.next(freshToken);
-            return next(req.clone({ setHeaders: { 'Authorization': `Bearer ${freshToken}` } }));
-          }
-          refreshTokenSubject.error(err);
-          refreshTokenSubject = new BehaviorSubject<string | null>(null);
-          authStore.logout();
-          router.navigate(['/login']);
-          return throwError(() => err);
-        })
-      );
-    } else {
-      isRefreshing = false;
-      authStore.logout();
-      router.navigate(['/login']);
-      return throwError(() => new Error('No refresh token available'));
-    }
+    // Call refresh without body — browser sends refresh_token cookie automatically
+    return authService.refreshToken().pipe(
+      switchMap((res: any) => {
+        isRefreshing = false;
+        authStore.setAuth({
+          token: null,
+          refreshToken: null,
+          roles: res.data.roles,
+          companyId: res.data.companyId,
+          companyName: res.data.companyName,
+          nombreCompleto: res.data.nombreCompleto,
+          userType: res.data.userType,
+          empleadoId: res.data.empleadoId ?? null,
+          passwordChanged: res.data.passwordChanged,
+          needsCompanySelection: res.data.needsCompanySelection,
+          selectedEnterprise: authStore.selectedEnterprise(),
+          menu: res.data.menu,
+          simulatedRoleId: authStore.simulatedRoleId(),
+          originalMenu: res.data.menu,
+          originalRoles: res.data.assignedRoles ?? res.data.roles,
+          assignedRoles: res.data.assignedRoles ?? authStore.assignedRoles()
+        });
+        refreshTokenSubject.next(true);
+        return next(req.clone({ withCredentials: true }));
+      }),
+      catchError((err) => {
+        isRefreshing = false;
+        refreshTokenSubject.error(err);
+        refreshTokenSubject = new BehaviorSubject<boolean>(false);
+        authStore.logout();
+        router.navigate(['/login']);
+        return throwError(() => err);
+      })
+    );
   } else {
     return refreshTokenSubject.pipe(
-      filter(token => token !== null),
+      filter(ok => ok),
       take(1),
-      switchMap(token => {
-        return next(req.clone({
-          setHeaders: {
-            'Authorization': `Bearer ${token}`
-          }
-        }));
+      switchMap(() => {
+        return next(req.clone({ withCredentials: true }));
       })
     );
   }

@@ -32,8 +32,13 @@ export class AuthService {
     return this.http.post<ApiResponse<void>>(`${this.baseUrl}/change-password`, payload);
   }
 
-  refreshToken(refreshToken: string): Observable<AuthLoginResponse> {
-    return this.http.post<AuthLoginResponse>(`${this.baseUrl}/refresh`, { refreshToken });
+  refreshToken(refreshToken?: string): Observable<AuthLoginResponse> {
+    const body = refreshToken ? { refreshToken } : {};
+    return this.http.post<AuthLoginResponse>(`${this.baseUrl}/refresh`, body);
+  }
+
+  logout(): Observable<ApiResponse<void>> {
+    return this.http.post<ApiResponse<void>>(`${this.baseUrl}/logout`, {}, { withCredentials: true });
   }
 
   switchRole(roleName: string): Observable<AuthLoginResponse> {

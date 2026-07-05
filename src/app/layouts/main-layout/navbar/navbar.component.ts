@@ -139,8 +139,8 @@ export class NavbarComponent implements OnInit {
       this.authService.switchRole(selectedRole).subscribe({
         next: (res) => {
           this.authStore.setAuth({
-            token: res.data.token,
-            refreshToken: res.data.refreshToken,
+            token: null,
+            refreshToken: null,
             roles: res.data.roles,
             companyId: res.data.companyId,
             companyName: res.data.companyName,
@@ -184,6 +184,7 @@ export class NavbarComponent implements OnInit {
   }
 
   logout() {
+    this.authService.logout().subscribe({ error: () => {} });
     this.authStore.logout();
     this.router.navigate(['/login']);
   }
