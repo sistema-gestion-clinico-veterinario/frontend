@@ -400,7 +400,7 @@
                 class="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
               <p *ngIf="companyForm.get('email')?.invalid && companyForm.get('email')?.touched" class="text-[11px] text-rose-500 ml-0.5">
                 <ng-container *ngIf="companyForm.get('email')?.errors?.['required']">El correo es requerido</ng-container>
-                <ng-container *ngIf="companyForm.get('email')?.errors?.['email'] || companyForm.get('email')?.errors?.['pattern']">Ingresa un correo electrónico válido, sin espacios</ng-container>
+                <ng-container *ngIf="companyForm.get('email')?.errors?.['email'] || companyForm.get('email')?.errors?.['lowercaseEmail']">Ingresa un correo válido en minúsculas, sin espacios</ng-container>
               </p>
             </div>
 
@@ -444,6 +444,7 @@
                 class="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none resize-none transition-all"></textarea>
               <p *ngIf="companyForm.get('description')?.invalid && companyForm.get('description')?.touched" class="text-[11px] text-rose-500 ml-0.5">
                 <ng-container *ngIf="companyForm.get('description')?.errors?.['maxlength']">Máximo 500 caracteres</ng-container>
+                <ng-container *ngIf="companyForm.get('description')?.errors?.['textContent']">Debe contener al menos una letra o número</ng-container>
                 <ng-container *ngIf="companyForm.get('description')?.errors?.['leadingTrailingSpace']">No debe tener espacios al inicio o al final</ng-container>
               </p>
             </div>

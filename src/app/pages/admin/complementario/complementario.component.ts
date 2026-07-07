@@ -29,6 +29,7 @@ import { AuthStore } from '../../../store/auth.store';
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
 import { lettersOnlyValidator } from '../../../core/validators/letters-only.validator';
+import { textContentValidator } from '../../../core/validators/text-content.validator';
 
 
 @Component({
@@ -190,16 +191,16 @@ export class ComplementarioComponent implements OnInit {
   showEspModal = signal(false);
   editingEsp = signal<any | null>(null);
   espForm: FormGroup = this.fb.group({
-    nombre: ['', [Validators.required, Validators.minLength(2), noLeadingTrailingSpaceValidator(), lettersOnlyValidator()]],
-    descripcion: ['', [noLeadingTrailingSpaceValidator()]]
+    nombre: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100), noLeadingTrailingSpaceValidator(), lettersOnlyValidator()]],
+    descripcion: ['', [Validators.maxLength(500), noLeadingTrailingSpaceValidator(), textContentValidator()]]
   });
   tiposEmpleado = signal<any[]>([]);
   tiposEmpleadoActivos = computed(() => this.tiposEmpleado().filter(t => t.estado !== false));
   showTipoModal = signal(false);
   editingTipo = signal<any | null>(null);
   tipoForm: FormGroup = this.fb.group({
-    nombre: ['', [Validators.required, Validators.minLength(2), noLeadingTrailingSpaceValidator(), lettersOnlyValidator()]],
-    descripcion: ['', [noLeadingTrailingSpaceValidator()]],
+    nombre: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100), noLeadingTrailingSpaceValidator(), lettersOnlyValidator()]],
+    descripcion: ['', [Validators.maxLength(500), noLeadingTrailingSpaceValidator(), textContentValidator()]],
     permiteEspecialidades: [false]
   });
 
@@ -209,7 +210,7 @@ export class ComplementarioComponent implements OnInit {
   editingServicio     = signal<ServicioResponse | null>(null);
   servicioForm: FormGroup = this.fb.group({
     nombre:      ['', [Validators.required, Validators.minLength(2), Validators.maxLength(80), noLeadingTrailingSpaceValidator(), lettersOnlyValidator()]],
-    descripcion: ['', [Validators.required, Validators.maxLength(300), noLeadingTrailingSpaceValidator()]],
+    descripcion: ['', [Validators.required, Validators.maxLength(300), noLeadingTrailingSpaceValidator(), textContentValidator()]],
     precio:      [null, [Validators.required, Validators.min(5), Validators.max(5000)]],
     duracionEstimada: [20, [Validators.required, Validators.min(5), Validators.max(240)]],
     disponible:  [true],

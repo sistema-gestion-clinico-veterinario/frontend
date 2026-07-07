@@ -81,14 +81,19 @@ export class CajaComponent implements OnInit {
   }
 
   guardarEgreso() {
-    if (!this.egresoForm.monto || !this.egresoForm.descripcion.trim()) {
+    const descripcion = this.egresoForm.descripcion.trim();
+    if (!this.egresoForm.monto || !descripcion) {
       this.messageService.add({ severity: 'warn', summary: 'Campos requeridos', detail: 'Ingresa monto y descripción.' });
+      return;
+    }
+    if (descripcion.length > 300 || !/[\p{L}\p{N}]/u.test(descripcion) || /[{}\[\]<>*|\\^~`=@]/.test(descripcion)) {
+      this.messageService.add({ severity: 'warn', summary: 'Descripción inválida', detail: 'Use una descripción válida, sin caracteres especiales no permitidos.' });
       return;
     }
     this.savingEgreso.set(true);
     this.cajaService.registrarEgreso({
       monto: this.egresoForm.monto,
-      descripcion: this.egresoForm.descripcion.trim(),
+      descripcion,
       companyId: this.companyId,
       concepto: this.egresoForm.concepto
     }).subscribe({

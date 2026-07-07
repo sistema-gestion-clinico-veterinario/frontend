@@ -266,14 +266,14 @@
       <form [formGroup]="espForm" (ngSubmit)="confirmarGuardarEspecialidad()" class="space-y-5">
         <div class="flex flex-col gap-1">
           <label class="text-xs font-semibold text-slate-700 ml-0.5">Denominación <span class="text-rose-500">*</span></label>
-          <input type="text" formControlName="nombre" placeholder="Ej: Cirugía General"
+          <input type="text" formControlName="nombre" maxlength="100" placeholder="Ej: Cirugía General"
             class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
           <p *ngIf="espForm.get('nombre')?.touched && espForm.get('nombre')?.errors?.['leadingTrailingSpace']" class="text-[11px] text-rose-500 ml-0.5">No debe tener espacios al inicio o al final</p>
           <p *ngIf="espForm.get('nombre')?.touched && espForm.get('nombre')?.errors?.['lettersOnly']" class="text-[11px] text-rose-500 ml-0.5">Solo se permiten letras</p>
         </div>
         <div class="flex flex-col gap-1">
           <label class="text-xs font-semibold text-slate-700 ml-0.5">Descripción Operativa</label>
-          <textarea formControlName="descripcion" rows="3" placeholder="Detalle las competencias de esta especialidad..."
+          <textarea formControlName="descripcion" rows="3" maxlength="500" placeholder="Detalle las competencias de esta especialidad..."
             class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none resize-none transition-all"></textarea>
           <p *ngIf="espForm.get('descripcion')?.touched && espForm.get('descripcion')?.errors?.['leadingTrailingSpace']" class="text-[11px] text-rose-500 ml-0.5">No debe tener espacios al inicio o al final</p>
         </div>
@@ -305,14 +305,14 @@
       <form [formGroup]="tipoForm" (ngSubmit)="confirmarGuardarTipoEmpleado()" class="space-y-5">
         <div class="flex flex-col gap-1">
           <label class="text-xs font-semibold text-slate-700 ml-0.5">Denominación <span class="text-rose-500">*</span></label>
-          <input type="text" formControlName="nombre" placeholder="Ej: Veterinario Clínico"
+          <input type="text" formControlName="nombre" maxlength="100" placeholder="Ej: Veterinario Clínico"
             class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
           <p *ngIf="tipoForm.get('nombre')?.touched && tipoForm.get('nombre')?.errors?.['leadingTrailingSpace']" class="text-[11px] text-rose-500 ml-0.5">No debe tener espacios al inicio o al final</p>
           <p *ngIf="tipoForm.get('nombre')?.touched && tipoForm.get('nombre')?.errors?.['lettersOnly']" class="text-[11px] text-rose-500 ml-0.5">Solo se permiten letras</p>
         </div>
         <div class="flex flex-col gap-1">
           <label class="text-xs font-semibold text-slate-700 ml-0.5">Descripción</label>
-          <textarea formControlName="descripcion" rows="3" placeholder="Descripción del tipo de empleado..."
+          <textarea formControlName="descripcion" rows="3" maxlength="500" placeholder="Descripción del tipo de empleado..."
             class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none resize-none transition-all"></textarea>
           <p *ngIf="tipoForm.get('descripcion')?.touched && tipoForm.get('descripcion')?.errors?.['leadingTrailingSpace']" class="text-[11px] text-rose-500 ml-0.5">No debe tener espacios al inicio o al final</p>
         </div>
@@ -349,14 +349,14 @@
       <form [formGroup]="servicioForm" (ngSubmit)="confirmarGuardarServicio()" class="space-y-5">
         <div class="flex flex-col gap-1">
           <label class="text-xs font-semibold text-slate-700 ml-0.5">Nombre del Servicio <span class="text-rose-500">*</span></label>
-          <input type="text" formControlName="nombre" placeholder="Ej: Profilaxis Dental"
+          <input type="text" formControlName="nombre" maxlength="80" placeholder="Ej: Profilaxis Dental"
             class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
           <p *ngIf="servicioForm.get('nombre')?.touched && servicioForm.get('nombre')?.errors?.['leadingTrailingSpace']" class="text-[11px] text-rose-500 ml-0.5">No debe tener espacios al inicio o al final</p>
           <p *ngIf="servicioForm.get('nombre')?.touched && servicioForm.get('nombre')?.errors?.['lettersOnly']" class="text-[11px] text-rose-500 ml-0.5">Solo se permiten letras</p>
         </div>
         <div class="flex flex-col gap-1">
           <label class="text-xs font-semibold text-slate-700 ml-0.5">Descripción del Procedimiento <span class="text-rose-500">*</span></label>
-          <textarea formControlName="descripcion" rows="3" placeholder="Detalle las actividades incluidas en este servicio..."
+          <textarea formControlName="descripcion" rows="3" maxlength="300" placeholder="Detalle las actividades incluidas en este servicio..."
             class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none resize-none transition-all"></textarea>
           <p *ngIf="servicioForm.get('descripcion')?.touched && servicioForm.get('descripcion')?.errors?.['leadingTrailingSpace']" class="text-[11px] text-rose-500 ml-0.5">No debe tener espacios al inicio o al final</p>
         </div>

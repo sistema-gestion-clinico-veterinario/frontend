@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { lowercaseEmailValidator } from '../../../core/validators/lowercase-email.validator';
 
 @Component({
   selector: 'app-forgot-password',
@@ -20,7 +21,7 @@ export class ForgotPasswordComponent {
   errorMessage = '';
 
   forgotForm = this.fb.group({
-    email: ['', [Validators.required, Validators.email, Validators.pattern(/^\S+@\S+\.\S+$/), Validators.maxLength(255)]]
+    email: ['', [Validators.required, Validators.email, lowercaseEmailValidator(), Validators.maxLength(255)]]
   });
 
   get email() { return this.forgotForm.get('email'); }
