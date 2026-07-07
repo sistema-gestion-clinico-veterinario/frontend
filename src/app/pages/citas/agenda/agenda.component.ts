@@ -343,6 +343,22 @@ export class AgendaComponent implements OnInit, OnDestroy {
     this.refreshCurrentView();
   }
 
+  hasFiltrosActivos(): boolean {
+    return this.filterEstado !== null
+      || this.filterVeterinarioId !== null
+      || this.filterFecha !== this.toDateStr(new Date());
+  }
+
+  limpiarFiltros() {
+    this.filterFecha = this.toDateStr(new Date());
+    this.filterEstado = null;
+    this.filterVeterinarioId = null;
+    this.showEstadoFilter.set(false);
+    this.showVeterinarioFilter.set(false);
+    this.fechaBase.set(new Date());
+    this.refreshCurrentView();
+  }
+
   readonly diasSemanaActual = computed<Date[]>(() => {
     const base = new Date(this.fechaBase());
     const dow  = base.getDay();
@@ -550,6 +566,9 @@ export class AgendaComponent implements OnInit, OnDestroy {
             .filter(c => c.activo)
             .map(c => ({ label: `${c.nombre} ${c.apellido}`, value: c.id }))
         );
+      },
+      error: () => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar los dueños' });
       }
     });
   }
@@ -557,7 +576,10 @@ export class AgendaComponent implements OnInit, OnDestroy {
   loadAllMascotas(companyId?: number) {
     const targetCompanyId = companyId || (this.activeCompanyId ?? undefined);
     this.mascotaService.listar(targetCompanyId, undefined, undefined, 0, 500).subscribe({
-      next: (res) => this.allMascotas.set(res.data.content)
+      next: (res) => this.allMascotas.set(res.data.content),
+      error: () => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar las mascotas' });
+      }
     });
   }
 
