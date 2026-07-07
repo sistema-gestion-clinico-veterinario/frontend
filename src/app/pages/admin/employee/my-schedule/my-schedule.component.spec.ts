@@ -1,5 +1,6 @@
-﻿import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MyScheduleComponent } from './my-schedule.component';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('MyScheduleComponent', () => {
   let component: MyScheduleComponent;
@@ -7,8 +8,10 @@ describe('MyScheduleComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MyScheduleComponent]
-    }).compileComponents();
+      imports: [MyScheduleComponent, HttpClientTestingModule],
+    })
+    .overrideComponent(MyScheduleComponent, { set: { template: '' } })
+    .compileComponents();
 
     fixture = TestBed.createComponent(MyScheduleComponent);
     component = fixture.componentInstance;

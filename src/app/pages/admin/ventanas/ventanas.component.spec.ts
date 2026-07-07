@@ -1,5 +1,6 @@
-﻿import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { VentanasComponent } from './ventanas.component';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('VentanasComponent', () => {
   let component: VentanasComponent;
@@ -7,8 +8,10 @@ describe('VentanasComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [VentanasComponent]
-    }).compileComponents();
+      imports: [VentanasComponent, HttpClientTestingModule],
+    })
+    .overrideComponent(VentanasComponent, { set: { template: '' } })
+    .compileComponents();
 
     fixture = TestBed.createComponent(VentanasComponent);
     component = fixture.componentInstance;
