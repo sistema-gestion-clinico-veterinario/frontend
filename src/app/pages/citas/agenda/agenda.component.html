@@ -423,7 +423,9 @@
               </div>
               <div class="flex flex-col gap-1">
                 <label class="text-[10px] font-semibold text-slate-500">N° Documento <span class="text-rose-500">*</span></label>
-                <input type="text" [ngModel]="ncNumDoc()" (ngModelChange)="ncNumDoc.set($event)" [ngModelOptions]="{standalone: true}"
+                <input type="text" [appInputFilter]="ncTipoDoc() === 'PASAPORTE' ? 'alphanumeric' : 'digits'"
+                  [appInputFilterMaxLength]="ncTipoDoc() === 'DNI' ? 8 : 9" [maxlength]="ncTipoDoc() === 'DNI' ? 8 : 9"
+                  [ngModel]="ncNumDoc()" (ngModelChange)="ncNumDoc.set($event)" [ngModelOptions]="{standalone: true}"
                   placeholder="12345678"
                   class="w-full h-9 px-3 border border-slate-200 rounded-lg text-xs font-semibold outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/10 bg-white placeholder:text-slate-300 transition-all">
               </div>
@@ -441,6 +443,12 @@
                   placeholder="cliente@correo.com"
                   class="w-full h-9 px-3 border border-slate-200 rounded-lg text-xs font-semibold outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/10 bg-white placeholder:text-slate-300 transition-all">
               </div>
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-[10px] font-semibold text-slate-500">Dirección <span class="text-rose-500">*</span></label>
+              <input type="text" [ngModel]="ncDireccion()" (ngModelChange)="ncDireccion.set($event)" [ngModelOptions]="{standalone: true}"
+                maxlength="200" placeholder="Av. Ejemplo 123, Distrito"
+                class="w-full h-9 px-3 border border-slate-200 rounded-lg text-xs font-semibold outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/10 bg-white placeholder:text-slate-300 transition-all">
             </div>
             <div class="flex flex-col gap-1">
               <label class="text-[10px] font-semibold text-slate-500">Género <span class="text-rose-500">*</span></label>

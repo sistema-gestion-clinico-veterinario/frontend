@@ -722,8 +722,7 @@
                   <div class="text-right shrink-0 flex flex-col items-end gap-1">
                     <p class="text-[11px] sm:text-xs font-black text-slate-700 leading-none">S/ {{ p.monto | number:'1.2-2' }}</p>
                     <span [class]="'inline-flex items-center gap-1 px-1.5 sm:px-2 py-0.5 rounded-full text-[7px] sm:text-[8px] font-bold border ' + pagoEstadoBadge(p.estado)">
-                      <span class="w-1 sm:w-1.5 h-1 sm:h-1.5 rounded-full"
-                        [class]="p.estado === 'PAID' || p.estado === 'COMPLETADO' ? 'bg-emerald-500' : p.estado === 'REJECTED' || p.estado === 'CANCELLED' ? 'bg-red-500' : 'bg-amber-500'"></span>
+                      <span class="w-1 sm:w-1.5 h-1 sm:h-1.5 rounded-full" [class]="pagoEstadoDot(p.estado)"></span>
                       {{ pagoEstadoLabel(p.estado) }}
                     </span>
                   </div>

@@ -369,6 +369,10 @@ export class CitasComponent implements OnInit {
     this.vets.set([]);
     this.availableSlots.set([]);
     this.horariosVeterinario.set([]);
+    this.citaForm.get('servicioId')?.enable();
+    this.citaForm.get('veterinarioId')?.enable();
+    this.citaForm.get('fechaCita')?.enable();
+    this.citaForm.get('horaCita')?.enable();
     const defaultMascotaId = this.selectedPetFilter() ?? (this.mascotas().length > 0 ? this.mascotas()[0].id : null);
     this.citaForm.reset({
       mascotaId: defaultMascotaId,
@@ -448,6 +452,10 @@ export class CitasComponent implements OnInit {
     this.onServiceChange(cita.servicioId, true);
     this.availableSlots.set([]);
     this.horariosVeterinario.set([]);
+    this.citaForm.get('servicioId')?.enable();
+    this.citaForm.get('veterinarioId')?.enable();
+    this.citaForm.get('fechaCita')?.enable();
+    this.citaForm.get('horaCita')?.enable();
 
     this.citaForm.reset({
       mascotaId: cita.mascotaId,
