@@ -1,5 +1,6 @@
-﻿import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ApoderadoDashboardComponent } from './apoderado-dashboard.component';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('ApoderadoDashboardComponent', () => {
   let component: ApoderadoDashboardComponent;
@@ -7,8 +8,10 @@ describe('ApoderadoDashboardComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ApoderadoDashboardComponent]
-    }).compileComponents();
+      imports: [ApoderadoDashboardComponent, HttpClientTestingModule],
+    })
+    .overrideComponent(ApoderadoDashboardComponent, { set: { template: '' } })
+    .compileComponents();
 
     fixture = TestBed.createComponent(ApoderadoDashboardComponent);
     component = fixture.componentInstance;

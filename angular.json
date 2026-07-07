@@ -38,7 +38,11 @@
             "allowedCommonJsDependencies": [
               "exceljs",
               "jspdf",
-              "html2canvas"
+              "html2canvas",
+              "canvg",
+              "rgbcolor",
+              "raf",
+              "core-js"
             ]
           },
           "configurations": {
