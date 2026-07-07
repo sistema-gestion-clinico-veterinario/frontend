@@ -379,6 +379,29 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
     });
   }
 
+  onDocInput(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const tipo = this.ncTipoDoc();
+    const raw = input.value;
+    let filtered = '';
+    if (tipo === 'DNI' || tipo === 'CARNET_EXTRANJERIA') {
+      filtered = raw.replace(/\D/g, '');
+    } else if (tipo === 'PASAPORTE') {
+      for (let i = 0; i < raw.length; i++) {
+        const ch = raw[i];
+        if (i === 0 && /[A-Za-z]/.test(ch)) {
+          filtered += ch.toUpperCase();
+        } else if (i > 0 && /\d/.test(ch)) {
+          filtered += ch;
+        }
+      }
+    }
+    if (filtered !== raw) {
+      input.value = filtered;
+      this.ncNumDoc.set(filtered);
+    }
+  }
+
   toggleNuevoCliente() {
     this.showNuevoCliente.update(v => !v);
     if (this.showNuevoCliente()) {

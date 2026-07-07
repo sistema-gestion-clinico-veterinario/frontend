@@ -57,6 +57,10 @@ describe('ListaRecetasComponent', () => {
     component.searchQuery = 'test';
     component.resetFiltros();
     expect(component.searchQuery).toBe('');
+<<<<<<< HEAD
     expect(hcService.buscarRecetas).toHaveBeenCalledWith(jasmine.objectContaining({ query: '' }), 0, 10);
+=======
+    expect(hcService.buscarRecetas).toHaveBeenCalledWith({}, 0, 10);
+>>>>>>> 0f83ff7c760e7f557c48fa7aeb72f8c3090d0372
   });
 });
