@@ -131,7 +131,7 @@
                     class="w-full h-9 px-3 border border-slate-200 rounded-lg text-sm font-medium outline-none focus:border-[#0066AA] bg-white transition-all appearance-none cursor-pointer">
                     <option *ngFor="let opt of tipoDocOpciones" [value]="opt.value">{{ opt.label }}</option>
                   </select>
-                  <input type="text" [ngModel]="ncNumDoc()" (ngModelChange)="ncNumDoc.set($event)" [ngModelOptions]="{standalone: true}"
+                  <input type="text" [ngModel]="ncNumDoc()" (ngModelChange)="ncNumDoc.set($event)" (input)="onDocInput($event)" [ngModelOptions]="{standalone: true}"
                     placeholder="N° Documento *"
                     class="w-full h-9 px-3 border border-slate-200 rounded-lg text-sm font-medium outline-none focus:border-[#0066AA] bg-white transition-all" />
                 </div>
