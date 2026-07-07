@@ -16,6 +16,8 @@ import { AuthStore } from '../../../store/auth.store';
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 import { InputFilterDirective } from '../../../core/directives/input-filter.directive';
 import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
+import { lowercaseEmailValidator } from '../../../core/validators/lowercase-email.validator';
+import { textContentValidator } from '../../../core/validators/text-content.validator';
 import { normalizeText } from '../../../core/utils/normalize-text.util';
 
 @Component({
@@ -86,11 +88,11 @@ export class CompanyComponent implements OnInit {
     ruc: ['', [Validators.required, Validators.pattern('^(10|20)[0-9]{9}$')]],
     address: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(200), Validators.pattern(/^[a-zA-Z0-9áéíóúÁÉÍÓÚüÜñÑ\s\.,#\-\/°:]+$/), noLeadingTrailingSpaceValidator()]],
     phone: ['', [Validators.required, Validators.pattern(/^\d{9}$/)]],
-    email: ['', [Validators.required, Validators.email, Validators.pattern(/^\S+@\S+\.\S+$/), Validators.maxLength(100)]],
+    email: ['', [Validators.required, Validators.email, lowercaseEmailValidator(), Validators.maxLength(100)]],
     hasWebsite: [false],
     website: ['', [Validators.maxLength(200), Validators.pattern(/^\S*$/)]],
-    description: ['', [Validators.maxLength(500), noLeadingTrailingSpaceValidator()]],
-    businessHours: ['', [Validators.maxLength(100)]],
+    description: ['', [Validators.maxLength(500), noLeadingTrailingSpaceValidator(), textContentValidator()]],
+    businessHours: ['', [Validators.maxLength(100), textContentValidator()]],
     logoUrl: [''],
     operatingHours: this.fb.array([])
   });

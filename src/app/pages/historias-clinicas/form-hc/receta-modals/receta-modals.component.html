@@ -20,7 +20,7 @@
       <div class="grid sm:grid-cols-2 gap-4">
         <div class="flex flex-col gap-1">
           <label class="text-xs font-bold text-slate-600">Medicamento <span class="text-rose-500">*</span></label>
-          <input type="text" formControlName="medicamento" placeholder="Nombre del medicamento"
+          <input type="text" formControlName="medicamento" maxlength="80" placeholder="Nombre del medicamento"
             class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
             [ngClass]="{'border-rose-400': form.get('medicamento')?.invalid && form.get('medicamento')?.touched, 'border-slate-200': !(form.get('medicamento')?.invalid && form.get('medicamento')?.touched)}" />
           <span *ngIf="form.get('medicamento')?.invalid && form.get('medicamento')?.touched" class="text-xs text-rose-500">
@@ -29,7 +29,7 @@
         </div>
         <div class="flex flex-col gap-1">
           <label class="text-xs font-bold text-slate-600">Principio activo</label>
-          <input type="text" formControlName="principioActivo" placeholder="Ej: Amoxicilina"
+          <input type="text" formControlName="principioActivo" maxlength="80" placeholder="Ej: Amoxicilina"
             [ngClass]="{'border-rose-400': form.get('principioActivo')?.invalid && form.get('principioActivo')?.touched, 'border-slate-200': !(form.get('principioActivo')?.invalid && form.get('principioActivo')?.touched)}"
             class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20" />
           <span *ngIf="form.get('principioActivo')?.invalid && form.get('principioActivo')?.touched" class="text-xs text-rose-500">No debe tener espacios al inicio o al final</span>
@@ -39,7 +39,7 @@
       <div class="grid sm:grid-cols-3 gap-4">
         <div class="flex flex-col gap-1">
           <label class="text-xs font-bold text-slate-600">Dosis <span class="text-rose-500">*</span></label>
-          <input type="text" formControlName="dosis" placeholder="Ej: 250mg"
+          <input type="text" formControlName="dosis" maxlength="80" placeholder="Ej: 250mg"
             class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
             [ngClass]="{'border-rose-400': form.get('dosis')?.invalid && form.get('dosis')?.touched, 'border-slate-200': !(form.get('dosis')?.invalid && form.get('dosis')?.touched)}" />
           <span *ngIf="form.get('dosis')?.invalid && form.get('dosis')?.touched" class="text-xs text-rose-500">
@@ -48,7 +48,7 @@
         </div>
         <div class="flex flex-col gap-1">
           <label class="text-xs font-bold text-slate-600">Frecuencia <span class="text-rose-500">*</span></label>
-          <input type="text" formControlName="frecuencia" placeholder="Ej: cada 8 horas"
+          <input type="text" formControlName="frecuencia" maxlength="80" placeholder="Ej: cada 8 horas"
             class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
             [ngClass]="{'border-rose-400': form.get('frecuencia')?.invalid && form.get('frecuencia')?.touched, 'border-slate-200': !(form.get('frecuencia')?.invalid && form.get('frecuencia')?.touched)}" />
           <span *ngIf="form.get('frecuencia')?.invalid && form.get('frecuencia')?.touched" class="text-xs text-rose-500">
@@ -102,7 +102,7 @@
 
       <div class="flex flex-col gap-1">
         <label class="text-xs font-bold text-slate-600">Indicaciones especiales</label>
-        <textarea formControlName="instrucciones" rows="2" placeholder="Indicaciones adicionales para el propietario..."
+        <textarea formControlName="instrucciones" rows="2" maxlength="500" placeholder="Indicaciones adicionales para el propietario..."
           [ngClass]="{'border-rose-400': form.get('instrucciones')?.invalid && form.get('instrucciones')?.touched, 'border-slate-200': !(form.get('instrucciones')?.invalid && form.get('instrucciones')?.touched)}"
           class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 outline-none resize-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20">
         </textarea>
