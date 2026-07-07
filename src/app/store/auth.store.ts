@@ -257,7 +257,8 @@ export const AuthStore = signalStore(
 
       const canonicalRoute = ROUTE_ALIASES[normalized] ?? normalized;
 
-      if (store.allowedRoutes().includes(canonicalRoute)) {
+      // Acceso exacto o a una sub-ruta (ej. detalle/edición) de un módulo permitido
+      if (store.allowedRoutes().some(r => canonicalRoute === r || canonicalRoute.startsWith(r + '/'))) {
         return true;
       }
 
@@ -265,7 +266,7 @@ export const AuthStore = signalStore(
       const cleanPattern = stripPrefix(canonicalRoute);
       const cleanAllowed = store.allowedRoutes().map(r => stripPrefix(r));
 
-      return cleanAllowed.includes(cleanPattern);
+      return cleanAllowed.some(r => cleanPattern === r || cleanPattern.startsWith(r + '/'));
     },
 
     isSuperAdmin(): boolean {

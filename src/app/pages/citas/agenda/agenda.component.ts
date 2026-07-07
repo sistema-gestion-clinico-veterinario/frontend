@@ -240,6 +240,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
   ncTipoDoc   = signal('DNI');
   ncNumDoc    = signal('');
   ncGenero    = signal('MASCULINO');
+  ncDireccion = signal('');
 
   showNuevaMascota   = signal(false);
   savingNuevaMascota = signal(false);
@@ -674,6 +675,17 @@ export class AgendaComponent implements OnInit, OnDestroy {
     const val = this.citaForm.value;
     const isEditing = !!val.id && !this.isReprogramando();
     if (isEditing) return;
+
+    if (val.esEmergencia) {
+      const now = new Date();
+      const dateStr = this.toDateStr(now);
+      const hours = String(now.getHours()).padStart(2, '0');
+      const mins = String(now.getMinutes()).padStart(2, '0');
+      this.citaForm.patchValue({ fechaCita: dateStr, horaCita: `${hours}:${mins}` });
+      this.availableSlots.set([]);
+      return;
+    }
+
     const fechaRaw = fechaOverride ?? val.fechaCita;
     if (!val.veterinarioId || !fechaRaw || !val.servicioId) {
       this.availableSlots.set([]);
@@ -764,6 +776,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
     this.ncNombre.set(''); this.ncApellido.set('');
     this.ncTelefono.set(''); this.ncCorreo.set('');
     this.ncTipoDoc.set('DNI'); this.ncNumDoc.set(''); this.ncGenero.set('MASCULINO');
+    this.ncDireccion.set('');
     this.showNuevaMascota.set(false);
     this.nmNombre.set(''); this.nmEspecie.set('PERRO');
     this.nmRazaId.set(null); this.nmSexo.set('MACHO'); this.nmFechaNac.set('');
@@ -835,13 +848,14 @@ export class AgendaComponent implements OnInit, OnDestroy {
   }
 
   crearNuevoCliente() {
-    const nombre   = normalizeText(this.ncNombre());
-    const apellido = normalizeText(this.ncApellido());
-    const telefono = this.ncTelefono().trim();
-    const correo   = this.ncCorreo().trim();
-    const numDoc   = this.ncNumDoc().trim();
+    const nombre     = normalizeText(this.ncNombre());
+    const apellido   = normalizeText(this.ncApellido());
+    const telefono   = this.ncTelefono().trim();
+    const correo     = this.ncCorreo().trim();
+    const numDoc     = this.ncNumDoc().trim();
+    const direccion  = normalizeText(this.ncDireccion());
 
-    if (!nombre || !apellido || !telefono || !correo || !numDoc) {
+    if (!nombre || !apellido || !telefono || !correo || !numDoc || !direccion) {
       this.messageService.add({ severity: 'warn', summary: 'Campos incompletos', detail: 'Complete todos los campos del nuevo cliente.' });
       return;
     }
@@ -855,6 +869,10 @@ export class AgendaComponent implements OnInit, OnDestroy {
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) {
       this.messageService.add({ severity: 'warn', summary: 'Correo inválido', detail: 'Ingrese un correo electrónico válido.' });
+      return;
+    }
+    if (direccion.length > 200 || !/^[a-zA-Z0-9áéíóúÁÉÍÓÚüÜñÑ\s\.,#\-\/°:]+$/.test(direccion)) {
+      this.messageService.add({ severity: 'warn', summary: 'Dirección inválida', detail: 'Verifique la dirección ingresada (máximo 200 caracteres).' });
       return;
     }
 
@@ -877,6 +895,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
       tipoDocumento: this.ncTipoDoc(),
       numeroDocumento: numDoc,
       genero: this.ncGenero(),
+      direccion,
       companyId: this.activeCompanyId ?? undefined
     }).subscribe({
       next: (res) => {
@@ -887,6 +906,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
         this.ncNombre.set(''); this.ncApellido.set('');
         this.ncTelefono.set(''); this.ncCorreo.set('');
         this.ncTipoDoc.set('DNI'); this.ncNumDoc.set(''); this.ncGenero.set('MASCULINO');
+        this.ncDireccion.set('');
         this.showNuevoCliente.set(false);
         this.savingNuevoCliente.set(false);
         this.messageService.add({ severity: 'success', summary: 'Cliente creado', detail: `${nombre} ${apellido} registrado correctamente.` });
