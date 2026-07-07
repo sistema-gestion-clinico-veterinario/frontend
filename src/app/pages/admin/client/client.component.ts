@@ -1,4 +1,4 @@
-import { Component, OnInit, DestroyRef, inject, signal } from '@angular/core';
+import { Component, OnInit, DestroyRef, inject, signal, effect } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Subject, debounceTime, forkJoin } from 'rxjs';
 import { CommonModule } from '@angular/common';
@@ -71,7 +71,15 @@ export class ClientComponent implements OnInit {
   searchDocumento = signal('');
   private pageSize = 10;
   private readonly searchTrigger = new Subject<void>();
+  private hasSearched = false;
 
+  private readonly autoReloadOnClear = effect(() => {
+    const nombre = this.searchNombre();
+    const doc = this.searchDocumento();
+    if (this.hasSearched && !nombre && !doc) {
+      this.searchTrigger.next();
+    }
+  });
 
   especieLabel(especie: string): string {
     const m: Record<string, string> = {
@@ -234,13 +242,15 @@ export class ClientComponent implements OnInit {
   }
 
   onSearchChange() {
+    this.hasSearched = true;
     this.searchTrigger.next();
   }
 
   clearSearch() {
+    this.hasSearched = true;
     this.searchNombre.set('');
     this.searchDocumento.set('');
-    this.loadClients({ first: 0, rows: this.pageSize });
+    this.searchTrigger.next();
   }
 
   loadClients(event: any = { first: 0, rows: this.pageSize }) {
