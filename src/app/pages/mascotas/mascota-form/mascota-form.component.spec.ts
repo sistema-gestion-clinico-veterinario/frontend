@@ -62,3 +62,58 @@ describe('MascotaFormComponent', () => {
     });
   });
 });
+
+describe('MascotaFormComponent - crearCliente validations', () => {
+  let component: MascotaFormComponent;
+  let fixture: ComponentFixture<MascotaFormComponent>;
+  let addSpy: jasmine.Spy;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [MascotaFormComponent, HttpClientTestingModule],
+      providers: [
+        { provide: Router, useValue: jasmine.createSpyObj('Router', ['navigate', 'navigateByUrl', 'getCurrentNavigation']) },
+        { provide: ActivatedRoute, useValue: { snapshot: { paramMap: { get: () => null }, queryParamMap: { get: () => null } }, params: of({}), queryParams: of({}) } },
+      ],
+    })
+      .overrideComponent(MascotaFormComponent, { set: { template: '' } })
+      .compileComponents();
+
+    fixture = TestBed.createComponent(MascotaFormComponent);
+    component = fixture.componentInstance;
+    addSpy = spyOn((component as any).messageService, 'add');
+    component.ncNombre.set('Ana');
+    component.ncApellido.set('Perez');
+    component.ncTipoDoc.set('DNI');
+    component.ncNumDoc.set('1234567');
+    component.ncTelefono.set('987654321');
+    component.ncCorreo.set('ana@test.com');
+    component.ncDireccion.set('Av. Lima 123');
+  });
+
+  it('bloquea DNI con longitud invalida antes de llamar al servicio', () => {
+    const registrarSpy = spyOn((component as any).apoderadoService, 'registrar');
+
+    component.crearCliente();
+
+    expect(addSpy).toHaveBeenCalledWith(jasmine.objectContaining({
+      severity: 'warn',
+      summary: 'Documento inválido',
+    }));
+    expect(registrarSpy).not.toHaveBeenCalled();
+  });
+
+  it('bloquea telefono que no tiene 9 digitos', () => {
+    const registrarSpy = spyOn((component as any).apoderadoService, 'registrar');
+    component.ncNumDoc.set('12345678');
+    component.ncTelefono.set('98765');
+
+    component.crearCliente();
+
+    expect(addSpy).toHaveBeenCalledWith(jasmine.objectContaining({
+      severity: 'warn',
+      summary: 'Teléfono inválido',
+    }));
+    expect(registrarSpy).not.toHaveBeenCalled();
+  });
+});

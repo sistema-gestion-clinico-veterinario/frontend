@@ -30,6 +30,25 @@ describe('AuthStore', () => {
     store.logout();
   });
 
+  describe('setAuth storage seguro', () => {
+    it('persiste la sesion sin guardar token ni refreshToken en localStorage', () => {
+      store.setAuth({
+        ...cleanAuth,
+        token: 'jwt-secreto',
+        refreshToken: 'refresh-secreto',
+        roles: ['ROLE_ADMIN'],
+        menu: [flatItem('VISTA_MASCOTAS', { ruta: '/mascotas' })],
+      });
+
+      const persisted = JSON.parse(localStorage.getItem('auth') ?? '{}');
+
+      expect(store.token()).toBe('jwt-secreto');
+      expect(persisted.token).toBeUndefined();
+      expect(persisted.refreshToken).toBeUndefined();
+      expect(persisted.allowedRoutes).toEqual(['mascotas']);
+    });
+  });
+
   describe('hasAccess – flat menu item', () => {
     it('returns true when flat item has the requested permission', () => {
       store.setAuth({ ...cleanAuth, roles: ['ROLE_EMPLEADO'], menu: [flatItem('VISTA_MASCOTAS')] });
@@ -74,6 +93,30 @@ describe('AuthStore', () => {
     it('resolves the alias admin/mascotas → mascotas before checking allowedRoutes', () => {
       store.setAuth({ ...cleanAuth, roles: ['ROLE_EMPLEADO'], menu: [flatItem('VISTA_MASCOTAS', { ruta: '/mascotas' })] });
       expect(store.hasRouteAccess('admin/mascotas')).toBeTrue();
+    });
+  });
+
+  describe('rutas hijas y simulacion de rol', () => {
+    it('allows child routes under an allowed module route', () => {
+      store.setAuth({ ...cleanAuth, roles: ['ROLE_EMPLEADO'], menu: [flatItem('VISTA_MASCOTAS', { ruta: '/mascotas' })] });
+      expect(store.hasRouteAccess('admin/mascotas/123/editar')).toBeTrue();
+    });
+
+    it('changes active role and menu while preserving original roles', () => {
+      const originalMenu = [flatItem('VISTA_MASCOTAS', { ruta: '/mascotas' })];
+      const simulatedMenu = [flatItem('VISTA_PAGOS', { ruta: '/admin/pagos' })];
+      store.setAuth({ ...cleanAuth, roles: ['ROLE_ADMIN'], menu: originalMenu });
+
+      store.simulateRole(2, 'ROLE_RECEPCIONISTA', simulatedMenu);
+
+      expect(store.roles()).toEqual(['ROLE_RECEPCIONISTA']);
+      expect(store.originalRoles()).toEqual(['ROLE_ADMIN']);
+      expect(store.hasRouteAccess('admin/pagos')).toBeTrue();
+
+      store.stopSimulation();
+
+      expect(store.roles()).toEqual(['ROLE_ADMIN']);
+      expect(store.hasRouteAccess('mascotas')).toBeTrue();
     });
   });
 
