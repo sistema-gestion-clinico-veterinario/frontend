@@ -303,11 +303,24 @@ export class DashboardComponent implements OnInit {
     switch (estado) {
       case 'PAID':
       case 'COMPLETADO':     return 'bg-emerald-50 text-emerald-700 border-emerald-200';
-      case 'PENDING':
-      case 'PENDING_TRANSFER': return 'bg-amber-50 text-amber-700 border-amber-200';
+      case 'PENDING':        return 'bg-amber-50 text-amber-700 border-amber-200';
+      case 'PENDING_TRANSFER': return 'bg-blue-50 text-blue-700 border-blue-200';
       case 'REJECTED':
       case 'CANCELLED':      return 'bg-red-50 text-red-600 border-red-200';
+      case 'REFUNDED':       return 'bg-purple-50 text-purple-700 border-purple-200';
       default:               return 'bg-slate-50 text-slate-600 border-slate-200';
+    }
+  }
+
+  pagoEstadoDot(estado: string): string {
+    switch (estado) {
+      case 'PAID':
+      case 'COMPLETADO':       return 'bg-emerald-500';
+      case 'PENDING_TRANSFER': return 'bg-blue-500';
+      case 'REJECTED':
+      case 'CANCELLED':        return 'bg-red-500';
+      case 'REFUNDED':         return 'bg-purple-500';
+      default:                 return 'bg-amber-500';
     }
   }
 
@@ -318,7 +331,8 @@ export class DashboardComponent implements OnInit {
       PENDING: 'Pendiente',
       PENDING_TRANSFER: 'Transf. Pendiente',
       REJECTED: 'Rechazado',
-      CANCELLED: 'Anulado'
+      CANCELLED: 'Anulado',
+      REFUNDED: 'Reembolsado'
     };
     return map[estado] ?? estado;
   }

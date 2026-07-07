@@ -1,10 +1,8 @@
 import { Component, Input, inject, signal, OnChanges, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClient, HttpContext } from '@angular/common/http';
 import { Subscription, firstValueFrom } from 'rxjs';
 import { DiagnosticoIaService } from '../../../../core/services/diagnostico-ia.service';
-import { MediaService } from '../../../../core/services/media.service';
-import { SKIP_GLOBAL_LOADING } from '../../../../core/interceptors/api.interceptor';
+import { HistoriaClinicaService } from '../../../../core/services/historia-clinica.service';
 import { ESCENARIO_LABEL } from '../../../../models/response/diagnostico-ia-response';
 import {
   HistoriaClinicaDetalle,
@@ -76,9 +74,8 @@ import { MarkdownPipe } from './markdown.pipe';
 export class DiagnosticoIaComponent implements OnChanges {
   @Input() hc!: HistoriaClinicaDetalle;
 
-  private readonly iaService    = inject(DiagnosticoIaService);
-  private readonly http         = inject(HttpClient);
-  private readonly mediaService = inject(MediaService);
+  private readonly iaService = inject(DiagnosticoIaService);
+  private readonly hcService = inject(HistoriaClinicaService);
   private streamSub: Subscription | null = null;
 
   abierto            = signal(false);
@@ -350,26 +347,32 @@ export class DiagnosticoIaComponent implements OnChanges {
     const conPeso = consultas.find(c => c.pesoEnConsulta);
     if (conPeso?.pesoEnConsulta) fd.append('peso', `${conPeso.pesoEnConsulta} kg`);
 
-    for (const archivo of this.archivosLab) {
-      const file = await this.fetchAsFile(archivo);
+    for (const { consultaId, archivo } of this.archivosLabConConsulta) {
+      const file = await this.fetchAsFile(consultaId, archivo);
       fd.append('archivo_hemograma', file, file.name);
     }
-    for (const archivo of this.archivosRadio) {
-      const file = await this.fetchAsFile(archivo);
+    for (const { consultaId, archivo } of this.archivosRadioConConsulta) {
+      const file = await this.fetchAsFile(consultaId, archivo);
       fd.append('archivo_radiografia', file, file.name);
     }
 
     return fd;
   }
 
-  private async fetchAsFile(archivo: ArchivoClinico): Promise<File> {
-    const url  = this.mediaService.resolveUrl(archivo.url)!;
-    const blob = await firstValueFrom(
-      this.http.get(url, {
-        responseType: 'blob',
-        context: new HttpContext().set(SKIP_GLOBAL_LOADING, true),
-      })
+  private get archivosLabConConsulta(): { consultaId: number; archivo: ArchivoClinico }[] {
+    return this.todasConsultas.flatMap(c =>
+      c.archivos.filter(a => a.tipo === 'LABORATORIO').map(archivo => ({ consultaId: c.id, archivo }))
     );
+  }
+
+  private get archivosRadioConConsulta(): { consultaId: number; archivo: ArchivoClinico }[] {
+    return this.todasConsultas.flatMap(c =>
+      c.archivos.filter(a => a.tipo === 'RADIOGRAFIA').map(archivo => ({ consultaId: c.id, archivo }))
+    );
+  }
+
+  private async fetchAsFile(consultaId: number, archivo: ArchivoClinico): Promise<File> {
+    const blob = await firstValueFrom(this.hcService.obtenerContenidoArchivo(consultaId, archivo.id));
     return new File([blob], archivo.nombre, {
       type: archivo.tipoMime ?? blob.type ?? 'application/octet-stream',
     });

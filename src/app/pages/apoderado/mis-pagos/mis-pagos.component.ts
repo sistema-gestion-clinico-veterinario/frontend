@@ -81,12 +81,32 @@ export class MisPagosComponent implements OnInit {
     this.cargar(event);
   }
 
+  avatarBadgeClass(estado: string | null, dark = false): string {
+    if (dark) {
+      switch (estado) {
+        case 'PAID':             return 'bg-green-100 text-green-700';
+        case 'PENDING_TRANSFER': return 'bg-blue-100 text-blue-700';
+        case 'REJECTED':         return 'bg-red-100 text-red-600';
+        case 'REFUNDED':         return 'bg-purple-100 text-purple-700';
+        default:                 return 'bg-amber-100 text-amber-700';
+      }
+    }
+    switch (estado) {
+      case 'PAID':             return 'bg-green-50 text-green-700';
+      case 'PENDING_TRANSFER': return 'bg-blue-50 text-blue-700';
+      case 'REJECTED':         return 'bg-red-50 text-red-600';
+      case 'REFUNDED':         return 'bg-purple-50 text-purple-700';
+      default:                 return 'bg-amber-50 text-amber-700';
+    }
+  }
+
   estadoBadge(estado: string | null): string {
     switch (estado) {
       case 'PAID':             return 'bg-green-50 text-green-700 border border-green-200';
       case 'PENDING':          return 'bg-amber-50 text-amber-700 border border-amber-200';
       case 'PENDING_TRANSFER': return 'bg-blue-50 text-blue-700 border border-blue-200';
       case 'REJECTED':         return 'bg-red-50 text-red-700 border border-red-200';
+      case 'REFUNDED':         return 'bg-purple-50 text-purple-700 border border-purple-200';
       default:                 return 'bg-slate-50 text-slate-600 border border-slate-200';
     }
   }
@@ -97,6 +117,7 @@ export class MisPagosComponent implements OnInit {
       case 'PENDING':          return 'Pendiente';
       case 'PENDING_TRANSFER': return 'Transf. Pendiente';
       case 'REJECTED':         return 'Rechazado';
+      case 'REFUNDED':         return 'Reembolsado';
       default:                 return estado ?? '—';
     }
   }
