@@ -3,10 +3,12 @@ import { LoginComponent } from './login.component';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { of } from 'rxjs';
 
 describe('LoginComponent – greeting', () => {
   let component: LoginComponent;
   let fixture: ComponentFixture<LoginComponent>;
+  let authService: jasmine.SpyObj<AuthService>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -21,10 +23,15 @@ describe('LoginComponent – greeting', () => {
 
     fixture = TestBed.createComponent(LoginComponent);
     component = fixture.componentInstance;
+    authService = TestBed.inject(AuthService) as jasmine.SpyObj<AuthService>;
     jasmine.clock().install();
   });
 
-  afterEach(() => jasmine.clock().uninstall());
+  afterEach(() => {
+    document.getElementById('email')?.remove();
+    document.getElementById('password')?.remove();
+    jasmine.clock().uninstall();
+  });
 
   it('returns "Buenos días" before noon (hour < 12)', () => {
     jasmine.clock().mockDate(new Date(2025, 6, 5, 9, 0, 0));
@@ -41,3 +48,80 @@ describe('LoginComponent – greeting', () => {
     expect(component.greeting).toBe('Buenas noches');
   });
 });
+
+describe('LoginComponent - submit validations', () => {
+  let component: LoginComponent;
+  let fixture: ComponentFixture<LoginComponent>;
+  let authService: jasmine.SpyObj<AuthService>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [LoginComponent, HttpClientTestingModule],
+      providers: [
+        { provide: Router, useValue: jasmine.createSpyObj('Router', ['navigateByUrl']) },
+        { provide: AuthService, useValue: jasmine.createSpyObj('AuthService', ['login', 'refreshToken']) },
+      ],
+    })
+      .overrideComponent(LoginComponent, { set: { template: '' } })
+      .compileComponents();
+
+    fixture = TestBed.createComponent(LoginComponent);
+    component = fixture.componentInstance;
+    authService = TestBed.inject(AuthService) as jasmine.SpyObj<AuthService>;
+  });
+
+  afterEach(() => {
+    document.getElementById('email')?.remove();
+    document.getElementById('password')?.remove();
+  });
+
+  it('bloquea email con espacios y no llama al servicio de login', () => {
+    createLoginInput('email', ' admin@test.com ');
+    createLoginInput('password', 'secret123');
+
+    component.submit();
+
+    expect(component.authError).toBe('El correo no debe contener espacios al inicio o al final.');
+    expect(authService.login).not.toHaveBeenCalled();
+  });
+
+  it('bloquea password con espacios y no llama al servicio de login', () => {
+    createLoginInput('email', 'admin@test.com');
+    createLoginInput('password', 'secret 123');
+
+    component.submit();
+
+    expect(component.authError).toBe('La contraseña no debe contener espacios.');
+    expect(authService.login).not.toHaveBeenCalled();
+  });
+
+  it('rechaza respuesta exitosa sin roles asignados', () => {
+    createLoginInput('email', 'admin@test.com');
+    createLoginInput('password', 'secret123');
+    authService.login.and.returnValue(of({
+      data: {
+        roles: [],
+        assignedRoles: [],
+        companyId: 1,
+        companyName: 'VargasVet',
+        nombreCompleto: 'Admin Test',
+        userType: 'EMPLEADO',
+        empleadoId: 1,
+        passwordChanged: true,
+        needsCompanySelection: false,
+        menu: [],
+      }
+    } as any));
+
+    component.submit();
+
+    expect(component.authError).toBe('Tu usuario no tiene ningún rol asignado. Contacta al administrador.');
+  });
+});
+
+function createLoginInput(id: string, value: string) {
+  const input = document.createElement('input');
+  input.id = id;
+  input.value = value;
+  document.body.appendChild(input);
+}

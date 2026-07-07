@@ -329,24 +329,25 @@
                 <ng-container *ngIf="companyForm.get('name')?.errors?.['required']">El nombre es requerido</ng-container>
                 <ng-container *ngIf="companyForm.get('name')?.errors?.['minlength']">Mínimo 3 caracteres</ng-container>
                 <ng-container *ngIf="companyForm.get('name')?.errors?.['maxlength']">Máximo 100 caracteres</ng-container>
+                <ng-container *ngIf="companyForm.get('name')?.errors?.['pattern']">Debe contener letras y solo caracteres permitidos</ng-container>
                 <ng-container *ngIf="companyForm.get('name')?.errors?.['leadingTrailingSpace']">No debe tener espacios al inicio o al final</ng-container>
               </p>
             </div>
 
             <div class="flex flex-col gap-1">
               <label class="text-xs font-semibold text-slate-700 ml-0.5">RUC (Registro Único) <span class="text-rose-500">*</span></label>
-              <input type="text" formControlName="ruc" placeholder="11 dígitos" maxlength="11"
+              <input type="text" formControlName="ruc" appInputFilter="digits" [appInputFilterMaxLength]="11" inputmode="numeric" placeholder="11 dígitos" maxlength="11"
                 [ngClass]="companyForm.get('ruc')?.invalid && companyForm.get('ruc')?.touched ? 'border-rose-400' : 'border-slate-300'"
                 class="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
               <p *ngIf="companyForm.get('ruc')?.invalid && companyForm.get('ruc')?.touched" class="text-[11px] text-rose-500 ml-0.5">
                 <ng-container *ngIf="companyForm.get('ruc')?.errors?.['required']">El RUC es requerido</ng-container>
-                <ng-container *ngIf="companyForm.get('ruc')?.errors?.['pattern']">El RUC debe tener exactamente 11 dígitos</ng-container>
+                <ng-container *ngIf="companyForm.get('ruc')?.errors?.['pattern']">El RUC debe tener 11 dígitos y empezar con 10 o 20</ng-container>
               </p>
             </div>
 
             <div class="flex flex-col gap-1">
               <label class="text-xs font-semibold text-slate-700 ml-0.5">Teléfono de Contacto <span class="text-rose-500">*</span></label>
-              <input type="text" formControlName="phone" placeholder="Ej: 999888777" maxlength="9"
+              <input type="text" formControlName="phone" appInputFilter="digits" [appInputFilterMaxLength]="9" inputmode="numeric" placeholder="Ej: 999888777" maxlength="9"
                 [ngClass]="companyForm.get('phone')?.invalid && companyForm.get('phone')?.touched ? 'border-rose-400' : 'border-slate-300'"
                 class="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
               <p *ngIf="companyForm.get('phone')?.invalid && companyForm.get('phone')?.touched" class="text-[11px] text-rose-500 ml-0.5">
@@ -431,6 +432,7 @@
                 class="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
               <p *ngIf="companyForm.get('website')?.invalid && companyForm.get('website')?.touched" class="text-[11px] text-rose-500 ml-0.5">
                 <ng-container *ngIf="companyForm.get('website')?.errors?.['maxlength']">Máximo 200 caracteres</ng-container>
+                <ng-container *ngIf="companyForm.get('website')?.errors?.['pattern']">No debe contener espacios</ng-container>
                 <ng-container *ngIf="companyForm.get('website')?.errors?.['leadingTrailingSpace']">No debe tener espacios al inicio o al final</ng-container>
               </p>
             </div>

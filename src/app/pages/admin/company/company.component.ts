@@ -14,6 +14,7 @@ import { CompanyDTO, CompanyOperatingHourDTO } from '../../../models/request/com
 import { Role } from '../../../models/response/permission';
 import { AuthStore } from '../../../store/auth.store';
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
+import { InputFilterDirective } from '../../../core/directives/input-filter.directive';
 import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
 import { normalizeText } from '../../../core/utils/normalize-text.util';
 
@@ -26,7 +27,8 @@ import { normalizeText } from '../../../core/utils/normalize-text.util';
     TableModule,
     MenuModule,
     Toast,
-    HasPermissionDirective
+    HasPermissionDirective,
+    InputFilterDirective
   ],
   providers: [MessageService],
   templateUrl: './company.component.html',
@@ -80,14 +82,14 @@ export class CompanyComponent implements OnInit {
 
   companyForm: FormGroup = this.fb.group({
     id: [null],
-    name: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100), noLeadingTrailingSpaceValidator()]],
-    ruc: ['', [Validators.required, Validators.pattern('^(10|15|17|20)[0-9]{9}$')]],
+    name: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100), Validators.pattern(/^(?=.*\p{L})[\p{L}\p{N}\s.&,()'-]+$/u), noLeadingTrailingSpaceValidator()]],
+    ruc: ['', [Validators.required, Validators.pattern('^(10|20)[0-9]{9}$')]],
     address: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(200), Validators.pattern(/^[a-zA-Z0-9áéíóúÁÉÍÓÚüÜñÑ\s\.,#\-\/°:]+$/), noLeadingTrailingSpaceValidator()]],
     phone: ['', [Validators.required, Validators.pattern(/^\d{9}$/)]],
     email: ['', [Validators.required, Validators.email, Validators.pattern(/^\S+@\S+\.\S+$/), Validators.maxLength(100)]],
     hasWebsite: [false],
-    website: ['', [Validators.maxLength(200)]],
-    description: ['', [Validators.maxLength(500)]],
+    website: ['', [Validators.maxLength(200), Validators.pattern(/^\S*$/)]],
+    description: ['', [Validators.maxLength(500), noLeadingTrailingSpaceValidator()]],
     businessHours: ['', [Validators.maxLength(100)]],
     logoUrl: [''],
     operatingHours: this.fb.array([])
