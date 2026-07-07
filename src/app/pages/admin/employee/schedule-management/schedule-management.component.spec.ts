@@ -10,13 +10,10 @@ describe('ScheduleManagementComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        ScheduleManagementComponent,
-        HttpClientTestingModule,
-        RouterTestingModule
-      ],
-      providers: [MessageService, ConfirmationService]
+      imports: [ScheduleManagementComponent, HttpClientTestingModule, RouterTestingModule],
+      providers: [MessageService, ConfirmationService],
     })
+    .overrideComponent(ScheduleManagementComponent, { set: { template: '' } })
     .compileComponents();
 
     fixture = TestBed.createComponent(ScheduleManagementComponent);

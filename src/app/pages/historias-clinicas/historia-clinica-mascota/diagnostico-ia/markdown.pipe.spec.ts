@@ -1,10 +1,44 @@
 import { MarkdownPipe } from './markdown.pipe';
+<<<<<<< HEAD
+=======
 import { DomSanitizer } from '@angular/platform-browser';
+>>>>>>> 0f83ff7c760e7f557c48fa7aeb72f8c3090d0372
 
 describe('MarkdownPipe', () => {
   let pipe: MarkdownPipe;
 
   beforeEach(() => {
+<<<<<<< HEAD
+    const mockSanitizer = { bypassSecurityTrustHtml: (v: string) => v } as any;
+    pipe = new MarkdownPipe(mockSanitizer);
+  });
+
+  it('converts ## heading to <h2> element', () => {
+    const result = pipe.transform('## Diagnóstico') as string;
+    expect(result).toContain('<h2>Diagnóstico</h2>');
+  });
+
+  it('converts **bold** markers to <b> element', () => {
+    const result = pipe.transform('**negrita**') as string;
+    expect(result).toContain('<b>negrita</b>');
+  });
+
+  it('converts *italic* markers to <em> element', () => {
+    const result = pipe.transform('*cursiva*') as string;
+    expect(result).toContain('<em>cursiva</em>');
+  });
+
+  it('wraps - list item inside <ul> with <li>', () => {
+    const result = pipe.transform('- elemento') as string;
+    expect(result).toContain('<ul>');
+    expect(result).toContain('<li>elemento</li>');
+  });
+
+  it('escapes HTML special characters to prevent injection', () => {
+    const result = pipe.transform('<script>alert(1)</script>') as string;
+    expect(result).toContain('&lt;script&gt;');
+    expect(result).not.toContain('<script>');
+=======
     const sanitizer = { bypassSecurityTrustHtml: (v: string) => v } as unknown as DomSanitizer;
     pipe = new MarkdownPipe(sanitizer);
   });
@@ -166,5 +200,6 @@ describe('MarkdownPipe', () => {
     const resultado = pipe.transform('`*no cursiva*`');
     expect(resultado).toBe('<p><code>*no cursiva*</code></p>');
     // Actual: '<p><code><em>no cursiva</em></code></p>'
+>>>>>>> 0f83ff7c760e7f557c48fa7aeb72f8c3090d0372
   });
 });

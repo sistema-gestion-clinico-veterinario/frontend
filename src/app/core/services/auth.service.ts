@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, finalize, shareReplay } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { LoginRequest } from '../../models/request/login-request.model';
 import { AuthLoginResponse } from '../../models/response/auth-login-response.model';
@@ -9,6 +9,7 @@ import { ApiResponse } from '../../models/response/api-response';
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly baseUrl = `${environment.apiUrl}/auth`;
+  private refreshInFlight$: Observable<AuthLoginResponse> | null = null;
 
   constructor(private http: HttpClient) {}
 
@@ -33,8 +34,16 @@ export class AuthService {
   }
 
   refreshToken(refreshToken?: string): Observable<AuthLoginResponse> {
+    if (this.refreshInFlight$) {
+      return this.refreshInFlight$;
+    }
+
     const body = refreshToken ? { refreshToken } : {};
-    return this.http.post<AuthLoginResponse>(`${this.baseUrl}/refresh`, body);
+    this.refreshInFlight$ = this.http.post<AuthLoginResponse>(`${this.baseUrl}/refresh`, body).pipe(
+      finalize(() => { this.refreshInFlight$ = null; }),
+      shareReplay(1)
+    );
+    return this.refreshInFlight$;
   }
 
   logout(): Observable<ApiResponse<void>> {

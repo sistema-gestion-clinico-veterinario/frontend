@@ -1,5 +1,6 @@
-﻿import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AuditoriaComponent } from './auditoria.component';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('AuditoriaComponent', () => {
   let component: AuditoriaComponent;
@@ -7,8 +8,10 @@ describe('AuditoriaComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AuditoriaComponent]
-    }).compileComponents();
+      imports: [AuditoriaComponent, HttpClientTestingModule],
+    })
+    .overrideComponent(AuditoriaComponent, { set: { template: '' } })
+    .compileComponents();
 
     fixture = TestBed.createComponent(AuditoriaComponent);
     component = fixture.componentInstance;
