@@ -185,6 +185,8 @@ export class AgendaComponent implements OnInit, OnDestroy {
   selectedCita     = signal<CitaResponse | null>(null);
   selectedCitaToDelete = signal<CitaResponse | null>(null);
   isReprogramando  = signal<boolean>(false);
+  originalCitaEdit = signal<CitaResponse | null>(null);
+  isEditing = computed(() => !!this.citaForm?.get('id')?.value && !this.isReprogramando());
   
   veterinarios     = signal<{ label: string; value: number }[]>([]);
   clientes         = signal<{ label: string; value: number }[]>([]);
@@ -307,6 +309,16 @@ export class AgendaComponent implements OnInit, OnDestroy {
   getServicioLabel(): string {
     const id = this.citaForm.get('servicioId')?.value;
     return this.servicios().find(s => s.value === id)?.label ?? 'Seleccionar servicio...';
+  }
+
+  getReadOnlyFechaHora(): string {
+    const fechaHora = this.citaForm.get('fechaHoraInicio')?.value;
+    if (!fechaHora) return '—';
+    const d = new Date(fechaHora);
+    if (isNaN(d.getTime())) return fechaHora;
+    const fecha = d.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const hora = d.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit', hour12: false });
+    return `${fecha} ${hora}`;
   }
 
   getEstadoLabel(): string {
@@ -755,11 +767,13 @@ export class AgendaComponent implements OnInit, OnDestroy {
 
   reprogramarCita(cita: CitaResponse) {
     this.isReprogramando.set(true);
+    this.originalCitaEdit.set(cita);
     this.availableSlots.set([]);
     this.editarCita(cita);
   }
 
   editarCita(cita: CitaResponse) {
+    this.originalCitaEdit.set(cita);
     this.selectedClienteLabel.set(cita.apoderadoNombre);
     this.selectedMascotaLabel.set(cita.mascotaNombre);
     this.filteredMascotas.set(
@@ -964,14 +978,12 @@ export class AgendaComponent implements OnInit, OnDestroy {
       }
       localIsoString = `${dateStr}T${formValue.horaCita}:00`;
     } else {
-      localIsoString = formValue.fechaHoraInicio;
-      if (formValue.fechaHoraInicio instanceof Date) {
-        const date = formValue.fechaHoraInicio;
-        localIsoString = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}T${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}:00`;
-      }
+      // Edit: use the original cita's date/time (not editable in this flow)
+      const orig = this.originalCitaEdit();
+      localIsoString = orig?.fechaHoraInicio ?? formValue.fechaHoraInicio;
     }
 
-    if (this.isPastDateTime(new Date(localIsoString))) {
+    if (!isEditing && this.isPastDateTime(new Date(localIsoString))) {
       this.messageService.add({ severity: 'warn', summary: 'Fecha invalida', detail: 'La fecha de la cita no puede estar en el pasado.' });
       return;
     }
@@ -982,6 +994,17 @@ export class AgendaComponent implements OnInit, OnDestroy {
       notas: normalizeText(formValue.notas),
       fechaHoraInicio: localIsoString
     };
+
+    // Edit: preserve original vet, service, emergency fields (not editable)
+    if (isEditing) {
+      const orig = this.originalCitaEdit();
+      if (orig) {
+        request.veterinarioId = orig.veterinarioId;
+        request.servicioId = orig.servicioId;
+        request.esEmergencia = orig.esEmergencia;
+        request.version = orig.version;
+      }
+    }
     
     const id = this.citaForm.get('id')?.value;
     const observer = {
