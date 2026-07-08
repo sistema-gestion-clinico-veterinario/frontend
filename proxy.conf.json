@@ -1,0 +1,8 @@
+{
+  "/api/v1": {
+    "target": "https://backend-cwx3.onrender.com",
+    "secure": true,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  }
+}

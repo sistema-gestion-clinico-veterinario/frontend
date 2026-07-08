@@ -456,7 +456,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
     this.lastWsDestination = destination;
 
     try {
-      const urlObj = new URL(environment.apiUrl);
+      const urlObj = new URL(environment.wsApiUrl);
       const wsProtocol = urlObj.protocol === 'https:' ? 'wss:' : 'ws:';
       let path = urlObj.pathname.trim();
       if (path.endsWith('/')) path = path.slice(0, -1);
