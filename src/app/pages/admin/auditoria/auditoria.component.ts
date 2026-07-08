@@ -134,7 +134,7 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
     this.lastSubscribedDestination = destination;
 
     try {
-      const urlObj = new URL(environment.apiUrl);
+      const urlObj = new URL(environment.wsApiUrl);
       const wsProtocol = urlObj.protocol === 'https:' ? 'wss:' : 'ws:';
 
       // Obtener el context-path de forma dinámica (ej: '/api/v1')
