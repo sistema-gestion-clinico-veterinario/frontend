@@ -23,11 +23,11 @@ export class HistoriaClinicaService {
 
   buscar(query: { numeroHc?: string; nombrePaciente?: string; nombrePropietario?: string; fechaDesde?: string; fechaHasta?: string; companyId?: number; page?: number; size?: number }) {
     let params = `?page=${query.page || 0}&size=${query.size || 10}`;
-    if (query.numeroHc)          params += `&numeroHc=${query.numeroHc}`;
-    if (query.nombrePaciente)    params += `&nombrePaciente=${query.nombrePaciente}`;
-    if (query.nombrePropietario) params += `&nombrePropietario=${query.nombrePropietario}`;
-    if (query.fechaDesde)        params += `&fechaDesde=${query.fechaDesde}`;
-    if (query.fechaHasta)        params += `&fechaHasta=${query.fechaHasta}`;
+    if (query.numeroHc)          params += `&numeroHc=${encodeURIComponent(query.numeroHc)}`;
+    if (query.nombrePaciente)    params += `&nombrePaciente=${encodeURIComponent(query.nombrePaciente)}`;
+    if (query.nombrePropietario) params += `&nombrePropietario=${encodeURIComponent(query.nombrePropietario)}`;
+    if (query.fechaDesde)        params += `&fechaDesde=${encodeURIComponent(query.fechaDesde)}`;
+    if (query.fechaHasta)        params += `&fechaHasta=${encodeURIComponent(query.fechaHasta)}`;
     if (query.companyId != null) params += `&companyId=${query.companyId}`;
 
     return this.http.get<ApiResponse<Page<any>>>(`${this.hcUrl}${params}`);
