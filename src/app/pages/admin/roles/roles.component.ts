@@ -11,6 +11,8 @@ import { AuthService } from '../../../core/services/auth.service';
 import { Role } from '../../../models/response/permission';
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 import { resolveInitialRoute } from '../../../layouts/main-layout/navbar/navbar.component';
+import { hasMeaningfulText } from '../../../core/utils/input-validation.util';
+import { normalizeText } from '../../../core/utils/normalize-text.util';
 
 type Section = 'empresa' | 'sistema';
 
@@ -242,7 +244,11 @@ export class RolesComponent implements OnInit {
       message: `¿Guardar cambios en el rol "${this.roleLabel(role.name)}"?`,
       variant: 'primary',
       onConfirm: () => {
-        const descripcion = this.editingDescValue().trim() || undefined;
+        const descripcion = normalizeText(this.editingDescValue()) || undefined;
+        if (descripcion && !hasMeaningfulText(descripcion)) {
+          this.messageService.add({ severity: 'warn', summary: 'Descripcion invalida', detail: 'La descripcion debe contener texto real y no usar caracteres peligrosos.' });
+          return;
+        }
         this.roleService.actualizar(role.id, {
           name: formattedName,
           descripcion,
@@ -320,8 +326,13 @@ export class RolesComponent implements OnInit {
       this.messageService.add({ severity: 'warn', summary: 'Nombre invalido', detail: 'Use solo letras, numeros y guion bajo; minimo 2 caracteres.' });
       return;
     }
-    if (this.newRoleDesc().trim().length > 250) {
+    const descripcion = normalizeText(this.newRoleDesc());
+    if (descripcion.length > 250) {
       this.messageService.add({ severity: 'warn', summary: 'Descripcion extensa', detail: 'La descripcion no debe superar 250 caracteres.' });
+      return;
+    }
+    if (descripcion && !hasMeaningfulText(descripcion)) {
+      this.messageService.add({ severity: 'warn', summary: 'Descripcion invalida', detail: 'La descripcion debe contener texto real y no usar caracteres peligrosos.' });
       return;
     }
 
@@ -346,7 +357,7 @@ export class RolesComponent implements OnInit {
       onConfirm: () => {
         this.roleService.crear({
           name: formattedName,
-          descripcion: this.newRoleDesc() || undefined,
+          descripcion: descripcion || undefined,
           companyId: section === 'empresa' ? (this.activeCompanyId ?? undefined) : undefined
         }).subscribe({
           next: (res) => {

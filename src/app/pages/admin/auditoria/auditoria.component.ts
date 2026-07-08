@@ -9,6 +9,8 @@ import { CompanyService } from '../../../core/services/company.service';
 import { AuthStore } from '../../../store/auth.store';
 import { CompanyListResponse } from '../../../models/response/company-list-response';
 import { environment } from '../../../../environments/environment';
+import { normalizeText } from '../../../core/utils/normalize-text.util';
+import { isDateRangeValid, isLowercaseEmail } from '../../../core/utils/input-validation.util';
 
 @Component({
   selector: 'app-auditoria',
@@ -182,6 +184,18 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
   }
 
   private executeLoadLogs(page: number, initialLoad = false) {
+    const userEmail = this.userEmailFilter.trim();
+    const action = normalizeText(this.actionFilter).slice(0, 80);
+    const module = normalizeText(this.moduleFilter).slice(0, 80);
+
+    if (userEmail && !isLowercaseEmail(userEmail, 100)) {
+      this.messageService.add({ severity: 'warn', summary: 'Correo invalido', detail: 'El filtro de correo debe ser valido y estar en minusculas.' });
+      return;
+    }
+    if (!isDateRangeValid(this.startDateFilter, this.endDateFilter)) {
+      this.messageService.add({ severity: 'warn', summary: 'Rango invalido', detail: 'La fecha final no puede ser anterior a la fecha inicial.' });
+      return;
+    }
 
     const formattedStart = this.startDateFilter ? `${this.startDateFilter}T00:00:00` : undefined;
     const formattedEnd = this.endDateFilter ? `${this.endDateFilter}T23:59:59` : undefined;
@@ -195,9 +209,9 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
 
     this.auditLogService.getLogs({
       companyId: targetCompanyId,
-      userEmail: this.userEmailFilter.trim() || undefined,
-      action: this.actionFilter || undefined,
-      module: this.moduleFilter || undefined,
+      userEmail: userEmail || undefined,
+      action: action || undefined,
+      module: module || undefined,
       startDate: formattedStart,
       endDate: formattedEnd,
       page: page,

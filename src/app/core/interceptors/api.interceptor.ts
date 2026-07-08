@@ -12,6 +12,21 @@ const DEFAULT_REQUEST_TIMEOUT_MS = 30000;
 const UPLOAD_REQUEST_TIMEOUT_MS = 120000;
 export const SKIP_GLOBAL_LOADING = new HttpContextToken<boolean>(() => false);
 
+const AUTH_ENDPOINTS_WITHOUT_REFRESH = [
+  '/auth/login',
+  '/auth/refresh',
+  '/auth/logout',
+  '/auth/setup-account',
+  '/auth/resend-verification',
+  '/auth/forgot-password',
+  '/auth/validate-reset-token',
+  '/auth/reset-password',
+  '/auth/verify/'
+];
+
+const shouldSkipRefresh = (url: string): boolean =>
+  AUTH_ENDPOINTS_WITHOUT_REFRESH.some(endpoint => url.includes(endpoint));
+
 export const apiInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, next: HttpHandlerFn): Observable<HttpEvent<unknown>> => {
   const authStore = inject(AuthStore);
   const loadingStore = inject(LoadingStore);
@@ -23,7 +38,6 @@ export const apiInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, nex
     loadingStore.show();
   }
 
-  // Send cookies (HttpOnly tokens) with every request
   const authReq = req.clone({
     withCredentials: true
   });
@@ -35,7 +49,7 @@ export const apiInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, nex
   return next(authReq).pipe(
     timeout(requestTimeout),
     catchError((error) => {
-      const isAuthRecoveryRequest = req.url.includes('/auth/login') || req.url.includes('/auth/refresh');
+      const isAuthRecoveryRequest = shouldSkipRefresh(req.url);
       if (error instanceof HttpErrorResponse && error.status === 401 && !isAuthRecoveryRequest) {
         return handle401Error(authReq, next, authStore, authService, router);
       }
@@ -81,7 +95,7 @@ const handle401Error = (req: HttpRequest<any>, next: HttpHandlerFn, authStore: a
       }),
       catchError((err) => {
         isRefreshing = false;
-        refreshTokenSubject.error(err);
+        refreshTokenSubject.next(false);
         refreshTokenSubject = new BehaviorSubject<boolean>(false);
         authStore.logout();
         router.navigate(['/login']);

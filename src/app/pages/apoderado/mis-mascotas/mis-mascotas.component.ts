@@ -7,6 +7,8 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { PaginatorModule } from 'primeng/paginator';
 import { FormsModule } from '@angular/forms';
+import { normalizeText } from '../../../core/utils/normalize-text.util';
+import { hasMeaningfulText } from '../../../core/utils/input-validation.util';
 
 @Component({
   selector: 'app-mis-mascotas',
@@ -70,11 +72,16 @@ export class MisMascotasComponent implements OnInit {
       this.isLoading.set(true);
     }
     
-    const nombre = this.filtroNombre() || undefined;
+    const nombre = normalizeText(this.filtroNombre()).slice(0, 80);
+    if (nombre && !hasMeaningfulText(nombre)) {
+      this.messageService.add({ severity: 'warn', summary: 'Filtro invalido', detail: 'Busca por un nombre con texto real.' });
+      this.isLoading.set(false);
+      return;
+    }
     const especie = this.filtroEspecie() || undefined;
     const activo = this.filtroEstado() !== null ? this.filtroEstado()! : undefined;
 
-    this.apoderadoService.getPortalMascotasPaginated(this.page(), this.size(), nombre, especie, activo).subscribe({
+    this.apoderadoService.getPortalMascotasPaginated(this.page(), this.size(), nombre || undefined, especie, activo).subscribe({
       next: (res: any) => {
         this.mascotas.set(res.data?.content || []);
         // Spring Boot 3.2+ nests pagination info under 'page'

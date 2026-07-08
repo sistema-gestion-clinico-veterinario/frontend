@@ -111,8 +111,8 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
     sexo:            [null, [Validators.required]],
     fechaNacimiento: ['',   [Validators.required, (control: AbstractControl) => this.fechaNoFuturaValidator(control)]],
     color:           ['', [Validators.maxLength(50), Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/), noLeadingTrailingSpaceValidator()]],
-    peso:            [null, [Validators.min(0), Validators.max(150)]],
-    fotoUrl:         [''],
+    peso:            [null, [Validators.min(0.01), Validators.max(120)]],
+    fotoUrl:         ['', [Validators.maxLength(500), Validators.pattern(/^$|^https?:\/\/[^\s<>]+$/)]],
     apoderadoId:     [null, [Validators.required]],
   });
 
@@ -195,13 +195,13 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
     const pesoCtrl = this.mascotaForm.get('peso');
     const especie = this.mascotaForm.get('especie')?.value;
     const rangos: Record<string, { min: number; max: number }> = {
-      PERRO: { min: 0, max: 500 },
-      GATO: { min: 0, max: 500 },
-      AVE: { min: 0, max: 500 },
-      REPTIL: { min: 0, max: 500 },
-      ROEDOR: { min: 0, max: 500 },
-      EXOTICO: { min: 0, max: 500 },
-      OTRO: { min: 0, max: 500 }
+      PERRO: { min: 0.5, max: 120 },
+      GATO: { min: 0.3, max: 20 },
+      AVE: { min: 0.02, max: 5 },
+      REPTIL: { min: 0.01, max: 100 },
+      ROEDOR: { min: 0.02, max: 10 },
+      EXOTICO: { min: 0.01, max: 120 },
+      OTRO: { min: 0.01, max: 120 }
     };
     const rango = rangos[especie] ?? rangos['OTRO'];
     pesoCtrl?.setValidators([Validators.min(rango.min), Validators.max(rango.max)]);
@@ -420,7 +420,7 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
     const numDoc   = this.ncNumDoc().trim();
     const direccion = normalizeText(this.ncDireccion());
     const referencias = normalizeText(this.ncReferencias());
-    const textoSeguro = /^(?=.*[A-Za-z0-9ÃÃ‰ÃÃ“ÃšÃ¡Ã©Ã­Ã³ÃºÃ‘Ã±ÃœÃ¼])(?!.*[{}\[\]<>*|\\^~`=@]).*$/;
+    const textoSeguro = /^(?=.*\p{L})(?!.*[{}\[\]<>*|\\^~`=@])(?!(?:[\p{P}\p{S}\s]+)$).*$/u;
 
     if (!nombre || !apellido || !telefono || !correo || !numDoc || !direccion) {
       this.messageService.add({ severity: 'warn', summary: 'Campos incompletos', detail: 'Complete todos los campos obligatorios.' });
@@ -584,3 +584,4 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
     return m[especie?.toUpperCase()] ?? especie;
   }
 }
+

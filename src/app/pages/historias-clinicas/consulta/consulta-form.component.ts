@@ -26,6 +26,7 @@ import { Role } from '../../../core/enums/role.enum';
 import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
 import { textContentValidator } from '../../../core/validators/text-content.validator';
 import { normalizeText } from '../../../core/utils/normalize-text.util';
+import { hasMeaningfulText } from '../../../core/utils/input-validation.util';
 
 
 @Component({
@@ -148,7 +149,7 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
     antecedentesProcedimientos:  ['', [Validators.maxLength(500), noLeadingTrailingSpaceValidator(), textContentValidator()]],
     antecedentesPersonales:      ['', [Validators.maxLength(500), noLeadingTrailingSpaceValidator(), textContentValidator()]],
     antecedentesFamiliares:      ['', [Validators.maxLength(500), noLeadingTrailingSpaceValidator(), textContentValidator()]],
-    grupoSanguineo:              ['', [Validators.maxLength(20), noLeadingTrailingSpaceValidator(), textContentValidator()]],
+    grupoSanguineo:              ['', [Validators.maxLength(20), noLeadingTrailingSpaceValidator(), textContentValidator({ requireLetter: false })]],
     indicacionesReceta:          ['', [Validators.maxLength(500), noLeadingTrailingSpaceValidator(), textContentValidator()]],
   });
 
@@ -292,8 +293,17 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
     if (!this.canCreateArchivo()) return;
     const file = this.archivoPendiente();
     if (!file) return;
+    const descripcion = normalizeText(this.descripcionArchivo());
+    if (descripcion && (descripcion.length > 300 || !hasMeaningfulText(descripcion))) {
+      this.msgService.add({
+        severity: 'warn',
+        summary: 'Descripcion invalida',
+        detail: 'La descripcion del archivo debe contener texto real y no superar 300 caracteres.'
+      });
+      return;
+    }
     this.archivoSubiendo.set(true);
-    this.hcService.subirArchivo(this.consultaId, file, this.tipoSeleccionado(), this.descripcionArchivo() || undefined).subscribe({
+    this.hcService.subirArchivo(this.consultaId, file, this.tipoSeleccionado(), descripcion || undefined).subscribe({
       next: () => {
         this.msgService.add({ severity: 'success', summary: 'Examen', detail: 'Archivo subido correctamente' });
         this.archivoPendiente.set(null);

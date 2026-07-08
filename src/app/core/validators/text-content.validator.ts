@@ -1,11 +1,26 @@
 import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 
-export function textContentValidator(): ValidatorFn {
+export interface TextContentOptions {
+  requireLetter?: boolean;
+}
+
+export function textContentValidator(options: TextContentOptions = {}): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
     const value = control.value;
     if (typeof value !== 'string' || value.length === 0) return null;
-    const hasText = /[\p{L}\p{N}]/u.test(value);
-    const hasUnsafeCharacter = /[{}\[\]<>*|\\^~`=@]/.test(value);
-    return hasText && !hasUnsafeCharacter ? null : { textContent: true };
+    const trimmed = value.trim();
+    if (trimmed.length === 0 || trimmed !== value) return { textContent: true };
+
+    const requireLetter = options.requireLetter ?? true;
+    const hasLetter = /\p{L}/u.test(trimmed);
+    const hasText = requireLetter ? hasLetter : /[\p{L}\p{N}]/u.test(trimmed);
+    const onlySymbols = /^[\p{P}\p{S}\s]+$/u.test(trimmed);
+    const onlyNumbers = /^\d+$/.test(trimmed);
+    const hasUnsafeCharacter = /[{}\[\]<>*|\\^~`=@]/.test(trimmed);
+    const hasXssSignal = /<\s*\/?\s*(script|iframe|object|embed|style|img|svg|body|html|link|meta)\b|javascript:|data:text\/html|on\w+\s*=/i.test(trimmed);
+
+    return hasText && !onlySymbols && !(requireLetter && onlyNumbers) && !hasUnsafeCharacter && !hasXssSignal
+      ? null
+      : { textContent: true };
   };
 }

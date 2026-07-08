@@ -86,14 +86,14 @@ export class CompanyComponent implements OnInit {
     id: [null],
     name: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100), Validators.pattern(/^(?=.*\p{L})[\p{L}\p{N}\s.&,()'-]+$/u), noLeadingTrailingSpaceValidator()]],
     ruc: ['', [Validators.required, Validators.pattern('^(10|20)[0-9]{9}$')]],
-    address: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(200), Validators.pattern(/^[a-zA-Z0-9áéíóúÁÉÍÓÚüÜñÑ\s\.,#\-\/°:]+$/), noLeadingTrailingSpaceValidator()]],
+    address: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(200), Validators.pattern(/^[a-zA-Z0-9áéíóúÁÉÍÓÚüÜñÑ\s\.,#\-\/°:]+$/), noLeadingTrailingSpaceValidator(), textContentValidator()]],
     phone: ['', [Validators.required, Validators.pattern(/^\d{9}$/)]],
     email: ['', [Validators.required, Validators.email, lowercaseEmailValidator(), Validators.maxLength(100)]],
     hasWebsite: [false],
-    website: ['', [Validators.maxLength(200), Validators.pattern(/^\S*$/)]],
+    website: ['', [Validators.maxLength(200), Validators.pattern(/^$|^(https?:\/\/)?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(\/\S*)?$/)]],
     description: ['', [Validators.maxLength(500), noLeadingTrailingSpaceValidator(), textContentValidator()]],
-    businessHours: ['', [Validators.maxLength(100), textContentValidator()]],
-    logoUrl: [''],
+    businessHours: ['', [Validators.maxLength(100), textContentValidator({ requireLetter: false })]],
+    logoUrl: ['', [Validators.maxLength(500), Validators.pattern(/^$|^https?:\/\/[^\s<>]+$/)]],
     operatingHours: this.fb.array([])
   });
 
