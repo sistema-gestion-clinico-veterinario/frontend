@@ -1,13 +1,10 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router, ActivatedRouteSnapshot } from '@angular/router';
-import { catchError, map, of } from 'rxjs';
 import { AuthStore } from '../../store/auth.store';
-import { AuthService } from '../services/auth.service';
 import { resolveDashboardRoute, resolveInitialRoute } from '../../layouts/main-layout/navbar/navbar.component';
 
 export const AuthGuard: CanActivateFn = (route, state) => {
   const authStore = inject(AuthStore);
-  const authService = inject(AuthService);
   const router = inject(Router);
 
   const hasSession = authStore.roles().length > 0 || authStore.nombreCompleto() !== null;
@@ -16,33 +13,7 @@ export const AuthGuard: CanActivateFn = (route, state) => {
     return router.createUrlTree(['/login']);
   }
 
-  // Attempt refresh to get latest profile data and verify cookie session is still valid
-  return authService.refreshToken().pipe(
-    map(({ data }) => {
-      authStore.setAuth({
-        token: null,
-        refreshToken: null,
-        roles: data.roles,
-        assignedRoles: data.assignedRoles ?? data.roles,
-        originalRoles: data.assignedRoles ?? data.roles,
-        companyId: data.companyId,
-        companyName: data.companyName,
-        nombreCompleto: data.nombreCompleto,
-        userType: data.userType,
-        empleadoId: data.empleadoId ?? null,
-        passwordChanged: data.passwordChanged,
-        needsCompanySelection: data.needsCompanySelection,
-        selectedEnterprise: authStore.selectedEnterprise(),
-        menu: data.menu,
-        originalMenu: data.menu
-      });
-      return validateAccess(route, authStore, router);
-    }),
-    catchError(() => {
-      authStore.logout();
-      return of(router.createUrlTree(['/login']));
-    })
-  );
+  return validateAccess(route, authStore, router);
 };
 
 function validateAccess(route: ActivatedRouteSnapshot, authStore: any, router: Router) {

@@ -17,6 +17,8 @@ import { AuthStore } from '../../../store/auth.store';
 import { LoadingStore } from '../../../store/loading.store';
 import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
 import { textContentValidator } from '../../../core/validators/text-content.validator';
+import { isLowercaseEmail } from '../../../core/utils/input-validation.util';
+import { normalizeText } from '../../../core/utils/normalize-text.util';
 
 interface HorarioResumen {
   diaSemana: string;
@@ -158,7 +160,7 @@ export class CitasComponent implements OnInit {
       this.messageService.add({ severity: 'warn', summary: 'OTP inválido', detail: 'El código OTP debe tener exactamente 6 dígitos.' });
       return;
     }
-    if (!email || !/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/.test(email)) {
+    if (!isLowercaseEmail(email)) {
       this.messageService.add({ severity: 'warn', summary: 'Email invalido', detail: 'Ingresa un correo valido en minusculas para completar el pago.' });
       return;
     }
@@ -512,8 +514,8 @@ export class CitasComponent implements OnInit {
       veterinarioId: Number(formVal.veterinarioId),
       servicioId: Number(formVal.servicioId),
       fechaHoraInicio: this.isEditing() && originalCita ? originalCita.fechaHoraInicio : isoString,
-      motivoCita: formVal.motivoCita,
-      notas: formVal.notas,
+      motivoCita: normalizeText(formVal.motivoCita),
+      notas: normalizeText(formVal.notas),
       esEmergencia: originalCita ? originalCita.esEmergencia : false
     };
 

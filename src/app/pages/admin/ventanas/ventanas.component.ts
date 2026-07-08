@@ -8,6 +8,7 @@ import { forkJoin } from 'rxjs';
 import { MenuManagementService } from '../../../core/services/menu-management.service';
 import { VistaDTO } from '../../../models/response/auth-login-response.model';
 import { LoadingStore } from '../../../store/loading.store';
+import { hasMeaningfulText } from '../../../core/utils/input-validation.util';
 
 const STANDALONE_KEY = '__STANDALONE__';
 
@@ -303,12 +304,16 @@ addVistaToGroup(groupKey: string) {
       this.messageService.add({ severity: 'warn', summary: 'Codigo invalido', detail: 'Use entre 3 y 80 caracteres validos.' });
       return;
     }
-    if (nombre.length < 2 || nombre.length > 80) {
+    if (nombre.length < 2 || nombre.length > 80 || !hasMeaningfulText(nombre, false)) {
       this.messageService.add({ severity: 'warn', summary: 'Nombre invalido', detail: 'El nombre debe tener entre 2 y 80 caracteres.' });
       return;
     }
-    if (!/^[A-Za-z0-9_\s-]{1,40}$/.test(grupo)) {
+    if (!/^[A-Za-z0-9_\s-]{1,40}$/.test(grupo) || /^[\W_]+$/.test(grupo)) {
       this.messageService.add({ severity: 'warn', summary: 'Grupo invalido', detail: 'El grupo no debe superar 40 caracteres.' });
+      return;
+    }
+    if (data.orden != null && (Number(data.orden) < 0 || Number(data.orden) > 10000)) {
+      this.messageService.add({ severity: 'warn', summary: 'Orden invalido', detail: 'El orden debe estar entre 0 y 10000.' });
       return;
     }
 
@@ -391,6 +396,10 @@ addVistaToGroup(groupKey: string) {
     const newKey = this.editingGroupName().trim().toUpperCase().replace(/\s+/g, '_');
     this.editingGroupKey.set(null);
     if (!newKey || newKey === oldKey) return;
+    if (!/^[A-Z0-9_-]{1,40}$/.test(newKey) || /^[\W_]+$/.test(newKey)) {
+      this.messageService.add({ severity: 'warn', summary: 'Grupo invalido', detail: 'Use letras, numeros, guion o guion bajo.' });
+      return;
+    }
     const toUpdate = this.vistas().filter(v => v.grupo === oldKey);
     if (!toUpdate.length) return;
     this.loadingStore.show();

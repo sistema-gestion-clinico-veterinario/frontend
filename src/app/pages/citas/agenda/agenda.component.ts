@@ -50,6 +50,7 @@ import { InputFilterDirective } from '../../../core/directives/input-filter.dire
 import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
 import { textContentValidator } from '../../../core/validators/text-content.validator';
 import { normalizeText } from '../../../core/utils/normalize-text.util';
+import { hasMeaningfulText, isLowercaseEmail } from '../../../core/utils/input-validation.util';
 export type Vista = 'lista' | 'dia' | 'semana' | 'mes';
 
 interface CitaWsEvent {
@@ -860,7 +861,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
       this.messageService.add({ severity: 'warn', summary: 'Campos incompletos', detail: 'Complete todos los campos del nuevo cliente.' });
       return;
     }
-    if (!/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/.test(nombre) || !/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/.test(apellido)) {
+    if (!hasMeaningfulText(nombre) || !hasMeaningfulText(apellido) || !/^[\p{L}\s]+$/u.test(nombre) || !/^[\p{L}\s]+$/u.test(apellido)) {
       this.messageService.add({ severity: 'warn', summary: 'Nombre inválido', detail: 'Nombres y apellidos solo aceptan letras y espacios.' });
       return;
     }
@@ -868,11 +869,11 @@ export class AgendaComponent implements OnInit, OnDestroy {
       this.messageService.add({ severity: 'warn', summary: 'Teléfono inválido', detail: 'Debe tener exactamente 9 dígitos.' });
       return;
     }
-    if (!/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/.test(correo)) {
+    if (!isLowercaseEmail(correo)) {
       this.messageService.add({ severity: 'warn', summary: 'Correo inválido', detail: 'Use un correo válido en minúsculas.' });
       return;
     }
-    if (direccion.length > 200 || !/^[a-zA-Z0-9áéíóúÁÉÍÓÚüÜñÑ\s\.,#\-\/°:]+$/.test(direccion)) {
+    if (direccion.length > 200 || !hasMeaningfulText(direccion) || !/^[\p{L}\p{N}\s.,#\-\/\u00B0:]+$/u.test(direccion)) {
       this.messageService.add({ severity: 'warn', summary: 'Dirección inválida', detail: 'Verifique la dirección ingresada (máximo 200 caracteres).' });
       return;
     }
@@ -953,7 +954,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
       this.messageService.add({ severity: 'warn', summary: 'Campos incompletos', detail: 'Complete nombre, raza y fecha de nacimiento.' });
       return;
     }
-    if (!/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/.test(nombre)) {
+    if (!hasMeaningfulText(nombre) || !/^[\p{L}\s]+$/u.test(nombre)) {
       this.messageService.add({ severity: 'warn', summary: 'Nombre inválido', detail: 'El nombre de la mascota solo acepta letras y espacios.' });
       return;
     }
@@ -1938,3 +1939,4 @@ class AgendaStompClient {
     }
   }
 }
+

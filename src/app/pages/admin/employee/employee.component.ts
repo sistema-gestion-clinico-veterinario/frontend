@@ -214,8 +214,8 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     companyId: [null],
     genero: ['MASCULINO', [Validators.required]],
     observaciones: ['', [Validators.maxLength(500), noLeadingTrailingSpaceValidator(), textContentValidator()]],
-    fotoUrl: [''],
-    numeroColegiatura: ['', [Validators.maxLength(30), noLeadingTrailingSpaceValidator(), textContentValidator()]],
+    fotoUrl: ['', [Validators.maxLength(500), Validators.pattern(/^$|^https?:\/\/[^\s<>]+$/)]],
+    numeroColegiatura: ['', [Validators.maxLength(30), noLeadingTrailingSpaceValidator(), textContentValidator({ requireLetter: false })]],
     especialidades: [[]],
     tiposEmpleado: [[]]
   });
@@ -232,10 +232,11 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     this.employeeForm.get('roles')?.valueChanges.subscribe(roles => {
       const isVet = roles?.includes(Role.VETERINARIO);
       const collegiatura = this.employeeForm.get('numeroColegiatura');
+      const collegiaturaValidators = [Validators.maxLength(30), noLeadingTrailingSpaceValidator(), textContentValidator({ requireLetter: false })];
       if (isVet) {
-        collegiatura?.setValidators([Validators.required]);
+        collegiatura?.setValidators([Validators.required, ...collegiaturaValidators]);
       } else {
-        collegiatura?.clearValidators();
+        collegiatura?.setValidators(collegiaturaValidators);
       }
       collegiatura?.updateValueAndValidity();
     });

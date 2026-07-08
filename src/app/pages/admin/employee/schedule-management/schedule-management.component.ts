@@ -10,6 +10,7 @@ import { ActivatedRoute } from '@angular/router';
 import { EmpleadoService } from '../../../../core/services/empleado.service';
 import { HorarioEmpleadoResponse } from '../../../../models/response/horario-empleado-response';
 import { HasPermissionDirective } from '../../../../core/directives/has-permission.directive';
+import { isFutureOrToday, toDateInputKey } from '../../../../core/utils/input-validation.util';
 
 @Component({
   selector: 'app-schedule-management',
@@ -179,9 +180,23 @@ export class ScheduleManagementComponent implements OnInit {
     }
 
     const val = this.bulkForm.value;
+    const startDate = toDateInputKey(val.dateRange?.[0]);
+    const endDate = toDateInputKey(val.dateRange?.[1] || val.dateRange?.[0]);
+    if (!startDate || !endDate || !isFutureOrToday(startDate) || !isFutureOrToday(endDate)) {
+      this.messageService.add({ severity: 'warn', summary: 'Fecha invalida', detail: 'No se pueden asignar horarios en fechas pasadas.' });
+      return;
+    }
+    if (endDate < startDate) {
+      this.messageService.add({ severity: 'warn', summary: 'Rango invalido', detail: 'La fecha final no puede ser anterior a la fecha inicial.' });
+      return;
+    }
+    if (val.shifts.some((s: any) => !s.horaInicio || !s.horaFin || s.horaFin <= s.horaInicio)) {
+      this.messageService.add({ severity: 'warn', summary: 'Turno invalido', detail: 'Cada turno debe tener hora fin posterior a hora inicio.' });
+      return;
+    }
     const request = {
-      startDate: val.dateRange[0],
-      endDate: val.dateRange[1] || val.dateRange[0],
+      startDate,
+      endDate,
       shifts: val.shifts,
       overwrite: val.overwrite
     };
