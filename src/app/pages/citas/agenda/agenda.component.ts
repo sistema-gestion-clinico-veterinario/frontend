@@ -1659,8 +1659,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
 
   // TEMPORAL (periodo de pruebas): validación de fecha pasada desactivada. Revertir a la línea original cuando termine.
   private isPastDateTime(date: Date): boolean {
-    return false;
-    // return date.getTime() < Date.now() - 60_000;
+    return date.getTime() < Date.now() - 60_000;
   }
 
   canCobrar(cita: CitaResponse): boolean {
