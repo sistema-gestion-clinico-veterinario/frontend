@@ -18,6 +18,7 @@ import { LoadingStore } from '../../../store/loading.store';
 import { AuthStore } from '../../../store/auth.store';
 import { InputFilterDirective } from '../../../core/directives/input-filter.directive';
 import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
+import { textContentValidator } from '../../../core/validators/text-content.validator';
 import { normalizeText } from '../../../core/utils/normalize-text.util';
 
 @Component({
@@ -109,15 +110,15 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
     razaId:          [null, [Validators.required]],
     sexo:            [null, [Validators.required]],
     fechaNacimiento: ['',   [Validators.required, (control: AbstractControl) => this.fechaNoFuturaValidator(control)]],
-    color:           ['', [Validators.maxLength(50), Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/)]],
-    peso:            [null, [Validators.min(0), Validators.max(150)]],
-    fotoUrl:         [''],
+    color:           ['', [Validators.maxLength(50), Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/), noLeadingTrailingSpaceValidator()]],
+    peso:            [null, [Validators.min(0.01), Validators.max(120)]],
+    fotoUrl:         ['', [Validators.maxLength(500), Validators.pattern(/^$|^https?:\/\/[^\s<>]+$/)]],
     apoderadoId:     [null, [Validators.required]],
   });
 
   razaForm: FormGroup = this.fb.group({
     nombre:      ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100), Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/), noLeadingTrailingSpaceValidator()]],
-    descripcion: ['', [Validators.maxLength(300)]],
+    descripcion: ['', [Validators.maxLength(300), noLeadingTrailingSpaceValidator(), textContentValidator()]],
   });
 
 
@@ -194,13 +195,13 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
     const pesoCtrl = this.mascotaForm.get('peso');
     const especie = this.mascotaForm.get('especie')?.value;
     const rangos: Record<string, { min: number; max: number }> = {
-      PERRO: { min: 0, max: 500 },
-      GATO: { min: 0, max: 500 },
-      AVE: { min: 0, max: 500 },
-      REPTIL: { min: 0, max: 500 },
-      ROEDOR: { min: 0, max: 500 },
-      EXOTICO: { min: 0, max: 500 },
-      OTRO: { min: 0, max: 500 }
+      PERRO: { min: 0.5, max: 120 },
+      GATO: { min: 0.3, max: 20 },
+      AVE: { min: 0.02, max: 5 },
+      REPTIL: { min: 0.01, max: 100 },
+      ROEDOR: { min: 0.02, max: 10 },
+      EXOTICO: { min: 0.01, max: 120 },
+      OTRO: { min: 0.01, max: 120 }
     };
     const rango = rangos[especie] ?? rangos['OTRO'];
     pesoCtrl?.setValidators([Validators.min(rango.min), Validators.max(rango.max)]);
@@ -418,9 +419,15 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
     const correo   = this.ncCorreo().trim();
     const numDoc   = this.ncNumDoc().trim();
     const direccion = normalizeText(this.ncDireccion());
+    const referencias = normalizeText(this.ncReferencias());
+    const textoSeguro = /^(?=.*\p{L})(?!.*[{}\[\]<>*|\\^~`=@])(?!(?:[\p{P}\p{S}\s]+)$).*$/u;
 
     if (!nombre || !apellido || !telefono || !correo || !numDoc || !direccion) {
       this.messageService.add({ severity: 'warn', summary: 'Campos incompletos', detail: 'Complete todos los campos obligatorios.' });
+      return;
+    }
+    if (nombre.length > 80 || apellido.length > 80 || direccion.length > 200 || referencias.length > 500) {
+      this.messageService.add({ severity: 'warn', summary: 'Limite excedido', detail: 'Revise la cantidad maxima de caracteres permitidos.' });
       return;
     }
     if (!/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/.test(nombre) || !/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/.test(apellido)) {
@@ -431,8 +438,13 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
       this.messageService.add({ severity: 'warn', summary: 'Teléfono inválido', detail: 'Debe tener 9 dígitos.' });
       return;
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) {
-      this.messageService.add({ severity: 'warn', summary: 'Correo inválido', detail: 'Ingrese un correo electrónico válido.' });
+    if (!/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/.test(correo)) {
+      this.messageService.add({ severity: 'warn', summary: 'Correo inválido', detail: 'Use un correo válido en minúsculas.' });
+      return;
+    }
+
+    if (!textoSeguro.test(direccion) || (referencias && !textoSeguro.test(referencias))) {
+      this.messageService.add({ severity: 'warn', summary: 'Texto invalido', detail: 'No use caracteres como }, *, <, > ni campos solo con puntos.' });
       return;
     }
 
@@ -462,7 +474,7 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
       email: correo,
       genero: this.ncGenero(),
       direccion,
-      referencias: normalizeText(this.ncReferencias()) || undefined,
+      referencias: referencias || undefined,
       companyId
     }).subscribe({
       next: (res) => {
@@ -572,3 +584,4 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
     return m[especie?.toUpperCase()] ?? especie;
   }
 }
+

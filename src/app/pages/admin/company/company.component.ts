@@ -16,6 +16,8 @@ import { AuthStore } from '../../../store/auth.store';
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 import { InputFilterDirective } from '../../../core/directives/input-filter.directive';
 import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
+import { lowercaseEmailValidator } from '../../../core/validators/lowercase-email.validator';
+import { textContentValidator } from '../../../core/validators/text-content.validator';
 import { normalizeText } from '../../../core/utils/normalize-text.util';
 
 @Component({
@@ -84,14 +86,14 @@ export class CompanyComponent implements OnInit {
     id: [null],
     name: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100), Validators.pattern(/^(?=.*\p{L})[\p{L}\p{N}\s.&,()'-]+$/u), noLeadingTrailingSpaceValidator()]],
     ruc: ['', [Validators.required, Validators.pattern('^(10|20)[0-9]{9}$')]],
-    address: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(200), Validators.pattern(/^[a-zA-Z0-9áéíóúÁÉÍÓÚüÜñÑ\s\.,#\-\/°:]+$/), noLeadingTrailingSpaceValidator()]],
+    address: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(200), Validators.pattern(/^[a-zA-Z0-9áéíóúÁÉÍÓÚüÜñÑ\s\.,#\-\/°:]+$/), noLeadingTrailingSpaceValidator(), textContentValidator()]],
     phone: ['', [Validators.required, Validators.pattern(/^\d{9}$/)]],
-    email: ['', [Validators.required, Validators.email, Validators.pattern(/^\S+@\S+\.\S+$/), Validators.maxLength(100)]],
+    email: ['', [Validators.required, Validators.email, lowercaseEmailValidator(), Validators.maxLength(100)]],
     hasWebsite: [false],
-    website: ['', [Validators.maxLength(200), Validators.pattern(/^\S*$/)]],
-    description: ['', [Validators.maxLength(500), noLeadingTrailingSpaceValidator()]],
-    businessHours: ['', [Validators.maxLength(100)]],
-    logoUrl: [''],
+    website: ['', [Validators.maxLength(200), Validators.pattern(/^$|^(https?:\/\/)?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(\/\S*)?$/)]],
+    description: ['', [Validators.maxLength(500), noLeadingTrailingSpaceValidator(), textContentValidator()]],
+    businessHours: ['', [Validators.maxLength(100), textContentValidator({ requireLetter: false })]],
+    logoUrl: ['', [Validators.maxLength(500), Validators.pattern(/^$|^https?:\/\/[^\s<>]+$/)]],
     operatingHours: this.fb.array([])
   });
 

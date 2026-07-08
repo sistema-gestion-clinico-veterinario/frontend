@@ -24,7 +24,9 @@ import { RecetaModalsComponent } from '../form-hc/receta-modals/receta-modals.co
 import { ArchivoModalsComponent } from '../form-hc/archivo-modals/archivo-modals.component';
 import { Role } from '../../../core/enums/role.enum';
 import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
+import { textContentValidator } from '../../../core/validators/text-content.validator';
 import { normalizeText } from '../../../core/utils/normalize-text.util';
+import { hasMeaningfulText } from '../../../core/utils/input-validation.util';
 
 
 @Component({
@@ -106,13 +108,13 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
   private syncingForm = false;
 
   recetaForm: FormGroup = this.fb.group({
-    medicamento:       ['', [Validators.required, Validators.maxLength(80)]],
-    principioActivo:   ['', [Validators.maxLength(80)]],
-    dosis:             ['', [Validators.required, Validators.maxLength(80)]],
-    frecuencia:        ['', [Validators.required, Validators.maxLength(80)]],
+    medicamento:       ['', [Validators.required, Validators.maxLength(80), noLeadingTrailingSpaceValidator(), textContentValidator()]],
+    principioActivo:   ['', [Validators.maxLength(80), noLeadingTrailingSpaceValidator(), textContentValidator()]],
+    dosis:             ['', [Validators.required, Validators.maxLength(80), noLeadingTrailingSpaceValidator(), textContentValidator()]],
+    frecuencia:        ['', [Validators.required, Validators.maxLength(80), noLeadingTrailingSpaceValidator(), textContentValidator()]],
     duracionDias:      [null, [Validators.min(1), Validators.max(365)]],
-    viaAdministracion: ['', [Validators.required, Validators.maxLength(50)]],
-    instrucciones:     ['', [Validators.maxLength(500)]],
+    viaAdministracion: ['', [Validators.required, Validators.maxLength(50), noLeadingTrailingSpaceValidator(), textContentValidator()]],
+    instrucciones:     ['', [Validators.maxLength(500), noLeadingTrailingSpaceValidator(), textContentValidator()]],
     fechaInicio:       ['', Validators.required],
     fechaFin:          [''],
   });
@@ -131,24 +133,24 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
   form: FormGroup = this.fb.group({
     version:                 [null, Validators.required],
     tipoConsulta:            [null, Validators.required],
-    motivoConsulta:          ['',   Validators.required],
+    motivoConsulta:          ['',   [Validators.required, Validators.minLength(5), Validators.maxLength(250), noLeadingTrailingSpaceValidator(), textContentValidator()]],
     pesoEnConsulta:          [null, [Validators.required, Validators.min(0.01), Validators.max(150)]],
     temperatura:             [null, [Validators.min(0.1), Validators.max(45)]],
     frecuenciaCardiaca:      [null, [Validators.min(1), Validators.max(300)]],
     frecuenciaRespiratoria:  [null, [Validators.min(1), Validators.max(200)]],
-    mucosas:                 [''],
-    turgenciaPiel:           [''],
+    mucosas:                 ['', [Validators.maxLength(80), noLeadingTrailingSpaceValidator(), textContentValidator()]],
+    turgenciaPiel:           ['', [Validators.maxLength(80), noLeadingTrailingSpaceValidator(), textContentValidator()]],
     vacunacionAlDia:         [false],
     desparasitacionAlDia:    [false],
-    anamnesis:               ['',   Validators.required],
-    examenFisico:            [''],
-    observaciones:           [''],
-    antecedentesEnfermedades:    [''],
-    antecedentesProcedimientos:  [''],
-    antecedentesPersonales:      [''],
-    antecedentesFamiliares:      [''],
-    grupoSanguineo:              [''],
-    indicacionesReceta:          [''],
+    anamnesis:               ['',   [Validators.required, Validators.maxLength(1000), noLeadingTrailingSpaceValidator(), textContentValidator()]],
+    examenFisico:            ['', [Validators.maxLength(1000), noLeadingTrailingSpaceValidator(), textContentValidator()]],
+    observaciones:           ['', [Validators.maxLength(500), noLeadingTrailingSpaceValidator(), textContentValidator()]],
+    antecedentesEnfermedades:    ['', [Validators.maxLength(500), noLeadingTrailingSpaceValidator(), textContentValidator()]],
+    antecedentesProcedimientos:  ['', [Validators.maxLength(500), noLeadingTrailingSpaceValidator(), textContentValidator()]],
+    antecedentesPersonales:      ['', [Validators.maxLength(500), noLeadingTrailingSpaceValidator(), textContentValidator()]],
+    antecedentesFamiliares:      ['', [Validators.maxLength(500), noLeadingTrailingSpaceValidator(), textContentValidator()]],
+    grupoSanguineo:              ['', [Validators.maxLength(20), noLeadingTrailingSpaceValidator(), textContentValidator({ requireLetter: false })]],
+    indicacionesReceta:          ['', [Validators.maxLength(500), noLeadingTrailingSpaceValidator(), textContentValidator()]],
   });
 
   ngOnInit() {
@@ -291,8 +293,17 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
     if (!this.canCreateArchivo()) return;
     const file = this.archivoPendiente();
     if (!file) return;
+    const descripcion = normalizeText(this.descripcionArchivo());
+    if (descripcion && (descripcion.length > 300 || !hasMeaningfulText(descripcion))) {
+      this.msgService.add({
+        severity: 'warn',
+        summary: 'Descripcion invalida',
+        detail: 'La descripcion del archivo debe contener texto real y no superar 300 caracteres.'
+      });
+      return;
+    }
     this.archivoSubiendo.set(true);
-    this.hcService.subirArchivo(this.consultaId, file, this.tipoSeleccionado(), this.descripcionArchivo() || undefined).subscribe({
+    this.hcService.subirArchivo(this.consultaId, file, this.tipoSeleccionado(), descripcion || undefined).subscribe({
       next: () => {
         this.msgService.add({ severity: 'success', summary: 'Examen', detail: 'Archivo subido correctamente' });
         this.archivoPendiente.set(null);

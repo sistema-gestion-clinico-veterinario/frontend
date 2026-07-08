@@ -174,11 +174,13 @@
 
             <div class="flex flex-col gap-1">
               <label class="text-xs font-semibold text-slate-700 ml-0.5">Nombres <span class="text-rose-500">*</span></label>
-              <input type="text" formControlName="nombre" appInputFilter="letters" placeholder="Ej: Juan Antonio"
+              <input type="text" formControlName="nombre" appInputFilter="letters" [appInputFilterMaxLength]="80" maxlength="80" placeholder="Ej: Juan Antonio"
                 [ngClass]="employeeForm.get('nombre')?.invalid && employeeForm.get('nombre')?.touched ? 'border-rose-400' : 'border-slate-300'"
                 class="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
               <p *ngIf="employeeForm.get('nombre')?.invalid && employeeForm.get('nombre')?.touched" class="text-[11px] text-rose-500 ml-0.5">
                 <ng-container *ngIf="employeeForm.get('nombre')?.errors?.['required']">El nombre es requerido</ng-container>
+                <ng-container *ngIf="employeeForm.get('nombre')?.errors?.['minlength']">Mínimo 2 caracteres</ng-container>
+                <ng-container *ngIf="employeeForm.get('nombre')?.errors?.['maxlength']">Máximo 80 caracteres</ng-container>
                 <ng-container *ngIf="employeeForm.get('nombre')?.errors?.['pattern']">Solo se permiten letras y espacios</ng-container>
                 <ng-container *ngIf="employeeForm.get('nombre')?.errors?.['leadingTrailingSpace']">No debe tener espacios al inicio o al final</ng-container>
               </p>
@@ -186,11 +188,13 @@
 
             <div class="flex flex-col gap-1">
               <label class="text-xs font-semibold text-slate-700 ml-0.5">Apellidos <span class="text-rose-500">*</span></label>
-              <input type="text" formControlName="apellido" appInputFilter="letters" placeholder="Ej: Morales Ruiz"
+              <input type="text" formControlName="apellido" appInputFilter="letters" [appInputFilterMaxLength]="80" maxlength="80" placeholder="Ej: Morales Ruiz"
                 [ngClass]="employeeForm.get('apellido')?.invalid && employeeForm.get('apellido')?.touched ? 'border-rose-400' : 'border-slate-300'"
                 class="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
               <p *ngIf="employeeForm.get('apellido')?.invalid && employeeForm.get('apellido')?.touched" class="text-[11px] text-rose-500 ml-0.5">
                 <ng-container *ngIf="employeeForm.get('apellido')?.errors?.['required']">Los apellidos son requeridos</ng-container>
+                <ng-container *ngIf="employeeForm.get('apellido')?.errors?.['minlength']">Mínimo 2 caracteres</ng-container>
+                <ng-container *ngIf="employeeForm.get('apellido')?.errors?.['maxlength']">Máximo 80 caracteres</ng-container>
                 <ng-container *ngIf="employeeForm.get('apellido')?.errors?.['pattern']">Solo se permiten letras y espacios</ng-container>
                 <ng-container *ngIf="employeeForm.get('apellido')?.errors?.['leadingTrailingSpace']">No debe tener espacios al inicio o al final</ng-container>
               </p>
@@ -304,12 +308,13 @@
 
             <div class="flex flex-col gap-1">
               <label class="text-xs font-semibold text-slate-700 ml-0.5">Correo Corporativo <span class="text-rose-500">*</span></label>
-              <input type="email" formControlName="email" placeholder="empleado@vargasvet.com"
+              <input type="email" formControlName="email" placeholder="empleado@vargasvet.com" maxlength="100"
                 [ngClass]="employeeForm.get('email')?.invalid && employeeForm.get('email')?.touched ? 'border-rose-400' : 'border-slate-300'"
                 class="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all font-bold" />
               <p *ngIf="employeeForm.get('email')?.invalid && employeeForm.get('email')?.touched" class="text-[11px] text-rose-500 ml-0.5">
                 <ng-container *ngIf="employeeForm.get('email')?.errors?.['required']">El correo es requerido</ng-container>
-                <ng-container *ngIf="employeeForm.get('email')?.errors?.['email'] || employeeForm.get('email')?.errors?.['pattern']">Ingresa un correo electrónico válido, sin espacios</ng-container>
+                <ng-container *ngIf="employeeForm.get('email')?.errors?.['email'] || employeeForm.get('email')?.errors?.['lowercaseEmail']">Ingresa un correo válido en minúsculas, sin espacios</ng-container>
+                <ng-container *ngIf="employeeForm.get('email')?.errors?.['maxlength']">Máximo 100 caracteres</ng-container>
               </p>
             </div>
 
@@ -326,11 +331,13 @@
 
             <div class="flex flex-col gap-1">
               <label class="text-xs font-semibold text-slate-700 ml-0.5">Dirección <span class="text-rose-500">*</span></label>
-              <input type="text" formControlName="direccion" placeholder="Ej: Av. Los Pinos 123"
+              <input type="text" formControlName="direccion" placeholder="Ej: Av. Los Pinos 123" maxlength="200"
                 [ngClass]="employeeForm.get('direccion')?.invalid && employeeForm.get('direccion')?.touched ? 'border-rose-400' : 'border-slate-300'"
                 class="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
               <p *ngIf="employeeForm.get('direccion')?.invalid && employeeForm.get('direccion')?.touched" class="text-[11px] text-rose-500 ml-0.5">
                 <ng-container *ngIf="employeeForm.get('direccion')?.errors?.['required']">La dirección es requerida</ng-container>
+                <ng-container *ngIf="employeeForm.get('direccion')?.errors?.['maxlength']">Máximo 200 caracteres</ng-container>
+                <ng-container *ngIf="employeeForm.get('direccion')?.errors?.['textContent']">Debe contener al menos una letra o número</ng-container>
                 <ng-container *ngIf="employeeForm.get('direccion')?.errors?.['leadingTrailingSpace']">No debe tener espacios al inicio o al final</ng-container>
               </p>
             </div>
@@ -340,11 +347,13 @@
           <div *ngIf="employeeForm.get('roles')?.value?.includes('ROLE_VETERINARIO')" class="grid grid-cols-1 sm:grid-cols-2 gap-6 animate-in slide-in-from-top-2 pt-2">
             <div class="flex flex-col gap-1">
               <label class="text-xs font-semibold text-slate-700 ml-0.5">Registro de Colegiatura <span class="text-rose-500">*</span></label>
-              <input type="text" formControlName="numeroColegiatura" placeholder="Nro de Colegiatura"
+              <input type="text" formControlName="numeroColegiatura" placeholder="Nro de Colegiatura" maxlength="30"
                 [ngClass]="employeeForm.get('numeroColegiatura')?.invalid && employeeForm.get('numeroColegiatura')?.touched ? 'border-rose-400' : 'border-slate-300'"
                 class="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all font-bold" />
               <p *ngIf="employeeForm.get('numeroColegiatura')?.invalid && employeeForm.get('numeroColegiatura')?.touched" class="text-[11px] text-rose-500 ml-0.5">
                 <ng-container *ngIf="employeeForm.get('numeroColegiatura')?.errors?.['required']">El número de colegiatura es requerido para veterinarios</ng-container>
+                <ng-container *ngIf="employeeForm.get('numeroColegiatura')?.errors?.['maxlength']">Máximo 30 caracteres</ng-container>
+                <ng-container *ngIf="employeeForm.get('numeroColegiatura')?.errors?.['textContent']">Debe contener al menos una letra o número</ng-container>
                 <ng-container *ngIf="employeeForm.get('numeroColegiatura')?.errors?.['leadingTrailingSpace']">No debe tener espacios al inicio o al final</ng-container>
               </p>
             </div>

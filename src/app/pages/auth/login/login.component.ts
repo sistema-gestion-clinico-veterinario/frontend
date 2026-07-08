@@ -2,8 +2,9 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
+import { lowercaseEmailValidator } from '../../../core/validators/lowercase-email.validator';
 import { Router, RouterModule } from '@angular/router';
-import { finalize, timeout } from 'rxjs';
+import { catchError, EMPTY, finalize, timeout } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
 import { AuthStore } from '../../../store/auth.store';
 import { resolveInitialRoute } from '../../../layouts/main-layout/navbar/navbar.component';
@@ -26,13 +27,36 @@ export class LoginComponent implements OnInit {
 
   ngOnInit() {
     if (this.authStore.roles().length > 0) {
-      const roles = this.authStore.roles() ?? [];
-      this.router.navigateByUrl(resolveInitialRoute(roles, this.authStore.menu() ?? []));
+      this.authService.refreshToken().pipe(
+        timeout(10000),
+        catchError(() => {
+          this.authStore.logout();
+          return EMPTY;
+        })
+      ).subscribe(({ data }) => {
+        this.authStore.setAuth({
+          token: null,
+          refreshToken: null,
+          roles: data.roles,
+          companyId: data.companyId,
+          companyName: data.companyName,
+          nombreCompleto: data.nombreCompleto,
+          userType: data.userType,
+          empleadoId: data.empleadoId ?? null,
+          passwordChanged: data.passwordChanged,
+          needsCompanySelection: data.needsCompanySelection,
+          selectedEnterprise: null,
+          menu: data.menu,
+          assignedRoles: data.assignedRoles ?? data.roles
+        });
+        const roles = data.roles ?? [];
+        this.router.navigateByUrl(resolveInitialRoute(roles, data.menu ?? []));
+      });
     }
   }
 
   loginForm = inject(FormBuilder).group({
-    email: ['', [Validators.required, Validators.email, Validators.pattern(/^\S+@\S+\.\S+$/), noLeadingTrailingSpaceValidator(), Validators.maxLength(255)]],
+    email: ['', [Validators.required, Validators.email, lowercaseEmailValidator(), noLeadingTrailingSpaceValidator(), Validators.maxLength(255)]],
     password: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(72), Validators.pattern(/^\S+$/)]]
   });
 

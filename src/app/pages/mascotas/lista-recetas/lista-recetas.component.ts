@@ -9,6 +9,8 @@ import { HistoriaClinicaService } from '../../../core/services/historia-clinica.
 import { LoadingStore } from '../../../store/loading.store';
 import { AuthStore } from '../../../store/auth.store';
 import { PrescripcionResponse } from '../../../models/response/prescripcion-response';
+import { normalizeText } from '../../../core/utils/normalize-text.util';
+import { hasMeaningfulText, isDateRangeValid } from '../../../core/utils/input-validation.util';
 
 @Component({
   selector: 'app-lista-recetas',
@@ -53,14 +55,30 @@ export class ListaRecetasComponent implements OnInit {
   cargarRecetas(page: number = 0) {
     this.currentPage = page;
     this.loadingStore.show();
+    const query = normalizeText(this.searchQuery).slice(0, 80);
+    const nombreMascota = normalizeText(this.nombreMascota).slice(0, 80);
+    const numeroMicrochip = normalizeText(this.numeroMicrochip).slice(0, 50);
+    const numeroDocumentoApoderado = normalizeText(this.numeroDocumentoApoderado).slice(0, 20);
+    const numeroDocumentoEmpleado = normalizeText(this.numeroDocumentoEmpleado).slice(0, 20);
+    const numeroHc = normalizeText(this.numeroHc).slice(0, 30);
+
+    if (!isDateRangeValid(this.fechaDesde, this.fechaHasta)) {
+      this.loadingStore.hide();
+      return;
+    }
+    if ((query && !hasMeaningfulText(query, false)) || (nombreMascota && !hasMeaningfulText(nombreMascota))) {
+      this.loadingStore.hide();
+      return;
+    }
+
     this.hcService.buscarRecetas({
-      query: this.searchQuery,
+      query,
       companyId: this.activeCompanyId,
-      nombreMascota: this.nombreMascota || undefined,
-      numeroMicrochip: this.numeroMicrochip || undefined,
-      numeroDocumentoApoderado: this.numeroDocumentoApoderado || undefined,
-      numeroDocumentoEmpleado: this.numeroDocumentoEmpleado || undefined,
-      numeroHc: this.numeroHc || undefined,
+      nombreMascota: nombreMascota || undefined,
+      numeroMicrochip: numeroMicrochip || undefined,
+      numeroDocumentoApoderado: numeroDocumentoApoderado || undefined,
+      numeroDocumentoEmpleado: numeroDocumentoEmpleado || undefined,
+      numeroHc: numeroHc || undefined,
       fechaDesde: this.fechaDesde || undefined,
       fechaHasta: this.fechaHasta || undefined
     }, page, this.pageSize).subscribe({
@@ -105,6 +123,22 @@ export class ListaRecetasComponent implements OnInit {
 
   imprimirReceta(receta: PrescripcionResponse) {
     const hoy = new Date().toLocaleDateString('es-PE', { day: '2-digit', month: 'long', year: 'numeric' });
+    const safe = (value: unknown) => String(value ?? '').replace(/[&<>"']/g, (char) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;'
+    }[char] ?? char));
+    const medicamento = safe(receta.medicamento);
+    const principioActivo = safe(receta.principioActivo);
+    const dosis = safe(receta.dosis);
+    const frecuencia = safe(receta.frecuencia);
+    const viaAdministracion = safe(receta.viaAdministracion);
+    const instrucciones = safe(receta.instrucciones);
+    const pacienteNombre = safe(receta.pacienteNombre);
+    const numeroHcSeguro = safe(receta.numeroHc ?? '-');
+    const veterinarioNombre = safe(receta.veterinarioNombre || 'Medico Veterinario');
 
     const html = `<!DOCTYPE html>
 <html lang="es">
@@ -142,35 +176,35 @@ export class ListaRecetasComponent implements OnInit {
     </div>
     <div class="fecha">
       <p>Fecha: <strong>${hoy}</strong></p>
-      <p>HC: <strong>${receta.numeroHc ?? '—'}</strong></p>
+      <p>HC: <strong>${numeroHcSeguro}</strong></p>
     </div>
   </div>
   <div class="section">
     <div class="section-title">Datos del paciente</div>
     <div class="grid-2">
-      <div class="field"><label>Paciente</label><p>${receta.pacienteNombre ?? '—'}</p></div>
+      <div class="field"><label>Paciente</label><p>${pacienteNombre || '-'}</p></div>
     </div>
   </div>
   <div class="section">
     <div class="section-title">Medicamento prescrito</div>
     <div class="rx-box">
-      <div class="rx-med">℞ &nbsp;${receta.medicamento}${receta.principioActivo ? ' <span style="font-size:12px;color:#64748b;font-weight:normal;">(' + receta.principioActivo + ')</span>' : ''}</div>
+      <div class="rx-med">Rx &nbsp;${medicamento}${principioActivo ? ' <span style="font-size:12px;color:#64748b;font-weight:normal;">(' + principioActivo + ')</span>' : ''}</div>
       <div class="rx-detail">
-        <div class="item"><label>Dosis</label><p>${receta.dosis}</p></div>
-        <div class="item"><label>Frecuencia</label><p>${receta.frecuencia}</p></div>
-        <div class="item"><label>Vía</label><p>${receta.viaAdministracion}</p></div>
+        <div class="item"><label>Dosis</label><p>${dosis}</p></div>
+        <div class="item"><label>Frecuencia</label><p>${frecuencia}</p></div>
+        <div class="item"><label>Vía</label><p>${viaAdministracion}</p></div>
         <div class="item"><label>Duración</label><p>${receta.duracionDias ? receta.duracionDias + ' días' : '—'}</p></div>
       </div>
       <div class="grid-2" style="margin-top:8px;">
         <div class="field"><label>Fecha inicio</label><p>${receta.fechaInicio ? new Date(receta.fechaInicio).toLocaleDateString('es-PE') : '—'}</p></div>
         <div class="field"><label>Fecha fin</label><p>${receta.fechaFin ? new Date(receta.fechaFin).toLocaleDateString('es-PE') : '—'}</p></div>
       </div>
-      ${receta.instrucciones ? '<div class="indicaciones"><strong>Indicaciones:</strong> ' + receta.instrucciones + '</div>' : ''}
+      ${instrucciones ? '<div class="indicaciones"><strong>Indicaciones:</strong> ' + instrucciones + '</div>' : ''}
     </div>
   </div>
   <div class="firma">
     <div class="line"></div><br>
-    <p><strong>${receta.veterinarioNombre || 'Médico Veterinario'}</strong></p>
+    <p><strong>${veterinarioNombre}</strong></p>
     <p>Médico Veterinario</p>
   </div>
 </body>

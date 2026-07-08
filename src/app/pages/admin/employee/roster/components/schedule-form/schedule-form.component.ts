@@ -5,6 +5,7 @@ import { EmpleadoService } from '../../../../../../core/services/empleado.servic
 import { CompanyService } from '../../../../../../core/services/company.service';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
+import { isDateRangeValid, isFutureOrToday } from '../../../../../../core/utils/input-validation.util';
 
 @Component({
   selector: 'app-schedule-form',
@@ -258,7 +259,11 @@ export class ScheduleFormComponent implements OnInit {
     const selectedDays = form.dias as string[];
 
     if (!this.employeeId) return;
-    if (form.fechaFin < form.fechaInicio) {
+    if (!isFutureOrToday(form.fechaInicio) || !isFutureOrToday(form.fechaFin)) {
+      this.messageService.add({ severity: 'warn', summary: 'Fecha invalida', detail: 'No se pueden asignar horarios en fechas pasadas.' });
+      return;
+    }
+    if (!isDateRangeValid(form.fechaInicio, form.fechaFin)) {
       this.messageService.add({ severity: 'warn', summary: 'Rango invalido', detail: 'La fecha de fin no puede ser anterior a la fecha de inicio.' });
       return;
     }

@@ -12,6 +12,7 @@ import { LoadingStore } from '../../store/loading.store';
 import { AuthStore } from '../../store/auth.store';
 import { InputFilterDirective } from '../../core/directives/input-filter.directive';
 import { noLeadingTrailingSpaceValidator } from '../../core/validators/no-leading-trailing-space.validator';
+import { textContentValidator } from '../../core/validators/text-content.validator';
 import { normalizeText } from '../../core/utils/normalize-text.util';
 
 interface HorarioResumen {
@@ -62,8 +63,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
     nombre:        ['', [Validators.required, Validators.minLength(2), Validators.maxLength(80), Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/), noLeadingTrailingSpaceValidator()]],
     apellido:      ['', [Validators.required, Validators.minLength(2), Validators.maxLength(80), Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/), noLeadingTrailingSpaceValidator()]],
     telefono:      ['', [Validators.pattern(/^\d{9}$/)]],
-    direccion:     ['', [Validators.maxLength(200)]],
-    observaciones: ['', [Validators.maxLength(500)]],
+    direccion:     ['', [Validators.maxLength(200), noLeadingTrailingSpaceValidator(), textContentValidator()]],
+    observaciones: ['', [Validators.maxLength(500), noLeadingTrailingSpaceValidator(), textContentValidator()]],
     fotoUrl:       ['', [Validators.maxLength(500)]]
   });
 

@@ -130,7 +130,7 @@
           <div class="flex flex-col gap-1">
             <label class="text-xs font-bold text-slate-600">Motivo de consulta <span
                 class="text-rose-500">*</span></label>
-            <input type="text" formControlName="motivoConsulta" placeholder="Motivo principal..."
+            <input type="text" formControlName="motivoConsulta" maxlength="250" placeholder="Motivo principal..."
               class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
               [ngClass]="{'border-rose-500': form.get('motivoConsulta')?.invalid && form.get('motivoConsulta')?.touched, 'border-slate-200': !(form.get('motivoConsulta')?.invalid && form.get('motivoConsulta')?.touched)}" />
             <span *ngIf="form.get('motivoConsulta')?.invalid && form.get('motivoConsulta')?.touched"
@@ -256,7 +256,7 @@
 
           <div class="flex flex-col gap-1">
             <label class="text-xs font-bold text-slate-600">Anamnesis <span class="text-rose-500">*</span></label>
-            <textarea formControlName="anamnesis" rows="4"
+            <textarea formControlName="anamnesis" rows="4" maxlength="1000"
               placeholder="Historia del problema actual, síntomas, evolución..."
               class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
               [ngClass]="{'border-rose-500': form.get('anamnesis')?.invalid && form.get('anamnesis')?.touched, 'border-slate-200': !(form.get('anamnesis')?.invalid && form.get('anamnesis')?.touched)}">
@@ -267,14 +267,14 @@
 
           <div class="flex flex-col gap-1">
             <label class="text-xs font-bold text-slate-600">Examen físico</label>
-            <textarea formControlName="examenFisico" rows="4" placeholder="Hallazgos del examen físico..."
+            <textarea formControlName="examenFisico" rows="4" maxlength="1000" placeholder="Hallazgos del examen físico..."
               class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20">
             </textarea>
           </div>
 
           <div class="flex flex-col gap-1">
             <label class="text-xs font-bold text-slate-600">Observaciones</label>
-            <textarea formControlName="observaciones" rows="3" placeholder="Notas adicionales..."
+            <textarea formControlName="observaciones" rows="3" maxlength="500" placeholder="Notas adicionales..."
               class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20">
             </textarea>
           </div>
@@ -285,27 +285,27 @@
           <div class="grid sm:grid-cols-2 gap-4">
             <div class="flex flex-col gap-1">
               <label class="text-xs font-bold text-slate-600">Enfermedades previas</label>
-              <textarea formControlName="antecedentesEnfermedades" rows="3" placeholder="Enfermedades anteriores..."
+              <textarea formControlName="antecedentesEnfermedades" rows="3" maxlength="500" placeholder="Enfermedades anteriores..."
                 class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20">
               </textarea>
             </div>
             <div class="flex flex-col gap-1">
               <label class="text-xs font-bold text-slate-600">Procedimientos previos</label>
-              <textarea formControlName="antecedentesProcedimientos" rows="3"
+              <textarea formControlName="antecedentesProcedimientos" rows="3" maxlength="500"
                 placeholder="Cirugías, tratamientos anteriores..."
                 class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20">
               </textarea>
             </div>
             <div class="flex flex-col gap-1">
               <label class="text-xs font-bold text-slate-600">Antecedentes personales</label>
-              <textarea formControlName="antecedentesPersonales" rows="3"
+              <textarea formControlName="antecedentesPersonales" rows="3" maxlength="500"
                 placeholder="Alergias, condiciones crónicas..."
                 class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20">
               </textarea>
             </div>
             <div class="flex flex-col gap-1">
               <label class="text-xs font-bold text-slate-600">Antecedentes familiares</label>
-              <textarea formControlName="antecedentesFamiliares" rows="3" placeholder="Enfermedades hereditarias..."
+              <textarea formControlName="antecedentesFamiliares" rows="3" maxlength="500" placeholder="Enfermedades hereditarias..."
                 class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20">
               </textarea>
             </div>
@@ -447,7 +447,7 @@
               <i class="pi pi-align-left text-[10px] text-slate-400"></i>
               Indicaciones generales
             </label>
-            <textarea formControlName="indicacionesReceta" rows="3"
+            <textarea formControlName="indicacionesReceta" rows="3" maxlength="500"
               placeholder="Indicaciones generales para el propietario sobre el tratamiento..."
               [attr.readonly]="!canModify() ? true : null"
               class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 outline-none resize-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"

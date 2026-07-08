@@ -7,6 +7,8 @@ import { MessageService } from 'primeng/api';
 import { CajaService } from '../../../core/services/caja.service';
 import { AuthStore } from '../../../store/auth.store';
 import { MovimientoCajaResponse, ResumenCajaResponse } from '../../../models/response/movimiento-caja-response';
+import { hasMeaningfulText, isDateRangeValid } from '../../../core/utils/input-validation.util';
+import { normalizeText } from '../../../core/utils/normalize-text.util';
 
 @Component({
   selector: 'app-caja',
@@ -66,7 +68,14 @@ export class CajaComponent implements OnInit {
       });
   }
 
-  aplicarFiltros() { this.currentPage.set(0); this.cargar(); }
+  aplicarFiltros() {
+    if (!isDateRangeValid(this.filtroDesde, this.filtroHasta)) {
+      this.messageService.add({ severity: 'warn', summary: 'Rango invalido', detail: 'La fecha hasta no puede ser anterior a la fecha desde.' });
+      return;
+    }
+    this.currentPage.set(0);
+    this.cargar();
+  }
 
   limpiarFiltros() {
     this.filtroDesde = '';
@@ -81,14 +90,24 @@ export class CajaComponent implements OnInit {
   }
 
   guardarEgreso() {
-    if (!this.egresoForm.monto || !this.egresoForm.descripcion.trim()) {
+    const descripcion = normalizeText(this.egresoForm.descripcion);
+    const monto = Number(this.egresoForm.monto);
+    if (!monto || !descripcion) {
       this.messageService.add({ severity: 'warn', summary: 'Campos requeridos', detail: 'Ingresa monto y descripción.' });
+      return;
+    }
+    if (monto < 0.01 || monto > 50000) {
+      this.messageService.add({ severity: 'warn', summary: 'Monto invalido', detail: 'El monto debe estar entre S/ 0.01 y S/ 50,000.00.' });
+      return;
+    }
+    if (descripcion.length > 300 || !hasMeaningfulText(descripcion)) {
+      this.messageService.add({ severity: 'warn', summary: 'Descripción inválida', detail: 'Use una descripción válida, sin caracteres especiales no permitidos.' });
       return;
     }
     this.savingEgreso.set(true);
     this.cajaService.registrarEgreso({
-      monto: this.egresoForm.monto,
-      descripcion: this.egresoForm.descripcion.trim(),
+      monto,
+      descripcion,
       companyId: this.companyId,
       concepto: this.egresoForm.concepto
     }).subscribe({
