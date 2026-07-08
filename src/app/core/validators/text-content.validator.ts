@@ -18,8 +18,11 @@ export function textContentValidator(options: TextContentOptions = {}): Validato
     const onlyNumbers = /^\d+$/.test(trimmed);
     const hasUnsafeCharacter = /[{}\[\]<>*|\\^~`=@]/.test(trimmed);
     const hasXssSignal = /<\s*\/?\s*(script|iframe|object|embed|style|img|svg|body|html|link|meta)\b|javascript:|data:text\/html|on\w+\s*=/i.test(trimmed);
+    const punctuationCount = (trimmed.match(/[\p{P}\p{S}]/gu) ?? []).length;
+    const excessivePunctuation = /[\p{P}\p{S}]{6,}/u.test(trimmed)
+      || (punctuationCount >= 8 && punctuationCount / trimmed.length > 0.45);
 
-    return hasText && !onlySymbols && !(requireLetter && onlyNumbers) && !hasUnsafeCharacter && !hasXssSignal
+    return hasText && !onlySymbols && !(requireLetter && onlyNumbers) && !hasUnsafeCharacter && !hasXssSignal && !excessivePunctuation
       ? null
       : { textContent: true };
   };

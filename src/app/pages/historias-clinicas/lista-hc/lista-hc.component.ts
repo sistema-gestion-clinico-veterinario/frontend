@@ -32,6 +32,7 @@ export class ListaHcComponent implements OnInit {
   searchPropietario    = '';
   searchFechaDesde     = '';
   searchFechaHasta     = '';
+  filterError           = signal<string | null>(null);
 
   ngOnInit() {
     this.cargarHistorias();
@@ -42,6 +43,7 @@ export class ListaHcComponent implements OnInit {
   }
 
   cargarHistorias(page: number = 0) {
+    if (!this.validarFiltros()) return;
     this.currentPage = page;
     this.loadingStore.show();
     this.hcService.buscar({
@@ -72,10 +74,51 @@ export class ListaHcComponent implements OnInit {
     this.searchPropietario    = '';
     this.searchFechaDesde     = '';
     this.searchFechaHasta     = '';
+    this.filterError.set(null);
     this.cargarHistorias(0);
   }
 
   verDetalle(numeroHc: string) {
     this.router.navigate(['/historias-clinicas/mascota', numeroHc], { queryParams: { returnUrl: '/historias-clinicas' } });
+  }
+
+  private validarFiltros(): boolean {
+    this.searchNumeroHc = this.searchNumeroHc.trim().toUpperCase();
+    this.searchNombrePaciente = this.searchNombrePaciente.trim();
+    this.searchPropietario = this.searchPropietario.trim();
+    this.filterError.set(null);
+
+    if (this.searchNumeroHc && !/^HC-\d{1,6}$/.test(this.searchNumeroHc)) {
+      this.filterError.set('El código HC debe tener el formato HC-000001.');
+      return false;
+    }
+
+    if (!this.esNombreBusquedaValido(this.searchNombrePaciente)) {
+      this.filterError.set('Ingrese un nombre de paciente válido, sin exceso de símbolos.');
+      return false;
+    }
+
+    if (!this.esNombreBusquedaValido(this.searchPropietario)) {
+      this.filterError.set('Ingrese un nombre de propietario válido, sin exceso de símbolos.');
+      return false;
+    }
+
+    if (this.searchFechaDesde && this.searchFechaHasta && this.searchFechaDesde > this.searchFechaHasta) {
+      this.filterError.set('La fecha desde no puede ser mayor que la fecha hasta.');
+      return false;
+    }
+
+    return true;
+  }
+
+  private esNombreBusquedaValido(value: string): boolean {
+    if (!value) return true;
+    if (value.length > 80) return false;
+    if (!/\p{L}/u.test(value)) return false;
+    if (/^[\p{P}\p{S}\s]+$/u.test(value)) return false;
+    if (/[\p{P}\p{S}]{6,}/u.test(value)) return false;
+    if (/[{}\[\]<>*|\\^~`=@]/.test(value)) return false;
+    if (/<\s*\/?\s*(script|iframe|object|embed|style|img|svg|body|html|link|meta)\b|javascript:|data:text\/html|on\w+\s*=/i.test(value)) return false;
+    return /^[\p{L}\p{M}\s.'-]+$/u.test(value);
   }
 }
