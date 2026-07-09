@@ -68,6 +68,18 @@ export class ListaHcComponent implements OnInit {
   onFilterChange() { this.cargarHistorias(0); }
   onPageChange(e: any) { this.cargarHistorias(e.page); }
 
+  onNumeroHcInput(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const sanitized = this.sanitizeNumeroHc(input.value);
+
+    if (input.value !== sanitized) {
+      input.value = sanitized;
+    }
+
+    this.searchNumeroHc = sanitized;
+    this.filterError.set(null);
+  }
+
   resetFiltros() {
     this.searchNumeroHc       = '';
     this.searchNombrePaciente = '';
@@ -88,8 +100,8 @@ export class ListaHcComponent implements OnInit {
     this.searchPropietario = this.searchPropietario.trim();
     this.filterError.set(null);
 
-    if (this.searchNumeroHc && !/^HC-\d{1,6}$/.test(this.searchNumeroHc)) {
-      this.filterError.set('El código HC debe tener el formato HC-000001.');
+    if (this.searchNumeroHc && !/^HC-\d{6}$/.test(this.searchNumeroHc)) {
+      this.filterError.set('El codigo HC debe tener el formato HC-000001.');
       return false;
     }
 
@@ -130,6 +142,13 @@ export class ListaHcComponent implements OnInit {
     if (/[{}\[\]<>*|\\^~`=@]/.test(value)) return false;
     if (/<\s*\/?\s*(script|iframe|object|embed|style|img|svg|body|html|link|meta)\b|javascript:|data:text\/html|on\w+\s*=/i.test(value)) return false;
     return /^[\p{L}\p{M}\s.'-]+$/u.test(value);
+  }
+
+  private sanitizeNumeroHc(value: string): string {
+    return (value ?? '')
+      .toUpperCase()
+      .replace(/[^HC0-9-]/g, '')
+      .slice(0, 9);
   }
 
   private esFechaBusquedaValida(value: string): boolean {
