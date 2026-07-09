@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { AuthStore } from '../../../store/auth.store';
 
-type SearchCriterion = 'Por Codigo de Historia' | 'Por Nombre de Mascota' | 'Por Apellido Propietario';
+type SearchCriterion = 'Por Codigo de Historia' | 'Por Nombre de Mascota' | 'Por Apellido Propietario' | 'Por Fecha de Atencion';
 type SearchResult = 'Exito' | 'Fallo';
 
 interface ThesisMeasurement {
@@ -19,6 +19,8 @@ interface ThesisMeasurement {
   paciente: string;
   propietario: string;
   criterio: SearchCriterion;
+  fechaAtencionDesde?: string;
+  fechaAtencionHasta?: string;
   timeMs: number;
   result: SearchResult;
   observations: string;
@@ -35,6 +37,8 @@ interface ActiveMeasurementDraft {
   paciente: string;
   propietario: string;
   criterio: SearchCriterion;
+  fechaAtencionDesde?: string;
+  fechaAtencionHasta?: string;
   observations: string;
 }
 
@@ -52,7 +56,8 @@ export class Instrumento5Component {
   readonly criteria: SearchCriterion[] = [
     'Por Codigo de Historia',
     'Por Nombre de Mascota',
-    'Por Apellido Propietario'
+    'Por Apellido Propietario',
+    'Por Fecha de Atencion'
   ];
   readonly shifts = ['Manana', 'Tarde', 'Noche'];
 
@@ -67,6 +72,8 @@ export class Instrumento5Component {
   paciente = '';
   propietario = '';
   criterio: SearchCriterion = 'Por Codigo de Historia';
+  fechaAtencionDesde = '';
+  fechaAtencionHasta = '';
   observations = '';
 
   readonly successfulCount = computed(() => this.measurements().filter((item) => item.result === 'Exito').length);
@@ -93,6 +100,8 @@ export class Instrumento5Component {
       paciente: this.paciente.trim(),
       propietario: this.propietario.trim(),
       criterio: this.criterio,
+      fechaAtencionDesde: this.fechaAtencionDesde,
+      fechaAtencionHasta: this.fechaAtencionHasta,
       observations: this.observations.trim()
     };
 
@@ -119,6 +128,8 @@ export class Instrumento5Component {
       paciente: active.paciente,
       propietario: active.propietario,
       criterio: active.criterio,
+      fechaAtencionDesde: active.fechaAtencionDesde ?? '',
+      fechaAtencionHasta: active.fechaAtencionHasta ?? '',
       timeMs: elapsed,
       result,
       observations: this.observations.trim() || active.observations
@@ -206,8 +217,13 @@ export class Instrumento5Component {
       return false;
     }
 
-    if (!this.codigoHc && !this.paciente && !this.propietario) {
-      this.message.set('Ingresa al menos un dato del caso: codigo HC, paciente o propietario.');
+    if (this.fechaAtencionDesde && this.fechaAtencionHasta && this.fechaAtencionDesde > this.fechaAtencionHasta) {
+      this.message.set('La fecha de atencion desde no puede ser mayor que la fecha hasta.');
+      return false;
+    }
+
+    if (!this.codigoHc && !this.paciente && !this.propietario && !this.fechaAtencionDesde && !this.fechaAtencionHasta) {
+      this.message.set('Ingresa al menos un dato del caso: codigo HC, paciente, propietario o fecha de atencion.');
       return false;
     }
 
@@ -219,6 +235,8 @@ export class Instrumento5Component {
     this.codigoHc = '';
     this.paciente = '';
     this.propietario = '';
+    this.fechaAtencionDesde = '';
+    this.fechaAtencionHasta = '';
     this.observations = '';
   }
 
@@ -323,12 +341,12 @@ export class Instrumento5Component {
     sheet.columns = [
       { width: 7 }, { width: 13 }, { width: 16 }, { width: 16 }, { width: 12 }, { width: 24 },
       { width: 16 }, { width: 24 }, { width: 24 }, { width: 28 }, { width: 14 }, { width: 14 },
-      { width: 13 }, { width: 38 }
+      { width: 14 }, { width: 14 }, { width: 13 }, { width: 38 }
     ];
-    sheet.mergeCells('A1:N1');
+    sheet.mergeCells('A1:P1');
     sheet.getCell('A1').value = 'Tabla 5B. Registro de tiempos de busqueda - Fase postest (Sistema web)';
     this.styleTitle(sheet.getCell('A1'));
-    sheet.getRow(3).values = ['No.', 'Fecha', 'Hora inicio', 'Hora fin', 'Turno', 'Usuario', 'Codigo HC', 'Paciente', 'Propietario', 'Criterio de busqueda', 'Tiempo (ms)', 'Tiempo (seg)', 'Resultado', 'Observaciones'];
+    sheet.getRow(3).values = ['No.', 'Fecha', 'Hora inicio', 'Hora fin', 'Turno', 'Usuario', 'Codigo HC', 'Paciente', 'Propietario', 'Criterio de busqueda', 'Fecha atencion desde', 'Fecha atencion hasta', 'Tiempo (ms)', 'Tiempo (seg)', 'Resultado', 'Observaciones'];
     this.styleHeaderRow(sheet.getRow(3));
 
     for (let i = 1; i <= 100; i++) {
@@ -345,23 +363,34 @@ export class Instrumento5Component {
         item?.paciente ?? '',
         item?.propietario ?? '',
         item?.criterio ?? '',
+        item?.fechaAtencionDesde ?? '',
+        item?.fechaAtencionHasta ?? '',
         item?.timeMs ?? '',
-        item ? { formula: `K${i + 3}/1000` } : '',
+        item ? Number((item.timeMs / 1000).toFixed(3)) : '',
         item?.result ?? '',
         item?.observations ?? ''
       ];
       row.eachCell((cell: any) => this.styleBodyCell(cell));
-      if (item?.result === 'Exito') row.getCell(13).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDCFCE7' } };
-      if (item?.result === 'Fallo') row.getCell(13).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEE2E2' } };
+      if (item?.result === 'Exito') row.getCell(15).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDCFCE7' } };
+      if (item?.result === 'Fallo') row.getCell(15).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEE2E2' } };
     }
 
-    sheet.getColumn(11).numFmt = '#,##0';
-    sheet.getColumn(12).numFmt = '0.000';
-    sheet.autoFilter = 'A3:N103';
+    sheet.getColumn(11).numFmt = 'yyyy-mm-dd';
+    sheet.getColumn(12).numFmt = 'yyyy-mm-dd';
+    sheet.getColumn(13).numFmt = '#,##0';
+    sheet.getColumn(14).numFmt = '0.000';
+    sheet.autoFilter = 'A3:P103';
   }
 
   private buildSummarySheet(workbook: any) {
     const sheet = workbook.addWorksheet('Resumen', { views: [{ showGridLines: false }] });
+    const records = this.measurements();
+    const successful = records.filter((item) => item.result === 'Exito');
+    const failed = records.filter((item) => item.result === 'Fallo');
+    const successfulTimes = successful.map((item) => item.timeMs).sort((a, b) => a - b);
+    const averageMs = successfulTimes.length ? Math.round(successfulTimes.reduce((sum, value) => sum + value, 0) / successfulTimes.length) : 0;
+    const medianMs = this.calculateMedian(successfulTimes);
+
     sheet.columns = [{ width: 34 }, { width: 18 }, { width: 6 }, { width: 30 }, { width: 14 }, { width: 16 }];
     sheet.mergeCells('A1:F1');
     sheet.getCell('A1').value = 'Resumen del Instrumento 5 - Postest';
@@ -381,15 +410,15 @@ export class Instrumento5Component {
       this.styleBodyCell(sheet.getCell(`B${row}`));
     });
 
-    sheet.getCell('B3').value = { formula: 'COUNT(\'5B_Postest\'!K4:K103)' };
-    sheet.getCell('B4').value = { formula: 'COUNTIF(\'5B_Postest\'!M4:M103,"Exito")' };
-    sheet.getCell('B5').value = { formula: 'COUNTIF(\'5B_Postest\'!M4:M103,"Fallo")' };
-    sheet.getCell('B6').value = { formula: 'IFERROR(AVERAGEIF(\'5B_Postest\'!M4:M103,"Exito",\'5B_Postest\'!K4:K103),0)' };
-    sheet.getCell('B7').value = { formula: 'IFERROR(B6/1000,0)' };
-    sheet.getCell('B8').value = { formula: 'IFERROR(MINIFS(\'5B_Postest\'!K4:K103,\'5B_Postest\'!M4:M103,"Exito"),0)' };
-    sheet.getCell('B9').value = { formula: 'IFERROR(MAXIFS(\'5B_Postest\'!K4:K103,\'5B_Postest\'!M4:M103,"Exito"),0)' };
-    sheet.getCell('B10').value = { formula: 'IFERROR(MEDIAN(FILTER(\'5B_Postest\'!K4:K103,\'5B_Postest\'!M4:M103="Exito")),0)' };
-    sheet.getCell('B11').value = { formula: 'IFERROR(B4/B3,0)' };
+    sheet.getCell('B3').value = records.filter((item) => item.timeMs != null).length;
+    sheet.getCell('B4').value = successful.length;
+    sheet.getCell('B5').value = failed.length;
+    sheet.getCell('B6').value = averageMs;
+    sheet.getCell('B7').value = Number((averageMs / 1000).toFixed(3));
+    sheet.getCell('B8').value = successfulTimes.length ? successfulTimes[0] : 0;
+    sheet.getCell('B9').value = successfulTimes.length ? successfulTimes[successfulTimes.length - 1] : 0;
+    sheet.getCell('B10').value = medianMs;
+    sheet.getCell('B11').value = records.length ? successful.length / records.length : 0;
     sheet.getCell('B7').numFmt = '0.000';
     sheet.getCell('B11').numFmt = '0.0%';
 
@@ -399,9 +428,13 @@ export class Instrumento5Component {
     this.styleHeaderRow(sheet.getRow(3), 4, 6);
     this.criteria.forEach((criterion, index) => {
       const row = index + 4;
+      const criterionRecords = successful.filter((item) => item.criterio === criterion);
+      const criterionAverage = criterionRecords.length
+        ? Math.round(criterionRecords.reduce((sum, item) => sum + item.timeMs, 0) / criterionRecords.length)
+        : 0;
       sheet.getCell(`D${row}`).value = criterion;
-      sheet.getCell(`E${row}`).value = { formula: `COUNTIFS('5B_Postest'!J4:J103,D${row},'5B_Postest'!M4:M103,"Exito")` };
-      sheet.getCell(`F${row}`).value = { formula: `IFERROR(AVERAGEIFS('5B_Postest'!K4:K103,'5B_Postest'!J4:J103,D${row},'5B_Postest'!M4:M103,"Exito"),0)` };
+      sheet.getCell(`E${row}`).value = criterionRecords.length;
+      sheet.getCell(`F${row}`).value = criterionAverage;
       ['D', 'E', 'F'].forEach((col) => this.styleBodyCell(sheet.getCell(`${col}${row}`)));
     });
 
@@ -430,9 +463,19 @@ export class Instrumento5Component {
       ['Turno', 'Criterio', 'Resultado'],
       ['Manana', 'Por Codigo de Historia', 'Exito'],
       ['Tarde', 'Por Nombre de Mascota', 'Fallo'],
-      ['Noche', 'Por Apellido Propietario', '']
+      ['Noche', 'Por Apellido Propietario', ''],
+      ['', 'Por Fecha de Atencion', '']
     ]);
     this.styleHeaderRow(sheet.getRow(1), 1, 3);
+  }
+
+  private calculateMedian(sortedValues: number[]): number {
+    if (sortedValues.length === 0) return 0;
+    const middle = Math.floor(sortedValues.length / 2);
+    if (sortedValues.length % 2 === 1) {
+      return sortedValues[middle];
+    }
+    return Math.round((sortedValues[middle - 1] + sortedValues[middle]) / 2);
   }
 
   private styleTitle(cell: any) {
