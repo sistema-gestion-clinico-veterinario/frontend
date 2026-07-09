@@ -93,6 +93,13 @@
             <p class="text-sm font-extrabold text-slate-800">{{ active()?.propietario || '-' }}</p>
           </div>
           <div>
+            <p class="text-xs font-bold text-slate-500">Fecha atencion</p>
+            <p class="text-sm font-extrabold text-slate-800">
+              {{ active()?.fechaAtencionDesde || '-' }}
+              <span *ngIf="active()?.fechaAtencionHasta"> a {{ active()?.fechaAtencionHasta }}</span>
+            </p>
+          </div>
+          <div>
             <p class="text-xs font-bold text-slate-500">Usuario</p>
             <p class="text-sm font-extrabold text-slate-800">{{ active()?.user }}</p>
           </div>
@@ -139,6 +146,17 @@
               class="h-11 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm font-semibold text-slate-700 outline-none focus:border-[#0066AA]">
               <option *ngFor="let item of criteria" [value]="item">{{ item }}</option>
             </select>
+          </div>
+          <div>
+            <label class="mb-1 block text-xs font-extrabold uppercase tracking-wide text-slate-500">Fecha atencion desde</label>
+            <input type="date" [(ngModel)]="fechaAtencionDesde" name="fechaAtencionDesde"
+              class="h-11 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm font-semibold text-slate-700 outline-none focus:border-[#0066AA]" />
+          </div>
+          <div>
+            <label class="mb-1 block text-xs font-extrabold uppercase tracking-wide text-slate-500">Fecha atencion hasta</label>
+            <input type="date" [(ngModel)]="fechaAtencionHasta" name="fechaAtencionHasta"
+              [min]="fechaAtencionDesde || null"
+              class="h-11 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm font-semibold text-slate-700 outline-none focus:border-[#0066AA]" />
           </div>
           <div class="md:col-span-2 xl:col-span-4">
             <label class="mb-1 block text-xs font-extrabold uppercase tracking-wide text-slate-500">Observaciones</label>
@@ -203,6 +221,7 @@
             <th class="px-3 py-3">Paciente</th>
             <th class="px-3 py-3">Propietario</th>
             <th class="px-3 py-3">Criterio</th>
+            <th class="px-3 py-3">Fecha atencion</th>
             <th class="px-3 py-3">Tiempo</th>
             <th class="px-3 py-3">Resultado</th>
             <th class="px-3 py-3"></th>
@@ -217,6 +236,10 @@
             <td class="px-3 py-3 text-slate-700">{{ item.paciente || '-' }}</td>
             <td class="px-3 py-3 text-slate-700">{{ item.propietario || '-' }}</td>
             <td class="px-3 py-3 text-slate-500">{{ item.criterio }}</td>
+            <td class="px-3 py-3 text-slate-500">
+              {{ item.fechaAtencionDesde || '-' }}
+              <span *ngIf="item.fechaAtencionHasta"> a {{ item.fechaAtencionHasta }}</span>
+            </td>
             <td class="px-3 py-3 font-bold text-slate-800">{{ item.timeMs }} ms <span class="text-slate-400">({{ formatDuration(item.timeMs) }})</span></td>
             <td class="px-3 py-3">
               <span [class]="item.result === 'Exito' ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-600'"
@@ -231,7 +254,7 @@
             </td>
           </tr>
           <tr *ngIf="measurements().length === 0">
-            <td colspan="10" class="px-3 py-12 text-center text-sm font-bold text-slate-400">Aun no hay mediciones registradas.</td>
+            <td colspan="11" class="px-3 py-12 text-center text-sm font-bold text-slate-400">Aun no hay mediciones registradas.</td>
           </tr>
         </tbody>
       </table>
