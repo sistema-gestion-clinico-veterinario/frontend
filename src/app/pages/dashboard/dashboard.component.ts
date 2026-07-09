@@ -51,7 +51,22 @@ export class DashboardComponent implements OnInit {
   isRecepcionista = this.roles.includes(Role.RECEPCIONISTA);
 
   readonly today       = new Date();
-  readonly companyName = this.authStore.companyName() ?? '';
+  get dashboardScopeLabel(): string {
+    if (this.isGlobalSuperAdminMode) return 'Todas las empresas';
+    return this.authStore.selectedEnterprise()?.name ?? this.authStore.companyName() ?? '';
+  }
+
+  get companyName(): string {
+    return this.dashboardScopeLabel;
+  }
+
+  get scopeDescription(): string {
+    return this.isGlobalSuperAdminMode ? 'del sistema' : 'de la sede';
+  }
+
+  get isGlobalSuperAdminMode(): boolean {
+    return this.isSuperAdmin && !this.authStore.selectedEnterprise()?.establishmentId;
+  }
 
   stats              = signal<DashboardStats | null>(null);
   companies          = signal<any[]>([]);
@@ -350,6 +365,13 @@ export class DashboardComponent implements OnInit {
     if (this.canViewAuditoria()) {
       this.loadRecentLogs();
     }
+    if (this.isGlobalSuperAdminMode) {
+      this.clearCompanyScopedLists();
+      if (this.isSuperAdmin || this.canView('VISTA_COMPANY')) {
+        this.loadCompanies();
+      }
+      return;
+    }
     if (this.canViewEmpleados()) {
       this.loadEmployees(companyId);
     }
@@ -374,6 +396,18 @@ export class DashboardComponent implements OnInit {
     if (this.isSuperAdmin || this.canView('VISTA_COMPANY')) {
       this.loadCompanies();
     }
+  }
+
+  private clearCompanyScopedLists() {
+    this.employeesList.set([]);
+    this.todayAppointmentsList.set([]);
+    this.petsList.set([]);
+    this.rolesList.set([]);
+    this.apoderadosList.set([]);
+    this.schedulesReport.set([]);
+    this.allAppointments.set([]);
+    this.pagos.set([]);
+    this.loadingPagos.set(false);
   }
 
   loadStats(companyId?: number) {

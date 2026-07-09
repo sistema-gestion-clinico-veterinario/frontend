@@ -21,7 +21,7 @@
           <span [class]="'text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider ' + roleBadgeClass">
             {{ rolePrincipal }}
           </span>
-          <span *ngIf="companyName" class="text-xs text-slate-400 font-medium">
+          <span *ngIf="dashboardScopeLabel" class="text-xs text-slate-400 font-medium">
             · {{ companyName }}
           </span>
         </div>
@@ -53,7 +53,7 @@
           <p class="text-2xl sm:text-2xl font-black text-slate-900 leading-none">
             {{ stats()?.totalPacientes ?? '—' }}
           </p>
-          <p class="text-[11px] sm:text-[11px] text-slate-400 font-medium mt-1 sm:mt-1">mascotas registradas</p>
+          <p class="text-[11px] sm:text-[11px] text-slate-400 font-medium mt-1 sm:mt-1">mascotas registradas {{ scopeDescription }}</p>
         </div>
       </div>
 
@@ -69,7 +69,7 @@
           <p class="text-2xl sm:text-2xl font-black text-white leading-none">
             {{ stats()?.totalCitasHoy ?? '—' }}
           </p>
-          <p class="text-[11px] sm:text-[11px] text-blue-200 font-medium mt-1 sm:mt-1">programadas</p>
+          <p class="text-[11px] sm:text-[11px] text-blue-200 font-medium mt-1 sm:mt-1">programadas {{ scopeDescription }}</p>
         </div>
       </div>
 
@@ -85,7 +85,7 @@
           <p class="text-2xl sm:text-2xl font-black text-slate-900 leading-none">
             {{ stats()?.totalCitas ?? '—' }}
           </p>
-          <p class="text-[11px] sm:text-[11px] text-slate-400 font-medium mt-1 sm:mt-1">acumuladas</p>
+          <p class="text-[11px] sm:text-[11px] text-slate-400 font-medium mt-1 sm:mt-1">acumuladas {{ scopeDescription }}</p>
         </div>
       </div>
 
@@ -101,7 +101,7 @@
           <p class="text-2xl sm:text-2xl font-black text-slate-900 leading-none">
             {{ stats()?.totalEmpleados ?? '—' }}
           </p>
-          <p class="text-[11px] sm:text-[11px] text-slate-400 font-medium mt-1 sm:mt-1">empleados activos</p>
+          <p class="text-[11px] sm:text-[11px] text-slate-400 font-medium mt-1 sm:mt-1">empleados activos {{ scopeDescription }}</p>
         </div>
       </div>
 
@@ -214,7 +214,7 @@
         </div>
 
         <!-- 👥 USUARIOS REGISTRADOS (PERSONAL) -->
-        <div *ngIf="canViewEmpleados()" class="bg-white rounded-2xl border border-slate-100 p-0 overflow-hidden">
+        <div *ngIf="!isGlobalSuperAdminMode && canViewEmpleados()" class="bg-white rounded-2xl border border-slate-100 p-0 overflow-hidden">
           <div class="px-3 sm:px-6 py-2.5 sm:py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
             <div class="min-w-0">
               <h2 class="text-[9px] sm:text-xs font-black text-slate-800 uppercase tracking-widest flex items-center gap-1.5 sm:gap-2">
@@ -293,7 +293,7 @@
         </div>
 
             <!-- 👥 APODERADOS REGISTRADOS (CLIENTES) -->
-        <div *ngIf="canViewClientes()" class="bg-white rounded-2xl border border-slate-100 p-0 overflow-hidden">
+        <div *ngIf="!isGlobalSuperAdminMode && canViewClientes()" class="bg-white rounded-2xl border border-slate-100 p-0 overflow-hidden">
           <div class="px-3 sm:px-6 py-2.5 sm:py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
             <div class="min-w-0">
               <h2 class="text-[9px] sm:text-xs font-black text-slate-800 uppercase tracking-widest flex items-center gap-1.5 sm:gap-2">
@@ -401,7 +401,7 @@
           </div>
         </div>
         <!-- 🐾 MASCOTAS REGISTRADAS -->
-        <div *ngIf="canViewMascotas()" class="bg-white rounded-2xl border border-slate-100 p-0 overflow-hidden">
+        <div *ngIf="!isGlobalSuperAdminMode && canViewMascotas()" class="bg-white rounded-2xl border border-slate-100 p-0 overflow-hidden">
           <div class="px-3 sm:px-6 py-2.5 sm:py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
             <div class="min-w-0">
               <h2 class="text-[9px] sm:text-xs font-black text-slate-800 uppercase tracking-widest flex items-center gap-1.5 sm:gap-2">
@@ -435,7 +435,7 @@
         </div>
 
         <!-- 📊 DISTRIBUCIÓN DE SERVICIOS -->
-        <div *ngIf="canViewCitas()" class="bg-white rounded-2xl border border-slate-100 p-0 overflow-hidden">
+        <div *ngIf="!isGlobalSuperAdminMode && canViewCitas()" class="bg-white rounded-2xl border border-slate-100 p-0 overflow-hidden">
           <div class="px-3 sm:px-6 py-2.5 sm:py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
             <div class="min-w-0">
               <h2 class="text-[9px] sm:text-xs font-black text-slate-800 uppercase tracking-widest flex items-center gap-1.5 sm:gap-2">
@@ -517,7 +517,7 @@
               <div class="w-6 h-6 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
                 <i class="pi pi-building text-[10px] text-slate-400"></i>
               </div>
-              <span class="text-xs text-slate-600 font-semibold truncate">{{ companyName }}</span>
+              <span class="text-xs text-slate-600 font-semibold truncate">{{ dashboardScopeLabel }}</span>
             </div>
 
             <div class="flex items-center gap-2.5">
@@ -530,7 +530,7 @@
         </div>
 
         <!-- 📅 CITAS DEL DÍA -->
-        <div *ngIf="canViewCitas()" class="bg-white rounded-2xl border border-slate-100 p-0 overflow-hidden">
+        <div *ngIf="!isGlobalSuperAdminMode && canViewCitas()" class="bg-white rounded-2xl border border-slate-100 p-0 overflow-hidden">
           <div class="px-3 sm:px-6 py-2.5 sm:py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
             <div class="min-w-0">
               <h2 class="text-[9px] sm:text-xs font-black text-slate-800 uppercase tracking-widest flex items-center gap-1.5 sm:gap-2">
@@ -571,7 +571,7 @@
         </div>
 
         <!-- 🩺 PERSONAL DE TURNO -->
-        <div *ngIf="canViewHorarios()" class="bg-white rounded-2xl border border-slate-100 p-0 overflow-hidden">
+        <div *ngIf="!isGlobalSuperAdminMode && canViewHorarios()" class="bg-white rounded-2xl border border-slate-100 p-0 overflow-hidden">
           <div class="px-3 sm:px-6 py-2.5 sm:py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
             <div class="min-w-0">
               <h2 class="text-[9px] sm:text-xs font-black text-slate-800 uppercase tracking-widest flex items-center gap-1.5 sm:gap-2">
@@ -606,7 +606,7 @@
         </div>
 
         <!-- 🛡️ ROLES POR EMPRESA -->
-        <div *ngIf="canViewRoles()" class="bg-white rounded-2xl border border-slate-100 p-0 overflow-hidden">
+        <div *ngIf="!isGlobalSuperAdminMode && canViewRoles()" class="bg-white rounded-2xl border border-slate-100 p-0 overflow-hidden">
           <div class="px-3 sm:px-6 py-2.5 sm:py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
             <div class="min-w-0">
               <h2 class="text-[9px] sm:text-xs font-black text-slate-800 uppercase tracking-widest flex items-center gap-1.5 sm:gap-2">
@@ -692,7 +692,7 @@
         </div>
 
         <!-- 💳 PAGOS RECIENTES -->
-        <div *ngIf="canViewPayments()" class="bg-white rounded-2xl border border-slate-100 p-0 overflow-hidden">
+        <div *ngIf="!isGlobalSuperAdminMode && canViewPayments()" class="bg-white rounded-2xl border border-slate-100 p-0 overflow-hidden">
           <div class="px-3 sm:px-6 py-2.5 sm:py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
             <div class="flex items-center gap-1.5 sm:gap-3 min-w-0">
               <div class="w-6 h-6 sm:w-8 sm:h-8 rounded-xl bg-emerald-50 flex items-center justify-center border border-emerald-100 shrink-0">
