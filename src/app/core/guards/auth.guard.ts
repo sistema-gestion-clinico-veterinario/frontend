@@ -24,6 +24,10 @@ function validateAccess(route: ActivatedRouteSnapshot, authStore: any, router: R
     return router.createUrlTree(['/login']);
   }
 
+  if (route.data?.['thesisTool']) {
+    return true;
+  }
+
   // Dynamic route pattern access check
   const pattern = getRoutePattern(route);
   if (pattern && !isRoleDashboardRoute(pattern, currentRoles) && !authStore.hasRouteAccess(pattern)) {

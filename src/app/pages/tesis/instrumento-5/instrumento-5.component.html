@@ -1,0 +1,240 @@
+<div class="min-h-screen bg-slate-50 p-4 sm:p-6 lg:p-5 font-['Barlow']">
+  <div class="mb-5 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+    <div>
+      <p class="text-xs font-extrabold uppercase tracking-wider text-[#0066AA]">Instrumento 5 - Postest</p>
+      <h1 class="mt-1 text-2xl sm:text-3xl font-extrabold text-slate-900 leading-tight">Medicion de busqueda de historias clinicas</h1>
+      <p class="mt-1 text-sm font-medium text-slate-500">Registra el tiempo operativo del usuario desde que inicia la busqueda hasta que valida la historia clinica encontrada.</p>
+    </div>
+
+    <div class="flex flex-wrap gap-2">
+      <button
+        type="button"
+        (click)="openClinicalRecords()"
+        class="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 text-sm font-bold text-slate-600 transition hover:bg-slate-100">
+        <i class="pi pi-folder-open text-xs"></i>
+        Abrir historias
+      </button>
+      <button
+        type="button"
+        (click)="exportExcel()"
+        [disabled]="measurements().length === 0"
+        class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-[#0066AA] px-4 text-sm font-bold text-white transition hover:bg-[#00558E] disabled:cursor-not-allowed disabled:opacity-50">
+        <i class="pi pi-download text-xs"></i>
+        Exportar Excel
+      </button>
+    </div>
+  </div>
+
+  <div class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+    <section class="rounded-xl border border-slate-200 bg-white p-4">
+      <div class="mb-4 grid gap-3 md:grid-cols-3">
+        <div class="rounded-lg bg-blue-50 p-3">
+          <p class="text-xs font-bold text-slate-500">Registros</p>
+          <p class="mt-1 text-2xl font-extrabold text-slate-900">{{ measurements().length }}/100</p>
+        </div>
+        <div class="rounded-lg bg-emerald-50 p-3">
+          <p class="text-xs font-bold text-emerald-700">Exitos</p>
+          <p class="mt-1 text-2xl font-extrabold text-emerald-800">{{ successfulCount() }}</p>
+        </div>
+        <div class="rounded-lg bg-slate-100 p-3">
+          <p class="text-xs font-bold text-slate-500">TPB promedio</p>
+          <p class="mt-1 text-2xl font-extrabold text-slate-900">{{ averageMs() }} ms</p>
+        </div>
+      </div>
+
+      <div *ngIf="message()" class="mb-4 rounded-lg border border-blue-100 bg-blue-50 px-3 py-2 text-sm font-semibold text-[#00558E]">
+        {{ message() }}
+      </div>
+
+      <div *ngIf="active(); else formBlock" class="rounded-xl border border-[#0066AA] bg-blue-50 p-4">
+        <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p class="text-xs font-extrabold uppercase tracking-wider text-[#0066AA]">Medicion activa</p>
+            <h2 class="mt-1 text-xl font-extrabold text-slate-900">Caso {{ active()?.number }} - {{ active()?.criterio }}</h2>
+            <p class="mt-1 text-sm font-medium text-slate-600">
+              Inicio: {{ active()?.date }} {{ active()?.startTime }}
+            </p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button
+              type="button"
+              (click)="finishMeasurement('Exito')"
+              class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 text-sm font-bold text-white hover:bg-emerald-700">
+              <i class="pi pi-check text-xs"></i>
+              Encontrado
+            </button>
+            <button
+              type="button"
+              (click)="finishMeasurement('Fallo')"
+              class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-rose-600 px-4 text-sm font-bold text-white hover:bg-rose-700">
+              <i class="pi pi-times text-xs"></i>
+              Fallo
+            </button>
+            <button
+              type="button"
+              (click)="cancelActive()"
+              class="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 text-sm font-bold text-slate-600 hover:bg-slate-100">
+              Cancelar
+            </button>
+          </div>
+        </div>
+
+        <div class="mt-4 grid gap-3 md:grid-cols-4">
+          <div>
+            <p class="text-xs font-bold text-slate-500">Codigo HC</p>
+            <p class="text-sm font-extrabold text-slate-800">{{ active()?.codigoHc || '-' }}</p>
+          </div>
+          <div>
+            <p class="text-xs font-bold text-slate-500">Paciente</p>
+            <p class="text-sm font-extrabold text-slate-800">{{ active()?.paciente || '-' }}</p>
+          </div>
+          <div>
+            <p class="text-xs font-bold text-slate-500">Propietario</p>
+            <p class="text-sm font-extrabold text-slate-800">{{ active()?.propietario || '-' }}</p>
+          </div>
+          <div>
+            <p class="text-xs font-bold text-slate-500">Usuario</p>
+            <p class="text-sm font-extrabold text-slate-800">{{ active()?.user }}</p>
+          </div>
+        </div>
+      </div>
+
+      <ng-template #formBlock>
+        <form class="grid gap-3 md:grid-cols-2 xl:grid-cols-4" (ngSubmit)="startMeasurement()">
+          <div>
+            <label class="mb-1 block text-xs font-extrabold uppercase tracking-wide text-slate-500">No. caso</label>
+            <input type="number" min="1" max="100" [(ngModel)]="caseNumber" name="caseNumber"
+              class="h-11 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm font-semibold text-slate-700 outline-none focus:border-[#0066AA]" />
+          </div>
+          <div>
+            <label class="mb-1 block text-xs font-extrabold uppercase tracking-wide text-slate-500">Turno</label>
+            <select [(ngModel)]="shift" name="shift"
+              class="h-11 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm font-semibold text-slate-700 outline-none focus:border-[#0066AA]">
+              <option *ngFor="let item of shifts" [value]="item">{{ item }}</option>
+            </select>
+          </div>
+          <div class="md:col-span-2">
+            <label class="mb-1 block text-xs font-extrabold uppercase tracking-wide text-slate-500">Usuario</label>
+            <input type="text" maxlength="80" [(ngModel)]="user" name="user"
+              class="h-11 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm font-semibold text-slate-700 outline-none focus:border-[#0066AA]" />
+          </div>
+          <div>
+            <label class="mb-1 block text-xs font-extrabold uppercase tracking-wide text-slate-500">Codigo HC</label>
+            <input type="text" maxlength="9" [(ngModel)]="codigoHc" name="codigoHc" placeholder="HC-000001"
+              class="h-11 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 font-mono text-sm font-semibold text-slate-700 outline-none focus:border-[#0066AA]" />
+          </div>
+          <div>
+            <label class="mb-1 block text-xs font-extrabold uppercase tracking-wide text-slate-500">Paciente</label>
+            <input type="text" maxlength="80" [(ngModel)]="paciente" name="paciente"
+              class="h-11 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm font-semibold text-slate-700 outline-none focus:border-[#0066AA]" />
+          </div>
+          <div>
+            <label class="mb-1 block text-xs font-extrabold uppercase tracking-wide text-slate-500">Propietario</label>
+            <input type="text" maxlength="80" [(ngModel)]="propietario" name="propietario"
+              class="h-11 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm font-semibold text-slate-700 outline-none focus:border-[#0066AA]" />
+          </div>
+          <div>
+            <label class="mb-1 block text-xs font-extrabold uppercase tracking-wide text-slate-500">Criterio</label>
+            <select [(ngModel)]="criterio" name="criterio"
+              class="h-11 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm font-semibold text-slate-700 outline-none focus:border-[#0066AA]">
+              <option *ngFor="let item of criteria" [value]="item">{{ item }}</option>
+            </select>
+          </div>
+          <div class="md:col-span-2 xl:col-span-4">
+            <label class="mb-1 block text-xs font-extrabold uppercase tracking-wide text-slate-500">Observaciones</label>
+            <textarea rows="2" maxlength="250" [(ngModel)]="observations" name="observations"
+              class="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700 outline-none focus:border-[#0066AA]"></textarea>
+          </div>
+          <div class="md:col-span-2 xl:col-span-4 flex flex-wrap justify-end gap-2">
+            <button
+              type="button"
+              routerLink="/historias-clinicas"
+              class="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 text-sm font-bold text-slate-600 hover:bg-slate-100">
+              <i class="pi pi-search text-xs"></i>
+              Ir al buscador
+            </button>
+            <button
+              type="submit"
+              class="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-[#0066AA] px-5 text-sm font-bold text-white hover:bg-[#00558E]">
+              <i class="pi pi-play text-xs"></i>
+              Iniciar medicion
+            </button>
+          </div>
+        </form>
+      </ng-template>
+    </section>
+
+    <aside class="rounded-xl border border-slate-200 bg-white p-4">
+      <h2 class="text-lg font-extrabold text-slate-900">Flujo de medicion</h2>
+      <ol class="mt-3 space-y-3 text-sm font-medium text-slate-600">
+        <li><span class="font-extrabold text-[#0066AA]">1.</span> Ingresa los datos del caso.</li>
+        <li><span class="font-extrabold text-[#0066AA]">2.</span> Presiona <strong>Iniciar medicion</strong>.</li>
+        <li><span class="font-extrabold text-[#0066AA]">3.</span> Busca en Historias Clinicas.</li>
+        <li><span class="font-extrabold text-[#0066AA]">4.</span> Al validar el resultado, marca <strong>Encontrado</strong> o <strong>Fallo</strong>.</li>
+        <li><span class="font-extrabold text-[#0066AA]">5.</span> Exporta el Excel al terminar la muestra.</li>
+      </ol>
+      <div class="mt-4 rounded-lg bg-slate-50 p-3 text-xs font-semibold text-slate-500">
+        Los datos se guardan solo en este navegador. No se modifica la base de datos ni las historias clinicas reales.
+      </div>
+    </aside>
+  </div>
+
+  <section class="mt-4 rounded-xl border border-slate-200 bg-white p-4">
+    <div class="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+      <h2 class="text-lg font-extrabold text-slate-900">Mediciones registradas</h2>
+      <button
+        type="button"
+        (click)="clearAll()"
+        [disabled]="measurements().length === 0"
+        class="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-rose-100 bg-rose-50 px-3 text-xs font-bold text-rose-600 hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-50">
+        <i class="pi pi-trash text-xs"></i>
+        Limpiar mediciones
+      </button>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full min-w-[1100px] text-sm">
+        <thead>
+          <tr class="border-b border-slate-100 bg-slate-50 text-left text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+            <th class="px-3 py-3">No.</th>
+            <th class="px-3 py-3">Fecha</th>
+            <th class="px-3 py-3">Usuario</th>
+            <th class="px-3 py-3">Codigo HC</th>
+            <th class="px-3 py-3">Paciente</th>
+            <th class="px-3 py-3">Propietario</th>
+            <th class="px-3 py-3">Criterio</th>
+            <th class="px-3 py-3">Tiempo</th>
+            <th class="px-3 py-3">Resultado</th>
+            <th class="px-3 py-3"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of measurements()" class="border-b border-slate-100 last:border-0">
+            <td class="px-3 py-3 font-bold text-slate-700">{{ item.number }}</td>
+            <td class="px-3 py-3 text-slate-500">{{ item.date }}</td>
+            <td class="px-3 py-3 text-slate-600">{{ item.user }}</td>
+            <td class="px-3 py-3 font-mono font-extrabold text-[#0066AA]">{{ item.codigoHc || '-' }}</td>
+            <td class="px-3 py-3 text-slate-700">{{ item.paciente || '-' }}</td>
+            <td class="px-3 py-3 text-slate-700">{{ item.propietario || '-' }}</td>
+            <td class="px-3 py-3 text-slate-500">{{ item.criterio }}</td>
+            <td class="px-3 py-3 font-bold text-slate-800">{{ item.timeMs }} ms <span class="text-slate-400">({{ formatDuration(item.timeMs) }})</span></td>
+            <td class="px-3 py-3">
+              <span [class]="item.result === 'Exito' ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-600'"
+                class="rounded-full px-2.5 py-1 text-xs font-extrabold">
+                {{ item.result }}
+              </span>
+            </td>
+            <td class="px-3 py-3 text-right">
+              <button type="button" (click)="deleteMeasurement(item.id)" class="text-xs font-bold text-rose-500 hover:text-rose-700">
+                Eliminar
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="measurements().length === 0">
+            <td colspan="10" class="px-3 py-12 text-center text-sm font-bold text-slate-400">Aun no hay mediciones registradas.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
