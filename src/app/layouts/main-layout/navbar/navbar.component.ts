@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, output, signal, HostListener } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { finalize } from 'rxjs';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { AuthStore } from '../../../store/auth.store';
@@ -34,6 +35,7 @@ export class NavbarComponent implements OnInit {
   dropdownOpen = signal(false);
   companyDropdownOpen = signal(false);
   activeRoleDropdownOpen = signal(false);
+  roleSwitching = signal(false);
 
   get userName(): string { return this.authStore.nombreCompleto() ?? 'Usuario'; }
   get companyName(): string { return this.authStore.selectedEnterprise()?.name ?? this.authStore.companyName() ?? 'VargasVet'; }
@@ -44,6 +46,7 @@ export class NavbarComponent implements OnInit {
 
   get activeCompanyLabel(): string {
     const activeId = this.activeCompanyId;
+    if (!activeId && this.isSuperAdmin) return 'Todas las empresas';
     const found = this.companies().find(c => c.value === activeId);
     return found ? found.label : 'Seleccionar Empresa';
   }
@@ -88,11 +91,7 @@ export class NavbarComponent implements OnInit {
           this.companies.set(list);
 
           const currentSelected = this.authStore.selectedEnterprise();
-          if (!currentSelected && list.length > 0) {
-            const firstCompany = list[0];
-            this.authStore.setSelectedEnterprise({ establishmentId: firstCompany.value, name: firstCompany.label });
-            this.loadCompanyRoles(firstCompany.value);
-          } else if (currentSelected) {
+          if (currentSelected) {
             this.loadCompanyRoles(currentSelected.establishmentId);
           }
           this.authStore.setLoadingEnterprise(false);
@@ -120,7 +119,22 @@ export class NavbarComponent implements OnInit {
     this.companyDropdownOpen.set(false);
   }
 
+  toggleCompanyDropdown() {
+    this.companyDropdownOpen.update(v => !v);
+    if (this.companyDropdownOpen()) {
+      this.activeRoleDropdownOpen.set(false);
+      this.dropdownOpen.set(false);
+    }
+  }
 
+  toggleActiveRoleDropdown() {
+    if (this.roleSwitching()) return;
+    this.activeRoleDropdownOpen.update(v => !v);
+    if (this.activeRoleDropdownOpen()) {
+      this.companyDropdownOpen.set(false);
+      this.dropdownOpen.set(false);
+    }
+  }
 
   getRoleLabel(roleName: string): string {
     const mapping: Record<string, string> = {
@@ -135,8 +149,20 @@ export class NavbarComponent implements OnInit {
   }
 
   selectActiveRole(selectedRole: string) {
-    if (selectedRole) {
-      this.authService.switchRole(selectedRole).subscribe({
+    if (!selectedRole || this.roleSwitching()) return;
+
+    if (selectedRole === this.authStore.roles()[0]) {
+      this.activeRoleDropdownOpen.set(false);
+      return;
+    }
+
+    this.roleSwitching.set(true);
+    this.authService.switchRole(selectedRole).pipe(
+      finalize(() => {
+        this.roleSwitching.set(false);
+        this.activeRoleDropdownOpen.set(false);
+      })
+    ).subscribe({
         next: (res) => {
           this.authStore.setAuth({
             token: null,
@@ -162,15 +188,16 @@ export class NavbarComponent implements OnInit {
         error: (err) => {
           const msg = err.error?.message || 'No se pudo cambiar el rol';
           this.messageService.add({ severity: 'error', summary: 'Error', detail: msg });
-          this.activeRoleDropdownOpen.set(false);
         }
       });
-    }
-    this.activeRoleDropdownOpen.set(false);
   }
 
   toggleDropdown() {
     this.dropdownOpen.update(v => !v);
+    if (this.dropdownOpen()) {
+      this.companyDropdownOpen.set(false);
+      this.activeRoleDropdownOpen.set(false);
+    }
   }
 
   goToProfile() {
