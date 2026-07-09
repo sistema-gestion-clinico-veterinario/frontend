@@ -24,8 +24,11 @@
         <input
           type="text"
           [(ngModel)]="searchNumeroHc"
+          (input)="onNumeroHcInput($event)"
           (keyup.enter)="onFilterChange()"
           maxlength="9"
+          autocomplete="off"
+          autocapitalize="characters"
           placeholder="Código HC..."
           class="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 text-sm font-medium text-slate-700 placeholder:text-slate-400 focus:outline-none focus:border-[#0066AA]"
         />
