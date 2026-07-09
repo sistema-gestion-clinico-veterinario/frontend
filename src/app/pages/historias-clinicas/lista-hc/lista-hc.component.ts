@@ -103,6 +103,16 @@ export class ListaHcComponent implements OnInit {
       return false;
     }
 
+    if (!this.esFechaBusquedaValida(this.searchFechaDesde)) {
+      this.filterError.set('Ingrese una fecha desde valida con anio completo.');
+      return false;
+    }
+
+    if (!this.esFechaBusquedaValida(this.searchFechaHasta)) {
+      this.filterError.set('Ingrese una fecha hasta valida con anio completo.');
+      return false;
+    }
+
     if (this.searchFechaDesde && this.searchFechaHasta && this.searchFechaDesde > this.searchFechaHasta) {
       this.filterError.set('La fecha desde no puede ser mayor que la fecha hasta.');
       return false;
@@ -120,5 +130,23 @@ export class ListaHcComponent implements OnInit {
     if (/[{}\[\]<>*|\\^~`=@]/.test(value)) return false;
     if (/<\s*\/?\s*(script|iframe|object|embed|style|img|svg|body|html|link|meta)\b|javascript:|data:text\/html|on\w+\s*=/i.test(value)) return false;
     return /^[\p{L}\p{M}\s.'-]+$/u.test(value);
+  }
+
+  private esFechaBusquedaValida(value: string): boolean {
+    if (!value) return true;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+
+    const [year, month, day] = value.split('-').map(Number);
+    if (year < 1900) return false;
+
+    const date = new Date(year, month - 1, day);
+    const isRealDate = date.getFullYear() === year
+      && date.getMonth() === month - 1
+      && date.getDate() === day;
+    if (!isRealDate) return false;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return date <= today;
   }
 }
