@@ -44,14 +44,16 @@ export class ListaHcComponent implements OnInit {
 
   cargarHistorias(page: number = 0) {
     if (!this.validarFiltros()) return;
+    const dateRange = this.resolveDateRange();
+
     this.currentPage = page;
     this.loadingStore.show();
     this.hcService.buscar({
       numeroHc:          this.searchNumeroHc       || undefined,
       nombrePaciente:    this.searchNombrePaciente || undefined,
       nombrePropietario: this.searchPropietario    || undefined,
-      fechaDesde:        this.searchFechaDesde     || undefined,
-      fechaHasta:        this.searchFechaHasta     || undefined,
+      fechaDesde:        dateRange.fechaDesde,
+      fechaHasta:        dateRange.fechaHasta,
       companyId:         this.activeCompanyId,
       page,
       size: this.pageSize
@@ -131,6 +133,24 @@ export class ListaHcComponent implements OnInit {
     }
 
     return true;
+  }
+
+  private resolveDateRange(): { fechaDesde?: string; fechaHasta?: string } {
+    const fechaDesde = this.searchFechaDesde || '';
+    const fechaHasta = this.searchFechaHasta || '';
+
+    if (fechaDesde && !fechaHasta) {
+      return { fechaDesde, fechaHasta: fechaDesde };
+    }
+
+    if (!fechaDesde && fechaHasta) {
+      return { fechaDesde: fechaHasta, fechaHasta };
+    }
+
+    return {
+      fechaDesde: fechaDesde || undefined,
+      fechaHasta: fechaHasta || undefined
+    };
   }
 
   private esNombreBusquedaValido(value: string): boolean {
