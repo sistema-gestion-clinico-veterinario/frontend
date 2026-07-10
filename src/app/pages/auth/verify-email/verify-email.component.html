@@ -86,7 +86,7 @@
             }
           </div>
 
-          <button type="submit" [disabled]="passwordForm.invalid"
+          <button type="submit" [disabled]="estado() === 'enviando'"
             class="w-full h-12 bg-[#0066AA] hover:bg-[#005599] disabled:opacity-60 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-xl">
             Activar cuenta
           </button>

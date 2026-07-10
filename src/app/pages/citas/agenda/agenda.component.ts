@@ -1017,6 +1017,25 @@ export class AgendaComponent implements OnInit, OnDestroy {
     }
   }
 
+  private maxEdadMascotaPorEspecie(especie: string): number {
+    const maximos: Record<string, number> = {
+      PERRO: 20,
+      GATO: 20,
+      AVE: 80,
+      REPTIL: 100,
+      ROEDOR: 15,
+      OTRO: 100,
+      EXOTICO: 100
+    };
+    return maximos[especie] ?? 100;
+  }
+
+  private fechaMinimaNacimientoPorEspecie(especie: string): string {
+    const fecha = new Date();
+    fecha.setFullYear(fecha.getFullYear() - this.maxEdadMascotaPorEspecie(especie));
+    return this.toDateStr(fecha);
+  }
+
   crearNuevaMascota() {
     const apoderadoId = this.selectedClienteId();
     if (!apoderadoId) {
@@ -1039,11 +1058,16 @@ export class AgendaComponent implements OnInit, OnDestroy {
       this.messageService.add({ severity: 'warn', summary: 'Fecha inválida', detail: 'La fecha de nacimiento no puede ser futura.' });
       return;
     }
+    const especie = this.nmEspecie();
+    if (fecha < this.fechaMinimaNacimientoPorEspecie(especie)) {
+      this.messageService.add({ severity: 'warn', summary: 'Fecha inválida', detail: `La edad no debe superar ${this.maxEdadMascotaPorEspecie(especie)} años para esta especie.` });
+      return;
+    }
 
     this.savingNuevaMascota.set(true);
     this.mascotaService.crear({
       nombreCompleto: nombre,
-      especie: this.nmEspecie(),
+      especie,
       razaId,
       sexo: this.nmSexo(),
       fechaNacimiento: fecha,

@@ -41,10 +41,14 @@ export class VerifyEmailComponent {
   submitPassword() {
     const rawPwd = this.passwordForm.getRawValue().password ?? '';
     if (rawPwd !== rawPwd.trim()) {
+      this.passwordForm.markAllAsTouched();
       this.errorMsg.set('La contraseña no debe contener espacios.');
       return;
     }
-    if (this.passwordForm.invalid || !this.token) return;
+    if (this.passwordForm.invalid || !this.token) {
+      this.passwordForm.markAllAsTouched();
+      return;
+    }
     this.estado.set('enviando');
     this.authService.setupAccount(this.token, this.passwordForm.value.password!).subscribe({
       next: () => this.estado.set('exito'),

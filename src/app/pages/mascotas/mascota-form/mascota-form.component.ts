@@ -51,6 +51,14 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
   readonly loadingStore             = inject(LoadingStore);
 
   readonly todayStr = new Date().toISOString().split('T')[0];
+  readonly minBirthDateBySpecies: Record<string, string> = {
+    PERRO: this.dateYearsAgo(20),
+    GATO: this.dateYearsAgo(20),
+    AVE: this.dateYearsAgo(80),
+    REPTIL: this.dateYearsAgo(100),
+    ROEDOR: this.dateYearsAgo(15),
+    OTRO: this.dateYearsAgo(100)
+  };
 
   isEdit     = signal<boolean>(false);
   editingId  = signal<number | null>(null);
@@ -109,7 +117,7 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
     especie:         [null, [Validators.required]],
     razaId:          [null, [Validators.required]],
     sexo:            [null, [Validators.required]],
-    fechaNacimiento: ['',   [Validators.required, (control: AbstractControl) => this.fechaNoFuturaValidator(control)]],
+    fechaNacimiento: ['',   [Validators.required, (control: AbstractControl) => this.fechaNacimientoValidator(control)]],
     color:           ['', [Validators.maxLength(50), Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/), noLeadingTrailingSpaceValidator()]],
     peso:            [null, [Validators.min(0.01), Validators.max(120)]],
     fotoUrl:         ['', [Validators.maxLength(500), Validators.pattern(/^$|^https?:\/\/[^\s<>]+$/)]],
@@ -158,6 +166,7 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
     }
     this.mascotaForm.get('especie')?.valueChanges.subscribe(() => {
       this.actualizarValidadoresPeso();
+      this.mascotaForm.get('fechaNacimiento')?.updateValueAndValidity({ emitEvent: false });
       this.loadRazas();
       this.razaFilterText.set('');
       this.mascotaForm.get('razaId')?.setValue(null);
@@ -187,8 +196,70 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
     });
   }
 
-  fechaNoFuturaValidator(control: AbstractControl): ValidationErrors | null {
-    return control.value && control.value > this.todayStr ? { fechaFutura: true } : null;
+  private dateYearsAgo(years: number): string {
+    const date = new Date();
+    date.setFullYear(date.getFullYear() - years);
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${date.getFullYear()}-${month}-${day}`;
+  }
+
+  fechaNacimientoValidator(control: AbstractControl): ValidationErrors | null {
+    const value = control.value;
+    if (!value) return null;
+    if (value > this.todayStr) return { fechaFutura: true };
+
+    const especie = this.mascotaForm?.get('especie')?.value;
+    const minDate = this.minBirthDateBySpecies[especie];
+    if (minDate && value < minDate) {
+      return { edadMaxima: { especie, minDate } };
+    }
+
+    return null;
+  }
+
+  fieldError(controlName: string): string {
+    const control = this.mascotaForm.get(controlName);
+    if (!control?.errors) return '';
+
+    if (control.errors['required']) return 'Este campo es obligatorio.';
+    if (control.errors['minlength']) return `Mínimo ${control.errors['minlength'].requiredLength} caracteres.`;
+    if (control.errors['maxlength']) return `Máximo ${control.errors['maxlength'].requiredLength} caracteres.`;
+    if (control.errors['pattern']) return 'Ingrese solo caracteres válidos para este campo.';
+    if (control.errors['leadingTrailingSpace']) return 'No debe tener espacios al inicio o al final.';
+    if (control.errors['fechaFutura']) return 'La fecha no puede ser futura.';
+    if (control.errors['edadMaxima']) return this.birthDateErrorMessage(control.errors['edadMaxima'].especie);
+    if (control.errors['min']) return `Valor mínimo: ${control.errors['min'].min}.`;
+    if (control.errors['max']) return `Valor máximo: ${control.errors['max'].max}.`;
+
+    return 'Valor inválido.';
+  }
+
+  razaFieldError(controlName: string): string {
+    const control = this.razaForm.get(controlName);
+    if (!control?.errors) return '';
+
+    if (control.errors['required']) return 'Este campo es obligatorio.';
+    if (control.errors['minlength']) return `Mínimo ${control.errors['minlength'].requiredLength} caracteres.`;
+    if (control.errors['maxlength']) return `Máximo ${control.errors['maxlength'].requiredLength} caracteres.`;
+    if (control.errors['pattern']) return 'Ingrese solo letras y espacios; no use números ni símbolos.';
+    if (control.errors['leadingTrailingSpace']) return 'No debe tener espacios al inicio o al final.';
+    if (control.errors['textContent']) return 'Debe contener texto real.';
+
+    return 'Valor inválido.';
+  }
+
+  private birthDateErrorMessage(especie: string): string {
+    const maxYears: Record<string, number> = {
+      PERRO: 20,
+      GATO: 20,
+      AVE: 80,
+      REPTIL: 100,
+      ROEDOR: 15,
+      OTRO: 100
+    };
+    const years = maxYears[especie] ?? 100;
+    return `La edad no debe superar ${years} años para esta especie.`;
   }
 
   private actualizarValidadoresPeso() {
@@ -369,8 +440,12 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
       next: (res) => {
         this.messageService.add({ severity: 'success', summary: 'Listo', detail: 'Raza creada correctamente' });
         this.displayRazaModal.set(false);
-        this.loadRazas();
-        this.mascotaForm.get('razaId')?.setValue(res.data.id);
+        const nuevaRaza = { label: res.data.nombre, value: res.data.id };
+        this.razas.update(list => [nuevaRaza, ...list.filter(r => r.value !== nuevaRaza.value)]);
+        this.mascotaForm.get('razaId')?.setValue(nuevaRaza.value);
+        this.mascotaForm.get('razaId')?.markAsTouched();
+        this.razaFilterText.set(nuevaRaza.label);
+        this.razaDropdownOpen.set(false);
         this.savingRaza.set(false);
       },
       error: (err) => {
