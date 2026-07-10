@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit, inject, signal, computed } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { AbstractControl, ReactiveFormsModule, FormBuilder, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ToastModule } from 'primeng/toast';
 import { ButtonModule } from 'primeng/button';
@@ -112,7 +112,7 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
     principioActivo:   ['', [Validators.maxLength(80), noLeadingTrailingSpaceValidator(), textContentValidator()]],
     dosis:             ['', [Validators.required, Validators.maxLength(80), noLeadingTrailingSpaceValidator(), textContentValidator()]],
     frecuencia:        ['', [Validators.required, Validators.maxLength(80), noLeadingTrailingSpaceValidator(), textContentValidator()]],
-    duracionDias:      [null, [Validators.min(1), Validators.max(365)]],
+    duracionDias:      [null, [this.finiteNumberValidator(), this.integerNumberValidator(), Validators.min(1), Validators.max(365)]],
     viaAdministracion: ['', [Validators.required, Validators.maxLength(50), noLeadingTrailingSpaceValidator(), textContentValidator()]],
     instrucciones:     ['', [Validators.maxLength(500), noLeadingTrailingSpaceValidator(), textContentValidator()]],
     fechaInicio:       ['', Validators.required],
@@ -133,11 +133,11 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
   form: FormGroup = this.fb.group({
     version:                 [null, Validators.required],
     tipoConsulta:            [null, Validators.required],
-    motivoConsulta:          ['',   [Validators.required, Validators.minLength(5), Validators.maxLength(250), noLeadingTrailingSpaceValidator(), textContentValidator()]],
-    pesoEnConsulta:          [null, [Validators.required, Validators.min(0.01), Validators.max(150)]],
-    temperatura:             [null, [Validators.min(0.1), Validators.max(45)]],
-    frecuenciaCardiaca:      [null, [Validators.min(1), Validators.max(300)]],
-    frecuenciaRespiratoria:  [null, [Validators.min(1), Validators.max(200)]],
+    motivoConsulta:          [{ value: '', disabled: true }],
+    pesoEnConsulta:          [null, [Validators.required, this.finiteNumberValidator(), Validators.min(0.01), Validators.max(120)]],
+    temperatura:             [null, [this.finiteNumberValidator(), Validators.min(0.1), Validators.max(45)]],
+    frecuenciaCardiaca:      [null, [this.finiteNumberValidator(), this.integerNumberValidator(), Validators.min(1), Validators.max(300)]],
+    frecuenciaRespiratoria:  [null, [this.finiteNumberValidator(), this.integerNumberValidator(), Validators.min(1), Validators.max(200)]],
     mucosas:                 ['', [Validators.maxLength(80), noLeadingTrailingSpaceValidator(), textContentValidator()]],
     turgenciaPiel:           ['', [Validators.maxLength(80), noLeadingTrailingSpaceValidator(), textContentValidator()]],
     vacunacionAlDia:         [false],
@@ -178,6 +178,60 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
     this.autosaveSub?.unsubscribe();
   }
 
+  blockInvalidNumberInput(event: KeyboardEvent, allowDecimal = false) {
+    const blocked = ['e', 'E', '+', '-'];
+    if (blocked.includes(event.key)) {
+      event.preventDefault();
+      return;
+    }
+
+    if (!allowDecimal && ['.', ','].includes(event.key)) {
+      event.preventDefault();
+    }
+  }
+
+  blockInvalidNumberPaste(event: ClipboardEvent, allowDecimal = false) {
+    const text = event.clipboardData?.getData('text')?.trim() ?? '';
+    const pattern = allowDecimal ? /^\d{1,3}(\.\d{1,2})?$/ : /^\d{1,3}$/;
+    if (!pattern.test(text)) {
+      event.preventDefault();
+    }
+  }
+
+  controlError(controlName: string, requiredMessage?: string): string {
+    const control = this.form.get(controlName);
+    if (!control?.errors) return '';
+
+    if (control.errors['required']) return requiredMessage ?? 'Campo requerido.';
+    if (control.errors['minlength']) return `Mínimo ${control.errors['minlength'].requiredLength} caracteres.`;
+    if (control.errors['maxlength']) return `Máximo ${control.errors['maxlength'].requiredLength} caracteres.`;
+    if (control.errors['finiteNumber']) return 'Ingrese un número válido.';
+    if (control.errors['integerNumber']) return 'Ingrese un número entero.';
+    if (control.errors['textContent'] || control.errors['leadingTrailingSpace']) {
+      return 'Ingrese texto real, sin espacios al inicio/final ni solo números, puntos o símbolos.';
+    }
+    if (control.errors['min']) return `Valor mínimo: ${control.errors['min'].min}.`;
+    if (control.errors['max']) return `Valor máximo: ${control.errors['max'].max}.`;
+
+    return 'Valor inválido.';
+  }
+
+  private finiteNumberValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      if (control.value === null || control.value === undefined || control.value === '') return null;
+      const value = Number(control.value);
+      return Number.isFinite(value) ? null : { finiteNumber: true };
+    };
+  }
+
+  private integerNumberValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      if (control.value === null || control.value === undefined || control.value === '') return null;
+      const value = Number(control.value);
+      return Number.isInteger(value) ? null : { integerNumber: true };
+    };
+  }
+
   loadConsulta() {
     this.loadingStore.show();
     this.hcService.getConsulta(this.consultaId).subscribe({
@@ -213,11 +267,7 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
           indicacionesReceta:          res.data.indicacionesReceta          ?? '',
           version:                     res.data.version,
         }, { emitEvent: false });
-        if (this.puedeEditarConsulta()) {
-          this.form.enable({ emitEvent: false });
-        } else {
-          this.form.disable({ emitEvent: false });
-        }
+        this.aplicarEstadoEdicionFormulario();
         this.form.markAsPristine();
         this.autoSaveStatus.set('saved');
         this.syncingForm = false;
@@ -249,6 +299,15 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
       }
     }
     return trimmed as T;
+  }
+
+  private aplicarEstadoEdicionFormulario() {
+    if (this.puedeEditarConsulta()) {
+      this.form.enable({ emitEvent: false });
+    } else {
+      this.form.disable({ emitEvent: false });
+    }
+    this.form.get('motivoConsulta')?.disable({ emitEvent: false });
   }
 
   private setupAutosave() {
@@ -592,7 +651,7 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
     if (version === undefined) return of(false);
 
     this.autoSaveStatus.set('saving');
-    const payload = this.trimStringFields({ ...this.form.getRawValue(), version });
+    const payload = this.buildConsultaPayload(version);
     return this.hcService.updateConsulta(this.consultaId, payload, true).pipe(
       tap((res) => {
         this.sincronizarConsultaGuardada(res.data);
@@ -630,7 +689,7 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
     if (version === undefined) return;
 
     this.loadingStore.show();
-    const payload = this.trimStringFields({ ...this.form.getRawValue(), version: this.consulta()?.version });
+    const payload = this.buildConsultaPayload(this.consulta()?.version);
     this.hcService.updateConsulta(this.consultaId, payload).subscribe({
       next: (res) => {
         this.sincronizarConsultaGuardada(res.data);
@@ -642,6 +701,12 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
         this.loadingStore.hide();
       }
     });
+  }
+
+  private buildConsultaPayload(version: number | undefined): any {
+    const payload = this.trimStringFields({ ...this.form.getRawValue(), version });
+    delete payload.motivoConsulta;
+    return payload;
   }
 
   reintentarGuardado() {
