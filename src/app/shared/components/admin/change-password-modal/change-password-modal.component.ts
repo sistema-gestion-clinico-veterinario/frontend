@@ -1,9 +1,10 @@
 import { Component, EventEmitter, Output, input, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { UsuarioService } from '../../../../core/services/usuario.service';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
+import { strongPasswordValidators } from '../../../../core/validators/password-policy.validator';
 
 @Component({
   selector: 'app-change-password-modal',
@@ -28,8 +29,8 @@ export class ChangePasswordModalComponent {
   showPassword = signal(false);
 
   passwordForm = this.fb.group({
-    newPassword: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(72), Validators.pattern(/^\S+$/)]],
-    confirmPassword: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(72), Validators.pattern(/^\S+$/)]]
+    newPassword: ['', strongPasswordValidators()],
+    confirmPassword: ['', strongPasswordValidators()]
   }, {
     validators: this.passwordMatchValidator
   });

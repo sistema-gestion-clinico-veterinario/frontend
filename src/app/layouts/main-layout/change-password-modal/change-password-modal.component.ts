@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { AuthStore } from '../../../store/auth.store';
 import { AuthService } from '../../../core/services/auth.service';
+import { strongPasswordValidators } from '../../../core/validators/password-policy.validator';
 
 function passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
   const newPassword = control.get('newPassword')?.value;
@@ -32,18 +33,20 @@ export class ChangePasswordModalComponent {
 
   form = this.fb.group({
     oldPassword: ['', [Validators.required, Validators.maxLength(72), Validators.pattern(/^\S+$/)]],
-    newPassword: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(72), Validators.pattern(/^\S+$/)]],
-    confirmPassword: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(72), Validators.pattern(/^\S+$/)]]
+    newPassword: ['', strongPasswordValidators()],
+    confirmPassword: ['', strongPasswordValidators()]
   }, { validators: passwordMatchValidator });
 
   get passwordStrength(): number {
     const val: string = this.form.get('newPassword')?.value ?? '';
     let score = 0;
-    if (val.length >= 6) score++;
-    if (val.length >= 10) score++;
-    if (/[A-Z]/.test(val) || /[0-9]/.test(val)) score++;
-    if (/[^a-zA-Z0-9]/.test(val)) score++;
-    return score;
+    if (val.length >= 8) score++;
+    if (/[A-Z]/.test(val)) score++;
+    if (/[a-z]/.test(val)) score++;
+    if (/\d/.test(val)) score++;
+    if (/[^\w\s]/.test(val)) score++;
+    if (/\s/.test(val)) score = Math.min(score, 1);
+    return Math.min(score, 4);
   }
 
   strengthClass(index: number): string {
