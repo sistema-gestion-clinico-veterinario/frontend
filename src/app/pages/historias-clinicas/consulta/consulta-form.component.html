@@ -232,6 +232,7 @@
             <div class="flex flex-col gap-1">
               <label class="text-xs font-bold text-slate-600">Mucosas</label>
               <input type="text" formControlName="mucosas" maxlength="80" placeholder="Ej: húmedas, rosadas..."
+                (keydown)="blockInvalidClinicalTextInput($event)" (paste)="blockInvalidClinicalTextPaste($event)" (input)="sanitizeClinicalText('mucosas')"
                 class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
                 [ngClass]="{'border-rose-500': form.get('mucosas')?.invalid && form.get('mucosas')?.touched, 'border-slate-200': !(form.get('mucosas')?.invalid && form.get('mucosas')?.touched)}" />
               <span *ngIf="form.get('mucosas')?.invalid && form.get('mucosas')?.touched"
@@ -240,6 +241,7 @@
             <div class="flex flex-col gap-1">
               <label class="text-xs font-bold text-slate-600">Turgencia de piel</label>
               <input type="text" formControlName="turgenciaPiel" maxlength="80" placeholder="Ej: normal, disminuida..."
+                (keydown)="blockInvalidClinicalTextInput($event)" (paste)="blockInvalidClinicalTextPaste($event)" (input)="sanitizeClinicalText('turgenciaPiel')"
                 class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
                 [ngClass]="{'border-rose-500': form.get('turgenciaPiel')?.invalid && form.get('turgenciaPiel')?.touched, 'border-slate-200': !(form.get('turgenciaPiel')?.invalid && form.get('turgenciaPiel')?.touched)}" />
               <span *ngIf="form.get('turgenciaPiel')?.invalid && form.get('turgenciaPiel')?.touched"
@@ -264,6 +266,7 @@
             <label class="text-xs font-bold text-slate-600">Anamnesis <span class="text-rose-500">*</span></label>
             <textarea formControlName="anamnesis" rows="4" maxlength="1000"
               placeholder="Historia del problema actual, síntomas, evolución..."
+              (keydown)="blockInvalidClinicalTextInput($event)" (paste)="blockInvalidClinicalTextPaste($event)" (input)="sanitizeClinicalText('anamnesis')"
               class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
               [ngClass]="{'border-rose-500': form.get('anamnesis')?.invalid && form.get('anamnesis')?.touched, 'border-slate-200': !(form.get('anamnesis')?.invalid && form.get('anamnesis')?.touched)}">
             </textarea>
@@ -274,6 +277,7 @@
           <div class="flex flex-col gap-1">
             <label class="text-xs font-bold text-slate-600">Examen físico</label>
             <textarea formControlName="examenFisico" rows="4" maxlength="1000" placeholder="Hallazgos del examen físico..."
+              (keydown)="blockInvalidClinicalTextInput($event)" (paste)="blockInvalidClinicalTextPaste($event)" (input)="sanitizeClinicalText('examenFisico')"
               class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
               [ngClass]="{'border-rose-500': form.get('examenFisico')?.invalid && form.get('examenFisico')?.touched, 'border-slate-200': !(form.get('examenFisico')?.invalid && form.get('examenFisico')?.touched)}">
             </textarea>
@@ -284,6 +288,7 @@
           <div class="flex flex-col gap-1">
             <label class="text-xs font-bold text-slate-600">Observaciones</label>
             <textarea formControlName="observaciones" rows="3" maxlength="500" placeholder="Notas adicionales..."
+              (keydown)="blockInvalidClinicalTextInput($event)" (paste)="blockInvalidClinicalTextPaste($event)" (input)="sanitizeClinicalText('observaciones')"
               class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
               [ngClass]="{'border-rose-500': form.get('observaciones')?.invalid && form.get('observaciones')?.touched, 'border-slate-200': !(form.get('observaciones')?.invalid && form.get('observaciones')?.touched)}">
             </textarea>
