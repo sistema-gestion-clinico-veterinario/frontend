@@ -124,17 +124,15 @@
               </div>
             </div>
             <span *ngIf="form.get('tipoConsulta')?.invalid && form.get('tipoConsulta')?.touched"
-              class="text-xs text-rose-500">Requerido</span>
+              class="text-xs text-rose-500">{{ controlError('tipoConsulta', 'El tipo de consulta es requerido.') }}</span>
           </div>
 
           <div class="flex flex-col gap-1">
             <label class="text-xs font-bold text-slate-600">Motivo de consulta <span
                 class="text-rose-500">*</span></label>
-            <input type="text" formControlName="motivoConsulta" maxlength="250" placeholder="Motivo principal..."
-              class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
-              [ngClass]="{'border-rose-500': form.get('motivoConsulta')?.invalid && form.get('motivoConsulta')?.touched, 'border-slate-200': !(form.get('motivoConsulta')?.invalid && form.get('motivoConsulta')?.touched)}" />
-            <span *ngIf="form.get('motivoConsulta')?.invalid && form.get('motivoConsulta')?.touched"
-              class="text-xs text-rose-500">Requerido</span>
+            <input type="text" formControlName="motivoConsulta" maxlength="250" placeholder="Motivo registrado en la cita"
+              class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-600 bg-slate-50 outline-none cursor-not-allowed" />
+            <span class="text-[10px] text-slate-400">El motivo proviene de la cita y no se modifica desde la atención.</span>
           </div>
 
         </div>
@@ -191,53 +189,61 @@
 
             <div class="flex flex-col gap-1">
               <label class="text-xs font-bold text-slate-600">Peso (kg) <span class="text-rose-500">*</span></label>
-              <input type="number" min="0.01" inputmode="decimal" formControlName="pesoEnConsulta" step="0.01" placeholder="0.0"
+              <input type="number" min="0.01" max="120" inputmode="decimal" formControlName="pesoEnConsulta" step="0.01" placeholder="0.0"
+                (keydown)="blockInvalidNumberInput($event, true)" (paste)="blockInvalidNumberPaste($event, true)"
                 class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
                 [ngClass]="{'border-rose-500': form.get('pesoEnConsulta')?.invalid && form.get('pesoEnConsulta')?.touched, 'border-slate-200': !(form.get('pesoEnConsulta')?.invalid && form.get('pesoEnConsulta')?.touched)}" />
-              <span *ngIf="form.get('pesoEnConsulta')?.hasError('required') && form.get('pesoEnConsulta')?.touched"
-                class="text-xs text-rose-500">Requerido</span>
-              <span *ngIf="form.get('pesoEnConsulta')?.hasError('min') && form.get('pesoEnConsulta')?.touched"
-                class="text-xs text-rose-500">Debe ser mayor a 0</span>
+              <span *ngIf="form.get('pesoEnConsulta')?.invalid && form.get('pesoEnConsulta')?.touched"
+                class="text-xs text-rose-500">{{ controlError('pesoEnConsulta', 'El peso es requerido.') }}</span>
             </div>
 
             <div class="flex flex-col gap-1">
               <label class="text-xs font-bold text-slate-600">Temperatura (°C)</label>
-              <input type="number" min="0.1" inputmode="decimal" formControlName="temperatura" step="0.1" placeholder="0.0"
+              <input type="number" min="0.1" max="45" inputmode="decimal" formControlName="temperatura" step="0.1" placeholder="0.0"
+                (keydown)="blockInvalidNumberInput($event, true)" (paste)="blockInvalidNumberPaste($event, true)"
                 class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
                 [ngClass]="{'border-rose-500': form.get('temperatura')?.invalid && form.get('temperatura')?.touched, 'border-slate-200': !(form.get('temperatura')?.invalid && form.get('temperatura')?.touched)}" />
-              <span *ngIf="form.get('temperatura')?.hasError('min') && form.get('temperatura')?.touched"
-                class="text-xs text-rose-500">Debe ser mayor a 0</span>
+              <span *ngIf="form.get('temperatura')?.invalid && form.get('temperatura')?.touched"
+                class="text-xs text-rose-500">{{ controlError('temperatura') }}</span>
             </div>
 
             <div class="flex flex-col gap-1">
               <label class="text-xs font-bold text-slate-600">F. Cardíaca (lpm)</label>
-              <input type="number" min="1" inputmode="numeric" formControlName="frecuenciaCardiaca" placeholder="0"
+              <input type="number" min="1" max="300" inputmode="numeric" formControlName="frecuenciaCardiaca" placeholder="0"
+                (keydown)="blockInvalidNumberInput($event)" (paste)="blockInvalidNumberPaste($event)"
                 class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
                 [ngClass]="{'border-rose-500': form.get('frecuenciaCardiaca')?.invalid && form.get('frecuenciaCardiaca')?.touched, 'border-slate-200': !(form.get('frecuenciaCardiaca')?.invalid && form.get('frecuenciaCardiaca')?.touched)}" />
-              <span *ngIf="form.get('frecuenciaCardiaca')?.hasError('min') && form.get('frecuenciaCardiaca')?.touched"
-                class="text-xs text-rose-500">Debe ser mayor a 0</span>
+              <span *ngIf="form.get('frecuenciaCardiaca')?.invalid && form.get('frecuenciaCardiaca')?.touched"
+                class="text-xs text-rose-500">{{ controlError('frecuenciaCardiaca') }}</span>
             </div>
 
             <div class="flex flex-col gap-1">
               <label class="text-xs font-bold text-slate-600">F. Respiratoria (rpm)</label>
-              <input type="number" min="1" inputmode="numeric" formControlName="frecuenciaRespiratoria" placeholder="0"
+              <input type="number" min="1" max="200" inputmode="numeric" formControlName="frecuenciaRespiratoria" placeholder="0"
+                (keydown)="blockInvalidNumberInput($event)" (paste)="blockInvalidNumberPaste($event)"
                 class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
                 [ngClass]="{'border-rose-500': form.get('frecuenciaRespiratoria')?.invalid && form.get('frecuenciaRespiratoria')?.touched, 'border-slate-200': !(form.get('frecuenciaRespiratoria')?.invalid && form.get('frecuenciaRespiratoria')?.touched)}" />
-              <span *ngIf="form.get('frecuenciaRespiratoria')?.hasError('min') && form.get('frecuenciaRespiratoria')?.touched"
-                class="text-xs text-rose-500">Debe ser mayor a 0</span>
+              <span *ngIf="form.get('frecuenciaRespiratoria')?.invalid && form.get('frecuenciaRespiratoria')?.touched"
+                class="text-xs text-rose-500">{{ controlError('frecuenciaRespiratoria') }}</span>
             </div>
           </div>
 
           <div class="grid sm:grid-cols-2 gap-4 mb-5">
             <div class="flex flex-col gap-1">
               <label class="text-xs font-bold text-slate-600">Mucosas</label>
-              <input type="text" formControlName="mucosas" placeholder="Ej: húmedas, rosadas..."
-                class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20" />
+              <input type="text" formControlName="mucosas" maxlength="80" placeholder="Ej: húmedas, rosadas..."
+                class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
+                [ngClass]="{'border-rose-500': form.get('mucosas')?.invalid && form.get('mucosas')?.touched, 'border-slate-200': !(form.get('mucosas')?.invalid && form.get('mucosas')?.touched)}" />
+              <span *ngIf="form.get('mucosas')?.invalid && form.get('mucosas')?.touched"
+                class="text-xs text-rose-500">{{ controlError('mucosas') }}</span>
             </div>
             <div class="flex flex-col gap-1">
               <label class="text-xs font-bold text-slate-600">Turgencia de piel</label>
-              <input type="text" formControlName="turgenciaPiel" placeholder="Ej: normal, disminuida..."
-                class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20" />
+              <input type="text" formControlName="turgenciaPiel" maxlength="80" placeholder="Ej: normal, disminuida..."
+                class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
+                [ngClass]="{'border-rose-500': form.get('turgenciaPiel')?.invalid && form.get('turgenciaPiel')?.touched, 'border-slate-200': !(form.get('turgenciaPiel')?.invalid && form.get('turgenciaPiel')?.touched)}" />
+              <span *ngIf="form.get('turgenciaPiel')?.invalid && form.get('turgenciaPiel')?.touched"
+                class="text-xs text-rose-500">{{ controlError('turgenciaPiel') }}</span>
             </div>
           </div>
 
@@ -262,21 +268,27 @@
               [ngClass]="{'border-rose-500': form.get('anamnesis')?.invalid && form.get('anamnesis')?.touched, 'border-slate-200': !(form.get('anamnesis')?.invalid && form.get('anamnesis')?.touched)}">
             </textarea>
             <span *ngIf="form.get('anamnesis')?.invalid && form.get('anamnesis')?.touched"
-              class="text-xs text-rose-500">Requerido para cerrar la consulta</span>
+              class="text-xs text-rose-500">{{ controlError('anamnesis', 'La anamnesis es requerida para cerrar la consulta.') }}</span>
           </div>
 
           <div class="flex flex-col gap-1">
             <label class="text-xs font-bold text-slate-600">Examen físico</label>
             <textarea formControlName="examenFisico" rows="4" maxlength="1000" placeholder="Hallazgos del examen físico..."
-              class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20">
+              class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
+              [ngClass]="{'border-rose-500': form.get('examenFisico')?.invalid && form.get('examenFisico')?.touched, 'border-slate-200': !(form.get('examenFisico')?.invalid && form.get('examenFisico')?.touched)}">
             </textarea>
+            <span *ngIf="form.get('examenFisico')?.invalid && form.get('examenFisico')?.touched"
+              class="text-xs text-rose-500">{{ controlError('examenFisico') }}</span>
           </div>
 
           <div class="flex flex-col gap-1">
             <label class="text-xs font-bold text-slate-600">Observaciones</label>
             <textarea formControlName="observaciones" rows="3" maxlength="500" placeholder="Notas adicionales..."
-              class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20">
+              class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
+              [ngClass]="{'border-rose-500': form.get('observaciones')?.invalid && form.get('observaciones')?.touched, 'border-slate-200': !(form.get('observaciones')?.invalid && form.get('observaciones')?.touched)}">
             </textarea>
+            <span *ngIf="form.get('observaciones')?.invalid && form.get('observaciones')?.touched"
+              class="text-xs text-rose-500">{{ controlError('observaciones') }}</span>
           </div>
 
         </div>
@@ -286,35 +298,50 @@
             <div class="flex flex-col gap-1">
               <label class="text-xs font-bold text-slate-600">Enfermedades previas</label>
               <textarea formControlName="antecedentesEnfermedades" rows="3" maxlength="500" placeholder="Enfermedades anteriores..."
-                class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20">
+                class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
+                [ngClass]="{'border-rose-500': form.get('antecedentesEnfermedades')?.invalid && form.get('antecedentesEnfermedades')?.touched, 'border-slate-200': !(form.get('antecedentesEnfermedades')?.invalid && form.get('antecedentesEnfermedades')?.touched)}">
               </textarea>
+              <span *ngIf="form.get('antecedentesEnfermedades')?.invalid && form.get('antecedentesEnfermedades')?.touched"
+                class="text-xs text-rose-500">{{ controlError('antecedentesEnfermedades') }}</span>
             </div>
             <div class="flex flex-col gap-1">
               <label class="text-xs font-bold text-slate-600">Procedimientos previos</label>
               <textarea formControlName="antecedentesProcedimientos" rows="3" maxlength="500"
                 placeholder="Cirugías, tratamientos anteriores..."
-                class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20">
+                class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
+                [ngClass]="{'border-rose-500': form.get('antecedentesProcedimientos')?.invalid && form.get('antecedentesProcedimientos')?.touched, 'border-slate-200': !(form.get('antecedentesProcedimientos')?.invalid && form.get('antecedentesProcedimientos')?.touched)}">
               </textarea>
+              <span *ngIf="form.get('antecedentesProcedimientos')?.invalid && form.get('antecedentesProcedimientos')?.touched"
+                class="text-xs text-rose-500">{{ controlError('antecedentesProcedimientos') }}</span>
             </div>
             <div class="flex flex-col gap-1">
               <label class="text-xs font-bold text-slate-600">Antecedentes personales</label>
               <textarea formControlName="antecedentesPersonales" rows="3" maxlength="500"
                 placeholder="Alergias, condiciones crónicas..."
-                class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20">
+                class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
+                [ngClass]="{'border-rose-500': form.get('antecedentesPersonales')?.invalid && form.get('antecedentesPersonales')?.touched, 'border-slate-200': !(form.get('antecedentesPersonales')?.invalid && form.get('antecedentesPersonales')?.touched)}">
               </textarea>
+              <span *ngIf="form.get('antecedentesPersonales')?.invalid && form.get('antecedentesPersonales')?.touched"
+                class="text-xs text-rose-500">{{ controlError('antecedentesPersonales') }}</span>
             </div>
             <div class="flex flex-col gap-1">
               <label class="text-xs font-bold text-slate-600">Antecedentes familiares</label>
               <textarea formControlName="antecedentesFamiliares" rows="3" maxlength="500" placeholder="Enfermedades hereditarias..."
-                class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20">
+                class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
+                [ngClass]="{'border-rose-500': form.get('antecedentesFamiliares')?.invalid && form.get('antecedentesFamiliares')?.touched, 'border-slate-200': !(form.get('antecedentesFamiliares')?.invalid && form.get('antecedentesFamiliares')?.touched)}">
               </textarea>
+              <span *ngIf="form.get('antecedentesFamiliares')?.invalid && form.get('antecedentesFamiliares')?.touched"
+                class="text-xs text-rose-500">{{ controlError('antecedentesFamiliares') }}</span>
             </div>
           </div>
 
           <div class="flex flex-col gap-1">
             <label class="text-xs font-bold text-slate-600">Grupo sanguíneo</label>
-            <input type="text" formControlName="grupoSanguineo" placeholder="Ej: DEA 1.1+"
-              class="w-full sm:w-48 rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20" />
+            <input type="text" formControlName="grupoSanguineo" maxlength="20" placeholder="Ej: DEA 1.1+"
+              class="w-full sm:w-48 rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
+              [ngClass]="{'border-rose-500': form.get('grupoSanguineo')?.invalid && form.get('grupoSanguineo')?.touched, 'border-slate-200': !(form.get('grupoSanguineo')?.invalid && form.get('grupoSanguineo')?.touched)}" />
+            <span *ngIf="form.get('grupoSanguineo')?.invalid && form.get('grupoSanguineo')?.touched"
+              class="text-xs text-rose-500">{{ controlError('grupoSanguineo') }}</span>
           </div>
 
         </div>
@@ -450,9 +477,11 @@
             <textarea formControlName="indicacionesReceta" rows="3" maxlength="500"
               placeholder="Indicaciones generales para el propietario sobre el tratamiento..."
               [attr.readonly]="!canModify() ? true : null"
-              class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 outline-none resize-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
-              [ngClass]="{'bg-slate-50 text-slate-500 cursor-not-allowed': !canModify()}">
+              class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 outline-none resize-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
+              [ngClass]="{'bg-slate-50 text-slate-500 cursor-not-allowed': !canModify(), 'border-rose-500': form.get('indicacionesReceta')?.invalid && form.get('indicacionesReceta')?.touched, 'border-slate-200': !(form.get('indicacionesReceta')?.invalid && form.get('indicacionesReceta')?.touched)}">
             </textarea>
+            <span *ngIf="form.get('indicacionesReceta')?.invalid && form.get('indicacionesReceta')?.touched"
+              class="text-xs text-rose-500">{{ controlError('indicacionesReceta') }}</span>
             <p class="text-[10px] text-slate-400">Estas indicaciones aparecerán en la receta impresa.</p>
           </div>
 
