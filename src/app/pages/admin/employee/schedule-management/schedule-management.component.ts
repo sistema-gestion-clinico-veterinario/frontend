@@ -10,7 +10,7 @@ import { ActivatedRoute } from '@angular/router';
 import { EmpleadoService } from '../../../../core/services/empleado.service';
 import { HorarioEmpleadoResponse } from '../../../../models/response/horario-empleado-response';
 import { HasPermissionDirective } from '../../../../core/directives/has-permission.directive';
-import { isFutureOrToday, toDateInputKey } from '../../../../core/utils/input-validation.util';
+import { toDateInputKey } from '../../../../core/utils/input-validation.util';
 
 @Component({
   selector: 'app-schedule-management',
@@ -182,8 +182,8 @@ export class ScheduleManagementComponent implements OnInit {
     const val = this.bulkForm.value;
     const startDate = toDateInputKey(val.dateRange?.[0]);
     const endDate = toDateInputKey(val.dateRange?.[1] || val.dateRange?.[0]);
-    if (!startDate || !endDate || !isFutureOrToday(startDate) || !isFutureOrToday(endDate)) {
-      this.messageService.add({ severity: 'warn', summary: 'Fecha invalida', detail: 'No se pueden asignar horarios en fechas pasadas.' });
+    if (!startDate || !endDate) {
+      this.messageService.add({ severity: 'warn', summary: 'Fecha invalida', detail: 'Seleccione un rango de fechas valido.' });
       return;
     }
     if (endDate < startDate) {
