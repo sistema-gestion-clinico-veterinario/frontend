@@ -95,6 +95,36 @@ export class MisMascotasComponent implements OnInit {
     });
   }
 
+  formatFechaNacimiento(fecha: string | null | undefined, formato: 'short' | 'long' = 'short'): string {
+    const parsed = this.parseFecha(fecha);
+    if (!parsed) return formato === 'long' ? 'No registrado' : 'N/A';
+
+    return new Intl.DateTimeFormat('es-PE', {
+      day: '2-digit',
+      month: formato === 'long' ? 'long' : '2-digit',
+      year: 'numeric'
+    }).format(parsed);
+  }
+
+  private parseFecha(fecha: string | null | undefined): Date | null {
+    if (!fecha) return null;
+
+    const value = String(fecha).trim();
+    if (!value) return null;
+
+    const dateOnly = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (dateOnly) {
+      const year = Number(dateOnly[1]);
+      const month = Number(dateOnly[2]);
+      const day = Number(dateOnly[3]);
+      const parsed = new Date(year, month - 1, day);
+      return Number.isNaN(parsed.getTime()) ? null : parsed;
+    }
+
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  }
+
   goToHistorial(mascota: MascotaResponse) {
     this.router.navigate(['/apoderado/mi-historial'], { queryParams: { mascotaId: mascota.id } });
   }
