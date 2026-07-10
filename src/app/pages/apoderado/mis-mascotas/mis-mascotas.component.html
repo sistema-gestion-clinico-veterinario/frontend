@@ -159,7 +159,7 @@
             <div class="col-span-2 bg-[#f8fafc] border border-slate-100 rounded-lg p-3">
               <p class="text-[9px] text-slate-400 uppercase tracking-widest font-bold mb-1">Nacimiento</p>
               <p class="text-[12px] font-semibold text-slate-700">
-                {{ mascota.fechaNacimiento ? (mascota.fechaNacimiento | date:'dd MMMM yyyy':'':'es') : 'No registrado' }}
+                {{ formatFechaNacimiento(mascota.fechaNacimiento, 'long') }}
               </p>
             </div>
           </div>
@@ -218,7 +218,7 @@
               </td>
               <td class="py-4 px-6">
                 <span class="text-[12px] font-semibold text-slate-600">
-                  {{ mascota.fechaNacimiento ? (mascota.fechaNacimiento | date:'dd/MM/yyyy') : 'N/A' }}
+                  {{ formatFechaNacimiento(mascota.fechaNacimiento) }}
                 </span>
               </td>
               <td class="py-4 px-6">
