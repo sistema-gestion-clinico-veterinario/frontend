@@ -1,4 +1,4 @@
-import { Component, OnInit, DestroyRef, inject, signal, effect } from '@angular/core';
+import { Component, OnInit, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Subject, debounceTime, forkJoin } from 'rxjs';
 import { CommonModule } from '@angular/common';
@@ -74,14 +74,8 @@ export class ClientComponent implements OnInit {
   private pageSize = 10;
   private readonly searchTrigger = new Subject<void>();
   private hasSearched = false;
-
-  private readonly autoReloadOnClear = effect(() => {
-    const nombre = this.searchNombre();
-    const doc = this.searchDocumento();
-    if (this.hasSearched && !nombre && !doc) {
-      this.searchTrigger.next();
-    }
-  });
+  private readonly nameFilterPattern = /^[A-Za-zÁÉÍÓÚáéíóúÑñÜü]+(?: [A-Za-zÁÉÍÓÚáéíóúÑñÜü]+)*$/;
+  private readonly documentFilterPattern = /^(?:\d{8}|\d{9}|[A-Za-z]\d{8})$/;
 
   especieLabel(especie: string): string {
     const m: Record<string, string> = {
@@ -245,6 +239,7 @@ export class ClientComponent implements OnInit {
 
   onSearchChange() {
     this.hasSearched = true;
+    if (!this.normalizeAndValidateFilters()) return;
     this.searchTrigger.next();
   }
 
@@ -255,6 +250,14 @@ export class ClientComponent implements OnInit {
     this.searchTrigger.next();
   }
 
+  onClientNameFilterInput(value: string) {
+    this.searchNombre.set(this.sanitizeNameFilter(value));
+  }
+
+  onClientDocumentFilterInput(value: string) {
+    this.searchDocumento.set(this.sanitizeDocumentFilter(value));
+  }
+
   loadClients(event: any = { first: 0, rows: this.pageSize }) {
     const companyId = this.activeCompanyId;
     if (!companyId) return;
@@ -262,8 +265,8 @@ export class ClientComponent implements OnInit {
     this.pageSize = event.rows;
     const page = Math.floor(event.first / event.rows);
 
-    const nombre = this.searchNombre().trim() || undefined;
-    const numeroDocumento = this.searchDocumento().trim() || undefined;
+    const nombre = this.normalizeNameFilter(this.searchNombre()) || undefined;
+    const numeroDocumento = this.searchDocumento().trim().toUpperCase() || undefined;
 
     this.apoderadoService.listar(companyId, nombre, numeroDocumento, page, event.rows).subscribe({
       next: (res) => {
@@ -274,6 +277,53 @@ export class ClientComponent implements OnInit {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar los propietarios' });
       }
     });
+  }
+
+  private normalizeAndValidateFilters(): boolean {
+    const nombre = this.normalizeNameFilter(this.searchNombre());
+    const documento = this.searchDocumento().trim().toUpperCase();
+
+    this.searchNombre.set(nombre);
+    this.searchDocumento.set(documento);
+
+    if (nombre && !this.nameFilterPattern.test(nombre)) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Filtro inválido',
+        detail: 'El nombre o apellido solo debe contener letras y espacios entre palabras.'
+      });
+      return false;
+    }
+
+    if (documento && !this.documentFilterPattern.test(documento)) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Documento inválido',
+        detail: 'Ingrese un DNI de 8 dígitos, carnet de extranjería de 9 dígitos o pasaporte con una letra y 8 números.'
+      });
+      return false;
+    }
+
+    return true;
+  }
+
+  private sanitizeNameFilter(value: string): string {
+    return (value ?? '')
+      .replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]/g, '')
+      .replace(/\s{2,}/g, ' ')
+      .replace(/^\s+/, '')
+      .slice(0, 80);
+  }
+
+  private normalizeNameFilter(value: string): string {
+    return this.sanitizeNameFilter(value).trim().replace(/\s+/g, ' ');
+  }
+
+  private sanitizeDocumentFilter(value: string): string {
+    return (value ?? '')
+      .replace(/[^A-Za-z0-9]/g, '')
+      .toUpperCase()
+      .slice(0, 9);
   }
 
 
