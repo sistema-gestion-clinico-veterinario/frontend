@@ -252,6 +252,57 @@ export class AgendaComponent implements OnInit, OnDestroy {
   nmSexo      = signal('MACHO');
   nmFechaNac  = signal('');
   razasAgenda = signal<RazaResponse[]>([]);
+
+  private sanitizePersonName(value: string): string {
+    return (value ?? '')
+      .replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]/g, '')
+      .replace(/\s{2,}/g, ' ')
+      .replace(/^\s+/, '')
+      .slice(0, 80);
+  }
+
+  private normalizePersonName(value: string): string {
+    return this.sanitizePersonName(value).trim().replace(/\s+/g, ' ');
+  }
+
+  private sanitizeDocumentNumber(value: string, tipo: string): string {
+    const raw = (value ?? '').replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+    if (tipo === 'PASAPORTE') {
+      let filtered = '';
+      for (let i = 0; i < raw.length; i++) {
+        const ch = raw[i];
+        if (i === 0 && /[A-Z]/.test(ch)) {
+          filtered += ch;
+        } else if (i > 0 && /\d/.test(ch)) {
+          filtered += ch;
+        }
+      }
+      return filtered.slice(0, 9);
+    }
+
+    return raw.replace(/\D/g, '').slice(0, tipo === 'DNI' ? 8 : 9);
+  }
+
+  onNewClientNameChange(value: string) {
+    this.ncNombre.set(this.sanitizePersonName(value));
+  }
+
+  onNewClientLastNameChange(value: string) {
+    this.ncApellido.set(this.sanitizePersonName(value));
+  }
+
+  onNewClientDocumentTypeChange(tipo: string) {
+    this.ncTipoDoc.set(tipo);
+    this.ncNumDoc.set(this.sanitizeDocumentNumber(this.ncNumDoc(), tipo));
+  }
+
+  onNewClientDocumentChange(value: string) {
+    this.ncNumDoc.set(this.sanitizeDocumentNumber(value, this.ncTipoDoc()));
+  }
+
+  onNewPetNameChange(value: string) {
+    this.nmNombre.set(this.sanitizePersonName(value));
+  }
   today: Date                     = new Date();
   filterFecha: string             = this.toDateStr(new Date());
   filterEstado: EstadoCita | null = null;
@@ -850,12 +901,16 @@ export class AgendaComponent implements OnInit, OnDestroy {
   }
 
   crearNuevoCliente() {
-    const nombre     = normalizeText(this.ncNombre());
-    const apellido   = normalizeText(this.ncApellido());
+    const nombre     = normalizeText(this.normalizePersonName(this.ncNombre()));
+    const apellido   = normalizeText(this.normalizePersonName(this.ncApellido()));
     const telefono   = this.ncTelefono().trim();
     const correo     = this.ncCorreo().trim();
-    const numDoc     = this.ncNumDoc().trim();
+    const numDoc     = this.sanitizeDocumentNumber(this.ncNumDoc(), this.ncTipoDoc());
     const direccion  = normalizeText(this.ncDireccion());
+
+    this.ncNombre.set(nombre);
+    this.ncApellido.set(apellido);
+    this.ncNumDoc.set(numDoc);
 
     if (!nombre || !apellido || !telefono || !correo || !numDoc || !direccion) {
       this.messageService.add({ severity: 'warn', summary: 'Campos incompletos', detail: 'Complete todos los campos del nuevo cliente.' });
@@ -947,9 +1002,10 @@ export class AgendaComponent implements OnInit, OnDestroy {
       this.messageService.add({ severity: 'warn', summary: 'Sin dueño', detail: 'Selecciona o crea un cliente primero.' });
       return;
     }
-    const nombre = normalizeText(this.nmNombre());
+    const nombre = normalizeText(this.normalizePersonName(this.nmNombre()));
     const razaId = this.nmRazaId();
     const fecha  = this.nmFechaNac().trim();
+    this.nmNombre.set(nombre);
     if (!nombre || !razaId || !fecha) {
       this.messageService.add({ severity: 'warn', summary: 'Campos incompletos', detail: 'Complete nombre, raza y fecha de nacimiento.' });
       return;
