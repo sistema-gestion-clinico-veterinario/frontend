@@ -1,8 +1,9 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { strongPasswordValidators } from '../../../core/validators/password-policy.validator';
 
 @Component({
   selector: 'app-reset-password',
@@ -23,8 +24,8 @@ export class ResetPasswordComponent implements OnInit {
   showPassword = false;
 
   resetForm = this.fb.group({
-    password: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(72), Validators.pattern(/^\S+$/)]],
-    confirmPassword: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(72), Validators.pattern(/^\S+$/)]]
+    password: ['', strongPasswordValidators()],
+    confirmPassword: ['', strongPasswordValidators()]
   }, { validators: this.passwordMatchValidator });
 
   isTokenValid = true;

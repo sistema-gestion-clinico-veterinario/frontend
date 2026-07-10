@@ -28,6 +28,7 @@ import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-lea
 import { lowercaseEmailValidator } from '../../../core/validators/lowercase-email.validator';
 import { textContentValidator } from '../../../core/validators/text-content.validator';
 import { normalizeText } from '../../../core/utils/normalize-text.util';
+import { strongPasswordValidators } from '../../../core/validators/password-policy.validator';
 
 function passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
   const newPassword = control.get('newPassword')?.value;
@@ -85,8 +86,8 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   showResetConfirm = signal<boolean>(false);
 
   resetPasswordForm: FormGroup = this.fb.group({
-    newPassword: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(72), Validators.pattern(/^\S+$/)]],
-    confirmPassword: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(72), Validators.pattern(/^\S+$/)]]
+    newPassword: ['', strongPasswordValidators()],
+    confirmPassword: ['', strongPasswordValidators()]
   }, { validators: passwordMatchValidator });
   especialidadesList = signal<any[]>([]);
   tiposEmpleadoList = signal<any[]>([]);

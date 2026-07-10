@@ -119,6 +119,17 @@ export class NavbarComponent implements OnInit {
     this.companyDropdownOpen.set(false);
   }
 
+  selectAllCompanies() {
+    this.authStore.setSelectedEnterprise(null);
+    this.companyRoles.set([]);
+    this.companyDropdownOpen.set(false);
+
+    const currentUrl = this.router.url;
+    this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
+      this.router.navigate([currentUrl]);
+    });
+  }
+
   toggleCompanyDropdown() {
     this.companyDropdownOpen.update(v => !v);
     if (this.companyDropdownOpen()) {
