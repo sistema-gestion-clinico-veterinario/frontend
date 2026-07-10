@@ -29,26 +29,35 @@
               <div class="flex flex-col gap-1 sm:col-span-2">
                 <label class="text-sm font-semibold text-slate-700">Nombre <span class="text-rose-500">*</span></label>
                 <input type="text" formControlName="nombre" appInputFilter="letters" [appInputFilterMaxLength]="80" maxlength="80" placeholder="Ej: Max, Luna..."
-                  class="w-full px-3 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
-                <p *ngIf="mascotaForm.get('nombre')?.touched && mascotaForm.get('nombre')?.errors?.['leadingTrailingSpace']" class="text-[11px] text-rose-500">
-                  No debe tener espacios al inicio o al final
+                  [ngClass]="mascotaForm.get('nombre')?.invalid && mascotaForm.get('nombre')?.touched ? 'border-rose-400 focus:border-rose-500 focus:ring-rose-500/20' : 'border-slate-300 focus:border-blue-500 focus:ring-blue-500/20'"
+                  class="w-full px-3 border rounded-lg text-sm focus:ring-2 outline-none h-10 transition-all" />
+                <p *ngIf="mascotaForm.get('nombre')?.invalid && mascotaForm.get('nombre')?.touched" class="text-[11px] text-rose-500">
+                  {{ fieldError('nombre') }}
                 </p>
               </div>
               <div class="flex flex-col gap-1">
                 <label class="text-sm font-semibold text-slate-700">Especie <span class="text-rose-500">*</span></label>
                 <select formControlName="especie"
-                  class="w-full px-3 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 bg-white transition-all">
+                  [ngClass]="mascotaForm.get('especie')?.invalid && mascotaForm.get('especie')?.touched ? 'border-rose-400 focus:border-rose-500 focus:ring-rose-500/20' : 'border-slate-300 focus:border-blue-500 focus:ring-blue-500/20'"
+                  class="w-full px-3 border rounded-lg text-sm focus:ring-2 outline-none h-10 bg-white transition-all">
                   <option [ngValue]="null" disabled>Seleccione</option>
                   <option *ngFor="let opt of especieOpciones" [value]="opt.value">{{ opt.label }}</option>
                 </select>
+                <p *ngIf="mascotaForm.get('especie')?.invalid && mascotaForm.get('especie')?.touched" class="text-[11px] text-rose-500">
+                  {{ fieldError('especie') }}
+                </p>
               </div>
               <div class="flex flex-col gap-1">
                 <label class="text-sm font-semibold text-slate-700">Sexo <span class="text-rose-500">*</span></label>
                 <select formControlName="sexo"
-                  class="w-full px-3 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 bg-white transition-all">
+                  [ngClass]="mascotaForm.get('sexo')?.invalid && mascotaForm.get('sexo')?.touched ? 'border-rose-400 focus:border-rose-500 focus:ring-rose-500/20' : 'border-slate-300 focus:border-blue-500 focus:ring-blue-500/20'"
+                  class="w-full px-3 border rounded-lg text-sm focus:ring-2 outline-none h-10 bg-white transition-all">
                   <option [ngValue]="null" disabled>Seleccione</option>
                   <option *ngFor="let opt of sexoOpciones" [value]="opt.value">{{ opt.label }}</option>
                 </select>
+                <p *ngIf="mascotaForm.get('sexo')?.invalid && mascotaForm.get('sexo')?.touched" class="text-[11px] text-rose-500">
+                  {{ fieldError('sexo') }}
+                </p>
               </div>
               <div class="flex flex-col gap-1 sm:col-span-2">
                 <label class="text-sm font-semibold text-slate-700">Raza <span class="text-rose-500">*</span></label>
@@ -57,7 +66,8 @@
                     <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-300 text-xs pointer-events-none"></i>
                     <input type="text" [ngModel]="razaFilterText()" (ngModelChange)="razaFilterText.set($event)" [ngModelOptions]="{standalone: true}"
                       placeholder="Buscar raza..." (focus)="razaDropdownOpen.set(true)" (blur)="onRazaInputBlur()"
-                      class="w-full pl-9 pr-3 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+                      [ngClass]="mascotaForm.get('razaId')?.invalid && mascotaForm.get('razaId')?.touched ? 'border-rose-400 focus:border-rose-500 focus:ring-rose-500/20' : 'border-slate-300 focus:border-blue-500 focus:ring-blue-500/20'"
+                      class="w-full pl-9 pr-3 border rounded-lg text-sm focus:ring-2 outline-none h-10 transition-all" />
                     <div *ngIf="razaDropdownOpen()" class="absolute left-0 right-0 top-full z-50 bg-white border border-t-0 border-slate-300 rounded-b-lg max-h-40 overflow-y-auto">
                       <button *ngFor="let r of razasFiltradas" type="button" (click)="selectRaza(r.value)"
                         class="w-full text-left px-3 py-2 text-sm hover:bg-blue-50 transition-colors"
@@ -73,23 +83,35 @@
                     <i class="pi pi-plus text-sm font-bold"></i>
                   </button>
                 </div>
+                <p *ngIf="mascotaForm.get('razaId')?.invalid && mascotaForm.get('razaId')?.touched" class="text-[11px] text-rose-500">
+                  {{ fieldError('razaId') }}
+                </p>
               </div>
               <div class="flex flex-col gap-1">
                 <label class="text-sm font-semibold text-slate-700">Fecha de Nacimiento <span class="text-rose-500">*</span></label>
-                <input type="date" formControlName="fechaNacimiento" [max]="todayStr"
-                  class="w-full px-3 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 bg-white transition-all" />
+                <input type="date" formControlName="fechaNacimiento" [max]="todayStr" [min]="minBirthDateBySpecies[mascotaForm.get('especie')?.value] || minBirthDateBySpecies['OTRO']"
+                  [ngClass]="mascotaForm.get('fechaNacimiento')?.invalid && mascotaForm.get('fechaNacimiento')?.touched ? 'border-rose-400 focus:border-rose-500 focus:ring-rose-500/20' : 'border-slate-300 focus:border-blue-500 focus:ring-blue-500/20'"
+                  class="w-full px-3 border rounded-lg text-sm focus:ring-2 outline-none h-10 bg-white transition-all" />
+                <p *ngIf="mascotaForm.get('fechaNacimiento')?.invalid && mascotaForm.get('fechaNacimiento')?.touched" class="text-[11px] text-rose-500">
+                  {{ fieldError('fechaNacimiento') }}
+                </p>
               </div>
               <div class="flex flex-col gap-1">
                 <label class="text-sm font-semibold text-slate-700">Peso (kg)</label>
                 <input type="number" step="0.1" formControlName="peso" placeholder="0.0"
-                  class="w-full px-3 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+                  [ngClass]="mascotaForm.get('peso')?.invalid && mascotaForm.get('peso')?.touched ? 'border-rose-400 focus:border-rose-500 focus:ring-rose-500/20' : 'border-slate-300 focus:border-blue-500 focus:ring-blue-500/20'"
+                  class="w-full px-3 border rounded-lg text-sm focus:ring-2 outline-none h-10 transition-all" />
+                <p *ngIf="mascotaForm.get('peso')?.invalid && mascotaForm.get('peso')?.touched" class="text-[11px] text-rose-500">
+                  {{ fieldError('peso') }}
+                </p>
               </div>
               <div class="flex flex-col gap-1 sm:col-span-2">
                 <label class="text-sm font-semibold text-slate-700">Color / Manto</label>
                 <input type="text" formControlName="color" maxlength="50" placeholder="Ej: Atigrado, Negro..."
-                  class="w-full px-3 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
-                <p *ngIf="mascotaForm.get('color')?.touched && mascotaForm.get('color')?.errors?.['leadingTrailingSpace']" class="text-[11px] text-rose-500">
-                  No debe tener espacios al inicio o al final
+                  [ngClass]="mascotaForm.get('color')?.invalid && mascotaForm.get('color')?.touched ? 'border-rose-400 focus:border-rose-500 focus:ring-rose-500/20' : 'border-slate-300 focus:border-blue-500 focus:ring-blue-500/20'"
+                  class="w-full px-3 border rounded-lg text-sm focus:ring-2 outline-none h-10 transition-all" />
+                <p *ngIf="mascotaForm.get('color')?.invalid && mascotaForm.get('color')?.touched" class="text-[11px] text-rose-500">
+                  {{ fieldError('color') }}
                 </p>
               </div>
             </div>
@@ -105,7 +127,8 @@
               <label class="text-sm font-semibold text-slate-700">Responsable <span class="text-rose-500">*</span></label>
               <div class="flex gap-2">
                 <select formControlName="apoderadoId"
-                  class="flex-1 px-3 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 bg-white transition-all">
+                  [ngClass]="mascotaForm.get('apoderadoId')?.invalid && mascotaForm.get('apoderadoId')?.touched ? 'border-rose-400 focus:border-rose-500 focus:ring-rose-500/20' : 'border-slate-300 focus:border-blue-500 focus:ring-blue-500/20'"
+                  class="flex-1 px-3 border rounded-lg text-sm focus:ring-2 outline-none h-10 bg-white transition-all">
                   <option [ngValue]="null" disabled>Seleccione</option>
                   <option *ngFor="let opt of apoderados()" [ngValue]="opt.value">{{ opt.label }}</option>
                 </select>
@@ -115,6 +138,9 @@
                   <i class="pi pi-plus text-sm font-bold"></i>
                 </button>
               </div>
+              <p *ngIf="mascotaForm.get('apoderadoId')?.invalid && mascotaForm.get('apoderadoId')?.touched" class="text-[11px] text-rose-500">
+                {{ fieldError('apoderadoId') }}
+              </p>
 
               <div *ngIf="showNuevoCliente()" class="mt-2 border border-blue-200 rounded-lg p-4 space-y-3 bg-blue-50/30">
                 <p class="text-xs font-extrabold text-[#0066AA] uppercase tracking-wider">Nuevo propietario</p>
@@ -294,15 +320,17 @@
         <div class="flex flex-col gap-1">
           <label class="text-sm font-semibold text-slate-700">Nombre <span class="text-rose-500">*</span></label>
           <input type="text" formControlName="nombre" appInputFilter="letters" [appInputFilterMaxLength]="100" maxlength="100" placeholder="Ej: Labrador, Persa..."
-            class="w-full px-3 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
-          <p *ngIf="razaForm.get('nombre')?.touched && razaForm.get('nombre')?.errors?.['leadingTrailingSpace']" class="text-[11px] text-rose-500">
-            No debe tener espacios al inicio o al final
+            [ngClass]="razaForm.get('nombre')?.invalid && razaForm.get('nombre')?.touched ? 'border-rose-400 focus:border-rose-500 focus:ring-rose-500/20' : 'border-slate-300 focus:border-blue-500 focus:ring-blue-500/20'"
+            class="w-full px-3 border rounded-lg text-sm focus:ring-2 outline-none h-10 transition-all" />
+          <p *ngIf="razaForm.get('nombre')?.invalid && razaForm.get('nombre')?.touched" class="text-[11px] text-rose-500">
+            {{ razaFieldError('nombre') }}
           </p>
         </div>
         <div class="flex flex-col gap-1">
           <label class="text-sm font-semibold text-slate-700">Descripción</label>
           <textarea formControlName="descripcion" rows="2" maxlength="300" placeholder="Breve descripción..."
-            class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none resize-none transition-all"></textarea>
+            [ngClass]="razaForm.get('descripcion')?.invalid && razaForm.get('descripcion')?.touched ? 'border-rose-400 focus:border-rose-500 focus:ring-rose-500/20' : 'border-slate-300 focus:border-blue-500 focus:ring-blue-500/20'"
+            class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 outline-none resize-none transition-all"></textarea>
           <p *ngIf="razaForm.get('descripcion')?.touched && razaForm.get('descripcion')?.errors?.['leadingTrailingSpace']" class="text-[11px] text-rose-500">
             No debe tener espacios al inicio o al final
           </p>
