@@ -108,8 +108,8 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
   private syncingForm = false;
 
   recetaForm: FormGroup = this.fb.group({
-    medicamento:       ['', [Validators.required, Validators.maxLength(80), noLeadingTrailingSpaceValidator(), textContentValidator()]],
-    principioActivo:   ['', [Validators.maxLength(80), noLeadingTrailingSpaceValidator(), textContentValidator()]],
+    medicamento:       ['', [Validators.required, Validators.maxLength(80), Validators.pattern(/^[\p{L}\s.,;:()\/\-+°%]*$/u), noLeadingTrailingSpaceValidator(), textContentValidator()]],
+    principioActivo:   ['', [Validators.maxLength(80), Validators.pattern(/^[\p{L}\s.,;:()\/\-+°%]*$/u), noLeadingTrailingSpaceValidator(), textContentValidator()]],
     dosis:             ['', [Validators.required, Validators.maxLength(80), noLeadingTrailingSpaceValidator(), textContentValidator()]],
     frecuencia:        ['', [Validators.required, Validators.maxLength(80), noLeadingTrailingSpaceValidator(), textContentValidator()]],
     duracionDias:      [null, [this.finiteNumberValidator(), this.integerNumberValidator(), Validators.min(1), Validators.max(365)]],
@@ -138,8 +138,8 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
     temperatura:             [null, [this.finiteNumberValidator(), Validators.min(0.1), Validators.max(45)]],
     frecuenciaCardiaca:      [null, [this.finiteNumberValidator(), this.integerNumberValidator(), Validators.min(1), Validators.max(300)]],
     frecuenciaRespiratoria:  [null, [this.finiteNumberValidator(), this.integerNumberValidator(), Validators.min(1), Validators.max(200)]],
-    mucosas:                 ['', [Validators.maxLength(80), noLeadingTrailingSpaceValidator(), textContentValidator()]],
-    turgenciaPiel:           ['', [Validators.maxLength(80), noLeadingTrailingSpaceValidator(), textContentValidator()]],
+    mucosas:                 ['', [Validators.maxLength(80), Validators.pattern(/^[\p{L}\s.,;:()\/\-+°%]*$/u), noLeadingTrailingSpaceValidator(), textContentValidator()]],
+    turgenciaPiel:           ['', [Validators.maxLength(80), Validators.pattern(/^[\p{L}\s.,;:()\/\-+°%]*$/u), noLeadingTrailingSpaceValidator(), textContentValidator()]],
     vacunacionAlDia:         [false],
     desparasitacionAlDia:    [false],
     anamnesis:               ['',   [Validators.required, Validators.maxLength(1000), noLeadingTrailingSpaceValidator(), textContentValidator()]],
@@ -198,6 +198,27 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
     }
   }
 
+  sanitizeNumberField(controlName: string, maxIntegerDigits: number, maxDecimalDigits = 0) {
+    const control = this.form.get(controlName);
+    const rawValue = control?.value;
+    if (rawValue === null || rawValue === undefined || rawValue === '') return;
+
+    const value = String(rawValue).replace(',', '.');
+    const cleaned = this.cleanNumericText(value, maxIntegerDigits, maxDecimalDigits);
+    if (cleaned !== value) {
+      control?.setValue(cleaned === '' ? null : Number(cleaned), { emitEvent: false });
+    }
+  }
+
+  private cleanNumericText(value: string, maxIntegerDigits: number, maxDecimalDigits: number): string {
+    const numeric = value.replace(/[^\d.]/g, '');
+    const [integerPart = '', ...decimalParts] = numeric.split('.');
+    const integer = integerPart.slice(0, maxIntegerDigits);
+    if (maxDecimalDigits <= 0 || decimalParts.length === 0) return integer;
+    const decimal = decimalParts.join('').slice(0, maxDecimalDigits);
+    return decimal.length > 0 ? `${integer}.${decimal}` : integer;
+  }
+
   blockInvalidClinicalTextInput(event: KeyboardEvent) {
     if (event.key.length > 1) return;
     if (!this.isAllowedClinicalText(event.key)) {
@@ -212,6 +233,20 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
     }
   }
 
+  blockInvalidDescriptorTextInput(event: KeyboardEvent) {
+    if (event.key.length > 1) return;
+    if (!this.isAllowedClinicalText(event.key, false)) {
+      event.preventDefault();
+    }
+  }
+
+  blockInvalidDescriptorTextPaste(event: ClipboardEvent) {
+    const text = event.clipboardData?.getData('text') ?? '';
+    if (this.cleanClinicalText(text, false) !== text) {
+      event.preventDefault();
+    }
+  }
+
   sanitizeClinicalText(controlName: string) {
     const control = this.form.get(controlName);
     const value = control?.value;
@@ -222,12 +257,23 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
     }
   }
 
-  private cleanClinicalText(value: string): string {
-    return Array.from(value).filter((char) => this.isAllowedClinicalText(char)).join('');
+  sanitizeDescriptorText(controlName: string) {
+    const control = this.form.get(controlName);
+    const value = control?.value;
+    if (typeof value !== 'string') return;
+    const cleaned = this.cleanClinicalText(value, false);
+    if (cleaned !== value) {
+      control?.setValue(cleaned, { emitEvent: false });
+    }
   }
 
-  private isAllowedClinicalText(char: string): boolean {
-    return /^[\p{L}\p{N}\s.,;:()\/\-+°%]$/u.test(char);
+  private cleanClinicalText(value: string, allowNumbers = true): string {
+    return Array.from(value).filter((char) => this.isAllowedClinicalText(char, allowNumbers)).join('');
+  }
+
+  private isAllowedClinicalText(char: string, allowNumbers = true): boolean {
+    const pattern = allowNumbers ? /^[\p{L}\p{N}\s.,;:()\/\-+°%]$/u : /^[\p{L}\s.,;:()\/\-+°%]$/u;
+    return pattern.test(char);
   }
 
   controlError(controlName: string, requiredMessage?: string): string {
@@ -239,6 +285,7 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
     if (control.errors['maxlength']) return `Máximo ${control.errors['maxlength'].requiredLength} caracteres.`;
     if (control.errors['finiteNumber']) return 'Ingrese un número válido.';
     if (control.errors['integerNumber']) return 'Ingrese un número entero.';
+    if (control.errors['pattern']) return 'Use solo letras y puntuación clínica básica; no ingrese números ni símbolos especiales.';
     if (control.errors['textContent'] || control.errors['leadingTrailingSpace']) {
       return 'Ingrese texto real, sin espacios al inicio/final ni solo números, puntos o símbolos.';
     }
