@@ -136,7 +136,7 @@ export const AuthStore = signalStore(
       saveToStorage({ ...buildCurrentState(store), token } as unknown as AuthState);
     },
 
-    setSelectedEnterprise(enterprise: Enterprise) {
+    setSelectedEnterprise(enterprise: Enterprise | null) {
       patchState(store, { selectedEnterprise: enterprise });
       const current = buildCurrentState(store);
       saveToStorage({ ...current, selectedEnterprise: enterprise });

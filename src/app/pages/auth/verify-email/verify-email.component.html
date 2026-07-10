@@ -1,4 +1,4 @@
-<div class="min-h-screen w-full flex items-center justify-center relative overflow-hidden bg-[#0066AA]">
+﻿<div class="min-h-screen w-full flex items-center justify-center relative overflow-hidden bg-[#0066AA]">
   <div class="absolute top-[10%] left-[15%] w-[450px] h-[450px] rounded-full bg-white/10 blur-[100px] pointer-events-none"></div>
   <div class="absolute bottom-[10%] right-[10%] w-[500px] h-[500px] rounded-full bg-white/10 blur-[120px] pointer-events-none"></div>
   <div class="absolute top-[40%] right-[30%] w-[300px] h-[300px] rounded-full bg-white/5 blur-[80px] pointer-events-none"></div>
@@ -40,7 +40,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
             </svg>
           </span>
-          Mínimo 6 caracteres, sin espacios
+          Mínimo 8 caracteres, mayúscula, minúscula, número y símbolo
         </li>
         <li class="flex items-center gap-3">
           <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white/15">
@@ -64,13 +64,12 @@
         <form [formGroup]="passwordForm" (ngSubmit)="submitPassword()" class="space-y-4">
           <div class="space-y-1.5">
             <label class="text-sm font-semibold text-slate-700">Nueva contraseña</label>
-            <input formControlName="password" type="password" placeholder="Mínimo 6 caracteres"
+            <input formControlName="password" type="password" placeholder="Mínimo 8 caracteres"
               class="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 text-slate-800 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0066AA]/30 focus:border-[#0066AA]" />
             @if (passwordForm.get('password')?.invalid && passwordForm.get('password')?.touched) {
               <div class="text-xs text-rose-500 font-medium">
                 @if (passwordForm.get('password')?.errors?.['required']) { <span>La contraseña es obligatoria.</span> }
-                @if (passwordForm.get('password')?.errors?.['minlength']) { <span>Mínimo 6 caracteres.</span> }
-                @if (passwordForm.get('password')?.errors?.['pattern']) { <span>No debe contener espacios.</span> }
+                @if (passwordForm.get('password')?.errors?.['passwordPolicy']) { <span>Debe tener mínimo 8 caracteres, una mayúscula, una minúscula, un número y un símbolo como ! o &#64;. No debe contener espacios.</span> }
               </div>
             }
           </div>
@@ -81,6 +80,9 @@
               class="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 text-slate-800 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0066AA]/30 focus:border-[#0066AA]" />
             @if (passwordForm.errors?.['mismatch'] && passwordForm.get('confirmPassword')?.touched) {
               <div class="text-xs text-rose-500 font-medium">Las contraseñas no coinciden.</div>
+            }
+            @if (passwordForm.get('confirmPassword')?.errors?.['passwordPolicy'] && passwordForm.get('confirmPassword')?.touched) {
+              <div class="text-xs text-rose-500 font-medium">Debe cumplir la misma regla: mínimo 8 caracteres, mayúscula, minúscula, número y símbolo.</div>
             }
           </div>
 
@@ -197,3 +199,4 @@
     </div>
   </div>
 </div>
+

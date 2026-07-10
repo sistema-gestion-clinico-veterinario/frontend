@@ -5,6 +5,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { lowercaseEmailValidator } from '../../../core/validators/lowercase-email.validator';
 import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
+import { strongPasswordValidators } from '../../../core/validators/password-policy.validator';
 
 @Component({
   selector: 'app-verify-email',
@@ -23,8 +24,8 @@ export class VerifyEmailComponent {
   errorMsg = signal('');
 
   passwordForm = this.fb.group({
-    password: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(72), Validators.pattern(/^\S+$/)]],
-    confirmPassword: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(72), Validators.pattern(/^\S+$/)]]
+    password: ['', strongPasswordValidators()],
+    confirmPassword: ['', strongPasswordValidators()]
   }, { validators: this.passwordsMatch });
 
   resendForm = this.fb.group({

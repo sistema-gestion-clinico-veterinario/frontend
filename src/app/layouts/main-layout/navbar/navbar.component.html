@@ -33,6 +33,15 @@
       <!-- Dropdown Menu -->
       <div *ngIf="companyDropdownOpen()"
         class="fixed left-3 right-3 top-16 mt-1.5 w-auto bg-white rounded-xl border border-slate-100 py-1 z-[250] animate-in fade-in slide-in-from-top-1 duration-150 sm:absolute sm:left-0 sm:right-auto sm:top-full sm:w-52">
+        <button
+          type="button"
+          (click)="selectAllCompanies()"
+          class="w-full flex items-center justify-between px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-[#0066AA] transition-colors text-left"
+        >
+          <span class="truncate">Todas las empresas</span>
+          <i *ngIf="!activeCompanyId" class="pi pi-check text-[#0066AA] text-[10px]"></i>
+        </button>
+        <div class="my-1 border-t border-slate-100"></div>
         <button *ngFor="let c of companies()"
           (click)="selectCompany(c.value)"
           class="w-full flex items-center justify-between px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-[#0066AA] transition-colors text-left"
