@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+﻿import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
@@ -128,10 +128,21 @@ export class LoginComponent implements OnInit {
         this.router.navigateByUrl(resolveInitialRoute(roles, data.menu ?? []));
       },
       error: (error) => {
-        this.authError = error?.name === 'TimeoutError' || error?.status === 0
-          ? 'No se pudo conectar con el servidor. Intenta nuevamente en unos segundos.'
-          : error.error?.message || 'Correo o contraseña incorrectos.';
+        this.authError = this.resolveLoginError(error);
       },
     });
+  }
+
+  private resolveLoginError(error: any): string {
+    if (error?.name === 'TimeoutError' || error?.status === 0) {
+      return 'No se pudo conectar con el servidor. Intenta nuevamente en unos segundos.';
+    }
+
+    const payload = error?.error;
+    const serverMessage = typeof payload === 'string'
+      ? payload
+      : payload?.message || payload?.error;
+
+    return serverMessage || 'Correo o contraseña incorrectos.';
   }
 }
