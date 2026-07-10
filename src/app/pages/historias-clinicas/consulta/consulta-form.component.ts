@@ -198,6 +198,38 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
     }
   }
 
+  blockInvalidClinicalTextInput(event: KeyboardEvent) {
+    if (event.key.length > 1) return;
+    if (!this.isAllowedClinicalText(event.key)) {
+      event.preventDefault();
+    }
+  }
+
+  blockInvalidClinicalTextPaste(event: ClipboardEvent) {
+    const text = event.clipboardData?.getData('text') ?? '';
+    if (this.cleanClinicalText(text) !== text) {
+      event.preventDefault();
+    }
+  }
+
+  sanitizeClinicalText(controlName: string) {
+    const control = this.form.get(controlName);
+    const value = control?.value;
+    if (typeof value !== 'string') return;
+    const cleaned = this.cleanClinicalText(value);
+    if (cleaned !== value) {
+      control?.setValue(cleaned, { emitEvent: false });
+    }
+  }
+
+  private cleanClinicalText(value: string): string {
+    return Array.from(value).filter((char) => this.isAllowedClinicalText(char)).join('');
+  }
+
+  private isAllowedClinicalText(char: string): boolean {
+    return /^[\p{L}\p{N}\s.,;:()\/\-+°%]$/u.test(char);
+  }
+
   controlError(controlName: string, requiredMessage?: string): string {
     const control = this.form.get(controlName);
     if (!control?.errors) return '';

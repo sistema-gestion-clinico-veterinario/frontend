@@ -37,16 +37,35 @@ export class RecetaModalsComponent {
   }
 
   blockUnsafeTextInput(event: KeyboardEvent) {
-    if (/[{}\[\]<>*|\\^~`=@]/.test(event.key)) {
+    if (event.key.length > 1) return;
+    if (!this.isAllowedText(event.key)) {
       event.preventDefault();
     }
   }
 
   blockUnsafeTextPaste(event: ClipboardEvent) {
     const text = event.clipboardData?.getData('text') ?? '';
-    if (/[{}\[\]<>*|\\^~`=@]/.test(text)) {
+    if (this.cleanText(text) !== text) {
       event.preventDefault();
     }
+  }
+
+  sanitizeTextField(controlName: string) {
+    const control = this.form.get(controlName);
+    const value = control?.value;
+    if (typeof value !== 'string') return;
+    const cleaned = this.cleanText(value);
+    if (cleaned !== value) {
+      control?.setValue(cleaned, { emitEvent: false });
+    }
+  }
+
+  private cleanText(value: string): string {
+    return Array.from(value).filter((char) => this.isAllowedText(char)).join('');
+  }
+
+  private isAllowedText(char: string): boolean {
+    return /^[\p{L}\p{N}\s.,;:()\/\-+°%]$/u.test(char);
   }
 
   validationMessage(controlName: string, requiredMessage = 'Requerido'): string {
