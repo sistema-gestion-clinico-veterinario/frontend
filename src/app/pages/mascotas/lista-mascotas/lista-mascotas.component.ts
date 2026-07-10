@@ -21,6 +21,7 @@ import { LoadingStore } from '../../../store/loading.store';
 import { AuthStore } from '../../../store/auth.store';
 import { Role } from '../../../core/enums/role.enum';
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
+import { InputFilterDirective } from '../../../core/directives/input-filter.directive';
 
 @Component({
   selector: 'app-lista-mascotas',
@@ -34,7 +35,8 @@ import { HasPermissionDirective } from '../../../core/directives/has-permission.
     PaginatorModule,
     ToastModule,
     MenuModule,
-    HasPermissionDirective
+    HasPermissionDirective,
+    InputFilterDirective
   ],
   providers: [MessageService],
   templateUrl: './lista-mascotas.component.html',
@@ -62,6 +64,7 @@ export class ListaMascotasComponent implements OnInit {
   filtersOpen       = false;
   currentPage       = 0;
   readonly pageSize = 12;
+  private readonly nameFilterPattern = /^[A-Za-zÁÉÍÓÚáéíóúÑñÜü]+(?: [A-Za-zÁÉÍÓÚáéíóúÑñÜü]+)*$/;
 
   readonly especieOpciones = [
     { label: 'Perro',  value: 'PERRO'  },
@@ -165,10 +168,12 @@ export class ListaMascotasComponent implements OnInit {
     }
 
     this.currentPage = page;
+    const nombre = this.normalizeNameFilter(this.searchNombre);
+    this.searchNombre = nombre;
 
     this.mascotaService.listar(
       companyId,
-      this.searchNombre  || undefined,
+      nombre || undefined,
       this.filterEspecie || undefined,
       page,
       this.pageSize,
@@ -185,6 +190,8 @@ export class ListaMascotasComponent implements OnInit {
   }
 
   onFilterChange()  {
+    if (!this.normalizeAndValidateFilters()) return;
+
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: { page: null },
@@ -201,6 +208,15 @@ export class ListaMascotasComponent implements OnInit {
     this.onFilterChange();
   }
 
+  onPetNameFilterInput(value: string) {
+    const hadFilter = !!this.searchNombre.trim();
+    this.searchNombre = this.sanitizeNameFilter(value);
+
+    if (hadFilter && !this.searchNombre.trim() && !this.filterEspecie && this.filterActivo === null) {
+      this.onFilterChange();
+    }
+  }
+
   onPageChange(e: any) {
     const page = Number(e.page) || 0;
     this.router.navigate([], {
@@ -213,7 +229,35 @@ export class ListaMascotasComponent implements OnInit {
   }
 
   onSearch(event: KeyboardEvent) {
-    if (event.key === 'Enter') this.loadMascotas(0);
+    if (event.key === 'Enter') this.onFilterChange();
+  }
+
+  private normalizeAndValidateFilters(): boolean {
+    const nombre = this.normalizeNameFilter(this.searchNombre);
+    this.searchNombre = nombre;
+
+    if (nombre && !this.nameFilterPattern.test(nombre)) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Filtro inválido',
+        detail: 'El nombre de la mascota solo debe contener letras y espacios entre palabras.'
+      });
+      return false;
+    }
+
+    return true;
+  }
+
+  private sanitizeNameFilter(value: string): string {
+    return (value ?? '')
+      .replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]/g, '')
+      .replace(/\s{2,}/g, ' ')
+      .replace(/^\s+/, '')
+      .slice(0, 80);
+  }
+
+  private normalizeNameFilter(value: string): string {
+    return this.sanitizeNameFilter(value).trim().replace(/\s+/g, ' ');
   }
 
   irANueva() {

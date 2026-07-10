@@ -196,14 +196,15 @@
     <div class="relative flex-1">
       <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-300 text-sm pointer-events-none"></i>
       <input type="text" placeholder="Buscar por nombre o apellido..."
-        [ngModel]="searchNombre()" (ngModelChange)="searchNombre.set($event)"
+        appInputFilter="letters" [appInputFilterMaxLength]="80" maxlength="80"
+        [ngModel]="searchNombre()" (ngModelChange)="onClientNameFilterInput($event)"
         (keyup.enter)="onSearchChange()"
         class="w-full h-10 pl-9 pr-3 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" />
     </div>
     <div class="relative flex-1 sm:max-w-xs">
       <i class="pi pi-id-card absolute left-3 top-1/2 -translate-y-1/2 text-slate-300 text-sm pointer-events-none"></i>
-      <input type="text" placeholder="Documento de identidad..." appInputFilter="alphanumeric" maxlength="15"
-        [ngModel]="searchDocumento()" (ngModelChange)="searchDocumento.set($event)"
+      <input type="text" placeholder="Documento de identidad..." appInputFilter="alphanumeric" [appInputFilterMaxLength]="9" maxlength="9"
+        [ngModel]="searchDocumento()" (ngModelChange)="onClientDocumentFilterInput($event)"
         (keyup.enter)="onSearchChange()"
         class="w-full h-10 pl-9 pr-3 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" />
     </div>

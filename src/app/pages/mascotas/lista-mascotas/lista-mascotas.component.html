@@ -34,7 +34,11 @@
         <i class="pi pi-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300 text-sm pointer-events-none"></i>
         <input
           type="text"
-          [(ngModel)]="searchNombre"
+          appInputFilter="letters"
+          [appInputFilterMaxLength]="80"
+          maxlength="80"
+          [ngModel]="searchNombre"
+          (ngModelChange)="onPetNameFilterInput($event)"
           (keyup.enter)="onFilterChange()"
           placeholder="Buscar por nombre..."
           class="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 text-sm font-medium text-slate-700 placeholder:text-slate-400 focus:outline-none focus:border-[#0066AA]"
