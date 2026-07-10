@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, inject, signal, computed, HostListener } from '@angular/core';
+﻿import { Component, OnInit, OnDestroy, ViewChild, inject, signal, computed, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { TableModule } from 'primeng/table';
@@ -1168,7 +1168,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
 
   iniciarCita(cita: CitaResponse) {
     if (!this.canCreateHistoria()) {
-      this.messageService.add({ severity: 'warn', summary: 'Sin permiso', detail: 'No puedes iniciar historias clÃ­nicas.' });
+      this.messageService.add({ severity: 'warn', summary: 'Sin permiso', detail: 'No puedes iniciar historias clínicas.' });
       return;
     }
     this.displayDetalleCita.set(false);
@@ -1283,7 +1283,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
 
   continuarConsulta(cita: CitaResponse) {
     if (!this.canReadHistoria()) {
-      this.messageService.add({ severity: 'warn', summary: 'Sin permiso', detail: 'No puedes ver historias clÃ­nicas.' });
+      this.messageService.add({ severity: 'warn', summary: 'Sin permiso', detail: 'No puedes ver historias clínicas.' });
       return;
     }
     this.displayDetalleCita.set(false);
@@ -1291,7 +1291,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
       this.router.navigate(['/historias-clinicas/consulta', cita.consultaId], { queryParams: { returnUrl: '/citas/agenda' } });
     } else {
       if (!this.canCreateHistoria()) {
-        this.messageService.add({ severity: 'warn', summary: 'Sin permiso', detail: 'No puedes iniciar historias clÃ­nicas.' });
+        this.messageService.add({ severity: 'warn', summary: 'Sin permiso', detail: 'No puedes iniciar historias clínicas.' });
         return;
       }
       this.citaService.iniciarAtencion(cita.id).subscribe({
@@ -1938,4 +1938,5 @@ class AgendaStompClient {
     }
   }
 }
+
 

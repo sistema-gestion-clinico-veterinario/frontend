@@ -1,17 +1,17 @@
 ﻿<div class="p-3 sm:p-4 min-h-screen bg-slate-50 font-['Barlow']">
   <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-10">
     <div>
-      <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">GestiÃ³n de Personal</h1>
+      <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Gestión de Personal</h1>
       <p class="text-sm sm:text-base text-slate-500 font-medium mt-1 flex items-start sm:items-center gap-2">
         <span class="w-2 h-2 rounded-full bg-[#0066AA]"></span>
-        Administra los accesos y perfiles de los empleados de la organizaciÃ³n
+        Administra los accesos y perfiles de los empleados de la organización
       </p>
     </div>
     <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
       <a routerLink="/admin/empleados/horarios"
         class="flex items-center justify-center gap-2 bg-white border border-slate-200 hover:border-[#0066AA] hover:text-[#0066AA] text-slate-600 text-sm font-medium px-5 h-10 rounded-lg transition-all">
         <i class="pi pi-calendar text-xs"></i>
-        GestiÃ³n de Horarios
+        Gestión de Horarios
       </a>
       <button *appHasPermission="'VISTA_EMPLEADOS:escribir'" (click)="openNew()"
         class="flex items-center justify-center gap-2 bg-[#0066AA] hover:bg-[#005a96] text-white text-sm font-medium px-5 h-10 rounded-lg transition-colors">
@@ -145,7 +145,7 @@
         <div class="space-y-4">
           <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
             <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
-            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">1. InformaciÃ³n de Identidad</h3>
+            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">1. Información de Identidad</h3>
           </div>
 
           <!-- Foto de perfil -->
@@ -179,8 +179,8 @@
                 class="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
               <p *ngIf="employeeForm.get('nombre')?.invalid && employeeForm.get('nombre')?.touched" class="text-[11px] text-rose-500 ml-0.5">
                 <ng-container *ngIf="employeeForm.get('nombre')?.errors?.['required']">El nombre es requerido</ng-container>
-                <ng-container *ngIf="employeeForm.get('nombre')?.errors?.['minlength']">MÃ­nimo 2 caracteres</ng-container>
-                <ng-container *ngIf="employeeForm.get('nombre')?.errors?.['maxlength']">MÃ¡ximo 80 caracteres</ng-container>
+                <ng-container *ngIf="employeeForm.get('nombre')?.errors?.['minlength']">Mínimo 2 caracteres</ng-container>
+                <ng-container *ngIf="employeeForm.get('nombre')?.errors?.['maxlength']">Máximo 80 caracteres</ng-container>
                 <ng-container *ngIf="employeeForm.get('nombre')?.errors?.['pattern']">Solo se permiten letras y espacios</ng-container>
                 <ng-container *ngIf="employeeForm.get('nombre')?.errors?.['leadingTrailingSpace']">No debe tener espacios al inicio o al final</ng-container>
               </p>
@@ -193,8 +193,8 @@
                 class="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
               <p *ngIf="employeeForm.get('apellido')?.invalid && employeeForm.get('apellido')?.touched" class="text-[11px] text-rose-500 ml-0.5">
                 <ng-container *ngIf="employeeForm.get('apellido')?.errors?.['required']">Los apellidos son requeridos</ng-container>
-                <ng-container *ngIf="employeeForm.get('apellido')?.errors?.['minlength']">MÃ­nimo 2 caracteres</ng-container>
-                <ng-container *ngIf="employeeForm.get('apellido')?.errors?.['maxlength']">MÃ¡ximo 80 caracteres</ng-container>
+                <ng-container *ngIf="employeeForm.get('apellido')?.errors?.['minlength']">Mínimo 2 caracteres</ng-container>
+                <ng-container *ngIf="employeeForm.get('apellido')?.errors?.['maxlength']">Máximo 80 caracteres</ng-container>
                 <ng-container *ngIf="employeeForm.get('apellido')?.errors?.['pattern']">Solo se permiten letras y espacios</ng-container>
                 <ng-container *ngIf="employeeForm.get('apellido')?.errors?.['leadingTrailingSpace']">No debe tener espacios al inicio o al final</ng-container>
               </p>
@@ -207,20 +207,20 @@
                   class="w-24 px-2 py-2 border border-slate-300 rounded-l border-r-0 text-[11px] font-extrabold uppercase bg-slate-50 text-slate-600 focus:ring-0 outline-none h-10 transition-all cursor-pointer">
                   <option *ngFor="let t of tipoDocumentos" [value]="t.value">{{ t.label }}</option>
                 </select>
-                <input type="text" formControlName="numeroDocumento" placeholder="NÃºmero de documento"
+                <input type="text" formControlName="numeroDocumento" placeholder="Número de documento"
                   (input)="onDocInput($event)"
                   [maxlength]="employeeForm.get('tipoDocumento')?.value === 'DNI' ? 8 : 9"
                   [ngClass]="employeeForm.get('numeroDocumento')?.invalid && employeeForm.get('numeroDocumento')?.touched ? 'border-rose-400' : 'border-slate-300'"
                   class="flex-1 px-3 py-2 border rounded-r text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all font-bold" />
               </div>
               <p *ngIf="employeeForm.get('numeroDocumento')?.invalid && employeeForm.get('numeroDocumento')?.touched" class="text-[11px] text-rose-500 ml-0.5">
-                <ng-container *ngIf="employeeForm.get('numeroDocumento')?.errors?.['required']">El nÃºmero de documento es requerido</ng-container>
+                <ng-container *ngIf="employeeForm.get('numeroDocumento')?.errors?.['required']">El número de documento es requerido</ng-container>
                 <ng-container *ngIf="employeeForm.get('numeroDocumento')?.errors?.['pattern']">{{ documentoErrorMsg }}</ng-container>
               </p>
             </div>
 
             <div class="flex flex-col gap-1">
-              <label class="text-xs font-semibold text-slate-700 ml-0.5">GÃ©nero / Sexo <span class="text-rose-500">*</span></label>
+              <label class="text-xs font-semibold text-slate-700 ml-0.5">Género / Sexo <span class="text-rose-500">*</span></label>
               <div class="relative">
                 <select formControlName="genero"
                   class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 bg-white transition-all appearance-none font-bold">
@@ -313,31 +313,31 @@
                 class="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all font-bold" />
               <p *ngIf="employeeForm.get('email')?.invalid && employeeForm.get('email')?.touched" class="text-[11px] text-rose-500 ml-0.5">
                 <ng-container *ngIf="employeeForm.get('email')?.errors?.['required']">El correo es requerido</ng-container>
-                <ng-container *ngIf="employeeForm.get('email')?.errors?.['email'] || employeeForm.get('email')?.errors?.['lowercaseEmail']">Ingresa un correo vÃ¡lido en minÃºsculas, sin espacios</ng-container>
-                <ng-container *ngIf="employeeForm.get('email')?.errors?.['maxlength']">MÃ¡ximo 100 caracteres</ng-container>
+                <ng-container *ngIf="employeeForm.get('email')?.errors?.['email'] || employeeForm.get('email')?.errors?.['lowercaseEmail']">Ingresa un correo válido en minúsculas, sin espacios</ng-container>
+                <ng-container *ngIf="employeeForm.get('email')?.errors?.['maxlength']">Máximo 100 caracteres</ng-container>
               </p>
             </div>
 
             <div class="flex flex-col gap-1">
-              <label class="text-xs font-semibold text-slate-700 ml-0.5">TelÃ©fono de Contacto <span class="text-rose-500">*</span></label>
+              <label class="text-xs font-semibold text-slate-700 ml-0.5">Teléfono de Contacto <span class="text-rose-500">*</span></label>
               <input type="text" formControlName="telefono" appInputFilter="digits" [appInputFilterMaxLength]="9" inputmode="numeric" maxlength="9" placeholder="Ej: 987654321"
                 [ngClass]="employeeForm.get('telefono')?.invalid && employeeForm.get('telefono')?.touched ? 'border-rose-400' : 'border-slate-300'"
                 class="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all font-bold" />
               <p *ngIf="employeeForm.get('telefono')?.invalid && employeeForm.get('telefono')?.touched" class="text-[11px] text-rose-500 ml-0.5">
-                <ng-container *ngIf="employeeForm.get('telefono')?.errors?.['required']">El telÃ©fono es requerido</ng-container>
-                <ng-container *ngIf="employeeForm.get('telefono')?.errors?.['pattern']">El telÃ©fono debe tener exactamente 9 dÃ­gitos</ng-container>
+                <ng-container *ngIf="employeeForm.get('telefono')?.errors?.['required']">El teléfono es requerido</ng-container>
+                <ng-container *ngIf="employeeForm.get('telefono')?.errors?.['pattern']">El teléfono debe tener exactamente 9 dígitos</ng-container>
               </p>
             </div>
 
             <div class="flex flex-col gap-1">
-              <label class="text-xs font-semibold text-slate-700 ml-0.5">DirecciÃ³n <span class="text-rose-500">*</span></label>
+              <label class="text-xs font-semibold text-slate-700 ml-0.5">Dirección <span class="text-rose-500">*</span></label>
               <input type="text" formControlName="direccion" placeholder="Ej: Av. Los Pinos 123" maxlength="200"
                 [ngClass]="employeeForm.get('direccion')?.invalid && employeeForm.get('direccion')?.touched ? 'border-rose-400' : 'border-slate-300'"
                 class="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
               <p *ngIf="employeeForm.get('direccion')?.invalid && employeeForm.get('direccion')?.touched" class="text-[11px] text-rose-500 ml-0.5">
-                <ng-container *ngIf="employeeForm.get('direccion')?.errors?.['required']">La direcciÃ³n es requerida</ng-container>
-                <ng-container *ngIf="employeeForm.get('direccion')?.errors?.['maxlength']">MÃ¡ximo 200 caracteres</ng-container>
-                <ng-container *ngIf="employeeForm.get('direccion')?.errors?.['textContent']">Debe contener al menos una letra o nÃºmero</ng-container>
+                <ng-container *ngIf="employeeForm.get('direccion')?.errors?.['required']">La dirección es requerida</ng-container>
+                <ng-container *ngIf="employeeForm.get('direccion')?.errors?.['maxlength']">Máximo 200 caracteres</ng-container>
+                <ng-container *ngIf="employeeForm.get('direccion')?.errors?.['textContent']">Debe contener al menos una letra o número</ng-container>
                 <ng-container *ngIf="employeeForm.get('direccion')?.errors?.['leadingTrailingSpace']">No debe tener espacios al inicio o al final</ng-container>
               </p>
             </div>
@@ -351,15 +351,15 @@
                 [ngClass]="employeeForm.get('numeroColegiatura')?.invalid && employeeForm.get('numeroColegiatura')?.touched ? 'border-rose-400' : 'border-slate-300'"
                 class="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all font-bold" />
               <p *ngIf="employeeForm.get('numeroColegiatura')?.invalid && employeeForm.get('numeroColegiatura')?.touched" class="text-[11px] text-rose-500 ml-0.5">
-                <ng-container *ngIf="employeeForm.get('numeroColegiatura')?.errors?.['required']">El nÃºmero de colegiatura es requerido para veterinarios</ng-container>
-                <ng-container *ngIf="employeeForm.get('numeroColegiatura')?.errors?.['maxlength']">MÃ¡ximo 30 caracteres</ng-container>
-                <ng-container *ngIf="employeeForm.get('numeroColegiatura')?.errors?.['textContent']">Debe contener al menos una letra o nÃºmero</ng-container>
+                <ng-container *ngIf="employeeForm.get('numeroColegiatura')?.errors?.['required']">El número de colegiatura es requerido para veterinarios</ng-container>
+                <ng-container *ngIf="employeeForm.get('numeroColegiatura')?.errors?.['maxlength']">Máximo 30 caracteres</ng-container>
+                <ng-container *ngIf="employeeForm.get('numeroColegiatura')?.errors?.['textContent']">Debe contener al menos una letra o número</ng-container>
                 <ng-container *ngIf="employeeForm.get('numeroColegiatura')?.errors?.['leadingTrailingSpace']">No debe tener espacios al inicio o al final</ng-container>
               </p>
             </div>
 
             <div class="flex flex-col gap-1.5 relative">
-              <label class="text-xs font-semibold text-slate-700 ml-0.5">Especialidades MÃ©dicas</label>
+              <label class="text-xs font-semibold text-slate-700 ml-0.5">Especialidades Médicas</label>
               <button type="button" (click)="toggleDropdown('especialidades', $event)"
                 class="w-full h-10 px-3 flex items-center justify-between border border-slate-300 rounded bg-white text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all">
                 <span [class.text-slate-400]="!employeeForm.get('especialidades')?.value?.length" class="truncate">
@@ -449,22 +449,22 @@
         </div>
         <!-- Email -->
         <div>
-          <label class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Correo ElectrÃ³nico</label>
+          <label class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Correo Electrónico</label>
           <p class="text-sm font-semibold text-slate-800 mt-0.5">{{ emp.email }}</p>
         </div>
-        <!-- TelÃ©fono -->
+        <!-- Teléfono -->
         <div>
-          <label class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">TelÃ©fono</label>
+          <label class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Teléfono</label>
           <p class="text-sm font-semibold text-slate-800 mt-0.5">{{ emp.telefono }}</p>
         </div>
-        <!-- GÃ©nero -->
+        <!-- Género -->
         <div>
-          <label class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">GÃ©nero</label>
+          <label class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Género</label>
           <p class="text-sm font-semibold text-slate-800 mt-0.5">{{ emp.genero === 'M' ? 'Masculino' : emp.genero === 'F' ? 'Femenino' : emp.genero }}</p>
         </div>
-        <!-- DirecciÃ³n -->
+        <!-- Dirección -->
         <div class="sm:col-span-2">
-          <label class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">DirecciÃ³n</label>
+          <label class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Dirección</label>
           <p class="text-sm font-semibold text-slate-800 mt-0.5">{{ emp.direccion || 'No registrada' }}</p>
         </div>
         <!-- Roles -->
@@ -483,7 +483,7 @@
         </div>
         <!-- Especialidades -->
         <div class="sm:col-span-2" *ngIf="emp.especialidades?.length">
-          <label class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Especialidades MÃ©dicas</label>
+          <label class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Especialidades Médicas</label>
           <div class="flex flex-wrap gap-1.5 mt-1.5">
             <span *ngFor="let e of emp.especialidades" class="px-2.5 py-0.5 rounded text-[11px] bg-blue-50 text-blue-600 font-bold uppercase tracking-wider">{{ e }}</span>
           </div>
@@ -528,7 +528,7 @@
         <div class="w-9 h-9 bg-amber-50 text-amber-600 rounded-lg flex items-center justify-center">
           <i class="pi pi-lock text-base"></i>
         </div>
-        <h2 class="text-sm font-bold text-slate-800">Restablecer ContraseÃ±a</h2>
+        <h2 class="text-sm font-bold text-slate-800">Restablecer Contraseña</h2>
       </div>
       <button (click)="showPasswordResetModal.set(false)"
         class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
@@ -542,7 +542,7 @@
       <div class="flex items-start gap-2.5 p-3.5 bg-amber-50 border border-amber-100 rounded-lg text-xs text-amber-800 font-semibold leading-relaxed">
         <i class="pi pi-exclamation-triangle mt-0.5 text-sm shrink-0"></i>
         <div>
-          EstÃ¡s restableciendo la contraseÃ±a del empleado: 
+          Estás restableciendo la contraseña del empleado: 
           <span class="text-slate-800 font-bold block mt-0.5 uppercase">{{ selectedEmployeeForReset()?.nombre }} {{ selectedEmployeeForReset()?.apellido }}</span>
         </div>
       </div>
@@ -550,7 +550,7 @@
       <form [formGroup]="resetPasswordForm" (ngSubmit)="submitPasswordReset()" class="space-y-4">
         <!-- New Password -->
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-semibold text-slate-700 ml-0.5">Nueva ContraseÃ±a <span class="text-rose-500">*</span></label>
+          <label class="text-xs font-semibold text-slate-700 ml-0.5">Nueva Contraseña <span class="text-rose-500">*</span></label>
           <div class="relative">
             <input [type]="showResetNew() ? 'text' : 'password'" formControlName="newPassword" placeholder="Mínimo 8 caracteres"
               class="w-full px-3 py-2 pr-10 border border-slate-300 rounded-lg text-sm focus:border-[#0066AA] focus:ring-1 focus:ring-[#0066AA] outline-none h-10 transition-all duration-150 text-slate-800" />
@@ -567,9 +567,9 @@
 
         <!-- Confirm Password -->
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-semibold text-slate-700 ml-0.5">Confirmar Nueva ContraseÃ±a <span class="text-rose-500">*</span></label>
+          <label class="text-xs font-semibold text-slate-700 ml-0.5">Confirmar Nueva Contraseña <span class="text-rose-500">*</span></label>
           <div class="relative">
-            <input [type]="showResetConfirm() ? 'text' : 'password'" formControlName="confirmPassword" placeholder="Repita la nueva contraseÃ±a"
+            <input [type]="showResetConfirm() ? 'text' : 'password'" formControlName="confirmPassword" placeholder="Repita la nueva contraseña"
               class="w-full px-3 py-2 pr-10 rounded-lg text-sm outline-none h-10 transition-all duration-150 text-slate-800"
               [class]="resetPasswordForm.errors?.['mismatch'] && resetPasswordForm.get('confirmPassword')?.dirty
                 ? 'border border-rose-300 focus:border-rose-500 focus:ring-1 focus:ring-rose-500'
@@ -581,7 +581,7 @@
           </div>
           <p *ngIf="resetPasswordForm.get('confirmPassword')?.touched && resetPasswordForm.get('confirmPassword')?.errors?.['required']"
             class="text-[10px] text-rose-500 font-bold mt-1">
-            ConfirmaciÃ³n requerida.
+            Confirmación requerida.
           </p>
           <p *ngIf="resetPasswordForm.get('confirmPassword')?.touched && resetPasswordForm.get('confirmPassword')?.errors?.['passwordPolicy']"
             class="text-[10px] text-rose-500 font-bold mt-1">
@@ -589,7 +589,7 @@
           </p>
           <p *ngIf="resetPasswordForm.errors?.['mismatch'] && resetPasswordForm.get('confirmPassword')?.dirty" 
             class="text-[10px] text-rose-500 font-bold mt-1">
-            Las contraseÃ±as no coinciden.
+            Las contraseñas no coinciden.
           </p>
         </div>
 
@@ -608,5 +608,6 @@
     </div>
   </div>
 </div>
+
 
 
