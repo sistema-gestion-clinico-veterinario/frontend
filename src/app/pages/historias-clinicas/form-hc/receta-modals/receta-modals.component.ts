@@ -43,9 +43,23 @@ export class RecetaModalsComponent {
     }
   }
 
+  blockMedicineNameInput(event: KeyboardEvent) {
+    if (event.key.length > 1) return;
+    if (!this.isAllowedText(event.key, false)) {
+      event.preventDefault();
+    }
+  }
+
   blockUnsafeTextPaste(event: ClipboardEvent) {
     const text = event.clipboardData?.getData('text') ?? '';
     if (this.cleanText(text) !== text) {
+      event.preventDefault();
+    }
+  }
+
+  blockMedicineNamePaste(event: ClipboardEvent) {
+    const text = event.clipboardData?.getData('text') ?? '';
+    if (this.cleanText(text, false) !== text) {
       event.preventDefault();
     }
   }
@@ -60,11 +74,22 @@ export class RecetaModalsComponent {
     }
   }
 
-  private cleanText(value: string): string {
-    return Array.from(value).filter((char) => this.isAllowedText(char)).join('');
+  sanitizeMedicineNameField(controlName: string) {
+    const control = this.form.get(controlName);
+    const value = control?.value;
+    if (typeof value !== 'string') return;
+    const cleaned = this.cleanText(value, false);
+    if (cleaned !== value) {
+      control?.setValue(cleaned, { emitEvent: false });
+    }
   }
 
-  private isAllowedText(char: string): boolean {
+  private cleanText(value: string, allowNumbers = true): string {
+    return Array.from(value).filter((char) => this.isAllowedText(char, allowNumbers)).join('');
+  }
+
+  private isAllowedText(char: string, allowNumbers = true): boolean {
+    if (!allowNumbers) return /^[\p{L}\s.,;:()\/\-+%]$/u.test(char);
     return /^[\p{L}\p{N}\s.,;:()\/\-+°%]$/u.test(char);
   }
 
@@ -78,6 +103,7 @@ export class RecetaModalsComponent {
     if (control.errors['required']) return requiredMessage;
     if (control.errors['finiteNumber']) return 'Ingrese un numero valido.';
     if (control.errors['integerNumber']) return 'Ingrese un numero entero.';
+    if (control.errors['pattern']) return 'Use solo letras y puntuacion basica; no ingrese numeros ni simbolos especiales.';
     if (control.errors['min']) return `Valor minimo: ${control.errors['min'].min}.`;
     if (control.errors['max']) return `Valor maximo: ${control.errors['max'].max}.`;
     if (control.errors['maxlength']) return `Maximo ${control.errors['maxlength'].requiredLength} caracteres.`;

@@ -191,6 +191,7 @@
               <label class="text-xs font-bold text-slate-600">Peso (kg) <span class="text-rose-500">*</span></label>
               <input type="number" min="0.01" max="120" inputmode="decimal" formControlName="pesoEnConsulta" step="0.01" placeholder="0.0"
                 (keydown)="blockInvalidNumberInput($event, true)" (paste)="blockInvalidNumberPaste($event, true)"
+                (input)="sanitizeNumberField('pesoEnConsulta', 3, 2)"
                 class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
                 [ngClass]="{'border-rose-500': form.get('pesoEnConsulta')?.invalid && form.get('pesoEnConsulta')?.touched, 'border-slate-200': !(form.get('pesoEnConsulta')?.invalid && form.get('pesoEnConsulta')?.touched)}" />
               <span *ngIf="form.get('pesoEnConsulta')?.invalid && form.get('pesoEnConsulta')?.touched"
@@ -201,6 +202,7 @@
               <label class="text-xs font-bold text-slate-600">Temperatura (°C)</label>
               <input type="number" min="0.1" max="45" inputmode="decimal" formControlName="temperatura" step="0.1" placeholder="0.0"
                 (keydown)="blockInvalidNumberInput($event, true)" (paste)="blockInvalidNumberPaste($event, true)"
+                (input)="sanitizeNumberField('temperatura', 2, 1)"
                 class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
                 [ngClass]="{'border-rose-500': form.get('temperatura')?.invalid && form.get('temperatura')?.touched, 'border-slate-200': !(form.get('temperatura')?.invalid && form.get('temperatura')?.touched)}" />
               <span *ngIf="form.get('temperatura')?.invalid && form.get('temperatura')?.touched"
@@ -211,6 +213,7 @@
               <label class="text-xs font-bold text-slate-600">F. Cardíaca (lpm)</label>
               <input type="number" min="1" max="300" inputmode="numeric" formControlName="frecuenciaCardiaca" placeholder="0"
                 (keydown)="blockInvalidNumberInput($event)" (paste)="blockInvalidNumberPaste($event)"
+                (input)="sanitizeNumberField('frecuenciaCardiaca', 3)"
                 class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
                 [ngClass]="{'border-rose-500': form.get('frecuenciaCardiaca')?.invalid && form.get('frecuenciaCardiaca')?.touched, 'border-slate-200': !(form.get('frecuenciaCardiaca')?.invalid && form.get('frecuenciaCardiaca')?.touched)}" />
               <span *ngIf="form.get('frecuenciaCardiaca')?.invalid && form.get('frecuenciaCardiaca')?.touched"
@@ -221,6 +224,7 @@
               <label class="text-xs font-bold text-slate-600">F. Respiratoria (rpm)</label>
               <input type="number" min="1" max="200" inputmode="numeric" formControlName="frecuenciaRespiratoria" placeholder="0"
                 (keydown)="blockInvalidNumberInput($event)" (paste)="blockInvalidNumberPaste($event)"
+                (input)="sanitizeNumberField('frecuenciaRespiratoria', 3)"
                 class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
                 [ngClass]="{'border-rose-500': form.get('frecuenciaRespiratoria')?.invalid && form.get('frecuenciaRespiratoria')?.touched, 'border-slate-200': !(form.get('frecuenciaRespiratoria')?.invalid && form.get('frecuenciaRespiratoria')?.touched)}" />
               <span *ngIf="form.get('frecuenciaRespiratoria')?.invalid && form.get('frecuenciaRespiratoria')?.touched"
@@ -232,7 +236,7 @@
             <div class="flex flex-col gap-1">
               <label class="text-xs font-bold text-slate-600">Mucosas</label>
               <input type="text" formControlName="mucosas" maxlength="80" placeholder="Ej: húmedas, rosadas..."
-                (keydown)="blockInvalidClinicalTextInput($event)" (paste)="blockInvalidClinicalTextPaste($event)" (input)="sanitizeClinicalText('mucosas')"
+                (keydown)="blockInvalidDescriptorTextInput($event)" (paste)="blockInvalidDescriptorTextPaste($event)" (input)="sanitizeDescriptorText('mucosas')"
                 class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
                 [ngClass]="{'border-rose-500': form.get('mucosas')?.invalid && form.get('mucosas')?.touched, 'border-slate-200': !(form.get('mucosas')?.invalid && form.get('mucosas')?.touched)}" />
               <span *ngIf="form.get('mucosas')?.invalid && form.get('mucosas')?.touched"
@@ -241,7 +245,7 @@
             <div class="flex flex-col gap-1">
               <label class="text-xs font-bold text-slate-600">Turgencia de piel</label>
               <input type="text" formControlName="turgenciaPiel" maxlength="80" placeholder="Ej: normal, disminuida..."
-                (keydown)="blockInvalidClinicalTextInput($event)" (paste)="blockInvalidClinicalTextPaste($event)" (input)="sanitizeClinicalText('turgenciaPiel')"
+                (keydown)="blockInvalidDescriptorTextInput($event)" (paste)="blockInvalidDescriptorTextPaste($event)" (input)="sanitizeDescriptorText('turgenciaPiel')"
                 class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
                 [ngClass]="{'border-rose-500': form.get('turgenciaPiel')?.invalid && form.get('turgenciaPiel')?.touched, 'border-slate-200': !(form.get('turgenciaPiel')?.invalid && form.get('turgenciaPiel')?.touched)}" />
               <span *ngIf="form.get('turgenciaPiel')?.invalid && form.get('turgenciaPiel')?.touched"
