@@ -669,6 +669,14 @@ export class AgendaComponent implements OnInit, OnDestroy {
     this.selectedClienteLabel.set(cliente.label);
     this.selectedClienteId.set(cliente.value);
     this.showClienteSelector.set(false);
+    this.clienteSearch.set('');
+    this.resetNuevoClienteForm();
+    this.showNuevaMascota.set(false);
+    this.nmNombre.set('');
+    this.nmEspecie.set('PERRO');
+    this.nmRazaId.set(null);
+    this.nmSexo.set('MACHO');
+    this.nmFechaNac.set('');
     this.filteredMascotas.set(
       this.allMascotas()
         .filter(m => m.apoderadoId === cliente.value && m.activo)
@@ -682,6 +690,19 @@ export class AgendaComponent implements OnInit, OnDestroy {
     this.selectedMascotaLabel.set(mascota.label);
     this.citaForm.get('mascotaId')?.setValue(mascota.value);
     this.showMascotaSelector.set(false);
+  }
+
+  private resetNuevoClienteForm() {
+    this.showNuevoCliente.set(false);
+    this.savingNuevoCliente.set(false);
+    this.ncNombre.set('');
+    this.ncApellido.set('');
+    this.ncTelefono.set('');
+    this.ncCorreo.set('');
+    this.ncTipoDoc.set('DNI');
+    this.ncNumDoc.set('');
+    this.ncGenero.set('MASCULINO');
+    this.ncDireccion.set('');
   }
 
   selectVeterinario(vet: {label: string, value: number}) {
