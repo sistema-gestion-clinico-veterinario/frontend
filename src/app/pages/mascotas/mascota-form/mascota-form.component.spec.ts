@@ -34,14 +34,14 @@ describe('MascotaFormComponent', () => {
     addSpy = spyOn((component as any).messageService, 'add');
   });
 
-  describe('fechaNoFuturaValidator', () => {
+  describe('fechaNacimientoValidator', () => {
     it('returns null when the date equals today', () => {
       const today = new Date().toISOString().split('T')[0];
-      expect(component.fechaNoFuturaValidator(new FormControl(today))).toBeNull();
+      expect(component.fechaNacimientoValidator(new FormControl(today))).toBeNull();
     });
 
     it('returns { fechaFutura: true } for a date in the future', () => {
-      expect(component.fechaNoFuturaValidator(new FormControl('2099-12-31'))).toEqual({ fechaFutura: true });
+      expect(component.fechaNacimientoValidator(new FormControl('2099-12-31'))).toEqual({ fechaFutura: true });
     });
   });
 
