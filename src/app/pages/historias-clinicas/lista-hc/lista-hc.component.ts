@@ -47,11 +47,11 @@ export class ListaHcComponent implements OnInit {
     return this.authStore.isSuperAdmin() && !this.activeCompanyId;
   }
 
-  get contextLabel(): string {
+  /*get contextLabel(): string {
     if (this.isGlobalSuperAdminMode) return 'Vista global · Todas las empresas';
     const companyName = this.authStore.selectedEnterprise()?.name ?? this.authStore.companyName();
     return companyName ? `Empresa seleccionada · ${companyName}` : '';
-  }
+  }*/
 
   cargarHistorias(page: number = 0) {
     if (!this.validarFiltros()) return;
