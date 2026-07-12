@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   ReactiveFormsModule,
@@ -18,6 +18,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import { ToastModule } from 'primeng/toast';
 import { CheckboxModule } from 'primeng/checkbox';
 import { MultiSelectModule } from 'primeng/multiselect';
+import { PaginatorModule } from 'primeng/paginator';
 import { MessageService } from 'primeng/api';
 import { EspecialidadService } from '../../../core/services/especialidad.service';
 import { TipoEmpleadoService } from '../../../core/services/tipo-empleado.service';
@@ -49,6 +50,7 @@ import { textContentValidator } from '../../../core/validators/text-content.vali
     ToastModule,
     CheckboxModule,
     MultiSelectModule,
+    PaginatorModule,
     HasPermissionDirective
   ],
   providers: [MessageService],
@@ -64,9 +66,31 @@ export class ComplementarioComponent implements OnInit {
   private readonly messageService = inject(MessageService);
   readonly authStore = inject(AuthStore);
   readonly loadingStore = inject(LoadingStore);
+  private lastLoadedCompanyId: number | null | undefined = undefined;
 
   get activeCompanyId(): number | null {
     return this.authStore.selectedEnterprise()?.establishmentId ?? this.authStore.companyId();
+  }
+
+  get requiresCompanySelection(): boolean {
+    return this.authStore.isSuperAdmin() && !this.activeCompanyId;
+  }
+
+  constructor() {
+    effect(() => {
+      const companyId = this.activeCompanyId;
+      if (this.lastLoadedCompanyId === companyId) return;
+
+      this.lastLoadedCompanyId = companyId;
+      this.resetPagination();
+
+      if (!companyId) {
+        this.clearData();
+        return;
+      }
+
+      this.loadAll();
+    });
   }
   activeTab = signal<number>(0);
   confirmDialog = signal<{
@@ -188,6 +212,8 @@ export class ComplementarioComponent implements OnInit {
   }
 
   especialidades = signal<any[]>([]);
+  especialidadesTotal = signal(0);
+  especialidadesPage = signal(0);
   showEspModal = signal(false);
   editingEsp = signal<any | null>(null);
   espForm: FormGroup = this.fb.group({
@@ -195,7 +221,10 @@ export class ComplementarioComponent implements OnInit {
     descripcion: ['', [Validators.maxLength(500), noLeadingTrailingSpaceValidator(), textContentValidator()]]
   });
   tiposEmpleado = signal<any[]>([]);
-  tiposEmpleadoActivos = computed(() => this.tiposEmpleado().filter(t => t.estado !== false));
+  tiposEmpleadoCatalogo = signal<any[]>([]);
+  tiposEmpleadoTotal = signal(0);
+  tiposEmpleadoPage = signal(0);
+  tiposEmpleadoActivos = computed(() => this.tiposEmpleadoCatalogo().filter(t => t.estado !== false));
   showTipoModal = signal(false);
   editingTipo = signal<any | null>(null);
   tipoForm: FormGroup = this.fb.group({
@@ -206,6 +235,9 @@ export class ComplementarioComponent implements OnInit {
 
 
   servicios           = signal<ServicioResponse[]>([]);
+  serviciosTotal      = signal(0);
+  serviciosPage       = signal(0);
+  readonly pageSize   = 8;
   showServicioModal   = signal(false);
   editingServicio     = signal<ServicioResponse | null>(null);
   servicioForm: FormGroup = this.fb.group({
@@ -217,19 +249,49 @@ export class ComplementarioComponent implements OnInit {
     tipoEmpleadoId: [null]
   });
   ngOnInit() {
-    this.loadAll();
   }
 
   loadAll() {
+    if (!this.activeCompanyId) {
+      this.clearData();
+      return;
+    }
+
     this.loadEspecialidades();
     this.loadTiposEmpleado();
+    this.loadTiposEmpleadoCatalogo();
     this.loadServicios();
   }
 
-  loadEspecialidades() {
+  private resetPagination() {
+    this.especialidadesPage.set(0);
+    this.tiposEmpleadoPage.set(0);
+    this.serviciosPage.set(0);
+  }
+
+  private clearData() {
+    this.especialidades.set([]);
+    this.especialidadesTotal.set(0);
+    this.tiposEmpleado.set([]);
+    this.tiposEmpleadoCatalogo.set([]);
+    this.tiposEmpleadoTotal.set(0);
+    this.servicios.set([]);
+    this.serviciosTotal.set(0);
+  }
+
+  private pageTotal(data: any): number {
+    return data?.page?.totalElements ?? data?.totalElements ?? 0;
+  }
+
+  loadEspecialidades(page = this.especialidadesPage()) {
+    if (!this.activeCompanyId) return;
     const cid = this.activeCompanyId ?? undefined;
-    this.especialidadService.listar(cid).subscribe({
-      next: (res) => this.especialidades.set(res.data.content ?? res.data),
+    this.especialidadService.listar(cid, page, this.pageSize).subscribe({
+      next: (res) => {
+        this.especialidades.set(res.data.content ?? res.data);
+        this.especialidadesTotal.set(this.pageTotal(res.data));
+        this.especialidadesPage.set(page);
+      },
       error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar las especialidades' })
     });
   }
@@ -258,7 +320,7 @@ export class ComplementarioComponent implements OnInit {
       next: () => {
         this.messageService.add({ severity: 'success', summary: 'Éxito', detail: this.editingEsp() ? 'Especialidad actualizada' : 'Especialidad creada' });
         this.showEspModal.set(false);
-        this.loadEspecialidades();
+        this.loadEspecialidades(this.editingEsp() ? this.especialidadesPage() : 0);
         this.loadingStore.hide();
       },
       error: (err) => {
@@ -273,7 +335,7 @@ export class ComplementarioComponent implements OnInit {
     this.especialidadService.eliminar(id).subscribe({
       next: () => {
         this.messageService.add({ severity: 'success', summary: 'Eliminada', detail: 'Especialidad eliminada' });
-        this.loadEspecialidades();
+        this.loadEspecialidades(this.especialidadesPage());
         this.loadingStore.hide();
       },
       error: (err) => {
@@ -282,11 +344,25 @@ export class ComplementarioComponent implements OnInit {
       }
     });
   }
-  loadTiposEmpleado() {
+  loadTiposEmpleado(page = this.tiposEmpleadoPage()) {
+    if (!this.activeCompanyId) return;
     const cid = this.activeCompanyId ?? undefined;
-    this.tipoEmpleadoService.listar(cid).subscribe({
-      next: (res) => this.tiposEmpleado.set(res.data.content ?? res.data),
+    this.tipoEmpleadoService.listar(cid, page, this.pageSize).subscribe({
+      next: (res) => {
+        this.tiposEmpleado.set(res.data.content ?? res.data);
+        this.tiposEmpleadoTotal.set(this.pageTotal(res.data));
+        this.tiposEmpleadoPage.set(page);
+      },
       error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar los tipos de empleado' })
+    });
+  }
+
+  loadTiposEmpleadoCatalogo() {
+    if (!this.activeCompanyId) return;
+    const cid = this.activeCompanyId ?? undefined;
+    this.tipoEmpleadoService.listar(cid, 0, 100).subscribe({
+      next: (res) => this.tiposEmpleadoCatalogo.set(res.data.content ?? res.data),
+      error: () => this.tiposEmpleadoCatalogo.set([])
     });
   }
 
@@ -319,7 +395,8 @@ export class ComplementarioComponent implements OnInit {
       next: () => {
         this.messageService.add({ severity: 'success', summary: 'Éxito', detail: editing ? 'Tipo de empleado actualizado' : 'Tipo de empleado creado' });
         this.showTipoModal.set(false);
-        this.loadTiposEmpleado();
+        this.loadTiposEmpleado(editing ? this.tiposEmpleadoPage() : 0);
+        this.loadTiposEmpleadoCatalogo();
         this.loadingStore.hide();
       },
       error: (err) => {
@@ -334,7 +411,8 @@ export class ComplementarioComponent implements OnInit {
     this.tipoEmpleadoService.cambiarEstado(item.id, !item.estado).subscribe({
       next: () => {
         this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Estado actualizado' });
-        this.loadTiposEmpleado();
+        this.loadTiposEmpleado(this.tiposEmpleadoPage());
+        this.loadTiposEmpleadoCatalogo();
         this.loadingStore.hide();
       },
       error: (err) => {
@@ -349,7 +427,8 @@ export class ComplementarioComponent implements OnInit {
     this.tipoEmpleadoService.eliminar(id).subscribe({
       next: () => {
         this.messageService.add({ severity: 'success', summary: 'Eliminado', detail: 'Tipo de empleado eliminado' });
-        this.loadTiposEmpleado();
+        this.loadTiposEmpleado(this.tiposEmpleadoPage());
+        this.loadTiposEmpleadoCatalogo();
         this.loadingStore.hide();
       },
       error: (err) => {
@@ -359,13 +438,16 @@ export class ComplementarioComponent implements OnInit {
     });
   }
 
-  loadServicios() {
+  loadServicios(page = this.serviciosPage()) {
+    if (!this.activeCompanyId) return;
     const cid = this.activeCompanyId ?? undefined;
-    this.servicioService.listar(cid, 0, 100).subscribe({
+    this.servicioService.listar(cid, page, this.pageSize).subscribe({
       next: (res) => {
         // Filter out soft-deleted services so they do not show up in the active list
         const activeList = (res.data.content || []).filter((s: ServicioResponse) => s.activo);
         this.servicios.set(activeList);
+        this.serviciosTotal.set(this.pageTotal(res.data));
+        this.serviciosPage.set(page);
       },
       error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar los servicios' })
     });
@@ -400,7 +482,7 @@ export class ComplementarioComponent implements OnInit {
       next: () => {
         this.messageService.add({ severity: 'success', summary: 'Éxito', detail: editing ? 'Servicio actualizado' : 'Servicio creado' });
         this.showServicioModal.set(false);
-        this.loadServicios();
+        this.loadServicios(editing ? this.serviciosPage() : 0);
         this.loadingStore.hide();
       },
       error: (err) => {
@@ -414,7 +496,7 @@ export class ComplementarioComponent implements OnInit {
     this.loadingStore.show();
     this.servicioService.toggleDisponible(item.id).subscribe({
       next: () => {
-        this.loadServicios();
+        this.loadServicios(this.serviciosPage());
         this.loadingStore.hide();
         this.messageService.add({ severity: 'success', summary: 'Actualizado', detail: 'Disponibilidad del servicio actualizada' });
       },
@@ -430,7 +512,7 @@ export class ComplementarioComponent implements OnInit {
     this.servicioService.eliminar(id).subscribe({
       next: () => {
         this.messageService.add({ severity: 'success', summary: 'Eliminado', detail: 'Servicio eliminado correctamente' });
-        this.loadServicios();
+        this.loadServicios(this.serviciosPage());
         this.loadingStore.hide();
       },
       error: (err) => {
@@ -438,6 +520,18 @@ export class ComplementarioComponent implements OnInit {
         this.loadingStore.hide();
       }
     });
+  }
+
+  onEspecialidadesPageChange(event: any) {
+    this.loadEspecialidades(Number(event.page) || 0);
+  }
+
+  onTiposEmpleadoPageChange(event: any) {
+    this.loadTiposEmpleado(Number(event.page) || 0);
+  }
+
+  onServiciosPageChange(event: any) {
+    this.loadServicios(Number(event.page) || 0);
   }
 
 }
