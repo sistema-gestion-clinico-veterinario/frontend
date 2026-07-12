@@ -3,7 +3,7 @@ import { LoginComponent } from './login.component';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 
 describe('LoginComponent – greeting', () => {
   let component: LoginComponent;
@@ -55,6 +55,8 @@ describe('LoginComponent - submit validations', () => {
   let authService: jasmine.SpyObj<AuthService>;
 
   beforeEach(async () => {
+    localStorage.clear();
+    sessionStorage.clear();
     await TestBed.configureTestingModule({
       imports: [LoginComponent, HttpClientTestingModule],
       providers: [
@@ -116,6 +118,45 @@ describe('LoginComponent - submit validations', () => {
     component.submit();
 
     expect(component.authError).toBe('Tu usuario no tiene ningún rol asignado. Contacta al administrador.');
+  });
+
+  it('[BB-001] permite iniciar sesion con credenciales validas y redirige al usuario', () => {
+    const router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
+    createLoginInput('email', 'admin@test.com');
+    createLoginInput('password', 'secret123');
+    authService.login.and.returnValue(of({
+      data: {
+        roles: ['ROLE_ADMIN'],
+        assignedRoles: ['ROLE_ADMIN'],
+        companyId: 1,
+        companyName: 'VargasVet',
+        nombreCompleto: 'Admin Test',
+        userType: 'EMPLEADO',
+        empleadoId: 1,
+        passwordChanged: true,
+        needsCompanySelection: false,
+        menu: [],
+      }
+    } as any));
+
+    component.submit();
+
+    expect(component.authError).toBeNull();
+    expect(authService.login).toHaveBeenCalledWith({ email: 'admin@test.com', password: 'secret123' });
+    expect(router.navigateByUrl).toHaveBeenCalled();
+  });
+
+  it('[BB-002] rechaza credenciales invalidas y muestra el mensaje del servidor', () => {
+    createLoginInput('email', 'admin@test.com');
+    createLoginInput('password', 'incorrecta');
+    authService.login.and.returnValue(throwError(() => ({
+      status: 401,
+      error: { message: 'Correo o contrasena incorrectos.' },
+    })));
+
+    component.submit();
+
+    expect(component.authError).toBe('Correo o contrasena incorrectos.');
   });
 });
 
