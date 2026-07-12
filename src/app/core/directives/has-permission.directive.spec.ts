@@ -61,7 +61,7 @@ describe('HasPermissionDirective', () => {
     expect(fixture.nativeElement.querySelector('#content')).not.toBeNull();
   });
 
-  it('hides content when user does not have access to the ventana', () => {
+  it('[BB-003] hides content when user does not have access to the ventana', () => {
     store.setAuth({ ...baseAuth, roles: ['ROLE_EMPLEADO'], menu: [] });
     host.permission = 'VISTA_MASCOTAS';
     fixture.detectChanges();
