@@ -11,8 +11,9 @@ export class EspecialidadService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = `${environment.apiUrl}/admin/specialties`;
 
-  listar(companyId?: number) {
-    const params = companyId ? `?companyId=${companyId}&size=1000` : '?size=1000';
+  listar(companyId?: number, page = 0, size = 10) {
+    let params = `?page=${page}&size=${size}`;
+    if (companyId) params += `&companyId=${companyId}`;
     return this.http.get<ApiResponse<Page<any>>>(`${this.apiUrl}${params}`);
   }
 

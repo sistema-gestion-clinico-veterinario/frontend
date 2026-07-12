@@ -9,6 +9,7 @@ import { HistoriaClinicaService } from '../../../core/services/historia-clinica.
 import { LoadingStore } from '../../../store/loading.store';
 import { AuthStore } from '../../../store/auth.store';
 import { FormsModule } from '@angular/forms';
+import { HistoriaClinicaResumen } from '../../../models/response/historia-clinica-response';
 
 @Component({
   selector: 'app-lista-hc',
@@ -22,7 +23,7 @@ export class ListaHcComponent implements OnInit {
   readonly authStore            = inject(AuthStore);
   private readonly router       = inject(Router);
 
-  historias    = signal<any[]>([]);
+  historias    = signal<HistoriaClinicaResumen[]>([]);
   totalRecords = signal(0);
   currentPage  = 0;
   readonly pageSize = 10;
@@ -40,6 +41,16 @@ export class ListaHcComponent implements OnInit {
 
   get activeCompanyId(): number | undefined {
     return this.authStore.selectedEnterprise()?.establishmentId ?? undefined;
+  }
+
+  get isGlobalSuperAdminMode(): boolean {
+    return this.authStore.isSuperAdmin() && !this.activeCompanyId;
+  }
+
+  get contextLabel(): string {
+    if (this.isGlobalSuperAdminMode) return 'Vista global · Todas las empresas';
+    const companyName = this.authStore.selectedEnterprise()?.name ?? this.authStore.companyName();
+    return companyName ? `Empresa seleccionada · ${companyName}` : '';
   }
 
   cargarHistorias(page: number = 0) {

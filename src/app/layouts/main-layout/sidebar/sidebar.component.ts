@@ -38,7 +38,17 @@ export class SidebarComponent implements OnInit {
   companyLogoUrl = computed(() => this.authStore.selectedEnterprise()?.logoUrl ? this.mediaService.resolveUrl(this.authStore.selectedEnterprise()?.logoUrl) : null);
 
   userName = computed(() => this.authStore.nombreCompleto() ?? 'Usuario');
-  companyName = computed(() => this.authStore.selectedEnterprise()?.name ?? this.authStore.companyName() ?? '');
+  companyName = computed(() => {
+    const selectedEnterprise = this.authStore.selectedEnterprise();
+    if (selectedEnterprise?.name) return selectedEnterprise.name;
+
+    const companyName = this.authStore.companyName();
+    if (companyName) return companyName;
+
+    const roles = this.authStore.roles() ?? [];
+    const isSuperAdmin = roles.some(role => role === 'SUPER_ADMIN' || role === 'ROLE_SUPER_ADMIN');
+    return isSuperAdmin ? 'Vet Admin Pro' : '';
+  });
   loadingEnterprise = computed(() => this.authStore.loadingEnterprise());
 
   userInitials = computed(() => {

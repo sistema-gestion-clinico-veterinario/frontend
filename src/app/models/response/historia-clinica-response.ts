@@ -89,3 +89,17 @@ export interface HistoriaClinicaDetalle {
   grupoSanguineo?: string;
   consultas: ConsultaResumen[];
 }
+
+export interface HistoriaClinicaResumen {
+  id: number;
+  numeroHc: string;
+  mascotaId: number;
+  mascotaNombre: string;
+  especie?: string;
+  raza?: string;
+  propietarioNombre?: string;
+  companyId?: number;
+  companyName?: string;
+  fechaUltimaConsulta?: string;
+  activa: boolean;
+}
