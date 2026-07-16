@@ -28,6 +28,7 @@
     "@fullcalendar/timegrid": "^6.1.17",
     "@ngrx/signals": "^19.2.1",
     "@primeng/themes": "^19.1.4",
+    "@vercel/analytics": "^2.0.1",
     "docx": "^9.7.1",
     "html2canvas": "^1.4.1",
     "primeflex": "^4.0.0",
