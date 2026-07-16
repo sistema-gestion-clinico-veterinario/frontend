@@ -13,6 +13,7 @@
   },
   "private": true,
   "dependencies": {
+    "@angular/animations": "^20.1.8",
     "@angular/cdk": "^19.2.19",
     "@angular/common": "^19.2.0",
     "@angular/compiler": "^19.2.0",
@@ -29,6 +30,7 @@
     "@ngrx/signals": "^19.2.1",
     "@primeng/themes": "^19.1.4",
     "@vercel/analytics": "^2.0.1",
+    "@vercel/speed-insights": "^2.0.0",
     "docx": "^9.7.1",
     "html2canvas": "^1.4.1",
     "primeflex": "^4.0.0",
