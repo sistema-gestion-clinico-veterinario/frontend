@@ -161,12 +161,32 @@
                 {{ serviciosNoMedicos().length }}
               </span>
             </button>
+            <button
+              (click)="seleccionarTab('preventivos')"
+              [class]="tabActiva() === 'preventivos'
+                ? 'py-3 text-xs font-extrabold text-[#0066AA] border-b-2 border-[#0066AA] ml-6'
+                : 'py-3 text-xs font-bold text-slate-400 border-b-2 border-transparent hover:text-slate-600 ml-6'">
+              Preventivos
+              <span *ngIf="(hc()!.controlesPreventivos?.length || 0) > 0" class="ml-1 bg-blue-100 text-[#0066AA] rounded-full px-1.5 py-0.5 text-[10px]">{{ hc()!.controlesPreventivos!.length }}</span>
+            </button>
           </div>
 
-          <div *ngIf="tabActiva() !== 'servicios' && !consultaActiva()"
+          <div *ngIf="tabActiva() !== 'servicios' && tabActiva() !== 'preventivos' && !consultaActiva()"
             class="py-20 text-center px-6">
             <i class="pi pi-arrow-left text-2xl text-slate-200 block mb-3"></i>
             <p class="text-xs text-slate-400 font-medium">Selecciona una consulta para ver su detalle</p>
+          </div>
+          <div *ngIf="tabActiva() === 'preventivos'" class="p-5">
+            <h3 class="text-sm font-extrabold text-slate-800 mb-4">Controles preventivos</h3>
+            <div *ngIf="hc()!.controlesPreventivos?.length; else sinPreventivos" class="overflow-x-auto">
+              <table class="w-full min-w-[560px] text-left">
+                <thead><tr class="text-[10px] uppercase text-slate-400 border-b border-slate-100"><th class="pb-2">Tipo</th><th class="pb-2">Control</th><th class="pb-2">Fecha</th><th class="pb-2">Estado</th></tr></thead>
+                <tbody><tr *ngFor="let control of hc()!.controlesPreventivos" class="text-xs border-b border-slate-50"><td class="py-3">{{ control.tipo === 'VACUNACION' ? 'Vacunacion' : 'Desparasitacion' }}</td><td class="py-3 font-bold text-slate-700">{{ control.nombreControl }}</td><td class="py-3 text-slate-500">{{ control.fechaRecomendada | date:'dd/MM/yyyy' }}</td><td class="py-3"><span class="px-2 py-1 rounded bg-slate-100 text-slate-600 text-[10px] font-bold">{{ control.estado }}</span></td></tr></tbody>
+              </table>
+            </div>
+            <ng-template #sinPreventivos><p class="py-10 text-center text-xs text-slate-400">Sin controles preventivos registrados.</p></ng-template>
+            <h4 *ngIf="hc()!.aplicacionesPreventivas?.length" class="text-xs font-extrabold text-slate-600 mt-6 mb-3">Historial de aplicaciones</h4>
+            <div class="grid sm:grid-cols-2 gap-x-6"><div *ngFor="let aplicacion of hc()!.aplicacionesPreventivas" class="py-3 border-b border-slate-50 text-xs"><strong class="text-slate-700">{{ aplicacion.nombreControl }}</strong><p class="text-slate-400 mt-1">Aplicada {{ aplicacion.fechaAplicacion | date:'dd/MM/yyyy' }} · Proxima {{ aplicacion.fechaProximaAplicacion | date:'dd/MM/yyyy' }}</p></div></div>
           </div>
           <div *ngIf="consultaActiva() && tabActiva() === 'clinico'" class="p-5 flex flex-col gap-5">
             <div>

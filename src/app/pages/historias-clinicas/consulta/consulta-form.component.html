@@ -253,7 +253,7 @@
             </div>
           </div>
 
-          <div class="flex gap-6">
+          <div class="hidden" aria-hidden="true">
             <label class="flex items-center gap-2 cursor-pointer select-none">
               <input type="checkbox" formControlName="vacunacionAlDia" class="w-4 h-4 rounded accent-[#0066AA]" />
               <span class="text-sm font-medium text-slate-700">Vacunación al día</span>
@@ -262,6 +262,86 @@
               <input type="checkbox" formControlName="desparasitacionAlDia" class="w-4 h-4 rounded accent-[#0066AA]" />
               <span class="text-sm font-medium text-slate-700">Desparasitación al día</span>
             </label>
+          </div>
+
+          <div class="mt-6 pt-5 border-t border-slate-100">
+            <div class="flex items-center justify-between gap-3 mb-4">
+              <div>
+                <h3 class="text-sm font-extrabold text-slate-800">Controles preventivos</h3>
+                <p class="text-xs text-slate-400 mt-0.5">Seguimiento individual por vacuna o desparasitacion.</p>
+              </div>
+              <span class="text-xs font-bold text-slate-500">{{ controlesAbiertos().length }} abiertos</span>
+            </div>
+
+            <div class="flex flex-wrap gap-2 mb-4">
+              <span class="text-xs font-bold px-3 py-2 rounded-lg" [ngClass]="!tieneVacunacionRegistrada() ? 'bg-slate-100 text-slate-600' : (vacunacionAlDiaCalculada() ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700')">
+                Vacunacion {{ !tieneVacunacionRegistrada() ? 'sin registros' : (vacunacionAlDiaCalculada() ? 'al dia' : 'pendiente') }}
+              </span>
+              <span class="text-xs font-bold px-3 py-2 rounded-lg" [ngClass]="!tieneDesparasitacionRegistrada() ? 'bg-slate-100 text-slate-600' : (desparasitacionAlDiaCalculada() ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700')">
+                Desparasitacion {{ !tieneDesparasitacionRegistrada() ? 'sin registros' : (desparasitacionAlDiaCalculada() ? 'al dia' : 'pendiente') }}
+              </span>
+            </div>
+
+            <div *ngIf="controlesAbiertos().length; else sinControles" class="overflow-x-auto mb-6">
+              <table class="w-full min-w-[560px] text-left">
+                <thead><tr class="text-[10px] uppercase text-slate-400 border-b border-slate-100">
+                  <th class="pb-2 font-extrabold">Tipo</th><th class="pb-2 font-extrabold">Control</th>
+                  <th class="pb-2 font-extrabold">Fecha</th><th class="pb-2 font-extrabold">Estado</th>
+                </tr></thead>
+                <tbody><tr *ngFor="let control of controlesAbiertos()" class="border-b border-slate-50 text-xs text-slate-700">
+                  <td class="py-3 font-semibold">{{ control.tipo === 'VACUNACION' ? 'Vacunacion' : 'Desparasitacion' }}</td>
+                  <td class="py-3 font-bold">{{ control.nombreControl }}</td>
+                  <td class="py-3">{{ control.fechaRecomendada | date:'dd/MM/yyyy' }}</td>
+                  <td class="py-3"><span class="px-2 py-1 rounded-md text-[10px] font-extrabold" [ngClass]="claseEstadoPreventivo(control.estado)">{{ control.estado }}</span></td>
+                </tr></tbody>
+              </table>
+            </div>
+            <ng-template #sinControles><p class="text-xs text-slate-400 py-3 mb-4">No hay controles preventivos abiertos.</p></ng-template>
+
+            <div *ngIf="!isCerrada() && canModify()" class="grid lg:grid-cols-2 gap-6 pt-5 border-t border-slate-100">
+              <div [formGroup]="vacunacionForm" class="lg:pr-6 lg:border-r border-slate-100">
+                <h4 class="text-xs font-extrabold text-slate-700 mb-3">Registrar vacunacion</h4>
+                <div class="grid sm:grid-cols-2 gap-3">
+                  <label class="flex flex-col gap-1 sm:col-span-2"><span class="text-[10px] font-bold text-slate-500">Vacuna aplicada</span>
+                    <select formControlName="tipoVacunaId" (change)="seleccionarTipoVacuna($any($event.target).value)" class="rounded-lg border border-slate-200 px-3 py-2 text-xs bg-white">
+                      <option [ngValue]="null">Seleccionar vacuna</option><option *ngFor="let vacuna of tiposVacuna()" [value]="vacuna.id">{{ vacuna.nombre }}</option>
+                    </select>
+                  </label>
+                  <label class="flex flex-col gap-1"><span class="text-[10px] font-bold text-slate-500">Fecha aplicada</span><input type="date" formControlName="fechaAplicacion" class="rounded-lg border border-slate-200 px-3 py-2 text-xs"></label>
+                  <label class="flex flex-col gap-1"><span class="text-[10px] font-bold text-slate-500">Periodicidad (meses)</span><input type="number" min="1" max="120" formControlName="periodicidadMeses" class="rounded-lg border border-slate-200 px-3 py-2 text-xs"></label>
+                  <label class="flex flex-col gap-1 sm:col-span-2"><span class="text-[10px] font-bold text-slate-500">Proxima dosis (opcional)</span><input type="date" formControlName="fechaProximaDosis" class="rounded-lg border border-slate-200 px-3 py-2 text-xs"></label>
+                </div>
+                <div class="flex gap-2 mt-3"><input type="text" maxlength="100" [value]="nuevoTipoVacuna()" (input)="nuevoTipoVacuna.set($any($event.target).value)" placeholder="Nueva vacuna" class="min-w-0 flex-1 rounded-lg border border-slate-200 px-3 py-2 text-xs"><button type="button" (click)="crearTipoVacuna()" [disabled]="guardandoPreventivo() || !nuevoTipoVacuna().trim()" class="w-9 h-9 rounded-lg border border-slate-200 text-[#0066AA] disabled:opacity-40" title="Agregar vacuna"><i class="pi pi-plus"></i></button></div>
+                <button type="button" (click)="registrarVacunacion()" [disabled]="guardandoPreventivo()" class="mt-3 px-4 py-2 rounded-lg bg-[#0066AA] text-white text-xs font-bold disabled:opacity-50">Registrar aplicacion</button>
+              </div>
+
+              <div [formGroup]="desparasitacionForm">
+                <h4 class="text-xs font-extrabold text-slate-700 mb-3">Registrar desparasitacion</h4>
+                <div class="grid sm:grid-cols-2 gap-3">
+                  <label class="flex flex-col gap-1 sm:col-span-2"><span class="text-[10px] font-bold text-slate-500">Producto</span><input type="text" maxlength="100" formControlName="producto" class="rounded-lg border border-slate-200 px-3 py-2 text-xs"></label>
+                  <label class="flex flex-col gap-1"><span class="text-[10px] font-bold text-slate-500">Fecha aplicada</span><input type="date" formControlName="fechaAplicacion" class="rounded-lg border border-slate-200 px-3 py-2 text-xs"></label>
+                  <label class="flex flex-col gap-1"><span class="text-[10px] font-bold text-slate-500">Periodicidad (meses)</span><input type="number" min="1" max="120" formControlName="periodicidadMeses" class="rounded-lg border border-slate-200 px-3 py-2 text-xs"></label>
+                  <label class="flex flex-col gap-1 sm:col-span-2"><span class="text-[10px] font-bold text-slate-500">Proxima aplicacion (opcional)</span><input type="date" formControlName="fechaProximaAplicacion" class="rounded-lg border border-slate-200 px-3 py-2 text-xs"></label>
+                </div>
+                <button type="button" (click)="registrarDesparasitacion()" [disabled]="guardandoPreventivo()" class="mt-3 px-4 py-2 rounded-lg bg-[#0066AA] text-white text-xs font-bold disabled:opacity-50">Registrar aplicacion</button>
+              </div>
+            </div>
+
+            <div *ngIf="!isCerrada() && canModify()" [formGroup]="pendienteForm" class="mt-6 pt-5 border-t border-slate-100">
+              <h4 class="text-xs font-extrabold text-slate-700 mb-3">Programar control pendiente</h4>
+              <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 items-end">
+                <label class="flex flex-col gap-1"><span class="text-[10px] font-bold text-slate-500">Tipo</span><select formControlName="tipo" class="rounded-lg border border-slate-200 px-3 py-2 text-xs bg-white"><option value="VACUNACION">Vacunacion</option><option value="DESPARASITACION">Desparasitacion</option></select></label>
+                <label *ngIf="pendienteForm.value.tipo === 'VACUNACION'" class="flex flex-col gap-1"><span class="text-[10px] font-bold text-slate-500">Vacuna pendiente</span><select formControlName="tipoVacunaId" class="rounded-lg border border-slate-200 px-3 py-2 text-xs bg-white"><option [ngValue]="null">Seleccionar</option><option *ngFor="let vacuna of tiposVacuna()" [ngValue]="vacuna.id">{{ vacuna.nombre }}</option></select></label>
+                <label *ngIf="pendienteForm.value.tipo === 'DESPARASITACION'" class="flex flex-col gap-1"><span class="text-[10px] font-bold text-slate-500">Producto o control</span><input type="text" maxlength="100" formControlName="nombreControl" class="rounded-lg border border-slate-200 px-3 py-2 text-xs"></label>
+                <label class="flex flex-col gap-1"><span class="text-[10px] font-bold text-slate-500">Fecha recomendada</span><input type="date" formControlName="fechaRecomendada" class="rounded-lg border border-slate-200 px-3 py-2 text-xs"></label>
+                <button type="button" (click)="programarPendiente()" [disabled]="guardandoPreventivo()" class="px-4 py-2 rounded-lg border border-[#0066AA] text-[#0066AA] text-xs font-bold disabled:opacity-50">Programar</button>
+              </div>
+            </div>
+
+            <div *ngIf="aplicacionesPreventivas().length" class="mt-6 pt-5 border-t border-slate-100">
+              <h4 class="text-xs font-extrabold text-slate-700 mb-3">Historial de aplicaciones</h4>
+              <div class="grid sm:grid-cols-2 gap-x-6"><div *ngFor="let aplicacion of aplicacionesPreventivas().slice(0, 6)" class="py-2 border-b border-slate-50 flex items-center justify-between gap-3 text-xs"><div><strong class="text-slate-700">{{ aplicacion.nombreControl }}</strong><p class="text-slate-400 mt-0.5">{{ aplicacion.fechaAplicacion | date:'dd/MM/yyyy' }}</p></div><span class="text-slate-500">Proxima {{ aplicacion.fechaProximaAplicacion | date:'dd/MM/yyyy' }}</span></div></div>
+            </div>
           </div>
         </div>
         <div *ngIf="tabActiva() === 'clinico'" class="p-5 flex flex-col gap-4">

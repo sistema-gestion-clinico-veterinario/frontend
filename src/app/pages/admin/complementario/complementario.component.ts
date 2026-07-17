@@ -246,7 +246,8 @@ export class ComplementarioComponent implements OnInit {
     precio:      [null, [Validators.required, Validators.min(5), Validators.max(5000)]],
     duracionEstimada: [20, [Validators.required, Validators.min(5), Validators.max(240)]],
     disponible:  [true],
-    tipoEmpleadoId: [null]
+    tipoEmpleadoId: [null],
+    tipoControlPreventivo: ['NO_APLICA']
   });
   ngOnInit() {
   }
@@ -461,7 +462,8 @@ export class ComplementarioComponent implements OnInit {
       precio:      item?.precio      ?? null,
       duracionEstimada: item?.duracionEstimada ?? 20,
       disponible:  item?.disponible  ?? true,
-      tipoEmpleadoId: item?.tipoEmpleadoId ?? null
+      tipoEmpleadoId: item?.tipoEmpleadoId ?? null,
+      tipoControlPreventivo: item?.tipoControlPreventivo ?? 'NO_APLICA'
     });
     this.showServicioModal.set(true);
   }

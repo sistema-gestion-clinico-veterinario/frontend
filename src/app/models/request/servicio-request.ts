@@ -4,4 +4,5 @@ export interface ServicioRequest {
   descripcion: string;
   precio: number;
   disponible?: boolean;
+  tipoControlPreventivo?: 'VACUNACION' | 'DESPARASITACION' | 'NO_APLICA';
 }
