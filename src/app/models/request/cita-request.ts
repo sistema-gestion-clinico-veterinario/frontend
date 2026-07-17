@@ -7,6 +7,7 @@ export interface CitaRequest {
   notas?: string;
   version?: number;
   esEmergencia?: boolean;
+  controlPreventivoIds?: number[];
 }
 
 export interface CitaReprogramacionRequest {

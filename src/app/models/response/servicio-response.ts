@@ -11,4 +11,5 @@ export interface ServicioResponse {
   permiteEmergencia?: boolean;
   tipoEmpleadoId?: number;
   tipoEmpleadoNombre?: string;
+  tipoControlPreventivo?: 'VACUNACION' | 'DESPARASITACION' | 'NO_APLICA';
 }

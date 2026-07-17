@@ -22,4 +22,5 @@ export interface CitaResponse {
   esEmergencia: boolean;
   totalServicio?: number;
   montoPagado?: number;
+  controlPreventivoIds?: number[];
 }

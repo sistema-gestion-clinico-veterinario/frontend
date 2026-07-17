@@ -51,6 +51,8 @@ import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-lea
 import { textContentValidator } from '../../../core/validators/text-content.validator';
 import { normalizeText } from '../../../core/utils/normalize-text.util';
 import { hasMeaningfulText, isLowercaseEmail } from '../../../core/utils/input-validation.util';
+import { ControlPreventivoService } from '../../../core/services/control-preventivo.service';
+import { ControlPreventivoResponse } from '../../../models/response/control-preventivo-response';
 export type Vista = 'lista' | 'dia' | 'semana' | 'mes';
 
 interface CitaWsEvent {
@@ -103,6 +105,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
   private readonly razaService       = inject(RazaService);
   private readonly companyService    = inject(CompanyService);
   private readonly servicioService   = inject(ServicioService);
+  private readonly preventivoService = inject(ControlPreventivoService);
   private readonly pagoService       = inject(PagoService);
   private readonly cajaService       = inject(CajaService);
   private readonly messageService    = inject(MessageService);
@@ -202,6 +205,13 @@ export class AgendaComponent implements OnInit, OnDestroy {
   serviciosConDetalle  = signal<ServicioResponse[]>([]);
   todosEmpleados       = signal<{ id: number; nombre: string; apellido: string; tiposEmpleado: string[] }[]>([]);
   selectedServicioId   = signal<number | null>(null);
+  controlesPreventivosMascota = signal<ControlPreventivoResponse[]>([]);
+  readonly controlesParaServicio = computed(() => {
+    const servicio = this.serviciosConDetalle().find(s => s.id === this.selectedServicioId());
+    const tipo = servicio?.tipoControlPreventivo;
+    if (tipo !== 'VACUNACION' && tipo !== 'DESPARASITACION') return [];
+    return this.controlesPreventivosMascota().filter(c => c.tipo === tipo && !['APLICADO', 'CANCELADO', 'SUSPENDIDO_POR_CITA'].includes(c.estado));
+  });
   empleadosDelServicio = signal<{ label: string; value: number }[]>([]);
 
   showClienteSelector = signal<boolean>(false);
@@ -466,7 +476,8 @@ export class AgendaComponent implements OnInit, OnDestroy {
     horaCita:        [null],
     servicioId:      [null, [Validators.required]],
     notas:           ['', [Validators.maxLength(500), noLeadingTrailingSpaceValidator(), textContentValidator()]],
-    esEmergencia:    [false]
+    esEmergencia:    [false],
+    controlPreventivoIds: [[] as number[]]
   });
 
   ngOnInit() {
@@ -690,6 +701,11 @@ export class AgendaComponent implements OnInit, OnDestroy {
     this.selectedMascotaLabel.set(mascota.label);
     this.citaForm.get('mascotaId')?.setValue(mascota.value);
     this.showMascotaSelector.set(false);
+    this.citaForm.patchValue({ controlPreventivoIds: [] });
+    this.preventivoService.listarControles(mascota.value).subscribe({
+      next: res => this.controlesPreventivosMascota.set(res.data ?? []),
+      error: () => this.controlesPreventivosMascota.set([])
+    });
   }
 
   private resetNuevoClienteForm() {
@@ -715,6 +731,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
   selectServicio(srv: { label: string; value: number } | null) {
     this.citaForm.get('servicioId')?.setValue(srv?.value ?? null);
     this.selectedServicioId.set(srv?.value ?? null);
+    this.citaForm.patchValue({ controlPreventivoIds: [] });
     this.citaForm.get('veterinarioId')?.setValue(null);
     this.horariosVeterinario.set([]);
     this.availableSlots.set([]);
@@ -722,6 +739,17 @@ export class AgendaComponent implements OnInit, OnDestroy {
     this.showServicioSelector.set(false);
     this.filterEmpleadosByServicio(srv?.value ?? null);
     this.onBookingParamsChange();
+  }
+
+  controlPreventivoSeleccionado(id: number): boolean {
+    return (this.citaForm.get('controlPreventivoIds')?.value ?? []).includes(id);
+  }
+
+  toggleControlPreventivo(id: number, checked: boolean) {
+    const actuales: number[] = this.citaForm.get('controlPreventivoIds')?.value ?? [];
+    this.citaForm.patchValue({
+      controlPreventivoIds: checked ? [...actuales, id] : actuales.filter(actual => actual !== id)
+    });
   }
 
   private filterEmpleadosByServicio(servicioId: number | null) {
@@ -908,7 +936,11 @@ export class AgendaComponent implements OnInit, OnDestroy {
       horaCita: cita.fechaHoraInicio.substring(11, 16),
       servicioId: cita.servicioId,
       notas: cita.notas,
-      esEmergencia: cita.esEmergencia
+      esEmergencia: cita.esEmergencia,
+      controlPreventivoIds: cita.controlPreventivoIds ?? []
+    });
+    this.preventivoService.listarControles(cita.mascotaId).subscribe({
+      next: res => this.controlesPreventivosMascota.set(res.data ?? [])
     });
 
     this.onVeterinarioChange(cita.veterinarioId);
