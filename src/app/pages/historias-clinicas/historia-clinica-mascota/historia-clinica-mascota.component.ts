@@ -43,7 +43,7 @@ export class HistoriaClinicaMascotaComponent implements OnInit {
   numeroHc            = '';
   hc                  = signal<HistoriaClinicaDetalle | null>(null);
   consultaActiva      = signal<ConsultaResumen | null>(null);
-  tabActiva           = signal<'clinico' | 'recetas' | 'archivos' | 'servicios'>('clinico');
+  tabActiva           = signal<'clinico' | 'recetas' | 'archivos' | 'servicios' | 'preventivos'>('clinico');
   noTieneHc           = signal<boolean>(false);
   serviciosNoMedicos  = signal<CitaResponse[]>([]);
   loadingServicios    = signal(false);
@@ -88,10 +88,10 @@ export class HistoriaClinicaMascotaComponent implements OnInit {
 
   seleccionarConsulta(consulta: ConsultaResumen) {
     this.consultaActiva.set(consulta);
-    if (this.tabActiva() === 'servicios') this.tabActiva.set('clinico');
+    if (this.tabActiva() === 'servicios' || this.tabActiva() === 'preventivos') this.tabActiva.set('clinico');
   }
 
-  seleccionarTab(tab: 'clinico' | 'recetas' | 'archivos' | 'servicios') {
+  seleccionarTab(tab: 'clinico' | 'recetas' | 'archivos' | 'servicios' | 'preventivos') {
     this.tabActiva.set(tab);
     if (tab === 'servicios' && this.mascotaId && this.serviciosNoMedicos().length === 0) {
       this.cargarServicios();

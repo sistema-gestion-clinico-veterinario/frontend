@@ -88,6 +88,8 @@ export interface HistoriaClinicaDetalle {
   antecedentesFamiliares?: string;
   grupoSanguineo?: string;
   consultas: ConsultaResumen[];
+  controlesPreventivos?: import('./control-preventivo-response').ControlPreventivoResponse[];
+  aplicacionesPreventivas?: import('./control-preventivo-response').AplicacionPreventivaResponse[];
 }
 
 export interface HistoriaClinicaResumen {
