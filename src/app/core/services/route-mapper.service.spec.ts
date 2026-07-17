@@ -10,15 +10,39 @@ describe('RouteMapperService', () => {
   });
 
   it('maps known backend view codes to frontend routes', () => {
-    expect(service.getRoute('VISTA_CITAS_AGENDA_ADMIN')).toBe('/admin/citas/agenda');
-    expect(service.getRoute('VISTA_HISTORIAS_CONSULTA_EMP')).toBe('/empleado/historias-clinicas/consulta/:consultaId');
+    // Arrange
+    const agendaCode = 'VISTA_CITAS_AGENDA_ADMIN';
+    const consultaCode = 'VISTA_HISTORIAS_CONSULTA_EMP';
+
+    // Act
+    const agendaRoute = service.getRoute(agendaCode);
+    const consultaRoute = service.getRoute(consultaCode);
+
+    // Assert
+    expect(agendaRoute).toBe('/admin/citas/agenda');
+    expect(consultaRoute).toBe('/empleado/historias-clinicas/consulta/:consultaId');
   });
 
   it('returns null for unknown view codes', () => {
-    expect(service.getRoute('VISTA_INEXISTENTE')).toBeNull();
+    // Arrange
+    const unknownCode = 'VISTA_INEXISTENTE';
+
+    // Act
+    const route = service.getRoute(unknownCode);
+
+    // Assert
+    expect(route).toBeNull();
   });
 
   it('returns the provided default route when code is unknown', () => {
-    expect(service.getRouteOrDefault('VISTA_INEXISTENTE', '/dashboard')).toBe('/dashboard');
+    // Arrange
+    const unknownCode = 'VISTA_INEXISTENTE';
+    const defaultRoute = '/dashboard';
+
+    // Act
+    const route = service.getRouteOrDefault(unknownCode, defaultRoute);
+
+    // Assert
+    expect(route).toBe(defaultRoute);
   });
 });

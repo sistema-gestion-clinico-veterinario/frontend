@@ -78,26 +78,33 @@ describe('LoginComponent - submit validations', () => {
   });
 
   it('bloquea email con espacios y no llama al servicio de login', () => {
+    // Arrange
     createLoginInput('email', ' admin@test.com ');
     createLoginInput('password', 'secret123');
 
+    // Act
     component.submit();
 
+    // Assert
     expect(component.authError).toBe('El correo no debe contener espacios al inicio o al final.');
     expect(authService.login).not.toHaveBeenCalled();
   });
 
   it('bloquea password con espacios y no llama al servicio de login', () => {
+    // Arrange
     createLoginInput('email', 'admin@test.com');
     createLoginInput('password', 'secret 123');
 
+    // Act
     component.submit();
 
+    // Assert
     expect(component.authError).toBe('La contraseña no debe contener espacios.');
     expect(authService.login).not.toHaveBeenCalled();
   });
 
   it('rechaza respuesta exitosa sin roles asignados', () => {
+    // Arrange
     createLoginInput('email', 'admin@test.com');
     createLoginInput('password', 'secret123');
     authService.login.and.returnValue(of({
@@ -115,8 +122,10 @@ describe('LoginComponent - submit validations', () => {
       }
     } as any));
 
+    // Act
     component.submit();
 
+    // Assert
     expect(component.authError).toBe('Tu usuario no tiene ningún rol asignado. Contacta al administrador.');
   });
 

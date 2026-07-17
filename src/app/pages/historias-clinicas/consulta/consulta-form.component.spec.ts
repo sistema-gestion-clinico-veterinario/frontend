@@ -61,15 +61,27 @@ describe('ConsultaFormComponent – permission computed signals', () => {
   });
 
   it('canCreateReceta is false when user has no write access', () => {
+    // Arrange
     store.setAuth({ ...baseAuth, roles: ['ROLE_EMPLEADO'], menu: [] });
     component.isCerrada.set(false);
-    expect(component.canCreateReceta()).toBeFalse();
+
+    // Act
+    const canCreate = component.canCreateReceta();
+
+    // Assert
+    expect(canCreate).toBeFalse();
   });
 
   it('canModifyReceta is true for admin with modify access even when consulta is closed', () => {
+    // Arrange
     store.setAuth({ ...baseAuth, roles: ['ROLE_ADMIN'], menu: [makeHistoriasItem()] });
     component.isCerrada.set(true);
-    expect(component.canModifyReceta()).toBeTrue();
+
+    // Act
+    const canModify = component.canModifyReceta();
+
+    // Assert
+    expect(canModify).toBeTrue();
   });
 
   it('canDeleteReceta is true when user has delete access and consulta is open', () => {

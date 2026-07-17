@@ -104,6 +104,7 @@ describe('ScheduleFormComponent - onSave business validations', () => {
   });
 
   it('bloquea fecha fin anterior a fecha inicio', () => {
+    // Arrange
     component.scheduleForm.setValue({
       fechaInicio: '2026-07-10',
       fechaFin: '2026-07-09',
@@ -113,8 +114,10 @@ describe('ScheduleFormComponent - onSave business validations', () => {
       editMode: 'bulk',
     });
 
+    // Act
     component.onSave();
 
+    // Assert
     expect(messageService.add).toHaveBeenCalledWith(jasmine.objectContaining({
       severity: 'warn',
       summary: 'Rango invalido',
@@ -123,6 +126,7 @@ describe('ScheduleFormComponent - onSave business validations', () => {
   });
 
   it('bloquea horario fuera del rango operativo de la clinica', () => {
+    // Arrange
     component.companyInfo.set({
       name: 'VargasVet',
       operatingHours: [{
@@ -141,8 +145,10 @@ describe('ScheduleFormComponent - onSave business validations', () => {
       editMode: 'bulk',
     });
 
+    // Act
     component.onSave();
 
+    // Assert
     expect(messageService.add).toHaveBeenCalledWith(jasmine.objectContaining({
       severity: 'error',
       summary: 'Horario Fuera de Rango',

@@ -23,17 +23,44 @@ describe('MarkdownPipe', () => {
   });
 
   it('convierte listas con guion y listas numeradas', () => {
-    expect(pipe.transform('- Item 1\n- Item 2')).toBe('<ul><li>Item 1</li><li>Item 2</li></ul>');
-    expect(pipe.transform('1. Primero\n2. Segundo')).toBe('<ul><li>Primero</li><li>Segundo</li></ul>');
+    // Arrange
+    const unorderedMarkdown = '- Item 1\n- Item 2';
+    const orderedMarkdown = '1. Primero\n2. Segundo';
+
+    // Act
+    const unorderedHtml = pipe.transform(unorderedMarkdown);
+    const orderedHtml = pipe.transform(orderedMarkdown);
+
+    // Assert
+    expect(unorderedHtml).toBe('<ul><li>Item 1</li><li>Item 2</li></ul>');
+    expect(orderedHtml).toBe('<ul><li>Primero</li><li>Segundo</li></ul>');
   });
 
   it('escapa HTML malicioso antes de aplicar markdown', () => {
-    expect(pipe.transform('<script>alert("xss")</script>')).toBe('<p>&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;</p>');
+    // Arrange
+    const maliciousHtml = '<script>alert("xss")</script>';
+
+    // Act
+    const result = pipe.transform(maliciousHtml);
+
+    // Assert
+    expect(result).toBe('<p>&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;</p>');
   });
 
   it('retorna vacio para entradas vacias o nulas', () => {
-    expect(pipe.transform('')).toBe('');
-    expect(pipe.transform(null as any)).toBe('');
-    expect(pipe.transform(undefined as any)).toBe('');
+    // Arrange
+    const emptyValue = '';
+    const nullValue = null as any;
+    const undefinedValue = undefined as any;
+
+    // Act
+    const emptyResult = pipe.transform(emptyValue);
+    const nullResult = pipe.transform(nullValue);
+    const undefinedResult = pipe.transform(undefinedValue);
+
+    // Assert
+    expect(emptyResult).toBe('');
+    expect(nullResult).toBe('');
+    expect(undefinedResult).toBe('');
   });
 });

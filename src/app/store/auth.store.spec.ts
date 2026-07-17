@@ -32,16 +32,20 @@ describe('AuthStore', () => {
 
   describe('setAuth storage seguro', () => {
     it('persiste la sesion sin guardar token ni refreshToken en localStorage', () => {
-      store.setAuth({
+      // Arrange
+      const auth = {
         ...cleanAuth,
         token: 'jwt-secreto',
         refreshToken: 'refresh-secreto',
         roles: ['ROLE_ADMIN'],
         menu: [flatItem('VISTA_MASCOTAS', { ruta: '/mascotas' })],
-      });
+      };
 
+      // Act
+      store.setAuth(auth);
       const persisted = JSON.parse(localStorage.getItem('auth') ?? '{}');
 
+      // Assert
       expect(store.token()).toBe('jwt-secreto');
       expect(persisted.token).toBeUndefined();
       expect(persisted.refreshToken).toBeUndefined();
@@ -51,13 +55,25 @@ describe('AuthStore', () => {
 
   describe('hasAccess – flat menu item', () => {
     it('returns true when flat item has the requested permission', () => {
+      // Arrange
       store.setAuth({ ...cleanAuth, roles: ['ROLE_EMPLEADO'], menu: [flatItem('VISTA_MASCOTAS')] });
-      expect(store.hasAccess('VISTA_MASCOTAS', 'leer')).toBeTrue();
+
+      // Act
+      const hasAccess = store.hasAccess('VISTA_MASCOTAS', 'leer');
+
+      // Assert
+      expect(hasAccess).toBeTrue();
     });
 
     it('returns false when the item is not present in the menu', () => {
+      // Arrange
       store.setAuth({ ...cleanAuth, roles: ['ROLE_EMPLEADO'], menu: [] });
-      expect(store.hasAccess('VISTA_MASCOTAS', 'leer')).toBeFalse();
+
+      // Act
+      const hasAccess = store.hasAccess('VISTA_MASCOTAS', 'leer');
+
+      // Assert
+      expect(hasAccess).toBeFalse();
     });
   });
 
@@ -98,23 +114,34 @@ describe('AuthStore', () => {
 
   describe('rutas hijas y simulacion de rol', () => {
     it('allows child routes under an allowed module route', () => {
+      // Arrange
       store.setAuth({ ...cleanAuth, roles: ['ROLE_EMPLEADO'], menu: [flatItem('VISTA_MASCOTAS', { ruta: '/mascotas' })] });
-      expect(store.hasRouteAccess('admin/mascotas/123/editar')).toBeTrue();
+
+      // Act
+      const hasAccess = store.hasRouteAccess('admin/mascotas/123/editar');
+
+      // Assert
+      expect(hasAccess).toBeTrue();
     });
 
     it('changes active role and menu while preserving original roles', () => {
+      // Arrange
       const originalMenu = [flatItem('VISTA_MASCOTAS', { ruta: '/mascotas' })];
       const simulatedMenu = [flatItem('VISTA_PAGOS', { ruta: '/admin/pagos' })];
       store.setAuth({ ...cleanAuth, roles: ['ROLE_ADMIN'], menu: originalMenu });
 
+      // Act
       store.simulateRole(2, 'ROLE_RECEPCIONISTA', simulatedMenu);
 
+      // Assert
       expect(store.roles()).toEqual(['ROLE_RECEPCIONISTA']);
       expect(store.originalRoles()).toEqual(['ROLE_ADMIN']);
       expect(store.hasRouteAccess('admin/pagos')).toBeTrue();
 
+      // Act
       store.stopSimulation();
 
+      // Assert
       expect(store.roles()).toEqual(['ROLE_ADMIN']);
       expect(store.hasRouteAccess('mascotas')).toBeTrue();
     });

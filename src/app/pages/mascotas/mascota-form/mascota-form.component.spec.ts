@@ -41,13 +41,27 @@ describe('MascotaFormComponent', () => {
     });
 
     it('returns { fechaFutura: true } for a date in the future', () => {
-      expect(component.fechaNacimientoValidator(new FormControl('2099-12-31'))).toEqual({ fechaFutura: true });
+      // Arrange
+      const control = new FormControl('2099-12-31');
+
+      // Act
+      const result = component.fechaNacimientoValidator(control);
+
+      // Assert
+      expect(result).toEqual({ fechaFutura: true });
     });
   });
 
   describe('onPhotoSelected – validación de tipo de archivo', () => {
     it('muestra advertencia cuando el archivo es PDF (tipo no permitido)', () => {
-      component.onPhotoSelected(createFileInputEvent(new File([''], 'doc.pdf', { type: 'application/pdf' })));
+      // Arrange
+      const file = new File([''], 'doc.pdf', { type: 'application/pdf' });
+      const event = createFileInputEvent(file);
+
+      // Act
+      component.onPhotoSelected(event);
+
+      // Assert
       expect(addSpy).toHaveBeenCalledWith(jasmine.objectContaining({ severity: 'warn' }));
     });
 
@@ -92,10 +106,13 @@ describe('MascotaFormComponent - crearCliente validations', () => {
   });
 
   it('bloquea DNI con longitud invalida antes de llamar al servicio', () => {
+    // Arrange
     const registrarSpy = spyOn((component as any).apoderadoService, 'registrar');
 
+    // Act
     component.crearCliente();
 
+    // Assert
     expect(addSpy).toHaveBeenCalledWith(jasmine.objectContaining({
       severity: 'warn',
       summary: 'Documento inválido',
@@ -104,12 +121,15 @@ describe('MascotaFormComponent - crearCliente validations', () => {
   });
 
   it('bloquea telefono que no tiene 9 digitos', () => {
+    // Arrange
     const registrarSpy = spyOn((component as any).apoderadoService, 'registrar');
     component.ncNumDoc.set('12345678');
     component.ncTelefono.set('98765');
 
+    // Act
     component.crearCliente();
 
+    // Assert
     expect(addSpy).toHaveBeenCalledWith(jasmine.objectContaining({
       severity: 'warn',
       summary: 'Teléfono inválido',
