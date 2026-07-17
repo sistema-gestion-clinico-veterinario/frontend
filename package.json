@@ -7,10 +7,13 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "start:e2e": "ng serve --configuration=e2e --proxy-config proxy.e2e.conf.json --host 127.0.0.1 --port 4200"
+    "start:e2e": "ng serve --configuration=e2e --proxy-config proxy.e2e.conf.json --host 127.0.0.1 --port 4200",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
   },
   "private": true,
   "dependencies": {
+    "@angular/animations": "^19.2.25",
     "@angular/cdk": "^19.2.19",
     "@angular/common": "^19.2.0",
     "@angular/compiler": "^19.2.0",
@@ -26,6 +29,8 @@
     "@fullcalendar/timegrid": "^6.1.17",
     "@ngrx/signals": "^19.2.1",
     "@primeng/themes": "^19.1.4",
+    "@vercel/analytics": "^2.0.1",
+    "@vercel/speed-insights": "^2.0.0",
     "docx": "^9.7.1",
     "html2canvas": "^1.4.1",
     "primeflex": "^4.0.0",
@@ -39,6 +44,7 @@
     "@angular-devkit/build-angular": "^19.2.25",
     "@angular/cli": "^19.2.25",
     "@angular/compiler-cli": "^19.2.0",
+    "@playwright/test": "^1.61.1",
     "@types/jasmine": "~5.1.0",
     "autoprefixer": "^10.5.0",
     "exceljs": "^4.4.0",
