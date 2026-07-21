@@ -28,18 +28,15 @@ describe('HistoriaClinicaService integration', () => {
       anamnesis: 'Paciente estable',
       antecedentesEnfermedades: 'Dermatitis previa',
     };
-
     service.updateConsulta(44, request).subscribe((response) => {
       expect(response.success).toBeTrue();
       expect(response.data.id).toBe(44);
       expect(response.data.pesoEnConsulta).toBe(12.8);
       expect(response.data.antecedentesEnfermedades).toBe('Dermatitis previa');
     });
-
     const req = httpMock.expectOne(`${environment.apiUrl}/consultations/44`);
     expect(req.request.method).toBe('PUT');
     expect(req.request.body).toEqual(request);
-
     req.flush({
       success: true,
       message: 'Consulta actualizada',
@@ -52,7 +49,6 @@ describe('HistoriaClinicaService integration', () => {
       },
     });
   });
-
   it('debe cerrar consulta clinica y recibir estado cerrado', () => {
     service.cerrarConsulta(44, { version: 4 }).subscribe((response) => {
       expect(response.success).toBeTrue();
@@ -60,11 +56,9 @@ describe('HistoriaClinicaService integration', () => {
       expect(response.data.estado).toBe('CERRADA');
       expect(response.data.cerradoPor).toBe('doctor@vargasvet.test');
     });
-
     const req = httpMock.expectOne(`${environment.apiUrl}/consultations/44/close`);
     expect(req.request.method).toBe('PATCH');
     expect(req.request.body).toEqual({ version: 4 });
-
     req.flush({
       success: true,
       message: 'Consulta cerrada',
