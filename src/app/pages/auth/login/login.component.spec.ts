@@ -97,6 +97,16 @@ describe('LoginComponent - submit validations', () => {
     expect(authService.login).not.toHaveBeenCalled();
   });
 
+  it('bloquea password con puntos suspensivos y no llama al servicio de login', () => {
+    createLoginInput('email', 'admin@test.com');
+    createLoginInput('password', 'secret...');
+
+    component.submit();
+
+    expect(component.authError).toBe('La contraseña no debe contener "...".');
+    expect(authService.login).not.toHaveBeenCalled();
+  });
+
   it('rechaza respuesta exitosa sin roles asignados', () => {
     createLoginInput('email', 'admin@test.com');
     createLoginInput('password', 'secret123');

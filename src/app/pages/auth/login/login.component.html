@@ -105,7 +105,7 @@
           <div *ngIf="password?.touched && password?.invalid" class="text-sm font-medium text-rose-600">
             <span *ngIf="password?.errors?.['required']">La contraseña es obligatoria.</span>
             <span *ngIf="password?.errors?.['minlength']">Mínimo 6 caracteres.</span>
-            <span *ngIf="password?.errors?.['pattern']">La contraseña no debe contener espacios.</span>
+            <span *ngIf="password?.errors?.['pattern']">La contraseña no debe contener espacios ni "...".</span>
           </div>
           <div class="flex justify-end">
             <a routerLink="/forgot-password" class="text-sm font-semibold text-[#0066AA] hover:text-[#005599] hover:underline">
