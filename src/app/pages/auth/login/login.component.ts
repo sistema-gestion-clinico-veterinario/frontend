@@ -57,7 +57,7 @@ export class LoginComponent implements OnInit {
 
   loginForm = inject(FormBuilder).group({
     email: ['', [Validators.required, Validators.email, lowercaseEmailValidator(), noLeadingTrailingSpaceValidator(), Validators.maxLength(255)]],
-    password: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(72), Validators.pattern(/^\S+$/)]]
+    password: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(72), Validators.pattern(/^(?!.*\.\.\.)(?!.*\s).+$/)]]
   });
 
   get email() { return this.loginForm.get('email'); }
@@ -78,11 +78,15 @@ export class LoginComponent implements OnInit {
 
     const hasUntrimmedEmail = rawEmail !== rawEmail.trim();
     const hasSpacesPassword = /\s/.test(rawPassword);
+    const hasEllipsisPassword = /\.\.\./.test(rawPassword);
 
-    if (hasUntrimmedEmail || hasSpacesPassword) {
+    if (hasUntrimmedEmail || hasSpacesPassword || hasEllipsisPassword) {
       if (hasUntrimmedEmail) {
         this.authError = 'El correo no debe contener espacios al inicio o al final.';
         this.loginForm.get('email')?.markAsTouched();
+      } else if (hasEllipsisPassword) {
+        this.authError = 'La contraseña no debe contener "...".';
+        this.loginForm.get('password')?.markAsTouched();
       } else {
         this.authError = 'La contraseña no debe contener espacios.';
         this.loginForm.get('password')?.markAsTouched();
