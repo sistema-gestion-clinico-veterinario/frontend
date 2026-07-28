@@ -4,6 +4,22 @@ import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../../models/response/api-response';
 import { AplicacionPreventivaResponse, ControlPreventivoResponse, TipoControlPreventivo, TipoVacunaResponse } from '../../models/response/control-preventivo-response';
 
+export interface RegistroVacunacionPayload {
+  controlPreventivoId?: number;
+  tipoVacunaId: number;
+  fechaAplicacion: string;
+  periodicidadMeses: number;
+  fechaProximaDosis?: string;
+}
+
+export interface RegistroDesparasitacionPayload {
+  controlPreventivoId?: number;
+  producto: string;
+  fechaAplicacion: string;
+  periodicidadMeses: number;
+  fechaProximaAplicacion?: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ControlPreventivoService {
   private readonly http = inject(HttpClient);
@@ -29,11 +45,19 @@ export class ControlPreventivoService {
     return this.http.post<ApiResponse<ControlPreventivoResponse>>(`${this.baseUrl}/pets/${mascotaId}`, request);
   }
 
-  registrarVacunacion(consultaId: number, request: { controlPreventivoId?: number; tipoVacunaId: number; fechaAplicacion: string; periodicidadMeses: number; fechaProximaDosis?: string }) {
+  reprogramar(controlId: number, fechaRecomendada: string) {
+    return this.http.put<ApiResponse<ControlPreventivoResponse>>(`${this.baseUrl}/${controlId}/schedule`, { fechaRecomendada });
+  }
+
+  cancelar(controlId: number) {
+    return this.http.patch<ApiResponse<ControlPreventivoResponse>>(`${this.baseUrl}/${controlId}/cancel`, {});
+  }
+
+  registrarVacunacion(consultaId: number, request: RegistroVacunacionPayload) {
     return this.http.post<ApiResponse<ControlPreventivoResponse>>(`${this.baseUrl}/consultations/${consultaId}/vaccinations`, request);
   }
 
-  registrarDesparasitacion(consultaId: number, request: { controlPreventivoId?: number; producto: string; fechaAplicacion: string; periodicidadMeses: number; fechaProximaAplicacion?: string }) {
+  registrarDesparasitacion(consultaId: number, request: RegistroDesparasitacionPayload) {
     return this.http.post<ApiResponse<ControlPreventivoResponse>>(`${this.baseUrl}/consultations/${consultaId}/dewormings`, request);
   }
 }

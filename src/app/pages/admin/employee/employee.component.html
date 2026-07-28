@@ -352,7 +352,8 @@
                 class="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all font-bold" />
               <p *ngIf="employeeForm.get('numeroColegiatura')?.invalid && employeeForm.get('numeroColegiatura')?.touched" class="text-[11px] text-rose-500 ml-0.5">
                 <ng-container *ngIf="employeeForm.get('numeroColegiatura')?.errors?.['required']">El número de colegiatura es requerido para veterinarios</ng-container>
-                <ng-container *ngIf="employeeForm.get('numeroColegiatura')?.errors?.['maxlength']">Máximo 30 caracteres</ng-container>
+                <ng-container *ngIf="employeeForm.get('numeroColegiatura')?.errors?.['maxlength']">Máximo 15 caracteres</ng-container>
+                <ng-container *ngIf="employeeForm.get('numeroColegiatura')?.errors?.['pattern']">No debe contener puntos ni comas</ng-container>
                 <ng-container *ngIf="employeeForm.get('numeroColegiatura')?.errors?.['textContent']">Debe contener al menos una letra o número</ng-container>
                 <ng-container *ngIf="employeeForm.get('numeroColegiatura')?.errors?.['leadingTrailingSpace']">No debe tener espacios al inicio o al final</ng-container>
               </p>

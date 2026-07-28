@@ -86,9 +86,19 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
   tiposVacuna = signal<TipoVacunaResponse[]>([]);
   guardandoPreventivo = signal(false);
   nuevoTipoVacuna = signal('');
+  nuevaVacunaPeriodicidad = signal(12);
+  mostrarCreacionVacuna = signal(false);
+  accionPreventiva = signal<'APLICACION' | 'PROGRAMACION' | null>(null);
+  tipoPreventivoActivo = signal<TipoControlPreventivo>('VACUNACION');
+  editarProximaVacuna = signal(false);
+  editarProximaDesparasitacion = signal(false);
+  controlReprogramandoId = signal<number | null>(null);
+  fechaReprogramacion = signal('');
 
   readonly controlesAbiertos = computed(() => this.controlesPreventivos().filter(c =>
     !['APLICADO', 'CANCELADO'].includes(c.estado)));
+  readonly controlesVacunacionAbiertos = computed(() => this.controlesAbiertos().filter(c => c.tipo === 'VACUNACION'));
+  readonly controlesDesparasitacionAbiertos = computed(() => this.controlesAbiertos().filter(c => c.tipo === 'DESPARASITACION'));
   readonly tieneVacunacionRegistrada = computed(() => this.controlesPreventivos().some(c => c.tipo === 'VACUNACION')
     || this.aplicacionesPreventivas().some(a => a.tipo === 'VACUNACION'));
   readonly tieneDesparasitacionRegistrada = computed(() => this.controlesPreventivos().some(c => c.tipo === 'DESPARASITACION')
@@ -173,6 +183,7 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
   });
 
   vacunacionForm = this.fb.group({
+    controlPreventivoId: [null as number | null],
     tipoVacunaId: [null as number | null, Validators.required],
     fechaAplicacion: [this.fechaHoy(), Validators.required],
     periodicidadMeses: [12, [Validators.required, Validators.min(1), Validators.max(120)]],
@@ -180,6 +191,7 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
   });
 
   desparasitacionForm = this.fb.group({
+    controlPreventivoId: [null as number | null],
     producto: ['', [Validators.required, Validators.maxLength(100)]],
     fechaAplicacion: [this.fechaHoy(), Validators.required],
     periodicidadMeses: [3, [Validators.required, Validators.min(1), Validators.max(120)]],
@@ -443,15 +455,21 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
   crearTipoVacuna() {
     const nombre = this.nuevoTipoVacuna().trim();
     const especie = this.consulta()?.especie;
-    if (!nombre || !especie) return;
+    const periodicidad = Number(this.nuevaVacunaPeriodicidad());
+    if (!nombre || !especie || !Number.isInteger(periodicidad) || periodicidad < 1 || periodicidad > 120) {
+      this.msgService.add({ severity: 'warn', summary: 'Datos incompletos', detail: 'Indique un nombre y una periodicidad entre 1 y 120 meses' });
+      return;
+    }
     this.guardandoPreventivo.set(true);
-    this.preventivoService.crearTipoVacuna({ nombre, especie, periodicidadMesesSugerida: 12 }).pipe(
+    this.preventivoService.crearTipoVacuna({ nombre, especie, periodicidadMesesSugerida: periodicidad }).pipe(
       finalize(() => this.guardandoPreventivo.set(false))
     ).subscribe({
       next: res => {
         this.tiposVacuna.update(items => [...items, res.data].sort((a, b) => a.nombre.localeCompare(b.nombre)));
         this.vacunacionForm.patchValue({ tipoVacunaId: res.data.id, periodicidadMeses: res.data.periodicidadMesesSugerida ?? 12 });
         this.nuevoTipoVacuna.set('');
+        this.nuevaVacunaPeriodicidad.set(12);
+        this.mostrarCreacionVacuna.set(false);
         this.msgService.add({ severity: 'success', summary: 'Vacuna creada', detail: 'Ya puede registrar su aplicación' });
       },
       error: err => this.msgService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo crear la vacuna' })
@@ -461,7 +479,43 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
   seleccionarTipoVacuna(value: string) {
     const id = Number(value);
     const tipo = this.tiposVacuna().find(v => v.id === id);
-    this.vacunacionForm.patchValue({ tipoVacunaId: id, periodicidadMeses: tipo?.periodicidadMesesSugerida ?? 12 });
+    const controles = this.controlesVacunacionAbiertos()
+      .filter(c => c.tipoVacunaId === id)
+      .sort((a, b) => a.fechaRecomendada.localeCompare(b.fechaRecomendada));
+    this.vacunacionForm.patchValue({
+      tipoVacunaId: id,
+      periodicidadMeses: tipo?.periodicidadMesesSugerida ?? 12,
+      controlPreventivoId: controles[0]?.id ?? null,
+      fechaProximaDosis: ''
+    });
+    this.editarProximaVacuna.set(false);
+  }
+
+  controlesCoincidentesVacuna() {
+    const id = this.vacunacionForm.value.tipoVacunaId;
+    return this.controlesVacunacionAbiertos()
+      .filter(c => c.tipoVacunaId === id)
+      .sort((a, b) => a.fechaRecomendada.localeCompare(b.fechaRecomendada));
+  }
+
+  seleccionarControlVacunacion(value: string) {
+    const id = Number(value);
+    const control = this.controlesVacunacionAbiertos().find(c => c.id === id);
+    const vacuna = this.tiposVacuna().find(v => v.id === control?.tipoVacunaId);
+    this.vacunacionForm.patchValue({
+      controlPreventivoId: control?.id ?? null,
+      tipoVacunaId: control?.tipoVacunaId ?? this.vacunacionForm.value.tipoVacunaId,
+      periodicidadMeses: vacuna?.periodicidadMesesSugerida ?? this.vacunacionForm.value.periodicidadMeses
+    });
+  }
+
+  seleccionarControlDesparasitacion(value: string) {
+    const id = Number(value);
+    const control = this.controlesDesparasitacionAbiertos().find(c => c.id === id);
+    this.desparasitacionForm.patchValue({
+      controlPreventivoId: control?.id ?? null,
+      producto: control?.nombreControl ?? this.desparasitacionForm.value.producto
+    });
   }
 
   registrarVacunacion() {
@@ -470,16 +524,17 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
       return;
     }
     const value = this.vacunacionForm.getRawValue();
-    const control = this.controlesAbiertos().find(c => c.tipo === 'VACUNACION' && c.tipoVacunaId === value.tipoVacunaId);
+    const proxima = value.fechaProximaDosis
+      || this.sumarMeses(value.fechaAplicacion!, Number(value.periodicidadMeses));
     this.guardandoPreventivo.set(true);
     this.preventivoService.registrarVacunacion(this.consultaId, {
-      controlPreventivoId: control?.id,
+      controlPreventivoId: value.controlPreventivoId ?? undefined,
       tipoVacunaId: value.tipoVacunaId!,
       fechaAplicacion: value.fechaAplicacion!,
       periodicidadMeses: Number(value.periodicidadMeses),
-      fechaProximaDosis: value.fechaProximaDosis || undefined,
+      fechaProximaDosis: proxima,
     }).pipe(finalize(() => this.guardandoPreventivo.set(false))).subscribe({
-      next: () => this.preventivoGuardado('Vacunación registrada'),
+      next: () => this.preventivoGuardado('Vacunación registrada', true),
       error: err => this.msgService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo registrar la vacunación' })
     });
   }
@@ -490,16 +545,17 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
       return;
     }
     const value = this.desparasitacionForm.getRawValue();
-    const control = this.controlesAbiertos().find(c => c.tipo === 'DESPARASITACION');
+    const proxima = value.fechaProximaAplicacion
+      || this.sumarMeses(value.fechaAplicacion!, Number(value.periodicidadMeses));
     this.guardandoPreventivo.set(true);
     this.preventivoService.registrarDesparasitacion(this.consultaId, {
-      controlPreventivoId: control?.id,
+      controlPreventivoId: value.controlPreventivoId ?? undefined,
       producto: value.producto!.trim(),
       fechaAplicacion: value.fechaAplicacion!,
       periodicidadMeses: Number(value.periodicidadMeses),
-      fechaProximaAplicacion: value.fechaProximaAplicacion || undefined,
+      fechaProximaAplicacion: proxima,
     }).pipe(finalize(() => this.guardandoPreventivo.set(false))).subscribe({
-      next: () => this.preventivoGuardado('Desparasitación registrada'),
+      next: () => this.preventivoGuardado('Desparasitación registrada', true),
       error: err => this.msgService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo registrar la desparasitación' })
     });
   }
@@ -535,10 +591,161 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
     return 'bg-emerald-50 text-emerald-700';
   }
 
-  private preventivoGuardado(mensaje: string) {
+  etiquetaEstadoPreventivo(control: ControlPreventivoResponse) {
+    const etiquetas: Record<string, string> = {
+      PROGRAMADO: 'Programado',
+      PROXIMO: 'Vence próximamente',
+      PENDIENTE: 'Debe aplicarse hoy',
+      ATRASADO: 'Control vencido',
+      SUSPENDIDO_POR_CITA: 'Cita programada',
+      APLICADO: 'Aplicado',
+      CANCELADO: 'Cancelado'
+    };
+    return etiquetas[control.estado] ?? control.estado;
+  }
+
+  prepararAplicacion(control: ControlPreventivoResponse) {
+    this.accionPreventiva.set('APLICACION');
+    this.tipoPreventivoActivo.set(control.tipo);
+    if (control.tipo === 'VACUNACION') {
+      this.seleccionarControlVacunacion(String(control.id));
+    } else {
+      this.seleccionarControlDesparasitacion(String(control.id));
+    }
+  }
+
+  iniciarReprogramacion(control: ControlPreventivoResponse) {
+    this.controlReprogramandoId.set(control.id);
+    this.fechaReprogramacion.set(control.fechaRecomendada);
+  }
+
+  guardarReprogramacion(control: ControlPreventivoResponse) {
+    const fecha = this.fechaReprogramacion();
+    if (!fecha) return;
+    this.guardandoPreventivo.set(true);
+    this.preventivoService.reprogramar(control.id, fecha).pipe(
+      finalize(() => this.guardandoPreventivo.set(false))
+    ).subscribe({
+      next: () => {
+        this.controlReprogramandoId.set(null);
+        this.preventivoGuardado('Control reprogramado');
+      },
+      error: err => this.msgService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo reprogramar el control' })
+    });
+  }
+
+  confirmarCancelarControl(control: ControlPreventivoResponse) {
+    this.confirmSvc.confirm({
+      header: 'Cancelar control',
+      message: `¿Desea cancelar el control "${control.nombreControl}"?`,
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Cancelar control',
+      rejectLabel: 'Volver',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        this.guardandoPreventivo.set(true);
+        this.preventivoService.cancelar(control.id).pipe(
+          finalize(() => this.guardandoPreventivo.set(false))
+        ).subscribe({
+          next: () => this.preventivoGuardado('Control cancelado'),
+          error: err => this.msgService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo cancelar el control' })
+        });
+      }
+    });
+  }
+
+  proximaVacunaSugerida() {
+    const value = this.vacunacionForm.getRawValue();
+    return value.fechaAplicacion && value.periodicidadMeses
+      ? this.sumarMeses(value.fechaAplicacion, Number(value.periodicidadMeses)) : '';
+  }
+
+  proximaDesparasitacionSugerida() {
+    const value = this.desparasitacionForm.getRawValue();
+    return value.fechaAplicacion && value.periodicidadMeses
+      ? this.sumarMeses(value.fechaAplicacion, Number(value.periodicidadMeses)) : '';
+  }
+
+  alternarEdicionProximaVacuna() {
+    if (this.editarProximaVacuna()) {
+      this.vacunacionForm.patchValue({ fechaProximaDosis: '' });
+    }
+    this.editarProximaVacuna.update(valor => !valor);
+  }
+
+  alternarEdicionProximaDesparasitacion() {
+    if (this.editarProximaDesparasitacion()) {
+      this.desparasitacionForm.patchValue({ fechaProximaAplicacion: '' });
+    }
+    this.editarProximaDesparasitacion.update(valor => !valor);
+  }
+
+  fechaHoyPublica() {
+    return this.fechaHoy();
+  }
+
+  private sumarMeses(fecha: string, meses: number): string {
+    const [anio, mes, dia] = fecha.split('-').map(Number);
+    const primerDiaDestino = new Date(anio, mes - 1 + meses, 1);
+    const ultimoDiaDestino = new Date(
+      primerDiaDestino.getFullYear(),
+      primerDiaDestino.getMonth() + 1,
+      0
+    ).getDate();
+    const resultado = new Date(
+      primerDiaDestino.getFullYear(),
+      primerDiaDestino.getMonth(),
+      Math.min(dia, ultimoDiaDestino)
+    );
+    return `${resultado.getFullYear()}-${String(resultado.getMonth() + 1).padStart(2, '0')}-${String(resultado.getDate()).padStart(2, '0')}`;
+  }
+
+  private preventivoGuardado(mensaje: string, actualizaVersionConsulta = false) {
     const mascotaId = this.consulta()?.mascotaId;
     if (mascotaId) this.loadPreventivos(mascotaId);
+    if (actualizaVersionConsulta) {
+      this.sincronizarVersionConsulta();
+    }
     this.msgService.add({ severity: 'success', summary: 'Guardado', detail: mensaje });
+  }
+
+  private sincronizarVersionConsulta() {
+    const formularioTeniaCambios = this.form.dirty;
+    this.hcService.getConsulta(this.consultaId).subscribe({
+      next: (res) => {
+        const actual = this.consulta();
+        this.consulta.set(actual ? {
+          ...actual,
+          version: res.data.version,
+          vacunacionAlDia: res.data.vacunacionAlDia,
+          desparasitacionAlDia: res.data.desparasitacionAlDia
+        } : res.data);
+
+        this.syncingForm = true;
+        this.form.patchValue({
+          version: res.data.version,
+          vacunacionAlDia: res.data.vacunacionAlDia ?? false,
+          desparasitacionAlDia: res.data.desparasitacionAlDia ?? false
+        }, { emitEvent: false });
+        if (formularioTeniaCambios) {
+          this.form.markAsDirty();
+        } else {
+          this.form.markAsPristine();
+        }
+        this.syncingForm = false;
+        if (formularioTeniaCambios && this.autoSaveStatus() === 'error' && this.form.valid) {
+          this.guardarSilencioso(false).subscribe();
+        }
+      },
+      error: () => {
+        this.autoSaveStatus.set('error');
+        this.msgService.add({
+          severity: 'warn',
+          summary: 'Cambios pendientes',
+          detail: 'El control se guardó, pero no se pudo sincronizar la consulta. No recargues la página; usa Reintentar.'
+        });
+      }
+    });
   }
 
   private fechaHoy(): string {
