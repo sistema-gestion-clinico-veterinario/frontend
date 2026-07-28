@@ -233,11 +233,19 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     this.employeeForm.get('roles')?.valueChanges.subscribe(roles => {
       const isVet = roles?.includes(Role.VETERINARIO);
       const collegiatura = this.employeeForm.get('numeroColegiatura');
-      const collegiaturaValidators = [Validators.maxLength(30), noLeadingTrailingSpaceValidator(), textContentValidator({ requireLetter: false })];
+      const commonValidators = [noLeadingTrailingSpaceValidator(), textContentValidator({ requireLetter: false })];
       if (isVet) {
-        collegiatura?.setValidators([Validators.required, ...collegiaturaValidators]);
+        collegiatura?.setValidators([
+          Validators.required,
+          Validators.maxLength(15),
+          Validators.pattern(/^[^.,]+$/),
+          ...commonValidators
+        ]);
       } else {
-        collegiatura?.setValidators(collegiaturaValidators);
+        collegiatura?.setValidators([
+          Validators.maxLength(30),
+          ...commonValidators
+        ]);
       }
       collegiatura?.updateValueAndValidity();
     });

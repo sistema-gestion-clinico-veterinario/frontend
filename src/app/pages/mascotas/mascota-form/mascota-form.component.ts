@@ -266,7 +266,7 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
     const pesoCtrl = this.mascotaForm.get('peso');
     const especie = this.mascotaForm.get('especie')?.value;
     const rangos: Record<string, { min: number; max: number }> = {
-      PERRO: { min: 0.5, max: 120 },
+      PERRO: { min: 3, max: 120 },
       GATO: { min: 0.3, max: 20 },
       AVE: { min: 0.02, max: 5 },
       REPTIL: { min: 0.01, max: 100 },
