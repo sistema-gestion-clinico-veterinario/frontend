@@ -10,7 +10,7 @@ import { DatePickerModule } from 'primeng/datepicker';
 import { TextareaModule } from 'primeng/textarea';
 import { ToastModule } from 'primeng/toast';
 import { MessageService, ConfirmationService, MenuItem } from 'primeng/api';
-import { CitaService } from '../../../core/services/cita.service';
+import { AgendaCounters, CitaService } from '../../../core/services/cita.service';
 import { CajaService } from '../../../core/services/caja.service';
 import { EmpleadoService } from '../../../core/services/empleado.service';
 import { ApoderadoService } from '../../../core/services/apoderado.service';
@@ -54,6 +54,7 @@ import { hasMeaningfulText, isLowercaseEmail } from '../../../core/utils/input-v
 import { ControlPreventivoService } from '../../../core/services/control-preventivo.service';
 import { ControlPreventivoResponse } from '../../../models/response/control-preventivo-response';
 export type Vista = 'lista' | 'dia' | 'semana' | 'mes';
+export type PeriodoAgenda = 'hoy' | '7dias' | '30dias' | 'personalizado';
 
 interface CitaWsEvent {
   tipo: string;
@@ -80,6 +81,7 @@ interface HorarioResumen {
     ButtonModule,
     DialogModule,
     InputTextModule,
+    DatePickerModule,
     DropdownModule,
     CalendarModule,
     TooltipModule,
@@ -96,6 +98,7 @@ interface HorarioResumen {
 })
 export class AgendaComponent implements OnInit, OnDestroy {
   @ViewChild('fullCalendar') fullCalendar?: FullCalendarComponent;
+  private readonly citaActionItemsCache = new WeakMap<CitaResponse, MenuItem[]>();
 
   private readonly fb                = inject(FormBuilder);
   private readonly citaService       = inject(CitaService);
@@ -168,8 +171,15 @@ export class AgendaComponent implements OnInit, OnDestroy {
   citas            = signal<CitaResponse[]>([]);
   private loadTimeout: any = null;
   private lastLazyEvent: any = { first: 0, rows: 10 };
+  agendaFirst = 0;
   private suppressSseToast = false;
   totalRecords     = signal<number>(0);
+  agendaCounters   = signal<AgendaCounters>({
+    programadas: 0,
+    enProceso: 0,
+    completadas: 0,
+    canceladas: 0
+  });
   displayModal     = signal<boolean>(false);
   displayCancelModal = signal<boolean>(false);
   displayDeleteModal = signal<boolean>(false);
@@ -179,6 +189,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
   citaParaPago       = signal<CitaResponse | null>(null);
   metodoPago         = signal<MetodoPago>('EFECTIVO');
   montoRecibido      = signal<number | null>(null);
+  readonly billetesEfectivo = [10, 20, 50, 100, 200];
   yapePhone          = signal<string>('');
   yapeOtp            = signal<string>('');
   yapeEmail          = signal<string>('');
@@ -235,7 +246,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
     this.showEstadoFilter.set(false);
     this.showVeterinarioFilter.set(false);
     this.showVeterinarioSelector.set(false);
-    this.showMesPicker.set(false);
+    this.showCalendarPicker.set(false);
   }
 
   @HostListener('document:keydown.escape')
@@ -318,16 +329,25 @@ export class AgendaComponent implements OnInit, OnDestroy {
   filterEstado: EstadoCita | null = null;
   filterVeterinarioId: number | null = null;
   filtersOpen                        = false;
+  agendaPeriodo: PeriodoAgenda       = 'hoy';
+  agendaFechaDesde: string           = this.toDateStr(new Date());
+  agendaFechaHasta: string           = this.toDateStr(new Date());
 
   get activeCompanyId(): number | null {
     return this.authStore.selectedEnterprise()?.establishmentId ?? this.authStore.companyId();
   }
   vistaActual  = signal<Vista>('lista');
   fechaBase    = signal<Date>(new Date());
-  showMesPicker = signal(false);
+  showCalendarPicker = signal(false);
   pickerYear    = signal(new Date().getFullYear());
   readonly mesesPicker = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Set','Oct','Nov','Dic'];
   citasPorDia  = signal<Record<string, CitaResponse[]>>({});
+  readonly citasAgenda = computed(() =>
+    this.citas().map(cita => ({
+      ...cita,
+      fechaGrupo: cita.fechaHoraInicio?.substring(0, 10) ?? ''
+    }))
+  );
   calendarEvents = signal<EventInput[]>([]);
   cargandoCal  = signal<boolean>(false);
   calendarOptions: CalendarOptions = {
@@ -410,13 +430,18 @@ export class AgendaComponent implements OnInit, OnDestroy {
   hasFiltrosActivos(): boolean {
     return this.filterEstado !== null
       || this.filterVeterinarioId !== null
-      || this.filterFecha !== this.toDateStr(new Date());
+      || (this.vistaActual() === 'lista'
+        ? this.agendaPeriodo !== 'hoy'
+        : this.filterFecha !== this.toDateStr(new Date()));
   }
 
   limpiarFiltros() {
     this.filterFecha = this.toDateStr(new Date());
     this.filterEstado = null;
     this.filterVeterinarioId = null;
+    this.agendaPeriodo = 'hoy';
+    this.agendaFechaDesde = this.toDateStr(new Date());
+    this.agendaFechaHasta = this.toDateStr(new Date());
     this.showEstadoFilter.set(false);
     this.showVeterinarioFilter.set(false);
     this.fechaBase.set(new Date());
@@ -560,6 +585,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
   loadCitas(event: any = null) {
     if (event) {
       this.lastLazyEvent = event;
+      this.agendaFirst = event.first ?? 0;
     }
 
     if (this.loadTimeout) {
@@ -581,8 +607,19 @@ export class AgendaComponent implements OnInit, OnDestroy {
     }
 
     const page      = Math.floor(event.first / event.rows);
-    const fechaStr  = this.filterFecha || undefined;
+    const esAgenda = this.vistaActual() === 'lista';
+    const fechaStr = esAgenda ? undefined : (this.filterFecha || undefined);
+    const rangoAgenda = esAgenda ? this.getAgendaRange() : null;
+    if (esAgenda && (!rangoAgenda || this.agendaRangoError())) {
+      this.citas.set([]);
+      this.totalRecords.set(0);
+      this.agendaCounters.set({ programadas: 0, enProceso: 0, completadas: 0, canceladas: 0 });
+      return;
+    }
     const veterinarioId = this.getEffectiveVeterinarioFilter();
+    if (esAgenda && rangoAgenda) {
+      this.loadAgendaCounters(companyId, rangoAgenda.desde, rangoAgenda.hasta, veterinarioId);
+    }
 
     this.citaService.listar(
       companyId,
@@ -590,7 +627,9 @@ export class AgendaComponent implements OnInit, OnDestroy {
       this.filterEstado    || undefined,
       veterinarioId,
       page,
-      event.rows
+      event.rows,
+      rangoAgenda?.desde,
+      rangoAgenda?.hasta
     ).subscribe({
       next: (res) => {
         this.citas.set(res.data.content);
@@ -1249,6 +1288,9 @@ export class AgendaComponent implements OnInit, OnDestroy {
   }
 
   citaActionItems(cita: CitaResponse): MenuItem[] {
+    const cached = this.citaActionItemsCache.get(cita);
+    if (cached) return cached;
+
     const canModifyCita = this.authStore.hasAccess('VISTA_CITAS_AGENDA', 'modificar');
     const canDeleteCita = this.authStore.hasAccess('VISTA_CITAS_AGENDA', 'eliminar');
     const items: MenuItem[] = [
@@ -1272,15 +1314,15 @@ export class AgendaComponent implements OnInit, OnDestroy {
     }
 
     if (this.canReadHistoria() && cita.estado === 'EN_PROCESO') {
-      items.push({ label: 'Continuar consulta', icon: 'pi pi-eye', command: () => this.continuarConsulta(cita) });
+      items.push({ label: 'Continuar consulta', icon: 'pi pi-pencil', command: () => this.continuarConsulta(cita) });
     }
 
     if (this.canReadHistoria() && (cita.estado === 'COMPLETADA' || cita.consultaId) && cita.estado !== 'EN_PROCESO') {
-      items.push({ label: 'Ver consulta', icon: 'pi pi-file-edit', command: () => this.continuarConsulta(cita) });
+      items.push({ label: 'Ver consulta', icon: 'pi pi-file', command: () => this.continuarConsulta(cita, true) });
     }
 
     if (this.canCobrar(cita)) {
-      items.push({ label: 'Cobrar', icon: 'pi pi-wallet', command: () => this.abrirCaja(cita) });
+      items.push({ label: 'Cobrar', icon: 'pi pi-credit-card', command: () => this.abrirCaja(cita) });
     }
 
     if (this.canCancel(cita) && canModifyCita) {
@@ -1291,6 +1333,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
       items.push({ label: 'Eliminar', icon: 'pi pi-trash', command: () => this.eliminarCita(cita) });
     }
 
+    this.citaActionItemsCache.set(cita, items);
     return items;
   }
 
@@ -1414,15 +1457,28 @@ export class AgendaComponent implements OnInit, OnDestroy {
     });
   }
 
-  continuarConsulta(cita: CitaResponse) {
+  continuarConsulta(cita: CitaResponse, soloLectura = false) {
     if (!this.canReadHistoria()) {
       this.messageService.add({ severity: 'warn', summary: 'Sin permiso', detail: 'No puedes ver historias clínicas.' });
       return;
     }
     this.displayDetalleCita.set(false);
     if (cita.consultaId) {
-      this.router.navigate(['/historias-clinicas/consulta', cita.consultaId], { queryParams: { returnUrl: '/citas/agenda' } });
+      this.router.navigate(['/historias-clinicas/consulta', cita.consultaId], {
+        queryParams: {
+          returnUrl: '/citas/agenda',
+          mode: soloLectura ? 'view' : undefined
+        }
+      });
     } else {
+      if (soloLectura) {
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Consulta no disponible',
+          detail: 'No se encontró una consulta clínica vinculada a esta cita.'
+        });
+        return;
+      }
       if (!this.canCreateHistoria()) {
         this.messageService.add({ severity: 'warn', summary: 'Sin permiso', detail: 'No puedes iniciar historias clínicas.' });
         return;
@@ -1504,9 +1560,10 @@ export class AgendaComponent implements OnInit, OnDestroy {
   }
 
   cambiarVista(vista: Vista) {
+    this.showCalendarPicker.set(false);
     this.vistaActual.set(vista);
     if (vista === 'lista') {
-      this.loadCitas();
+      this.recargarAgendaDesdeInicio();
     } else {
       this.setFullCalendarView(vista);
       this.loadCitasCalendario();
@@ -1532,9 +1589,9 @@ export class AgendaComponent implements OnInit, OnDestroy {
     }
   }
 
-  toggleMesPicker() {
-    if (!this.showMesPicker()) this.pickerYear.set(this.fechaBase().getFullYear());
-    this.showMesPicker.update(v => !v);
+  toggleCalendarPicker() {
+    if (!this.showCalendarPicker()) this.pickerYear.set(this.fechaBase().getFullYear());
+    this.showCalendarPicker.update(v => !v);
   }
 
   pickerYearPrev() { this.pickerYear.update(y => y - 1); }
@@ -1544,7 +1601,17 @@ export class AgendaComponent implements OnInit, OnDestroy {
     const nueva = new Date(this.pickerYear(), mesIndex, 1);
     this.fechaBase.set(nueva);
     this.filterFecha = this.toDateStr(nueva);
-    this.showMesPicker.set(false);
+    this.showCalendarPicker.set(false);
+    this.refreshCurrentView();
+  }
+
+  seleccionarFechaPicker(fecha: Date | null) {
+    if (!fecha) return;
+    const nueva = new Date(fecha);
+    nueva.setHours(0, 0, 0, 0);
+    this.fechaBase.set(nueva);
+    this.filterFecha = this.toDateStr(nueva);
+    this.showCalendarPicker.set(false);
     this.refreshCurrentView();
   }
 
@@ -1570,6 +1637,126 @@ export class AgendaComponent implements OnInit, OnDestroy {
       this.fechaBase.set(new Date(y, m - 1, d));
     }
     this.refreshCurrentView();
+  }
+
+  onAgendaPeriodoChange() {
+    if (this.agendaPeriodo === 'personalizado') {
+      const hoy = this.toDateStr(new Date());
+      this.agendaFechaDesde = this.agendaFechaDesde || hoy;
+      this.agendaFechaHasta = this.agendaFechaHasta || hoy;
+    }
+    this.recargarAgendaDesdeInicio();
+  }
+
+  onAgendaRangeChange() {
+    if (!this.agendaRangoError()) {
+      this.recargarAgendaDesdeInicio();
+    }
+  }
+
+  agendaRangoError(): string | null {
+    if (this.agendaPeriodo !== 'personalizado') return null;
+    if (!this.agendaFechaDesde || !this.agendaFechaHasta) {
+      return 'Seleccione ambas fechas.';
+    }
+    const desde = this.parseDateStr(this.agendaFechaDesde);
+    const hasta = this.parseDateStr(this.agendaFechaHasta);
+    if (desde > hasta) {
+      return 'La fecha inicial no puede ser posterior a la final.';
+    }
+    const dias = Math.floor((hasta.getTime() - desde.getTime()) / 86_400_000) + 1;
+    return dias > 90 ? 'El periodo máximo permitido es de 90 días.' : null;
+  }
+
+  formatAgendaGroupLabel(fecha: string): string {
+    const fechaDate = this.parseDateStr(fecha);
+    return fechaDate.toLocaleDateString('es-PE', {
+      weekday: 'long',
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric'
+    });
+  }
+
+  avatarPastelClass(nombre?: string): string {
+    const palettes = [
+      'bg-sky-100 text-sky-700',
+      'bg-indigo-100 text-indigo-700',
+      'bg-violet-100 text-violet-700',
+      'bg-amber-100 text-amber-700',
+      'bg-rose-100 text-rose-700'
+    ];
+    const seed = (nombre ?? '').split('').reduce((total, char) => total + char.charCodeAt(0), 0);
+    return palettes[seed % palettes.length];
+  }
+
+  motivoPastelClass(cita: CitaResponse): string {
+    const texto = `${cita.servicioNombre ?? ''} ${cita.motivoCita ?? ''}`.toLowerCase();
+    if (texto.includes('vacun')) return 'bg-violet-100 text-violet-700';
+    if (texto.includes('desparasit')) return 'bg-cyan-50 text-cyan-700';
+    if (texto.includes('emerg')) return 'bg-rose-100 text-rose-700';
+    if (texto.includes('control')) return 'bg-sky-100 text-sky-700';
+    return 'bg-slate-100 text-slate-600';
+  }
+
+  agendaEmptyTitle(): string {
+    if (this.agendaPeriodo === 'hoy') return 'No hay citas programadas para hoy';
+    const rango = this.getAgendaRange();
+    if (!rango) return 'No hay citas en el periodo seleccionado';
+    return `No hay citas entre el ${this.formatShortDate(rango.desde)} y el ${this.formatShortDate(rango.hasta)}`;
+  }
+
+  agendaPeriodoLabel(): string {
+    switch (this.agendaPeriodo) {
+      case '7dias': return 'Próximos 7 días';
+      case '30dias': return 'Próximos 30 días';
+      case 'personalizado': return 'Rango seleccionado';
+      default: return 'Hoy';
+    }
+  }
+
+  private getAgendaRange(): { desde: string; hasta: string } | null {
+    const hoy = new Date();
+    if (this.agendaPeriodo === 'personalizado') {
+      if (!this.agendaFechaDesde || !this.agendaFechaHasta) return null;
+      return { desde: this.agendaFechaDesde, hasta: this.agendaFechaHasta };
+    }
+
+    const dias = this.agendaPeriodo === '7dias' ? 6 : this.agendaPeriodo === '30dias' ? 29 : 0;
+    const hasta = new Date(hoy);
+    hasta.setDate(hasta.getDate() + dias);
+    return { desde: this.toDateStr(hoy), hasta: this.toDateStr(hasta) };
+  }
+
+  private recargarAgendaDesdeInicio() {
+    this.agendaFirst = 0;
+    this.lastLazyEvent = { ...this.lastLazyEvent, first: 0 };
+    this.loadCitas();
+  }
+
+  private parseDateStr(value: string): Date {
+    const [year, month, day] = value.split('-').map(Number);
+    return new Date(year, month - 1, day);
+  }
+
+  private formatShortDate(value: string): string {
+    return this.parseDateStr(value).toLocaleDateString('es-PE', {
+      day: '2-digit',
+      month: 'short'
+    });
+  }
+
+  private loadAgendaCounters(
+    companyId: number,
+    fechaDesde: string,
+    fechaHasta: string,
+    veterinarioId?: number
+  ) {
+    this.citaService.obtenerContadores(companyId, fechaDesde, fechaHasta, veterinarioId).pipe(
+      catchError(() => of({
+        data: { programadas: 0, enProceso: 0, completadas: 0, canceladas: 0 }
+      } as any))
+    ).subscribe(res => this.agendaCounters.set(res.data));
   }
 
   refreshCurrentView() {

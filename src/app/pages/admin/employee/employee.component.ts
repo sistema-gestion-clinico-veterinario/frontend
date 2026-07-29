@@ -59,6 +59,7 @@ function passwordMatchValidator(control: AbstractControl): ValidationErrors | nu
   templateUrl: './employee.component.html'
 })
 export class EmployeeComponent implements OnInit, OnDestroy {
+  private readonly employeeActionItemsCache = new WeakMap<EmpleadoListResponse, MenuItem[]>();
   private readonly fb = inject(FormBuilder);
   private readonly empleadoService = inject(EmpleadoService);
   private readonly mediaService = inject(MediaService);
@@ -385,6 +386,9 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   }
 
   employeeActionItems(employee: EmpleadoListResponse): MenuItem[] {
+    const cached = this.employeeActionItemsCache.get(employee);
+    if (cached) return cached;
+
     const items: MenuItem[] = [];
 
     if (this.canEmployeeAction('leer')) {
@@ -419,6 +423,7 @@ export class EmployeeComponent implements OnInit, OnDestroy {
       });
     }
 
+    this.employeeActionItemsCache.set(employee, items);
     return items;
   }
 

@@ -9,7 +9,7 @@
       <div>
         <div class="flex items-center gap-2 flex-wrap">
           <h1 class="text-2xl font-extrabold text-slate-900 leading-tight">Atención Clínica</h1>
-          <span *ngIf="canModify()"
+          <span *ngIf="canEditConsulta()"
             class="text-[15px] font-bold inline-flex items-center gap-1.5"
             [ngClass]="{
               'text-[#0066AA]': autoSaveStatus() === 'saving' || (form.dirty && autoSaveStatus() !== 'error' && autoSaveStatus() !== 'invalid'),
@@ -42,6 +42,10 @@
         class="text-xs font-extrabold px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 uppercase tracking-wide">
         <i class="pi pi-lock mr-1"></i>Cerrada
       </span>
+      <span *ngIf="!canEditConsulta()"
+        class="text-xs font-extrabold px-3 py-1.5 rounded-full bg-slate-100 text-slate-600 uppercase tracking-wide">
+        <i class="pi pi-eye mr-1"></i>Solo lectura
+      </span>
       <span *ngIf="!isCerrada()"
         class="text-xs font-extrabold px-3 py-1.5 rounded-full bg-amber-50 text-amber-700 uppercase tracking-wide">
         <i class="pi pi-pencil mr-1"></i>En proceso
@@ -55,7 +59,7 @@
 
   <ng-container *ngIf="consulta()">
 
-    <div *ngIf="canModify() && (autoSaveStatus() === 'error' || autoSaveStatus() === 'invalid')"
+    <div *ngIf="canEditConsulta() && (autoSaveStatus() === 'error' || autoSaveStatus() === 'invalid')"
       class="mb-5 rounded-xl border border-rose-100 bg-rose-50 text-rose-600 px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
       <div class="flex items-start gap-3">
         <div class="w-9 h-9 rounded-xl bg-white/80 flex items-center justify-center border border-white">
@@ -282,32 +286,63 @@
               </span>
             </div>
 
-            <div *ngIf="controlesAbiertos().length; else sinControles" class="grid gap-2 mb-6">
-              <div *ngFor="let control of controlesAbiertos()" class="rounded-xl border border-slate-200 p-3">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div class="min-w-0">
-                    <div class="flex flex-wrap items-center gap-2">
-                      <strong class="text-sm text-slate-800">{{ control.nombreControl }}</strong>
-                      <span class="px-2 py-1 rounded-md text-[10px] font-extrabold" [ngClass]="claseEstadoPreventivo(control.estado)">{{ etiquetaEstadoPreventivo(control) }}</span>
+            <div *ngIf="controlesAbiertos().length; else sinControles" class="mb-6">
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-5 border-t border-slate-100">
+                <div *ngFor="let control of controlesAbiertosPaginados()" class="py-2.5 border-b border-slate-100 min-w-0">
+                  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div class="flex items-center gap-3 min-w-0">
+                      <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+                        [ngClass]="control.tipo === 'VACUNACION' ? 'bg-violet-50 text-violet-600' : 'bg-cyan-50 text-cyan-700'">
+                        <i [class]="control.tipo === 'VACUNACION' ? 'pi pi-shield text-xs' : 'pi pi-heart text-xs'"></i>
+                      </div>
+                      <div class="min-w-0">
+                        <div class="flex flex-wrap items-center gap-2">
+                          <strong class="text-sm text-slate-800 truncate">{{ control.nombreControl }}</strong>
+                          <span class="px-2 py-0.5 rounded-md text-[10px] font-extrabold"
+                            [ngClass]="claseEstadoPreventivo(control.estado)">{{ etiquetaEstadoPreventivo(control) }}</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500 mt-0.5">
+                          {{ control.tipo === 'VACUNACION' ? 'Vacunación' : 'Desparasitación' }}
+                          · Recomendada {{ control.fechaRecomendada | date:'dd/MM/yyyy' }}
+                        </p>
+                      </div>
                     </div>
-                    <p class="text-xs text-slate-500 mt-1">{{ control.tipo === 'VACUNACION' ? 'Vacunación' : 'Desparasitación' }} · Fecha recomendada {{ control.fechaRecomendada | date:'dd/MM/yyyy' }}</p>
+                    <div *ngIf="!isCerrada() && canEditConsulta()" class="flex flex-wrap gap-1.5 sm:justify-end">
+                      <button type="button" (click)="prepararAplicacion(control)" class="px-2.5 py-1.5 rounded-lg bg-[#0066AA] text-white text-[11px] font-bold">Registrar</button>
+                      <button type="button" (click)="iniciarReprogramacion(control)" class="px-2.5 py-1.5 rounded-lg border border-slate-200 text-slate-600 text-[11px] font-bold">Reprogramar</button>
+                      <button type="button" (click)="confirmarCancelarControl(control)" aria-label="Cancelar control" class="w-7 h-7 rounded-lg border border-rose-100 text-rose-500 text-[11px]">
+                        <i class="pi pi-times"></i>
+                      </button>
+                    </div>
                   </div>
-                  <div *ngIf="!isCerrada() && canModify()" class="flex flex-wrap gap-2">
-                    <button type="button" (click)="prepararAplicacion(control)" class="px-3 py-1.5 rounded-lg bg-[#0066AA] text-white text-[11px] font-bold">Registrar aplicación</button>
-                    <button type="button" (click)="iniciarReprogramacion(control)" class="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 text-[11px] font-bold">Reprogramar</button>
-                    <button type="button" (click)="confirmarCancelarControl(control)" class="px-3 py-1.5 rounded-lg border border-rose-200 text-rose-600 text-[11px] font-bold">Cancelar</button>
+                  <div *ngIf="controlReprogramandoId() === control.id" class="flex flex-col sm:flex-row gap-2 mt-2 pt-2 border-t border-slate-100">
+                    <input type="date" [min]="fechaHoyPublica()" [value]="fechaReprogramacion()" (input)="fechaReprogramacion.set($any($event.target).value)" class="rounded-lg border border-slate-200 px-3 py-2 text-xs">
+                    <button type="button" (click)="guardarReprogramacion(control)" [disabled]="guardandoPreventivo() || !fechaReprogramacion()" class="px-3 py-2 rounded-lg bg-[#0066AA] text-white text-xs font-bold disabled:opacity-50">Guardar fecha</button>
+                    <button type="button" (click)="controlReprogramandoId.set(null)" class="px-3 py-2 rounded-lg text-slate-500 text-xs font-bold">Cerrar</button>
                   </div>
                 </div>
-                <div *ngIf="controlReprogramandoId() === control.id" class="flex flex-col sm:flex-row gap-2 mt-3 pt-3 border-t border-slate-100">
-                  <input type="date" [min]="fechaHoyPublica()" [value]="fechaReprogramacion()" (input)="fechaReprogramacion.set($any($event.target).value)" class="rounded-lg border border-slate-200 px-3 py-2 text-xs">
-                  <button type="button" (click)="guardarReprogramacion(control)" [disabled]="guardandoPreventivo() || !fechaReprogramacion()" class="px-3 py-2 rounded-lg bg-[#0066AA] text-white text-xs font-bold disabled:opacity-50">Guardar fecha</button>
-                  <button type="button" (click)="controlReprogramandoId.set(null)" class="px-3 py-2 rounded-lg text-slate-500 text-xs font-bold">Cerrar</button>
+              </div>
+              <div *ngIf="totalPaginasControles() > 1" class="flex items-center justify-between gap-3 pt-3">
+                <p class="text-[11px] text-slate-500">
+                  Mostrando {{ paginaControles() * elementosPreventivosPorPagina + 1 }}–{{ (paginaControles() + 1) * elementosPreventivosPorPagina > controlesAbiertos().length ? controlesAbiertos().length : (paginaControles() + 1) * elementosPreventivosPorPagina }}
+                  de {{ controlesAbiertos().length }}
+                </p>
+                <div class="flex items-center gap-2">
+                  <button type="button" (click)="cambiarPaginaControles(-1)" [disabled]="paginaControles() === 0"
+                    aria-label="Controles anteriores" class="w-8 h-8 rounded-lg border border-slate-200 text-slate-500 disabled:opacity-30">
+                    <i class="pi pi-chevron-left text-[10px]"></i>
+                  </button>
+                  <span class="text-[11px] font-bold text-slate-600">{{ paginaControles() + 1 }} / {{ totalPaginasControles() }}</span>
+                  <button type="button" (click)="cambiarPaginaControles(1)" [disabled]="paginaControles() + 1 >= totalPaginasControles()"
+                    aria-label="Controles siguientes" class="w-8 h-8 rounded-lg border border-slate-200 text-slate-500 disabled:opacity-30">
+                    <i class="pi pi-chevron-right text-[10px]"></i>
+                  </button>
                 </div>
               </div>
             </div>
             <ng-template #sinControles><div class="rounded-xl bg-slate-50 px-4 py-3 mb-6"><p class="text-xs text-slate-500">No hay controles preventivos abiertos.</p></div></ng-template>
 
-            <div *ngIf="!isCerrada() && canModify()" class="pt-5 border-t border-slate-100">
+            <div *ngIf="!isCerrada() && canEditConsulta()" class="pt-5 border-t border-slate-100">
               <div class="border-b border-slate-200 flex gap-5 overflow-x-auto mb-5">
                 <button type="button" (click)="accionPreventiva.set('APLICACION')" class="shrink-0 pb-3 border-b-2 text-sm font-bold transition" [ngClass]="accionPreventiva() === 'APLICACION' ? 'border-[#0066AA] text-[#0066AA]' : 'border-transparent text-slate-500 hover:text-slate-800'">
                   <i class="pi pi-check-circle mr-2"></i>Registrar aplicación
@@ -393,9 +428,12 @@
             </div>
 
             <div *ngIf="aplicacionesPreventivas().length" class="mt-6 pt-5 border-t border-slate-100">
-              <h4 class="text-xs font-extrabold text-slate-700 mb-3">Historial de aplicaciones</h4>
+              <div class="flex items-center justify-between gap-3 mb-3">
+                <h4 class="text-xs font-extrabold text-slate-700">Historial de aplicaciones</h4>
+                <span class="text-[11px] font-bold text-slate-500">{{ aplicacionesPreventivas().length }} registros</span>
+              </div>
               <div class="grid sm:grid-cols-2 gap-3">
-                <details *ngFor="let aplicacion of aplicacionesPreventivas().slice(0, 8)" class="rounded-xl border border-slate-100 p-3 text-xs">
+                <details *ngFor="let aplicacion of aplicacionesPaginadas()" class="rounded-xl border border-slate-100 p-3 text-xs">
                   <summary class="cursor-pointer list-none flex items-center justify-between gap-3">
                     <div><strong class="text-slate-700">{{ aplicacion.nombreControl }}</strong><p class="text-slate-400 mt-0.5">Aplicada {{ aplicacion.fechaAplicacion | date:'dd/MM/yyyy' }}</p></div>
                     <span *ngIf="aplicacion.fechaProximaAplicacion" class="text-slate-500">Próxima {{ aplicacion.fechaProximaAplicacion | date:'dd/MM/yyyy' }}</span>
@@ -406,6 +444,23 @@
                     <span>Periodicidad: <strong>{{ aplicacion.periodicidadMeses }} meses</strong></span>
                   </div>
                 </details>
+              </div>
+              <div *ngIf="totalPaginasAplicaciones() > 1" class="flex items-center justify-between gap-3 pt-3">
+                <p class="text-[11px] text-slate-500">
+                  Mostrando {{ paginaAplicaciones() * elementosPreventivosPorPagina + 1 }}–{{ (paginaAplicaciones() + 1) * elementosPreventivosPorPagina > aplicacionesPreventivas().length ? aplicacionesPreventivas().length : (paginaAplicaciones() + 1) * elementosPreventivosPorPagina }}
+                  de {{ aplicacionesPreventivas().length }}
+                </p>
+                <div class="flex items-center gap-2">
+                  <button type="button" (click)="cambiarPaginaAplicaciones(-1)" [disabled]="paginaAplicaciones() === 0"
+                    aria-label="Aplicaciones anteriores" class="w-8 h-8 rounded-lg border border-slate-200 text-slate-500 disabled:opacity-30">
+                    <i class="pi pi-chevron-left text-[10px]"></i>
+                  </button>
+                  <span class="text-[11px] font-bold text-slate-600">{{ paginaAplicaciones() + 1 }} / {{ totalPaginasAplicaciones() }}</span>
+                  <button type="button" (click)="cambiarPaginaAplicaciones(1)" [disabled]="paginaAplicaciones() + 1 >= totalPaginasAplicaciones()"
+                    aria-label="Aplicaciones siguientes" class="w-8 h-8 rounded-lg border border-slate-200 text-slate-500 disabled:opacity-30">
+                    <i class="pi pi-chevron-right text-[10px]"></i>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -631,9 +686,9 @@
             </label>
             <textarea formControlName="indicacionesReceta" rows="3" maxlength="500"
               placeholder="Indicaciones generales para el propietario sobre el tratamiento..."
-              [attr.readonly]="!canModify() ? true : null"
+              [attr.readonly]="!canEditConsulta() ? true : null"
               class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 outline-none resize-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
-              [ngClass]="{'bg-slate-50 text-slate-500 cursor-not-allowed': !canModify(), 'border-rose-500': form.get('indicacionesReceta')?.invalid && form.get('indicacionesReceta')?.touched, 'border-slate-200': !(form.get('indicacionesReceta')?.invalid && form.get('indicacionesReceta')?.touched)}">
+              [ngClass]="{'bg-slate-50 text-slate-500 cursor-not-allowed': !canEditConsulta(), 'border-rose-500': form.get('indicacionesReceta')?.invalid && form.get('indicacionesReceta')?.touched, 'border-slate-200': !(form.get('indicacionesReceta')?.invalid && form.get('indicacionesReceta')?.touched)}">
             </textarea>
             <span *ngIf="form.get('indicacionesReceta')?.invalid && form.get('indicacionesReceta')?.touched"
               class="text-xs text-rose-500">{{ controlError('indicacionesReceta') }}</span>
@@ -761,7 +816,7 @@
         </div>
       </div>
 
-      <div *ngIf="canModify()" class="flex flex-col gap-3 mt-4 items-end">
+      <div *ngIf="canEditConsulta()" class="flex flex-col gap-3 mt-4 items-end">
         <div class="flex flex-col sm:flex-row gap-3 justify-end w-full">
           <button *ngIf="!isCerrada()" type="button" (click)="confirmarCerrar()" [disabled]="autoSaveStatus() === 'saving'"
             class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 text-white text-sm font-bold hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all">

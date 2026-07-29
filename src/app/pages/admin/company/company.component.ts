@@ -37,6 +37,7 @@ import { normalizeText } from '../../../core/utils/normalize-text.util';
   styleUrl: './company.component.scss'
 })
 export class CompanyComponent implements OnInit {
+  private readonly companyActionItemsCache = new WeakMap<CompanyListResponse, MenuItem[]>();
   private readonly fb = inject(FormBuilder);
   private readonly companyService = inject(CompanyService);
   private readonly messageService = inject(MessageService);
@@ -183,6 +184,9 @@ export class CompanyComponent implements OnInit {
   }
 
   companyActionItems(company: CompanyListResponse): MenuItem[] {
+    const cached = this.companyActionItemsCache.get(company);
+    if (cached) return cached;
+
     const canModify = this.authStore.isSuperAdmin() || this.authStore.hasAccess('VISTA_COMPANY', 'modificar');
     const items: MenuItem[] = [
       {
@@ -207,6 +211,7 @@ export class CompanyComponent implements OnInit {
         command: () => this.confirmToggleActivo(company)
       });
     }
+    this.companyActionItemsCache.set(company, items);
     return items;
   }
 

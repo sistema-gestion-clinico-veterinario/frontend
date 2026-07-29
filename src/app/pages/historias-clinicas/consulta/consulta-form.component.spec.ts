@@ -69,6 +69,7 @@ describe('ConsultaFormComponent – permission computed signals', () => {
   it('canModifyReceta is true for admin with modify access even when consulta is closed', () => {
     store.setAuth({ ...baseAuth, roles: ['ROLE_ADMIN'], menu: [makeHistoriasItem()] });
     component.isCerrada.set(true);
+    component.accessMode.set('edit');
     expect(component.canModifyReceta()).toBeTrue();
   });
 
