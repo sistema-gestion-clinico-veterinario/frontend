@@ -7,6 +7,13 @@ import { Page } from '../../models/response/page';
 import { ApiResponse } from '../../models/response/api-response';
 import { EstadoCita } from '../enums/estado-cita.enum';
 
+export interface AgendaCounters {
+  programadas: number;
+  enProceso: number;
+  completadas: number;
+  canceladas: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -14,14 +21,36 @@ export class CitaService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = `${environment.apiUrl}/appointments`;
 
-  listar(companyId?: number, fecha?: string, estado?: EstadoCita, veterinarioId?: number, page: number = 0, size: number = 10) {
+  listar(
+    companyId?: number,
+    fecha?: string,
+    estado?: EstadoCita,
+    veterinarioId?: number,
+    page: number = 0,
+    size: number = 10,
+    fechaDesde?: string,
+    fechaHasta?: string
+  ) {
     let query = `?page=${page}&size=${size}`;
     if (companyId !== undefined && companyId !== null) query += `&companyId=${companyId}`;
     if (fecha) query += `&fecha=${fecha}`;
+    if (fechaDesde) query += `&fechaDesde=${fechaDesde}`;
+    if (fechaHasta) query += `&fechaHasta=${fechaHasta}`;
     if (estado) query += `&estado=${estado}`;
     if (veterinarioId) query += `&veterinarioId=${veterinarioId}`;
     
     return this.http.get<ApiResponse<Page<CitaResponse>>>(`${this.apiUrl}${query}`);
+  }
+
+  obtenerContadores(
+    companyId: number,
+    fechaDesde: string,
+    fechaHasta: string,
+    veterinarioId?: number
+  ) {
+    let query = `?companyId=${companyId}&fechaDesde=${fechaDesde}&fechaHasta=${fechaHasta}`;
+    if (veterinarioId) query += `&veterinarioId=${veterinarioId}`;
+    return this.http.get<ApiResponse<AgendaCounters>>(`${this.apiUrl}/counters${query}`);
   }
 
   crear(data: CitaRequest) {

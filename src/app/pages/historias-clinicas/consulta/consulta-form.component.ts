@@ -67,11 +67,17 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
   readonly canModify = computed(() => this.authStore.hasAccess('VISTA_HISTORIAS', 'modificar'));
   readonly canDelete = computed(() => this.authStore.hasAccess('VISTA_HISTORIAS', 'eliminar'));
   readonly isAdminOrSuper = computed(() => this.authStore.roles().includes(Role.ADMIN) || this.authStore.roles().includes(Role.SUPER_ADMIN));
-  readonly canCreateReceta = computed(() => this.canCreate() && (!this.isCerrada() || this.isAdminOrSuper()));
-  readonly canModifyReceta = computed(() => this.canModify() && (!this.isCerrada() || this.isAdminOrSuper()));
-  readonly canDeleteReceta = computed(() => this.canDelete() && (!this.isCerrada() || this.isAdminOrSuper()));
-  readonly canCreateArchivo = computed(() => this.canCreate() && (!this.isCerrada() || this.isAdminOrSuper()));
-  readonly canDeleteArchivo = computed(() => this.canDelete() && (!this.isCerrada() || this.isAdminOrSuper()));
+  readonly accessMode = signal<'auto' | 'view' | 'edit'>('auto');
+  readonly canEditConsulta = computed(() =>
+    this.canModify()
+    && this.accessMode() !== 'view'
+    && (!this.isCerrada() || this.accessMode() === 'edit')
+  );
+  readonly canCreateReceta = computed(() => this.canCreate() && this.canEditConsulta() && (!this.isCerrada() || this.isAdminOrSuper()));
+  readonly canModifyReceta = computed(() => this.canEditConsulta() && (!this.isCerrada() || this.isAdminOrSuper()));
+  readonly canDeleteReceta = computed(() => this.canDelete() && this.canEditConsulta() && (!this.isCerrada() || this.isAdminOrSuper()));
+  readonly canCreateArchivo = computed(() => this.canCreate() && this.canEditConsulta() && (!this.isCerrada() || this.isAdminOrSuper()));
+  readonly canDeleteArchivo = computed(() => this.canDelete() && this.canEditConsulta() && (!this.isCerrada() || this.isAdminOrSuper()));
 
   consulta   = signal<ConsultaResponse | null>(null);
   historia   = signal<any | null>(null); 
@@ -94,9 +100,27 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
   editarProximaDesparasitacion = signal(false);
   controlReprogramandoId = signal<number | null>(null);
   fechaReprogramacion = signal('');
+  paginaControles = signal(0);
+  paginaAplicaciones = signal(0);
+  readonly elementosPreventivosPorPagina = 4;
 
-  readonly controlesAbiertos = computed(() => this.controlesPreventivos().filter(c =>
-    !['APLICADO', 'CANCELADO'].includes(c.estado)));
+  readonly controlesAbiertos = computed(() => this.controlesPreventivos()
+    .filter(c => !['APLICADO', 'CANCELADO'].includes(c.estado))
+    .sort((a, b) => a.fechaRecomendada.localeCompare(b.fechaRecomendada)));
+  readonly totalPaginasControles = computed(() =>
+    Math.ceil(this.controlesAbiertos().length / this.elementosPreventivosPorPagina));
+  readonly controlesAbiertosPaginados = computed(() => {
+    const inicio = this.paginaControles() * this.elementosPreventivosPorPagina;
+    return this.controlesAbiertos().slice(inicio, inicio + this.elementosPreventivosPorPagina);
+  });
+  readonly aplicacionesOrdenadas = computed(() => [...this.aplicacionesPreventivas()]
+    .sort((a, b) => b.fechaAplicacion.localeCompare(a.fechaAplicacion)));
+  readonly totalPaginasAplicaciones = computed(() =>
+    Math.ceil(this.aplicacionesOrdenadas().length / this.elementosPreventivosPorPagina));
+  readonly aplicacionesPaginadas = computed(() => {
+    const inicio = this.paginaAplicaciones() * this.elementosPreventivosPorPagina;
+    return this.aplicacionesOrdenadas().slice(inicio, inicio + this.elementosPreventivosPorPagina);
+  });
   readonly controlesVacunacionAbiertos = computed(() => this.controlesAbiertos().filter(c => c.tipo === 'VACUNACION'));
   readonly controlesDesparasitacionAbiertos = computed(() => this.controlesAbiertos().filter(c => c.tipo === 'DESPARASITACION'));
   readonly tieneVacunacionRegistrada = computed(() => this.controlesPreventivos().some(c => c.tipo === 'VACUNACION')
@@ -210,6 +234,11 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
     this.route.queryParamMap.subscribe(params => {
       if (params.get('returnUrl')) {
         this.returnUrl = params.get('returnUrl')!;
+      }
+      const mode = params.get('mode');
+      this.accessMode.set(mode === 'view' || mode === 'edit' ? mode : 'auto');
+      if (this.consulta()) {
+        this.aplicarEstadoEdicionFormulario();
       }
       if (params.get('tab') === 'recetas') {
         this.tabActiva.set('recetas');
@@ -436,6 +465,7 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
   loadPreventivos(mascotaId: number) {
     this.preventivoService.listarControles(mascotaId).subscribe({
       next: res => {
+        this.paginaControles.set(0);
         this.controlesPreventivos.set(res.data ?? []);
         this.form.patchValue({
           vacunacionAlDia: this.vacunacionAlDiaCalculada(),
@@ -445,7 +475,10 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
       error: () => this.msgService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar los controles preventivos' })
     });
     this.preventivoService.listarAplicaciones(mascotaId).subscribe({
-      next: res => this.aplicacionesPreventivas.set(res.data ?? [])
+      next: res => {
+        this.paginaAplicaciones.set(0);
+        this.aplicacionesPreventivas.set(res.data ?? []);
+      }
     });
     this.preventivoService.listarTiposVacuna(mascotaId).subscribe({
       next: res => this.tiposVacuna.set(res.data ?? [])
@@ -489,6 +522,17 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
       fechaProximaDosis: ''
     });
     this.editarProximaVacuna.set(false);
+  }
+
+  cambiarPaginaControles(direccion: -1 | 1) {
+    const ultimaPagina = Math.max(0, this.totalPaginasControles() - 1);
+    this.paginaControles.update(actual => Math.min(ultimaPagina, Math.max(0, actual + direccion)));
+    this.controlReprogramandoId.set(null);
+  }
+
+  cambiarPaginaAplicaciones(direccion: -1 | 1) {
+    const ultimaPagina = Math.max(0, this.totalPaginasAplicaciones() - 1);
+    this.paginaAplicaciones.update(actual => Math.min(ultimaPagina, Math.max(0, actual + direccion)));
   }
 
   controlesCoincidentesVacuna() {
@@ -778,7 +822,7 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
   }
 
   private puedeEditarConsulta(): boolean {
-    return this.canModify();
+    return this.canEditConsulta();
   }
 
   loadRecetas() {
@@ -1094,7 +1138,7 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
   }
 
   private guardarSilencioso(mostrarError: boolean): Observable<boolean> {
-    if (!this.canModify()) return of(false);
+    if (!this.canEditConsulta()) return of(false);
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       this.autoSaveStatus.set('invalid');
@@ -1121,7 +1165,7 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
   }
 
   confirmarGuardar() {
-    if (!this.canModify()) return;
+    if (!this.canEditConsulta()) return;
     this.confirmSvc.confirm({
       message: '¿Deseas guardar los cambios realizados en la consulta?',
       header: 'Guardar cambios',
@@ -1133,7 +1177,7 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
   }
 
   guardar() {
-    if (!this.canModify()) return;
+    if (!this.canEditConsulta()) return;
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
@@ -1163,7 +1207,7 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
   }
 
   reintentarGuardado() {
-    if (!this.canModify()) return;
+    if (!this.canEditConsulta()) return;
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       this.autoSaveStatus.set('invalid');
@@ -1173,7 +1217,7 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
   }
 
   confirmarCerrar() {
-    if (!this.canModify()) return;
+    if (!this.canEditConsulta()) return;
     this.confirmSvc.confirm({
       message: 'Al cerrar la consulta no podrás modificarla. ¿Deseas continuar?',
       header: 'Cerrar consulta',
@@ -1187,7 +1231,7 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
   }
 
   private cerrar() {
-    if (!this.canModify()) return;
+    if (!this.canEditConsulta()) return;
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;

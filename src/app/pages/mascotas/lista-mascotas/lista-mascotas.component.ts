@@ -43,6 +43,7 @@ import { InputFilterDirective } from '../../../core/directives/input-filter.dire
   styleUrl: './lista-mascotas.component.scss'
 })
 export class ListaMascotasComponent implements OnInit {
+  private readonly mascotaActionItemsCache = new WeakMap<MascotaResponse, MenuItem[]>();
   private readonly mascotaService   = inject(MascotaService);
   private readonly apoderadoService = inject(ApoderadoService);
   readonly mediaService     = inject(MediaService);
@@ -120,6 +121,9 @@ export class ListaMascotasComponent implements OnInit {
   }
 
   mascotaActionItems(mascota: MascotaResponse): MenuItem[] {
+    const cached = this.mascotaActionItemsCache.get(mascota);
+    if (cached) return cached;
+
     const items: MenuItem[] = [
       {
         label: 'Ver Detalles',
@@ -147,6 +151,7 @@ export class ListaMascotasComponent implements OnInit {
       });
     }
 
+    this.mascotaActionItemsCache.set(mascota, items);
     return items;
   }
 
