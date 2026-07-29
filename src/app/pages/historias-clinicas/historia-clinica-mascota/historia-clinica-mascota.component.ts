@@ -111,7 +111,12 @@ export class HistoriaClinicaMascotaComponent implements OnInit {
 
   editarConsulta(id: number) {
     if (!this.canModify()) return;
-    this.router.navigate(['/historias-clinicas/consulta', id], { queryParams: { returnUrl: '/historias-clinicas/mascota/' + this.numeroHc } });
+    this.router.navigate(['/historias-clinicas/consulta', id], {
+      queryParams: {
+        returnUrl: '/historias-clinicas/mascota/' + this.numeroHc,
+        mode: 'edit'
+      }
+    });
   }
 
   volver() {

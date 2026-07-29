@@ -31,6 +31,27 @@ describe('MarkdownPipe', () => {
     expect(pipe.transform('<script>alert("xss")</script>')).toBe('<p>&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;</p>');
   });
 
+  it('neutraliza payloads XSS comunes sin crear nodos o atributos ejecutables', () => {
+    const payloads = [
+      '<img src=x onerror=alert(1)>',
+      '<svg onload=alert(1)>',
+      '<iframe srcdoc="<script>alert(1)</script>"></iframe>',
+      '<a href="javascript:alert(1)">abrir</a>',
+      '**<ScRiPt>alert(1)</ScRiPt>**',
+      '- <img src=x onerror=alert(1)>',
+    ];
+
+    for (const payload of payloads) {
+      const host = document.createElement('div');
+      host.innerHTML = pipe.transform(payload) as unknown as string;
+
+      expect(host.querySelector('script, img, svg, iframe, object, embed')).toBeNull();
+      expect(host.querySelector('[onerror], [onload], [srcdoc]')).toBeNull();
+      expect(host.querySelector('[href^="javascript:"]')).toBeNull();
+      expect(host.textContent).toContain(payload.replace(/\*\*/g, '').replace(/^-\s*/, ''));
+    }
+  });
+
   it('retorna vacio para entradas vacias o nulas', () => {
     expect(pipe.transform('')).toBe('');
     expect(pipe.transform(null as any)).toBe('');

@@ -50,6 +50,7 @@ import { normalizeText } from '../../../core/utils/normalize-text.util';
   styleUrl: './client.component.scss'
 })
 export class ClientComponent implements OnInit {
+  private readonly clientActionItemsCache = new WeakMap<ApoderadoListResponse, MenuItem[]>();
   private readonly fb = inject(FormBuilder);
   private readonly apoderadoService = inject(ApoderadoService);
   private readonly mascotaService = inject(MascotaService);
@@ -129,6 +130,9 @@ export class ClientComponent implements OnInit {
   }
 
   clientActionItems(client: ApoderadoListResponse): MenuItem[] {
+    const cached = this.clientActionItemsCache.get(client);
+    if (cached) return cached;
+
     const items: MenuItem[] = [];
 
     if (this.canClientAction('leer')) {
@@ -156,6 +160,7 @@ export class ClientComponent implements OnInit {
       });
     }
 
+    this.clientActionItemsCache.set(client, items);
     return items;
   }
 
