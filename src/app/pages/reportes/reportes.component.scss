@@ -1,14 +1,14 @@
 :host { display: block; }
 canvas { width: 100% !important; height: 100% !important; }
 
-.kpi-card { @apply flex min-w-0 items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm; }
+.kpi-card { @apply flex min-w-0 items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 ; }
 .kpi-icon { @apply grid size-10 shrink-0 place-items-center rounded-full; }
 .kpi-card p { @apply mb-1 text-xs text-slate-500; }
 .kpi-card strong { @apply block text-xl font-bold text-slate-900; }
 .kpi-card small { @apply mt-1.5 block truncate text-[11px] text-emerald-600; }
 .negative { color: #dc2626 !important; }
 
-.chart-panel, .upcoming-panel { @apply min-w-0 rounded-xl border border-slate-200 bg-white p-4 shadow-sm; }
+.chart-panel, .upcoming-panel { @apply min-w-0 rounded-xl border border-slate-200 bg-white p-4 ; }
 .panel-heading { @apply flex flex-wrap items-center justify-between gap-2; }
 .panel-heading h2 { @apply text-sm font-bold text-slate-700; }
 .panel-heading span { @apply rounded-md bg-slate-100 px-2 py-1 text-[10px] text-slate-500; }
