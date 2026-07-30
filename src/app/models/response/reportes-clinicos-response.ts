@@ -48,8 +48,8 @@ export interface ReportesClinicos {
 
 export interface ReportesClinicosFiltros {
   companyId?: number;
-  fechaDesde: string;
-  fechaHasta: string;
+  fechaDesde?: string;
+  fechaHasta?: string;
   veterinarioId?: number;
   especie?: string;
 }
