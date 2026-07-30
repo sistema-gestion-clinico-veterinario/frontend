@@ -2,16 +2,10 @@
 
 <div class="min-h-screen bg-slate-50 p-6">
   <div class="max-w-full mx-auto space-y-6">
-
-    <!-- Header card -->
     <div class="bg-white rounded-2xl border border-slate-100 p-6">
       <div class="flex flex-col sm:flex-row items-center sm:items-start gap-5">
-        <!-- Avatar -->
         <div class="relative shrink-0 group">
-          <!-- Hidden file input -->
           <input #fileInput type="file" accept="image/*" class="hidden" (change)="onFileSelected($event)" />
-
-          <!-- Avatar display -->
           <div *ngIf="!previewUrl()"
             class="w-24 h-24 rounded-full bg-[#0066AA] flex items-center justify-center text-white text-3xl font-bold"
             [class.cursor-pointer]="editMode()"
@@ -21,32 +15,23 @@
           <img *ngIf="previewUrl()" [src]="safePreviewUrl()" (error)="previewUrl.set(null)"
             class="w-24 h-24 rounded-full object-cover border border-slate-200"
             alt="Foto de perfil" />
-
-          <!-- Upload overlay (edit mode) -->
           <div *ngIf="editMode() && !uploadingPhoto()"
             (click)="triggerFileInput()"
             class="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
             <i class="pi pi-camera text-white text-xl"></i>
           </div>
 
-          <!-- Uploading spinner -->
           <div *ngIf="uploadingPhoto()"
             class="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center">
             <i class="pi pi-spin pi-spinner text-white text-xl"></i>
           </div>
-
-          <!-- Active indicator (view mode) -->
           <span *ngIf="!editMode() && profile()?.activo"
             class="absolute bottom-1 right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"
             title="Activo"></span>
-
-          <!-- Change photo label (edit mode) -->
           <p *ngIf="editMode()" class="absolute -bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] font-medium text-slate-400 text-center">
             Cambiar foto
           </p>
         </div>
-
-        <!-- Basic info -->
         <div class="flex-1 text-center sm:text-left">
           <h1 class="text-2xl font-bold text-slate-800">
             {{ profile()?.nombre }} {{ profile()?.apellido }}
@@ -66,8 +51,6 @@
             </span>
           </div>
         </div>
-
-        <!-- Edit toggle button -->
         <div *ngIf="canModifyProfile" class="shrink-0">
           <button (click)="toggleEdit()"
             [class]="editMode() ? 'bg-slate-100 text-slate-600 hover:bg-slate-200' : 'bg-[#0066AA] text-white hover:bg-[#0055AA]'"
@@ -78,14 +61,8 @@
         </div>
       </div>
     </div>
-
-    <!-- Info / Form -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-      <!-- Left: View or Edit -->
       <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-100 p-6">
-
-        <!-- VIEW MODE -->
         <ng-container *ngIf="!editMode()">
           <h2 class="text-base font-semibold text-slate-700 mb-4 flex items-center gap-2">
             <i class="pi pi-user text-[#0066AA]"></i> Información personal
@@ -125,15 +102,11 @@
             </div>
           </div>
         </ng-container>
-
-        <!-- EDIT MODE -->
         <ng-container *ngIf="editMode()">
           <h2 class="text-base font-semibold text-slate-700 mb-4 flex items-center gap-2">
             <i class="pi pi-pencil text-[#0066AA]"></i> Editar información
           </h2>
           <form [formGroup]="form" (ngSubmit)="save()" class="space-y-4">
-
-            <!-- Datos obligatorios -->
             <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Datos obligatorios</p>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
