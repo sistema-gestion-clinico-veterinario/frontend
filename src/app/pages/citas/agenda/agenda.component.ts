@@ -54,7 +54,7 @@ import { hasMeaningfulText, isLowercaseEmail } from '../../../core/utils/input-v
 import { ControlPreventivoService } from '../../../core/services/control-preventivo.service';
 import { ControlPreventivoResponse } from '../../../models/response/control-preventivo-response';
 export type Vista = 'lista' | 'dia' | 'semana' | 'mes';
-export type PeriodoAgenda = 'hoy' | '7dias' | '30dias' | 'personalizado';
+export type PeriodoAgenda = '' | 'hoy' | '7dias' | '30dias' | 'personalizado';
 
 interface CitaWsEvent {
   tipo: string;
@@ -330,7 +330,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
   filterEstado: EstadoCita | null = null;
   filterVeterinarioId: number | null = null;
   filtersOpen                        = false;
-  agendaPeriodo: PeriodoAgenda       = 'hoy';
+  agendaPeriodo: PeriodoAgenda       = '';
   agendaFechaDesde: string           = this.toDateStr(new Date());
   agendaFechaHasta: string           = this.toDateStr(new Date());
 
@@ -451,7 +451,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
     this.filterFecha = this.toDateStr(new Date());
     this.filterEstado = null;
     this.filterVeterinarioId = null;
-    this.agendaPeriodo = 'hoy';
+    this.agendaPeriodo = '';
     this.agendaFechaDesde = this.toDateStr(new Date());
     this.agendaFechaHasta = this.toDateStr(new Date());
     this.showEstadoFilter.set(false);
@@ -622,15 +622,16 @@ export class AgendaComponent implements OnInit, OnDestroy {
     const esAgenda = this.vistaActual() === 'lista';
     const fechaStr = esAgenda ? undefined : (this.filterFecha || undefined);
     const rangoAgenda = esAgenda ? this.getAgendaRange() : null;
-    if (esAgenda && (!rangoAgenda || this.agendaRangoError())) {
+    if (esAgenda && this.agendaPeriodo && (!rangoAgenda || this.agendaRangoError())) {
       this.citas.set([]);
       this.totalRecords.set(0);
       this.agendaCounters.set({ programadas: 0, enProceso: 0, completadas: 0, canceladas: 0 });
       return;
     }
     const veterinarioId = this.getEffectiveVeterinarioFilter();
-    if (esAgenda && rangoAgenda) {
-      this.loadAgendaCounters(companyId, rangoAgenda.desde, rangoAgenda.hasta, veterinarioId);
+    if (esAgenda) {
+      const rangoContadores = rangoAgenda;
+      this.loadAgendaCounters(companyId, rangoContadores?.desde, rangoContadores?.hasta, veterinarioId);
     }
 
     this.citaService.listar(
@@ -1712,13 +1713,16 @@ export class AgendaComponent implements OnInit, OnDestroy {
   }
 
   agendaEmptyTitle(): string {
-    if (this.agendaPeriodo === 'hoy') return 'No hay citas programadas para hoy';
+    if (!this.agendaPeriodo) return 'No hay citas registradas';
+    const periodo = this.agendaPeriodo || 'hoy';
+    if (periodo === 'hoy') return 'No hay citas programadas para hoy';
     const rango = this.getAgendaRange();
     if (!rango) return 'No hay citas en el periodo seleccionado';
     return `No hay citas entre el ${this.formatShortDate(rango.desde)} y el ${this.formatShortDate(rango.hasta)}`;
   }
 
   agendaPeriodoLabel(): string {
+    if (!this.agendaPeriodo) return 'Todas las citas';
     switch (this.agendaPeriodo) {
       case '7dias': return 'Próximos 7 días';
       case '30dias': return 'Próximos 30 días';
@@ -1728,6 +1732,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
   }
 
   private getAgendaRange(): { desde: string; hasta: string } | null {
+    if (!this.agendaPeriodo) return null;
     const hoy = new Date();
     if (this.agendaPeriodo === 'personalizado') {
       if (!this.agendaFechaDesde || !this.agendaFechaHasta) return null;
@@ -1760,8 +1765,8 @@ export class AgendaComponent implements OnInit, OnDestroy {
 
   private loadAgendaCounters(
     companyId: number,
-    fechaDesde: string,
-    fechaHasta: string,
+    fechaDesde?: string,
+    fechaHasta?: string,
     veterinarioId?: number
   ) {
     this.citaService.obtenerContadores(companyId, fechaDesde, fechaHasta, veterinarioId).pipe(
