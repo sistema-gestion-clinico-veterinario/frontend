@@ -13,9 +13,9 @@ export class ReportesClinicosService {
   private readonly apiUrl = `${environment.apiUrl}/clinical-reports`;
 
   obtenerReportes(filtros: ReportesClinicosFiltros) {
-    let params = new HttpParams()
-      .set('fechaDesde', filtros.fechaDesde)
-      .set('fechaHasta', filtros.fechaHasta);
+    let params = new HttpParams();
+    if (filtros.fechaDesde) params = params.set('fechaDesde', filtros.fechaDesde);
+    if (filtros.fechaHasta) params = params.set('fechaHasta', filtros.fechaHasta);
     if (filtros.companyId != null) params = params.set('companyId', filtros.companyId);
     if (filtros.veterinarioId != null) params = params.set('veterinarioId', filtros.veterinarioId);
     if (filtros.especie) params = params.set('especie', filtros.especie);
