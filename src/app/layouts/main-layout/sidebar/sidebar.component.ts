@@ -168,6 +168,7 @@ export class SidebarComponent implements OnInit {
   vistaIcon(codigo: string): string {
     const icons: Record<string, string> = {
       VISTA_DASHBOARD: 'pi pi-home',
+      VISTA_REPORTES: 'pi pi-chart-pie',
       VISTA_COMPANY: 'pi pi-building',
       VISTA_AUDITORIA_ADMIN: 'pi pi-list-check',
       VISTA_ROLES: 'pi pi-shield',

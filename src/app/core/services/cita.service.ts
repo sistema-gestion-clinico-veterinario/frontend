@@ -44,11 +44,13 @@ export class CitaService {
 
   obtenerContadores(
     companyId: number,
-    fechaDesde: string,
-    fechaHasta: string,
+    fechaDesde?: string,
+    fechaHasta?: string,
     veterinarioId?: number
   ) {
-    let query = `?companyId=${companyId}&fechaDesde=${fechaDesde}&fechaHasta=${fechaHasta}`;
+    let query = `?companyId=${companyId}`;
+    if (fechaDesde) query += `&fechaDesde=${fechaDesde}`;
+    if (fechaHasta) query += `&fechaHasta=${fechaHasta}`;
     if (veterinarioId) query += `&veterinarioId=${veterinarioId}`;
     return this.http.get<ApiResponse<AgendaCounters>>(`${this.apiUrl}/counters${query}`);
   }

@@ -194,6 +194,7 @@
           </label>
           <select [(ngModel)]="agendaPeriodo" (change)="onAgendaPeriodoChange()"
             class="w-full h-10 bg-slate-50 border border-slate-200 rounded-xl px-3 text-sm font-semibold text-slate-700 focus:outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/10 transition-all">
+            <option value="">Todas</option>
             <option value="hoy">Hoy</option>
             <option value="7dias">Próximos 7 días</option>
             <option value="30dias">Próximos 30 días</option>
