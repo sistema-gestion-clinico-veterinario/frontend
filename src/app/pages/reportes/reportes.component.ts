@@ -1,112 +1,165 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  ElementRef,
+  afterRenderEffect,
+  computed,
+  inject,
+  signal,
+  viewChildren
+} from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
-import { distinctUntilChanged, skip } from 'rxjs/operators';
-import { Chart, registerables } from 'chart.js';
-import jsPDF from 'jspdf';
-import { AuthStore } from '../../store/auth.store';
-import { LoadingStore } from '../../store/loading.store';
-import { ReportesClinicosService } from '../../core/services/reportes-clinicos.service';
+import { FormsModule } from '@angular/forms';
+import { EMPTY, Subject, combineLatest } from 'rxjs';
+import { catchError, distinctUntilChanged, startWith, switchMap } from 'rxjs/operators';
 import { EmpleadoService } from '../../core/services/empleado.service';
+import { ReportesClinicosService } from '../../core/services/reportes-clinicos.service';
 import { EmpleadoListResponse } from '../../models/response/empleado-list-response';
 import {
-  ItemCount,
   ReportesClinicos,
-  ResumenReporte
+  ReportesClinicosFiltros
 } from '../../models/response/reportes-clinicos-response';
-
-Chart.register(...registerables);
-
-type Periodo = 'hoy' | 'semana' | 'mes' | 'personalizado';
+import { AuthStore } from '../../store/auth.store';
+import { ReportesChartService } from './reportes-chart.service';
+import { ReportesExportService } from './reportes-export.service';
+import { Periodo, calcularRangoPeriodo } from './reportes-periodo.utils';
 
 @Component({
   selector: 'app-reportes',
   standalone: true,
   imports: [CommonModule, FormsModule],
+  providers: [ReportesChartService, ReportesExportService],
   templateUrl: './reportes.component.html',
-  styleUrls: ['./reportes.component.scss']
+  styleUrls: ['./reportes.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export default class ReportesComponent implements OnInit {
+export default class ReportesComponent {
   private readonly authStore = inject(AuthStore);
   private readonly reportesService = inject(ReportesClinicosService);
   private readonly empleadoService = inject(EmpleadoService);
-  private readonly loadingStore = inject(LoadingStore);
+  private readonly chartService = inject(ReportesChartService);
+  private readonly exportService = inject(ReportesExportService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly reloadReports = new Subject<void>();
+  private readonly chartCanvases =
+    viewChildren<ElementRef<HTMLCanvasElement>>('reportChart');
+  private readonly selectedCompanyId = computed(() =>
+    this.authStore.selectedEnterprise()?.establishmentId
+      ?? this.authStore.companyId()
+      ?? undefined
+  );
 
   readonly data = signal<ReportesClinicos | null>(null);
   readonly veterinarios = signal<EmpleadoListResponse[]>([]);
   readonly diasSemana = [
-    { id: 1, label: 'Lun' }, { id: 2, label: 'Mar' }, { id: 3, label: 'Mié' },
-    { id: 4, label: 'Jue' }, { id: 5, label: 'Vie' }, { id: 6, label: 'Sáb' },
+    { id: 1, label: 'Lun' },
+    { id: 2, label: 'Mar' },
+    { id: 3, label: 'Mié' },
+    { id: 4, label: 'Jue' },
+    { id: 5, label: 'Vie' },
+    { id: 6, label: 'Sáb' },
     { id: 7, label: 'Dom' }
   ];
-  readonly horas = Array.from({ length: 14 }, (_, i) => i + 7);
+  readonly horas = Array.from({ length: 14 }, (_, index) => index + 7);
   readonly especies = [
-    ['PERRO', 'Perro'], ['GATO', 'Gato'], ['AVE', 'Ave'], ['REPTIL', 'Reptil'],
-    ['ROEDOR', 'Roedor'], ['EXOTICO', 'Exótico'], ['OTRO', 'Otro']
-  ];
+    ['PERRO', 'Perro'],
+    ['GATO', 'Gato'],
+    ['AVE', 'Ave'],
+    ['REPTIL', 'Reptil'],
+    ['ROEDOR', 'Roedor'],
+    ['EXOTICO', 'Exótico'],
+    ['OTRO', 'Otro']
+  ] as const;
 
-  periodo: Periodo = 'mes';
+  periodo: Periodo = 'todos';
   fechaDesde = '';
   fechaHasta = '';
   veterinarioId: number | null = null;
   especie = '';
-  private charts: Chart[] = [];
 
   readonly heatmapMax = computed(() =>
     Math.max(1, ...(this.data()?.demandaPorHorario ?? []).map(item => item.count))
   );
+  private readonly heatmapIndex = computed(() =>
+    new Map(
+      (this.data()?.demandaPorHorario ?? [])
+        .map(item => [`${item.diaSemana}-${item.hora}`, item.count] as const)
+    )
+  );
 
   constructor() {
-    toObservable(this.authStore.selectedEnterprise)
+    this.actualizarRangoSeleccionado();
+
+    const companyId$ = toObservable(this.selectedCompanyId).pipe(
+      distinctUntilChanged()
+    );
+
+    companyId$
       .pipe(
-        distinctUntilChanged((a, b) => a?.establishmentId === b?.establishmentId),
-        skip(1),
+        switchMap(companyId =>
+          this.empleadoService.listar(companyId, undefined, 0, 200).pipe(
+            catchError(() => EMPTY)
+          )
+        ),
         takeUntilDestroyed(this.destroyRef)
       )
-      .subscribe(() => {
-        this.cargarVeterinarios();
-        this.loadData();
+      .subscribe(response => {
+        const empleados = response.data.content ?? [];
+        this.veterinarios.set(
+          empleados.filter(empleado =>
+            empleado.activo
+            && empleado.tiposEmpleado?.some(tipo =>
+              tipo.toUpperCase().includes('VETERIN')
+            )
+          )
+        );
       });
+
+    combineLatest([
+      companyId$,
+      this.reloadReports.pipe(startWith(undefined))
+    ])
+      .pipe(
+        switchMap(([companyId]) =>
+          this.reportesService.obtenerReportes(this.buildFilters(companyId)).pipe(
+            catchError(() => EMPTY)
+          )
+        ),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe(response => this.data.set(response.data));
+
+    afterRenderEffect(() => {
+      const reporte = this.data();
+      const canvases = this.chartCanvases().map(reference => reference.nativeElement);
+
+      if (reporte) {
+        this.chartService.render(reporte, canvases);
+      } else {
+        this.chartService.destroy();
+      }
+    });
   }
 
-  ngOnInit(): void {
-    this.aplicarPeriodo(false);
-    this.cargarVeterinarios();
-    this.loadData();
-  }
-
-  aplicarPeriodo(recargar = true): void {
-    const hoy = new Date();
-    let desde = new Date(hoy);
-    let hasta = new Date(hoy);
-    if (this.periodo === 'semana') {
-      const day = hoy.getDay() || 7;
-      desde.setDate(hoy.getDate() - day + 1);
-      hasta = new Date(desde);
-      hasta.setDate(desde.getDate() + 6);
-    } else if (this.periodo === 'mes') {
-      desde = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
-      hasta = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0);
-    } else if (this.periodo === 'personalizado') {
-      return;
-    }
-    this.fechaDesde = this.toDateInput(desde);
-    this.fechaHasta = this.toDateInput(hasta);
-    if (recargar) this.loadData();
+  onFiltrosChange(): void {
+    if (this.periodo === 'personalizado') return;
+    this.actualizarRangoSeleccionado();
+    this.reloadReports.next();
   }
 
   aplicarFiltros(): void {
-    if (!this.fechaDesde || !this.fechaHasta || this.fechaHasta < this.fechaDesde) return;
-    this.loadData();
+    if (!this.rangoValido()) return;
+    this.reloadReports.next();
   }
 
   limpiarFiltros(): void {
-    this.periodo = 'mes';
+    this.periodo = 'todos';
     this.veterinarioId = null;
     this.especie = '';
-    this.aplicarPeriodo();
+    this.actualizarRangoSeleccionado();
+    this.reloadReports.next();
   }
 
   variacion(actual: number, anterior: number): number | null {
@@ -122,7 +175,7 @@ export default class ReportesComponent implements OnInit {
   }
 
   heatmapCount(dia: number, hora: number): number {
-    return this.data()?.demandaPorHorario?.find(i => i.diaSemana === dia && i.hora === hora)?.count ?? 0;
+    return this.heatmapIndex().get(`${dia}-${hora}`) ?? 0;
   }
 
   heatmapClass(dia: number, hora: number): string {
@@ -138,210 +191,50 @@ export default class ReportesComponent implements OnInit {
   formatShortDate(value: string): string {
     if (!value) return '—';
     const [year, month, day] = value.split('-').map(Number);
-    return new Date(year, month - 1, day).toLocaleDateString('es-PE', {
-      day: '2-digit', month: 'short'
-    }).replace('.', '');
+    return new Date(year, month - 1, day)
+      .toLocaleDateString('es-PE', { day: '2-digit', month: 'short' })
+      .replace('.', '');
   }
 
   formatMoney(value: number): string {
     return new Intl.NumberFormat('es-PE', {
-      style: 'currency', currency: 'PEN', minimumFractionDigits: 2
+      style: 'currency',
+      currency: 'PEN',
+      minimumFractionDigits: 2
     }).format(value ?? 0);
   }
 
   exportarPdf(): void {
     const reporte = this.data();
-    if (!reporte) return;
-    const doc = new jsPDF();
-    const resumen = reporte.resumen;
-    doc.setFontSize(18);
-    doc.text('Reportes clínicos', 14, 18);
-    doc.setFontSize(10);
-    doc.setTextColor(90);
-    doc.text(`Periodo: ${reporte.fechaDesde} al ${reporte.fechaHasta}`, 14, 26);
-    doc.setTextColor(20);
-    const lineas = [
-      `Consultas: ${resumen.consultas}`,
-      `Pacientes atendidos: ${resumen.pacientesAtendidos}`,
-      `Ingresos: ${this.formatMoney(resumen.ingresos)}`,
-      `Nuevos pacientes: ${resumen.nuevosPacientes}`,
-      `Tiempo promedio de atención: ${resumen.tiempoPromedioAtencionMinutos} min`,
-      `Citas completadas: ${resumen.porcentajeCitasCompletadas}%`
-    ];
-    lineas.forEach((linea, index) => doc.text(linea, 14, 40 + index * 8));
-    this.addPdfSection(doc, 'Estado de citas', reporte.consultasPorEstado, 94);
-    this.addPdfSection(doc, 'Servicios más solicitados', reporte.serviciosMasSolicitados, 140);
-    doc.save(`reporte-clinico-${reporte.fechaDesde}-${reporte.fechaHasta}.pdf`);
+    if (reporte) this.exportService.exportarPdf(reporte);
   }
 
   exportarExcel(): void {
     const reporte = this.data();
-    if (!reporte) return;
-    const rows = [
-      ['REPORTE CLÍNICO', ''],
-      ['Periodo', `${reporte.fechaDesde} al ${reporte.fechaHasta}`],
-      ['Consultas', reporte.resumen.consultas],
-      ['Pacientes atendidos', reporte.resumen.pacientesAtendidos],
-      ['Ingresos', reporte.resumen.ingresos],
-      ['Nuevos pacientes', reporte.resumen.nuevosPacientes],
-      ['Tiempo promedio (min)', reporte.resumen.tiempoPromedioAtencionMinutos],
-      ['Citas completadas (%)', reporte.resumen.porcentajeCitasCompletadas],
-      [],
-      ['ESTADO DE CITAS', 'CANTIDAD'],
-      ...reporte.consultasPorEstado.map(i => [i.label, i.count]),
-      [],
-      ['SERVICIOS MÁS SOLICITADOS', 'CANTIDAD'],
-      ...reporte.serviciosMasSolicitados.map(i => [i.label, i.count])
-    ];
-    const html = `<table>${rows.map(row =>
-      `<tr>${row.map(cell => `<td>${this.escapeHtml(String(cell ?? ''))}</td>`).join('')}</tr>`
-    ).join('')}</table>`;
-    const blob = new Blob(['\ufeff', html], { type: 'application/vnd.ms-excel;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `reporte-clinico-${reporte.fechaDesde}-${reporte.fechaHasta}.xls`;
-    link.click();
-    URL.revokeObjectURL(url);
+    if (reporte) this.exportService.exportarExcel(reporte);
   }
 
-  private loadData(): void {
-    if (!this.fechaDesde || !this.fechaHasta) return;
-    this.loadingStore.show();
-    this.reportesService.obtenerReportes({
-      companyId: this.companyId(),
+  private actualizarRangoSeleccionado(): void {
+    const rango = calcularRangoPeriodo(this.periodo);
+    this.fechaDesde = rango.fechaDesde;
+    this.fechaHasta = rango.fechaHasta;
+  }
+
+  private rangoValido(): boolean {
+    return Boolean(
+      this.fechaDesde
+      && this.fechaHasta
+      && this.fechaDesde <= this.fechaHasta
+    );
+  }
+
+  private buildFilters(companyId: number | undefined): ReportesClinicosFiltros {
+    return {
+      companyId,
       fechaDesde: this.fechaDesde,
       fechaHasta: this.fechaHasta,
       veterinarioId: this.veterinarioId ?? undefined,
       especie: this.especie || undefined
-    }).subscribe({
-      next: response => {
-        this.data.set(response.data);
-        this.loadingStore.hide();
-        setTimeout(() => this.renderCharts());
-      },
-      error: () => this.loadingStore.hide()
-    });
-  }
-
-  private cargarVeterinarios(): void {
-    this.empleadoService.listar(this.companyId(), undefined, 0, 200).subscribe({
-      next: response => this.veterinarios.set(
-        (response.data.content ?? []).filter(e =>
-          e.activo && e.tiposEmpleado?.some(tipo => tipo.toUpperCase().includes('VETERIN'))
-        )
-      )
-    });
-  }
-
-  private renderCharts(): void {
-    this.charts.forEach(chart => chart.destroy());
-    this.charts = [];
-    const reporte = this.data();
-    if (!reporte) return;
-    const font = { family: "'Barlow', sans-serif", size: 11 };
-    const grid = '#eef2f7';
-
-    this.createLine('chartEvolucion', reporte.consultasPorMes, '#169b62', font, grid);
-    this.createHorizontalBar('chartEstados', reporte.consultasPorEstado, font, grid,
-      ['#22a06b', '#f59e0b', '#4f86e8', '#ef5b5b', '#8b5cf6', '#64748b']);
-    this.createDoughnut('chartEspecies', reporte.pacientesPorEspecie,
-      ['#397ce8', '#27ad6f', '#f5a524', '#8b5cf6', '#ef667d', '#64748b'], font);
-    this.createHorizontalBar('chartServicios', reporte.serviciosMasSolicitados, font, grid,
-      ['#397ce8', '#27ad6f', '#f5a524', '#8b5cf6', '#ef667d']);
-    this.createBar('chartEdades', reporte.pacientesPorRangoEdad, font, grid,
-      ['#397ce8', '#27ad6f', '#f5a524', '#8b5cf6', '#64748b']);
-  }
-
-  private createLine(id: string, items: ItemCount[], color: string, font: any, grid: string): void {
-    const canvas = document.getElementById(id) as HTMLCanvasElement | null;
-    if (!canvas || !items.length) return;
-    this.charts.push(new Chart(canvas, {
-      type: 'line',
-      data: {
-        labels: items.map(i => i.label),
-        datasets: [{ data: items.map(i => i.count), borderColor: color, backgroundColor: '#eaf8f1',
-          fill: true, tension: .35, pointRadius: 3, pointBackgroundColor: '#fff', pointBorderWidth: 2 }]
-      },
-      options: this.chartOptions(font, grid)
-    }));
-  }
-
-  private createBar(id: string, items: ItemCount[], font: any, grid: string, colors: string[]): void {
-    const canvas = document.getElementById(id) as HTMLCanvasElement | null;
-    if (!canvas || !items.length) return;
-    this.charts.push(new Chart(canvas, {
-      type: 'bar',
-      data: { labels: items.map(i => i.label), datasets: [{
-        data: items.map(i => i.count), backgroundColor: items.map((_, i) => colors[i % colors.length]),
-        borderRadius: 5, maxBarThickness: 34
-      }] },
-      options: this.chartOptions(font, grid)
-    }));
-  }
-
-  private createHorizontalBar(id: string, items: ItemCount[], font: any, grid: string, colors: string[]): void {
-    const canvas = document.getElementById(id) as HTMLCanvasElement | null;
-    if (!canvas || !items.length) return;
-    this.charts.push(new Chart(canvas, {
-      type: 'bar',
-      data: { labels: items.map(i => i.label), datasets: [{
-        data: items.map(i => i.count), backgroundColor: items.map((_, i) => colors[i % colors.length]),
-        borderRadius: 4, maxBarThickness: 22
-      }] },
-      options: { ...this.chartOptions(font, grid), indexAxis: 'y' }
-    }));
-  }
-
-  private createDoughnut(id: string, items: ItemCount[], colors: string[], font: any): void {
-    const canvas = document.getElementById(id) as HTMLCanvasElement | null;
-    if (!canvas || !items.length) return;
-    this.charts.push(new Chart(canvas, {
-      type: 'doughnut',
-      data: { labels: items.map(i => i.label), datasets: [{
-        data: items.map(i => i.count), backgroundColor: colors, borderWidth: 3, borderColor: '#fff'
-      }] },
-      options: {
-        responsive: true, maintainAspectRatio: false, cutout: '66%',
-        plugins: { legend: { position: 'right', labels: { usePointStyle: true, pointStyle: 'circle', font } } }
-      }
-    }));
-  }
-
-  private chartOptions(font: any, grid: string): any {
-    return {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { grid: { display: false }, ticks: { font, color: '#60708a' } },
-        y: { beginAtZero: true, grid: { color: grid }, ticks: { font, color: '#60708a', precision: 0 } }
-      }
     };
-  }
-
-  private addPdfSection(doc: jsPDF, title: string, items: ItemCount[], startY: number): void {
-    doc.setFontSize(12);
-    doc.text(title, 14, startY);
-    doc.setFontSize(9);
-    items.slice(0, 8).forEach((item, index) =>
-      doc.text(`${item.label}: ${item.count}`, 18, startY + 8 + index * 6)
-    );
-  }
-
-  private companyId(): number | undefined {
-    return this.authStore.selectedEnterprise()?.establishmentId ?? this.authStore.companyId() ?? undefined;
-  }
-
-  private toDateInput(date: Date): string {
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, '0');
-    const d = String(date.getDate()).padStart(2, '0');
-    return `${y}-${m}-${d}`;
-  }
-
-  private escapeHtml(value: string): string {
-    return value.replace(/[&<>"']/g, char =>
-      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[char]!)
-    );
   }
 }

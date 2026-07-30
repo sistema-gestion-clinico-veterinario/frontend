@@ -10,8 +10,6 @@
   </button>
 
   <div class="flex-1 flex items-center gap-2 px-4 sm:px-8">
-
-    <!-- Company Dropdown -->
     <div *ngIf="isSuperAdmin" id="company-dropdown-container" class="relative">
       <button
         type="button"
@@ -29,8 +27,6 @@
         <i class="pi pi-chevron-down text-slate-400 text-[9px] absolute right-1.5 sm:right-2 hidden sm:block group-hover:text-slate-600 transition-all duration-200"
            [class.rotate-180]="companyDropdownOpen()"></i>
       </button>
-
-      <!-- Dropdown Menu -->
       <div *ngIf="companyDropdownOpen()"
         class="fixed left-3 right-3 top-16 mt-1.5 w-auto bg-white rounded-xl border border-slate-100 py-1 z-[250] animate-in fade-in slide-in-from-top-1 duration-150 sm:absolute sm:left-0 sm:right-auto sm:top-full sm:w-52">
         <button
@@ -51,8 +47,6 @@
         </button>
       </div>
     </div>
-
-    <!-- Active Role Switcher Dropdown -->
     <div *ngIf="authStore.assignedRoles().length > 1" id="active-role-dropdown-container" class="relative">
       <button
         type="button"
@@ -70,8 +64,6 @@
         <i class="pi pi-chevron-down text-slate-400 text-[9px] absolute right-1.5 sm:right-2 hidden sm:block group-hover:text-slate-600 transition-all duration-200"
            [class.rotate-180]="activeRoleDropdownOpen()"></i>
       </button>
-
-      <!-- Dropdown Menu -->
       <div *ngIf="activeRoleDropdownOpen()"
         class="fixed left-3 right-3 top-16 mt-1.5 w-auto bg-white rounded-xl border border-slate-100 py-1 z-[250] animate-in fade-in slide-in-from-top-1 duration-150 sm:absolute sm:left-0 sm:right-auto sm:top-full sm:w-52">
         <button *ngFor="let role of authStore.assignedRoles()"
@@ -86,8 +78,6 @@
       </div>
     </div>
   </div>
-
-  <!-- User menu -->
   <div id="user-menu-container" class="relative flex items-center gap-3 shrink-0">
     <div class="hidden text-right sm:block">
       <p class="text-sm font-semibold text-slate-800 leading-tight">{{ userName }}</p>
@@ -100,8 +90,6 @@
     >
       {{ userInitial }}
     </button>
-
-    <!-- Dropdown -->
     <div *ngIf="dropdownOpen()"
       class="absolute right-0 top-12 w-48 bg-white rounded-xl border border-slate-100 py-1 z-50">
       <button (click)="goToProfile()"
