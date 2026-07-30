@@ -1,0 +1,213 @@
+<div class="min-h-screen bg-[#F4F7FA] font-['Barlow']">
+
+  <!-- HEADER -->
+  <div class="bg-white border-b border-slate-100">
+    <div class="px-4 sm:px-8 lg:px-10 py-4 sm:py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2 mb-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+          <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-[0.18em]">
+            {{ today | date:'fullDate':'':'es-PE' }}
+          </p>
+        </div>
+        <h1 class="text-xl sm:text-[26px] font-black text-slate-900 leading-snug">
+          Reportes <span class="text-[#0066AA]">Clínicos</span>
+        </h1>
+        <p class="text-xs text-slate-400 font-medium mt-1">Dashboard de análisis clínico</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTENIDO -->
+  <div class="px-4 sm:px-8 lg:px-10 py-4 sm:py-7 space-y-4 sm:space-y-6">
+
+    <!-- ─── FILA 1: KPIs clínicos ─── -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
+      <div class="bg-white rounded-2xl border border-slate-100 p-4 sm:p-5 flex items-center gap-4">
+        <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+          <i class="pi pi-search text-sm text-[#0066AA]"></i>
+        </div>
+        <div>
+          <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Consultas</p>
+          <p class="text-2xl font-black text-slate-900">{{ totalConsultas }}</p>
+        </div>
+      </div>
+      <div class="bg-white rounded-2xl border border-slate-100 p-4 sm:p-5 flex items-center gap-4">
+        <div class="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center shrink-0">
+          <i class="pi pi-book text-sm text-purple-600"></i>
+        </div>
+        <div>
+          <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Diagnósticos</p>
+          <p class="text-2xl font-black text-slate-900">{{ totalDiagnosticos }}</p>
+        </div>
+      </div>
+      <div class="bg-white rounded-2xl border border-slate-100 p-4 sm:p-5 flex items-center gap-4">
+        <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
+          <i class="pi pi-refresh text-sm text-emerald-600"></i>
+        </div>
+        <div>
+          <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Tratamientos</p>
+          <p class="text-2xl font-black text-slate-900">{{ totalTratamientos }}</p>
+        </div>
+      </div>
+      <div class="bg-white rounded-2xl border border-slate-100 p-4 sm:p-5 flex items-center gap-4">
+        <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center shrink-0">
+          <i class="pi pi-users text-sm text-amber-600"></i>
+        </div>
+        <div>
+          <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Pacientes</p>
+          <p class="text-2xl font-black text-slate-900">{{ totalPacientes }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── FILA 2: Distribuciones (3 columnas) ─── -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+      <!-- Consultas por Tipo -->
+      <div class="bg-white rounded-2xl border border-slate-100 p-5">
+        <h3 class="text-sm font-extrabold text-slate-700 uppercase tracking-wider mb-4">Consultas por Tipo</h3>
+        <div class="space-y-3" *ngIf="data()?.consultasPorTipo?.length">
+          <div *ngFor="let item of data()?.consultasPorTipo; let i = index" class="space-y-1">
+            <div class="flex justify-between text-xs">
+              <span class="font-semibold text-slate-600">{{ item.label }}</span>
+              <span class="font-black text-slate-800">{{ item.count }}</span>
+            </div>
+            <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+              <div [style.width.%]="barWidth(item, data()?.consultasPorTipo)" [class]="'h-full rounded-full ' + barClasses[i % barClasses.length]"></div>
+            </div>
+          </div>
+        </div>
+        <p *ngIf="!data()?.consultasPorTipo?.length" class="text-xs text-slate-400 text-center py-4">Sin datos</p>
+      </div>
+
+      <!-- Pacientes por Especie -->
+      <div class="bg-white rounded-2xl border border-slate-100 p-5">
+        <h3 class="text-sm font-extrabold text-slate-700 uppercase tracking-wider mb-4">Pacientes por Especie</h3>
+        <div class="space-y-3" *ngIf="data()?.pacientesPorEspecie?.length">
+          <div *ngFor="let item of data()?.pacientesPorEspecie" class="space-y-1">
+            <div class="flex justify-between text-xs">
+              <span class="font-semibold text-slate-600">{{ item.label }}</span>
+              <span class="font-black text-slate-800">{{ item.count }}</span>
+            </div>
+            <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+              <div [style.width.%]="barWidth(item, data()?.pacientesPorEspecie)" class="h-full rounded-full bg-emerald-500"></div>
+            </div>
+          </div>
+        </div>
+        <p *ngIf="!data()?.pacientesPorEspecie?.length" class="text-xs text-slate-400 text-center py-4">Sin datos</p>
+      </div>
+
+      <!-- Pacientes por Rango de Edad -->
+      <div class="bg-white rounded-2xl border border-slate-100 p-5">
+        <h3 class="text-sm font-extrabold text-slate-700 uppercase tracking-wider mb-4">Pacientes por Edad</h3>
+        <div class="space-y-3" *ngIf="data()?.pacientesPorRangoEdad?.length">
+          <div *ngFor="let item of data()?.pacientesPorRangoEdad; let i = index" class="space-y-1">
+            <div class="flex justify-between text-xs">
+              <span class="font-semibold text-slate-600">{{ item.label }}</span>
+              <span class="font-black text-slate-800">{{ item.count }}</span>
+            </div>
+            <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+              <div [style.width.%]="barWidth(item, data()?.pacientesPorRangoEdad)" [class]="'h-full rounded-full ' + barClasses[(i + 2) % barClasses.length]"></div>
+            </div>
+          </div>
+        </div>
+        <p *ngIf="!data()?.pacientesPorRangoEdad?.length" class="text-xs text-slate-400 text-center py-4">Sin datos</p>
+      </div>
+    </div>
+
+    <!-- ─── FILA 3: Estados + Próximos (3 columnas) ─── -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+      <!-- Consultas por Estado -->
+      <div class="bg-white rounded-2xl border border-slate-100 p-5">
+        <h3 class="text-sm font-extrabold text-slate-700 uppercase tracking-wider mb-4">Consultas por Estado</h3>
+        <div class="space-y-3" *ngIf="data()?.consultasPorEstado?.length">
+          <div *ngFor="let item of data()?.consultasPorEstado; let i = index" class="space-y-1">
+            <div class="flex justify-between text-xs">
+              <span class="font-semibold text-slate-600">{{ item.label }}</span>
+              <span class="font-black text-slate-800">{{ item.count }}</span>
+            </div>
+            <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+              <div [style.width.%]="barWidth(item, data()?.consultasPorEstado)" [class]="'h-full rounded-full ' + barClasses[(i + 4) % barClasses.length]"></div>
+            </div>
+          </div>
+        </div>
+        <p *ngIf="!data()?.consultasPorEstado?.length" class="text-xs text-slate-400 text-center py-4">Sin datos</p>
+      </div>
+
+      <!-- Tratamientos por Estado -->
+      <div class="bg-white rounded-2xl border border-slate-100 p-5">
+        <h3 class="text-sm font-extrabold text-slate-700 uppercase tracking-wider mb-4">Tratamientos por Estado</h3>
+        <div class="space-y-3" *ngIf="data()?.tratamientosPorEstado?.length">
+          <div *ngFor="let item of data()?.tratamientosPorEstado; let i = index" class="space-y-1">
+            <div class="flex justify-between text-xs">
+              <span class="font-semibold text-slate-600">{{ item.label }}</span>
+              <span class="font-black text-slate-800">{{ item.count }}</span>
+            </div>
+            <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+              <div [style.width.%]="barWidth(item, data()?.tratamientosPorEstado)" [class]="'h-full rounded-full ' + barClasses[(i + 5) % barClasses.length]"></div>
+            </div>
+          </div>
+        </div>
+        <p *ngIf="!data()?.tratamientosPorEstado?.length" class="text-xs text-slate-400 text-center py-4">Sin datos</p>
+      </div>
+
+      <!-- Diagnósticos por Tipo/Estado -->
+      <div class="bg-white rounded-2xl border border-slate-100 p-5">
+        <h3 class="text-sm font-extrabold text-slate-700 uppercase tracking-wider mb-4">Diagnósticos por Tipo/Estado</h3>
+        <div class="space-y-3" *ngIf="data()?.diagnosticosPorTipoYEstado?.length">
+          <div *ngFor="let item of data()?.diagnosticosPorTipoYEstado; let i = index" class="space-y-1">
+            <div class="flex justify-between text-xs">
+              <span class="font-semibold text-slate-600 truncate">{{ item.label }}</span>
+              <span class="font-black text-slate-800 shrink-0 ml-2">{{ item.count }}</span>
+            </div>
+            <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+              <div [style.width.%]="barWidth(item, data()?.diagnosticosPorTipoYEstado)" [class]="'h-full rounded-full ' + barClasses[(i + 6) % barClasses.length]"></div>
+            </div>
+          </div>
+        </div>
+        <p *ngIf="!data()?.diagnosticosPorTipoYEstado?.length" class="text-xs text-slate-400 text-center py-4">Sin datos</p>
+      </div>
+    </div>
+
+    <!-- ─── FILA 4: Próximas Vacunas y Desparasitaciones ─── -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+      <!-- Próximas Vacunas -->
+      <div class="bg-white rounded-2xl border border-slate-100 p-5">
+        <h3 class="text-sm font-extrabold text-slate-700 uppercase tracking-wider mb-4">Próximas Vacunas (30 días)</h3>
+        <div *ngIf="data()?.proximasVacunas?.length; else sinProximas">
+          <div *ngFor="let item of data()?.proximasVacunas" class="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
+            <div>
+              <p class="text-sm font-bold text-slate-700">{{ item.mascota }}</p>
+              <p class="text-xs text-slate-400">{{ item.producto }}</p>
+            </div>
+            <span class="text-xs font-extrabold text-[#0066AA] bg-blue-50 px-2.5 py-1 rounded-full">{{ item.fechaProxima | date:'shortDate':'':'es-PE' }}</span>
+          </div>
+        </div>
+        <ng-template #sinProximas>
+          <p class="text-xs text-slate-400 text-center py-4">Sin próximas vacunas</p>
+        </ng-template>
+      </div>
+
+      <!-- Próximas Desparasitaciones -->
+      <div class="bg-white rounded-2xl border border-slate-100 p-5">
+        <h3 class="text-sm font-extrabold text-slate-700 uppercase tracking-wider mb-4">Próximas Desparasitaciones (30 días)</h3>
+        <div *ngIf="data()?.proximasDesparasitaciones?.length; else sinProximasD">
+          <div *ngFor="let item of data()?.proximasDesparasitaciones" class="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
+            <div>
+              <p class="text-sm font-bold text-slate-700">{{ item.mascota }}</p>
+              <p class="text-xs text-slate-400">{{ item.producto }}</p>
+            </div>
+            <span class="text-xs font-extrabold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">{{ item.fechaProxima | date:'shortDate':'':'es-PE' }}</span>
+          </div>
+        </div>
+        <ng-template #sinProximasD>
+          <p class="text-xs text-slate-400 text-center py-4">Sin próximas desparasitaciones</p>
+        </ng-template>
+      </div>
+    </div>
+
+  </div>
+</div>

@@ -9,6 +9,9 @@ export class RouteMapperService {
     VISTA_DASHBOARD_ADMIN: '/admin/dashboard',
     VISTA_DASHBOARD_EMPLEADO: '/empleado/dashboard',
 
+    VISTA_REPORTES: '/reportes',
+    VISTA_REPORTES_ADMIN: '/admin/reportes',
+
     VISTA_COMPANY: '/admin/company',
     VISTA_COMPANY_ADMIN: '/admin/company',
 
