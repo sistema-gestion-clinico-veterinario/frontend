@@ -1,29 +1,9 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { HttpParams } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../../models/response/api-response';
-
-export interface ItemCount {
-  label: string;
-  count: number;
-}
-
-export interface ProximaAplicacion {
-  mascota: string;
-  producto: string;
-  fechaProxima: string;
-}
-
-export interface ReportesClinicos {
-  consultasPorTipo: ItemCount[];
-  diagnosticosPorTipoYEstado: ItemCount[];
-  tratamientosPorEstado: ItemCount[];
-  consultasPorEstado: ItemCount[];
-  pacientesPorEspecie: ItemCount[];
-  pacientesPorRangoEdad: ItemCount[];
-  proximasVacunas: ProximaAplicacion[];
-  proximasDesparasitaciones: ProximaAplicacion[];
-}
+import { ReportesClinicos, ReportesClinicosFiltros } from '../../models/response/reportes-clinicos-response';
 
 @Injectable({
   providedIn: 'root'
@@ -32,8 +12,13 @@ export class ReportesClinicosService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = `${environment.apiUrl}/clinical-reports`;
 
-  obtenerReportes(companyId?: number) {
-    const params = companyId ? `?companyId=${companyId}` : '';
-    return this.http.get<ApiResponse<ReportesClinicos>>(`${this.apiUrl}${params}`);
+  obtenerReportes(filtros: ReportesClinicosFiltros) {
+    let params = new HttpParams()
+      .set('fechaDesde', filtros.fechaDesde)
+      .set('fechaHasta', filtros.fechaHasta);
+    if (filtros.companyId != null) params = params.set('companyId', filtros.companyId);
+    if (filtros.veterinarioId != null) params = params.set('veterinarioId', filtros.veterinarioId);
+    if (filtros.especie) params = params.set('especie', filtros.especie);
+    return this.http.get<ApiResponse<ReportesClinicos>>(this.apiUrl, { params });
   }
 }

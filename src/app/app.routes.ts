@@ -40,7 +40,7 @@ export const routes: Routes = [
       },
       {
         path: 'admin/reportes',
-        data: { ventana: 'VISTA_REPORTES' },
+        data: { ventana: 'VISTA_REPORTES_ADMIN' },
         loadComponent: () => import('./pages/reportes/reportes.component').then((m) => m.default)
       },
       {

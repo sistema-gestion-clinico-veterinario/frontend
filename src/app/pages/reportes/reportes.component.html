@@ -1,213 +1,177 @@
-<div class="min-h-screen bg-[#F4F7FA] font-['Barlow']">
-
-  <!-- HEADER -->
-  <div class="bg-white border-b border-slate-100">
-    <div class="px-4 sm:px-8 lg:px-10 py-4 sm:py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+<div class="reports-page" *ngIf="data() as report">
+  <header class="reports-header">
+    <div class="title-block">
+      <span class="title-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 20V10m6 10V4m6 16v-7m4 7H2" stroke-width="1.8" stroke-linecap="round"/><path d="m3 7 5-4 5 4 7-5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
       <div>
-        <div class="flex items-center gap-2 mb-1.5">
-          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-          <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-[0.18em]">
-            {{ today | date:'fullDate':'':'es-PE' }}
-          </p>
-        </div>
-        <h1 class="text-xl sm:text-[26px] font-black text-slate-900 leading-snug">
-          Reportes <span class="text-[#0066AA]">Clínicos</span>
-        </h1>
-        <p class="text-xs text-slate-400 font-medium mt-1">Dashboard de análisis clínico</p>
+        <h1>Reportes Clínicos</h1>
+        <p>Resumen y análisis del desempeño de la clínica</p>
       </div>
     </div>
+
+    <div class="header-tools">
+      <label class="compact-field">
+        <span>Periodo</span>
+        <select [(ngModel)]="periodo" (change)="aplicarPeriodo()">
+          <option value="hoy">Hoy</option>
+          <option value="semana">Esta semana</option>
+          <option value="mes">Este mes</option>
+          <option value="personalizado">Personalizado</option>
+        </select>
+      </label>
+      <label class="compact-field">
+        <span>Veterinario</span>
+        <select [(ngModel)]="veterinarioId" (change)="aplicarFiltros()">
+          <option [ngValue]="null">Todos</option>
+          <option *ngFor="let vet of veterinarios()" [ngValue]="vet.id">{{ vet.nombre }} {{ vet.apellido }}</option>
+        </select>
+      </label>
+      <label class="compact-field">
+        <span>Especie</span>
+        <select [(ngModel)]="especie" (change)="aplicarFiltros()">
+          <option value="">Todas</option>
+          <option *ngFor="let item of especies" [value]="item[0]">{{ item[1] }}</option>
+        </select>
+      </label>
+      <button type="button" class="export-button pdf" (click)="exportarPdf()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M7 3h7l4 4v14H7zM14 3v5h5M9 15h6M9 18h4" stroke-width="1.8"/></svg>
+        Exportar PDF
+      </button>
+      <button type="button" class="export-button excel" (click)="exportarExcel()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M7 3h7l4 4v14H7zM14 3v5h5M9 13l5 5m0-5-5 5" stroke-width="1.8"/></svg>
+        Exportar Excel
+      </button>
+    </div>
+  </header>
+
+  <div class="custom-period" *ngIf="periodo === 'personalizado'">
+    <label>Desde <input type="date" [(ngModel)]="fechaDesde"></label>
+    <label>Hasta <input type="date" [(ngModel)]="fechaHasta"></label>
+    <button type="button" (click)="aplicarFiltros()" [disabled]="!fechaDesde || !fechaHasta || fechaHasta < fechaDesde">Aplicar</button>
+    <button type="button" class="clear" (click)="limpiarFiltros()">Limpiar</button>
   </div>
 
-  <!-- CONTENIDO -->
-  <div class="px-4 sm:px-8 lg:px-10 py-4 sm:py-7 space-y-4 sm:space-y-6">
+  <section class="kpi-grid">
+    <article class="kpi-card">
+      <span class="kpi-icon mint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M8 4h8v3H8zM6 6H4v15h16V6h-2M8 12h8M8 16h5" stroke-width="1.8"/></svg></span>
+      <div><p>Consultas del periodo</p><strong>{{ report.resumen.consultas }}</strong>
+        <small [class.negative]="(variacion(report.resumen.consultas, report.resumenAnterior.consultas) ?? 0) < 0">
+          {{ variacionTexto(report.resumen.consultas, report.resumenAnterior.consultas) }}
+        </small>
+      </div>
+    </article>
+    <article class="kpi-card">
+      <span class="kpi-icon lavender"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2"/><path d="M3 20v-2a6 6 0 0 1 12 0v2m0-6a5 5 0 0 1 6 5v1" stroke-width="1.8"/></svg></span>
+      <div><p>Pacientes atendidos</p><strong>{{ report.resumen.pacientesAtendidos }}</strong>
+        <small [class.negative]="(variacion(report.resumen.pacientesAtendidos, report.resumenAnterior.pacientesAtendidos) ?? 0) < 0">
+          {{ variacionTexto(report.resumen.pacientesAtendidos, report.resumenAnterior.pacientesAtendidos) }}
+        </small>
+      </div>
+    </article>
+    <article class="kpi-card">
+      <span class="kpi-icon mint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path d="M15 8.5c-.7-.6-1.6-.9-2.7-.9-1.5 0-2.6.8-2.6 2 0 3.2 5.6 1.6 5.6 4.8 0 1.2-1.1 2-2.7 2-1.2 0-2.4-.4-3.2-1.2M12.5 5v14" stroke-width="1.7"/></svg></span>
+      <div><p>Ingresos</p><strong>{{ formatMoney(report.resumen.ingresos) }}</strong>
+        <small [class.negative]="(variacion(report.resumen.ingresos, report.resumenAnterior.ingresos) ?? 0) < 0">
+          {{ variacionTexto(report.resumen.ingresos, report.resumenAnterior.ingresos) }}
+        </small>
+      </div>
+    </article>
+    <article class="kpi-card">
+      <span class="kpi-icon peach"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="9" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2m4-9v6m-3-3h6" stroke-width="1.8"/></svg></span>
+      <div><p>Nuevos pacientes</p><strong>{{ report.resumen.nuevosPacientes }}</strong>
+        <small [class.negative]="(variacion(report.resumen.nuevosPacientes, report.resumenAnterior.nuevosPacientes) ?? 0) < 0">
+          {{ variacionTexto(report.resumen.nuevosPacientes, report.resumenAnterior.nuevosPacientes) }}
+        </small>
+      </div>
+    </article>
+    <article class="kpi-card">
+      <span class="kpi-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2" stroke-width="1.8"/></svg></span>
+      <div><p>Tiempo promedio atención</p><strong>{{ report.resumen.tiempoPromedioAtencionMinutos }} min</strong>
+        <small class="neutral">Consultas cerradas del periodo</small>
+      </div>
+    </article>
+    <article class="kpi-card">
+      <span class="kpi-icon mint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path d="m8 12 2.5 2.5L16 9" stroke-width="1.9"/></svg></span>
+      <div><p>Citas completadas</p><strong>{{ report.resumen.porcentajeCitasCompletadas | number:'1.0-1' }}%</strong>
+        <small [class.negative]="(variacion(report.resumen.porcentajeCitasCompletadas, report.resumenAnterior.porcentajeCitasCompletadas) ?? 0) < 0">
+          {{ variacionTexto(report.resumen.porcentajeCitasCompletadas, report.resumenAnterior.porcentajeCitasCompletadas) }}
+        </small>
+      </div>
+    </article>
+  </section>
 
-    <!-- ─── FILA 1: KPIs clínicos ─── -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
-      <div class="bg-white rounded-2xl border border-slate-100 p-4 sm:p-5 flex items-center gap-4">
-        <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
-          <i class="pi pi-search text-sm text-[#0066AA]"></i>
+  <section class="analytics-grid">
+    <article class="chart-panel">
+      <div class="panel-heading"><h2>Evolución de consultas</h2><span>{{ formatShortDate(report.fechaDesde) }} – {{ formatShortDate(report.fechaHasta) }}</span></div>
+      <div class="chart-area" *ngIf="report.consultasPorMes.length; else noChart"><canvas id="chartEvolucion"></canvas></div>
+    </article>
+    <article class="chart-panel">
+      <div class="panel-heading"><h2>Estado de consultas</h2><span>Periodo seleccionado</span></div>
+      <div class="chart-area" *ngIf="report.consultasPorEstado.length; else noChart"><canvas id="chartEstados"></canvas></div>
+    </article>
+    <article class="chart-panel">
+      <div class="panel-heading"><h2>Consultas por especie</h2><span>{{ report.resumen.consultas }} total</span></div>
+      <div class="chart-area" *ngIf="report.pacientesPorEspecie.length; else noChart"><canvas id="chartEspecies"></canvas></div>
+    </article>
+    <article class="chart-panel">
+      <div class="panel-heading"><h2>Servicios más solicitados</h2><span>Top {{ report.serviciosMasSolicitados.length }}</span></div>
+      <div class="chart-area" *ngIf="report.serviciosMasSolicitados.length; else noChart"><canvas id="chartServicios"></canvas></div>
+    </article>
+    <article class="chart-panel">
+      <div class="panel-heading"><h2>Pacientes por edad</h2><span>Pacientes únicos</span></div>
+      <div class="chart-area" *ngIf="report.pacientesPorRangoEdad.length; else noChart"><canvas id="chartEdades"></canvas></div>
+    </article>
+    <article class="chart-panel">
+      <div class="panel-heading"><h2>Horarios con mayor demanda</h2><span>Intensidad por citas</span></div>
+      <div class="heatmap-wrap">
+        <div class="heatmap">
+          <span></span><b *ngFor="let dia of diasSemana">{{ dia.label }}</b>
+          <ng-container *ngFor="let hora of horas">
+            <em>{{ hora | number:'2.0-0' }}:00</em>
+            <span *ngFor="let dia of diasSemana" [class]="heatmapClass(dia.id, hora)" [title]="heatmapCount(dia.id, hora) + ' citas'"></span>
+          </ng-container>
         </div>
-        <div>
-          <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Consultas</p>
-          <p class="text-2xl font-black text-slate-900">{{ totalConsultas }}</p>
+        <div class="heat-legend"><span>Baja</span><i class="heat-1"></i><i class="heat-2"></i><i class="heat-3"></i><i class="heat-4"></i><span>Alta</span></div>
+      </div>
+    </article>
+  </section>
+
+  <ng-template #noChart><div class="empty-chart"><span>Sin datos para los filtros seleccionados</span></div></ng-template>
+
+  <section class="upcoming-grid">
+    <article class="upcoming-panel">
+      <div class="panel-heading"><h2>Próximas vacunas</h2><span>{{ report.proximasVacunas.length }}</span></div>
+      <div class="upcoming-list" *ngIf="report.proximasVacunas.length; else noVaccines">
+        <div class="upcoming-row" *ngFor="let item of report.proximasVacunas">
+          <span class="pet-avatar vaccine">{{ item.mascota.charAt(0) }}</span>
+          <div><strong>{{ item.mascota }}</strong><small>{{ item.producto }}</small></div>
+          <time>{{ formatShortDate(item.fechaProxima) }}</time>
         </div>
       </div>
-      <div class="bg-white rounded-2xl border border-slate-100 p-4 sm:p-5 flex items-center gap-4">
-        <div class="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center shrink-0">
-          <i class="pi pi-book text-sm text-purple-600"></i>
-        </div>
-        <div>
-          <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Diagnósticos</p>
-          <p class="text-2xl font-black text-slate-900">{{ totalDiagnosticos }}</p>
-        </div>
-      </div>
-      <div class="bg-white rounded-2xl border border-slate-100 p-4 sm:p-5 flex items-center gap-4">
-        <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
-          <i class="pi pi-refresh text-sm text-emerald-600"></i>
-        </div>
-        <div>
-          <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Tratamientos</p>
-          <p class="text-2xl font-black text-slate-900">{{ totalTratamientos }}</p>
+      <ng-template #noVaccines><div class="empty-list">No hay vacunas próximas en los siguientes 30 días.</div></ng-template>
+    </article>
+    <article class="upcoming-panel">
+      <div class="panel-heading"><h2>Próximas desparasitaciones</h2><span>{{ report.proximasDesparasitaciones.length }}</span></div>
+      <div class="upcoming-list" *ngIf="report.proximasDesparasitaciones.length; else noDeworming">
+        <div class="upcoming-row" *ngFor="let item of report.proximasDesparasitaciones">
+          <span class="pet-avatar deworming">{{ item.mascota.charAt(0) }}</span>
+          <div><strong>{{ item.mascota }}</strong><small>{{ item.producto }}</small></div>
+          <time>{{ formatShortDate(item.fechaProxima) }}</time>
         </div>
       </div>
-      <div class="bg-white rounded-2xl border border-slate-100 p-4 sm:p-5 flex items-center gap-4">
-        <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center shrink-0">
-          <i class="pi pi-users text-sm text-amber-600"></i>
-        </div>
-        <div>
-          <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Pacientes</p>
-          <p class="text-2xl font-black text-slate-900">{{ totalPacientes }}</p>
+      <ng-template #noDeworming><div class="empty-list">No hay desparasitaciones próximas en los siguientes 30 días.</div></ng-template>
+    </article>
+    <article class="upcoming-panel">
+      <div class="panel-heading"><h2>Controles preventivos próximos</h2><span>{{ report.controlesPreventivosProximos.length }}</span></div>
+      <div class="upcoming-list" *ngIf="report.controlesPreventivosProximos.length; else noControls">
+        <div class="upcoming-row" *ngFor="let item of report.controlesPreventivosProximos">
+          <span class="pet-avatar control">{{ item.mascota.charAt(0) }}</span>
+          <div><strong>{{ item.mascota }}</strong><small>{{ item.producto }}</small></div>
+          <time>{{ formatShortDate(item.fechaProxima) }}</time>
         </div>
       </div>
-    </div>
-
-    <!-- ─── FILA 2: Distribuciones (3 columnas) ─── -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-
-      <!-- Consultas por Tipo -->
-      <div class="bg-white rounded-2xl border border-slate-100 p-5">
-        <h3 class="text-sm font-extrabold text-slate-700 uppercase tracking-wider mb-4">Consultas por Tipo</h3>
-        <div class="space-y-3" *ngIf="data()?.consultasPorTipo?.length">
-          <div *ngFor="let item of data()?.consultasPorTipo; let i = index" class="space-y-1">
-            <div class="flex justify-between text-xs">
-              <span class="font-semibold text-slate-600">{{ item.label }}</span>
-              <span class="font-black text-slate-800">{{ item.count }}</span>
-            </div>
-            <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-              <div [style.width.%]="barWidth(item, data()?.consultasPorTipo)" [class]="'h-full rounded-full ' + barClasses[i % barClasses.length]"></div>
-            </div>
-          </div>
-        </div>
-        <p *ngIf="!data()?.consultasPorTipo?.length" class="text-xs text-slate-400 text-center py-4">Sin datos</p>
-      </div>
-
-      <!-- Pacientes por Especie -->
-      <div class="bg-white rounded-2xl border border-slate-100 p-5">
-        <h3 class="text-sm font-extrabold text-slate-700 uppercase tracking-wider mb-4">Pacientes por Especie</h3>
-        <div class="space-y-3" *ngIf="data()?.pacientesPorEspecie?.length">
-          <div *ngFor="let item of data()?.pacientesPorEspecie" class="space-y-1">
-            <div class="flex justify-between text-xs">
-              <span class="font-semibold text-slate-600">{{ item.label }}</span>
-              <span class="font-black text-slate-800">{{ item.count }}</span>
-            </div>
-            <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-              <div [style.width.%]="barWidth(item, data()?.pacientesPorEspecie)" class="h-full rounded-full bg-emerald-500"></div>
-            </div>
-          </div>
-        </div>
-        <p *ngIf="!data()?.pacientesPorEspecie?.length" class="text-xs text-slate-400 text-center py-4">Sin datos</p>
-      </div>
-
-      <!-- Pacientes por Rango de Edad -->
-      <div class="bg-white rounded-2xl border border-slate-100 p-5">
-        <h3 class="text-sm font-extrabold text-slate-700 uppercase tracking-wider mb-4">Pacientes por Edad</h3>
-        <div class="space-y-3" *ngIf="data()?.pacientesPorRangoEdad?.length">
-          <div *ngFor="let item of data()?.pacientesPorRangoEdad; let i = index" class="space-y-1">
-            <div class="flex justify-between text-xs">
-              <span class="font-semibold text-slate-600">{{ item.label }}</span>
-              <span class="font-black text-slate-800">{{ item.count }}</span>
-            </div>
-            <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-              <div [style.width.%]="barWidth(item, data()?.pacientesPorRangoEdad)" [class]="'h-full rounded-full ' + barClasses[(i + 2) % barClasses.length]"></div>
-            </div>
-          </div>
-        </div>
-        <p *ngIf="!data()?.pacientesPorRangoEdad?.length" class="text-xs text-slate-400 text-center py-4">Sin datos</p>
-      </div>
-    </div>
-
-    <!-- ─── FILA 3: Estados + Próximos (3 columnas) ─── -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-
-      <!-- Consultas por Estado -->
-      <div class="bg-white rounded-2xl border border-slate-100 p-5">
-        <h3 class="text-sm font-extrabold text-slate-700 uppercase tracking-wider mb-4">Consultas por Estado</h3>
-        <div class="space-y-3" *ngIf="data()?.consultasPorEstado?.length">
-          <div *ngFor="let item of data()?.consultasPorEstado; let i = index" class="space-y-1">
-            <div class="flex justify-between text-xs">
-              <span class="font-semibold text-slate-600">{{ item.label }}</span>
-              <span class="font-black text-slate-800">{{ item.count }}</span>
-            </div>
-            <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-              <div [style.width.%]="barWidth(item, data()?.consultasPorEstado)" [class]="'h-full rounded-full ' + barClasses[(i + 4) % barClasses.length]"></div>
-            </div>
-          </div>
-        </div>
-        <p *ngIf="!data()?.consultasPorEstado?.length" class="text-xs text-slate-400 text-center py-4">Sin datos</p>
-      </div>
-
-      <!-- Tratamientos por Estado -->
-      <div class="bg-white rounded-2xl border border-slate-100 p-5">
-        <h3 class="text-sm font-extrabold text-slate-700 uppercase tracking-wider mb-4">Tratamientos por Estado</h3>
-        <div class="space-y-3" *ngIf="data()?.tratamientosPorEstado?.length">
-          <div *ngFor="let item of data()?.tratamientosPorEstado; let i = index" class="space-y-1">
-            <div class="flex justify-between text-xs">
-              <span class="font-semibold text-slate-600">{{ item.label }}</span>
-              <span class="font-black text-slate-800">{{ item.count }}</span>
-            </div>
-            <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-              <div [style.width.%]="barWidth(item, data()?.tratamientosPorEstado)" [class]="'h-full rounded-full ' + barClasses[(i + 5) % barClasses.length]"></div>
-            </div>
-          </div>
-        </div>
-        <p *ngIf="!data()?.tratamientosPorEstado?.length" class="text-xs text-slate-400 text-center py-4">Sin datos</p>
-      </div>
-
-      <!-- Diagnósticos por Tipo/Estado -->
-      <div class="bg-white rounded-2xl border border-slate-100 p-5">
-        <h3 class="text-sm font-extrabold text-slate-700 uppercase tracking-wider mb-4">Diagnósticos por Tipo/Estado</h3>
-        <div class="space-y-3" *ngIf="data()?.diagnosticosPorTipoYEstado?.length">
-          <div *ngFor="let item of data()?.diagnosticosPorTipoYEstado; let i = index" class="space-y-1">
-            <div class="flex justify-between text-xs">
-              <span class="font-semibold text-slate-600 truncate">{{ item.label }}</span>
-              <span class="font-black text-slate-800 shrink-0 ml-2">{{ item.count }}</span>
-            </div>
-            <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-              <div [style.width.%]="barWidth(item, data()?.diagnosticosPorTipoYEstado)" [class]="'h-full rounded-full ' + barClasses[(i + 6) % barClasses.length]"></div>
-            </div>
-          </div>
-        </div>
-        <p *ngIf="!data()?.diagnosticosPorTipoYEstado?.length" class="text-xs text-slate-400 text-center py-4">Sin datos</p>
-      </div>
-    </div>
-
-    <!-- ─── FILA 4: Próximas Vacunas y Desparasitaciones ─── -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-
-      <!-- Próximas Vacunas -->
-      <div class="bg-white rounded-2xl border border-slate-100 p-5">
-        <h3 class="text-sm font-extrabold text-slate-700 uppercase tracking-wider mb-4">Próximas Vacunas (30 días)</h3>
-        <div *ngIf="data()?.proximasVacunas?.length; else sinProximas">
-          <div *ngFor="let item of data()?.proximasVacunas" class="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
-            <div>
-              <p class="text-sm font-bold text-slate-700">{{ item.mascota }}</p>
-              <p class="text-xs text-slate-400">{{ item.producto }}</p>
-            </div>
-            <span class="text-xs font-extrabold text-[#0066AA] bg-blue-50 px-2.5 py-1 rounded-full">{{ item.fechaProxima | date:'shortDate':'':'es-PE' }}</span>
-          </div>
-        </div>
-        <ng-template #sinProximas>
-          <p class="text-xs text-slate-400 text-center py-4">Sin próximas vacunas</p>
-        </ng-template>
-      </div>
-
-      <!-- Próximas Desparasitaciones -->
-      <div class="bg-white rounded-2xl border border-slate-100 p-5">
-        <h3 class="text-sm font-extrabold text-slate-700 uppercase tracking-wider mb-4">Próximas Desparasitaciones (30 días)</h3>
-        <div *ngIf="data()?.proximasDesparasitaciones?.length; else sinProximasD">
-          <div *ngFor="let item of data()?.proximasDesparasitaciones" class="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
-            <div>
-              <p class="text-sm font-bold text-slate-700">{{ item.mascota }}</p>
-              <p class="text-xs text-slate-400">{{ item.producto }}</p>
-            </div>
-            <span class="text-xs font-extrabold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">{{ item.fechaProxima | date:'shortDate':'':'es-PE' }}</span>
-          </div>
-        </div>
-        <ng-template #sinProximasD>
-          <p class="text-xs text-slate-400 text-center py-4">Sin próximas desparasitaciones</p>
-        </ng-template>
-      </div>
-    </div>
-
-  </div>
+      <ng-template #noControls><div class="empty-list">No hay controles próximos en los siguientes 30 días.</div></ng-template>
+    </article>
+  </section>
 </div>
