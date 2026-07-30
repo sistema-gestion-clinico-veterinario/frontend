@@ -2,7 +2,7 @@
 
   <!-- ══════════════ TOP BAR ══════════════ -->
   <div class="bg-white/95 backdrop-blur-sm border-b border-slate-100 shadow-sm px-3 sm:px-6 py-3 sm:py-4 rounded-b-2xl">
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+    <div class="agenda-topbar-content flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
 
       <div class="flex items-center gap-3">
         <div class="w-10 h-10 rounded-xl bg-[#0066AA] flex items-center justify-center shrink-0">
@@ -14,9 +14,9 @@
         </div>
       </div>
 
-      <div class="flex w-full sm:w-auto items-center justify-between sm:justify-end gap-2">
+      <div class="agenda-topbar-actions flex w-full sm:w-auto items-center justify-between sm:justify-end gap-2">
         <!-- View switcher -->
-        <div class="flex min-w-0 flex-1 sm:flex-none items-center bg-slate-100 rounded-xl p-1 gap-0.5 overflow-x-auto">
+        <div class="agenda-view-switcher flex min-w-0 flex-1 sm:flex-none items-center bg-slate-100 rounded-xl p-1 gap-0.5 overflow-x-auto">
           <button (click)="cambiarVista('lista')"
             [class.bg-white]="vistaActual()==='lista'"
             [class.text-[#0066AA]]="vistaActual()==='lista'"
@@ -66,9 +66,9 @@
 
   <div class="p-3 sm:p-6 space-y-4">
 
-    <div *ngIf="vistaActual() === 'lista'" class="grid grid-cols-2 xl:grid-cols-4 gap-3">
-      <div class="min-h-[76px] flex items-center gap-3 rounded-xl border border-violet-200 bg-violet-50/70 px-4 py-3">
-        <div class="w-10 h-10 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center shrink-0">
+    <div *ngIf="vistaActual() === 'lista'" class="agenda-kpis grid grid-cols-2 xl:grid-cols-4 gap-3">
+      <div class="agenda-kpi min-h-[76px] flex items-center gap-3 rounded-xl border border-violet-200 bg-violet-50/70 px-4 py-3">
+        <div class="agenda-kpi-icon w-10 h-10 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center shrink-0">
           <i class="pi pi-calendar"></i>
         </div>
         <div>
@@ -78,8 +78,8 @@
         </div>
       </div>
 
-      <div class="min-h-[76px] flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50/70 px-4 py-3">
-        <div class="w-10 h-10 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+      <div class="agenda-kpi min-h-[76px] flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50/70 px-4 py-3">
+        <div class="agenda-kpi-icon w-10 h-10 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
           <i class="pi pi-clock"></i>
         </div>
         <div>
@@ -89,8 +89,8 @@
         </div>
       </div>
 
-      <div class="min-h-[76px] flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50/70 px-4 py-3">
-        <div class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+      <div class="agenda-kpi min-h-[76px] flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50/70 px-4 py-3">
+        <div class="agenda-kpi-icon w-10 h-10 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
           <i class="pi pi-check-circle"></i>
         </div>
         <div>
@@ -100,8 +100,8 @@
         </div>
       </div>
 
-      <div class="min-h-[76px] flex items-center gap-3 rounded-xl border border-rose-200 bg-rose-50/70 px-4 py-3">
-        <div class="w-10 h-10 rounded-full bg-rose-100 text-rose-700 flex items-center justify-center shrink-0">
+      <div class="agenda-kpi min-h-[76px] flex items-center gap-3 rounded-xl border border-rose-200 bg-rose-50/70 px-4 py-3">
+        <div class="agenda-kpi-icon w-10 h-10 rounded-full bg-rose-100 text-rose-700 flex items-center justify-center shrink-0">
           <i class="pi pi-times-circle"></i>
         </div>
         <div>
@@ -243,7 +243,7 @@
               <button (click)="setEstadoFilter(null)" type="button"
                 class="w-full text-left px-4 py-2.5 text-sm text-slate-400 italic hover:bg-slate-50">Todos</button>
               <button *ngFor="let estado of estadoOpciones" (click)="setEstadoFilter(estado.value)" type="button"
-                class="w-full text-left px-4 py-2.5 text-sm hover:bg-blue-50 hover:text-blue-700 border-t border-slate-50 transition-colors">
+                class="w-full text-left px-4 py-2.5 text-sm hover:bg-slate-50 hover:text-blue-700 border-t border-slate-50 transition-colors">
                 {{ estado.label }}
               </button>
             </div>
@@ -265,7 +265,7 @@
               <button (click)="setVeterinarioFilter(null)" type="button"
                 class="w-full text-left px-4 py-2.5 text-sm text-slate-400 italic hover:bg-slate-50">Todos</button>
               <button *ngFor="let vet of veterinarios()" (click)="setVeterinarioFilter(vet.value)" type="button"
-                class="w-full text-left px-4 py-2.5 text-sm hover:bg-blue-50 hover:text-blue-700 border-t border-slate-50 transition-colors">
+                class="w-full text-left px-4 py-2.5 text-sm hover:bg-slate-50 hover:text-blue-700 border-t border-slate-50 transition-colors">
                 {{ vet.label }}
               </button>
             </div>
@@ -291,7 +291,7 @@
 
     <!-- ══════════════ VISTA LISTA ══════════════ -->
     <ng-container *ngIf="vistaActual() === 'lista'">
-      <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+      <div class="agenda-list-table bg-white border border-slate-200 rounded-xl overflow-hidden">
         <p-table [value]="citasAgenda()" [lazy]="true" (onLazyLoad)="loadCitas($event)"
           [paginator]="true" [rows]="10" [first]="agendaFirst" [totalRecords]="totalRecords()"
           [rowHover]="true" rowGroupMode="subheader" groupRowsBy="fechaGrupo"
@@ -310,11 +310,11 @@
           </ng-template>
 
           <ng-template pTemplate="groupheader" let-cita>
-            <tr>
-              <td colspan="7" class="bg-white border-y border-slate-100 px-4 py-2">
-                <div class="flex items-center gap-2 text-slate-700">
+            <tr class="agenda-group-row">
+              <td colspan="7" class="agenda-group-cell bg-white border-y border-slate-100 px-4 py-2">
+                <div class="flex items-center gap-2 text-slate-600">
                   <i class="pi pi-calendar text-xs"></i>
-                  <span class="text-xs font-extrabold capitalize">
+                  <span class="text-xs font-semibold capitalize">
                     {{ formatAgendaGroupLabel(cita.fechaGrupo) }}
                   </span>
                 </div>
@@ -323,16 +323,15 @@
           </ng-template>
 
           <ng-template pTemplate="body" let-cita>
-            <tr class="border-b border-slate-50 last:border-0 hover:bg-slate-50/80 transition-colors">
+            <tr class="agenda-data-row border-b border-slate-50 last:border-0 hover:bg-slate-50/80 transition-colors">
 
               <!-- Hora -->
-              <td class="px-4 py-2.5 whitespace-nowrap">
-                <p class="text-sm font-extrabold text-[#0066AA]">{{ cita.fechaHoraInicio | date:'HH:mm' }}</p>
-                <p class="text-[9px] text-slate-400 font-medium">{{ cita.fechaHoraInicio | date:'dd MMM' }}</p>
+              <td class="agenda-cell-time px-4 py-2.5 whitespace-nowrap">
+                <p class="text-sm font-semibold text-[#0066AA]">{{ cita.fechaHoraInicio | date:'HH:mm' }}</p>
               </td>
 
               <!-- Paciente -->
-              <td class="px-4 py-2.5">
+              <td class="agenda-cell-patient px-4 py-2.5">
                 <div class="flex items-center gap-2">
                   <div class="w-7 h-7 rounded-full flex items-center justify-center font-extrabold text-xs shrink-0"
                     [ngClass]="avatarPastelClass(cita.mascotaNombre)">
@@ -340,37 +339,33 @@
                   </div>
                   <div class="min-w-0">
                     <div class="flex items-center gap-2 flex-wrap">
-                      <p class="text-sm font-bold text-slate-800">{{ cita.mascotaNombre }}</p>
+                      <p class="text-sm font-semibold text-slate-700">{{ cita.mascotaNombre }}</p>
                       <span *ngIf="cita.esEmergencia"
                         class="bg-rose-100 text-rose-600 text-[9px] font-extrabold px-1.5 py-0.5 rounded-full uppercase tracking-tight">
                         ⚠ Urgente
                       </span>
                     </div>
-                    <p class="md:hidden text-[11px] leading-tight text-slate-500 truncate">{{ cita.apoderadoNombre }}</p>
+                    <p class="agenda-patient-owner-mobile md:hidden text-[11px] leading-tight text-slate-500 truncate">{{ cita.apoderadoNombre }}</p>
                   </div>
                 </div>
               </td>
 
               <!-- Apoderado -->
-              <td class="px-4 py-2.5 hidden md:table-cell">
+              <td class="agenda-cell-owner px-4 py-2.5 hidden md:table-cell">
                 <div class="flex items-center gap-2 min-w-0">
-                  <i class="pi pi-id-card text-[11px] text-slate-400 shrink-0"></i>
                   <span class="text-sm text-slate-600 font-medium truncate">{{ cita.apoderadoNombre }}</span>
                 </div>
               </td>
 
               <!-- Veterinario -->
-              <td class="px-4 py-2.5 whitespace-nowrap hidden md:table-cell">
+              <td class="agenda-cell-vet px-4 py-2.5 whitespace-nowrap hidden md:table-cell">
                 <div class="flex items-center gap-2">
-                  <div class="w-5 h-5 rounded-full bg-sky-50 flex items-center justify-center shrink-0">
-                    <i class="pi pi-user text-[10px] text-sky-600"></i>
-                  </div>
                   <span class="text-sm text-slate-600 font-medium">{{ cita.veterinarioNombre }}</span>
                 </div>
               </td>
 
               <!-- Motivo -->
-              <td class="px-4 py-2.5 max-w-[180px] hidden lg:table-cell">
+              <td class="agenda-cell-reason px-4 py-2.5 max-w-[180px] hidden lg:table-cell">
                 <span class="inline-flex max-w-full px-2 py-0.5 rounded-full text-[11px] font-semibold"
                   [ngClass]="motivoPastelClass(cita)">
                   <span class="truncate">{{ cita.motivoCita }}</span>
@@ -378,7 +373,7 @@
               </td>
 
               <!-- Estado -->
-              <td class="px-4 py-2.5 whitespace-nowrap">
+              <td class="agenda-cell-status px-4 py-2.5 whitespace-nowrap">
                 <span [class]="'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold ' + estadoClass(cita.estado)">
                   <span class="w-1.5 h-1.5 rounded-full bg-current opacity-70"></span>
                   {{ estadoLabel(cita.estado) }}
@@ -386,7 +381,7 @@
               </td>
 
               <!-- Acciones -->
-              <td class="px-4 py-2.5">
+              <td class="agenda-cell-actions px-4 py-2.5">
                 <div class="flex items-center justify-center">
                   <p-menu #citaMenu [model]="citaActionItems(cita)" [popup]="true" appendTo="body"></p-menu>
                   <button type="button" (click)="citaMenu.toggle($event)" pTooltip="Acciones" tooltipPosition="top"
@@ -419,18 +414,103 @@
 
     <!-- ══════════════ CALENDARIO FULLCALENDAR ══════════════ -->
     <ng-container *ngIf="vistaActual() !== 'lista'">
-      <div class="agenda-calendar-shell bg-white border border-slate-200 rounded-xl overflow-x-auto p-3 sm:p-4">
+      <div class="agenda-calendar-shell bg-white border border-slate-200 rounded-xl p-3 sm:p-4">
         <div *ngIf="cargandoCal()" class="py-16 flex flex-col items-center gap-3 text-slate-400">
           <i class="pi pi-refresh pi-spin text-2xl"></i>
           <span class="text-sm font-medium">Cargando agenda...</span>
         </div>
 
-        <div class="min-w-[720px] md:min-w-0">
-        <full-calendar
-          *ngIf="!cargandoCal()"
-          #fullCalendar
-          [options]="calendarOptions">
-        </full-calendar>
+        <div *ngIf="!cargandoCal()" class="agenda-mobile-calendar">
+          <ng-container *ngIf="vistaActual() === 'dia'">
+            <div *ngIf="getCitasDia(fechaBase()).length; else mobileDayEmpty" class="mobile-day-list">
+              <button *ngFor="let cita of getCitasDia(fechaBase())" type="button"
+                (click)="verDetalleCita(cita)" class="mobile-calendar-appointment">
+                <div class="mobile-calendar-time">{{ cita.fechaHoraInicio | date:'HH:mm' }}</div>
+                <div class="min-w-0 text-left">
+                  <p class="truncate text-sm font-extrabold text-slate-800">{{ cita.mascotaNombre }}</p>
+                  <p class="truncate text-[11px] text-slate-500">
+                    {{ cita.motivoCita || cita.servicioNombre || 'Consulta veterinaria' }}
+                  </p>
+                  <p class="truncate text-[10px] text-slate-400">{{ cita.veterinarioNombre }}</p>
+                </div>
+                <span [class]="'mobile-calendar-status ' + estadoClass(cita.estado)">
+                  {{ estadoLabel(cita.estado) }}
+                </span>
+                <i class="pi pi-chevron-right text-[10px] text-slate-300"></i>
+              </button>
+            </div>
+            <ng-template #mobileDayEmpty>
+              <div class="mobile-calendar-empty">
+                <i class="pi pi-calendar text-xl text-slate-300"></i>
+                <p class="text-sm font-bold text-slate-500">Sin citas para este día</p>
+                <p class="text-[11px] text-slate-400">Puedes elegir otra fecha o crear una nueva cita.</p>
+              </div>
+            </ng-template>
+          </ng-container>
+
+          <div *ngIf="vistaActual() === 'semana'" class="mobile-week-list">
+            <button *ngFor="let dia of diasSemanaActual()" type="button"
+              (click)="clickDiaMes(dia)"
+              class="mobile-week-summary-row"
+              [class.mobile-week-day-today]="esHoy(dia)">
+              <span class="mobile-week-date">
+                <strong class="capitalize">{{ dia.toLocaleDateString('es-PE', { weekday: 'long' }) }}</strong>
+                <small>{{ dia.toLocaleDateString('es-PE', { day: 'numeric', month: 'short' }) }}</small>
+              </span>
+
+              <span class="mobile-week-summary">
+                <span class="mobile-week-icon">
+                  <i class="pi pi-calendar"></i>
+                </span>
+                <span class="truncate">
+                  {{ getCitasDia(dia).length
+                    ? (getCitasDia(dia).length === 1 ? '1 cita programada' : getCitasDia(dia).length + ' citas programadas')
+                    : 'Sin citas programadas' }}
+                </span>
+              </span>
+
+              <span class="mobile-week-count">
+                {{ getCitasDia(dia).length }} {{ getCitasDia(dia).length === 1 ? 'cita' : 'citas' }}
+              </span>
+            </button>
+
+            <div class="mobile-week-help">
+              <span class="mobile-week-help-icon"><i class="pi pi-info-circle"></i></span>
+              <span>
+                <strong>Vista semanal</strong>
+                <small>Selecciona un día para consultar y gestionar sus citas.</small>
+              </span>
+              <i class="pi pi-calendar text-xl text-blue-300"></i>
+            </div>
+          </div>
+
+          <ng-container *ngIf="vistaActual() === 'mes'">
+            <div class="mobile-month-weekdays">
+              <span *ngFor="let label of ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom']">{{ label }}</span>
+            </div>
+            <div class="mobile-month-grid">
+              <button *ngFor="let dia of diasMesActual()" type="button"
+                (click)="clickDiaMes(dia)" class="mobile-month-day"
+                [class.mobile-month-day-other]="!esMesActual(dia)"
+                [class.mobile-month-day-today]="esHoy(dia)">
+                <span class="mobile-month-day-number">{{ dia | date:'d' }}</span>
+                <span *ngIf="getCitasDia(dia).length" class="mobile-month-day-count">
+                  {{ getCitasDia(dia).length }}
+                </span>
+              </button>
+            </div>
+            <p class="mt-3 text-center text-[10px] text-slate-400">
+              Toca un día para consultar su agenda.
+            </p>
+          </ng-container>
+        </div>
+
+        <div class="agenda-desktop-calendar">
+          <full-calendar
+            *ngIf="!cargandoCal()"
+            #fullCalendar
+            [options]="calendarOptions">
+          </full-calendar>
         </div>
       </div>
     </ng-container>
@@ -1202,10 +1282,10 @@
 </div>
 <!-- Panel -->
 <div *ngIf="displayDetalleCita() && citaDetalle()"
-  class="fixed inset-y-0 right-0 w-full sm:w-[400px] bg-white border-l border-slate-200 z-[115] flex flex-col animate-in slide-in-from-right duration-300">
+  class="fixed inset-y-0 right-0 w-full sm:w-[400px] bg-slate-50 border-l border-slate-200 z-[115] flex flex-col animate-in slide-in-from-right duration-300">
 
   <!-- Cabecera -->
-  <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-white">
+  <div class="flex items-center justify-between px-5 py-4 border-b border-slate-200 bg-slate-50">
     <div class="flex items-center gap-3">
       <div class="w-10 h-10 rounded-xl flex items-center justify-center font-extrabold text-base shrink-0"
         [class]="estadoAvatarClass(citaDetalle()!.estado)">
@@ -1227,7 +1307,7 @@
   </div>
 
   <!-- Body scrolleable -->
-  <div class="flex-1 overflow-y-auto p-5 space-y-5">
+  <div class="flex-1 overflow-y-auto p-5 space-y-5 bg-slate-50">
 
     <!-- Emergencia -->
     <div *ngIf="citaDetalle()?.esEmergencia"
@@ -1242,12 +1322,12 @@
         <i class="pi pi-calendar text-[10px]"></i> Fecha y Horario
       </p>
       <div class="grid grid-cols-2 gap-3">
-        <div class="bg-slate-50 rounded-xl px-3 py-2.5">
+        <div class="bg-white border border-slate-200 rounded-xl px-3 py-2.5">
           <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wide block mb-1">Fecha</span>
           <span class="text-sm font-bold text-slate-800 block">{{ citaDetalle()?.fechaHoraInicio | date:'dd/MM/yyyy' }}</span>
           <span class="text-[10px] text-slate-400 mt-0.5 block">{{ citaDetalle()?.fechaHoraInicio | date:'EEEE' | titlecase }}</span>
         </div>
-        <div class="bg-slate-50 rounded-xl px-3 py-2.5">
+        <div class="bg-white border border-slate-200 rounded-xl px-3 py-2.5">
           <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wide block mb-1">Turno</span>
           <span class="text-sm font-bold text-slate-800 block">{{ citaDetalle()?.fechaHoraInicio | date:'HH:mm' }} – {{ citaDetalle()?.fechaHoraFin | date:'HH:mm' }}</span>
           <span class="text-[10px] text-slate-400 mt-0.5 block">{{ citaDetalle()?.duracionMinutos }} min</span>
@@ -1281,11 +1361,11 @@
       <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
         <i class="pi pi-file text-[10px]"></i> Motivo y Notas
       </p>
-      <div class="bg-slate-50 rounded-xl px-3 py-2.5">
+      <div class="bg-white border border-slate-200 rounded-xl px-3 py-2.5">
         <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wide block mb-1">Motivo</span>
         <span class="text-sm font-medium text-slate-700 leading-snug">{{ citaDetalle()?.motivoCita }}</span>
       </div>
-      <div *ngIf="citaDetalle()?.notas" class="bg-slate-50 rounded-xl px-3 py-2.5">
+      <div *ngIf="citaDetalle()?.notas" class="bg-white border border-slate-200 rounded-xl px-3 py-2.5">
         <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wide block mb-1">Notas adicionales</span>
         <span class="text-xs text-slate-600 leading-relaxed">{{ citaDetalle()?.notas }}</span>
       </div>
@@ -1319,7 +1399,7 @@
   </div>
 
   <!-- Footer: acciones -->
-  <div class="px-5 py-4 border-t border-slate-100 space-y-2 bg-slate-50/60">
+  <div class="px-5 py-4 border-t border-slate-200 space-y-2 bg-slate-100">
     <div class="flex gap-2">
       <ng-container *ngIf="canCreateHistoria() && (citaDetalle()?.estado === 'PROGRAMADA' || citaDetalle()?.estado === 'CONFIRMADA' || citaDetalle()?.estado === 'SALA_DE_ESPERA' || citaDetalle()?.estado === 'REPROGRAMADA')">
         <button (click)="iniciarCita(citaDetalle()!)"
@@ -1329,7 +1409,7 @@
       </ng-container>
       <ng-container *ngIf="canReadHistoria() && citaDetalle()?.estado === 'EN_PROCESO'">
         <button (click)="continuarConsulta(citaDetalle()!)"
-          class="flex-1 flex items-center justify-center gap-2 py-2.5 bg-amber-400 hover:bg-amber-500 text-white text-xs font-bold rounded-xl transition-all">
+          class="flex-1 flex items-center justify-center gap-2 py-2.5 bg-[#0066AA] hover:bg-[#005a96] text-white text-xs font-bold rounded-xl transition-all">
           <i class="pi pi-pencil text-xs"></i> {{ canModifyHistoria() ? 'Continuar consulta' : 'Ver consulta' }}
         </button>
       </ng-container>

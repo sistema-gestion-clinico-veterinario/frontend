@@ -94,7 +94,8 @@ interface HorarioResumen {
     InputFilterDirective
   ],
   providers: [MessageService, ConfirmationService],
-  templateUrl: './agenda.component.html'
+  templateUrl: './agenda.component.html',
+  styleUrl: './agenda.component.scss'
 })
 export class AgendaComponent implements OnInit, OnDestroy {
   @ViewChild('fullCalendar') fullCalendar?: FullCalendarComponent;
@@ -355,6 +356,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
     initialView: 'timeGridDay',
     initialDate: new Date(),
     locale: 'es',
+    firstDay: 1,
     height: 'auto',
     allDaySlot: false,
     nowIndicator: true,
@@ -366,9 +368,19 @@ export class AgendaComponent implements OnInit, OnDestroy {
     slotMaxTime: '21:00:00',
     slotDuration: '00:20:00',
     slotLabelInterval: '01:00',
+    views: {
+      timeGridWeek: {
+        slotDuration: '00:30:00'
+      },
+      dayGridMonth: {
+        fixedWeekCount: false,
+        showNonCurrentDates: false
+      }
+    },
     expandRows: true,
     stickyHeaderDates: true,
-    dayMaxEvents: 3,
+    dayMaxEvents: 2,
+    moreLinkContent: (args) => `+${args.num} más`,
     moreLinkClassNames: 'agenda-more-link',
     slotLabelFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
     eventTimeFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
@@ -1551,7 +1563,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
       case EstadoCita.CONFIRMADA:     return 'bg-blue-100 text-blue-700';
       case EstadoCita.REPROGRAMADA:   return 'bg-orange-100 text-orange-700';
       case EstadoCita.SALA_DE_ESPERA: return 'bg-violet-100 text-violet-700';
-      case EstadoCita.EN_PROCESO:     return 'bg-amber-100 text-amber-700';
+      case EstadoCita.EN_PROCESO:     return 'bg-amber-50 text-amber-700 border border-amber-200';
       case EstadoCita.COMPLETADA:     return 'bg-emerald-100 text-emerald-700';
       case EstadoCita.CANCELADA:      return 'bg-rose-100 text-rose-600';
       case EstadoCita.ELIMINADA:      return 'bg-red-100 text-red-600';
@@ -1788,9 +1800,21 @@ export class AgendaComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Semana / Mes: una sola llamada sin filtro de fecha, se agrupa en frontend
+    // Semana / Mes: una sola llamada por el rango visible, se agrupa en frontend
     const maxSize = this.vistaActual() === 'semana' ? 100 : 200;
-    this.citaService.listar(companyId, undefined, this.filterEstado || undefined, veterinarioId, 0, maxSize).pipe(
+    const diasVisibles = this.vistaActual() === 'semana' ? this.diasSemanaActual() : this.diasMesActual();
+    const fechaDesde = this.toDateStr(diasVisibles[0]);
+    const fechaHasta = this.toDateStr(diasVisibles[diasVisibles.length - 1]);
+    this.citaService.listar(
+      companyId,
+      undefined,
+      this.filterEstado || undefined,
+      veterinarioId,
+      0,
+      maxSize,
+      fechaDesde,
+      fechaHasta
+    ).pipe(
       catchError(() => of({ data: { content: [] as CitaResponse[] } } as any))
     ).subscribe(res => {
       const todas = (res as any).data?.content ?? [];
@@ -1865,12 +1889,27 @@ export class AgendaComponent implements OnInit, OnDestroy {
   private renderCalendarEvent(info: EventContentArg) {
     const cita = info.event.extendedProps['cita'] as CitaResponse | undefined;
     const accent = cita ? this.calendarColor(cita.estado) : '#0066AA';
+    const background = cita ? this.calendarBgColor(cita.estado) : '#eff6ff';
     const timeHtml = info.timeText
       ? `<span class="agenda-event-time" style="color:${accent}">${info.timeText}</span>`
       : '';
     const title   = cita?.mascotaNombre ?? info.event.title;
     const service = cita?.servicioNombre ?? cita?.veterinarioNombre ?? '';
     const estado  = cita ? this.estadoLabel(cita.estado) : '';
+
+    if (info.view.type === 'dayGridMonth') {
+      return {
+        html: `
+          <div class="agenda-month-event" style="border-left-color:${accent};background:${background}">
+            <span class="agenda-month-event-title">${this.escapeHtml(title)}</span>
+            <span class="agenda-month-event-meta">
+              ${timeHtml}
+              ${service ? `<span class="agenda-month-event-service">${this.escapeHtml(service)}</span>` : ''}
+            </span>
+          </div>
+        `
+      };
+    }
 
     return {
       html: `
