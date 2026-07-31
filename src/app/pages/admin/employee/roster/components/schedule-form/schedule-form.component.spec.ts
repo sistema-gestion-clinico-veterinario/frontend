@@ -72,6 +72,20 @@ describe('ScheduleFormComponent', () => {
       expect(component.isDaySelected('MARTES')).toBeTrue();
     });
   });
+
+  it('normaliza la fecha del turno al editar para que el formulario muestre el día correcto', () => {
+    component.initialData = {
+      id: 42,
+      fecha: '2026-07-30T00:00:00.000Z',
+      diaSemana: 'JUEVES',
+      horaInicio: '08:00:00',
+      horaFin: '13:00:00'
+    };
+
+    expect(component.scheduleForm.get('fechaInicio')?.value).toBe('2026-07-30');
+    expect(component.scheduleForm.get('fechaFin')?.value).toBe('2026-07-30');
+    expect(component.scheduleForm.get('dias')?.value).toEqual(['JUEVES']);
+  });
 });
 
 describe('ScheduleFormComponent - onSave business validations', () => {

@@ -5,7 +5,7 @@ import { EmpleadoService } from '../../../../../../core/services/empleado.servic
 import { CompanyService } from '../../../../../../core/services/company.service';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
-import { isDateRangeValid } from '../../../../../../core/utils/input-validation.util';
+import { isDateRangeValid, toDateInputKey } from '../../../../../../core/utils/input-validation.util';
 
 @Component({
   selector: 'app-schedule-form',
@@ -31,7 +31,7 @@ export class ScheduleFormComponent implements OnInit {
 
   clinicHoursInfo = computed(() => {
     const info = this.companyInfo();
-    const dateStr = this.scheduleForm.get('fechaInicio')?.value;
+    const dateStr = this.normalizeDateValue(this.scheduleForm.get('fechaInicio')?.value);
     if (!info || !info.operatingHours || !dateStr) return null;
 
     const [y, m, d] = dateStr.split('-').map(Number);
@@ -92,14 +92,16 @@ export class ScheduleFormComponent implements OnInit {
   @Input() employeeName: string = '';
   @Input() set initialData(data: any) {
     if (data) {
+      const normalizedFecha = this.normalizeDateValue(data.fecha);
+
       // Si el objeto tiene ID, es una edición real
       if (data.id) {
         this.currentData.set(data);
-        this.selectedStartDate.set(data.fecha || '');
-        this.selectedEndDate.set(data.fecha || '');
+        this.selectedStartDate.set(normalizedFecha);
+        this.selectedEndDate.set(normalizedFecha);
         this.scheduleForm.patchValue({
-          fechaInicio: data.fecha,
-          fechaFin: data.fecha,
+          fechaInicio: normalizedFecha,
+          fechaFin: normalizedFecha,
           horaInicio: data.horaInicio ? data.horaInicio.substring(0, 5) : '08:00',
           horaFin: data.horaFin ? data.horaFin.substring(0, 5) : '17:00',
           dias: data.diaSemana ? [data.diaSemana] : [],
@@ -108,14 +110,14 @@ export class ScheduleFormComponent implements OnInit {
       } else {
         // Si no tiene ID, es una preselección de fecha para crear
         this.currentData.set(null);
-        this.preselectedDate.set(data.fecha || '');
-        this.selectedStartDate.set(data.fecha || '');
-        this.selectedEndDate.set(data.fecha || '');
-        const [y, m, d] = data.fecha.split('-').map(Number);
+        this.preselectedDate.set(normalizedFecha);
+        this.selectedStartDate.set(normalizedFecha);
+        this.selectedEndDate.set(normalizedFecha);
+        const [y, m, d] = normalizedFecha.split('-').map(Number);
         const dayName = this.dayOfWeekMap[new Date(y, m - 1, d).getDay()];
         this.scheduleForm.reset({
-          fechaInicio: data.fecha,
-          fechaFin: data.fecha,
+          fechaInicio: normalizedFecha,
+          fechaFin: normalizedFecha,
           horaInicio: '',
           horaFin: '',
           dias: [dayName],
@@ -227,11 +229,11 @@ export class ScheduleFormComponent implements OnInit {
 
     // Escuchar cambios de fecha para limpiar días seleccionados fuera de rango y actualizar señales reactivas
     this.scheduleForm.get('fechaInicio')?.valueChanges.subscribe(val => {
-      this.selectedStartDate.set(val || '');
+      this.selectedStartDate.set(this.normalizeDateValue(val));
       this.filterSelectedDays();
     });
     this.scheduleForm.get('fechaFin')?.valueChanges.subscribe(val => {
-      this.selectedEndDate.set(val || '');
+      this.selectedEndDate.set(this.normalizeDateValue(val));
       this.filterSelectedDays();
     });
   }
@@ -247,6 +249,10 @@ export class ScheduleFormComponent implements OnInit {
     }
   }
 
+  private normalizeDateValue(value: string | Date | null | undefined): string {
+    return toDateInputKey(value);
+  }
+
   onSave() {
     if (this.scheduleForm.invalid || !this.employeeId) {
       this.scheduleForm.markAllAsTouched();
@@ -257,13 +263,15 @@ export class ScheduleFormComponent implements OnInit {
     const isEditing = !!this.currentData();
     const editMode = form.editMode;
     const selectedDays = form.dias as string[];
+    const fechaInicio = this.normalizeDateValue(form.fechaInicio);
+    const fechaFin = this.normalizeDateValue(form.fechaFin);
 
     if (!this.employeeId) return;
-    if (!isDateRangeValid(form.fechaInicio, form.fechaFin)) {
+    if (!isDateRangeValid(fechaInicio, fechaFin)) {
       this.messageService.add({ severity: 'warn', summary: 'Rango invalido', detail: 'La fecha de fin no puede ser anterior a la fecha de inicio.' });
       return;
     }
-    const diffDays = Math.ceil((new Date(form.fechaFin + 'T00:00:00').getTime() - new Date(form.fechaInicio + 'T00:00:00').getTime()) / (1000 * 60 * 60 * 24));
+    const diffDays = Math.ceil((new Date(fechaFin + 'T00:00:00').getTime() - new Date(fechaInicio + 'T00:00:00').getTime()) / (1000 * 60 * 60 * 24));
     if (diffDays > 366) {
       this.messageService.add({ severity: 'warn', summary: 'Rango muy amplio', detail: 'El rango no debe superar 366 dias.' });
       return;
@@ -278,23 +286,23 @@ export class ScheduleFormComponent implements OnInit {
     }
 
     // Validar contra horario de clínica
-    if (!this.validarContraClinica(form)) return;
+    if (!this.validarContraClinica(form, fechaInicio)) return;
 
     if (isEditing && editMode === 'single') {
       // ACTUALIZACIÓN PUNTUAL
       this.confirmationService.confirm({
-        message: `¿Estás seguro de actualizar el turno del día ${form.fechaInicio} a las ${form.horaInicio}?`,
+        message: `¿Estás seguro de actualizar el turno del día ${fechaInicio} a las ${form.horaInicio}?`,
         header: 'Confirmar Actualización',
         icon: 'pi pi-info-circle',
         acceptLabel: 'Sí, actualizar',
         rejectLabel: 'Cancelar',
         acceptButtonStyleClass: 'p-button-info p-button-sm',
         accept: () => {
-          const [y, m, d] = form.fechaInicio.split('-').map(Number);
+          const [y, m, d] = fechaInicio.split('-').map(Number);
           const diaNum = new Date(y, m - 1, d).getDay();
           
           const updateReq = {
-            fecha: form.fechaInicio,
+            fecha: fechaInicio,
             horaInicio: form.horaInicio,
             horaFin: form.horaFin,
             diaSemana: this.dayOfWeekMap[diaNum]
@@ -317,7 +325,7 @@ export class ScheduleFormComponent implements OnInit {
     } else {
       // OPERACIÓN MASIVA
       const actionLabel = isEditing ? 'actualizar masivamente' : 'asignar';
-      const rangeLabel = `${form.fechaInicio} al ${form.fechaFin}`;
+      const rangeLabel = `${fechaInicio} al ${fechaFin}`;
       
       this.confirmationService.confirm({
         message: `¿Estás seguro de ${actionLabel} el horario para el rango ${rangeLabel}?`,
@@ -334,8 +342,8 @@ export class ScheduleFormComponent implements OnInit {
           }));
 
           const request: any = {
-            startDate: form.fechaInicio,
-            endDate: form.fechaFin,
+            startDate: fechaInicio,
+            endDate: fechaFin,
             overwrite: isEditing,
             originalStartTime: isEditing ? this.currentData().horaInicio.substring(0, 5) : null,
             shifts: shifts.length > 0 ? shifts : []
@@ -368,12 +376,12 @@ export class ScheduleFormComponent implements OnInit {
     }
   }
 
-  private validarContraClinica(form: any): boolean {
+  private validarContraClinica(form: any, fechaInicioValue: string): boolean {
     const info = this.companyInfo();
     if (!info || !info.operatingHours) return true;
 
     // Parsear fecha manualmente para evitar desfases de zona horaria (UTC vs Local)
-    const [year, month, day] = form.fechaInicio.split('-').map(Number);
+    const [year, month, day] = fechaInicioValue.split('-').map(Number);
     const fecha = new Date(year, month - 1, day);
     
     const diaNum = fecha.getDay();
