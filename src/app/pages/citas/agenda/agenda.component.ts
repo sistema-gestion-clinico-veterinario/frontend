@@ -1322,15 +1322,26 @@ export class AgendaComponent implements OnInit, OnDestroy {
       items.push({ label: 'Reprogramar', icon: 'pi pi-calendar-plus', command: () => this.reprogramarCita(cita) });
     }
 
-    if (this.canCreateHistoria() && (cita.estado === 'PROGRAMADA' || cita.estado === 'CONFIRMADA' || cita.estado === 'SALA_DE_ESPERA' || cita.estado === 'REPROGRAMADA')) {
-      items.push({ label: 'Iniciar consulta', icon: 'pi pi-play', command: () => this.iniciarCita(cita) });
+    const puedeIniciar = cita.estado === 'PROGRAMADA' || cita.estado === 'CONFIRMADA'
+      || cita.estado === 'SALA_DE_ESPERA' || cita.estado === 'REPROGRAMADA';
+    const esConsultaClinica = cita.requiereConsultaClinica !== false;
+    if (puedeIniciar && canModifyCita && (!esConsultaClinica || this.canCreateHistoria())) {
+      items.push({
+        label: esConsultaClinica ? 'Iniciar consulta' : 'Iniciar servicio',
+        icon: 'pi pi-play',
+        command: () => this.iniciarCita(cita)
+      });
     }
 
-    if (this.canReadHistoria() && cita.estado === 'EN_PROCESO') {
+    if (esConsultaClinica && this.canReadHistoria() && cita.estado === 'EN_PROCESO') {
       items.push({ label: 'Continuar consulta', icon: 'pi pi-pencil', command: () => this.continuarConsulta(cita) });
     }
 
-    if (this.canReadHistoria() && (cita.estado === 'COMPLETADA' || cita.consultaId) && cita.estado !== 'EN_PROCESO') {
+    if (!esConsultaClinica && canModifyCita && cita.estado === 'EN_PROCESO') {
+      items.push({ label: 'Finalizar servicio', icon: 'pi pi-check', command: () => this.finalizarServicio(cita) });
+    }
+
+    if (esConsultaClinica && this.canReadHistoria() && (cita.estado === 'COMPLETADA' || cita.consultaId) && cita.estado !== 'EN_PROCESO') {
       items.push({ label: 'Ver consulta', icon: 'pi pi-file', command: () => this.continuarConsulta(cita, true) });
     }
 
@@ -1356,7 +1367,8 @@ export class AgendaComponent implements OnInit, OnDestroy {
   }
 
   iniciarCita(cita: CitaResponse) {
-    if (!this.canCreateHistoria()) {
+    const esConsultaClinica = cita.requiereConsultaClinica !== false;
+    if (esConsultaClinica && !this.canCreateHistoria()) {
       this.messageService.add({ severity: 'warn', summary: 'Sin permiso', detail: 'No puedes iniciar historias clínicas.' });
       return;
     }
@@ -1364,7 +1376,11 @@ export class AgendaComponent implements OnInit, OnDestroy {
     this.citaService.iniciarAtencion(cita.id).subscribe({
       next: (res) => {
         this.suppressSseToast = true;
-        this.messageService.add({ severity: 'success', summary: 'Listo', detail: 'Atención iniciada' });
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Listo',
+          detail: esConsultaClinica ? 'Consulta iniciada' : 'Servicio iniciado'
+        });
         if (res.data) {
           this.router.navigate(['/historias-clinicas/consulta', res.data], { queryParams: { returnUrl: '/citas/agenda' } });
         } else {
@@ -1373,6 +1389,32 @@ export class AgendaComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error al iniciar atención' });
+      }
+    });
+  }
+
+  finalizarServicio(cita: CitaResponse) {
+    this.displayDetalleCita.set(false);
+    this.confirmationService.confirm({
+      message: `¿Confirmas que el servicio «${cita.servicioNombre || cita.motivoCita}» fue terminado?`,
+      header: 'Finalizar servicio',
+      icon: 'pi pi-check-circle',
+      acceptLabel: 'Sí, finalizar',
+      rejectLabel: 'Volver',
+      accept: () => {
+        this.citaService.finalizarServicio(cita.id).subscribe({
+          next: () => {
+            this.suppressSseToast = true;
+            this.messageService.add({ severity: 'success', summary: 'Servicio completado', detail: 'El servicio quedó registrado en el historial de la mascota.' });
+            this.loadCitas();
+            if (this.vistaActual() !== 'lista') this.loadCitasCalendario();
+          },
+          error: (err) => this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: err.error?.message || 'No se pudo finalizar el servicio'
+          })
+        });
       }
     });
   }

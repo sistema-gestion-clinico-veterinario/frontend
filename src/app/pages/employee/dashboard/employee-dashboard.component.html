@@ -179,14 +179,23 @@
                           {{ canIniciar(cita) ? 'Iniciar' : tiempoParaIniciar(cita) || 'Iniciar' }}
                         </button>
 
-                        <!-- Continuar consulta (Disponible si está EN_PROCESO) -->
-                        <a *ngIf="cita.estado === 'EN_PROCESO'"
-                          [routerLink]="['/historias-clinicas/consulta', cita.id]"
+                        <!-- Continuar una consulta médica en proceso -->
+                        <a *ngIf="cita.estado === 'EN_PROCESO' && cita.requiereConsultaClinica !== false && cita.consultaId"
+                          [routerLink]="['/historias-clinicas/consulta', cita.consultaId]"
                           [queryParams]="{ returnUrl: '/employee/dashboard' }"
                           class="flex items-center gap-1.5 bg-violet-600 hover:bg-violet-700 text-white text-[10px] font-extrabold px-3 py-1.5 rounded-lg transition-colors cursor-pointer">
                           <i class="pi pi-pencil text-[8px]"></i>
                           Continuar
                         </a>
+
+                        <!-- Finalizar un servicio no médico en proceso -->
+                        <button *ngIf="cita.estado === 'EN_PROCESO' && cita.requiereConsultaClinica === false"
+                          type="button"
+                          (click)="finalizarServicio(cita)"
+                          class="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-extrabold px-3 py-1.5 rounded-lg transition-colors cursor-pointer">
+                          <i class="pi pi-check text-[8px]"></i>
+                          Finalizar servicio
+                        </button>
 
                         <!-- Ver historial clinico de la mascota -->
                         <button (click)="verHistorialClinico(cita)"

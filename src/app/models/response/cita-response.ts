@@ -12,6 +12,7 @@ export interface CitaResponse {
   veterinarioNombre: string;
   servicioId?: number;
   servicioNombre?: string;
+  requiereConsultaClinica?: boolean;
   motivoCita: string;
   fechaHoraInicio: string;
   fechaHoraFin: string;
