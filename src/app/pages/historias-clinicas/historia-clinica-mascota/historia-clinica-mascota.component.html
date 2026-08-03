@@ -52,7 +52,33 @@
         <p class="text-sm font-bold text-slate-700">{{ hc()!.propietarioTelefono || '—' }}</p>
       </div>
     </div>
-    <div class="flex flex-col lg:flex-row gap-5">
+    <div class="mb-5 overflow-x-auto">
+    <nav class="flex min-w-max items-center gap-7 border-b border-slate-200" aria-label="Secciones de la historia de la mascota">
+      <button type="button" (click)="seleccionarSeccion('consultas')"
+        [class]="seccionActiva() === 'consultas'
+          ? 'flex items-center gap-2 py-3 text-xs font-extrabold text-[#0066AA] border-b-2 border-[#0066AA] whitespace-nowrap'
+          : 'flex items-center gap-2 py-3 text-xs font-bold text-slate-400 border-b-2 border-transparent hover:text-slate-600 whitespace-nowrap'">
+        <i class="pi pi-file-edit text-xs"></i> Consultas
+        <span class="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] text-slate-500">{{ hc()!.consultas.length }}</span>
+      </button>
+      <button type="button" (click)="seleccionarSeccion('servicios')"
+        [class]="seccionActiva() === 'servicios'
+          ? 'flex items-center gap-2 py-3 text-xs font-extrabold text-[#0066AA] border-b-2 border-[#0066AA] whitespace-nowrap'
+          : 'flex items-center gap-2 py-3 text-xs font-bold text-slate-400 border-b-2 border-transparent hover:text-slate-600 whitespace-nowrap'">
+        <i class="pi pi-scissors text-xs"></i> Servicios
+        <span *ngIf="serviciosNoMedicos().length > 0" class="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] text-slate-500">{{ serviciosNoMedicos().length }}</span>
+      </button>
+      <button type="button" (click)="seleccionarSeccion('preventivos')"
+        [class]="seccionActiva() === 'preventivos'
+          ? 'flex items-center gap-2 py-3 text-xs font-extrabold text-[#0066AA] border-b-2 border-[#0066AA] whitespace-nowrap'
+          : 'flex items-center gap-2 py-3 text-xs font-bold text-slate-400 border-b-2 border-transparent hover:text-slate-600 whitespace-nowrap'">
+        <i class="pi pi-shield text-xs"></i> Preventivos
+        <span *ngIf="(hc()!.controlesPreventivos?.length || 0) > 0" class="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] text-slate-500">{{ hc()!.controlesPreventivos!.length }}</span>
+      </button>
+    </nav>
+    </div>
+
+    <div *ngIf="seccionActiva() === 'consultas'" class="flex flex-col lg:flex-row gap-5">
       <div class="w-full lg:w-80 xl:w-96 shrink-0">
         <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
           <div class="px-4 py-3 border-b border-slate-100">
@@ -97,7 +123,7 @@
       <div class="flex-1 min-w-0">
         <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
 
-          <div *ngIf="consultaActiva() && tabActiva() !== 'servicios'" class="px-5 py-4 border-b border-slate-100">
+          <div *ngIf="consultaActiva()" class="px-5 py-4 border-b border-slate-100">
             <div class="flex items-start justify-between gap-3">
               <div>
                 <p class="text-base font-extrabold text-slate-900 leading-snug">
@@ -150,43 +176,12 @@
                 {{ consultaActiva()!.archivos.length }}
               </span>
             </button>
-            <button
-              (click)="seleccionarTab('servicios')"
-              [class]="tabActiva() === 'servicios'
-                ? 'py-3 text-xs font-extrabold text-[#0066AA] border-b-2 border-[#0066AA]'
-                : 'py-3 text-xs font-bold text-slate-400 border-b-2 border-transparent hover:text-slate-600'">
-              Servicios
-              <span *ngIf="serviciosNoMedicos().length > 0"
-                class="ml-1 bg-blue-100 text-[#0066AA] rounded-full px-1.5 py-0.5 text-[10px]">
-                {{ serviciosNoMedicos().length }}
-              </span>
-            </button>
-            <button
-              (click)="seleccionarTab('preventivos')"
-              [class]="tabActiva() === 'preventivos'
-                ? 'py-3 text-xs font-extrabold text-[#0066AA] border-b-2 border-[#0066AA] ml-6'
-                : 'py-3 text-xs font-bold text-slate-400 border-b-2 border-transparent hover:text-slate-600 ml-6'">
-              Preventivos
-              <span *ngIf="(hc()!.controlesPreventivos?.length || 0) > 0" class="ml-1 bg-blue-100 text-[#0066AA] rounded-full px-1.5 py-0.5 text-[10px]">{{ hc()!.controlesPreventivos!.length }}</span>
-            </button>
           </div>
 
-          <div *ngIf="tabActiva() !== 'servicios' && tabActiva() !== 'preventivos' && !consultaActiva()"
+          <div *ngIf="!consultaActiva()"
             class="py-20 text-center px-6">
             <i class="pi pi-arrow-left text-2xl text-slate-200 block mb-3"></i>
             <p class="text-xs text-slate-400 font-medium">Selecciona una consulta para ver su detalle</p>
-          </div>
-          <div *ngIf="tabActiva() === 'preventivos'" class="p-5">
-            <h3 class="text-sm font-extrabold text-slate-800 mb-4">Controles preventivos</h3>
-            <div *ngIf="hc()!.controlesPreventivos?.length; else sinPreventivos" class="overflow-x-auto">
-              <table class="w-full min-w-[560px] text-left">
-                <thead><tr class="text-[10px] uppercase text-slate-400 border-b border-slate-100"><th class="pb-2">Tipo</th><th class="pb-2">Control</th><th class="pb-2">Fecha</th><th class="pb-2">Estado</th></tr></thead>
-                <tbody><tr *ngFor="let control of hc()!.controlesPreventivos" class="text-xs border-b border-slate-50"><td class="py-3">{{ control.tipo === 'VACUNACION' ? 'Vacunacion' : 'Desparasitacion' }}</td><td class="py-3 font-bold text-slate-700">{{ control.nombreControl }}</td><td class="py-3 text-slate-500">{{ control.fechaRecomendada | date:'dd/MM/yyyy' }}</td><td class="py-3"><span class="px-2 py-1 rounded bg-slate-100 text-slate-600 text-[10px] font-bold">{{ control.estado }}</span></td></tr></tbody>
-              </table>
-            </div>
-            <ng-template #sinPreventivos><p class="py-10 text-center text-xs text-slate-400">Sin controles preventivos registrados.</p></ng-template>
-            <h4 *ngIf="hc()!.aplicacionesPreventivas?.length" class="text-xs font-extrabold text-slate-600 mt-6 mb-3">Historial de aplicaciones</h4>
-            <div class="grid sm:grid-cols-2 gap-x-6"><div *ngFor="let aplicacion of hc()!.aplicacionesPreventivas" class="py-3 border-b border-slate-50 text-xs"><strong class="text-slate-700">{{ aplicacion.nombreControl }}</strong><p class="text-slate-400 mt-1">Aplicada {{ aplicacion.fechaAplicacion | date:'dd/MM/yyyy' }} · Proxima {{ aplicacion.fechaProximaAplicacion | date:'dd/MM/yyyy' }}</p></div></div>
           </div>
           <div *ngIf="consultaActiva() && tabActiva() === 'clinico'" class="p-5 flex flex-col gap-5">
             <div>
@@ -358,45 +353,114 @@
             </div>
           </div>
 
-          <div *ngIf="tabActiva() === 'servicios'" class="p-5">
-            <div *ngIf="loadingServicios()" class="py-12 text-center text-slate-300">
-              <i class="pi pi-spin pi-spinner text-2xl block mb-2"></i>
-              <p class="text-xs font-medium">Cargando servicios...</p>
-            </div>
-            <div *ngIf="!loadingServicios() && serviciosNoMedicos().length === 0"
-              class="py-12 text-center text-slate-300">
-              <i class="pi pi-scissors text-2xl block mb-2"></i>
-              <p class="text-xs font-medium">Sin servicios no médicos registrados</p>
-            </div>
-            <div *ngIf="!loadingServicios() && serviciosNoMedicos().length > 0" class="flex flex-col gap-3">
-              <div *ngFor="let s of serviciosNoMedicos()"
-                class="border border-slate-200 rounded-xl p-4 flex items-start gap-4">
-                <div class="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center shrink-0">
-                  <i class="pi pi-scissors text-violet-500 text-sm"></i>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <div class="flex items-center gap-2 flex-wrap mb-1">
-                    <p class="text-sm font-extrabold text-slate-800">{{ s.servicioNombre || s.motivoCita || 'Servicio' }}</p>
-                    <span [class]="'text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ' + estadoCitaBadge(s.estado)">
-                      {{ estadoCitaLabel(s.estado) }}
-                    </span>
-                  </div>
-                  <p class="text-xs text-slate-500">{{ formatFechaHora(s.fechaHoraInicio) }}</p>
-                  <p *ngIf="s.veterinarioNombre" class="text-xs text-slate-400 mt-0.5">
-                    <i class="pi pi-user mr-1 text-[10px]"></i>{{ s.veterinarioNombre }}
-                  </p>
-                  <p *ngIf="s.notas" class="text-xs text-slate-400 mt-1 italic">{{ s.notas }}</p>
-                </div>
-                <div *ngIf="s.montoPagado" class="text-right shrink-0">
-                  <p class="text-sm font-extrabold text-green-600">S/ {{ s.montoPagado | number:'1.2-2' }}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
         </div>
       </div>
     </div>
+
+    <section *ngIf="seccionActiva() === 'servicios'" class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+      <header class="px-5 py-4 border-b border-slate-100 flex items-center justify-between gap-4">
+        <div>
+          <h2 class="text-sm font-extrabold text-slate-800">Historial de servicios</h2>
+          <p class="text-xs text-slate-400 mt-0.5">Servicios no clínicos de la mascota</p>
+        </div>
+        <span class="text-[10px] font-bold text-slate-500 bg-slate-100 rounded-full px-2.5 py-1 whitespace-nowrap">
+          {{ serviciosNoMedicos().length }} {{ serviciosNoMedicos().length === 1 ? 'registro' : 'registros' }}
+        </span>
+      </header>
+
+      <div *ngIf="loadingServicios()" class="py-16 text-center text-slate-300">
+        <i class="pi pi-spin pi-spinner text-2xl block mb-2"></i>
+        <p class="text-xs font-medium">Cargando servicios...</p>
+      </div>
+
+      <div *ngIf="!loadingServicios() && serviciosNoMedicos().length === 0" class="py-16 text-center">
+        <i class="pi pi-briefcase text-xl text-slate-300 block mb-2"></i>
+        <p class="text-xs font-bold text-slate-500">Sin servicios registrados</p>
+      </div>
+
+      <div *ngIf="!loadingServicios() && serviciosNoMedicos().length > 0">
+        <div class="hidden lg:grid lg:grid-cols-[minmax(240px,1fr)_minmax(190px,.7fr)_minmax(240px,1fr)_150px] gap-6 px-5 py-2.5 bg-slate-50 border-b border-slate-100 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+          <span>Servicio</span>
+          <span>Atendido por</span>
+          <span>Observaciones</span>
+          <span class="text-right">Estado y monto</span>
+        </div>
+        <div class="divide-y divide-slate-100">
+        <article *ngFor="let s of serviciosNoMedicos()"
+          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[minmax(240px,1fr)_minmax(190px,.7fr)_minmax(240px,1fr)_150px] gap-4 lg:gap-6 px-5 py-4 hover:bg-slate-50/60 transition-colors">
+          <div class="min-w-0">
+            <h3 class="text-sm font-extrabold text-slate-800 truncate">{{ s.servicioNombre || s.motivoCita || 'Servicio' }}</h3>
+            <p class="text-xs text-slate-400 mt-1">{{ formatFechaHora(s.fechaHoraInicio) }}</p>
+          </div>
+
+          <div>
+            <p class="lg:hidden text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">Atendido por</p>
+            <p class="text-xs font-semibold text-slate-600">{{ s.veterinarioNombre || 'No asignado' }}</p>
+          </div>
+
+          <div>
+            <p class="lg:hidden text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">Observaciones</p>
+            <p [class]="s.notas ? 'text-xs text-slate-600 line-clamp-2' : 'text-xs text-slate-400 italic'">
+              {{ s.notas || 'Sin observaciones registradas' }}
+            </p>
+          </div>
+
+          <div class="flex items-center sm:justify-end gap-3 lg:flex-col lg:items-end lg:gap-2">
+            <span [class]="'text-[10px] font-bold px-2.5 py-1 rounded-full uppercase whitespace-nowrap ' + estadoCitaBadge(s.estado)">
+              {{ estadoCitaLabel(s.estado) }}
+            </span>
+            <p class="text-sm font-extrabold text-slate-800 whitespace-nowrap">
+              {{ s.totalServicio != null ? ('S/ ' + (s.totalServicio | number:'1.2-2')) : '—' }}
+            </p>
+          </div>
+        </article>
+        </div>
+      </div>
+    </section>
+
+    <section *ngIf="seccionActiva() === 'preventivos'" class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+      <header class="px-5 py-4 border-b border-slate-100 bg-slate-50/30 flex items-center gap-3">
+        <span class="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0"><i class="pi pi-shield text-sm"></i></span>
+        <div>
+          <h2 class="text-sm font-extrabold text-slate-800">Controles preventivos</h2>
+          <p class="text-xs text-slate-400 mt-0.5">Vacunaciones y desparasitaciones de la mascota</p>
+        </div>
+      </header>
+
+      <div *ngIf="hc()!.controlesPreventivos?.length; else sinPreventivos" class="overflow-x-auto">
+        <table class="w-full min-w-[620px] text-left">
+          <thead class="bg-slate-50/70">
+            <tr class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+              <th class="px-5 py-3">Tipo</th>
+              <th class="px-4 py-3">Control</th>
+              <th class="px-4 py-3">Fecha recomendada</th>
+              <th class="px-5 py-3">Estado</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <tr *ngFor="let control of hc()!.controlesPreventivos" class="text-xs hover:bg-slate-50/60">
+              <td class="px-5 py-4 text-slate-500">{{ control.tipo === 'VACUNACION' ? 'Vacunación' : 'Desparasitación' }}</td>
+              <td class="px-4 py-4 font-bold text-slate-700">{{ control.nombreControl }}</td>
+              <td class="px-4 py-4 text-slate-500">{{ control.fechaRecomendada | date:'dd/MM/yyyy' }}</td>
+              <td class="px-5 py-4"><span class="px-2 py-1 rounded bg-slate-100 text-slate-600 text-[10px] font-bold">{{ control.estado }}</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <ng-template #sinPreventivos>
+        <p class="py-14 text-center text-xs text-slate-400">Sin controles preventivos registrados.</p>
+      </ng-template>
+
+      <div *ngIf="hc()!.aplicacionesPreventivas?.length" class="border-t border-slate-100">
+        <h3 class="px-5 pt-4 text-xs font-extrabold text-slate-600">Historial de aplicaciones</h3>
+        <div class="divide-y divide-slate-100 px-5">
+          <div *ngFor="let aplicacion of hc()!.aplicacionesPreventivas" class="py-3 text-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+            <strong class="text-slate-700">{{ aplicacion.nombreControl }}</strong>
+            <p class="text-slate-400">Aplicada {{ aplicacion.fechaAplicacion | date:'dd/MM/yyyy' }} · Próxima {{ aplicacion.fechaProximaAplicacion | date:'dd/MM/yyyy' }}</p>
+          </div>
+        </div>
+      </div>
+    </section>
 
   </ng-container>
 
