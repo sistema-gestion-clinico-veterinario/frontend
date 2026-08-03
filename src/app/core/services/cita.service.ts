@@ -64,7 +64,11 @@ export class CitaService {
   }
 
   iniciarAtencion(id: number) {
-    return this.http.patch<ApiResponse<number>>(`${this.apiUrl}/${id}/start`, {});
+    return this.http.patch<ApiResponse<number | null>>(`${this.apiUrl}/${id}/start`, {});
+  }
+
+  finalizarServicio(id: number, notas?: string) {
+    return this.http.patch<ApiResponse<CitaResponse>>(`${this.apiUrl}/${id}/finish-service`, { notas });
   }
 
   cancelarCita(id: number, motivo: string) {

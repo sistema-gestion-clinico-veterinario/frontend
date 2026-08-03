@@ -169,12 +169,36 @@ export class EmployeeDashboardComponent implements OnInit {
     this.loadingStore.show();
     this.citaService.iniciarAtencion(cita.id).subscribe({
       next: (res) => {
-        this.messageService.add({ severity: 'success', summary: 'Listo', detail: 'Atención iniciada con éxito.' });
+        const esConsultaClinica = cita.requiereConsultaClinica !== false;
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Listo',
+          detail: esConsultaClinica ? 'Consulta iniciada con éxito.' : 'Servicio iniciado con éxito.'
+        });
         this.loadingStore.hide();
-        this.router.navigate(['/historias-clinicas/consulta', res.data], { queryParams: { returnUrl: '/employee/dashboard' } });
+        if (esConsultaClinica && res.data) {
+          this.router.navigate(['/historias-clinicas/consulta', res.data], { queryParams: { returnUrl: '/employee/dashboard' } });
+        } else {
+          this.loadDashboardData();
+        }
       },
       error: (err) => {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error al iniciar la atención.' });
+        this.loadingStore.hide();
+      }
+    });
+  }
+
+  finalizarServicio(cita: any) {
+    this.loadingStore.show();
+    this.citaService.finalizarServicio(cita.id).subscribe({
+      next: () => {
+        this.messageService.add({ severity: 'success', summary: 'Servicio completado', detail: 'El servicio quedó registrado en el historial de la mascota.' });
+        this.loadingStore.hide();
+        this.loadDashboardData();
+      },
+      error: (err) => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo finalizar el servicio.' });
         this.loadingStore.hide();
       }
     });
