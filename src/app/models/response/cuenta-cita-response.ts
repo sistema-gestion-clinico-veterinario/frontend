@@ -20,6 +20,7 @@ export interface DetalleCuentaResponse {
 
 export interface CuentaCitaResponse {
   citaId: number;
+  numeroCita: string;
   mascotaNombre: string;
   apoderadoNombre: string;
   servicioNombre: string;

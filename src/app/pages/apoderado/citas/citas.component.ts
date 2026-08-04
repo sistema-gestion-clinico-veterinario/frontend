@@ -122,10 +122,7 @@ export class CitasComponent implements OnInit {
   // ── PAGO – helpers ─────────────────────────────────────────────
   /** Muestra el botón "Pagar" si la cita está ATENDIDA y no tiene pago registrado */
   canPagar(cita: any): boolean {
-    if (!cita) return false;
-    const pagableStates = ['ATENDIDA', 'EN_PROCESO', 'COMPLETADA'];
-    return pagableStates.includes(cita.estado)
-      && Number(cita.totalServicio ?? 0) > Number(cita.montoPagado ?? 0);
+    return false;
   }
 
   openPagoModal(cita: any) {
@@ -170,10 +167,7 @@ export class CitasComponent implements OnInit {
 
     this.pagoService.registrar({
       citaId: cita.id,
-      metodoPago: 'YAPE',
-      yapePhoneNumber: Number(phone),
-      yapeOtp: Number(otp),
-      payerEmail: email
+      metodoPago: 'YAPE'
     }).subscribe({
       next: () => {
         this.pagoProcessing.set(false);

@@ -3,7 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../../models/response/api-response';
 import { Page } from '../../models/response/page';
-import { MovimientoCajaResponse, ResumenCajaResponse } from '../../models/response/movimiento-caja-response';
+import { MovimientoCajaResponse, ResumenCajaResponse, SesionCajaResponse } from '../../models/response/movimiento-caja-response';
 import { MovimientoEgresoRequest } from '../../models/request/movimiento-egreso-request';
 import { CuentaCitaResponse, DetalleCuentaRequest } from '../../models/response/cuenta-cita-response';
 
@@ -32,6 +32,23 @@ export class CajaService {
 
   registrarDevolucion(citaId: number) {
     return this.http.post<ApiResponse<MovimientoCajaResponse>>(`${this.apiUrl}/devolucion/${citaId}`, {});
+  }
+
+  obtenerSesion(companyId: number) {
+    const params = new HttpParams().set('companyId', companyId);
+    return this.http.get<ApiResponse<SesionCajaResponse | null>>(`${this.apiUrl}/sesion`, { params });
+  }
+
+  abrirCaja(companyId: number, montoApertura: number) {
+    return this.http.post<ApiResponse<SesionCajaResponse>>(`${this.apiUrl}/sesion/abrir`, { companyId, montoApertura });
+  }
+
+  arquearCaja(companyId: number, efectivoContado: number, observaciones?: string) {
+    return this.http.post<ApiResponse<SesionCajaResponse>>(`${this.apiUrl}/sesion/arqueo`, { companyId, efectivoContado, observaciones });
+  }
+
+  cerrarCaja(companyId: number, efectivoContado: number, observaciones?: string) {
+    return this.http.post<ApiResponse<SesionCajaResponse>>(`${this.apiUrl}/sesion/cerrar`, { companyId, efectivoContado, observaciones });
   }
 
   listarPendientes(companyId: number, page = 0, size = 20) {
