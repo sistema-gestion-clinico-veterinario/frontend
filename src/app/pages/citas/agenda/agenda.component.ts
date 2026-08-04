@@ -1345,10 +1345,6 @@ export class AgendaComponent implements OnInit, OnDestroy {
       items.push({ label: 'Ver consulta', icon: 'pi pi-file', command: () => this.continuarConsulta(cita, true) });
     }
 
-    if (this.canCobrar(cita)) {
-      items.push({ label: 'Cobrar', icon: 'pi pi-credit-card', command: () => this.abrirCaja(cita) });
-    }
-
     if (this.canCancel(cita) && canModifyCita) {
       items.push({ label: 'Cancelar', icon: 'pi pi-times', command: () => this.cancelarCita(cita) });
     }

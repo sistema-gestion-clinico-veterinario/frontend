@@ -508,7 +508,7 @@
         <div class="flex justify-between text-xs"><span class="text-slate-500">Servicio:</span> <span class="font-semibold text-slate-700">{{ citaPendientePago()?.servicioNombre }}</span></div>
         <div class="flex justify-between items-center pt-2 border-t border-slate-200">
           <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total</span>
-          <span class="text-lg font-black text-purple-700">S/ {{ citaPendientePago()?.totalServicio | number:'1.2-2' }}</span>
+          <span class="text-lg font-black text-purple-700">S/ {{ ((citaPendientePago()?.totalServicio ?? 0) - (citaPendientePago()?.montoPagado ?? 0)) | number:'1.2-2' }}</span>
         </div>
       </div>
 
@@ -567,7 +567,7 @@
         class="flex-1 h-10 flex items-center justify-center gap-2 text-sm font-bold text-white bg-purple-600 hover:bg-purple-700 rounded-xl transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-purple-600/20">
         <i *ngIf="pagoProcessing()" class="pi pi-spin pi-spinner text-xs"></i>
         <i *ngIf="!pagoProcessing()" class="pi pi-mobile text-xs"></i>
-        {{ pagoProcessing() ? 'Procesando...' : 'Pagar S/ ' + (citaPendientePago()?.totalServicio | number:'1.2-2') }}
+        {{ pagoProcessing() ? 'Procesando...' : 'Pagar S/ ' + (((citaPendientePago()?.totalServicio ?? 0) - (citaPendientePago()?.montoPagado ?? 0)) | number:'1.2-2') }}
       </button>
     </div>
   </div>

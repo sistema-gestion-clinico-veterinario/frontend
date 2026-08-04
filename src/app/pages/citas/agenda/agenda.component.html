@@ -1420,12 +1420,6 @@
           <i class="pi pi-file text-xs"></i> Ver consulta
         </button>
       </ng-container>
-      <ng-container *ngIf="canCobrar(citaDetalle()!)">
-        <button (click)="abrirCaja(citaDetalle()!)"
-          class="flex-1 flex items-center justify-center gap-2 py-2.5 bg-[#0066AA] hover:bg-[#005a96] text-white text-xs font-bold rounded-xl transition-all">
-          <i class="pi pi-wallet text-xs"></i> Cobrar
-        </button>
-      </ng-container>
     </div>
     <div class="flex gap-2">
       <ng-container *ngIf="canCancel(citaDetalle()!)">
