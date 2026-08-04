@@ -5,6 +5,7 @@ import { ApiResponse } from '../../models/response/api-response';
 import { Page } from '../../models/response/page';
 import { MovimientoCajaResponse, ResumenCajaResponse } from '../../models/response/movimiento-caja-response';
 import { MovimientoEgresoRequest } from '../../models/request/movimiento-egreso-request';
+import { CuentaCitaResponse, DetalleCuentaRequest } from '../../models/response/cuenta-cita-response';
 
 @Injectable({ providedIn: 'root' })
 export class CajaService {
@@ -31,5 +32,26 @@ export class CajaService {
 
   registrarDevolucion(citaId: number) {
     return this.http.post<ApiResponse<MovimientoCajaResponse>>(`${this.apiUrl}/devolucion/${citaId}`, {});
+  }
+
+  listarPendientes(companyId: number, page = 0, size = 20) {
+    const params = new HttpParams().set('companyId', companyId).set('page', page).set('size', size);
+    return this.http.get<ApiResponse<Page<CuentaCitaResponse>>>(`${this.apiUrl}/cuentas/pendientes`, { params });
+  }
+
+  obtenerCuenta(citaId: number) {
+    return this.http.get<ApiResponse<CuentaCitaResponse>>(`${this.apiUrl}/cuentas/${citaId}`);
+  }
+
+  agregarDetalle(citaId: number, request: DetalleCuentaRequest) {
+    return this.http.post<ApiResponse<CuentaCitaResponse>>(`${this.apiUrl}/cuentas/${citaId}/detalles`, request);
+  }
+
+  eliminarDetalle(citaId: number, detalleId: number) {
+    return this.http.delete<ApiResponse<CuentaCitaResponse>>(`${this.apiUrl}/cuentas/${citaId}/detalles/${detalleId}`);
+  }
+
+  actualizarDetalle(citaId: number, detalleId: number, request: DetalleCuentaRequest) {
+    return this.http.put<ApiResponse<CuentaCitaResponse>>(`${this.apiUrl}/cuentas/${citaId}/detalles/${detalleId}`, request);
   }
 }

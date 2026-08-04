@@ -5,6 +5,7 @@ export interface PagoResponse {
   monto: number;
   montoRecibido?: number;
   cambio?: number;
+  saldoPendiente?: number;
   fechaPago: string;
   estado: string;
   mercadoPagoId?: string;
