@@ -124,7 +124,8 @@ export class CitasComponent implements OnInit {
   canPagar(cita: any): boolean {
     if (!cita) return false;
     const pagableStates = ['ATENDIDA', 'EN_PROCESO', 'COMPLETADA'];
-    return pagableStates.includes(cita.estado) && !cita.montoPagado;
+    return pagableStates.includes(cita.estado)
+      && Number(cita.totalServicio ?? 0) > Number(cita.montoPagado ?? 0);
   }
 
   openPagoModal(cita: any) {
