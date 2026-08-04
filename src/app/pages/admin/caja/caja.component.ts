@@ -6,12 +6,13 @@ import { PaginatorModule } from 'primeng/paginator';
 import { MessageService } from 'primeng/api';
 import { CajaService } from '../../../core/services/caja.service';
 import { AuthStore } from '../../../store/auth.store';
-import { MovimientoCajaResponse, ResumenCajaResponse } from '../../../models/response/movimiento-caja-response';
+import { MovimientoCajaResponse, ResumenCajaResponse, SesionCajaResponse } from '../../../models/response/movimiento-caja-response';
 import { hasMeaningfulText, isDateRangeValid } from '../../../core/utils/input-validation.util';
 import { normalizeText } from '../../../core/utils/normalize-text.util';
 import { PagoService } from '../../../core/services/pago.service';
 import { CuentaCitaResponse, DetalleCuentaRequest, DetalleCuentaResponse, TipoDetalleCuenta } from '../../../models/response/cuenta-cita-response';
 import { MetodoPago } from '../../../models/request/pago-request';
+import { NotaVentaPdfService } from '../../../core/services/nota-venta-pdf.service';
 
 @Component({
   selector: 'app-caja',
@@ -25,6 +26,7 @@ export class CajaComponent implements OnInit {
   private readonly cajaService   = inject(CajaService);
   private readonly messageService = inject(MessageService);
   private readonly pagoService    = inject(PagoService);
+  private readonly notaVentaPdf   = inject(NotaVentaPdfService);
   readonly authStore             = inject(AuthStore);
 
   movimientos  = signal<MovimientoCajaResponse[]>([]);
@@ -32,7 +34,12 @@ export class CajaComponent implements OnInit {
   loading      = signal(false);
   totalRecords = signal(0);
   currentPage  = signal(0);
-  pageSize     = signal(20);
+  pageSize     = signal(5);
+  readonly pendingPageSize = 20;
+  sesionCaja = signal<SesionCajaResponse | null>(null);
+  showSesionModal = signal<'ABRIR' | 'ARQUEO' | 'CERRAR' | null>(null);
+  savingSesion = signal(false);
+  sesionForm = { monto: null as number | null, observaciones: '' };
 
   filtroDesde = '';
   filtroHasta = '';
@@ -46,15 +53,13 @@ export class CajaComponent implements OnInit {
   pendingTotal = signal(0);
   pendingPage = signal(0);
   posSearch = signal('');
-  historialExpandido = signal(false);
   cuentasPos = computed(() => {
     const term = normalizeText(this.posSearch()).toLocaleLowerCase('es-PE');
     return this.cuentasPendientes().filter(cuenta => {
-      const text = `${cuenta.citaId} ${cuenta.mascotaNombre} ${cuenta.apoderadoNombre} ${cuenta.servicioNombre}`.toLocaleLowerCase('es-PE');
+      const text = `${cuenta.numeroCita} ${cuenta.mascotaNombre} ${cuenta.apoderadoNombre} ${cuenta.servicioNombre}`.toLocaleLowerCase('es-PE');
       return !term || text.includes(term);
     });
   });
-  movimientosVisibles = computed(() => this.historialExpandido() ? this.movimientos() : this.movimientos().slice(0, 5));
   cuentaSeleccionada = signal<CuentaCitaResponse | null>(null);
   savingDetalle = signal(false);
   savingPago = signal(false);
@@ -65,12 +70,8 @@ export class CajaComponent implements OnInit {
     metodoPago: MetodoPago;
     monto: number;
     montoRecibido: number | null;
-    yapePhoneNumber: string;
-    yapeOtp: string;
-    payerEmail: string;
   } = {
-    metodoPago: 'EFECTIVO', monto: 0, montoRecibido: null,
-    yapePhoneNumber: '', yapeOtp: '', payerEmail: ''
+    metodoPago: 'EFECTIVO', monto: 0, montoRecibido: null
   };
 
   get companyId(): number {
@@ -80,12 +81,13 @@ export class CajaComponent implements OnInit {
   ngOnInit() {
     this.cargar();
     this.cargarPendientes();
+    this.cargarSesion();
   }
 
   cargarPendientes(page = this.pendingPage()) {
     if (!this.companyId) return;
     this.pendingLoading.set(true);
-    this.cajaService.listarPendientes(this.companyId, page, this.pageSize()).subscribe({
+    this.cajaService.listarPendientes(this.companyId, page, this.pendingPageSize).subscribe({
       next: r => {
         this.cuentasPendientes.set(r.data?.content ?? []);
         this.pendingTotal.set((r.data as any)?.page?.totalElements ?? r.data?.totalElements ?? 0);
@@ -115,12 +117,16 @@ export class CajaComponent implements OnInit {
     this.posSearch.set('');
   }
 
+  nuevaOperacion() {
+    this.limpiarCuenta();
+    this.messageService.add({ severity: 'info', summary: 'Nueva operación', detail: 'Selecciona una cita para cargar su cuenta al carrito.' });
+  }
+
   prepararPago(cuenta: CuentaCitaResponse) {
     this.pagoForm = {
       metodoPago: 'EFECTIVO',
       monto: Number(cuenta.saldoPendiente),
-      montoRecibido: Number(cuenta.saldoPendiente),
-      yapePhoneNumber: '', yapeOtp: '', payerEmail: ''
+      montoRecibido: Number(cuenta.saldoPendiente)
     };
   }
 
@@ -186,18 +192,20 @@ export class CajaComponent implements OnInit {
   registrarPago() {
     const cuenta = this.cuentaSeleccionada();
     const monto = Number(this.pagoForm.monto);
-    if (!cuenta || monto <= 0 || monto > Number(cuenta.saldoPendiente)) {
+    if (!this.sesionCaja()) {
+      this.messageService.add({ severity: 'warn', summary: 'Caja cerrada', detail: 'Abre la caja antes de registrar cobros.' });
+      return;
+    }
+    if (!cuenta || monto <= 0 || monto > Number(cuenta.saldoPendiente) || monto > 50000) {
       this.messageService.add({ severity: 'warn', summary: 'Monto inválido', detail: 'El pago no puede superar el saldo pendiente.' });
       return;
     }
-    if (this.pagoForm.metodoPago === 'EFECTIVO' && Number(this.pagoForm.montoRecibido) < monto) {
-      this.messageService.add({ severity: 'warn', summary: 'Efectivo insuficiente', detail: 'El monto recibido debe cubrir el pago.' });
-      return;
-    }
-    if (this.pagoForm.metodoPago === 'YAPE' &&
-        (this.pagoForm.yapePhoneNumber.length !== 9 || this.pagoForm.yapeOtp.length !== 6 || !this.pagoForm.payerEmail.trim())) {
-      this.messageService.add({ severity: 'warn', summary: 'Datos Yape incompletos', detail: 'Ingresa teléfono, OTP y correo del pagador.' });
-      return;
+    if (this.pagoForm.metodoPago === 'EFECTIVO') {
+      const recibido = Number(this.pagoForm.montoRecibido);
+      if (recibido < monto || recibido > 10000 || recibido - monto > 1000) {
+        this.messageService.add({ severity: 'warn', summary: 'Efectivo inválido', detail: 'El recibido debe cubrir el pago, no superar S/ 10,000 ni generar más de S/ 1,000 de vuelto.' });
+        return;
+      }
     }
 
     this.savingPago.set(true);
@@ -205,16 +213,11 @@ export class CajaComponent implements OnInit {
       citaId: cuenta.citaId,
       metodoPago: this.pagoForm.metodoPago,
       monto,
-      ...(this.pagoForm.metodoPago === 'EFECTIVO'
-        ? { montoRecibido: Number(this.pagoForm.montoRecibido) }
-        : {
-            yapePhoneNumber: Number(this.pagoForm.yapePhoneNumber),
-            yapeOtp: Number(this.pagoForm.yapeOtp),
-            payerEmail: this.pagoForm.payerEmail.trim().toLowerCase()
-          })
+      ...(this.pagoForm.metodoPago === 'EFECTIVO' ? { montoRecibido: Number(this.pagoForm.montoRecibido) } : {})
     }).subscribe({
       next: r => {
         this.savingPago.set(false);
+        if (r.data) this.notaVentaPdf.mostrar(cuenta, r.data, this.authStore.selectedEnterprise()?.name ?? this.authStore.companyName() ?? 'Veterinaria');
         this.messageService.add({
           severity: 'success', summary: 'Pago registrado',
           detail: r.data?.saldoPendiente ? `Queda un saldo de S/ ${Number(r.data.saldoPendiente).toFixed(2)}` : 'La cuenta quedó pagada.'
@@ -247,6 +250,58 @@ export class CajaComponent implements OnInit {
 
   cambioPago(): number {
     return Math.max(0, Number(this.pagoForm.montoRecibido ?? 0) - Number(this.pagoForm.monto ?? 0));
+  }
+
+  limitarMontoRecibido(valor: number | null) {
+    if (valor == null || !Number.isFinite(Number(valor))) {
+      this.pagoForm.montoRecibido = null;
+      return;
+    }
+    this.pagoForm.montoRecibido = Math.min(10000, Math.max(0, Number(valor)));
+  }
+
+  cargarSesion() {
+    if (!this.companyId) return;
+    this.cajaService.obtenerSesion(this.companyId).subscribe({
+      next: r => this.sesionCaja.set(r.data ?? null),
+      error: () => this.sesionCaja.set(null)
+    });
+  }
+
+  abrirModalSesion(tipo: 'ABRIR' | 'ARQUEO' | 'CERRAR') {
+    this.sesionForm = {
+      monto: tipo === 'ABRIR' ? 0 : Number(this.sesionCaja()?.efectivoEsperado ?? 0),
+      observaciones: ''
+    };
+    this.showSesionModal.set(tipo);
+  }
+
+  guardarSesion() {
+    const tipo = this.showSesionModal();
+    const monto = Number(this.sesionForm.monto);
+    if (!tipo || !Number.isFinite(monto) || monto < 0 || monto > (tipo === 'ABRIR' ? 10000 : 100000)) {
+      this.messageService.add({ severity: 'warn', summary: 'Monto inválido', detail: 'Revisa el efectivo ingresado.' });
+      return;
+    }
+    this.savingSesion.set(true);
+    const request = tipo === 'ABRIR'
+      ? this.cajaService.abrirCaja(this.companyId, monto)
+      : tipo === 'ARQUEO'
+        ? this.cajaService.arquearCaja(this.companyId, monto, normalizeText(this.sesionForm.observaciones))
+        : this.cajaService.cerrarCaja(this.companyId, monto, normalizeText(this.sesionForm.observaciones));
+    request.subscribe({
+      next: r => {
+        this.sesionCaja.set(tipo === 'CERRAR' ? null : r.data);
+        this.showSesionModal.set(null);
+        this.savingSesion.set(false);
+        this.cargar();
+        this.messageService.add({ severity: 'success', summary: tipo === 'ABRIR' ? 'Caja abierta' : tipo === 'ARQUEO' ? 'Arqueo registrado' : 'Caja cerrada' });
+      },
+      error: err => {
+        this.savingSesion.set(false);
+        this.messageService.add({ severity: 'error', summary: 'No se completó la operación', detail: err?.error?.message ?? 'Intenta nuevamente.' });
+      }
+    });
   }
 
   metodoPagoLabel(metodo: MetodoPago): string {
@@ -298,6 +353,10 @@ export class CajaComponent implements OnInit {
   }
 
   abrirEgreso() {
+    if (!this.sesionCaja()) {
+      this.messageService.add({ severity: 'warn', summary: 'Caja cerrada', detail: 'Abre la caja antes de registrar egresos.' });
+      return;
+    }
     this.egresoForm = { monto: null, descripcion: '', concepto: 'GASTO_OPERATIVO' };
     this.showEgresoModal.set(true);
   }

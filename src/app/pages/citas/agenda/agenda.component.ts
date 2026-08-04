@@ -2065,11 +2065,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
   }
 
   canCobrar(cita: CitaResponse): boolean {
-    if (!cita.servicioId) return false;
-    if (cita.estado === EstadoCita.CANCELADA || cita.estado === EstadoCita.NO_ASISTIO || cita.estado === EstadoCita.ELIMINADA) return false;
-    const total = cita.totalServicio ?? 0;
-    const pagado = cita.montoPagado ?? 0;
-    return total > 0 && pagado <= 0;
+    return false;
   }
 
   abrirCaja(cita: CitaResponse) {
@@ -2119,13 +2115,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
     const request: PagoRequest = {
       citaId: cita.id,
       metodoPago: this.metodoPago(),
-      ...(this.metodoPago() === 'EFECTIVO'
-        ? { montoRecibido: this.montoRecibido() ?? 0 }
-        : {
-            yapePhoneNumber: Number(this.yapePhone()),
-            yapeOtp: Number(this.yapeOtp()),
-            payerEmail: this.yapeEmail().trim()
-          })
+      ...(this.metodoPago() === 'EFECTIVO' ? { montoRecibido: this.montoRecibido() ?? 0 } : {})
     };
 
     this.pagoService.registrar(request).subscribe({

@@ -1,6 +1,7 @@
 export interface PagoResponse {
   id: number;
   citaId: number;
+  numeroCita: string;
   metodoPago: string;
   monto: number;
   montoRecibido?: number;
@@ -15,6 +16,7 @@ export interface PagoResponse {
 export interface PagoListResponse {
   id: number;
   citaId: number;
+  numeroCita: string;
   metodoPago: string;
   monto: number;
   montoRecibido: number | null;
