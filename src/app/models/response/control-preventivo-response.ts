@@ -6,6 +6,15 @@ export interface TipoVacunaResponse {
   nombre: string;
   especie: string;
   periodicidadMesesSugerida?: number;
+  precio: number;
+}
+
+export interface TipoDesparasitanteResponse {
+  id: number;
+  nombre: string;
+  especie: string;
+  periodicidadMesesSugerida?: number;
+  precio: number;
 }
 
 export interface ControlPreventivoResponse {

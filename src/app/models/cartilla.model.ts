@@ -3,6 +3,7 @@ export interface CartillaAplicacionRequest {
   empleadoId?: number;
   servicioId: number;
   tipoVacunaId?: number;
+  tipoDesparasitanteId?: number;
   producto?: string;
   fechaAplicacion: string;   // yyyy-MM-dd
   periodicidadMeses: number;
@@ -41,4 +42,13 @@ export interface TipoVacuna {
   nombre: string;
   especie: string;
   periodicidadMesesSugerida?: number;
+  precio: number;
+}
+
+export interface TipoDesparasitante {
+  id: number;
+  nombre: string;
+  especie: string;
+  periodicidadMesesSugerida?: number;
+  precio: number;
 }
