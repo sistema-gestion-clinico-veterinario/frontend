@@ -6,7 +6,8 @@ import {
   CartillaAplicacionRequest,
   CartillaAplicacionResponse,
   AplicacionPreventiva,
-  TipoVacuna
+  TipoVacuna,
+  TipoDesparasitante
 } from '../../models/cartilla.model';
 
 @Injectable({ providedIn: 'root' })
@@ -29,5 +30,17 @@ export class CartillaService {
 
   listarTiposVacuna(petId: number) {
     return this.http.get<ApiResponse<TipoVacuna[]>>(`${this.preventivosUrl}/pets/${petId}/vaccine-types`);
+  }
+
+  listarTiposDesparasitante(petId: number) {
+    return this.http.get<ApiResponse<TipoDesparasitante[]>>(`${this.preventivosUrl}/pets/${petId}/deworming-products`);
+  }
+
+  crearTipoVacuna(request: { nombre: string; especie: string; periodicidadMesesSugerida?: number; precio: number }) {
+    return this.http.post<ApiResponse<TipoVacuna>>(`${this.preventivosUrl}/vaccine-types`, request);
+  }
+
+  crearTipoDesparasitante(request: { nombre: string; especie: string; periodicidadMesesSugerida?: number; precio: number }) {
+    return this.http.post<ApiResponse<TipoDesparasitante>>(`${this.preventivosUrl}/deworming-products`, request);
   }
 }
