@@ -4,10 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { CartillaService } from '../../core/services/cartilla.service';
+import { ControlPreventivoService } from '../../core/services/control-preventivo.service';
 import { MascotaService } from '../../core/services/mascota.service';
 import { ServicioService } from '../../core/services/servicio.service';
 import { MascotaResponse } from '../../models/response/mascota-response';
 import { ServicioResponse } from '../../models/response/servicio-response';
+import { ControlPreventivoResponse, TipoControlPreventivo } from '../../models/response/control-preventivo-response';
 import { AplicacionPreventiva, TipoVacuna, CartillaAplicacionResponse } from '../../models/cartilla.model';
 
 @Component({
@@ -19,10 +21,11 @@ import { AplicacionPreventiva, TipoVacuna, CartillaAplicacionResponse } from '..
   styleUrls: ['./cartilla.component.scss']
 })
 export class CartillaComponent implements OnInit {
-  private readonly cartillaService = inject(CartillaService);
-  private readonly mascotaService   = inject(MascotaService);
-  private readonly servicioService  = inject(ServicioService);
-  private readonly msgService       = inject(MessageService);
+  private readonly cartillaService         = inject(CartillaService);
+  private readonly preventivoService       = inject(ControlPreventivoService);
+  private readonly mascotaService          = inject(MascotaService);
+  private readonly servicioService         = inject(ServicioService);
+  private readonly msgService              = inject(MessageService);
 
   readonly modo = signal<'VACUNACION' | 'DESPARASITACION'>('VACUNACION');
 
@@ -44,11 +47,27 @@ export class CartillaComponent implements OnInit {
   serviciosPreventivos = signal<ServicioResponse[]>([]);
   servicioId: number | null = null;
   tipoVacunaId: number | null = null;
+  tipoProducto = '';
   tiposVacuna = signal<TipoVacuna[]>([]);
-  producto    = '';
   fechaAplicacion = '';
   periodicidadMeses = 3;
   fechaProxima = '';
+
+  // Control preventivo seleccionado para aplicar
+  controlActivo = signal<ControlPreventivoResponse | null>(null);
+
+  // Controles preventivos de la mascota
+  controles      = signal<ControlPreventivoResponse[]>([]);
+  cargandoCtrl   = signal(false);
+  controlReprogramandoId = signal<number | null>(null);
+  fechaReprogramacion    = signal('');
+
+  // Programar control futuro
+  mostrarProgramar = signal(false);
+  progTipo         = 'VACUNACION' as TipoControlPreventivo;
+  progTipoVacunaId = null as number | null;
+  progNombreControl = '';
+  progFecha        = '';
 
   // Resultado
   resultado = signal<CartillaAplicacionResponse | null>(null);
@@ -59,6 +78,10 @@ export class CartillaComponent implements OnInit {
     this.modo() === 'VACUNACION'
       ? { titulo: 'Cartilla de Vacunación', check: 'vacuna' }
       : { titulo: 'Cartilla de Desparasitación', check: 'desparasitación' }
+  );
+
+  readonly controlesOrdenados = computed(() =>
+    [...this.controles()].sort((a, b) => a.fechaRecomendada.localeCompare(b.fechaRecomendada))
   );
 
   ngOnInit() {
@@ -90,21 +113,38 @@ export class CartillaComponent implements OnInit {
     this.mascotaSel.set(m);
     this.resultados.set([]);
     this.searchQuery = m.nombreCompleto;
-    if (this.modo() === 'VACUNACION') {
-      this.cargarTiposVacuna(m.id);
-    }
+    this.cargarDatosMascota(m.id);
+  }
+
+  private cargarDatosMascota(petId: number) {
+    this.cargarTiposVacuna(petId);
+    this.cargarControles(petId);
+    this.cargarMatriz(petId);
   }
 
   private cargarTiposVacuna(petId: number) {
-    this.cartillaService.listarTiposVacuna(petId).subscribe({
+    this.preventivoService.listarTiposVacuna(petId).subscribe({
       next: (res) => this.tiposVacuna.set(res.data ?? []),
       error: () => this.msgService.add({ severity: 'warn', summary: 'Aviso', detail: 'No se pudieron cargar los tipos de vacuna' })
+    });
+  }
+
+  private cargarControles(petId: number) {
+    this.cargandoCtrl.set(true);
+    this.preventivoService.listarControles(petId).subscribe({
+      next: (res) => {
+        this.controles.set(res.data ?? []);
+        this.controlReprogramandoId.set(null);
+      },
+      error: () => this.msgService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar los controles preventivos' }),
+      complete: () => this.cargandoCtrl.set(false)
     });
   }
 
   cambiarModo(modo: 'VACUNACION' | 'DESPARASITACION') {
     this.modo.set(modo);
     this.resultado.set(null);
+    this.controlActivo.set(null);
     const m = this.mascotaSel();
     if (modo === 'VACUNACION' && m) this.cargarTiposVacuna(m.id);
   }
@@ -125,10 +165,94 @@ export class CartillaComponent implements OnInit {
       next: (res) => {
         this.mascotaSel.set(res.data);
         this.mostrarAlta.set(false);
-        if (this.modo() === 'VACUNACION') this.cargarTiposVacuna(res.data.id);
+        this.cargarDatosMascota(res.data.id);
         this.msgService.add({ severity: 'success', summary: 'Mascota registrada', detail: res.data.nombreCompleto });
       },
       error: (err) => this.msgService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo registrar la mascota' })
+    });
+  }
+
+  prepararAplicacion(control: ControlPreventivoResponse) {
+    this.controlActivo.set(control);
+    this.modo.set(control.tipo);
+    this.resultado.set(null);
+    if (control.tipo === 'VACUNACION') {
+      this.tipoVacunaId = control.tipoVacunaId ?? null;
+      this.tipoProducto = '';
+      this.periodicidadMeses = control.tipoVacunaId
+        ? (this.tiposVacuna().find(v => v.id === control.tipoVacunaId)?.periodicidadMesesSugerida ?? this.periodicidadMeses)
+        : this.periodicidadMeses;
+    } else {
+      this.tipoProducto = control.nombreControl || '';
+      this.tipoVacunaId = null;
+    }
+    this.fechaAplicacion = new Date().toISOString().slice(0, 10);
+  }
+
+  iniciarReprogramacion(control: ControlPreventivoResponse) {
+    this.controlReprogramandoId.set(control.id);
+    this.fechaReprogramacion.set(control.fechaRecomendada);
+  }
+
+  guardarReprogramacion(control: ControlPreventivoResponse) {
+    const fecha = this.fechaReprogramacion();
+    if (!fecha) return;
+    this.guardando.set(true);
+    this.preventivoService.reprogramar(control.id, fecha).subscribe({
+      next: () => {
+        this.controlReprogramandoId.set(null);
+        this.msgService.add({ severity: 'success', summary: 'Control reprogramado', detail: 'Fecha recomendada actualizada' });
+        this.recargarMascota();
+      },
+      error: (err) => this.msgService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo reprogramar el control' }),
+      complete: () => this.guardando.set(false)
+    });
+  }
+
+  cancelarControl(control: ControlPreventivoResponse) {
+    this.guardando.set(true);
+    this.preventivoService.cancelar(control.id).subscribe({
+      next: () => {
+        this.msgService.add({ severity: 'success', summary: 'Control cancelado', detail: control.nombreControl });
+        this.recargarMascota();
+      },
+      error: (err) => this.msgService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo cancelar el control' }),
+      complete: () => this.guardando.set(false)
+    });
+  }
+
+  abrirProgramar() {
+    this.mostrarProgramar.set(!this.mostrarProgramar());
+    this.progFecha = new Date().toISOString().slice(0, 10);
+  }
+
+  programarControl() {
+    const m = this.mascotaSel();
+    if (!m) { this.msgService.add({ severity: 'warn', summary: 'Falta mascota', detail: 'Seleccione la mascota' }); return; }
+    if (this.progTipo === 'VACUNACION' && !this.progTipoVacunaId) {
+      this.msgService.add({ severity: 'warn', summary: 'Falta vacuna', detail: 'Seleccione la vacuna' }); return;
+    }
+    if (this.progTipo === 'DESPARASITACION' && !this.progNombreControl?.trim()) {
+      this.msgService.add({ severity: 'warn', summary: 'Falta producto', detail: 'Indique el producto' }); return;
+    }
+    if (!this.progFecha) { this.msgService.add({ severity: 'warn', summary: 'Falta fecha', detail: 'Indique la fecha recomendada' }); return; }
+
+    this.guardando.set(true);
+    this.preventivoService.programar(m.id, {
+      tipo: this.progTipo,
+      tipoVacunaId: this.progTipo === 'VACUNACION' ? this.progTipoVacunaId! : undefined,
+      nombreControl: this.progTipo === 'DESPARASITACION' ? this.progNombreControl.trim() : undefined,
+      fechaRecomendada: this.progFecha,
+    }).subscribe({
+      next: () => {
+        this.msgService.add({ severity: 'success', summary: 'Control programado', detail: 'Se notificará al apoderado cuando se acerque la fecha' });
+        this.mostrarProgramar.set(false);
+        this.progNombreControl = '';
+        this.progTipoVacunaId = null;
+        this.recargarMascota();
+      },
+      error: (err) => this.msgService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo programar el control' }),
+      complete: () => this.guardando.set(false)
     });
   }
 
@@ -137,7 +261,7 @@ export class CartillaComponent implements OnInit {
     if (!m) { this.msgService.add({ severity: 'warn', summary: 'Falta mascota', detail: 'Seleccione o registre la mascota' }); return; }
     if (!this.servicioId) { this.msgService.add({ severity: 'warn', summary: 'Falta servicio', detail: 'Seleccione el servicio preventivo' }); return; }
     if (this.modo() === 'VACUNACION' && !this.tipoVacunaId) { this.msgService.add({ severity: 'warn', summary: 'Falta vacuna', detail: 'Seleccione la vacuna' }); return; }
-    if (this.modo() === 'DESPARASITACION' && !this.producto?.trim()) { this.msgService.add({ severity: 'warn', summary: 'Falta producto', detail: 'Indique el producto' }); return; }
+    if (this.modo() === 'DESPARASITACION' && !this.tipoProducto?.trim()) { this.msgService.add({ severity: 'warn', summary: 'Falta producto', detail: 'Indique el producto' }); return; }
     if (!this.fechaAplicacion) { this.msgService.add({ severity: 'warn', summary: 'Falta fecha', detail: 'Indique la fecha de aplicación' }); return; }
 
     const req = {
@@ -146,7 +270,7 @@ export class CartillaComponent implements OnInit {
       fechaAplicacion: this.fechaAplicacion,
       periodicidadMeses: this.periodicidadMeses,
       fechaProxima: this.fechaProxima || undefined,
-      ...(this.modo() === 'VACUNACION' ? { tipoVacunaId: this.tipoVacunaId! } : { producto: this.producto.trim() })
+      ...(this.modo() === 'VACUNACION' ? { tipoVacunaId: this.tipoVacunaId! } : { producto: this.tipoProducto.trim() })
     };
 
     this.guardando.set(true);
@@ -158,11 +282,19 @@ export class CartillaComponent implements OnInit {
       next: (res) => {
         this.resultado.set(res.data);
         this.msgService.add({ severity: 'success', summary: 'Registrado', detail: `Cobro generado: ${res.data.codigoCobro} (S/ ${res.data.total})` });
-        this.cargarMatriz(m.id);
+        this.recargarMascota();
       },
       error: (err) => this.msgService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo registrar' }),
       complete: () => this.guardando.set(false)
     });
+  }
+
+  private recargarMascota() {
+    const m = this.mascotaSel();
+    if (!m) return;
+    this.cargarControles(m.id);
+    this.cargarMatriz(m.id);
+    if (this.modo() === 'VACUNACION') this.cargarTiposVacuna(m.id);
   }
 
   private cargarMatriz(petId: number) {
@@ -172,14 +304,42 @@ export class CartillaComponent implements OnInit {
     });
   }
 
+  claseEstadoPreventivo(estado: string) {
+    if (estado === 'ATRASADO') return 'bg-rose-50 text-rose-700';
+    if (estado === 'PENDIENTE' || estado === 'PROXIMO') return 'bg-amber-50 text-amber-700';
+    if (estado === 'SUSPENDIDO_POR_CITA') return 'bg-sky-50 text-sky-700';
+    return 'bg-emerald-50 text-emerald-700';
+  }
+
+  etiquetaEstadoPreventivo(estado: string) {
+    const etiquetas: Record<string, string> = {
+      PROGRAMADO: 'Programado',
+      PROXIMO: 'Vence próximamente',
+      PENDIENTE: 'Debe aplicarse hoy',
+      ATRASADO: 'Control vencido',
+      SUSPENDIDO_POR_CITA: 'Cita programada',
+      APLICADO: 'Aplicado',
+      CANCELADO: 'Cancelado'
+    };
+    return etiquetas[estado] ?? estado;
+  }
+
+  tipoLabel(tipo: string) {
+    return tipo === 'VACUNACION' ? 'Vacunación' : 'Desparasitación';
+  }
+
   limpiar() {
     this.mascotaSel.set(null);
     this.resultado.set(null);
     this.matriz.set([]);
+    this.controles.set([]);
+    this.controlActivo.set(null);
+    this.controlReprogramandoId.set(null);
+    this.mostrarProgramar.set(false);
     this.searchQuery = '';
     this.servicioId = null;
     this.tipoVacunaId = null;
-    this.producto = '';
+    this.tipoProducto = '';
     this.fechaAplicacion = '';
     this.fechaProxima = '';
   }

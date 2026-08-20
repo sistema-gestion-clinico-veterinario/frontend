@@ -48,6 +48,8 @@ export class RouteMapperService {
     VISTA_HISTORIAS_MASCOTA_EMP: '/empleado/historias-clinicas/mascota/:numeroHc',
     VISTA_HISTORIAS_CONSULTA_EMP: '/empleado/historias-clinicas/consulta/:consultaId',
 
+    VISTA_CARTILLA: '/historias-clinicas/cartilla',
+
     VISTA_CITAS_AGENDA: '/citas/agenda',
     VISTA_CITAS_AGENDA_ADMIN: '/admin/citas/agenda',
     VISTA_CITAS_AGENDA_EMPLEADO: '/empleado/citas/agenda',

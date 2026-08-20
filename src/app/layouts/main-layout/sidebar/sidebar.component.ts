@@ -183,6 +183,7 @@ export class SidebarComponent implements OnInit {
       VISTA_MASCOTAS: 'pi pi-heart',
       VISTA_RECETAS: 'pi pi-file-edit',
       VISTA_HISTORIAS: 'pi pi-folder-open',
+      VISTA_CARTILLA: 'pi pi-shield',
       VISTA_CITAS_AGENDA: 'pi pi-calendar',
       VISTA_APODERADO_DASHBOARD: 'pi pi-chart-line',
       VISTA_MIS_MASCOTAS: 'pi pi-heart-fill',
