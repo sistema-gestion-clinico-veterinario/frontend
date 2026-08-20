@@ -197,6 +197,10 @@ export const routes: Routes = [
           {
             path: 'consulta/:consultaId',
             loadComponent: () => import('./pages/historias-clinicas/consulta/consulta-form.component').then((m) => m.ConsultaFormComponent)
+          },
+          {
+            path: 'cartilla',
+            loadComponent: () => import('./pages/cartilla/cartilla.component').then((m) => m.CartillaComponent)
           }
         ]
       },
@@ -215,6 +219,10 @@ export const routes: Routes = [
           {
             path: 'consulta/:consultaId',
             loadComponent: () => import('./pages/historias-clinicas/consulta/consulta-form.component').then((m) => m.ConsultaFormComponent)
+          },
+          {
+            path: 'cartilla',
+            loadComponent: () => import('./pages/cartilla/cartilla.component').then((m) => m.CartillaComponent)
           }
         ]
       },
@@ -233,6 +241,10 @@ export const routes: Routes = [
           {
             path: 'consulta/:consultaId',
             loadComponent: () => import('./pages/historias-clinicas/consulta/consulta-form.component').then((m) => m.ConsultaFormComponent)
+          },
+          {
+            path: 'cartilla',
+            loadComponent: () => import('./pages/cartilla/cartilla.component').then((m) => m.CartillaComponent)
           }
         ]
       },
