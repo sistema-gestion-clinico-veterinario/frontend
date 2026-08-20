@@ -8,6 +8,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { DatePickerModule } from 'primeng/datepicker';
 import { TagModule } from 'primeng/tag';
+import { DialogModule } from 'primeng/dialog';
 import { AutoCompleteModule, AutoCompleteCompleteEvent } from 'primeng/autocomplete';
 import { CardModule } from 'primeng/card';
 import { TooltipModule } from 'primeng/tooltip';
@@ -18,7 +19,7 @@ import { ServicioService } from '../../core/services/servicio.service';
 import { MascotaResponse } from '../../models/response/mascota-response';
 import { ServicioResponse } from '../../models/response/servicio-response';
 import { ControlPreventivoResponse, TipoControlPreventivo } from '../../models/response/control-preventivo-response';
-import { AplicacionPreventiva, TipoVacuna, TipoDesparasitante, CartillaAplicacionResponse } from '../../models/cartilla.model';
+import { AplicacionPreventiva, TipoVacuna, TipoDesparasitante, CartillaAplicacionResponse, IntervaloUnidad } from '../../models/cartilla.model';
 import { AuthStore } from '../../store/auth.store';
 
 @Component({
@@ -33,6 +34,7 @@ import { AuthStore } from '../../store/auth.store';
     SelectModule,
     DatePickerModule,
     TagModule,
+    DialogModule,
     AutoCompleteModule,
     CardModule,
     TooltipModule
@@ -76,15 +78,37 @@ export class CartillaComponent implements OnInit {
   tiposVacuna = signal<TipoVacuna[]>([]);
   tiposDesparasitante = signal<TipoDesparasitante[]>([]);
   fechaAplicacion = '';
-  periodicidadMeses = 3;
+  intervaloCantidad = 3;
+  intervaloUnidad: IntervaloUnidad = 'MESES';
   fechaProxima = '';
+  lote = '';
+  fechaVencimientoProducto = '';
+  dosis: number | null = null;
+  unidadDosis = '';
+  viaAdministracion = '';
+  sitioAplicacion = '';
+  pesoKg: number | null = null;
+  observaciones = '';
+  readonly unidadesIntervalo = [
+    { label: 'Días', value: 'DIAS' },
+    { label: 'Semanas', value: 'SEMANAS' },
+    { label: 'Meses', value: 'MESES' }
+  ];
+  readonly fechaHoyLima = this.fechaLocalLima();
 
   // Alta en catálogo (vacuna / desparasitante)
-  mostrarNuevaVacuna = signal(false);
-  mostrarNuevaDesparasitacion = signal(false);
+  dialogVisible = signal(false);
+  dialogTipo: 'VACUNACION' | 'DESPARASITACION' = 'VACUNACION';
   nuevoCatNombre = '';
   nuevoCatPeriodicidad = 12;
   nuevoCatPrecio: number | null = null;
+
+  readonly precioSeleccionado = computed(() => {
+    if (this.modo() === 'VACUNACION') {
+      return this.tiposVacuna().find((v) => v.id === this.tipoVacunaId)?.precio ?? null;
+    }
+    return this.tiposDesparasitante().find((d) => d.id === this.tipoDesparasitanteId)?.precio ?? null;
+  });
 
   // Control preventivo seleccionado para aplicar
   controlActivo = signal<ControlPreventivoResponse | null>(null);
@@ -114,20 +138,44 @@ export class CartillaComponent implements OnInit {
   );
 
   readonly controlesOrdenados = computed(() =>
-    [...this.controles()].sort((a, b) => a.fechaRecomendada.localeCompare(b.fechaRecomendada))
+    this.controles()
+      .filter((c) => c.tipo === this.modo() && !['APLICADO', 'CANCELADO'].includes(c.estado))
+      .sort((a, b) => a.fechaRecomendada.localeCompare(b.fechaRecomendada))
   );
+
+  readonly controlesAtrasados = computed(() =>
+    this.controlesOrdenados().filter(c => c.estado === 'ATRASADO').length
+  );
+
+  readonly controlesProgramados = computed(() =>
+    this.controlesOrdenados().filter(c => c.estado !== 'ATRASADO').length
+  );
+
+  readonly serviciosModo = computed(() => this.serviciosPreventivos().filter((s) =>
+    s.tipoControlPreventivo === this.modo()
+  ));
 
   readonly vacunasMatriz = computed(() => this.matriz().filter((a) => a.tipo === 'VACUNACION'));
   readonly desparasitacionesMatriz = computed(() => this.matriz().filter((a) => a.tipo === 'DESPARASITACION'));
+  readonly aplicacionesModo = computed(() => this.modo() === 'VACUNACION'
+    ? this.vacunasMatriz() : this.desparasitacionesMatriz());
 
   readonly totalVacunas = computed(() => this.vacunasMatriz().length);
   readonly totalDesparasitaciones = computed(() => this.desparasitacionesMatriz().length);
 
   readonly proximaAplicacion = computed(() => {
     const pendientes = this.controles()
-      .filter((c) => c.estado !== 'APLICADO' && c.estado !== 'CANCELADO')
+      .filter((c) => c.tipo === this.modo() && c.estado !== 'APLICADO' && c.estado !== 'CANCELADO')
       .map((c) => c.fechaRecomendada);
     return pendientes.length ? pendientes.sort((a, b) => a.localeCompare(b))[0] : '—';
+  });
+
+  readonly etiquetaProximaAplicacion = computed(() => {
+    const fecha = this.proximaAplicacion();
+    if (fecha === '—') return 'Sin controles pendientes';
+    if (fecha < this.fechaHoyLima) return 'Control más atrasado';
+    if (fecha === this.fechaHoyLima) return 'Aplicación para hoy';
+    return 'Próxima aplicación';
   });
 
   ngOnInit() {
@@ -224,6 +272,9 @@ export class CartillaComponent implements OnInit {
     this.modo.set(modo);
     this.resultado.set(null);
     this.controlActivo.set(null);
+    this.servicioId = null;
+    this.intervaloCantidad = modo === 'VACUNACION' ? 12 : 3;
+    this.intervaloUnidad = 'MESES';
     const m = this.mascotaSel();
     if (!m) return;
     if (modo === 'VACUNACION') this.cargarTiposVacuna(m.id);
@@ -239,7 +290,7 @@ export class CartillaComponent implements OnInit {
       nombreCompleto: this.nuevoNombre.trim(),
       especie: this.nuevaEspecie,
       sexo: this.nuevoSexo || 'MACHO',
-      fechaNacimiento: this.nuevaFechaNac || new Date().toISOString().slice(0, 10),
+      fechaNacimiento: this.nuevaFechaNac || this.fechaLocalLima(),
       apoderadoId: this.nuevoApoderadoId,
       razaId: 0
     }).subscribe({
@@ -259,15 +310,29 @@ export class CartillaComponent implements OnInit {
     this.resultado.set(null);
     if (control.tipo === 'VACUNACION') {
       this.tipoVacunaId = control.tipoVacunaId ?? null;
-      this.periodicidadMeses = control.tipoVacunaId
-        ? (this.tiposVacuna().find(v => v.id === control.tipoVacunaId)?.periodicidadMesesSugerida ?? this.periodicidadMeses)
-        : this.periodicidadMeses;
+      this.intervaloCantidad = control.tipoVacunaId
+        ? (this.tiposVacuna().find(v => v.id === control.tipoVacunaId)?.periodicidadMesesSugerida ?? this.intervaloCantidad)
+        : this.intervaloCantidad;
+      this.intervaloUnidad = 'MESES';
     } else {
       this.tipoDesparasitanteId = null;
       this.tipoVacunaId = null;
     }
     if (control.tipo === 'DESPARASITACION') this.cargarTiposDesparasitante(this.mascotaSel()!.id);
-    this.fechaAplicacion = new Date().toISOString().slice(0, 10);
+    const servicios = this.serviciosPreventivos().filter(s => s.tipoControlPreventivo === control.tipo);
+    this.servicioId = servicios.length === 1 ? servicios[0].id : null;
+    this.fechaAplicacion = this.fechaLocalLima();
+  }
+
+  actualizarIntervaloSugerido(id: number | null) {
+    if (!id) return;
+    const meses = this.modo() === 'VACUNACION'
+      ? this.tiposVacuna().find(v => v.id === id)?.periodicidadMesesSugerida
+      : this.tiposDesparasitante().find(d => d.id === id)?.periodicidadMesesSugerida;
+    if (meses) {
+      this.intervaloCantidad = meses;
+      this.intervaloUnidad = 'MESES';
+    }
   }
 
   iniciarReprogramacion(control: ControlPreventivoResponse) {
@@ -304,7 +369,8 @@ export class CartillaComponent implements OnInit {
 
   abrirProgramar() {
     this.mostrarProgramar.set(!this.mostrarProgramar());
-    this.progFecha = new Date().toISOString().slice(0, 10);
+    this.progTipo = this.modo();
+    this.progFecha = this.fechaLocalLima();
   }
 
   programarControl() {
@@ -344,13 +410,29 @@ export class CartillaComponent implements OnInit {
     if (this.modo() === 'VACUNACION' && !this.tipoVacunaId) { this.msgService.add({ severity: 'warn', summary: 'Falta vacuna', detail: 'Seleccione la vacuna' }); return; }
     if (this.modo() === 'DESPARASITACION' && !this.tipoDesparasitanteId) { this.msgService.add({ severity: 'warn', summary: 'Falta desparasitante', detail: 'Seleccione el desparasitante' }); return; }
     if (!this.fechaAplicacion) { this.msgService.add({ severity: 'warn', summary: 'Falta fecha', detail: 'Indique la fecha de aplicación' }); return; }
+    if (!this.fechaProxima && (!this.intervaloCantidad || !this.intervaloUnidad)) {
+      this.msgService.add({ severity: 'warn', summary: 'Falta próximo control', detail: 'Indique una próxima fecha o un intervalo' }); return;
+    }
+    if (this.dosis != null && !this.unidadDosis.trim()) {
+      this.msgService.add({ severity: 'warn', summary: 'Falta unidad', detail: 'Indique la unidad de la dosis' }); return;
+    }
 
     const req = {
       mascotaId: m.id,
+      controlPreventivoId: this.controlActivo()?.id,
       servicioId: this.servicioId,
       fechaAplicacion: this.fechaAplicacion,
-      periodicidadMeses: this.periodicidadMeses,
+      intervaloCantidad: this.fechaProxima ? undefined : this.intervaloCantidad,
+      intervaloUnidad: this.fechaProxima ? undefined : this.intervaloUnidad,
       fechaProxima: this.fechaProxima || undefined,
+      lote: this.lote.trim() || undefined,
+      fechaVencimientoProducto: this.fechaVencimientoProducto || undefined,
+      dosis: this.dosis ?? undefined,
+      unidadDosis: this.unidadDosis.trim() || undefined,
+      viaAdministracion: this.viaAdministracion.trim() || undefined,
+      sitioAplicacion: this.sitioAplicacion.trim() || undefined,
+      pesoKg: this.pesoKg ?? undefined,
+      observaciones: this.observaciones.trim() || undefined,
       ...(this.modo() === 'VACUNACION' ? { tipoVacunaId: this.tipoVacunaId! } : { tipoDesparasitanteId: this.tipoDesparasitanteId! })
     };
 
@@ -362,6 +444,7 @@ export class CartillaComponent implements OnInit {
     call.subscribe({
       next: (res) => {
         this.resultado.set(res.data);
+        this.limpiarAplicacion();
         this.msgService.add({ severity: 'success', summary: 'Registrado', detail: `Cobro generado: ${res.data.codigoCobro} (S/ ${res.data.total})` });
         this.recargarMascota();
       },
@@ -379,6 +462,19 @@ export class CartillaComponent implements OnInit {
     else this.cargarTiposDesparasitante(m.id);
   }
 
+  private limpiarAplicacion() {
+    this.controlActivo.set(null);
+    this.fechaProxima = '';
+    this.lote = '';
+    this.fechaVencimientoProducto = '';
+    this.dosis = null;
+    this.unidadDosis = '';
+    this.viaAdministracion = '';
+    this.sitioAplicacion = '';
+    this.pesoKg = null;
+    this.observaciones = '';
+  }
+
   crearVacuna() {
     const m = this.mascotaSel();
     if (!m) { this.msgService.add({ severity: 'warn', summary: 'Falta mascota', detail: 'Seleccione la mascota' }); return; }
@@ -392,10 +488,13 @@ export class CartillaComponent implements OnInit {
       precio: this.nuevoCatPrecio
     }).subscribe({
       next: (res) => {
-        this.msgService.add({ severity: 'success', summary: 'Vacuna creada', detail: res.data.nombre });
-        this.mostrarNuevaVacuna.set(false);
+        this.tiposVacuna.update(items => [...items.filter(item => item.id !== res.data.id), res.data]
+          .sort((a, b) => a.nombre.localeCompare(b.nombre)));
+        this.tipoVacunaId = res.data.id;
+        this.actualizarIntervaloSugerido(res.data.id);
+        this.msgService.add({ severity: 'success', summary: 'Vacuna agregada al catálogo', detail: `${res.data.nombre} quedó seleccionada para esta aplicación` });
+        this.dialogVisible.set(false);
         this.limpiarCatalogoForm();
-        this.cargarTiposVacuna(m.id);
       },
       error: (err) => this.msgService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo crear la vacuna' })
     });
@@ -414,13 +513,22 @@ export class CartillaComponent implements OnInit {
       precio: this.nuevoCatPrecio
     }).subscribe({
       next: (res) => {
-        this.msgService.add({ severity: 'success', summary: 'Desparasitante creado', detail: res.data.nombre });
-        this.mostrarNuevaDesparasitacion.set(false);
+        this.tiposDesparasitante.update(items => [...items.filter(item => item.id !== res.data.id), res.data]
+          .sort((a, b) => a.nombre.localeCompare(b.nombre)));
+        this.tipoDesparasitanteId = res.data.id;
+        this.actualizarIntervaloSugerido(res.data.id);
+        this.msgService.add({ severity: 'success', summary: 'Desparasitante agregado al catálogo', detail: `${res.data.nombre} quedó seleccionado para esta aplicación` });
+        this.dialogVisible.set(false);
         this.limpiarCatalogoForm();
-        this.cargarTiposDesparasitante(m.id);
       },
       error: (err) => this.msgService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo crear el desparasitante' })
     });
+  }
+
+  abrirNuevaCatalogo() {
+    this.limpiarCatalogoForm();
+    this.dialogTipo = this.modo();
+    this.dialogVisible.set(true);
   }
 
   private limpiarCatalogoForm() {
@@ -483,10 +591,18 @@ export class CartillaComponent implements OnInit {
     this.tipoDesparasitanteId = null;
     this.tipoProducto = '';
     this.tiposDesparasitante.set([]);
-    this.mostrarNuevaVacuna.set(false);
-    this.mostrarNuevaDesparasitacion.set(false);
+    this.dialogVisible.set(false);
     this.limpiarCatalogoForm();
     this.fechaAplicacion = '';
     this.fechaProxima = '';
+    this.limpiarAplicacion();
+  }
+
+  private fechaLocalLima(): string {
+    const partes = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/Lima', year: 'numeric', month: '2-digit', day: '2-digit'
+    }).formatToParts(new Date());
+    const valor = (tipo: string) => partes.find(p => p.type === tipo)?.value ?? '';
+    return `${valor('year')}-${valor('month')}-${valor('day')}`;
   }
 }
