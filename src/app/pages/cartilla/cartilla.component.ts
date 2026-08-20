@@ -3,6 +3,14 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { SelectModule } from 'primeng/select';
+import { DatePickerModule } from 'primeng/datepicker';
+import { TagModule } from 'primeng/tag';
+import { AutoCompleteModule, AutoCompleteCompleteEvent } from 'primeng/autocomplete';
+import { CardModule } from 'primeng/card';
+import { TooltipModule } from 'primeng/tooltip';
 import { CartillaService } from '../../core/services/cartilla.service';
 import { ControlPreventivoService } from '../../core/services/control-preventivo.service';
 import { MascotaService } from '../../core/services/mascota.service';
@@ -10,12 +18,25 @@ import { ServicioService } from '../../core/services/servicio.service';
 import { MascotaResponse } from '../../models/response/mascota-response';
 import { ServicioResponse } from '../../models/response/servicio-response';
 import { ControlPreventivoResponse, TipoControlPreventivo } from '../../models/response/control-preventivo-response';
-import { AplicacionPreventiva, TipoVacuna, CartillaAplicacionResponse } from '../../models/cartilla.model';
+import { AplicacionPreventiva, TipoVacuna, TipoDesparasitante, CartillaAplicacionResponse } from '../../models/cartilla.model';
+import { AuthStore } from '../../store/auth.store';
 
 @Component({
   selector: 'app-cartilla',
   standalone: true,
-  imports: [CommonModule, FormsModule, ToastModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ToastModule,
+    ButtonModule,
+    InputTextModule,
+    SelectModule,
+    DatePickerModule,
+    TagModule,
+    AutoCompleteModule,
+    CardModule,
+    TooltipModule
+  ],
   providers: [MessageService],
   templateUrl: './cartilla.component.html',
   styleUrls: ['./cartilla.component.scss']
@@ -26,14 +47,17 @@ export class CartillaComponent implements OnInit {
   private readonly mascotaService          = inject(MascotaService);
   private readonly servicioService         = inject(ServicioService);
   private readonly msgService              = inject(MessageService);
+  private readonly authStore               = inject(AuthStore);
 
   readonly modo = signal<'VACUNACION' | 'DESPARASITACION'>('VACUNACION');
 
   // Búsqueda / selección de mascota
-  searchQuery   = '';
-  resultados    = signal<MascotaResponse[]>([]);
-  mascotaSel    = signal<MascotaResponse | null>(null);
-  buscando      = signal(false);
+  searchQuery        = '';
+  resultados         = signal<MascotaResponse[]>([]);
+  mascotaSugerencias = signal<MascotaResponse[]>([]);
+  mascotaSel         = signal<MascotaResponse | null>(null);
+  mascotaModel: MascotaResponse | null = null;
+  buscando           = signal(false);
 
   // Alta rápida de mascota
   mostrarAlta   = signal(false);
@@ -47,11 +71,20 @@ export class CartillaComponent implements OnInit {
   serviciosPreventivos = signal<ServicioResponse[]>([]);
   servicioId: number | null = null;
   tipoVacunaId: number | null = null;
+  tipoDesparasitanteId: number | null = null;
   tipoProducto = '';
   tiposVacuna = signal<TipoVacuna[]>([]);
+  tiposDesparasitante = signal<TipoDesparasitante[]>([]);
   fechaAplicacion = '';
   periodicidadMeses = 3;
   fechaProxima = '';
+
+  // Alta en catálogo (vacuna / desparasitante)
+  mostrarNuevaVacuna = signal(false);
+  mostrarNuevaDesparasitacion = signal(false);
+  nuevoCatNombre = '';
+  nuevoCatPeriodicidad = 12;
+  nuevoCatPrecio: number | null = null;
 
   // Control preventivo seleccionado para aplicar
   controlActivo = signal<ControlPreventivoResponse | null>(null);
@@ -84,12 +117,25 @@ export class CartillaComponent implements OnInit {
     [...this.controles()].sort((a, b) => a.fechaRecomendada.localeCompare(b.fechaRecomendada))
   );
 
+  readonly vacunasMatriz = computed(() => this.matriz().filter((a) => a.tipo === 'VACUNACION'));
+  readonly desparasitacionesMatriz = computed(() => this.matriz().filter((a) => a.tipo === 'DESPARASITACION'));
+
+  readonly totalVacunas = computed(() => this.vacunasMatriz().length);
+  readonly totalDesparasitaciones = computed(() => this.desparasitacionesMatriz().length);
+
+  readonly proximaAplicacion = computed(() => {
+    const pendientes = this.controles()
+      .filter((c) => c.estado !== 'APLICADO' && c.estado !== 'CANCELADO')
+      .map((c) => c.fechaRecomendada);
+    return pendientes.length ? pendientes.sort((a, b) => a.localeCompare(b))[0] : '—';
+  });
+
   ngOnInit() {
     this.cargarServiciosPreventivos();
   }
 
   private cargarServiciosPreventivos() {
-    this.servicioService.listarDisponibles().subscribe({
+    this.servicioService.listarDisponibles(this.companyId).subscribe({
       next: (res) =>
         this.serviciosPreventivos.set(
           (res.data ?? []).filter((s) => s.tipoControlPreventivo && s.tipoControlPreventivo !== 'NO_APLICA')
@@ -98,15 +144,40 @@ export class CartillaComponent implements OnInit {
     });
   }
 
+  private get companyId(): number | undefined {
+    return this.authStore.selectedEnterprise()?.establishmentId ?? this.authStore.companyId() ?? undefined;
+  }
+
   buscar() {
     const q = this.searchQuery?.trim();
     if (!q) return;
     this.buscando.set(true);
-    this.mascotaService.listar(undefined, q, undefined, 0, 20, true, true).subscribe({
+    this.mascotaService.listar(this.companyId, q, undefined, 0, 20, true, true).subscribe({
       next: (res) => this.resultados.set((res.data?.content ?? [])),
       error: () => this.resultados.set([]),
       complete: () => this.buscando.set(false)
     });
+  }
+
+  onFilterMascota(event: AutoCompleteCompleteEvent) {
+    const q = event.query?.trim();
+    if (!q) { this.mascotaSugerencias.set([]); return; }
+    this.mascotaService.listar(this.companyId, q, undefined, 0, 20, true, true).subscribe({
+      next: (res) => {
+        const lista = (res.data?.content ?? []);
+        const yaSeleccionado = this.mascotaSel();
+        this.mascotaSugerencias.set(yaSeleccionado ? [yaSeleccionado, ...lista.filter(m => m.id !== yaSeleccionado.id)] : lista);
+      },
+      error: () => this.mascotaSugerencias.set([])
+    });
+  }
+
+  onAutocompleteSelect(value: MascotaResponse) {
+    this.mascotaSel.set(value);
+    this.mascotaModel = value;
+    this.searchQuery = value.nombreCompleto;
+    this.resultados.set([]);
+    this.cargarDatosMascota(value.id);
   }
 
   seleccionarMascota(m: MascotaResponse) {
@@ -118,6 +189,7 @@ export class CartillaComponent implements OnInit {
 
   private cargarDatosMascota(petId: number) {
     this.cargarTiposVacuna(petId);
+    this.cargarTiposDesparasitante(petId);
     this.cargarControles(petId);
     this.cargarMatriz(petId);
   }
@@ -126,6 +198,13 @@ export class CartillaComponent implements OnInit {
     this.preventivoService.listarTiposVacuna(petId).subscribe({
       next: (res) => this.tiposVacuna.set(res.data ?? []),
       error: () => this.msgService.add({ severity: 'warn', summary: 'Aviso', detail: 'No se pudieron cargar los tipos de vacuna' })
+    });
+  }
+
+  private cargarTiposDesparasitante(petId: number) {
+    this.cartillaService.listarTiposDesparasitante(petId).subscribe({
+      next: (res) => this.tiposDesparasitante.set(res.data ?? []),
+      error: () => this.msgService.add({ severity: 'warn', summary: 'Aviso', detail: 'No se pudieron cargar los desparasitantes' })
     });
   }
 
@@ -146,7 +225,9 @@ export class CartillaComponent implements OnInit {
     this.resultado.set(null);
     this.controlActivo.set(null);
     const m = this.mascotaSel();
-    if (modo === 'VACUNACION' && m) this.cargarTiposVacuna(m.id);
+    if (!m) return;
+    if (modo === 'VACUNACION') this.cargarTiposVacuna(m.id);
+    else this.cargarTiposDesparasitante(m.id);
   }
 
   registrarNuevaMascota() {
@@ -178,14 +259,14 @@ export class CartillaComponent implements OnInit {
     this.resultado.set(null);
     if (control.tipo === 'VACUNACION') {
       this.tipoVacunaId = control.tipoVacunaId ?? null;
-      this.tipoProducto = '';
       this.periodicidadMeses = control.tipoVacunaId
         ? (this.tiposVacuna().find(v => v.id === control.tipoVacunaId)?.periodicidadMesesSugerida ?? this.periodicidadMeses)
         : this.periodicidadMeses;
     } else {
-      this.tipoProducto = control.nombreControl || '';
+      this.tipoDesparasitanteId = null;
       this.tipoVacunaId = null;
     }
+    if (control.tipo === 'DESPARASITACION') this.cargarTiposDesparasitante(this.mascotaSel()!.id);
     this.fechaAplicacion = new Date().toISOString().slice(0, 10);
   }
 
@@ -261,7 +342,7 @@ export class CartillaComponent implements OnInit {
     if (!m) { this.msgService.add({ severity: 'warn', summary: 'Falta mascota', detail: 'Seleccione o registre la mascota' }); return; }
     if (!this.servicioId) { this.msgService.add({ severity: 'warn', summary: 'Falta servicio', detail: 'Seleccione el servicio preventivo' }); return; }
     if (this.modo() === 'VACUNACION' && !this.tipoVacunaId) { this.msgService.add({ severity: 'warn', summary: 'Falta vacuna', detail: 'Seleccione la vacuna' }); return; }
-    if (this.modo() === 'DESPARASITACION' && !this.tipoProducto?.trim()) { this.msgService.add({ severity: 'warn', summary: 'Falta producto', detail: 'Indique el producto' }); return; }
+    if (this.modo() === 'DESPARASITACION' && !this.tipoDesparasitanteId) { this.msgService.add({ severity: 'warn', summary: 'Falta desparasitante', detail: 'Seleccione el desparasitante' }); return; }
     if (!this.fechaAplicacion) { this.msgService.add({ severity: 'warn', summary: 'Falta fecha', detail: 'Indique la fecha de aplicación' }); return; }
 
     const req = {
@@ -270,7 +351,7 @@ export class CartillaComponent implements OnInit {
       fechaAplicacion: this.fechaAplicacion,
       periodicidadMeses: this.periodicidadMeses,
       fechaProxima: this.fechaProxima || undefined,
-      ...(this.modo() === 'VACUNACION' ? { tipoVacunaId: this.tipoVacunaId! } : { producto: this.tipoProducto.trim() })
+      ...(this.modo() === 'VACUNACION' ? { tipoVacunaId: this.tipoVacunaId! } : { tipoDesparasitanteId: this.tipoDesparasitanteId! })
     };
 
     this.guardando.set(true);
@@ -295,6 +376,57 @@ export class CartillaComponent implements OnInit {
     this.cargarControles(m.id);
     this.cargarMatriz(m.id);
     if (this.modo() === 'VACUNACION') this.cargarTiposVacuna(m.id);
+    else this.cargarTiposDesparasitante(m.id);
+  }
+
+  crearVacuna() {
+    const m = this.mascotaSel();
+    if (!m) { this.msgService.add({ severity: 'warn', summary: 'Falta mascota', detail: 'Seleccione la mascota' }); return; }
+    if (!this.nuevoCatNombre?.trim() || this.nuevoCatPrecio == null) {
+      this.msgService.add({ severity: 'warn', summary: 'Datos incompletos', detail: 'Nombre y precio son obligatorios' }); return;
+    }
+    this.cartillaService.crearTipoVacuna({
+      nombre: this.nuevoCatNombre.trim(),
+      especie: m.especie,
+      periodicidadMesesSugerida: this.nuevoCatPeriodicidad || undefined,
+      precio: this.nuevoCatPrecio
+    }).subscribe({
+      next: (res) => {
+        this.msgService.add({ severity: 'success', summary: 'Vacuna creada', detail: res.data.nombre });
+        this.mostrarNuevaVacuna.set(false);
+        this.limpiarCatalogoForm();
+        this.cargarTiposVacuna(m.id);
+      },
+      error: (err) => this.msgService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo crear la vacuna' })
+    });
+  }
+
+  crearDesparasitante() {
+    const m = this.mascotaSel();
+    if (!m) { this.msgService.add({ severity: 'warn', summary: 'Falta mascota', detail: 'Seleccione la mascota' }); return; }
+    if (!this.nuevoCatNombre?.trim() || this.nuevoCatPrecio == null) {
+      this.msgService.add({ severity: 'warn', summary: 'Datos incompletos', detail: 'Nombre y precio son obligatorios' }); return;
+    }
+    this.cartillaService.crearTipoDesparasitante({
+      nombre: this.nuevoCatNombre.trim(),
+      especie: m.especie,
+      periodicidadMesesSugerida: this.nuevoCatPeriodicidad || undefined,
+      precio: this.nuevoCatPrecio
+    }).subscribe({
+      next: (res) => {
+        this.msgService.add({ severity: 'success', summary: 'Desparasitante creado', detail: res.data.nombre });
+        this.mostrarNuevaDesparasitacion.set(false);
+        this.limpiarCatalogoForm();
+        this.cargarTiposDesparasitante(m.id);
+      },
+      error: (err) => this.msgService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo crear el desparasitante' })
+    });
+  }
+
+  private limpiarCatalogoForm() {
+    this.nuevoCatNombre = '';
+    this.nuevoCatPeriodicidad = 12;
+    this.nuevoCatPrecio = null;
   }
 
   private cargarMatriz(petId: number) {
@@ -324,6 +456,14 @@ export class CartillaComponent implements OnInit {
     return etiquetas[estado] ?? estado;
   }
 
+  severidadEstadoPreventivo(estado: string) {
+    if (estado === 'ATRASADO') return 'danger';
+    if (estado === 'PENDIENTE' || estado === 'PROXIMO') return 'warn';
+    if (estado === 'SUSPENDIDO_POR_CITA') return 'info';
+    if (estado === 'CANCELADO') return 'contrast';
+    return 'success';
+  }
+
   tipoLabel(tipo: string) {
     return tipo === 'VACUNACION' ? 'Vacunación' : 'Desparasitación';
   }
@@ -337,9 +477,15 @@ export class CartillaComponent implements OnInit {
     this.controlReprogramandoId.set(null);
     this.mostrarProgramar.set(false);
     this.searchQuery = '';
+    this.mascotaModel = null;
     this.servicioId = null;
     this.tipoVacunaId = null;
+    this.tipoDesparasitanteId = null;
     this.tipoProducto = '';
+    this.tiposDesparasitante.set([]);
+    this.mostrarNuevaVacuna.set(false);
+    this.mostrarNuevaDesparasitacion.set(false);
+    this.limpiarCatalogoForm();
     this.fechaAplicacion = '';
     this.fechaProxima = '';
   }

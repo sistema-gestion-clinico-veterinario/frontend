@@ -1,1 +1,24 @@
 :host { display: block; }
+
+.autocomplete-mascota {
+  > .p-autocomplete-input {
+    width: 100%;
+    height: 44px;
+    padding: 0 2.75rem 0 2.5rem;
+    background-color: #f8fafc;   /* slate-50 */
+    border: 1px solid #e2e8f0;   /* slate-200 */
+    border-radius: 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #334155;              /* slate-700 */
+
+    &::placeholder { color: #94a3b8; }
+    &:focus {
+      outline: none;
+      border-color: #0066AA;
+      box-shadow: none;
+    }
+  }
+
+  .p-autocomplete-dropdown { display: none; }
+}
