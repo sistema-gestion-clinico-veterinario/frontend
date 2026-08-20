@@ -7,8 +7,10 @@ export interface ConsultaRequest {
   frecuenciaRespiratoria?: number | null;
   mucosas?: string;
   turgenciaPiel?: string;
-  vacunacionAlDia?: boolean;
-  desparasitacionAlDia?: boolean;
+  vacunacionAplicada?: boolean;
+  observacionVacunacion?: string;
+  desparasitacionAplicada?: boolean;
+  observacionDesparasitacion?: string;
   motivoConsulta?: string;
   anamnesis?: string;
   examenFisico?: string;

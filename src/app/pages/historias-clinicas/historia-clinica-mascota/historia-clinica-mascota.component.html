@@ -451,12 +451,70 @@
         <p class="py-14 text-center text-xs text-slate-400">Sin controles preventivos registrados.</p>
       </ng-template>
 
-      <div *ngIf="hc()!.aplicacionesPreventivas?.length" class="border-t border-slate-100">
-        <h3 class="px-5 pt-4 text-xs font-extrabold text-slate-600">Historial de aplicaciones</h3>
-        <div class="divide-y divide-slate-100 px-5">
-          <div *ngFor="let aplicacion of hc()!.aplicacionesPreventivas" class="py-3 text-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
-            <strong class="text-slate-700">{{ aplicacion.nombreControl }}</strong>
-            <p class="text-slate-400">Aplicada {{ aplicacion.fechaAplicacion | date:'dd/MM/yyyy' }} · Próxima {{ aplicacion.fechaProximaAplicacion | date:'dd/MM/yyyy' }}</p>
+      <div class="border-t border-slate-100 p-5 flex flex-col gap-5">
+        <div class="overflow-hidden border border-slate-200 rounded-xl">
+          <div class="bg-[#0066AA]/5 px-4 py-3 border-b border-slate-100">
+            <h3 class="text-xs font-extrabold text-slate-700 flex items-center gap-2">
+              <i class="pi pi-shield text-[#0066AA] text-xs"></i> Cartilla de Vacunación
+            </h3>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full min-w-[520px] text-left">
+              <thead class="bg-slate-50/70">
+                <tr class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+                  <th class="px-5 py-3">Vacuna</th>
+                  <th class="px-4 py-3">Fecha</th>
+                  <th class="px-4 py-3">Próxima</th>
+                  <th class="px-4 py-3">Periodicidad</th>
+                  <th class="px-5 py-3">Veterinario</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                <tr *ngFor="let v of vacunas()" class="text-xs hover:bg-slate-50/60">
+                  <td class="px-5 py-3 font-bold text-slate-700">{{ v.nombreControl }}</td>
+                  <td class="px-4 py-3 text-slate-500">{{ formatFecha(v.fechaAplicacion) }}</td>
+                  <td class="px-4 py-3 text-slate-500">{{ v.fechaProximaAplicacion ? formatFecha(v.fechaProximaAplicacion) : '—' }}</td>
+                  <td class="px-4 py-3 text-slate-500">{{ v.periodicidadMeses ? v.periodicidadMeses + ' meses' : '—' }}</td>
+                  <td class="px-5 py-3 text-slate-500">{{ v.veterinarioNombre || '—' }}</td>
+                </tr>
+                <tr *ngIf="!vacunas().length">
+                  <td colspan="5" class="px-5 py-8 text-center text-slate-400">Sin vacunas registradas</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="overflow-hidden border border-slate-200 rounded-xl">
+          <div class="bg-emerald-50 px-4 py-3 border-b border-slate-100">
+            <h3 class="text-xs font-extrabold text-slate-700 flex items-center gap-2">
+              <i class="pi pi-briefcase text-emerald-600 text-xs"></i> Cartilla de Desparasitación
+            </h3>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full min-w-[520px] text-left">
+              <thead class="bg-slate-50/70">
+                <tr class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+                  <th class="px-5 py-3">Producto</th>
+                  <th class="px-4 py-3">Fecha</th>
+                  <th class="px-4 py-3">Próxima</th>
+                  <th class="px-4 py-3">Periodicidad</th>
+                  <th class="px-5 py-3">Veterinario</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                <tr *ngFor="let d of desparasitaciones()" class="text-xs hover:bg-slate-50/60">
+                  <td class="px-5 py-3 font-bold text-slate-700">{{ d.nombreControl }}</td>
+                  <td class="px-4 py-3 text-slate-500">{{ formatFecha(d.fechaAplicacion) }}</td>
+                  <td class="px-4 py-3 text-slate-500">{{ d.fechaProximaAplicacion ? formatFecha(d.fechaProximaAplicacion) : '—' }}</td>
+                  <td class="px-4 py-3 text-slate-500">{{ d.periodicidadMeses ? d.periodicidadMeses + ' meses' : '—' }}</td>
+                  <td class="px-5 py-3 text-slate-500">{{ d.veterinarioNombre || '—' }}</td>
+                </tr>
+                <tr *ngIf="!desparasitaciones().length">
+                  <td colspan="5" class="px-5 py-8 text-center text-slate-400">Sin desparasitaciones registradas</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>

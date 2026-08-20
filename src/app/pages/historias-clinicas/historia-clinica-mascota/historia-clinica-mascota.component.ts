@@ -49,6 +49,11 @@ export class HistoriaClinicaMascotaComponent implements OnInit {
   serviciosNoMedicos  = signal<CitaResponse[]>([]);
   loadingServicios    = signal(false);
 
+  readonly vacunas = computed(() =>
+    (this.hc()?.aplicacionesPreventivas ?? []).filter(a => a.tipo === 'VACUNACION'));
+  readonly desparasitaciones = computed(() =>
+    (this.hc()?.aplicacionesPreventivas ?? []).filter(a => a.tipo === 'DESPARASITACION'));
+
   previewArchivo   = signal<ArchivoClinicoResponse | null>(null);
   previewUrl       = signal<SafeResourceUrl | string>('');
   previewRawUrl    = signal<string>('');

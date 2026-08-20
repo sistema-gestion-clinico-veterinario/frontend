@@ -193,8 +193,10 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
     frecuenciaRespiratoria:  [null, [this.finiteNumberValidator(), this.integerNumberValidator(), Validators.min(1), Validators.max(200)]],
     mucosas:                 ['', [Validators.maxLength(80), Validators.pattern(/^[\p{L}\s.,;:()\/\-+°%]*$/u), noLeadingTrailingSpaceValidator(), textContentValidator()]],
     turgenciaPiel:           ['', [Validators.maxLength(80), Validators.pattern(/^[\p{L}\s.,;:()\/\-+°%]*$/u), noLeadingTrailingSpaceValidator(), textContentValidator()]],
-    vacunacionAlDia:         [false],
-    desparasitacionAlDia:    [false],
+    vacunacionAplicada:        [false],
+    observacionVacunacion:     ['', [Validators.maxLength(500), noLeadingTrailingSpaceValidator(), textContentValidator()]],
+    desparasitacionAplicada:   [false],
+    observacionDesparasitacion:['', [Validators.maxLength(500), noLeadingTrailingSpaceValidator(), textContentValidator()]],
     anamnesis:               ['',   [Validators.required, Validators.maxLength(1000), noLeadingTrailingSpaceValidator(), textContentValidator()]],
     examenFisico:            ['', [Validators.maxLength(1000), noLeadingTrailingSpaceValidator(), textContentValidator()]],
     observaciones:           ['', [Validators.maxLength(500), noLeadingTrailingSpaceValidator(), textContentValidator()]],
@@ -415,8 +417,10 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
           frecuenciaRespiratoria:  res.data.frecuenciaRespiratoria ?? null,
           mucosas:                 res.data.mucosas                ?? '',
           turgenciaPiel:           res.data.turgenciaPiel          ?? '',
-          vacunacionAlDia:         res.data.vacunacionAlDia        ?? false,
-          desparasitacionAlDia:    res.data.desparasitacionAlDia   ?? false,
+          vacunacionAplicada:         res.data.vacunacionAplicada        ?? false,
+          observacionVacunacion:      res.data.observacionVacunacion     ?? '',
+          desparasitacionAplicada:    res.data.desparasitacionAplicada   ?? false,
+          observacionDesparasitacion: res.data.observacionDesparasitacion ?? '',
           anamnesis:               res.data.anamnesis              ?? '',
           examenFisico:            res.data.examenFisico           ?? '',
           observaciones:           res.data.observaciones          ?? '',
@@ -465,12 +469,8 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
   loadPreventivos(mascotaId: number) {
     this.preventivoService.listarControles(mascotaId).subscribe({
       next: res => {
-        this.paginaControles.set(0);
+this.paginaControles.set(0);
         this.controlesPreventivos.set(res.data ?? []);
-        this.form.patchValue({
-          vacunacionAlDia: this.vacunacionAlDiaCalculada(),
-          desparasitacionAlDia: this.desparasitacionAlDiaCalculada()
-        }, { emitEvent: false });
       },
       error: () => this.msgService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar los controles preventivos' })
     });
@@ -760,16 +760,20 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
         const actual = this.consulta();
         this.consulta.set(actual ? {
           ...actual,
-          version: res.data.version,
-          vacunacionAlDia: res.data.vacunacionAlDia,
-          desparasitacionAlDia: res.data.desparasitacionAlDia
+version: res.data.version,
+          vacunacionAplicada: res.data.vacunacionAplicada,
+          observacionVacunacion: res.data.observacionVacunacion,
+          desparasitacionAplicada: res.data.desparasitacionAplicada,
+          observacionDesparasitacion: res.data.observacionDesparasitacion
         } : res.data);
 
         this.syncingForm = true;
         this.form.patchValue({
-          version: res.data.version,
-          vacunacionAlDia: res.data.vacunacionAlDia ?? false,
-          desparasitacionAlDia: res.data.desparasitacionAlDia ?? false
+version: res.data.version,
+          vacunacionAplicada: res.data.vacunacionAplicada ?? false,
+          observacionVacunacion: res.data.observacionVacunacion ?? '',
+          desparasitacionAplicada: res.data.desparasitacionAplicada ?? false,
+          observacionDesparasitacion: res.data.observacionDesparasitacion ?? ''
         }, { emitEvent: false });
         if (formularioTeniaCambios) {
           this.form.markAsDirty();
