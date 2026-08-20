@@ -402,7 +402,6 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
         this.isCerrada.set(res.data.estado === 'CERRADA');
         if (res.data.mascotaId) {
           this.loadHistoria(res.data.mascotaId);
-          this.loadPreventivos(res.data.mascotaId);
         }
         this.loadRecetas();
         this.loadArchivos();
