@@ -54,8 +54,10 @@ export interface ConsultaResumen {
   frecuenciaRespiratoria?: number;
   mucosas?: string;
   turgenciaPiel?: string;
-  vacunacionAlDia?: boolean;
-  desparasitacionAlDia?: boolean;
+  vacunacionAplicada?: boolean;
+  observacionVacunacion?: string;
+  desparasitacionAplicada?: boolean;
+  observacionDesparasitacion?: string;
   anamnesis?: string;
   examenFisico?: string;
   observaciones?: string;
