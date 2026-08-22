@@ -21,6 +21,7 @@ import { ServicioResponse } from '../../models/response/servicio-response';
 import { ControlPreventivoResponse, TipoControlPreventivo } from '../../models/response/control-preventivo-response';
 import { AplicacionPreventiva, TipoVacuna, TipoDesparasitante, CartillaAplicacionResponse, IntervaloUnidad } from '../../models/cartilla.model';
 import { AuthStore } from '../../store/auth.store';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-cartilla',
@@ -41,7 +42,7 @@ import { AuthStore } from '../../store/auth.store';
   ],
   providers: [MessageService],
   templateUrl: './cartilla.component.html',
-  styleUrls: ['./cartilla.component.scss']
+  styleUrl: './cartilla.component.scss'
 })
 export class CartillaComponent implements OnInit {
   private readonly cartillaService         = inject(CartillaService);
@@ -49,7 +50,9 @@ export class CartillaComponent implements OnInit {
   private readonly mascotaService          = inject(MascotaService);
   private readonly servicioService         = inject(ServicioService);
   private readonly msgService              = inject(MessageService);
-  private readonly authStore               = inject(AuthStore);
+  readonly authStore                       = inject(AuthStore);
+  private readonly router                  = inject(Router);
+  private readonly route                   = inject(ActivatedRoute);
 
   readonly modo = signal<'VACUNACION' | 'DESPARASITACION'>('VACUNACION');
 
@@ -60,14 +63,6 @@ export class CartillaComponent implements OnInit {
   mascotaSel         = signal<MascotaResponse | null>(null);
   mascotaModel: MascotaResponse | null = null;
   buscando           = signal(false);
-
-  // Alta rápida de mascota
-  mostrarAlta   = signal(false);
-  nuevoNombre   = '';
-  nuevaEspecie  = '';
-  nuevoSexo     = '';
-  nuevaFechaNac = '';
-  nuevoApoderadoId: number | null = null;
 
   // Aplicación
   serviciosPreventivos = signal<ServicioResponse[]>([]);
@@ -89,6 +84,7 @@ export class CartillaComponent implements OnInit {
   sitioAplicacion = '';
   pesoKg: number | null = null;
   observaciones = '';
+  programarProximoControl = true;
   readonly unidadesIntervalo = [
     { label: 'Días', value: 'DIAS' },
     { label: 'Semanas', value: 'SEMANAS' },
@@ -102,6 +98,11 @@ export class CartillaComponent implements OnInit {
   nuevoCatNombre = '';
   nuevoCatPeriodicidad = 12;
   nuevoCatPrecio: number | null = null;
+  nuevoCatLote = '';
+  nuevoCatVencimiento = '';
+  nuevoCatDosis: number | null = null;
+  nuevoCatUnidad = '';
+  nuevoCatVia = '';
 
   readonly precioSeleccionado = computed(() => {
     if (this.modo() === 'VACUNACION') {
@@ -118,6 +119,9 @@ export class CartillaComponent implements OnInit {
   cargandoCtrl   = signal(false);
   controlReprogramandoId = signal<number | null>(null);
   fechaReprogramacion    = signal('');
+  fechaReprogramacionCalendario: Date | null = null;
+  controlReprogramando = signal<ControlPreventivoResponse | null>(null);
+  controlCancelar = signal<ControlPreventivoResponse | null>(null);
 
   // Programar control futuro
   mostrarProgramar = signal(false);
@@ -125,6 +129,7 @@ export class CartillaComponent implements OnInit {
   progTipoVacunaId = null as number | null;
   progNombreControl = '';
   progFecha        = '';
+  progFechaCalendario: Date | null = null;
 
   // Resultado
   resultado = signal<CartillaAplicacionResponse | null>(null);
@@ -139,7 +144,7 @@ export class CartillaComponent implements OnInit {
 
   readonly controlesOrdenados = computed(() =>
     this.controles()
-      .filter((c) => c.tipo === this.modo() && !['APLICADO', 'CANCELADO'].includes(c.estado))
+      .filter((c) => c.tipo === this.modo() && c.estado !== 'APLICADO')
       .sort((a, b) => a.fechaRecomendada.localeCompare(b.fechaRecomendada))
   );
 
@@ -180,6 +185,12 @@ export class CartillaComponent implements OnInit {
 
   ngOnInit() {
     this.cargarServiciosPreventivos();
+    const petId = Number(this.route.snapshot.queryParamMap.get('petId'));
+    if (Number.isInteger(petId) && petId > 0) {
+      this.mascotaService.obtenerPorId(petId).subscribe({
+        next: response => this.onAutocompleteSelect(response.data)
+      });
+    }
   }
 
   private cargarServiciosPreventivos() {
@@ -226,6 +237,19 @@ export class CartillaComponent implements OnInit {
     this.searchQuery = value.nombreCompleto;
     this.resultados.set([]);
     this.cargarDatosMascota(value.id);
+  }
+
+  buscarMascotaDesdeBarra() {
+    const primera = this.mascotaSugerencias()[0];
+    if (primera) {
+      this.onAutocompleteSelect(primera);
+      return;
+    }
+    this.msgService.add({
+      severity: 'info',
+      summary: 'Selecciona un paciente',
+      detail: 'Escribe el nombre y selecciona una mascota de los resultados.'
+    });
   }
 
   seleccionarMascota(m: MascotaResponse) {
@@ -282,26 +306,7 @@ export class CartillaComponent implements OnInit {
   }
 
   registrarNuevaMascota() {
-    if (!this.nuevoNombre?.trim() || !this.nuevaEspecie || !this.nuevoApoderadoId) {
-      this.msgService.add({ severity: 'warn', summary: 'Datos incompletos', detail: 'Nombre, especie y apoderado son obligatorios' });
-      return;
-    }
-    this.mascotaService.crear({
-      nombreCompleto: this.nuevoNombre.trim(),
-      especie: this.nuevaEspecie,
-      sexo: this.nuevoSexo || 'MACHO',
-      fechaNacimiento: this.nuevaFechaNac || this.fechaLocalLima(),
-      apoderadoId: this.nuevoApoderadoId,
-      razaId: 0
-    }).subscribe({
-      next: (res) => {
-        this.mascotaSel.set(res.data);
-        this.mostrarAlta.set(false);
-        this.cargarDatosMascota(res.data.id);
-        this.msgService.add({ severity: 'success', summary: 'Mascota registrada', detail: res.data.nombreCompleto });
-      },
-      error: (err) => this.msgService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo registrar la mascota' })
-    });
+    this.router.navigate(['/mascotas/form'], { queryParams: { returnUrl: '/historias-clinicas/cartilla' } });
   }
 
   prepararAplicacion(control: ControlPreventivoResponse) {
@@ -333,11 +338,21 @@ export class CartillaComponent implements OnInit {
       this.intervaloCantidad = meses;
       this.intervaloUnidad = 'MESES';
     }
+    const producto = this.modo() === 'VACUNACION'
+      ? this.tiposVacuna().find(v => v.id === id)
+      : this.tiposDesparasitante().find(d => d.id === id);
+    this.lote = producto?.lote ?? '';
+    this.fechaVencimientoProducto = producto?.fechaVencimientoProducto ?? '';
+    this.dosis = producto?.dosis ?? null;
+    this.unidadDosis = producto?.unidadDosis ?? '';
+    this.viaAdministracion = producto?.viaAdministracion ?? '';
   }
 
   iniciarReprogramacion(control: ControlPreventivoResponse) {
     this.controlReprogramandoId.set(control.id);
     this.fechaReprogramacion.set(control.fechaRecomendada);
+    this.fechaReprogramacionCalendario = this.desdeFechaIso(control.fechaRecomendada);
+    this.controlReprogramando.set(control);
   }
 
   guardarReprogramacion(control: ControlPreventivoResponse) {
@@ -346,7 +361,7 @@ export class CartillaComponent implements OnInit {
     this.guardando.set(true);
     this.preventivoService.reprogramar(control.id, fecha).subscribe({
       next: () => {
-        this.controlReprogramandoId.set(null);
+        this.cerrarReprogramacion();
         this.msgService.add({ severity: 'success', summary: 'Control reprogramado', detail: 'Fecha recomendada actualizada' });
         this.recargarMascota();
       },
@@ -355,11 +370,18 @@ export class CartillaComponent implements OnInit {
     });
   }
 
-  cancelarControl(control: ControlPreventivoResponse) {
+  solicitarCancelarControl(control: ControlPreventivoResponse) {
+    this.controlCancelar.set(control);
+  }
+
+  cancelarControl() {
+    const control = this.controlCancelar();
+    if (!control) return;
     this.guardando.set(true);
     this.preventivoService.cancelar(control.id).subscribe({
       next: () => {
         this.msgService.add({ severity: 'success', summary: 'Control cancelado', detail: control.nombreControl });
+        this.controlCancelar.set(null);
         this.recargarMascota();
       },
       error: (err) => this.msgService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo cancelar el control' }),
@@ -368,9 +390,10 @@ export class CartillaComponent implements OnInit {
   }
 
   abrirProgramar() {
-    this.mostrarProgramar.set(!this.mostrarProgramar());
+    this.mostrarProgramar.set(true);
     this.progTipo = this.modo();
     this.progFecha = this.fechaLocalLima();
+    this.progFechaCalendario = this.desdeFechaIso(this.progFecha);
   }
 
   programarControl() {
@@ -406,13 +429,9 @@ export class CartillaComponent implements OnInit {
   guardar() {
     const m = this.mascotaSel();
     if (!m) { this.msgService.add({ severity: 'warn', summary: 'Falta mascota', detail: 'Seleccione o registre la mascota' }); return; }
-    if (!this.servicioId) { this.msgService.add({ severity: 'warn', summary: 'Falta servicio', detail: 'Seleccione el servicio preventivo' }); return; }
     if (this.modo() === 'VACUNACION' && !this.tipoVacunaId) { this.msgService.add({ severity: 'warn', summary: 'Falta vacuna', detail: 'Seleccione la vacuna' }); return; }
     if (this.modo() === 'DESPARASITACION' && !this.tipoDesparasitanteId) { this.msgService.add({ severity: 'warn', summary: 'Falta desparasitante', detail: 'Seleccione el desparasitante' }); return; }
     if (!this.fechaAplicacion) { this.msgService.add({ severity: 'warn', summary: 'Falta fecha', detail: 'Indique la fecha de aplicación' }); return; }
-    if (!this.fechaProxima && (!this.intervaloCantidad || !this.intervaloUnidad)) {
-      this.msgService.add({ severity: 'warn', summary: 'Falta próximo control', detail: 'Indique una próxima fecha o un intervalo' }); return;
-    }
     if (this.dosis != null && !this.unidadDosis.trim()) {
       this.msgService.add({ severity: 'warn', summary: 'Falta unidad', detail: 'Indique la unidad de la dosis' }); return;
     }
@@ -420,16 +439,12 @@ export class CartillaComponent implements OnInit {
     const req = {
       mascotaId: m.id,
       controlPreventivoId: this.controlActivo()?.id,
-      servicioId: this.servicioId,
+      servicioId: this.serviciosModo()[0]?.id,
       fechaAplicacion: this.fechaAplicacion,
-      intervaloCantidad: this.fechaProxima ? undefined : this.intervaloCantidad,
-      intervaloUnidad: this.fechaProxima ? undefined : this.intervaloUnidad,
-      fechaProxima: this.fechaProxima || undefined,
-      lote: this.lote.trim() || undefined,
-      fechaVencimientoProducto: this.fechaVencimientoProducto || undefined,
-      dosis: this.dosis ?? undefined,
-      unidadDosis: this.unidadDosis.trim() || undefined,
-      viaAdministracion: this.viaAdministracion.trim() || undefined,
+      programarProximoControl: this.programarProximoControl,
+      intervaloCantidad: this.programarProximoControl && !this.fechaProxima ? this.intervaloCantidad : undefined,
+      intervaloUnidad: this.programarProximoControl && !this.fechaProxima ? this.intervaloUnidad : undefined,
+      fechaProxima: this.programarProximoControl ? (this.fechaProxima || undefined) : undefined,
       sitioAplicacion: this.sitioAplicacion.trim() || undefined,
       pesoKg: this.pesoKg ?? undefined,
       observaciones: this.observaciones.trim() || undefined,
@@ -445,7 +460,7 @@ export class CartillaComponent implements OnInit {
       next: (res) => {
         this.resultado.set(res.data);
         this.limpiarAplicacion();
-        this.msgService.add({ severity: 'success', summary: 'Registrado', detail: `Cobro generado: ${res.data.codigoCobro} (S/ ${res.data.total})` });
+        this.msgService.add({ severity: 'success', summary: 'Aplicación registrada', detail: 'La cuenta fue enviada automáticamente a Caja.' });
         this.recargarMascota();
       },
       error: (err) => this.msgService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo registrar' }),
@@ -485,7 +500,12 @@ export class CartillaComponent implements OnInit {
       nombre: this.nuevoCatNombre.trim(),
       especie: m.especie,
       periodicidadMesesSugerida: this.nuevoCatPeriodicidad || undefined,
-      precio: this.nuevoCatPrecio
+      precio: this.nuevoCatPrecio,
+      lote: this.nuevoCatLote.trim() || undefined,
+      fechaVencimientoProducto: this.nuevoCatVencimiento || undefined,
+      dosis: this.nuevoCatDosis ?? undefined,
+      unidadDosis: this.nuevoCatUnidad.trim() || undefined,
+      viaAdministracion: this.nuevoCatVia.trim() || undefined
     }).subscribe({
       next: (res) => {
         this.tiposVacuna.update(items => [...items.filter(item => item.id !== res.data.id), res.data]
@@ -510,7 +530,12 @@ export class CartillaComponent implements OnInit {
       nombre: this.nuevoCatNombre.trim(),
       especie: m.especie,
       periodicidadMesesSugerida: this.nuevoCatPeriodicidad || undefined,
-      precio: this.nuevoCatPrecio
+      precio: this.nuevoCatPrecio,
+      lote: this.nuevoCatLote.trim() || undefined,
+      fechaVencimientoProducto: this.nuevoCatVencimiento || undefined,
+      dosis: this.nuevoCatDosis ?? undefined,
+      unidadDosis: this.nuevoCatUnidad.trim() || undefined,
+      viaAdministracion: this.nuevoCatVia.trim() || undefined
     }).subscribe({
       next: (res) => {
         this.tiposDesparasitante.update(items => [...items.filter(item => item.id !== res.data.id), res.data]
@@ -535,6 +560,11 @@ export class CartillaComponent implements OnInit {
     this.nuevoCatNombre = '';
     this.nuevoCatPeriodicidad = 12;
     this.nuevoCatPrecio = null;
+    this.nuevoCatLote = '';
+    this.nuevoCatVencimiento = '';
+    this.nuevoCatDosis = null;
+    this.nuevoCatUnidad = '';
+    this.nuevoCatVia = '';
   }
 
   private cargarMatriz(petId: number) {
@@ -545,10 +575,11 @@ export class CartillaComponent implements OnInit {
   }
 
   claseEstadoPreventivo(estado: string) {
-    if (estado === 'ATRASADO') return 'bg-rose-50 text-rose-700';
-    if (estado === 'PENDIENTE' || estado === 'PROXIMO') return 'bg-amber-50 text-amber-700';
-    if (estado === 'SUSPENDIDO_POR_CITA') return 'bg-sky-50 text-sky-700';
-    return 'bg-emerald-50 text-emerald-700';
+    if (estado === 'ATRASADO') return 'rounded-lg bg-red-700 px-2.5 py-1 text-white font-bold';
+    if (estado === 'CANCELADO') return 'text-slate-500 font-bold';
+    if (estado === 'PENDIENTE' || estado === 'PROXIMO') return 'text-amber-700 font-bold';
+    if (estado === 'SUSPENDIDO_POR_CITA') return 'text-[#0066AA] font-bold';
+    return 'text-slate-700 font-bold';
   }
 
   etiquetaEstadoPreventivo(estado: string) {
@@ -576,6 +607,23 @@ export class CartillaComponent implements OnInit {
     return tipo === 'VACUNACION' ? 'Vacunación' : 'Desparasitación';
   }
 
+  parteFecha(fecha: string | undefined, parte: 'day' | 'month' | 'year') {
+    if (!fecha || fecha === '—') return '—';
+    const [year, month, day] = fecha.split('-').map(Number);
+    if (!year || !month || !day) return '—';
+    if (parte === 'day') return String(day).padStart(2, '0');
+    if (parte === 'year') return String(year);
+    return ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'][month - 1];
+  }
+
+  formatoFechaCorta(fecha: string | undefined) {
+    if (!fecha || fecha === '—') return '—';
+    const [year, month, day] = fecha.split('-').map(Number);
+    if (!year || !month || !day) return fecha;
+    const mes = ['ene.', 'feb.', 'mar.', 'abr.', 'may.', 'jun.', 'jul.', 'ago.', 'sep.', 'oct.', 'nov.', 'dic.'][month - 1];
+    return `${String(day).padStart(2, '0')} ${mes} ${year}`;
+  }
+
   limpiar() {
     this.mascotaSel.set(null);
     this.resultado.set(null);
@@ -596,6 +644,36 @@ export class CartillaComponent implements OnInit {
     this.fechaAplicacion = '';
     this.fechaProxima = '';
     this.limpiarAplicacion();
+  }
+
+  confirmarFechaProgramacion(fecha: Date | null) {
+    this.progFechaCalendario = fecha;
+    this.progFecha = this.aFechaIso(fecha);
+  }
+
+  confirmarFechaReprogramacion(fecha: Date | null) {
+    this.fechaReprogramacionCalendario = fecha;
+    this.fechaReprogramacion.set(this.aFechaIso(fecha));
+  }
+
+  cerrarReprogramacion() {
+    this.controlReprogramando.set(null);
+    this.controlReprogramandoId.set(null);
+  }
+
+  etiquetaMascota(m: MascotaResponse) {
+    return `${m.nombreCompleto} · ${m.especie}${m.razaNombre ? ' · ' + m.razaNombre : ''} · ${m.apoderadoNombreCompleto}`;
+  }
+
+  desdeFechaIso(fecha: string): Date | null {
+    if (!fecha) return null;
+    const [year, month, day] = fecha.split('-').map(Number);
+    return year && month && day ? new Date(year, month - 1, day) : null;
+  }
+
+  private aFechaIso(fecha: Date | null): string {
+    if (!fecha) return '';
+    return `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}-${String(fecha.getDate()).padStart(2, '0')}`;
   }
 
   private fechaLocalLima(): string {
