@@ -1,143 +1,234 @@
-<div class="cartilla-page">
-  <div class="cartilla-container">
-    <header class="page-header">
-      <div class="page-heading">
-        <span class="page-icon"><i class="pi pi-shield"></i></span>
-        <div><p class="eyebrow">Salud preventiva</p><h1>Cartilla del paciente</h1><p class="page-subtitle">Aplicaciones, próximos controles e historial clínico en un solo lugar.</p></div>
+<main class="mx-auto min-h-screen w-full max-w-[1440px] bg-slate-50 p-3 font-sans text-slate-900 sm:p-5 lg:p-6">
+  <div class="space-y-5 sm:space-y-6">
+    <header class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+      <div class="flex items-center gap-4">
+        <span class="grid size-14 shrink-0 place-items-center rounded-2xl bg-[#EAF3FB] text-[#0066AA] ring-1 ring-[#0066AA]/10">
+          <svg *ngIf="modo() === 'VACUNACION'" viewBox="0 0 24 24" class="size-7" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m14.5 4.5 5 5M13 6l5 5M4 20l5.5-1.5L19 9l-4-4-9.5 9.5L4 20Z"/><path d="m7.5 16.5-2-2M15.5 12.5l-4-4"/></svg>
+          <svg *ngIf="modo() === 'DESPARASITACION'" viewBox="0 0 24 24" class="size-7" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5.2 12.8 12.8 5.2a4.25 4.25 0 0 1 6 6l-7.6 7.6a4.25 4.25 0 0 1-6-6Z"/><path d="m8.5 9.5 6 6"/></svg>
+        </span>
+        <div>
+          <p class="text-[11px] font-bold uppercase tracking-[.14em] text-[#0066AA]">Salud preventiva</p>
+          <h1 class="mt-1 text-[26px] font-extrabold leading-tight tracking-tight text-slate-900">{{ modo() === 'VACUNACION' ? 'Cartilla de vacunación' : 'Control de desparasitación' }}</h1>
+          <p class="mt-1 text-sm text-slate-500">Registro, seguimiento e historial preventivo del paciente</p>
+        </div>
       </div>
-      <div class="mode-switch" role="tablist" aria-label="Tipo de control preventivo">
-        <button type="button" (click)="cambiarModo('VACUNACION')" [class.active]="modo() === 'VACUNACION'" role="tab" [attr.aria-selected]="modo() === 'VACUNACION'"><i class="pi pi-shield"></i><span>Vacunación</span></button>
-        <button type="button" (click)="cambiarModo('DESPARASITACION')" [class.active]="modo() === 'DESPARASITACION'" role="tab" [attr.aria-selected]="modo() === 'DESPARASITACION'"><i class="pi pi-sparkles"></i><span>Desparasitación</span></button>
+
+      <div class="inline-grid grid-cols-2 gap-1 rounded-full border border-slate-200 bg-white p-1">
+        <button type="button" (click)="cambiarModo('VACUNACION')" class="flex h-11 items-center justify-center gap-2 rounded-full px-5 text-sm font-bold transition-colors" [class]="modo() === 'VACUNACION' ? 'bg-[#0066AA] text-white' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'">
+          <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="2"><path d="m14.5 4.5 5 5M13 6l5 5M4 20l5.5-1.5L19 9l-4-4-9.5 9.5L4 20Z"/><path d="m7.5 16.5-2-2M15.5 12.5l-4-4"/></svg>
+          Vacunación
+        </button>
+        <button type="button" (click)="cambiarModo('DESPARASITACION')" class="flex h-11 items-center justify-center gap-2 rounded-full px-5 text-sm font-bold transition-colors" [class]="modo() === 'DESPARASITACION' ? 'bg-[#0066AA] text-white' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'">
+          <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="2"><path d="M5.2 12.8 12.8 5.2a4.25 4.25 0 0 1 6 6l-7.6 7.6a4.25 4.25 0 0 1-6-6Z"/><path d="m8.5 9.5 6 6"/></svg>
+          Desparasitación
+        </button>
       </div>
     </header>
 
-    <section *ngIf="!mascotaSel()" class="patient-search-card">
-      <div class="search-illustration"><i class="pi pi-search"></i></div>
-      <div class="search-copy"><p class="eyebrow">Comienza aquí</p><h2>Selecciona un paciente</h2><p>Busca por el nombre de la mascota para consultar su cartilla o registrar una aplicación.</p></div>
-      <div class="patient-search-box">
-        <i class="pi pi-search"></i>
-        <p-autoComplete [(ngModel)]="mascotaModel" [suggestions]="mascotaSugerencias()" (completeMethod)="onFilterMascota($event)" (onSelect)="onAutocompleteSelect($event.value)" optionLabel="nombreCompleto" dropdown placeholder="Buscar mascota…" styleClass="autocomplete-mascota w-full"></p-autoComplete>
-      </div>
-      <div *ngIf="buscando()" class="loading-line"><i class="pi pi-spin pi-spinner"></i> Buscando pacientes…</div>
-      <button type="button" class="link-button" (click)="mostrarAlta.set(!mostrarAlta())"><i [class]="mostrarAlta() ? 'pi pi-times' : 'pi pi-plus'"></i>{{ mostrarAlta() ? 'Cancelar registro' : 'Registrar una nueva mascota' }}</button>
-      <div *ngIf="mostrarAlta()" class="quick-patient-form">
-        <div class="form-section-title"><span><i class="pi pi-plus"></i></span><div><strong>Nueva mascota</strong><small>Completa los datos esenciales</small></div></div>
-        <div class="form-grid three">
-          <label class="field"><span>Nombre *</span><input [(ngModel)]="nuevoNombre" placeholder="Nombre de la mascota" /></label>
-          <label class="field"><span>Especie *</span><select [(ngModel)]="nuevaEspecie"><option value="">Seleccionar</option><option value="PERRO">Perro</option><option value="GATO">Gato</option><option value="OTRO">Otra</option></select></label>
-          <label class="field"><span>Sexo</span><select [(ngModel)]="nuevoSexo"><option value="">Seleccionar</option><option value="MACHO">Macho</option><option value="HEMBRA">Hembra</option></select></label>
-          <label class="field"><span>Fecha de nacimiento</span><input type="date" [(ngModel)]="nuevaFechaNac" /></label>
-          <label class="field"><span>ID del apoderado *</span><input type="number" [(ngModel)]="nuevoApoderadoId" placeholder="Identificador" /></label>
-          <button type="button" class="primary-button align-end" (click)="registrarNuevaMascota()"><i class="pi pi-check"></i> Registrar mascota</button>
-        </div>
+    <section class="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5">
+      <div class="flex flex-col gap-3 lg:flex-row lg:items-end">
+        <label class="min-w-0 flex-1">
+          <span class="mb-1.5 block text-xs font-bold text-slate-700">Nombre de la mascota</span>
+          <div class="relative">
+            <i class="pi pi-search absolute left-4 top-1/2 z-10 -translate-y-1/2 text-sm text-slate-400"></i>
+            <p-autoComplete [(ngModel)]="mascotaModel" [suggestions]="mascotaSugerencias()" (completeMethod)="onFilterMascota($event)" (onSelect)="onAutocompleteSelect($event.value)" [optionLabel]="'nombreCompleto'" [forceSelection]="true" placeholder="Escribe un nombre para buscar..." styleClass="autocomplete-mascota w-full">
+              <ng-template let-mascota pTemplate="item">
+                <div class="flex w-full items-center gap-3 py-1">
+                  <img *ngIf="mascota.fotoUrl" [src]="mascota.fotoUrl" class="size-10 rounded-lg border border-slate-200 object-cover" />
+                  <span *ngIf="!mascota.fotoUrl" class="grid size-10 shrink-0 place-items-center rounded-lg bg-[#EAF3FB] text-sm font-bold text-[#0066AA]">{{ mascota.nombreCompleto.charAt(0) }}</span>
+                  <span class="min-w-0 flex-1"><strong class="block truncate text-sm text-slate-800">{{ mascota.nombreCompleto }}</strong><small class="block truncate text-xs text-slate-500">{{ mascota.especie }} · {{ mascota.razaNombre || 'Sin raza' }} · {{ mascota.apoderadoNombreCompleto }}</small></span>
+                  <span class="text-[10px] font-semibold text-slate-400">{{ mascota.sexo }}</span>
+                </div>
+              </ng-template>
+            </p-autoComplete>
+          </div>
+        </label>
+        <button type="button" (click)="registrarNuevaMascota()" class="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-600 transition-colors hover:border-slate-300 hover:bg-slate-50 hover:text-slate-800">
+          <i class="pi pi-user-plus text-xs"></i> Nueva mascota
+        </button>
+        <button *ngIf="mascotaSel()" type="button" (click)="abrirNuevaCatalogo()" class="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#0066AA] px-5 text-sm font-bold text-white transition-colors hover:bg-[#00558F]">
+          <svg *ngIf="modo() === 'VACUNACION'" viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="2"><path d="m14.5 4.5 5 5M13 6l5 5M4 20l5.5-1.5L19 9l-4-4-9.5 9.5L4 20Z"/><path d="m7.5 16.5-2-2"/></svg>
+          <svg *ngIf="modo() === 'DESPARASITACION'" viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="2"><path d="M5.2 12.8 12.8 5.2a4.25 4.25 0 0 1 6 6l-7.6 7.6a4.25 4.25 0 0 1-6-6Z"/><path d="m8.5 9.5 6 6"/></svg>
+          {{ modo() === 'VACUNACION' ? 'Agregar vacuna al catálogo' : 'Agregar desparasitante' }}
+        </button>
       </div>
     </section>
 
-    <ng-container *ngIf="mascotaSel()">
-      <section class="patient-banner">
-        <div class="patient-identity">
-          <div class="patient-avatar"><img *ngIf="mascotaSel()!.fotoUrl" [src]="mascotaSel()!.fotoUrl" [alt]="mascotaSel()!.nombreCompleto" /><i *ngIf="!mascotaSel()!.fotoUrl" class="pi pi-heart-fill"></i></div>
-          <div class="patient-copy">
-            <div class="patient-name-line"><h2>{{ mascotaSel()!.nombreCompleto }}</h2><span class="species-chip">{{ mascotaSel()!.especie }}</span></div>
-            <p><i class="pi pi-user"></i> {{ mascotaSel()!.apoderadoNombreCompleto }}</p>
-            <p class="patient-meta"><span *ngIf="mascotaSel()!.razaNombre">{{ mascotaSel()!.razaNombre }}</span><span *ngIf="mascotaSel()!.sexo">{{ mascotaSel()!.sexo }}</span><span *ngIf="mascotaSel()!.peso">{{ mascotaSel()!.peso }} kg</span></p>
+    <section *ngIf="!mascotaSel()" class="flex min-h-56 flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white px-5 py-10 text-center">
+      <span class="grid size-14 place-items-center rounded-2xl bg-[#EAF3FB] text-[#0066AA]"><i class="pi pi-id-card text-xl"></i></span>
+      <p class="mt-4 text-sm font-bold text-slate-800">Selecciona una mascota para consultar su cartilla</p>
+      <p class="mt-1 max-w-sm text-xs text-slate-500">Los resultados muestran especie, raza y propietario para evitar confusiones.</p>
+    </section>
+
+    <ng-container *ngIf="mascotaSel() as mascota">
+      <section class="grid items-center gap-5 rounded-2xl border border-slate-200 bg-white p-5 lg:grid-cols-[minmax(320px,1fr)_minmax(420px,1fr)]">
+        <div class="flex min-w-0 items-center gap-4">
+          <img *ngIf="mascota.fotoUrl" [src]="mascota.fotoUrl" [alt]="mascota.nombreCompleto" class="size-16 shrink-0 rounded-2xl border-2 border-white object-cover ring-1 ring-slate-200" />
+          <span *ngIf="!mascota.fotoUrl" class="grid size-16 shrink-0 place-items-center rounded-2xl bg-[#EAF3FB] text-lg font-bold text-[#0066AA] ring-1 ring-[#0066AA]/10">{{ mascota.nombreCompleto.charAt(0) }}</span>
+          <div class="min-w-0">
+            <div class="flex items-center gap-2"><h2 class="truncate text-xl font-extrabold text-slate-900">{{ mascota.nombreCompleto }}</h2><span class="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold text-slate-600">{{ mascota.especie }}</span></div>
+            <p class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500"><span>Raza <b class="text-slate-700">{{ mascota.razaNombre || '—' }}</b></span><span>Sexo <b class="text-slate-700">{{ mascota.sexo }}</b></span><span>Peso <b class="text-slate-700">{{ mascota.peso ? mascota.peso + ' kg' : '—' }}</b></span></p>
+            <p class="mt-3 text-xs text-slate-500"><i class="pi pi-user mr-2 text-[#0066AA]"></i>Propietario: <b class="text-slate-700">{{ mascota.apoderadoNombreCompleto }}</b></p>
           </div>
         </div>
-        <div class="patient-metrics">
-          <div class="metric"><span>Aplicaciones</span><strong>{{ aplicacionesModo().length }}</strong></div>
-          <div class="metric" [class.danger]="controlesAtrasados() > 0"><span>Atrasadas</span><strong>{{ controlesAtrasados() }}</strong></div>
-          <div class="metric next"><span>{{ etiquetaProximaAplicacion() }}</span><strong>{{ proximaAplicacion() }}</strong></div>
+        <div class="grid overflow-hidden rounded-xl border border-slate-200 sm:grid-cols-3">
+          <div class="bg-slate-50/60 px-4 py-3"><p class="text-[9px] font-bold uppercase tracking-wide text-slate-500">Aplicaciones</p><strong class="mt-1 block text-xl text-slate-900">{{ aplicacionesModo().length }}</strong></div>
+          <div class="border-t border-slate-200 px-4 py-3 sm:border-l sm:border-t-0" [class.bg-red-50]="controlesAtrasados() > 0"><p class="text-[9px] font-bold uppercase tracking-wide text-slate-500">Controles vencidos</p><strong class="mt-1 block text-xl text-slate-900" [class.text-red-700]="controlesAtrasados() > 0">{{ controlesAtrasados() }}</strong></div>
+          <div class="border-t border-slate-200 bg-[#EAF3FB]/60 px-4 py-3 sm:border-l sm:border-t-0"><p class="text-[9px] font-bold uppercase tracking-wide text-slate-500">{{ etiquetaProximaAplicacion() }}</p><strong class="mt-1 block text-sm font-bold text-[#0066AA]">{{ formatoFechaCorta(proximaAplicacion()) }}</strong></div>
         </div>
-        <button type="button" class="secondary-button change-patient" (click)="limpiar()"><i class="pi pi-sync"></i> Cambiar paciente</button>
       </section>
 
-      <div class="workspace-grid">
-        <div class="workspace-main">
-          <section class="content-card controls-card">
-            <div class="card-heading">
-              <div class="card-title-group"><span class="section-icon"><i [class]="modo() === 'VACUNACION' ? 'pi pi-shield' : 'pi pi-sparkles'"></i></span><div><h3>Próximos controles</h3><p>{{ controlesOrdenados().length }} {{ controlesOrdenados().length === 1 ? 'control pendiente' : 'controles pendientes' }}</p></div></div>
-              <button type="button" class="secondary-button" (click)="abrirProgramar()"><i [class]="mostrarProgramar() ? 'pi pi-times' : 'pi pi-calendar-plus'"></i>{{ mostrarProgramar() ? 'Cerrar' : 'Programar control' }}</button>
+      <div class="grid grid-cols-1 items-start gap-5 xl:grid-cols-[minmax(0,1.65fr)_minmax(330px,.85fr)]">
+        <div class="min-w-0 space-y-5">
+          <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+            <header class="flex items-center justify-between gap-3 border-b border-slate-200 bg-[#f8fafc] px-4 py-3.5 sm:px-5">
+              <div><h3 class="text-sm font-extrabold text-slate-900">Próximos controles</h3><p class="mt-0.5 text-xs text-slate-500">{{ controlesOrdenados().length }} registros</p></div>
+              <button type="button" (click)="abrirProgramar()" class="inline-flex h-10 items-center gap-2 rounded-xl border border-[#0066AA] px-4 text-xs font-bold text-[#0066AA] transition-colors hover:bg-[#EAF3FB]"><i class="pi pi-calendar-plus"></i> Programar control</button>
+            </header>
+
+            <div *ngIf="!cargandoCtrl() && !controlesOrdenados().length" class="flex flex-col items-center gap-2 px-5 py-8 text-center">
+              <span class="grid size-10 place-items-center rounded-full bg-[#EAF3FB] text-[#0066AA]"><i class="pi pi-check-circle"></i></span>
+              <p class="text-xs text-slate-500">No hay controles registrados.</p>
             </div>
 
-            <div *ngIf="mostrarProgramar()" class="schedule-panel">
-              <div class="form-section-title compact"><span><i class="pi pi-calendar-plus"></i></span><div><strong>Nuevo control</strong><small>Programa la fecha y el sistema notificará al apoderado</small></div></div>
-              <div class="form-grid two">
-                <p-select [(ngModel)]="progTipo" [options]="[{label: 'Vacunación', value: 'VACUNACION'}, {label: 'Desparasitación', value: 'DESPARASITACION'}]" optionLabel="label" optionValue="value" placeholder="Tipo de control" styleClass="control-select" />
-                <p-select *ngIf="progTipo === 'VACUNACION'" [(ngModel)]="progTipoVacunaId" [options]="tiposVacuna()" optionLabel="nombre" optionValue="id" placeholder="Selecciona la vacuna" styleClass="control-select" />
-                <label *ngIf="progTipo === 'DESPARASITACION'" class="field no-label"><input [(ngModel)]="progNombreControl" placeholder="Producto o control" /></label>
-                <label class="field no-label"><input type="date" [(ngModel)]="progFecha" /></label>
-                <button type="button" class="primary-button" [disabled]="guardando()" (click)="programarControl()"><i class="pi pi-check"></i> Programar control</button>
+            <div *ngIf="controlesOrdenados().length" class="px-4 sm:px-5">
+              <article *ngFor="let control of controlesOrdenados(); let last = last" class="relative flex gap-4 py-3" [class.opacity-50]="control.estado === 'CANCELADO'">
+                <div class="flex flex-col items-center">
+                  <span class="mt-1 size-2.5 shrink-0 rounded-full" [ngClass]="control.estado === 'CANCELADO' ? 'bg-slate-300' : 'bg-[#0066AA]'"></span>
+                  <span *ngIf="!last" class="mt-1 w-px flex-1 bg-slate-200"></span>
+                </div>
+                <div class="flex h-14 w-16 shrink-0 flex-col items-center justify-center rounded-xl border border-slate-200 bg-slate-50/60">
+                  <strong class="text-lg leading-none text-slate-900">{{ parteFecha(control.fechaRecomendada, 'day') }}</strong>
+                  <span class="mt-1 text-[9px] font-bold uppercase text-slate-500">{{ parteFecha(control.fechaRecomendada, 'month') }} {{ parteFecha(control.fechaRecomendada, 'year') }}</span>
+                </div>
+                <div class="min-w-0 flex-1 pb-2 md:flex md:items-center md:justify-between md:gap-3">
+                  <div class="min-w-0">
+                    <div class="flex flex-wrap items-center gap-2"><h4 class="truncate text-sm font-bold text-slate-900">{{ control.nombreControl }}</h4><span class="rounded-full px-2 py-0.5 text-[10px] font-bold" [ngClass]="claseEstadoPreventivo(control.estado)">{{ etiquetaEstadoPreventivo(control.estado) }}</span></div>
+                    <p class="mt-1 text-xs text-slate-500">{{ tipoLabel(control.tipo) }} · {{ formatoFechaCorta(control.fechaRecomendada) }}</p>
+                  </div>
+                  <div *ngIf="control.estado !== 'CANCELADO'" class="mt-2 flex flex-wrap gap-2 md:mt-0">
+                    <button type="button" (click)="prepararAplicacion(control)" class="inline-flex h-10 items-center gap-2 rounded-xl bg-[#0066AA] px-4 text-xs font-bold text-white transition-colors hover:bg-[#00558F]"><i class="pi pi-check-circle"></i> Aplicar ahora</button>
+                    <button type="button" (click)="iniciarReprogramacion(control)" pTooltip="Reprogramar" class="grid size-10 place-items-center rounded-xl border border-slate-200 text-slate-500 transition-colors hover:border-slate-300 hover:bg-slate-50 hover:text-slate-700"><i class="pi pi-calendar"></i></button>
+                    <button type="button" (click)="solicitarCancelarControl(control)" pTooltip="Cancelar control" class="grid size-10 place-items-center rounded-xl border border-slate-200 text-slate-500 transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-600"><i class="pi pi-times"></i></button>
+                  </div>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+            <header class="border-b border-slate-200 bg-[#f8fafc] px-4 py-3.5 sm:px-5"><h3 class="text-sm font-extrabold text-slate-900">Historial de aplicaciones</h3><p class="mt-0.5 text-xs text-slate-500">Cartilla cronológica de {{ modo() === 'VACUNACION' ? 'vacunación' : 'desparasitación' }}</p></header>
+            <div class="overflow-x-auto">
+              <table class="w-full min-w-[760px] text-left">
+                <thead class="border-b border-slate-200 bg-slate-50/70"><tr><th class="px-5 py-3 text-[10px] font-bold uppercase tracking-wide text-slate-500">Aplicación</th><th class="px-4 py-3 text-[10px] font-bold uppercase tracking-wide text-slate-500">Producto</th><th class="px-4 py-3 text-[10px] font-bold uppercase tracking-wide text-slate-500">Responsable</th><th class="px-4 py-3 text-[10px] font-bold uppercase tracking-wide text-slate-500">Lote / dosis</th><th class="px-5 py-3 text-right text-[10px] font-bold uppercase tracking-wide text-slate-500">Próxima aplicación</th></tr></thead>
+                <tbody class="divide-y divide-slate-100">
+                  <tr *ngFor="let aplicacion of aplicacionesModo()" class="transition-colors hover:bg-slate-50/60">
+                    <td class="px-5 py-4 text-sm font-bold text-slate-800">{{ formatoFechaCorta(aplicacion.fechaAplicacion) }}</td>
+                    <td class="px-4 py-4"><strong class="block text-sm text-slate-800">{{ aplicacion.nombreControl }}</strong><small class="text-[10px] text-slate-500">{{ tipoLabel(aplicacion.tipo) }}</small></td>
+                    <td class="px-4 py-4 text-xs text-slate-600">{{ aplicacion.veterinarioNombre || '—' }}</td>
+                    <td class="px-4 py-4 text-xs text-slate-600">{{ aplicacion.lote || '—' }}<span *ngIf="aplicacion.dosis"> · {{ aplicacion.dosis }} {{ aplicacion.unidadDosis }}</span></td>
+                    <td class="px-5 py-4 text-right">
+                      <span *ngIf="aplicacion.fechaProximaAplicacion" class="inline-flex rounded-full bg-[#EAF3FB] px-2.5 py-1 text-xs font-bold text-[#0066AA]">{{ formatoFechaCorta(aplicacion.fechaProximaAplicacion) }}</span>
+                      <span *ngIf="!aplicacion.fechaProximaAplicacion" class="text-xs font-semibold text-slate-400">Última aplicación</span>
+                    </td>
+                  </tr>
+                  <tr *ngIf="!aplicacionesModo().length"><td colspan="5" class="px-5 py-12 text-center text-sm text-slate-500">Todavía no hay aplicaciones registradas.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+
+        <aside class="overflow-hidden rounded-2xl border border-slate-200 bg-white xl:sticky xl:top-4">
+          <header class="border-b border-slate-200 bg-[#0066AA] px-4 py-4 text-white">
+            <p class="text-[10px] font-bold uppercase tracking-[.14em] text-white/70">Nueva aplicación</p>
+            <h3 class="mt-0.5 text-sm font-extrabold">{{ modo() === 'VACUNACION' ? 'Registrar vacunación' : 'Registrar desparasitación' }}</h3>
+            <p class="mt-1.5 flex items-center gap-1.5 text-[10px] text-white/70"><i class="pi pi-user"></i> Responsable: {{ authStore.nombreCompleto() || 'sesión actual' }}</p>
+          </header>
+          <div class="space-y-4 p-4">
+            <div *ngIf="controlActivo()" class="flex items-center justify-between rounded-xl border border-[#0066AA]/20 bg-[#EAF3FB] px-3 py-2.5"><div><small class="block text-[9px] font-bold uppercase text-[#0066AA]/70">Control seleccionado</small><strong class="text-xs text-slate-800">{{ controlActivo()!.nombreControl }}</strong></div><button (click)="controlActivo.set(null)" class="text-[#0066AA]/60 hover:text-[#0066AA]"><i class="pi pi-times"></i></button></div>
+
+            <label class="block"><span class="mb-1.5 block text-xs font-bold text-slate-700">{{ modo() === 'VACUNACION' ? 'Vacuna' : 'Desparasitante' }} *</span>
+              <p-select *ngIf="modo() === 'VACUNACION'" [(ngModel)]="tipoVacunaId" (ngModelChange)="actualizarIntervaloSugerido($event)" [options]="tiposVacuna()" optionLabel="nombre" optionValue="id" placeholder="Seleccionar del catálogo" styleClass="control-select" />
+              <p-select *ngIf="modo() === 'DESPARASITACION'" [(ngModel)]="tipoDesparasitanteId" (ngModelChange)="actualizarIntervaloSugerido($event)" [options]="tiposDesparasitante()" optionLabel="nombre" optionValue="id" placeholder="Seleccionar del catálogo" styleClass="control-select" />
+            </label>
+            <label class="block"><span class="mb-1.5 block text-xs font-bold text-slate-700">Fecha de aplicación *</span><input type="date" [(ngModel)]="fechaAplicacion" [max]="fechaHoyLima" class="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none transition-colors focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15" /></label>
+
+            <div *ngIf="modo() === 'VACUNACION' && tipoVacunaId" class="overflow-hidden rounded-xl border border-slate-200">
+              <div class="flex items-center gap-1.5 border-b border-slate-200 bg-slate-50/70 px-3 py-2 text-[10px] font-bold uppercase tracking-wide text-slate-500"><i class="pi pi-info-circle text-[#0066AA]"></i> Datos tomados de la vacuna</div>
+              <dl class="grid grid-cols-2 gap-x-3 gap-y-2.5 p-3 text-xs"><div><dt class="text-slate-400">Lote</dt><dd class="font-semibold text-slate-700">{{ lote || 'No registrado' }}</dd></div><div><dt class="text-slate-400">Vencimiento</dt><dd class="font-semibold text-slate-700">{{ fechaVencimientoProducto || 'No registrado' }}</dd></div><div><dt class="text-slate-400">Dosis</dt><dd class="font-semibold text-slate-700">{{ dosis ? dosis + ' ' + unidadDosis : 'No registrada' }}</dd></div><div><dt class="text-slate-400">Vía</dt><dd class="font-semibold text-slate-700">{{ viaAdministracion || 'No registrada' }}</dd></div></dl>
+            </div>
+
+            <div *ngIf="modo() === 'VACUNACION'" class="grid grid-cols-2 gap-3">
+              <label><span class="mb-1.5 block text-xs font-bold text-slate-700">Peso actual (kg)</span><input type="number" [(ngModel)]="pesoKg" min="0.01" step="0.01" class="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none transition-colors focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15" /></label>
+              <label><span class="mb-1.5 block text-xs font-bold text-slate-700">Sitio de aplicación</span><input [(ngModel)]="sitioAplicacion" placeholder="Región anatómica" class="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none transition-colors focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15" /></label>
+            </div>
+
+            <div class="rounded-xl border border-slate-200 p-3">
+              <label class="flex items-start gap-3"><input type="checkbox" [(ngModel)]="programarProximoControl" class="mt-0.5 size-4 accent-[#0066AA]" /><span><strong class="block text-xs text-slate-700">Programar próximo control</strong><small class="mt-0.5 block text-[10px] text-slate-500">Desmárcalo si esta es la última aplicación.</small></span></label>
+              <div *ngIf="programarProximoControl" class="mt-3 grid grid-cols-[1fr_120px] gap-3 border-t border-slate-100 pt-3">
+                <label><span class="mb-1.5 block text-[10px] font-bold text-slate-600">Intervalo</span><input type="number" [(ngModel)]="intervaloCantidad" min="1" class="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15" /></label>
+                <label><span class="mb-1.5 block text-[10px] font-bold text-slate-600">Unidad</span><p-select [(ngModel)]="intervaloUnidad" [options]="unidadesIntervalo" optionLabel="label" optionValue="value" styleClass="control-select compact-select" /></label>
               </div>
             </div>
 
-            <div *ngIf="cargandoCtrl()" class="state-box"><i class="pi pi-spin pi-spinner"></i><p>Cargando controles…</p></div>
-            <div *ngIf="!cargandoCtrl() && !controlesOrdenados().length" class="state-box empty"><span><i class="pi pi-check-circle"></i></span><h4>Todo está al día</h4><p>No hay controles pendientes de {{ modo() === 'VACUNACION' ? 'vacunación' : 'desparasitación' }}.</p></div>
-
-            <div *ngIf="controlesOrdenados().length" class="control-list">
-              <article *ngFor="let control of controlesOrdenados()" class="control-row" [class.overdue]="control.estado === 'ATRASADO'">
-                <div class="control-date"><i class="pi pi-calendar"></i><strong>{{ control.fechaRecomendada }}</strong></div>
-                <div class="control-info"><div class="control-title-line"><h4>{{ control.nombreControl }}</h4><span class="status-pill" [ngClass]="claseEstadoPreventivo(control.estado)">{{ etiquetaEstadoPreventivo(control.estado) }}</span></div><p>{{ tipoLabel(control.tipo) }} · Fecha recomendada</p></div>
-                <div class="control-actions"><button type="button" class="apply-button" (click)="prepararAplicacion(control)"><i class="pi pi-check"></i> Registrar aplicación</button><button type="button" class="icon-button" pTooltip="Reprogramar" (click)="iniciarReprogramacion(control)"><i class="pi pi-calendar"></i></button><button type="button" class="icon-button danger" pTooltip="Cancelar control" (click)="cancelarControl(control)"><i class="pi pi-times"></i></button></div>
-                <div *ngIf="controlReprogramandoId() === control.id" class="reschedule-row"><label class="field"><span>Nueva fecha recomendada</span><input type="date" [value]="fechaReprogramacion()" (input)="fechaReprogramacion.set($any($event.target).value)" /></label><button type="button" class="primary-button" (click)="guardarReprogramacion(control)">Guardar fecha</button><button type="button" class="text-button" (click)="controlReprogramandoId.set(null)">Cancelar</button></div>
-              </article>
-            </div>
-          </section>
-
-          <section class="content-card history-card">
-            <div class="card-heading"><div class="card-title-group"><span class="section-icon neutral"><i class="pi pi-history"></i></span><div><h3>Historial de aplicaciones</h3><p>{{ aplicacionesModo().length }} registros de {{ modo() === 'VACUNACION' ? 'vacunación' : 'desparasitación' }}</p></div></div></div>
-            <div *ngIf="!aplicacionesModo().length" class="state-box empty small"><span><i class="pi pi-folder-open"></i></span><h4>Sin aplicaciones registradas</h4><p>Los registros aparecerán aquí después de guardarlos.</p></div>
-            <div *ngIf="aplicacionesModo().length" class="history-list">
-              <article *ngFor="let aplicacion of aplicacionesModo()" class="history-row">
-                <span class="history-mark"><i [class]="modo() === 'VACUNACION' ? 'pi pi-shield' : 'pi pi-sparkles'"></i></span>
-                <div class="history-main"><h4>{{ aplicacion.nombreControl }}</h4><p><span>{{ aplicacion.fechaAplicacion }}</span><span *ngIf="aplicacion.veterinarioNombre">Por {{ aplicacion.veterinarioNombre }}</span></p><small *ngIf="aplicacion.lote || aplicacion.dosis"><span *ngIf="aplicacion.lote">Lote {{ aplicacion.lote }}</span><span *ngIf="aplicacion.lote && aplicacion.dosis"> · </span><span *ngIf="aplicacion.dosis">{{ aplicacion.dosis }} {{ aplicacion.unidadDosis }}</span></small></div>
-                <div class="history-next"><span>Próxima</span><strong>{{ aplicacion.fechaProximaAplicacion || 'Sin fecha' }}</strong></div>
-              </article>
-            </div>
-          </section>
-        </div>
-
-        <aside class="application-column">
-          <section class="application-card">
-            <div class="application-heading"><span><i class="pi pi-plus"></i></span><div><p class="eyebrow">Nueva aplicación</p><h3>{{ modo() === 'VACUNACION' ? 'Registrar vacunación' : 'Registrar desparasitación' }}</h3></div></div>
-            <div class="session-responsible"><i class="pi pi-lock"></i><span>El responsable se asignará desde la sesión actual</span></div>
-            <div *ngIf="controlActivo()" class="linked-control"><span><i class="pi pi-link"></i></span><div><small>Control seleccionado</small><strong>{{ controlActivo()!.nombreControl }}</strong></div><button type="button" pTooltip="Desvincular" (click)="controlActivo.set(null)"><i class="pi pi-times"></i></button></div>
-
-            <div class="application-form">
-              <label class="field"><span>Servicio *</span><p-select [(ngModel)]="servicioId" [options]="serviciosModo()" optionLabel="nombre" optionValue="id" placeholder="Seleccionar servicio" styleClass="control-select" /></label>
-              <label class="field"><span>{{ modo() === 'VACUNACION' ? 'Vacuna' : 'Desparasitante' }} *</span><p-select *ngIf="modo() === 'VACUNACION'" [(ngModel)]="tipoVacunaId" (ngModelChange)="actualizarIntervaloSugerido($event)" [options]="tiposVacuna()" optionLabel="nombre" optionValue="id" placeholder="Seleccionar vacuna del catálogo" styleClass="control-select" /><p-select *ngIf="modo() === 'DESPARASITACION'" [(ngModel)]="tipoDesparasitanteId" (ngModelChange)="actualizarIntervaloSugerido($event)" [options]="tiposDesparasitante()" optionLabel="nombre" optionValue="id" placeholder="Seleccionar producto del catálogo" styleClass="control-select" /></label>
-              <button type="button" class="link-button" (click)="abrirNuevaCatalogo()"><i class="pi pi-plus"></i>{{ modo() === 'VACUNACION' ? 'Registrar nueva vacuna en el catálogo' : 'Registrar nuevo desparasitante en el catálogo' }}</button>
-              <label class="field"><span>Fecha de aplicación *</span><input type="date" [(ngModel)]="fechaAplicacion" [max]="fechaHoyLima" /></label>
-              <div class="session-responsible automatic-note"><i class="pi pi-calendar-clock"></i><span>El próximo control se calculará automáticamente según el producto.</span></div>
-
-              <details class="optional-details">
-                <summary><span><i class="pi pi-sliders-h"></i> Datos de esta aplicación</span><small>Lote, dosis y observaciones (opcional)</small><i class="pi pi-chevron-down"></i></summary>
-                <div class="optional-body">
-                  <div class="eyebrow">Próximo control</div>
-                  <div class="form-row"><label class="field"><span>Intervalo</span><input type="number" [(ngModel)]="intervaloCantidad" min="1" max="3650" /></label><label class="field"><span>Unidad</span><p-select [(ngModel)]="intervaloUnidad" [options]="unidadesIntervalo" optionLabel="label" optionValue="value" styleClass="control-select" /></label></div>
-                  <label class="field"><span>Fecha exacta <small>(opcional)</small></span><input type="date" [(ngModel)]="fechaProxima" /><em>Si la completas, reemplaza el intervalo.</em></label>
-                  <div class="eyebrow">Datos del producto y aplicación</div>
-                  <div class="form-row"><label class="field"><span>Lote</span><input [(ngModel)]="lote" maxlength="80" placeholder="Ej. L2408A" /></label><label class="field"><span>Vencimiento</span><input type="date" [(ngModel)]="fechaVencimientoProducto" [min]="fechaAplicacion" /></label></div>
-                  <div class="form-row"><label class="field"><span>Dosis</span><input type="number" [(ngModel)]="dosis" min="0.001" step="0.001" /></label><label class="field"><span>Unidad</span><input [(ngModel)]="unidadDosis" maxlength="30" placeholder="ml, tableta…" /></label></div>
-                  <div class="form-row"><label class="field"><span>Peso (kg)</span><input type="number" [(ngModel)]="pesoKg" min="0.01" step="0.01" /></label><label class="field"><span>Vía</span><input [(ngModel)]="viaAdministracion" maxlength="50" placeholder="Oral, subcutánea…" /></label></div>
-                  <label class="field"><span>Sitio de aplicación</span><input [(ngModel)]="sitioAplicacion" maxlength="100" /></label>
-                  <label class="field"><span>Observaciones</span><textarea [(ngModel)]="observaciones" maxlength="500" rows="3"></textarea></label>
-                </div>
-              </details>
-            </div>
-
-            <div class="charge-panel"><div><span>Total a cobrar</span><strong>{{ precioSeleccionado() == null ? 'S/ —' : 'S/ ' + precioSeleccionado() }}</strong></div><button type="button" class="primary-button register-button" (click)="guardar()" [disabled]="guardando() || precioSeleccionado() == null"><i [class]="guardando() ? 'pi pi-spin pi-spinner' : 'pi pi-check'"></i>{{ guardando() ? 'Registrando…' : 'Registrar aplicación' }}</button></div>
-            <div *ngIf="resultado()" class="success-message"><i class="pi pi-check-circle"></i><div><strong>Aplicación registrada</strong><span>Cobro {{ resultado()!.codigoCobro }} · S/ {{ resultado()!.total }}</span></div></div>
-          </section>
+            <label *ngIf="modo() === 'VACUNACION'" class="block"><span class="mb-1.5 block text-xs font-bold text-slate-700">Observaciones</span><textarea [(ngModel)]="observaciones" rows="2" maxlength="500" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none transition-colors focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15"></textarea></label>
+          </div>
+          <footer class="border-t border-slate-200 p-4">
+            <button type="button" (click)="guardar()" [disabled]="guardando()" class="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#0066AA] text-sm font-bold text-white transition-colors hover:bg-[#00558F] disabled:opacity-50"><i [class]="guardando() ? 'pi pi-spin pi-spinner' : 'pi pi-check-circle'"></i>{{ guardando() ? 'Registrando...' : 'Confirmar aplicación' }}</button>
+            <p class="mt-2 text-center text-[10px] text-slate-500">Al confirmar, la cuenta aparecerá automáticamente en Caja.</p>
+          </footer>
         </aside>
       </div>
     </ng-container>
   </div>
-</div>
+</main>
 
 <p-toast position="top-right"></p-toast>
 
-<p-dialog [(visible)]="dialogVisible" [style]="{ width: '460px' }" [modal]="true" [draggable]="false" [resizable]="false" styleClass="catalog-dialog">
-  <ng-template pTemplate="header"><div class="dialog-heading"><span><i class="pi pi-plus"></i></span><div><h3>Registrar {{ dialogTipo === 'VACUNACION' ? 'vacuna' : 'desparasitante' }}</h3><p>Se agrega una sola vez al catálogo y después podrás seleccionarlo en cada aplicación.</p></div></div></ng-template>
-  <div class="dialog-form"><label class="field"><span>Nombre comercial *</span><input [(ngModel)]="nuevoCatNombre" [placeholder]="dialogTipo === 'VACUNACION' ? 'Ej. Nobivac Parvo-C' : 'Ej. Drontal Plus'" /></label><div class="form-row"><label class="field"><span>Próximo control sugerido (meses)</span><input type="number" [(ngModel)]="nuevoCatPeriodicidad" min="1" max="120" /></label><label class="field"><span>Precio de aplicación (S/) *</span><input type="number" [(ngModel)]="nuevoCatPrecio" min="0" step="0.01" /></label></div></div>
-  <ng-template pTemplate="footer"><button type="button" class="text-button" (click)="dialogVisible.set(false)">Cancelar</button><button type="button" class="primary-button" (click)="dialogTipo === 'VACUNACION' ? crearVacuna() : crearDesparasitante()"><i class="pi pi-check"></i> Guardar en catálogo</button></ng-template>
+<p-dialog [(visible)]="mostrarProgramar" [modal]="true" [draggable]="false" [resizable]="false" [style]="{width:'440px'}" header="Programar nuevo control">
+  <div class="space-y-4 pt-2">
+    <label class="block"><span class="mb-1.5 block text-xs font-bold text-slate-700">Tipo de control</span><p-select [(ngModel)]="progTipo" [options]="[{label:'Vacunación',value:'VACUNACION'},{label:'Desparasitación',value:'DESPARASITACION'}]" optionLabel="label" optionValue="value" styleClass="control-select" /></label>
+    <label *ngIf="progTipo === 'VACUNACION'" class="block"><span class="mb-1.5 block text-xs font-bold text-slate-700">Vacuna</span><p-select [(ngModel)]="progTipoVacunaId" [options]="tiposVacuna()" optionLabel="nombre" optionValue="id" placeholder="Seleccionar vacuna" styleClass="control-select" /></label>
+    <label *ngIf="progTipo === 'DESPARASITACION'" class="block"><span class="mb-1.5 block text-xs font-bold text-slate-700">Producto</span><input [(ngModel)]="progNombreControl" class="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15" /></label>
+    <div><span class="mb-2 block text-xs font-bold text-slate-700">Fecha recomendada</span><p-datepicker [(ngModel)]="progFechaCalendario" (ngModelChange)="confirmarFechaProgramacion($event)" [showIcon]="true" [showButtonBar]="true" [minDate]="desdeFechaIso(fechaHoyLima)" dateFormat="dd/mm/yy" appendTo="body" styleClass="w-full" /></div>
+  </div>
+  <ng-template pTemplate="footer">
+    <button class="h-10 rounded-lg px-4 text-xs font-bold text-slate-600 transition-colors hover:bg-slate-50" (click)="mostrarProgramar.set(false)">Cancelar</button>
+    <button class="h-10 rounded-xl bg-[#0066AA] px-4 text-xs font-bold text-white transition-colors hover:bg-[#00558F]" (click)="programarControl()">Programar control</button>
+  </ng-template>
+</p-dialog>
+
+<p-dialog [visible]="!!controlReprogramando()" (visibleChange)="!$event && cerrarReprogramacion()" [modal]="true" [draggable]="false" [resizable]="false" [style]="{width:'420px'}" header="Reprogramar control">
+  <p class="mb-3 text-xs text-slate-500">{{ controlReprogramando()?.nombreControl }}</p>
+  <p-datepicker [(ngModel)]="fechaReprogramacionCalendario" (ngModelChange)="confirmarFechaReprogramacion($event)" [showIcon]="true" [showButtonBar]="true" [minDate]="desdeFechaIso(fechaHoyLima)" dateFormat="dd/mm/yy" appendTo="body" styleClass="w-full" />
+  <ng-template pTemplate="footer">
+    <button class="h-10 rounded-lg px-4 text-xs font-bold text-slate-600 transition-colors hover:bg-slate-50" (click)="cerrarReprogramacion()">Cancelar</button>
+    <button class="h-10 rounded-xl bg-[#0066AA] px-4 text-xs font-bold text-white transition-colors hover:bg-[#00558F]" (click)="guardarReprogramacion(controlReprogramando()!)">Guardar nueva fecha</button>
+  </ng-template>
+</p-dialog>
+
+<p-dialog [visible]="!!controlCancelar()" (visibleChange)="!$event && controlCancelar.set(null)" [modal]="true" [draggable]="false" [resizable]="false" [style]="{width:'400px'}" header="Cancelar control">
+  <div class="flex gap-3 py-2"><span class="grid size-10 shrink-0 place-items-center rounded-xl bg-red-50 text-red-700"><i class="pi pi-exclamation-triangle"></i></span><div><p class="text-sm font-bold text-slate-800">¿Confirmas esta cancelación?</p><p class="mt-1 text-xs leading-5 text-slate-500">{{ controlCancelar()?.nombreControl }} quedará visible en la cartilla con estado Cancelado.</p></div></div>
+  <ng-template pTemplate="footer">
+    <button class="h-10 rounded-lg px-4 text-xs font-bold text-slate-600 transition-colors hover:bg-slate-50" (click)="controlCancelar.set(null)">Volver</button>
+    <button class="h-10 rounded-xl bg-red-600 px-4 text-xs font-bold text-white transition-colors hover:bg-red-700" (click)="cancelarControl()">Sí, cancelar control</button>
+  </ng-template>
+</p-dialog>
+
+<p-dialog [(visible)]="dialogVisible" [modal]="true" [draggable]="false" [resizable]="false" [style]="{width:'560px'}" [header]="dialogTipo === 'VACUNACION' ? 'Registrar vacuna en el catálogo' : 'Registrar desparasitante en el catálogo'">
+  <div class="grid gap-4 pt-2 sm:grid-cols-2">
+    <label class="sm:col-span-2"><span class="mb-1.5 block text-xs font-bold text-slate-700">Nombre comercial *</span><input [(ngModel)]="nuevoCatNombre" placeholder="Ej. VanguardPlus 5CV" class="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15" /></label>
+    <label><span class="mb-1.5 block text-xs font-bold text-slate-700">Periodicidad sugerida (meses)</span><input type="number" [(ngModel)]="nuevoCatPeriodicidad" min="1" max="120" class="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15" /></label>
+    <label><span class="mb-1.5 block text-xs font-bold text-slate-700">Precio para Caja *</span><input type="number" [(ngModel)]="nuevoCatPrecio" min="0" step="0.01" class="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15" /></label>
+    <label><span class="mb-1.5 block text-xs font-bold text-slate-700">Lote</span><input [(ngModel)]="nuevoCatLote" placeholder="Ej. L2408A" class="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15" /></label>
+    <label><span class="mb-1.5 block text-xs font-bold text-slate-700">Vencimiento</span><input type="date" [(ngModel)]="nuevoCatVencimiento" class="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15" /></label>
+    <label><span class="mb-1.5 block text-xs font-bold text-slate-700">Dosis</span><input type="number" [(ngModel)]="nuevoCatDosis" min="0.001" step="0.001" class="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15" /></label>
+    <label><span class="mb-1.5 block text-xs font-bold text-slate-700">Unidad</span><input [(ngModel)]="nuevoCatUnidad" placeholder="ml, tableta..." class="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15" /></label>
+    <label class="sm:col-span-2"><span class="mb-1.5 block text-xs font-bold text-slate-700">Vía de administración</span><input [(ngModel)]="nuevoCatVia" placeholder="Oral, subcutánea..." class="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15" /></label>
+  </div>
+  <ng-template pTemplate="footer">
+    <button class="h-10 rounded-lg px-4 text-xs font-bold text-slate-600 transition-colors hover:bg-slate-50" (click)="dialogVisible.set(false)">Cancelar</button>
+    <button class="h-10 rounded-xl bg-[#0066AA] px-4 text-xs font-bold text-white transition-colors hover:bg-[#00558F]" (click)="dialogTipo === 'VACUNACION' ? crearVacuna() : crearDesparasitante()">Guardar en catálogo</button>
+  </ng-template>
 </p-dialog>
