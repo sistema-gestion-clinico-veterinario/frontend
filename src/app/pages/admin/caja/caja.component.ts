@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastModule } from 'primeng/toast';
@@ -13,6 +13,7 @@ import { PagoService } from '../../../core/services/pago.service';
 import { CuentaCitaResponse, DetalleCuentaRequest, DetalleCuentaResponse, TipoDetalleCuenta } from '../../../models/response/cuenta-cita-response';
 import { MetodoPago } from '../../../models/request/pago-request';
 import { NotaVentaPdfService } from '../../../core/services/nota-venta-pdf.service';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-caja',
@@ -22,12 +23,13 @@ import { NotaVentaPdfService } from '../../../core/services/nota-venta-pdf.servi
   templateUrl: './caja.component.html',
   styleUrl: './caja.component.scss'
 })
-export class CajaComponent implements OnInit {
+export class CajaComponent implements OnInit, OnDestroy {
   private readonly cajaService   = inject(CajaService);
   private readonly messageService = inject(MessageService);
   private readonly pagoService    = inject(PagoService);
   private readonly notaVentaPdf   = inject(NotaVentaPdfService);
   readonly authStore             = inject(AuthStore);
+  private realtimeClient: CajaStompClient | null = null;
 
   movimientos  = signal<MovimientoCajaResponse[]>([]);
   resumen      = signal<ResumenCajaResponse | null>(null);
@@ -82,6 +84,33 @@ export class CajaComponent implements OnInit {
     this.cargar();
     this.cargarPendientes();
     this.cargarSesion();
+    this.conectarActualizacionCaja();
+  }
+
+  ngOnDestroy() {
+    this.realtimeClient?.disconnect();
+  }
+
+  private conectarActualizacionCaja() {
+    if (!this.companyId) return;
+    try {
+      const url = new URL(environment.wsApiUrl);
+      const protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
+      const path = url.pathname.replace(/\/$/, '');
+      this.realtimeClient = new CajaStompClient(`${protocol}//${url.host}${path}/ws/websocket`);
+      this.realtimeClient.connect(() => {
+        this.realtimeClient?.subscribe(`/topic/caja/${this.companyId}`, event => {
+          if (event?.tipo !== 'CUENTA_PREVENTIVA_CREADA') return;
+          setTimeout(() => this.cargarPendientes(0), 200);
+          this.messageService.add({
+            severity: 'info', summary: 'Nueva cuenta preventiva',
+            detail: `${event.mascotaNombre} · ${event.control === 'VACUNACION' ? 'Vacunación' : 'Desparasitación'}`
+          });
+        });
+      });
+    } catch (error) {
+      console.error('[Caja WS] No se pudo iniciar la actualización en tiempo real', error);
+    }
   }
 
   cargarPendientes(page = this.pendingPage()) {
@@ -427,5 +456,57 @@ export class CajaComponent implements OnInit {
 
   formatMonto(m: number | null): string {
     return m != null ? `S/ ${Number(m).toFixed(2)}` : '—';
+  }
+}
+
+class CajaStompClient {
+  private socket: WebSocket | null = null;
+  private connected = false;
+  private subscriptions = new Map<string, (payload: any) => void>();
+  private subscriptionId = 0;
+
+  constructor(private readonly url: string) {}
+
+  connect(onConnect: () => void) {
+    this.socket = new WebSocket(this.url);
+    this.socket.onopen = () => this.socket?.send('CONNECT\naccept-version:1.1,1.2\nheart-beat:10000,10000\n\n\0');
+    this.socket.onmessage = event => {
+      const frame = String(event.data).replace(/\r\n/g, '\n');
+      if (!frame || frame === '\n') return;
+      if (frame.startsWith('CONNECTED')) {
+        this.connected = true;
+        onConnect();
+        this.subscriptions.forEach((_, destination) => this.sendSubscription(destination));
+        return;
+      }
+      if (!frame.startsWith('MESSAGE')) return;
+      const bodyStart = frame.indexOf('\n\n');
+      const destination = frame.match(/destination:([^\n]+)/)?.[1]?.trim();
+      if (bodyStart < 0 || !destination) return;
+      try {
+        const body = frame.substring(bodyStart + 2).replace(/\0$/, '').trim();
+        this.subscriptions.get(destination)?.(JSON.parse(body));
+      } catch (error) {
+        console.error('[Caja WS] Evento inválido', error);
+      }
+    };
+  }
+
+  subscribe(destination: string, callback: (payload: any) => void) {
+    this.subscriptions.set(destination, callback);
+    if (this.connected) this.sendSubscription(destination);
+  }
+
+  private sendSubscription(destination: string) {
+    this.socket?.send(`SUBSCRIBE\nid:caja-${this.subscriptionId++}\ndestination:${destination}\n\n\0`);
+  }
+
+  disconnect() {
+    this.connected = false;
+    this.subscriptions.clear();
+    if (!this.socket) return;
+    this.socket.onclose = null;
+    this.socket.close();
+    this.socket = null;
   }
 }

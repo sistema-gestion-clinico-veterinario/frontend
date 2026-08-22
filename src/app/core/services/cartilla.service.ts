@@ -36,11 +36,11 @@ export class CartillaService {
     return this.http.get<ApiResponse<TipoDesparasitante[]>>(`${this.preventivosUrl}/pets/${petId}/deworming-products`);
   }
 
-  crearTipoVacuna(request: { nombre: string; especie: string; periodicidadMesesSugerida?: number; precio: number }) {
+  crearTipoVacuna(request: { nombre: string; especie: string; periodicidadMesesSugerida?: number; precio: number; lote?: string; fechaVencimientoProducto?: string; dosis?: number; unidadDosis?: string; viaAdministracion?: string }) {
     return this.http.post<ApiResponse<TipoVacuna>>(`${this.preventivosUrl}/vaccine-types`, request);
   }
 
-  crearTipoDesparasitante(request: { nombre: string; especie: string; periodicidadMesesSugerida?: number; precio: number }) {
+  crearTipoDesparasitante(request: { nombre: string; especie: string; periodicidadMesesSugerida?: number; precio: number; lote?: string; fechaVencimientoProducto?: string; dosis?: number; unidadDosis?: string; viaAdministracion?: string }) {
     return this.http.post<ApiResponse<TipoDesparasitante>>(`${this.preventivosUrl}/deworming-products`, request);
   }
 }

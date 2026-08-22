@@ -10,6 +10,7 @@ export interface CartillaAplicacionRequest {
   intervaloCantidad?: number;
   intervaloUnidad?: IntervaloUnidad;
   fechaProxima?: string;     // yyyy-MM-dd
+  programarProximoControl?: boolean;
   lote?: string;
   fechaVencimientoProducto?: string;
   dosis?: number;
@@ -75,6 +76,11 @@ export interface TipoVacuna {
   especie: string;
   periodicidadMesesSugerida?: number;
   precio: number;
+  lote?: string;
+  fechaVencimientoProducto?: string;
+  dosis?: number;
+  unidadDosis?: string;
+  viaAdministracion?: string;
 }
 
 export interface TipoDesparasitante {
@@ -83,4 +89,9 @@ export interface TipoDesparasitante {
   especie: string;
   periodicidadMesesSugerida?: number;
   precio: number;
+  lote?: string;
+  fechaVencimientoProducto?: string;
+  dosis?: number;
+  unidadDosis?: string;
+  viaAdministracion?: string;
 }

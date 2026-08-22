@@ -5,6 +5,9 @@ module.exports = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['Barlow', 'sans-serif'],
+      },
       keyframes: {
         'slide-in-right': {
           '0%':   { transform: 'translateX(100%)', opacity: '0' },

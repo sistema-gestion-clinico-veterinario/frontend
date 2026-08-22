@@ -63,6 +63,7 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
   isEdit     = signal<boolean>(false);
   editingId  = signal<number | null>(null);
   returnPage = 0;
+  returnUrl: string | null = null;
   apoderados = signal<{ label: string; value: number }[]>([]);
   razas      = signal<{ label: string; value: number }[]>([]);
   razaFilterText    = signal<string>('');
@@ -136,6 +137,9 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    const requestedReturnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+    this.returnUrl = requestedReturnUrl?.startsWith('/') && !requestedReturnUrl.startsWith('//')
+      ? requestedReturnUrl : null;
     const page = Number(this.route.snapshot.queryParamMap.get('returnPage'));
     this.returnPage = Number.isInteger(page) && page > 0 ? page : 0;
 
@@ -191,6 +195,10 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
   }
 
   goBack() {
+    if (this.returnUrl) {
+      this.router.navigateByUrl(this.returnUrl);
+      return;
+    }
     this.router.navigate(['/mascotas'], {
       queryParams: { page: this.returnPage > 0 ? this.returnPage : null }
     });
@@ -612,13 +620,17 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
         : this.mascotaService.crear(request);
 
       obs.subscribe({
-        next: () => {
+        next: (response) => {
           this.messageService.add({
             severity: 'success',
             summary: 'Listo',
             detail: this.isEdit() ? 'Mascota actualizada correctamente' : 'Mascota registrada correctamente'
           });
           this.loadingStore.hide();
+          if (this.returnUrl && !this.isEdit()) {
+            this.router.navigate([this.returnUrl], { queryParams: { petId: response.data.id } });
+            return;
+          }
           this.goBack();
         },
         error: (err) => {
