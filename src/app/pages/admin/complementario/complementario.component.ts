@@ -24,6 +24,7 @@ import { EspecialidadService } from '../../../core/services/especialidad.service
 import { TipoEmpleadoService } from '../../../core/services/tipo-empleado.service';
 import { CompanyService } from '../../../core/services/company.service';
 import { ServicioService } from '../../../core/services/servicio.service';
+import { ControlPreventivoService } from '../../../core/services/control-preventivo.service';
 import { ServicioResponse } from '../../../models/response/servicio-response';
 import { LoadingStore } from '../../../store/loading.store';
 import { AuthStore } from '../../../store/auth.store';
@@ -63,6 +64,7 @@ export class ComplementarioComponent implements OnInit {
   private readonly tipoEmpleadoService = inject(TipoEmpleadoService);
   private readonly companyService = inject(CompanyService);
   private readonly servicioService = inject(ServicioService);
+  private readonly controlPreventivoService = inject(ControlPreventivoService);
   private readonly messageService = inject(MessageService);
   readonly authStore = inject(AuthStore);
   readonly loadingStore = inject(LoadingStore);
@@ -132,6 +134,12 @@ export class ComplementarioComponent implements OnInit {
       case 'guardar-servicio': this.saveServicio(); break;
       case 'eliminar-servicio': this.eliminarServicio(ctx.item.id); break;
       case 'toggle-servicio': this.toggleServicioDisponible(ctx.item); break;
+      case 'guardar-vacuna': this.saveVacuna(ctx.item); break;
+      case 'toggle-vacuna': this.cambiarEstadoVacuna(ctx.item); break;
+      case 'eliminar-vacuna': this.eliminarVacuna(ctx.item.id); break;
+      case 'guardar-desparasitante': this.saveDesparasitante(ctx.item); break;
+      case 'toggle-desparasitante': this.cambiarEstadoDesparasitante(ctx.item); break;
+      case 'eliminar-desparasitante': this.eliminarDesparasitante(ctx.item.id); break;
     }
   }
 
@@ -249,6 +257,31 @@ export class ComplementarioComponent implements OnInit {
     tipoEmpleadoId: [null],
     tipoControlPreventivo: ['NO_APLICA']
   });
+
+  vacunas           = signal<any[]>([]);
+  vacunasTotal      = signal(0);
+  vacunasPage       = signal(0);
+  showVacunaModal   = signal(false);
+  editingVacuna     = signal<any | null>(null);
+  vacunaForm: FormGroup = this.fb.group({
+    nombre: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
+    especie: ['', Validators.required],
+    precio: [null, [Validators.required, Validators.min(1)]],
+    periodicidadMesesSugerida: [null]
+  });
+
+  desparasitantes           = signal<any[]>([]);
+  desparasitantesTotal      = signal(0);
+  desparasitantesPage       = signal(0);
+  showDesparasitanteModal   = signal(false);
+  editingDesparasitante     = signal<any | null>(null);
+  desparasitanteForm: FormGroup = this.fb.group({
+    nombre: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
+    especie: ['', Validators.required],
+    precio: [null, [Validators.required, Validators.min(1)]],
+    periodicidadMesesSugerida: [null]
+  });
+
   ngOnInit() {
   }
 
@@ -262,12 +295,16 @@ export class ComplementarioComponent implements OnInit {
     this.loadTiposEmpleado();
     this.loadTiposEmpleadoCatalogo();
     this.loadServicios();
+    this.loadVacunas();
+    this.loadDesparasitantes();
   }
 
   private resetPagination() {
     this.especialidadesPage.set(0);
     this.tiposEmpleadoPage.set(0);
     this.serviciosPage.set(0);
+    this.vacunasPage.set(0);
+    this.desparasitantesPage.set(0);
   }
 
   private clearData() {
@@ -278,6 +315,10 @@ export class ComplementarioComponent implements OnInit {
     this.tiposEmpleadoTotal.set(0);
     this.servicios.set([]);
     this.serviciosTotal.set(0);
+    this.vacunas.set([]);
+    this.vacunasTotal.set(0);
+    this.desparasitantes.set([]);
+    this.desparasitantesTotal.set(0);
   }
 
   private pageTotal(data: any): number {
@@ -534,6 +575,256 @@ export class ComplementarioComponent implements OnInit {
 
   onServiciosPageChange(event: any) {
     this.loadServicios(Number(event.page) || 0);
+  }
+
+  onVacunasPageChange(event: any) {
+    this.loadVacunas(Number(event.page) || 0);
+  }
+
+  onDesparasitantesPageChange(event: any) {
+    this.loadDesparasitantes(Number(event.page) || 0);
+  }
+
+  private saveVacuna(item: any) {
+    const editando = this.editingVacuna();
+    const payload = {
+      nombre: item.nombre.trim(),
+      especie: item.especie,
+      precio: item.precio,
+      periodicidadMesesSugerida: item.periodicidadMesesSugerida || null
+    };
+    this.loadingStore.show();
+    const req$ = editando
+      ? this.controlPreventivoService.actualizarTipoVacuna(editando.id, payload)
+      : this.controlPreventivoService.crearTipoVacuna(payload);
+    req$.subscribe({
+      next: () => {
+        this.messageService.add({ severity: 'success', summary: editando ? 'Vacuna actualizada' : 'Vacuna creada' });
+        this.showVacunaModal.set(false);
+        this.loadVacunas(editando ? this.vacunasPage() : 0);
+        this.loadingStore.hide();
+      },
+      error: (err) => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo guardar' });
+        this.loadingStore.hide();
+      }
+    });
+  }
+
+  private cambiarEstadoVacuna(item: any) {
+    this.loadingStore.show();
+    this.controlPreventivoService.cambiarEstadoTipoVacuna(item.id, !item.activo).subscribe({
+      next: () => {
+        this.messageService.add({ severity: 'success', summary: item.activo ? 'Vacuna desactivada' : 'Vacuna activada' });
+        this.loadVacunas(this.vacunasPage());
+        this.loadingStore.hide();
+      },
+      error: (err) => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo cambiar estado' });
+        this.loadingStore.hide();
+      }
+    });
+  }
+
+  private saveDesparasitante(item: any) {
+    const editando = this.editingDesparasitante();
+    const payload = {
+      nombre: item.nombre.trim(),
+      especie: item.especie,
+      precio: item.precio,
+      periodicidadMesesSugerida: item.periodicidadMesesSugerida || null
+    };
+    this.loadingStore.show();
+    const req$ = editando
+      ? this.controlPreventivoService.actualizarTipoDesparasitante(editando.id, payload)
+      : this.controlPreventivoService.crearTipoDesparasitante(payload);
+    req$.subscribe({
+      next: () => {
+        this.messageService.add({ severity: 'success', summary: editando ? 'Desparasitante actualizado' : 'Desparasitante creado' });
+        this.showDesparasitanteModal.set(false);
+        this.loadDesparasitantes(editando ? this.desparasitantesPage() : 0);
+        this.loadingStore.hide();
+      },
+      error: (err) => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo guardar' });
+        this.loadingStore.hide();
+      }
+    });
+  }
+
+  private cambiarEstadoDesparasitante(item: any) {
+    this.loadingStore.show();
+    this.controlPreventivoService.cambiarEstadoTipoDesparasitante(item.id, !item.activo).subscribe({
+      next: () => {
+        this.messageService.add({ severity: 'success', summary: item.activo ? 'Desparasitante desactivado' : 'Desparasitante activado' });
+        this.loadDesparasitantes(this.desparasitantesPage());
+        this.loadingStore.hide();
+      },
+      error: (err) => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo cambiar estado' });
+        this.loadingStore.hide();
+      }
+    });
+  }
+
+  loadVacunas(page = this.vacunasPage()) {
+    if (!this.activeCompanyId) return;
+    this.loadingStore.show();
+    this.controlPreventivoService.listarTiposVacunaPorCompany(page, this.pageSize).subscribe({
+      next: (res) => {
+        this.vacunas.set(res.data?.content ?? []);
+        this.vacunasTotal.set(res.data?.totalElements ?? 0);
+        this.vacunasPage.set(page);
+        this.loadingStore.hide();
+      },
+      error: () => { this.loadingStore.hide(); }
+    });
+  }
+
+  loadDesparasitantes(page = this.desparasitantesPage()) {
+    if (!this.activeCompanyId) return;
+    this.loadingStore.show();
+    this.controlPreventivoService.listarTiposDesparasitantePorCompany(page, this.pageSize).subscribe({
+      next: (res) => {
+        this.desparasitantes.set(res.data?.content ?? []);
+        this.desparasitantesTotal.set(res.data?.totalElements ?? 0);
+        this.desparasitantesPage.set(page);
+        this.loadingStore.hide();
+      },
+      error: () => { this.loadingStore.hide(); }
+    });
+  }
+
+  openVacunaModal(item: any = null) {
+    this.editingVacuna.set(item ? { ...item } : null);
+    if (item) {
+      this.vacunaForm.patchValue({
+        nombre: item.nombre ?? '',
+        especie: item.especie ?? '',
+        precio: item.precio ?? null,
+        periodicidadMesesSugerida: item.periodicidadMesesSugerida ?? null
+      });
+    } else {
+      this.vacunaForm.reset({ nombre: '', especie: '', precio: null, periodicidadMesesSugerida: null });
+    }
+    this.showVacunaModal.set(true);
+  }
+
+  openDesparasitanteModal(item: any = null) {
+    this.editingDesparasitante.set(item ? { ...item } : null);
+    if (item) {
+      this.desparasitanteForm.patchValue({
+        nombre: item.nombre ?? '',
+        especie: item.especie ?? '',
+        precio: item.precio ?? null,
+        periodicidadMesesSugerida: item.periodicidadMesesSugerida ?? null
+      });
+    } else {
+      this.desparasitanteForm.reset({ nombre: '', especie: '', precio: null, periodicidadMesesSugerida: null });
+    }
+    this.showDesparasitanteModal.set(true);
+  }
+
+  confirmarGuardarVacuna() {
+    if (this.vacunaForm.invalid) { this.vacunaForm.markAllAsTouched(); return; }
+    const nombre = this.vacunaForm.get('nombre')?.value?.trim();
+    const editando = this.editingVacuna();
+    this.openConfirm(
+      editando ? 'Actualizar vacuna' : 'Crear vacuna',
+      '¿Está seguro de ' + (editando ? 'actualizar' : 'crear') + ' la vacuna «' + nombre + '»?',
+      editando ? 'guardar-vacuna' : 'guardar-vacuna',
+      { ...this.vacunaForm.value, id: editando?.id },
+      editando ? 'warning' : 'primary',
+      editando ? 'Actualizar' : 'Crear'
+    );
+  }
+
+  confirmarGuardarDesparasitante() {
+    if (this.desparasitanteForm.invalid) { this.desparasitanteForm.markAllAsTouched(); return; }
+    const nombre = this.desparasitanteForm.get('nombre')?.value?.trim();
+    const editando = this.editingDesparasitante();
+    this.openConfirm(
+      editando ? 'Actualizar desparasitante' : 'Crear desparasitante',
+      '¿Está seguro de ' + (editando ? 'actualizar' : 'crear') + ' el desparasitante «' + nombre + '»?',
+      editando ? 'guardar-desparasitante' : 'guardar-desparasitante',
+      { ...this.desparasitanteForm.value, id: editando?.id },
+      editando ? 'warning' : 'primary',
+      editando ? 'Actualizar' : 'Crear'
+    );
+  }
+
+  confirmarToggleEstadoVacuna(item: any) {
+    this.openConfirm(
+      item.activo ? 'Desactivar vacuna' : 'Activar vacuna',
+      '¿Está seguro de ' + (item.activo ? 'desactivar' : 'activar') + ' la vacuna «' + item.nombre + '»?',
+      'toggle-vacuna',
+      item,
+      item.activo ? 'danger' : 'primary',
+      item.activo ? 'Desactivar' : 'Activar'
+    );
+  }
+
+  confirmarToggleEstadoDesparasitante(item: any) {
+    this.openConfirm(
+      item.activo ? 'Desactivar desparasitante' : 'Activar desparasitante',
+      '¿Está seguro de ' + (item.activo ? 'desactivar' : 'activar') + ' el desparasitante «' + item.nombre + '»?',
+      'toggle-desparasitante',
+      item,
+      item.activo ? 'danger' : 'primary',
+      item.activo ? 'Desactivar' : 'Activar'
+    );
+  }
+
+  eliminarVacuna(id: number) {
+    this.loadingStore.show();
+    this.controlPreventivoService.eliminarTipoVacuna(id).subscribe({
+      next: () => {
+        this.messageService.add({ severity: 'success', summary: 'Vacuna eliminada' });
+        this.loadVacunas(this.vacunasPage());
+        this.loadingStore.hide();
+      },
+      error: (err) => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo eliminar' });
+        this.loadingStore.hide();
+      }
+    });
+  }
+
+  eliminarDesparasitante(id: number) {
+    this.loadingStore.show();
+    this.controlPreventivoService.eliminarTipoDesparasitante(id).subscribe({
+      next: () => {
+        this.messageService.add({ severity: 'success', summary: 'Desparasitante eliminado' });
+        this.loadDesparasitantes(this.desparasitantesPage());
+        this.loadingStore.hide();
+      },
+      error: (err) => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo eliminar' });
+        this.loadingStore.hide();
+      }
+    });
+  }
+
+  confirmarEliminarVacuna(item: any) {
+    this.openConfirm(
+      'Eliminar vacuna',
+      '¿Está seguro de eliminar la vacuna «' + item.nombre + '»? Esta acción no se puede deshacer.',
+      'eliminar-vacuna',
+      item,
+      'danger',
+      'Eliminar'
+    );
+  }
+
+  confirmarEliminarDesparasitante(item: any) {
+    this.openConfirm(
+      'Eliminar desparasitante',
+      '¿Está seguro de eliminar el desparasitante «' + item.nombre + '»? Esta acción no se puede deshacer.',
+      'eliminar-desparasitante',
+      item,
+      'danger',
+      'Eliminar'
+    );
   }
 
 }
