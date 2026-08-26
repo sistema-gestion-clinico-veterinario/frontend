@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, ElementRef, ViewChild, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MessageService } from 'primeng/api';
@@ -9,14 +9,14 @@ import { SelectModule } from 'primeng/select';
 import { DatePickerModule } from 'primeng/datepicker';
 import { TagModule } from 'primeng/tag';
 import { DialogModule } from 'primeng/dialog';
-import { AutoCompleteModule, AutoCompleteCompleteEvent } from 'primeng/autocomplete';
-import { CardModule } from 'primeng/card';
 import { TooltipModule } from 'primeng/tooltip';
+import { PaginatorModule } from 'primeng/paginator';
 import { CartillaService } from '../../core/services/cartilla.service';
 import { ControlPreventivoService } from '../../core/services/control-preventivo.service';
 import { MascotaService } from '../../core/services/mascota.service';
 import { ServicioService } from '../../core/services/servicio.service';
 import { MascotaResponse } from '../../models/response/mascota-response';
+import { MascotaCartillaResponse } from '../../models/response/mascota-cartilla-response';
 import { ServicioResponse } from '../../models/response/servicio-response';
 import { ControlPreventivoResponse, TipoControlPreventivo } from '../../models/response/control-preventivo-response';
 import { AplicacionPreventiva, TipoVacuna, TipoDesparasitante, CartillaAplicacionResponse, IntervaloUnidad } from '../../models/cartilla.model';
@@ -36,9 +36,8 @@ import { ActivatedRoute, Router } from '@angular/router';
     DatePickerModule,
     TagModule,
     DialogModule,
-    AutoCompleteModule,
-    CardModule,
-    TooltipModule
+    TooltipModule,
+    PaginatorModule
   ],
   providers: [MessageService],
   templateUrl: './cartilla.component.html',
@@ -63,6 +62,16 @@ export class CartillaComponent implements OnInit {
   mascotaSel         = signal<MascotaResponse | null>(null);
   mascotaModel: MascotaResponse | null = null;
   buscando           = signal(false);
+  showDropdown       = signal(false);
+  dropdownAbierto    = false;
+
+  // Listado de mascotas con vacunación
+  mascotasLista      = signal<MascotaCartillaResponse[]>([]);
+  filtroEspecie      = '';
+  paginaActual       = 0;
+  totalPaginas       = 0;
+  totalRegistros     = 0;
+  readonly tamanoPagina = 10;
 
   // Aplicación
   serviciosPreventivos = signal<ServicioResponse[]>([]);
@@ -185,12 +194,44 @@ export class CartillaComponent implements OnInit {
 
   ngOnInit() {
     this.cargarServiciosPreventivos();
+    this.cargarMascotas();
     const petId = Number(this.route.snapshot.queryParamMap.get('petId'));
     if (Number.isInteger(petId) && petId > 0) {
       this.mascotaService.obtenerPorId(petId).subscribe({
         next: response => this.onAutocompleteSelect(response.data)
       });
     }
+  }
+
+  cargarMascotas(especie?: string) {
+    this.cartillaService.listarMascotasConCartilla(
+      especie || undefined,
+      this.paginaActual,
+      this.tamanoPagina
+    ).subscribe({
+      next: (res) => {
+        const page = res.data;
+        this.mascotasLista.set(page?.content ?? []);
+        this.totalPaginas = page?.totalPages ?? 0;
+        this.totalRegistros = page?.totalElements ?? 0;
+      },
+      error: () => {
+        this.mascotasLista.set([]);
+        this.totalPaginas = 0;
+        this.totalRegistros = 0;
+      }
+    });
+  }
+
+  filtrarPorEspecie(especie: string) {
+    this.filtroEspecie = especie;
+    this.paginaActual = 0;
+    this.cargarMascotas(especie);
+  }
+
+  cambiarPagina(event: any) {
+    this.paginaActual = event.page;
+    this.cargarMascotas(this.filtroEspecie || undefined);
   }
 
   private cargarServiciosPreventivos() {
@@ -218,17 +259,24 @@ export class CartillaComponent implements OnInit {
     });
   }
 
-  onFilterMascota(event: AutoCompleteCompleteEvent) {
-    const q = event.query?.trim();
-    if (!q) { this.mascotaSugerencias.set([]); return; }
+  onFilterMascota(query: string) {
+    const q = query?.trim();
+    if (!q || q.length < 2) { this.mascotaSugerencias.set([]); this.showDropdown.set(false); return; }
+    this.buscando.set(true);
+    this.showDropdown.set(true);
     this.mascotaService.listar(this.companyId, q, undefined, 0, 20, true, true).subscribe({
       next: (res) => {
         const lista = (res.data?.content ?? []);
         const yaSeleccionado = this.mascotaSel();
         this.mascotaSugerencias.set(yaSeleccionado ? [yaSeleccionado, ...lista.filter(m => m.id !== yaSeleccionado.id)] : lista);
       },
-      error: () => this.mascotaSugerencias.set([])
+      error: () => this.mascotaSugerencias.set([]),
+      complete: () => this.buscando.set(false)
     });
+  }
+
+  cerrarDropdown() {
+    setTimeout(() => this.showDropdown.set(false), 200);
   }
 
   onAutocompleteSelect(value: MascotaResponse) {
@@ -252,11 +300,54 @@ export class CartillaComponent implements OnInit {
     });
   }
 
-  seleccionarMascota(m: MascotaResponse) {
-    this.mascotaSel.set(m);
-    this.resultados.set([]);
+  seleccionarMascota(m: MascotaCartillaResponse) {
     this.searchQuery = m.nombreCompleto;
-    this.cargarDatosMascota(m.id);
+    this.mascotaService.obtenerPorId(m.id).subscribe({
+      next: (res) => {
+        this.mascotaSel.set(res.data);
+        this.cargarDatosMascota(m.id);
+      }
+    });
+  }
+
+  volver() {
+    this.mascotaSel.set(null);
+    this.searchQuery = '';
+    this.mascotaSugerencias.set([]);
+    this.showDropdown.set(false);
+  }
+
+  editarAplicacion(aplicacion: AplicacionPreventiva) {
+    this.msgService.add({
+      severity: 'info',
+      summary: 'Editar aplicación',
+      detail: `Editar ${aplicacion.nombreControl} — funcionalidad en desarrollo`
+    });
+  }
+
+  confirmarToggleEstado(aplicacion: AplicacionPreventiva) {
+    const activo = aplicacion.activo === false;
+    const servicio = aplicacion.tipo === 'VACUNACION'
+      ? this.cartillaService.cambiarEstadoVacunacion(aplicacion.id, activo)
+      : this.cartillaService.cambiarEstadoDesparasitacion(aplicacion.id, activo);
+
+    servicio.subscribe({
+      next: () => {
+        this.msgService.add({
+          severity: activo ? 'success' : 'warn',
+          summary: activo ? 'Activada' : 'Desactivada',
+          detail: `${aplicacion.nombreControl} ${activo ? 'activada' : 'desactivada'} correctamente`
+        });
+        this.cargarMatriz(this.mascotaSel()!.id);
+      },
+      error: () => {
+        this.msgService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'No se pudo cambiar el estado'
+        });
+      }
+    });
   }
 
   private cargarDatosMascota(petId: number) {
