@@ -30,11 +30,11 @@ export class ControlPreventivoService {
     return this.http.get<ApiResponse<TipoVacunaResponse[]>>(`${this.baseUrl}/pets/${mascotaId}/vaccine-types`);
   }
 
-  crearTipoVacuna(request: { nombre: string; especie: string; periodicidadMesesSugerida?: number }) {
+  crearTipoVacuna(request: { nombre: string; especie: string; precio?: number; periodicidadMesesSugerida?: number; lote?: string; fechaVencimientoProducto?: string; dosis?: number; unidadDosis?: string; viaAdministracion?: string }) {
     return this.http.post<ApiResponse<TipoVacunaResponse>>(`${this.baseUrl}/vaccine-types`, request);
   }
 
-  crearTipoDesparasitante(request: { nombre: string; especie: string; precio?: number; periodicidadMesesSugerida?: number }) {
+  crearTipoDesparasitante(request: { nombre: string; especie: string; precio?: number; periodicidadMesesSugerida?: number; lote?: string; fechaVencimientoProducto?: string; dosis?: number; unidadDosis?: string; viaAdministracion?: string }) {
     return this.http.post<ApiResponse<any>>(`${this.baseUrl}/deworming-products`, request);
   }
 
