@@ -267,7 +267,12 @@ export class ComplementarioComponent implements OnInit {
     nombre: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
     especie: ['', Validators.required],
     precio: [null, [Validators.required, Validators.min(1)]],
-    periodicidadMesesSugerida: [null]
+    periodicidadMesesSugerida: [null],
+    lote: ['', Validators.maxLength(80)],
+    fechaVencimientoProducto: [null],
+    dosis: [null],
+    unidadDosis: ['', Validators.maxLength(30)],
+    viaAdministracion: ['', Validators.maxLength(50)]
   });
 
   desparasitantes           = signal<any[]>([]);
@@ -279,7 +284,12 @@ export class ComplementarioComponent implements OnInit {
     nombre: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
     especie: ['', Validators.required],
     precio: [null, [Validators.required, Validators.min(1)]],
-    periodicidadMesesSugerida: [null]
+    periodicidadMesesSugerida: [null],
+    lote: ['', Validators.maxLength(80)],
+    fechaVencimientoProducto: [null],
+    dosis: [null],
+    unidadDosis: ['', Validators.maxLength(30)],
+    viaAdministracion: ['', Validators.maxLength(50)]
   });
 
   ngOnInit() {
@@ -591,7 +601,12 @@ export class ComplementarioComponent implements OnInit {
       nombre: item.nombre.trim(),
       especie: item.especie,
       precio: item.precio,
-      periodicidadMesesSugerida: item.periodicidadMesesSugerida || null
+      periodicidadMesesSugerida: item.periodicidadMesesSugerida || null,
+      lote: item.lote?.trim() || null,
+      fechaVencimientoProducto: item.fechaVencimientoProducto || null,
+      dosis: item.dosis || null,
+      unidadDosis: item.unidadDosis?.trim() || null,
+      viaAdministracion: item.viaAdministracion?.trim() || null
     };
     this.loadingStore.show();
     const req$ = editando
@@ -632,7 +647,12 @@ export class ComplementarioComponent implements OnInit {
       nombre: item.nombre.trim(),
       especie: item.especie,
       precio: item.precio,
-      periodicidadMesesSugerida: item.periodicidadMesesSugerida || null
+      periodicidadMesesSugerida: item.periodicidadMesesSugerida || null,
+      lote: item.lote?.trim() || null,
+      fechaVencimientoProducto: item.fechaVencimientoProducto || null,
+      dosis: item.dosis || null,
+      unidadDosis: item.unidadDosis?.trim() || null,
+      viaAdministracion: item.viaAdministracion?.trim() || null
     };
     this.loadingStore.show();
     const req$ = editando
@@ -702,10 +722,15 @@ export class ComplementarioComponent implements OnInit {
         nombre: item.nombre ?? '',
         especie: item.especie ?? '',
         precio: item.precio ?? null,
-        periodicidadMesesSugerida: item.periodicidadMesesSugerida ?? null
+        periodicidadMesesSugerida: item.periodicidadMesesSugerida ?? null,
+        lote: item.lote ?? '',
+        fechaVencimientoProducto: item.fechaVencimientoProducto ?? null,
+        dosis: item.dosis ?? null,
+        unidadDosis: item.unidadDosis ?? '',
+        viaAdministracion: item.viaAdministracion ?? ''
       });
     } else {
-      this.vacunaForm.reset({ nombre: '', especie: '', precio: null, periodicidadMesesSugerida: null });
+      this.vacunaForm.reset({ nombre: '', especie: '', precio: null, periodicidadMesesSugerida: null, lote: '', fechaVencimientoProducto: null, dosis: null, unidadDosis: '', viaAdministracion: '' });
     }
     this.showVacunaModal.set(true);
   }
@@ -717,10 +742,15 @@ export class ComplementarioComponent implements OnInit {
         nombre: item.nombre ?? '',
         especie: item.especie ?? '',
         precio: item.precio ?? null,
-        periodicidadMesesSugerida: item.periodicidadMesesSugerida ?? null
+        periodicidadMesesSugerida: item.periodicidadMesesSugerida ?? null,
+        lote: item.lote ?? '',
+        fechaVencimientoProducto: item.fechaVencimientoProducto ?? null,
+        dosis: item.dosis ?? null,
+        unidadDosis: item.unidadDosis ?? '',
+        viaAdministracion: item.viaAdministracion ?? ''
       });
     } else {
-      this.desparasitanteForm.reset({ nombre: '', especie: '', precio: null, periodicidadMesesSugerida: null });
+      this.desparasitanteForm.reset({ nombre: '', especie: '', precio: null, periodicidadMesesSugerida: null, lote: '', fechaVencimientoProducto: null, dosis: null, unidadDosis: '', viaAdministracion: '' });
     }
     this.showDesparasitanteModal.set(true);
   }
