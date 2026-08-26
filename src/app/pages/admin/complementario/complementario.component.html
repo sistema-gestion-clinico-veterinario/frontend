@@ -38,6 +38,16 @@
       class="pb-4 px-1 text-sm font-bold border-b-2 outline-none shrink-0">
       Servicios
     </button>
+    <button (click)="activeTab.set(3)"
+      [class]="activeTab() === 3 ? 'text-[#0066AA] border-[#0066AA]' : 'text-slate-400 border-transparent hover:text-slate-600'"
+      class="pb-4 px-1 text-sm font-bold border-b-2 outline-none shrink-0">
+      Vacunas
+    </button>
+    <button (click)="activeTab.set(4)"
+      [class]="activeTab() === 4 ? 'text-[#0066AA] border-[#0066AA]' : 'text-slate-400 border-transparent hover:text-slate-600'"
+      class="pb-4 px-1 text-sm font-bold border-b-2 outline-none shrink-0">
+      Desparasitantes
+    </button>
   </div>
 
   <div *ngIf="!requiresCompanySelection">
@@ -294,7 +304,241 @@
         </div>
       </div>
 
+      <!-- Tab 3: Vacunas -->
+      <div *ngIf="activeTab() === 3" class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-none">
+        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 px-4 sm:px-6 py-4 border-b border-slate-100">
+          <div>
+            <h2 class="text-base font-bold text-slate-800">Catálogo de Vacunas</h2>
+            <p class="text-sm text-slate-500 mt-0.5">Vacunas disponibles por especie</p>
+          </div>
+          <button *appHasPermission="'VISTA_COMPLEMENTARIO:escribir'" (click)="openVacunaModal()"
+            class="flex items-center justify-center gap-2 bg-[#0066AA] hover:bg-[#005a96] text-white text-sm font-medium px-5 h-10 rounded-lg transition-colors w-full sm:w-auto">
+            <i class="pi pi-plus text-xs"></i>
+            Nueva Vacuna
+          </button>
+        </div>
+
+        <p-table [value]="vacunas()" [rowHover]="true" responsiveLayout="stack" breakpoint="768px" styleClass="p-datatable-borderless">
+          <ng-template pTemplate="header">
+            <tr class="border-b border-slate-100">
+              <th class="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider">Nombre</th>
+              <th class="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider">Especie</th>
+              <th class="text-right px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider w-28">Precio</th>
+              <th class="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider w-32">Estado</th>
+              <th class="px-6 py-4 w-20"></th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-item>
+            <tr class="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors" [class.opacity-50]="!item.activo">
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-[#0066AA] font-bold text-base flex-shrink-0">{{ item.nombre?.substring(0,2) }}</div>
+                  <span class="text-sm font-semibold text-slate-800">{{ item.nombre }}</span>
+                </div>
+              </td>
+              <td class="px-6 py-4 text-sm text-slate-600">{{ item.especie }}</td>
+              <td class="px-6 py-4 text-right text-sm font-semibold text-slate-800">S/ {{ item.precio }}</td>
+              <td class="px-6 py-4">
+                <button (click)="confirmarToggleEstadoVacuna(item)"
+                  class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-all active:scale-95"
+                  [ngClass]="item.activo ? 'bg-green-50 text-green-700' : 'bg-slate-100 text-slate-500'">
+                  <span class="w-1.5 h-1.5 rounded-full" [ngClass]="item.activo ? 'bg-green-500' : 'bg-slate-400'"></span>
+                  {{ item.activo ? 'Activo' : 'Inactivo' }}
+                </button>
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-1">
+                  <button *appHasPermission="'VISTA_COMPLEMENTARIO:modificar'" (click)="openVacunaModal(item)"
+                    class="w-9 h-9 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-95">
+                    <i class="pi pi-pencil text-sm"></i>
+                  </button>
+                  <button *appHasPermission="'VISTA_COMPLEMENTARIO:eliminar'" (click)="confirmarEliminarVacuna(item)"
+                    class="w-9 h-9 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all active:scale-95">
+                    <i class="pi pi-trash text-sm"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="emptymessage">
+            <tr><td colspan="5" class="text-center py-16">
+              <i class="pi pi-star text-3xl text-slate-200 block mb-3"></i>
+              <p class="text-sm text-slate-400 font-medium">No se han registrado vacunas aun</p>
+            </td></tr>
+          </ng-template>
+        </p-table>
+        <p-paginator *ngIf="vacunasTotal() > 0"
+          [rows]="pageSize" [totalRecords]="vacunasTotal()" [first]="vacunasPage() * pageSize"
+          (onPageChange)="onVacunasPageChange($event)"
+          [showCurrentPageReport]="true" currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} vacunas"
+          styleClass="!border-none !bg-transparent !py-3"
+        ></p-paginator>
+      </div>
+
+      <!-- Tab 4: Desparasitantes -->
+      <div *ngIf="activeTab() === 4" class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-none">
+        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 px-4 sm:px-6 py-4 border-b border-slate-100">
+          <div>
+            <h2 class="text-base font-bold text-slate-800">Catálogo de Desparasitantes</h2>
+            <p class="text-sm text-slate-500 mt-0.5">Productos antiparasitarios disponibles</p>
+          </div>
+          <button *appHasPermission="'VISTA_COMPLEMENTARIO:escribir'" (click)="openDesparasitanteModal()"
+            class="flex items-center justify-center gap-2 bg-[#0066AA] hover:bg-[#005a96] text-white text-sm font-medium px-5 h-10 rounded-lg transition-colors w-full sm:w-auto">
+            <i class="pi pi-plus text-xs"></i>
+            Nuevo Desparasitante
+          </button>
+        </div>
+
+        <p-table [value]="desparasitantes()" [rowHover]="true" responsiveLayout="stack" breakpoint="768px" styleClass="p-datatable-borderless">
+          <ng-template pTemplate="header">
+            <tr class="border-b border-slate-100">
+              <th class="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider">Nombre</th>
+              <th class="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider">Especie</th>
+              <th class="text-right px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider w-28">Precio</th>
+              <th class="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider w-32">Estado</th>
+              <th class="px-6 py-4 w-20"></th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-item>
+            <tr class="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors" [class.opacity-50]="!item.activo">
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center text-purple-600 font-bold text-base flex-shrink-0">{{ item.nombre?.substring(0,2) }}</div>
+                  <span class="text-sm font-semibold text-slate-800">{{ item.nombre }}</span>
+                </div>
+              </td>
+              <td class="px-6 py-4 text-sm text-slate-600">{{ item.especie }}</td>
+              <td class="px-6 py-4 text-right text-sm font-semibold text-slate-800">S/ {{ item.precio }}</td>
+              <td class="px-6 py-4">
+                <button (click)="confirmarToggleEstadoDesparasitante(item)"
+                  class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-all active:scale-95"
+                  [ngClass]="item.activo ? 'bg-green-50 text-green-700' : 'bg-slate-100 text-slate-500'">
+                  <span class="w-1.5 h-1.5 rounded-full" [ngClass]="item.activo ? 'bg-green-500' : 'bg-slate-400'"></span>
+                  {{ item.activo ? 'Activo' : 'Inactivo' }}
+                </button>
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-1">
+                  <button *appHasPermission="'VISTA_COMPLEMENTARIO:modificar'" (click)="openDesparasitanteModal(item)"
+                    class="w-9 h-9 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-95">
+                    <i class="pi pi-pencil text-sm"></i>
+                  </button>
+                  <button *appHasPermission="'VISTA_COMPLEMENTARIO:eliminar'" (click)="confirmarEliminarDesparasitante(item)"
+                    class="w-9 h-9 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all active:scale-95">
+                    <i class="pi pi-trash text-sm"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="emptymessage">
+            <tr><td colspan="5" class="text-center py-16">
+              <i class="pi pi-star text-3xl text-slate-200 block mb-3"></i>
+              <p class="text-sm text-slate-400 font-medium">No se han registrado desparasitantes aun</p>
+            </td></tr>
+          </ng-template>
+        </p-table>
+        <p-paginator *ngIf="desparasitantesTotal() > 0"
+          [rows]="pageSize" [totalRecords]="desparasitantesTotal()" [first]="desparasitantesPage() * pageSize"
+          (onPageChange)="onDesparasitantesPageChange($event)"
+          [showCurrentPageReport]="true" currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} desparasitantes"
+          styleClass="!border-none !bg-transparent !py-3"
+        ></p-paginator>
+      </div>
+
     </ng-container>
+  </div>
+</div>
+
+<!-- Modal: Vacuna -->
+<div *ngIf="showVacunaModal()" class="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/50 backdrop-blur-sm">
+  <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-lg shadow-2xl flex flex-col max-h-[95dvh]">
+    <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50 rounded-t-lg">
+      <h2 class="text-lg font-bold text-slate-800">{{ editingVacuna() ? 'Modificar Vacuna' : 'Nueva Vacuna' }}</h2>
+      <button (click)="showVacunaModal.set(false)" class="text-slate-400 hover:text-slate-600 transition-colors p-2"><i class="pi pi-times"></i></button>
+    </div>
+    <div class="flex-1 overflow-y-auto p-6">
+      <form [formGroup]="vacunaForm" (ngSubmit)="confirmarGuardarVacuna()" class="space-y-5">
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-semibold text-slate-700 ml-0.5">Nombre <span class="text-rose-500">*</span></label>
+          <input type="text" formControlName="nombre" maxlength="100" placeholder="Ej: Rabia"
+            class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-semibold text-slate-700 ml-0.5">Especie <span class="text-rose-500">*</span></label>
+          <select formControlName="especie" class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all">
+            <option value="">Seleccionar</option>
+            <option value="PERRO">Perro</option>
+            <option value="GATO">Gato</option>
+            <option value="AVE">Ave</option>
+            <option value="REPTIL">Reptil</option>
+            <option value="ROEDOR">Roedor</option>
+            <option value="EXOTICO">Exótico</option>
+            <option value="OTRO">Otro</option>
+          </select>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-semibold text-slate-700 ml-0.5">Precio <span class="text-rose-500">*</span></label>
+            <input type="number" formControlName="precio" min="1" step="0.01" class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-semibold text-slate-700 ml-0.5">Periodicidad (meses)</label>
+            <input type="number" formControlName="periodicidadMesesSugerida" min="1" class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+          </div>
+        </div>
+        <div class="flex flex-col sm:flex-row sm:justify-end gap-3 pt-6 border-t border-slate-200">
+          <button type="button" (click)="showVacunaModal.set(false)" class="px-5 py-2.5 text-sm font-semibold text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded transition-all">Descartar cambios</button>
+          <button type="submit" [disabled]="loadingStore.isLoading()" class="px-8 py-2.5 text-sm font-bold text-white bg-[#0066AA] hover:bg-[#004488] rounded shadow-sm disabled:opacity-50 transition-all">{{ editingVacuna() ? 'Guardar Cambios' : 'Confirmar Registro' }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Desparasitante -->
+<div *ngIf="showDesparasitanteModal()" class="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/50 backdrop-blur-sm">
+  <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-lg shadow-2xl flex flex-col max-h-[95dvh]">
+    <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50 rounded-t-lg">
+      <h2 class="text-lg font-bold text-slate-800">{{ editingDesparasitante() ? 'Modificar Desparasitante' : 'Nuevo Desparasitante' }}</h2>
+      <button (click)="showDesparasitanteModal.set(false)" class="text-slate-400 hover:text-slate-600 transition-colors p-2"><i class="pi pi-times"></i></button>
+    </div>
+    <div class="flex-1 overflow-y-auto p-6">
+      <form [formGroup]="desparasitanteForm" (ngSubmit)="confirmarGuardarDesparasitante()" class="space-y-5">
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-semibold text-slate-700 ml-0.5">Nombre <span class="text-rose-500">*</span></label>
+          <input type="text" formControlName="nombre" maxlength="100" placeholder="Ej: Ivermectina"
+            class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-semibold text-slate-700 ml-0.5">Especie <span class="text-rose-500">*</span></label>
+          <select formControlName="especie" class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all">
+            <option value="">Seleccionar</option>
+            <option value="PERRO">Perro</option>
+            <option value="GATO">Gato</option>
+            <option value="AVE">Ave</option>
+            <option value="REPTIL">Reptil</option>
+            <option value="ROEDOR">Roedor</option>
+            <option value="EXOTICO">Exótico</option>
+            <option value="OTRO">Otro</option>
+          </select>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-semibold text-slate-700 ml-0.5">Precio <span class="text-rose-500">*</span></label>
+            <input type="number" formControlName="precio" min="1" step="0.01" class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-semibold text-slate-700 ml-0.5">Periodicidad (meses)</label>
+            <input type="number" formControlName="periodicidadMesesSugerida" min="1" class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+          </div>
+        </div>
+        <div class="flex flex-col sm:flex-row sm:justify-end gap-3 pt-6 border-t border-slate-200">
+          <button type="button" (click)="showDesparasitanteModal.set(false)" class="px-5 py-2.5 text-sm font-semibold text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded transition-all">Descartar cambios</button>
+          <button type="submit" [disabled]="loadingStore.isLoading()" class="px-8 py-2.5 text-sm font-bold text-white bg-[#0066AA] hover:bg-[#004488] rounded shadow-sm disabled:opacity-50 transition-all">{{ editingDesparasitante() ? 'Guardar Cambios' : 'Confirmar Registro' }}</button>
+        </div>
+      </form>
+    </div>
   </div>
 </div>
 

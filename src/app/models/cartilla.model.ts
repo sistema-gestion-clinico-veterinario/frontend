@@ -67,6 +67,7 @@ export interface AplicacionPreventiva {
   sitioAplicacion?: string;
   pesoKg?: number;
   observaciones?: string;
+  activo?: boolean;
 }
 
 
