@@ -19,7 +19,7 @@ import { MascotaResponse } from '../../models/response/mascota-response';
 import { MascotaCartillaResponse } from '../../models/response/mascota-cartilla-response';
 import { ServicioResponse } from '../../models/response/servicio-response';
 import { ControlPreventivoResponse, TipoControlPreventivo } from '../../models/response/control-preventivo-response';
-import { AplicacionPreventiva, TipoVacuna, TipoDesparasitante, CartillaAplicacionResponse, IntervaloUnidad } from '../../models/cartilla.model';
+import { AplicacionPreventiva, TipoVacuna, TipoDesparasitante, CartillaAplicacionResponse, IntervaloUnidad, RecordatorioWhatsApp } from '../../models/cartilla.model';
 import { AuthStore } from '../../store/auth.store';
 import { ActivatedRoute, Router } from '@angular/router';
 
@@ -145,6 +145,11 @@ export class CartillaComponent implements OnInit {
   matriz    = signal<AplicacionPreventiva[]>([]);
   guardando = signal(false);
 
+  // Recordatorios WhatsApp
+  recordatorios = signal<RecordatorioWhatsApp[]>([]);
+  cargandoRecordatorios = signal(false);
+  mostrarRecordatorios = signal(false);
+
   readonly tipoConfig = computed(() =>
     this.modo() === 'VACUNACION'
       ? { titulo: 'Cartilla de Vacunación', check: 'vacuna' }
@@ -195,6 +200,7 @@ export class CartillaComponent implements OnInit {
   ngOnInit() {
     this.cargarServiciosPreventivos();
     this.cargarMascotas();
+    this.cargarRecordatorios();
     const petId = Number(this.route.snapshot.queryParamMap.get('petId'));
     if (Number.isInteger(petId) && petId > 0) {
       this.mascotaService.obtenerPorId(petId).subscribe({
@@ -202,6 +208,34 @@ export class CartillaComponent implements OnInit {
       });
     }
   }
+
+  cargarRecordatorios() {
+    this.cargandoRecordatorios.set(true);
+    this.cartillaService.listarRecordatoriosWhatsApp().subscribe({
+      next: (res) => {
+        this.recordatorios.set(res.data ?? []);
+        this.cargandoRecordatorios.set(false);
+      },
+      error: () => {
+        this.recordatorios.set([]);
+        this.cargandoRecordatorios.set(false);
+      }
+    });
+  }
+
+  abrirWhatsApp(recordatorio: RecordatorioWhatsApp) {
+    const tel = recordatorio.apoderadoTelefono?.replace(/\D/g, '');
+    if (!tel) {
+      this.msgService.add({ severity: 'warn', summary: 'Sin teléfono', detail: 'El apoderado no tiene número registrado' });
+      return;
+    }
+    const msg = encodeURIComponent(recordatorio.mensajeWhatsApp);
+    window.open(`https://wa.me/51${tel}?text=${msg}`, '_blank');
+  }
+
+  recordatoriosAtrasados = computed(() => this.recordatorios().filter(r => r.estado === 'ATRASADO'));
+  recordatoriosPendientes = computed(() => this.recordatorios().filter(r => r.estado === 'PENDIENTE'));
+  recordatoriosProximos = computed(() => this.recordatorios().filter(r => r.estado === 'PROXIMO'));
 
   cargarMascotas(especie?: string) {
     this.cartillaService.listarMascotasConCartilla(
