@@ -27,8 +27,6 @@ export interface MenuStructureDTO {
 }
 
 export interface AuthLoginData {
-  token: string;
-  refreshToken: string;
   roles: string[];
   assignedRoles?: string[];
   companyId: number;

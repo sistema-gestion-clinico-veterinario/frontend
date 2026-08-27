@@ -6,19 +6,11 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { distinctUntilChanged, skip } from 'rxjs/operators';
 import { AuthStore } from '../../store/auth.store';
 import { DashboardService, DashboardStats } from '../../core/services/dashboard.service';
-import { CompanyService } from '../../core/services/company.service';
 import { DropdownModule } from 'primeng/dropdown';
 import { FormsModule } from '@angular/forms';
 import { Role } from '../../core/enums/role.enum';
 import { LoadingStore } from '../../store/loading.store';
 import { ChangePasswordModalComponent } from '../../layouts/main-layout/change-password-modal/change-password-modal.component';
-import { AuditLogService } from '../../core/services/audit-log.service';
-import { EmpleadoService } from '../../core/services/empleado.service';
-import { CitaService } from '../../core/services/cita.service';
-import { MascotaService } from '../../core/services/mascota.service';
-import { RoleService } from '../../core/services/role.service';
-import { ApoderadoService } from '../../core/services/apoderado.service';
-import { PagoService } from '../../core/services/pago.service';
 import { PagoListResponse } from '../../models/response/pago-response';
 
 @Component({
@@ -31,16 +23,8 @@ import { PagoListResponse } from '../../models/response/pago-response';
 export class DashboardComponent implements OnInit {
   private authStore      = inject(AuthStore);
   private dashboardService = inject(DashboardService);
-  private companyService = inject(CompanyService);
   private loadingStore   = inject(LoadingStore);
   private router         = inject(Router);
-  private auditLogService  = inject(AuditLogService);
-  private empleadoService  = inject(EmpleadoService);
-  private citaService      = inject(CitaService);
-  private mascotaService   = inject(MascotaService);
-  private roleService      = inject(RoleService);
-  private apoderadoService = inject(ApoderadoService);
-  private pagoService      = inject(PagoService);
   private destroyRef       = inject(DestroyRef);
 
   userName        = this.authStore.nombreCompleto() ?? '';
@@ -166,7 +150,7 @@ export class DashboardComponent implements OnInit {
   employeeAvailability = computed(() => {
     const report       = this.schedulesReport();
     const appointments = this.todayAppointmentsList();
-    const todayStr     = new Date().toISOString().split('T')[0];
+    const todayStr     = this.todayInLima();
     const now          = new Date();
     const currentHourStr = now.toLocaleTimeString('es-PE', { hour12: false }).substring(0, 5);
 
@@ -361,41 +345,33 @@ export class DashboardComponent implements OnInit {
   // ─── Métodos de carga ────────────────────────────────────────────
 
   loadAllDashboardData(companyId?: number) {
-    this.loadStats(companyId);
-    if (this.canViewAuditoria()) {
-      this.loadRecentLogs();
-    }
-    if (this.isGlobalSuperAdminMode) {
-      this.clearCompanyScopedLists();
-      if (this.isSuperAdmin || this.canView('VISTA_COMPANY')) {
-        this.loadCompanies();
+    this.loadingStore.show();
+    this.loadingPagos.set(true);
+    this.dashboardService.getOverview(companyId).subscribe({
+      next: ({ data }) => {
+        this.stats.set(data.stats);
+        this.recentLogs.set(this.canViewAuditoria() ? data.recentLogs ?? [] : []);
+        this.employeesList.set(this.canViewEmpleados() ? data.employees ?? [] : []);
+        const appointments = this.canViewCitas() ? data.todayAppointments ?? [] : [];
+        this.todayAppointmentsList.set(appointments);
+        this.allAppointments.set(appointments);
+        this.petsList.set(this.canViewMascotas() ? data.pets ?? [] : []);
+        this.rolesList.set(this.canViewRoles() ? data.roles ?? [] : []);
+        this.apoderadosList.set(this.canViewClientes() ? data.guardians ?? [] : []);
+        this.schedulesReport.set(this.canViewHorarios() ? data.schedules ?? [] : []);
+        this.pagos.set(this.canViewPayments() ? data.payments ?? [] : []);
+        this.companies.set((this.isSuperAdmin || this.canView('VISTA_COMPANY')) ? data.companies ?? [] : []);
+        this.loadingPagos.set(false);
+        this.loadingStore.hide();
+      },
+      error: () => {
+        this.clearCompanyScopedLists();
+        this.recentLogs.set([]);
+        this.companies.set([]);
+        this.loadingPagos.set(false);
+        this.loadingStore.hide();
       }
-      return;
-    }
-    if (this.canViewEmpleados()) {
-      this.loadEmployees(companyId);
-    }
-    if (this.canViewCitas()) {
-      this.loadTodayAppointments(companyId);
-    }
-    if (this.canViewMascotas()) {
-      this.loadPets(companyId);
-    }
-    if (this.canViewRoles()) {
-      this.loadRoles(companyId);
-    }
-    if (this.canViewClientes()) {
-      this.loadApoderados(companyId);
-    }
-    if (this.canViewHorarios()) {
-      this.loadSchedulesReport(companyId);
-    }
-    if (this.canViewPayments()) {
-      this.loadPagos(companyId);
-    }
-    if (this.isSuperAdmin || this.canView('VISTA_COMPANY')) {
-      this.loadCompanies();
-    }
+    });
   }
 
   private clearCompanyScopedLists() {
@@ -410,85 +386,13 @@ export class DashboardComponent implements OnInit {
     this.loadingPagos.set(false);
   }
 
-  loadStats(companyId?: number) {
-    this.loadingStore.show();
-    this.dashboardService.getStats(companyId || undefined).subscribe({
-      next: (res) => { this.stats.set(res.data); this.loadingStore.hide(); },
-      error: ()    => { this.loadingStore.hide(); }
-    });
-  }
-
-  loadRecentLogs() {
-    this.auditLogService.getLogs({ page: 0, size: 5, sort: 'timestamp,desc' }).subscribe({
-      next: (res: any) => { this.recentLogs.set(res.data?.content ?? []); }
-    });
-  }
-
-  loadEmployees(companyId?: number) {
-    this.empleadoService.listar(companyId, undefined, 0, 5).subscribe({
-      next: (res) => { this.employeesList.set(res.data?.content ?? []); }
-    });
-  }
-
-  loadTodayAppointments(companyId?: number) {
-    this.citaService.listar(companyId, undefined, undefined, undefined, 0, 100).subscribe({
-      next: (res) => {
-        const content = res.data?.content ?? [];
-        this.allAppointments.set(content);
-        const today = new Date();
-        const todayAppointments = content.filter((cita: any) => {
-          if (!cita.fechaHoraInicio) return false;
-          const citaDate = new Date(cita.fechaHoraInicio);
-          return citaDate.getFullYear() === today.getFullYear() &&
-                 citaDate.getMonth()    === today.getMonth()    &&
-                 citaDate.getDate()     === today.getDate();
-        });
-        this.todayAppointmentsList.set(todayAppointments);
-      },
-      error: () => { this.allAppointments.set([]); this.todayAppointmentsList.set([]); }
-    });
-  }
-
-  loadPets(companyId?: number) {
-    this.mascotaService.listar(companyId, undefined, undefined, 0, 6).subscribe({
-      next: (res) => { this.petsList.set(res.data?.content ?? []); }
-    });
-  }
-
-  loadRoles(companyId?: number) {
-    this.roleService.listarPorEmpresa(companyId).subscribe({
-      next: (res) => { this.rolesList.set(res.data ?? []); }
-    });
-  }
-
-  loadApoderados(companyId?: number) {
-    this.apoderadoService.listar(companyId, undefined, undefined, 0, 5).subscribe({
-      next: (res) => { this.apoderadosList.set(res.data?.content ?? []); }
-    });
-  }
-
-  loadSchedulesReport(companyId?: number) {
-    this.empleadoService.getSchedulesReport(companyId).subscribe({
-      next: (res) => { this.schedulesReport.set(res.data ?? []); }
-    });
-  }
-
-  loadPagos(companyId?: number) {
-    this.loadingPagos.set(true);
-    this.pagoService.listarHistorialPorEmpresa(0, 5, companyId).subscribe({
-      next: (res) => {
-        this.pagos.set(res.data?.content ?? []);
-        this.loadingPagos.set(false);
-      },
-      error: () => this.loadingPagos.set(false)
-    });
-  }
-
-  loadCompanies() {
-    this.companyService.listar(0, 1000).subscribe({
-      next: (res: any) => { this.companies.set(res.data?.content ?? []); },
-      error: () => { this.companies.set([]); }
-    });
+  private todayInLima(): string {
+    return new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'America/Lima',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    }).format(new Date());
   }
 
   // ─── Helpers UI ──────────────────────────────────────────────────

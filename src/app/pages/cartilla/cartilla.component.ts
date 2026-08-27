@@ -367,10 +367,18 @@ export class CartillaComponent implements OnInit {
   }
 
   private cargarDatosMascota(petId: number) {
-    this.cargarTiposVacuna(petId);
-    this.cargarTiposDesparasitante(petId);
-    this.cargarControles(petId);
-    this.cargarMatriz(petId);
+    this.cargandoCtrl.set(true);
+    this.cartillaService.obtenerDetalle(petId).subscribe({
+      next: ({ data }) => {
+        this.tiposVacuna.set(data.vacunas ?? []);
+        this.tiposDesparasitante.set(data.desparasitantes ?? []);
+        this.controles.set(data.controles ?? []);
+        this.matriz.set(data.aplicaciones ?? []);
+        this.controlReprogramandoId.set(null);
+      },
+      error: () => this.msgService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cargar la cartilla' }),
+      complete: () => this.cargandoCtrl.set(false)
+    });
   }
 
   private cargarTiposVacuna(petId: number) {
@@ -408,8 +416,6 @@ export class CartillaComponent implements OnInit {
     this.intervaloUnidad = 'MESES';
     const m = this.mascotaSel();
     if (!m) return;
-    if (modo === 'VACUNACION') this.cargarTiposVacuna(m.id);
-    else this.cargarTiposDesparasitante(m.id);
   }
 
   registrarNuevaMascota() {
@@ -430,7 +436,6 @@ export class CartillaComponent implements OnInit {
       this.tipoDesparasitanteId = null;
       this.tipoVacunaId = null;
     }
-    if (control.tipo === 'DESPARASITACION') this.cargarTiposDesparasitante(this.mascotaSel()!.id);
     const servicios = this.serviciosPreventivos().filter(s => s.tipoControlPreventivo === control.tipo);
     this.servicioId = servicios.length === 1 ? servicios[0].id : null;
     this.fechaAplicacion = this.fechaLocalLima();
@@ -578,10 +583,7 @@ export class CartillaComponent implements OnInit {
   private recargarMascota() {
     const m = this.mascotaSel();
     if (!m) return;
-    this.cargarControles(m.id);
-    this.cargarMatriz(m.id);
-    if (this.modo() === 'VACUNACION') this.cargarTiposVacuna(m.id);
-    else this.cargarTiposDesparasitante(m.id);
+    this.cargarDatosMascota(m.id);
   }
 
   private limpiarAplicacion() {

@@ -14,6 +14,19 @@ export interface DashboardStats {
   citasPorMes?: number[];
 }
 
+export interface DashboardOverview {
+  stats: DashboardStats;
+  recentLogs: any[];
+  employees: any[];
+  todayAppointments: any[];
+  pets: any[];
+  roles: any[];
+  guardians: any[];
+  schedules: any[];
+  payments: any[];
+  companies: any[];
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -24,5 +37,10 @@ export class DashboardService {
   getStats(companyId?: number) {
     const params = companyId ? `?companyId=${companyId}` : '';
     return this.http.get<ApiResponse<DashboardStats>>(`${this.apiUrl}/stats${params}`);
+  }
+
+  getOverview(companyId?: number) {
+    const params = companyId ? `?companyId=${companyId}` : '';
+    return this.http.get<ApiResponse<DashboardOverview>>(`${this.apiUrl}/overview${params}`);
   }
 }

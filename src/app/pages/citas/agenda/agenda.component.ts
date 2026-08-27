@@ -53,6 +53,7 @@ import { normalizeText } from '../../../core/utils/normalize-text.util';
 import { hasMeaningfulText, isLowercaseEmail } from '../../../core/utils/input-validation.util';
 import { ControlPreventivoService } from '../../../core/services/control-preventivo.service';
 import { ControlPreventivoResponse } from '../../../models/response/control-preventivo-response';
+import { RealtimeTicketService } from '../../../core/services/realtime-ticket.service';
 export type Vista = 'lista' | 'dia' | 'semana' | 'mes';
 export type PeriodoAgenda = '' | 'hoy' | '7dias' | '30dias' | 'personalizado';
 
@@ -112,6 +113,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
   private readonly preventivoService = inject(ControlPreventivoService);
   private readonly pagoService       = inject(PagoService);
   private readonly cajaService       = inject(CajaService);
+  private readonly realtimeTicketService = inject(RealtimeTicketService);
   private readonly messageService    = inject(MessageService);
   private readonly confirmationService = inject(ConfirmationService);
   private readonly router            = inject(Router);
@@ -561,15 +563,18 @@ export class AgendaComponent implements OnInit, OnDestroy {
       if (path.endsWith('/')) path = path.slice(0, -1);
       const wsUrl = `${wsProtocol}//${urlObj.host}${path}/ws/websocket`;
 
-      this.stompClient = new AgendaStompClient(wsUrl);
-      this.stompClient.connect(
-        () => {
-          this.stompClient?.subscribe(destination, (event: CitaWsEvent) => {
+      this.realtimeTicketService.issue().subscribe({
+        next: ({ data }) => {
+          this.stompClient = new AgendaStompClient(wsUrl, data.ticket);
+          this.stompClient.connect(() => {
+            this.stompClient?.subscribe(destination, (event: CitaWsEvent) => {
             this.handleCitaWsEvent(event);
-          });
+            });
+          }, (err) => console.error('[Agenda WS] Error:', err),
+          () => setTimeout(() => this.setupWebSocket(), 5000));
         },
-        (err) => console.error('[Agenda WS] Error:', err)
-      );
+        error: err => console.error('[Agenda WS] No se pudo autorizar:', err)
+      });
     } catch (e) {
       console.error('[Agenda WS] Init error:', e);
     }
@@ -2263,16 +2268,16 @@ class AgendaStompClient {
   private subscriptions = new Map<string, (payload: any) => void>();
   private subIdCounter = 0;
 
-  constructor(private url: string) {}
+  constructor(private url: string, private ticket: string) {}
 
   isConnected(): boolean { return this.connected; }
 
-  connect(onConnect: () => void, onError: (err: any) => void) {
+  connect(onConnect: () => void, onError: (err: any) => void, onClose?: () => void) {
     try {
       this.socket = new WebSocket(this.url);
 
       this.socket.onopen = () => {
-        this.socket?.send(`CONNECT\naccept-version:1.1,1.2\nheart-beat:10000,10000\n\n\0`);
+        this.socket?.send(`CONNECT\naccept-version:1.1,1.2\nheart-beat:10000,10000\nticket:${this.ticket}\n\n\0`);
       };
 
       this.socket.onmessage = (event) => {
@@ -2301,9 +2306,7 @@ class AgendaStompClient {
       this.socket.onerror  = (err) => onError(err);
       this.socket.onclose  = () => {
         this.connected = false;
-        if (this.socket) {
-          setTimeout(() => { if (this.socket && !this.connected) this.connect(onConnect, onError); }, 5000);
-        }
+        onClose?.();
       };
     } catch (e) { onError(e); }
   }
