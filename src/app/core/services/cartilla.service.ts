@@ -11,6 +11,7 @@ import {
   AplicacionPreventiva,
   TipoVacuna,
   TipoDesparasitante,
+  CartillaDetalle,
   RecordatorioWhatsApp
 } from '../../models/cartilla.model';
 
@@ -30,6 +31,10 @@ export class CartillaService {
 
   obtenerMatriz(petId: number) {
     return this.http.get<ApiResponse<AplicacionPreventiva[]>>(`${this.url}/pets/${petId}`);
+  }
+
+  obtenerDetalle(petId: number) {
+    return this.http.get<ApiResponse<CartillaDetalle>>(`${this.url}/pets/${petId}/detail`);
   }
 
   listarMascotasConCartilla(especie?: string, page: number = 0, size: number = 10) {

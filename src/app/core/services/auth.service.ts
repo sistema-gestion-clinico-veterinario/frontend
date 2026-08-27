@@ -21,10 +21,6 @@ export class AuthService {
     return this.http.post<ApiResponse<void>>(`${this.baseUrl}/setup-account`, { token, password });
   }
 
-  verifyEmail(token: string): Observable<ApiResponse<void>> {
-    return this.http.get<ApiResponse<void>>(`${this.baseUrl}/verify/${token}`);
-  }
-
   resendVerification(email: string): Observable<ApiResponse<void>> {
     return this.http.post<ApiResponse<void>>(`${this.baseUrl}/resend-verification?email=${encodeURIComponent(email)}`, {});
   }
@@ -33,13 +29,12 @@ export class AuthService {
     return this.http.post<ApiResponse<void>>(`${this.baseUrl}/change-password`, payload);
   }
 
-  refreshToken(refreshToken?: string): Observable<AuthLoginResponse> {
+  refreshToken(): Observable<AuthLoginResponse> {
     if (this.refreshInFlight$) {
       return this.refreshInFlight$;
     }
 
-    const body = refreshToken ? { refreshToken } : {};
-    this.refreshInFlight$ = this.http.post<AuthLoginResponse>(`${this.baseUrl}/refresh`, body).pipe(
+    this.refreshInFlight$ = this.http.post<AuthLoginResponse>(`${this.baseUrl}/refresh`, {}).pipe(
       finalize(() => { this.refreshInFlight$ = null; }),
       shareReplay(1)
     );

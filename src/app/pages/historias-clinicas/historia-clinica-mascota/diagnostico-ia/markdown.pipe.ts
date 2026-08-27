@@ -1,12 +1,11 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 @Pipe({ name: 'mdHtml', standalone: true })
 export class MarkdownPipe implements PipeTransform {
-  constructor(private san: DomSanitizer) {}
-
-  transform(raw: string): SafeHtml {
-    return this.san.bypassSecurityTrustHtml(raw ? this.parse(raw) : '');
+  transform(raw: string): string {
+    // El contenido se escapa antes de convertir Markdown y Angular aplica
+    // además su sanitización normal al enlazarlo mediante [innerHTML].
+    return raw ? this.parse(raw) : '';
   }
 
   private parse(text: string): string {

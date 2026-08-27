@@ -11,6 +11,7 @@ import { CompanyListResponse } from '../../../models/response/company-list-respo
 import { environment } from '../../../../environments/environment';
 import { normalizeText } from '../../../core/utils/normalize-text.util';
 import { isDateRangeValid, isLowercaseEmail } from '../../../core/utils/input-validation.util';
+import { RealtimeTicketService } from '../../../core/services/realtime-ticket.service';
 
 @Component({
   selector: 'app-auditoria',
@@ -29,6 +30,7 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
   private readonly auditLogService = inject(AuditLogService);
   private readonly companyService = inject(CompanyService);
   private readonly messageService = inject(MessageService);
+  private readonly realtimeTicketService = inject(RealtimeTicketService);
   readonly authStore = inject(AuthStore);
 
   private stompClient: LightweightStompClient | null = null;
@@ -144,11 +146,11 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
       }
       const wsUrl = `${wsProtocol}//${urlObj.host}${path}/ws/websocket`;
 
-      this.stompClient = new LightweightStompClient(wsUrl);
-
-      this.stompClient.connect(
-        () => {
-          this.stompClient?.subscribe(destination, (newLog: AuditLog) => {
+      this.realtimeTicketService.issue().subscribe({
+        next: ({ data }) => {
+          this.stompClient = new LightweightStompClient(wsUrl, data.ticket);
+          this.stompClient.connect(() => {
+            this.stompClient?.subscribe(destination, (newLog: AuditLog) => {
             // Incorporar el log en tiempo real al principio de la tabla si el usuario está en la página 0
             if (this.currentPage === 0) {
               this.logs.update(current => {
@@ -159,12 +161,12 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
             } else {
               this.totalRecords.update(total => total + 1);
             }
-          });
+            });
+          }, (err) => console.error('WebSocket Error:', err),
+          () => setTimeout(() => this.setupWebSocket(targetCompanyId), 5000));
         },
-        (err) => {
-          console.error('WebSocket Error:', err);
-        }
-      );
+        error: (err) => console.error('No se pudo autorizar WebSocket:', err)
+      });
     } catch (e) {
       console.error('WebSocket Initialization Error:', e);
     }
@@ -332,18 +334,18 @@ class LightweightStompClient {
   private subscriptions = new Map<string, (payload: any) => void>();
   private subIdCounter = 0;
 
-  constructor(private url: string) { }
+  constructor(private url: string, private ticket: string) { }
 
   isConnected(): boolean {
     return this.connected;
   }
 
-  connect(onConnect: () => void, onError: (err: any) => void) {
+  connect(onConnect: () => void, onError: (err: any) => void, onClose?: () => void) {
     try {
       this.socket = new WebSocket(this.url);
 
       this.socket.onopen = () => {
-        const connectFrame = `CONNECT\naccept-version:1.1,1.2\nheart-beat:10000,10000\n\n\0`;
+        const connectFrame = `CONNECT\naccept-version:1.1,1.2\nheart-beat:10000,10000\nticket:${this.ticket}\n\n\0`;
         this.socket?.send(connectFrame);
       };
 
@@ -387,15 +389,7 @@ class LightweightStompClient {
 
       this.socket.onclose = () => {
         this.connected = false;
-        // Intentar reconectar si la desconexión no fue manual
-        if (this.socket) {
-          setTimeout(() => {
-            if (this.socket && !this.connected) {
-
-              this.connect(onConnect, onError);
-            }
-          }, 5000);
-        }
+        onClose?.();
       };
     } catch (e) {
       onError(e);
