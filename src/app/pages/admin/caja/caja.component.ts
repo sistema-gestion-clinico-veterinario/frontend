@@ -14,6 +14,7 @@ import { CuentaCitaResponse, DetalleCuentaRequest, DetalleCuentaResponse, TipoDe
 import { MetodoPago } from '../../../models/request/pago-request';
 import { NotaVentaPdfService } from '../../../core/services/nota-venta-pdf.service';
 import { environment } from '../../../../environments/environment';
+import { RealtimeTicketService } from '../../../core/services/realtime-ticket.service';
 
 @Component({
   selector: 'app-caja',
@@ -28,6 +29,7 @@ export class CajaComponent implements OnInit, OnDestroy {
   private readonly messageService = inject(MessageService);
   private readonly pagoService    = inject(PagoService);
   private readonly notaVentaPdf   = inject(NotaVentaPdfService);
+  private readonly realtimeTicketService = inject(RealtimeTicketService);
   readonly authStore             = inject(AuthStore);
   private realtimeClient: CajaStompClient | null = null;
 
@@ -97,17 +99,20 @@ export class CajaComponent implements OnInit, OnDestroy {
       const url = new URL(environment.wsApiUrl);
       const protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
       const path = url.pathname.replace(/\/$/, '');
-      this.realtimeClient = new CajaStompClient(`${protocol}//${url.host}${path}/ws/websocket`);
-      this.realtimeClient.connect(() => {
-        this.realtimeClient?.subscribe(`/topic/caja/${this.companyId}`, event => {
+      const wsUrl = `${protocol}//${url.host}${path}/ws/websocket`;
+      this.realtimeTicketService.issue().subscribe({ next: ({ data }) => {
+        this.realtimeClient = new CajaStompClient(wsUrl, data.ticket);
+        this.realtimeClient.connect(() => {
+          this.realtimeClient?.subscribe(`/topic/caja/${this.companyId}`, event => {
           if (event?.tipo !== 'CUENTA_PREVENTIVA_CREADA') return;
           setTimeout(() => this.cargarPendientes(0), 200);
           this.messageService.add({
             severity: 'info', summary: 'Nueva cuenta preventiva',
             detail: `${event.mascotaNombre} · ${event.control === 'VACUNACION' ? 'Vacunación' : 'Desparasitación'}`
           });
-        });
-      });
+          });
+        }, () => setTimeout(() => this.conectarActualizacionCaja(), 5000));
+      }, error: err => console.error('[Caja WS] No se pudo autorizar la conexión', err) });
     } catch (error) {
       console.error('[Caja WS] No se pudo iniciar la actualización en tiempo real', error);
     }
@@ -465,11 +470,11 @@ class CajaStompClient {
   private subscriptions = new Map<string, (payload: any) => void>();
   private subscriptionId = 0;
 
-  constructor(private readonly url: string) {}
+  constructor(private readonly url: string, private readonly ticket: string) {}
 
-  connect(onConnect: () => void) {
+  connect(onConnect: () => void, onClose?: () => void) {
     this.socket = new WebSocket(this.url);
-    this.socket.onopen = () => this.socket?.send('CONNECT\naccept-version:1.1,1.2\nheart-beat:10000,10000\n\n\0');
+    this.socket.onopen = () => this.socket?.send(`CONNECT\naccept-version:1.1,1.2\nheart-beat:10000,10000\nticket:${this.ticket}\n\n\0`);
     this.socket.onmessage = event => {
       const frame = String(event.data).replace(/\r\n/g, '\n');
       if (!frame || frame === '\n') return;
@@ -489,6 +494,10 @@ class CajaStompClient {
       } catch (error) {
         console.error('[Caja WS] Evento inválido', error);
       }
+    };
+    this.socket.onclose = () => {
+      this.connected = false;
+      onClose?.();
     };
   }
 

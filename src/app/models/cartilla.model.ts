@@ -97,6 +97,13 @@ export interface TipoDesparasitante {
   viaAdministracion?: string;
 }
 
+export interface CartillaDetalle {
+  vacunas: TipoVacuna[];
+  desparasitantes: TipoDesparasitante[];
+  controles: import('./response/control-preventivo-response').ControlPreventivoResponse[];
+  aplicaciones: AplicacionPreventiva[];
+}
+
 export interface RecordatorioWhatsApp {
   controlId: number;
   mascotaNombre: string;

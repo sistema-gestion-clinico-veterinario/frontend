@@ -1,12 +1,10 @@
-import { DomSanitizer } from '@angular/platform-browser';
 import { MarkdownPipe } from './markdown.pipe';
 
 describe('MarkdownPipe', () => {
   let pipe: MarkdownPipe;
 
   beforeEach(() => {
-    const sanitizer = { bypassSecurityTrustHtml: (value: string) => value } as unknown as DomSanitizer;
-    pipe = new MarkdownPipe(sanitizer);
+    pipe = new MarkdownPipe();
   });
 
   it('convierte texto plano en parrafo', () => {
