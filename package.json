@@ -29,7 +29,7 @@
     "@fullcalendar/daygrid": "^6.1.17",
     "@fullcalendar/interaction": "^6.1.17",
     "@fullcalendar/timegrid": "^6.1.17",
-    "@ngrx/signals": "^19.2.1",
+    "@ngrx/signals": "^22.0.0",
     "@primeng/themes": "^19.1.4",
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
