@@ -7,7 +7,10 @@ interface Enterprise {
   logoUrl?: string;
 }
 
+export type SessionStatus = 'uninitialized' | 'initializing' | 'authenticated' | 'anonymous';
+
 interface AuthState {
+  sessionStatus: SessionStatus;
   token: string | null;
   refreshToken: string | null;
   roles: string[];
@@ -47,30 +50,27 @@ export interface AuthPayload {
   simulatedRoleId?: number | null;
 }
 
+const UI_PREFERENCES_STORAGE_KEY = 'auth_ui_preferences';
+const LEGACY_AUTH_STORAGE_KEY = 'auth';
+
 const createInitialState = (useStorage = true): AuthState => {
+  let selectedEnterprise: Enterprise | null = null;
   if (useStorage && typeof window !== 'undefined') {
-    const stored = window.localStorage.getItem('auth');
+    // El formato anterior contenía identidad y permisos. Se elimina durante la
+    // migración para impedir que vuelva a utilizarse accidentalmente.
+    window.localStorage.removeItem(LEGACY_AUTH_STORAGE_KEY);
+    const stored = window.localStorage.getItem(UI_PREFERENCES_STORAGE_KEY);
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
-        const menu = parsed.menu ?? [];
-        return {
-          ...parsed,
-          token: null,
-          refreshToken: null,
-          simulatedRoleId: parsed.simulatedRoleId ?? null,
-          originalMenu: parsed.originalMenu ?? parsed.menu ?? [],
-          assignedRoles: parsed.assignedRoles ?? parsed.roles ?? [],
-          originalRoles: parsed.originalRoles ?? parsed.roles ?? [],
-          allowedRoutes: parsed.allowedRoutes ?? Array.from(extractAllowedRoutes(menu)),
-          loadingEnterprise: false,
-        } as AuthState;
+        selectedEnterprise = parsed.selectedEnterprise ?? null;
       } catch {
       }
     }
   }
 
   return {
+    sessionStatus: useStorage ? 'uninitialized' : 'anonymous',
     token: null,
     refreshToken: null,
     roles: [],
@@ -83,7 +83,7 @@ const createInitialState = (useStorage = true): AuthState => {
     empleadoId: null,
     passwordChanged: false,
     needsCompanySelection: false,
-    selectedEnterprise: null,
+    selectedEnterprise,
     menu: [],
     originalMenu: [],
     simulatedRoleId: null,
@@ -94,8 +94,11 @@ const createInitialState = (useStorage = true): AuthState => {
 
 const saveToStorage = (state: AuthState) => {
   if (typeof window !== 'undefined') {
-    const { token, refreshToken, ...safe } = state;
-    window.localStorage.setItem('auth', JSON.stringify(safe));
+    // Solo se persisten preferencias visuales. Identidad, roles, menús y rutas
+    // se reconstruyen siempre desde la sesión HttpOnly validada por el backend.
+    window.localStorage.setItem(UI_PREFERENCES_STORAGE_KEY, JSON.stringify({
+      selectedEnterprise: state.selectedEnterprise,
+    }));
   }
 };
 
@@ -108,6 +111,7 @@ export const AuthStore = signalStore(
     setAuth(auth: AuthPayload) {
       const allowedRoutes = Array.from(extractAllowedRoutes(auth.menu));
       const state: AuthState = {
+        sessionStatus: 'authenticated',
         token: auth.token,
         refreshToken: auth.refreshToken,
         roles: auth.roles,
@@ -129,6 +133,12 @@ export const AuthStore = signalStore(
       };
       patchState(store, state);
       saveToStorage(state);
+    },
+
+    beginSessionInitialization() {
+      if (store.sessionStatus() === 'uninitialized') {
+        patchState(store, { sessionStatus: 'initializing' });
+      }
     },
 
     setToken(token: string) {
@@ -285,7 +295,8 @@ export const AuthStore = signalStore(
     logout() {
       patchState(store, createInitialState(false));
       if (typeof window !== 'undefined') {
-        window.localStorage.removeItem('auth');
+        window.localStorage.removeItem(UI_PREFERENCES_STORAGE_KEY);
+        window.localStorage.removeItem(LEGACY_AUTH_STORAGE_KEY);
       }
     },
   }))
@@ -294,6 +305,7 @@ export const AuthStore = signalStore(
 
 function buildCurrentState(store: any): AuthState {
   return {
+    sessionStatus: store.sessionStatus(),
     token: store.token(),
     refreshToken: store.refreshToken(),
     roles: store.roles(),

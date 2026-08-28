@@ -1,20 +1,28 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, map } from 'rxjs';
+import { Observable, from, map, switchMap } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { ImageUploadOptimizerService } from './image-upload-optimizer.service';
 
 @Injectable({ providedIn: 'root' })
 export class MediaService {
   private readonly uploadUrl = `${environment.apiUrl}/media/upload`;
   readonly mediaBaseUrl = `${environment.apiUrl}/media`;
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private imageOptimizer: ImageUploadOptimizerService
+  ) {}
 
   upload(file: File): Observable<string> {
-    const formData = new FormData();
-    formData.append('file', file);
-    return this.http.post<{ path: string }>(this.uploadUrl, formData).pipe(
-      map(res => res.path)
+    return from(this.imageOptimizer.optimize(file)).pipe(
+      switchMap(optimizedFile => {
+        const formData = new FormData();
+        formData.append('file', optimizedFile);
+        formData.append('originalSize', file.size.toString());
+        return this.http.post<{ path: string }>(this.uploadUrl, formData);
+      }),
+      map(response => response.path)
     );
   }
 

@@ -2,18 +2,19 @@ import { inject } from '@angular/core';
 import { CanActivateFn, Router, ActivatedRouteSnapshot } from '@angular/router';
 import { AuthStore } from '../../store/auth.store';
 import { resolveDashboardRoute, resolveInitialRoute } from '../../layouts/main-layout/navbar/navbar.component';
+import { map } from 'rxjs';
+import { SessionService } from '../services/session.service';
 
 export const AuthGuard: CanActivateFn = (route, state) => {
   const authStore = inject(AuthStore);
   const router = inject(Router);
+  const sessionService = inject(SessionService);
 
-  const hasSession = authStore.roles().length > 0 || authStore.nombreCompleto() !== null;
-
-  if (!hasSession) {
-    return router.createUrlTree(['/login']);
-  }
-
-  return validateAccess(route, authStore, router);
+  return sessionService.initialize().pipe(
+    map((authenticated) => authenticated
+      ? validateAccess(route, authStore, router)
+      : router.createUrlTree(['/login']))
+  );
 };
 
 function validateAccess(route: ActivatedRouteSnapshot, authStore: any, router: Router) {

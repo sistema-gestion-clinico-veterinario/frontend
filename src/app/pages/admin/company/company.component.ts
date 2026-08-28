@@ -365,10 +365,10 @@ export class CompanyComponent implements OnInit {
   isDragOver = signal(false);
 
   private processLogoFile(file: File) {
-    const validTypes = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
+    const validTypes = ['image/png', 'image/jpeg', 'image/webp'];
     const maxSize = 5 * 1024 * 1024;
     if (!validTypes.includes(file.type)) {
-      this.messageService.add({ severity: 'error', summary: 'Formato no válido', detail: 'Solo PNG, JPG, WEBP y GIF' });
+      this.messageService.add({ severity: 'error', summary: 'Formato no válido', detail: 'Solo PNG, JPG o WEBP' });
       return;
     }
     if (file.size > maxSize) {

@@ -117,9 +117,9 @@ export class ProfileComponent implements OnInit, OnDestroy {
     const file = input.files?.[0];
     if (!file) return;
 
-    const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    const allowed = ['image/jpeg', 'image/png', 'image/webp'];
     if (!allowed.includes(file.type)) {
-      this.messageService.add({ severity: 'warn', summary: 'Formato no válido', detail: 'Solo se permiten imágenes JPG, PNG, WEBP o GIF' });
+      this.messageService.add({ severity: 'warn', summary: 'Formato no válido', detail: 'Solo se permiten imágenes JPG, PNG o WEBP' });
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
