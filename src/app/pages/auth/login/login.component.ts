@@ -4,10 +4,12 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
 import { lowercaseEmailValidator } from '../../../core/validators/lowercase-email.validator';
 import { Router, RouterModule } from '@angular/router';
-import { catchError, EMPTY, finalize, timeout } from 'rxjs';
+import { finalize, from, switchMap, timeout } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
 import { AuthStore } from '../../../store/auth.store';
 import { resolveInitialRoute } from '../../../layouts/main-layout/navbar/navbar.component';
+import { SessionService } from '../../../core/services/session.service';
+import { LoadingStore } from '../../../store/loading.store';
 
 @Component({
   selector: 'app-login',
@@ -20,39 +22,18 @@ export class LoginComponent implements OnInit {
   private authStore = inject(AuthStore);
   private router = inject(Router);
   private authService = inject(AuthService);
+  private sessionService = inject(SessionService);
+  private loadingStore = inject(LoadingStore);
 
   authError: string | null = null;
   isSubmitting = false;
   showPassword = false;
 
   ngOnInit() {
-    if (this.authStore.roles().length > 0) {
-      this.authService.refreshToken().pipe(
-        timeout(10000),
-        catchError(() => {
-          this.authStore.logout();
-          return EMPTY;
-        })
-      ).subscribe(({ data }) => {
-        this.authStore.setAuth({
-          token: null,
-          refreshToken: null,
-          roles: data.roles,
-          companyId: data.companyId,
-          companyName: data.companyName,
-          nombreCompleto: data.nombreCompleto,
-          userType: data.userType,
-          empleadoId: data.empleadoId ?? null,
-          passwordChanged: data.passwordChanged,
-          needsCompanySelection: data.needsCompanySelection,
-          selectedEnterprise: null,
-          menu: data.menu,
-          assignedRoles: data.assignedRoles ?? data.roles
-        });
-        const roles = data.roles ?? [];
-        this.router.navigateByUrl(resolveInitialRoute(roles, data.menu ?? []));
-      });
-    }
+    this.sessionService.initialize().subscribe((authenticated) => {
+      if (!authenticated) return;
+      this.navigateToInitialRoute();
+    });
   }
 
   loginForm = inject(FormBuilder).group({
@@ -101,36 +82,27 @@ export class LoginComponent implements OnInit {
 
     this.authError = null;
     this.isSubmitting = true;
+    this.loadingStore.show();
 
     this.authService.login({ email: rawEmail, password: rawPassword }).pipe(
       timeout(15000),
-      finalize(() => this.isSubmitting = false)
-    ).subscribe({
-      next: ({ data }) => {
-        this.authStore.setAuth({
-          token: null,
-          refreshToken: null,
-          roles: data.roles,
-          companyId: data.companyId,
-          companyName: data.companyName,
-          nombreCompleto: data.nombreCompleto,
-          userType: data.userType,
-          empleadoId: data.empleadoId ?? null,
-          passwordChanged: data.passwordChanged,
-          needsCompanySelection: data.needsCompanySelection,
-          selectedEnterprise: null,
-          menu: data.menu,
-          assignedRoles: data.assignedRoles ?? data.roles
-        });
-        sessionStorage.removeItem('pw_modal_dismissed');
+      switchMap(({ data }) => {
         const roles = data.roles ?? [];
         if (roles.length === 0) {
           this.authStore.logout();
-          this.authError = 'Tu usuario no tiene ningún rol asignado. Contacta al administrador.';
-          return;
+          throw new MissingRoleError();
         }
-        this.router.navigateByUrl(resolveInitialRoute(roles, data.menu ?? []));
-      },
+
+        this.sessionService.establish(data);
+        sessionStorage.removeItem('pw_modal_dismissed');
+        return from(this.router.navigateByUrl(resolveInitialRoute(roles, data.menu ?? [])));
+      }),
+      finalize(() => {
+        this.isSubmitting = false;
+        this.loadingStore.hide();
+      })
+    ).subscribe({
+      next: () => {},
       error: (error) => {
         this.authError = this.resolveLoginError(error);
       },
@@ -138,6 +110,9 @@ export class LoginComponent implements OnInit {
   }
 
   private resolveLoginError(error: any): string {
+    if (error instanceof MissingRoleError) {
+      return 'Tu usuario no tiene ningún rol asignado. Contacta al administrador.';
+    }
     if (error?.name === 'TimeoutError' || error?.status === 0) {
       return 'No se pudo conectar con el servidor. Intenta nuevamente en unos segundos.';
     }
@@ -149,4 +124,11 @@ export class LoginComponent implements OnInit {
 
     return serverMessage || 'Correo o contraseña incorrectos.';
   }
+
+  private navigateToInitialRoute(): void {
+    const roles = this.authStore.roles() ?? [];
+    this.router.navigateByUrl(resolveInitialRoute(roles, this.authStore.menu() ?? []));
+  }
 }
+
+class MissingRoleError extends Error {}

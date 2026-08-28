@@ -1,6 +1,5 @@
 import { Component, OnInit, inject, signal, ViewChild, ElementRef, AfterViewChecked, OnDestroy, computed } from '@angular/core';
-import jsPDF from 'jspdf';
-import ExcelJS from 'exceljs';
+import type ExcelJS from 'exceljs';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { EmpleadoService } from '../../../../core/services/empleado.service';
@@ -785,7 +784,8 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
     const dateStr = this.currentDateFormatted();
     const co = this.company();
 
-    const pdf = new jsPDF('l', 'mm', 'a4');
+    const { default: JsPdf } = await import('jspdf');
+    const pdf = new JsPdf('l', 'mm', 'a4');
     const pageW = 297;
     const pageH = 210;
     const margin = 15;
@@ -1022,6 +1022,9 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
 
     this.messageService.add({ severity: 'success', summary: 'Generando Reporte', detail: `Preparando Excel de ${empName}...` });
 
+    const ExcelJSModule = await import('exceljs');
+    const ExcelJSRuntime = ExcelJSModule.default ?? ExcelJSModule;
+
     const cargo    = this.selectedEmployeeCargo();
     const dateStr  = new Date().toLocaleDateString('es-PE');
     const totalHrs = this.totalShiftsHours();
@@ -1033,7 +1036,7 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
     const gridBorder = (): Partial<ExcelJS.Borders> => ({ top: { style: 'thin', color: { argb: 'FFCBD5E1' } }, left: { style: 'thin', color: { argb: 'FFCBD5E1' } }, bottom: { style: 'thin', color: { argb: 'FFCBD5E1' } }, right: { style: 'thin', color: { argb: 'FFCBD5E1' } } });
     const darkBorder = (): Partial<ExcelJS.Borders> => ({ top: { style: 'thin', color: { argb: 'FF1E293B' } }, left: { style: 'thin', color: { argb: 'FF1E293B' } }, bottom: { style: 'thin', color: { argb: 'FF1E293B' } }, right: { style: 'thin', color: { argb: 'FF1E293B' } } });
 
-    const workbook = new ExcelJS.Workbook();
+    const workbook = new ExcelJSRuntime.Workbook();
     workbook.creator = 'VargasVet Sistema';
     workbook.created = new Date();
     const sheet = workbook.addWorksheet(`Horario ${empName}`, {

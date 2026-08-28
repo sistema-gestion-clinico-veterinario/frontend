@@ -251,7 +251,15 @@ export class CajaComponent implements OnInit, OnDestroy {
     }).subscribe({
       next: r => {
         this.savingPago.set(false);
-        if (r.data) this.notaVentaPdf.mostrar(cuenta, r.data, this.authStore.selectedEnterprise()?.name ?? this.authStore.companyName() ?? 'Veterinaria');
+        if (r.data) {
+          void this.notaVentaPdf
+            .mostrar(cuenta, r.data, this.authStore.selectedEnterprise()?.name ?? this.authStore.companyName() ?? 'Veterinaria')
+            .catch(() => this.messageService.add({
+              severity: 'warn',
+              summary: 'Pago registrado',
+              detail: 'El pago se guardó, pero no se pudo generar la nota de venta.'
+            }));
+        }
         this.messageService.add({
           severity: 'success', summary: 'Pago registrado',
           detail: r.data?.saldoPendiente ? `Queda un saldo de S/ ${Number(r.data.saldoPendiente).toFixed(2)}` : 'La cuenta quedó pagada.'

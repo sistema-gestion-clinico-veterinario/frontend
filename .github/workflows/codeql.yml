@@ -9,15 +9,23 @@
 # the `language` matrix defined below to confirm you have the correct set of
 # supported CodeQL languages.
 #
-name: "CodeQL Advanced"
+name: "Frontend · Análisis de seguridad (CodeQL)"
 
 on:
   push:
     branches: [ "main" ]
+    paths-ignore:
+      - "**/*.md"
   pull_request:
     branches: [ "main" ]
+    paths-ignore:
+      - "**/*.md"
   schedule:
     - cron: '18 14 * * 1'
+
+concurrency:
+  group: frontend-codeql-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   analyze:

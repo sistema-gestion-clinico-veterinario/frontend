@@ -312,8 +312,8 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
 
   readonly maxFileSize = 5 * 1024 * 1024; // 5 MB
 
-  readonly allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
-  readonly allowedExtensions = ['.jpg', '.jpeg', '.jpe', '.png', '.webp', '.gif'];
+  readonly allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+  readonly allowedExtensions = ['.jpg', '.jpeg', '.jpe', '.png', '.webp'];
 
   private isValidFileType(file: File): boolean {
     return this.allowedTypes.includes(file.type) ||
