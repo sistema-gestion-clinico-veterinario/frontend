@@ -31,7 +31,7 @@ describe('AuthStore', () => {
   });
 
   describe('setAuth storage seguro', () => {
-    it('persiste la sesion sin guardar token ni refreshToken en localStorage', () => {
+    it('no persiste identidad, permisos ni tokens en localStorage', () => {
       store.setAuth({
         ...cleanAuth,
         token: 'jwt-secreto',
@@ -40,12 +40,16 @@ describe('AuthStore', () => {
         menu: [flatItem('VISTA_MASCOTAS', { ruta: '/mascotas' })],
       });
 
-      const persisted = JSON.parse(localStorage.getItem('auth') ?? '{}');
+      const persisted = JSON.parse(localStorage.getItem('auth_ui_preferences') ?? '{}');
 
       expect(store.token()).toBe('jwt-secreto');
       expect(persisted.token).toBeUndefined();
       expect(persisted.refreshToken).toBeUndefined();
-      expect(persisted.allowedRoutes).toEqual(['mascotas']);
+      expect(persisted.roles).toBeUndefined();
+      expect(persisted.menu).toBeUndefined();
+      expect(persisted.allowedRoutes).toBeUndefined();
+      expect(localStorage.getItem('auth')).toBeNull();
+      expect(store.sessionStatus()).toBe('authenticated');
     });
   });
 

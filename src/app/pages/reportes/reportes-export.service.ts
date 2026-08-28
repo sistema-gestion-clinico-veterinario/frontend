@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import jsPDF from 'jspdf';
+import type jsPDF from 'jspdf';
 import { ItemCount, ReportesClinicos } from '../../models/response/reportes-clinicos-response';
 
 type ExportCell = string | number;
@@ -7,8 +7,9 @@ type ExportCell = string | number;
 @Injectable()
 export class ReportesExportService {
 
-  exportarPdf(reporte: ReportesClinicos): void {
-    const doc = new jsPDF();
+  async exportarPdf(reporte: ReportesClinicos): Promise<void> {
+    const { default: JsPdf } = await import('jspdf');
+    const doc = new JsPdf();
     const resumen = reporte.resumen;
 
     doc.setFontSize(18);

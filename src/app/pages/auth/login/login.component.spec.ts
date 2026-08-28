@@ -1,9 +1,10 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, flushMicrotasks, TestBed } from '@angular/core/testing';
 import { LoginComponent } from './login.component';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { of, throwError } from 'rxjs';
+import { LoadingStore } from '../../../store/loading.store';
 
 describe('LoginComponent – greeting', () => {
   let component: LoginComponent;
@@ -11,6 +12,7 @@ describe('LoginComponent – greeting', () => {
   let authService: jasmine.SpyObj<AuthService>;
 
   beforeEach(async () => {
+    localStorage.clear();
     await TestBed.configureTestingModule({
       imports: [LoginComponent, HttpClientTestingModule],
       providers: [
@@ -24,6 +26,7 @@ describe('LoginComponent – greeting', () => {
     fixture = TestBed.createComponent(LoginComponent);
     component = fixture.componentInstance;
     authService = TestBed.inject(AuthService) as jasmine.SpyObj<AuthService>;
+    (TestBed.inject(Router) as jasmine.SpyObj<Router>).navigateByUrl.and.resolveTo(true);
     jasmine.clock().install();
   });
 
@@ -70,6 +73,7 @@ describe('LoginComponent - submit validations', () => {
     fixture = TestBed.createComponent(LoginComponent);
     component = fixture.componentInstance;
     authService = TestBed.inject(AuthService) as jasmine.SpyObj<AuthService>;
+    (TestBed.inject(Router) as jasmine.SpyObj<Router>).navigateByUrl.and.resolveTo(true);
   });
 
   afterEach(() => {
@@ -155,6 +159,42 @@ describe('LoginComponent - submit validations', () => {
     expect(authService.login).toHaveBeenCalledWith({ email: 'admin@test.com', password: 'secret123' });
     expect(router.navigateByUrl).toHaveBeenCalled();
   });
+
+  it('mantiene bloqueada la interfaz hasta que finaliza la navegacion', fakeAsync(() => {
+    const router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
+    const loadingStore = TestBed.inject(LoadingStore);
+    let completeNavigation!: (value: boolean) => void;
+    router.navigateByUrl.and.returnValue(new Promise<boolean>((resolve) => {
+      completeNavigation = resolve;
+    }));
+    createLoginInput('email', 'admin@test.com');
+    createLoginInput('password', 'secret123');
+    authService.login.and.returnValue(of({
+      data: {
+        roles: ['ROLE_ADMIN'],
+        assignedRoles: ['ROLE_ADMIN'],
+        companyId: 1,
+        companyName: 'VargasVet',
+        nombreCompleto: 'Admin Test',
+        userType: 'EMPLEADO',
+        empleadoId: 1,
+        passwordChanged: true,
+        needsCompanySelection: false,
+        menu: [],
+      }
+    } as any));
+
+    component.submit();
+
+    expect(component.isSubmitting).toBeTrue();
+    expect(loadingStore.isLoading()).toBeTrue();
+
+    completeNavigation(true);
+    flushMicrotasks();
+
+    expect(component.isSubmitting).toBeFalse();
+    expect(loadingStore.isLoading()).toBeFalse();
+  }));
 
   it('[BB-002] rechaza credenciales invalidas y muestra el mensaje del servidor', () => {
     createLoginInput('email', 'admin@test.com');

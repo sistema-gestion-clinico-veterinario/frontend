@@ -204,9 +204,9 @@ export default class ReportesComponent {
     }).format(value ?? 0);
   }
 
-  exportarPdf(): void {
+  async exportarPdf(): Promise<void> {
     const reporte = this.data();
-    if (reporte) this.exportService.exportarPdf(reporte);
+    if (reporte) await this.exportService.exportarPdf(reporte);
   }
 
   exportarExcel(): void {

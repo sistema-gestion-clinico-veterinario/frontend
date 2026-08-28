@@ -1,12 +1,12 @@
 import { Injectable } from '@angular/core';
-import { jsPDF } from 'jspdf';
 import { CuentaCitaResponse } from '../../models/response/cuenta-cita-response';
 import { PagoResponse } from '../../models/response/pago-response';
 
 @Injectable({ providedIn: 'root' })
 export class NotaVentaPdfService {
-  mostrar(cuenta: CuentaCitaResponse, pago: PagoResponse, empresa: string): void {
-    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  async mostrar(cuenta: CuentaCitaResponse, pago: PagoResponse, empresa: string): Promise<void> {
+    const { jsPDF: JsPdf } = await import('jspdf');
+    const doc = new JsPdf({ unit: 'mm', format: 'a4' });
     const money = (value: number | null | undefined) => `S/ ${Number(value ?? 0).toFixed(2)}`;
     const folio = `NV-${String(pago.id).padStart(8, '0')}`;
 
