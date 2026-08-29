@@ -45,6 +45,8 @@ import { CalendarModule } from 'primeng/calendar';
 import { TooltipModule } from 'primeng/tooltip';
 import { MenuModule } from 'primeng/menu';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { PaginatorModule } from 'primeng/paginator';
+import { SkeletonModule } from 'primeng/skeleton';
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 import { InputFilterDirective } from '../../../core/directives/input-filter.directive';
 import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
@@ -90,6 +92,8 @@ interface HorarioResumen {
 
     ConfirmDialogModule,
     ToastModule,
+    PaginatorModule,
+    SkeletonModule,
     FullCalendarModule,
     HasPermissionDirective,
     InputFilterDirective
@@ -172,6 +176,9 @@ export class AgendaComponent implements OnInit, OnDestroy {
   readonly pagoInsuficienteParaAtencion = computed(() => false);
 
   citas            = signal<CitaResponse[]>([]);
+  cargando         = signal<boolean>(true);
+  private pendingInitialLoads = 0;
+  private readonly TOTAL_INITIAL_LOADS = 6;
   private loadTimeout: any = null;
   private lastLazyEvent: any = { first: 0, rows: 10 };
   agendaFirst = 0;
@@ -351,6 +358,20 @@ export class AgendaComponent implements OnInit, OnDestroy {
       fechaGrupo: cita.fechaHoraInicio?.substring(0, 10) ?? ''
     }))
   );
+
+  readonly citasAgrupadas = computed(() => {
+    const groups: { fecha: string; label: string; items: (CitaResponse & { fechaGrupo: string })[] }[] = [];
+    const map = new Map<string, (CitaResponse & { fechaGrupo: string })[]>();
+    for (const cita of this.citasAgenda()) {
+      const key = cita.fechaGrupo;
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(cita);
+    }
+    for (const [fecha, items] of map) {
+      groups.push({ fecha, label: this.formatAgendaGroupLabel(fecha), items });
+    }
+    return groups;
+  });
   calendarEvents = signal<EventInput[]>([]);
   cargandoCal  = signal<boolean>(false);
   calendarOptions: CalendarOptions = {
@@ -520,6 +541,8 @@ export class AgendaComponent implements OnInit, OnDestroy {
   });
 
   ngOnInit() {
+    this.cargando.set(true);
+    this.pendingInitialLoads = 0;
     this.loadCitas();
     this.loadServicios();
     this.loadVeterinarios();
@@ -545,6 +568,13 @@ export class AgendaComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.stompClient?.disconnect();
+  }
+
+  private checkInitialLoadsComplete() {
+    this.pendingInitialLoads++;
+    if (this.pendingInitialLoads >= this.TOTAL_INITIAL_LOADS) {
+      this.cargando.set(false);
+    }
   }
 
   setupWebSocket() {
@@ -660,9 +690,11 @@ export class AgendaComponent implements OnInit, OnDestroy {
           const [y, m, d] = this.filterFecha.split('-').map(Number);
           this.fechaBase.set(new Date(y, m - 1, d));
         }
+        this.checkInitialLoadsComplete();
       },
       error: () => {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar las citas' });
+        this.checkInitialLoadsComplete();
       }
     });
   }
@@ -675,6 +707,10 @@ export class AgendaComponent implements OnInit, OnDestroy {
           res.data.content
             .map((e: any) => ({ label: `${e.nombre} ${e.apellido}`, value: e.id }))
         );
+        this.checkInitialLoadsComplete();
+      },
+      error: () => {
+        this.checkInitialLoadsComplete();
       }
     });
   }
@@ -688,9 +724,11 @@ export class AgendaComponent implements OnInit, OnDestroy {
             .filter(c => c.activo)
             .map(c => ({ label: `${c.nombre} ${c.apellido}`, value: c.id }))
         );
+        this.checkInitialLoadsComplete();
       },
       error: () => {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar los dueños' });
+        this.checkInitialLoadsComplete();
       }
     });
   }
@@ -698,9 +736,13 @@ export class AgendaComponent implements OnInit, OnDestroy {
   loadAllMascotas(companyId?: number) {
     const targetCompanyId = companyId || (this.activeCompanyId ?? undefined);
     this.mascotaService.listar(targetCompanyId, undefined, undefined, 0, 500).subscribe({
-      next: (res) => this.allMascotas.set(res.data.content),
+      next: (res) => {
+        this.allMascotas.set(res.data.content);
+        this.checkInitialLoadsComplete();
+      },
       error: () => {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar las mascotas' });
+        this.checkInitialLoadsComplete();
       }
     });
   }
@@ -717,19 +759,29 @@ export class AgendaComponent implements OnInit, OnDestroy {
             precio: s.precio
           }))
         );
+        this.checkInitialLoadsComplete();
       },
-      error: () => this.servicios.set([])
+      error: () => {
+        this.servicios.set([]);
+        this.checkInitialLoadsComplete();
+      }
     });
   }
 
   loadTodosEmpleados(companyId?: number) {
     const cid = companyId ?? (this.activeCompanyId ?? undefined);
     this.empleadoService.listar(cid, undefined, 0, 200).subscribe({
-      next: (res) => this.todosEmpleados.set(
-        res.data.content
-          .filter((e: any) => e.activo)
-          .map((e: any) => ({ id: e.id, nombre: e.nombre, apellido: e.apellido, tiposEmpleado: e.tiposEmpleado ?? [] }))
-      )
+      next: (res) => {
+        this.todosEmpleados.set(
+          res.data.content
+            .filter((e: any) => e.activo)
+            .map((e: any) => ({ id: e.id, nombre: e.nombre, apellido: e.apellido, tiposEmpleado: e.tiposEmpleado ?? [] }))
+        );
+        this.checkInitialLoadsComplete();
+      },
+      error: () => {
+        this.checkInitialLoadsComplete();
+      }
     });
   }
 
@@ -1792,6 +1844,10 @@ export class AgendaComponent implements OnInit, OnDestroy {
     this.agendaFirst = 0;
     this.lastLazyEvent = { ...this.lastLazyEvent, first: 0 };
     this.loadCitas();
+  }
+
+  onAgendaPageChange(event: any) {
+    this.loadCitas(event);
   }
 
   private parseDateStr(value: string): Date {

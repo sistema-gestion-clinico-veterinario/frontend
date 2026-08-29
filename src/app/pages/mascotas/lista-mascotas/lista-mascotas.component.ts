@@ -7,6 +7,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import { PaginatorModule } from 'primeng/paginator';
 import { ToastModule } from 'primeng/toast';
 import { MenuModule } from 'primeng/menu';
+import { SkeletonModule } from 'primeng/skeleton';
 import { MenuItem, MessageService } from 'primeng/api';
 import { forkJoin } from 'rxjs';
 
@@ -35,6 +36,7 @@ import { InputFilterDirective } from '../../../core/directives/input-filter.dire
     PaginatorModule,
     ToastModule,
     MenuModule,
+    SkeletonModule,
     HasPermissionDirective,
     InputFilterDirective
   ],
@@ -58,6 +60,7 @@ export class ListaMascotasComponent implements OnInit {
   readonly isSuperAdmin = computed(() => this.authStore.roles().includes(Role.SUPER_ADMIN));
 
   mascotas     = signal<MascotaResponse[]>([]);
+  cargando     = signal<boolean>(true);
   totalRecords = signal<number>(0);
   searchNombre      = '';
   filterEspecie: string | null   = null;
@@ -172,6 +175,7 @@ export class ListaMascotasComponent implements OnInit {
       return;
     }
 
+    this.cargando.set(true);
     this.currentPage = page;
     const nombre = this.normalizeNameFilter(this.searchNombre);
     this.searchNombre = nombre;
@@ -187,9 +191,11 @@ export class ListaMascotasComponent implements OnInit {
       next: (res) => {
         this.mascotas.set(res.data.content);
         this.totalRecords.set(res.data?.page?.totalElements ?? res.data?.totalElements ?? 0);
+        this.cargando.set(false);
       },
       error: () => {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar las mascotas' });
+        this.cargando.set(false);
       }
     });
   }

@@ -7,6 +7,7 @@ import { distinctUntilChanged, skip } from 'rxjs/operators';
 import { AuthStore } from '../../store/auth.store';
 import { DashboardService, DashboardStats } from '../../core/services/dashboard.service';
 import { DropdownModule } from 'primeng/dropdown';
+import { SkeletonModule } from 'primeng/skeleton';
 import { FormsModule } from '@angular/forms';
 import { Role } from '../../core/enums/role.enum';
 import { LoadingStore } from '../../store/loading.store';
@@ -16,7 +17,7 @@ import { PagoListResponse } from '../../models/response/pago-response';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, DropdownModule, FormsModule, RouterModule, ChangePasswordModalComponent],
+  imports: [CommonModule, DropdownModule, SkeletonModule, FormsModule, RouterModule, ChangePasswordModalComponent],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })
@@ -71,6 +72,7 @@ export class DashboardComponent implements OnInit {
   chartPeriod         = signal<'day' | 'week' | 'month'>('day');
   pagos               = signal<PagoListResponse[]>([]);
   loadingPagos        = signal(false);
+  cargando            = signal(true);
 
   // ─── Reacciona solo cuando selectedEnterprise cambia realmente ───
   constructor() {
@@ -345,6 +347,7 @@ export class DashboardComponent implements OnInit {
   // ─── Métodos de carga ────────────────────────────────────────────
 
   loadAllDashboardData(companyId?: number) {
+    this.cargando.set(true);
     this.loadingStore.show();
     this.loadingPagos.set(true);
     this.dashboardService.getOverview(companyId).subscribe({
@@ -362,6 +365,7 @@ export class DashboardComponent implements OnInit {
         this.pagos.set(this.canViewPayments() ? data.payments ?? [] : []);
         this.companies.set((this.isSuperAdmin || this.canView('VISTA_COMPANY')) ? data.companies ?? [] : []);
         this.loadingPagos.set(false);
+        this.cargando.set(false);
         this.loadingStore.hide();
       },
       error: () => {
@@ -369,6 +373,7 @@ export class DashboardComponent implements OnInit {
         this.recentLogs.set([]);
         this.companies.set([]);
         this.loadingPagos.set(false);
+        this.cargando.set(false);
         this.loadingStore.hide();
       }
     });

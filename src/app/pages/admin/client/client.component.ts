@@ -10,6 +10,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { DropdownModule } from 'primeng/dropdown';
 import { ToastModule } from 'primeng/toast';
 import { MenuModule } from 'primeng/menu';
+import { SkeletonModule } from 'primeng/skeleton';
 import { MenuItem, MessageService } from 'primeng/api';
 import { ApoderadoService } from '../../../core/services/apoderado.service';
 import { MascotaService } from '../../../core/services/mascota.service';
@@ -42,6 +43,7 @@ import { normalizeText } from '../../../core/utils/normalize-text.util';
     DropdownModule,
     ToastModule,
     MenuModule,
+    SkeletonModule,
     HasPermissionDirective,
     InputFilterDirective
   ],
@@ -62,6 +64,7 @@ export class ClientComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
 
   clients = signal<ApoderadoListResponse[]>([]);
+  cargando = signal<boolean>(true);
   displayModal = signal<boolean>(false);
   isEdit = signal<boolean>(false);
   totalRecords = signal<number>(0);
@@ -267,6 +270,8 @@ export class ClientComponent implements OnInit {
     const companyId = this.activeCompanyId;
     if (!companyId) return;
 
+    const isFirstLoad = this.clients().length === 0;
+    if (isFirstLoad) this.cargando.set(true);
     this.pageSize = event.rows;
     const page = Math.floor(event.first / event.rows);
 
@@ -277,9 +282,11 @@ export class ClientComponent implements OnInit {
       next: (res) => {
         this.clients.set(res.data.content);
         this.totalRecords.set(res.data?.page?.totalElements ?? res.data?.totalElements ?? 0);
+        this.cargando.set(false);
       },
       error: () => {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar los propietarios' });
+        this.cargando.set(false);
       }
     });
   }

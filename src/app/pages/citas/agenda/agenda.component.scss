@@ -496,6 +496,30 @@
   }
 }
 
+@media (max-width: 420px) {
+  :host ::ng-deep .agenda-form .grid.grid-cols-2 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .mobile-calendar-appointment {
+    grid-template-columns: 2.75rem minmax(0, 1fr) auto;
+    gap: 0.5rem;
+    padding-inline: 0.5rem;
+  }
+
+  .mobile-calendar-appointment > .pi-chevron-right {
+    display: none;
+  }
+
+  .mobile-week-summary-row {
+    grid-template-columns: 3.75rem minmax(0, 1fr);
+  }
+
+  .mobile-week-count {
+    display: none;
+  }
+}
+
 @media (max-width: 900px) {
   .agenda-kpis {
     gap: 0.5rem;
@@ -510,126 +534,5 @@
   .agenda-kpi-icon {
     width: 2rem;
     height: 2rem;
-  }
-
-  :host ::ng-deep .agenda-list-table {
-    .p-datatable-thead {
-      display: none;
-    }
-
-    .p-datatable-tbody > tr.agenda-group-row {
-      display: table-row !important;
-    }
-
-    .p-datatable-tbody > tr.agenda-group-row > td.agenda-group-cell {
-      display: table-cell !important;
-      padding: 0.5rem 0.75rem !important;
-      width: 100% !important;
-    }
-
-    .p-datatable-tbody > tr.agenda-data-row {
-      display: grid !important;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
-      grid-template-areas:
-        "patient patient status"
-        "time time actions"
-        "owner vet actions"
-        "reason reason actions";
-      column-gap: 0.75rem;
-      row-gap: 0.4375rem;
-      align-items: center;
-      padding: 0.75rem;
-      min-height: 0;
-    }
-
-    .p-datatable-tbody > tr.agenda-data-row > td {
-      border: 0 !important;
-      min-width: 0;
-      padding: 0 !important;
-      width: auto !important;
-    }
-
-    .agenda-cell-time {
-      display: flex !important;
-      align-items: baseline;
-      gap: 0.375rem;
-      grid-area: time;
-    }
-
-    .agenda-cell-time > p {
-      line-height: 1;
-    }
-
-    .agenda-cell-patient {
-      display: block !important;
-      grid-area: patient;
-    }
-
-    .agenda-cell-patient > div {
-      gap: 0.5rem;
-    }
-
-    .agenda-cell-patient p {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .agenda-cell-owner {
-      display: block !important;
-      grid-area: owner;
-    }
-
-    .agenda-cell-vet {
-      display: block !important;
-      grid-area: vet;
-    }
-
-    .agenda-cell-reason {
-      display: block !important;
-      grid-area: reason;
-      max-width: 100% !important;
-    }
-
-    .agenda-cell-status {
-      display: block !important;
-      grid-area: status;
-      justify-self: end;
-      align-self: start;
-    }
-
-    .agenda-cell-actions {
-      display: block !important;
-      grid-area: actions;
-      justify-self: end;
-    }
-
-    .agenda-patient-owner-mobile {
-      display: none !important;
-    }
-
-    .agenda-cell-owner > div,
-    .agenda-cell-vet > div {
-      gap: 0.375rem;
-    }
-
-    .agenda-cell-owner span,
-    .agenda-cell-vet span {
-      display: block;
-      max-width: 100%;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      font-size: 0.6875rem;
-    }
-
-    .agenda-cell-reason > span,
-    .agenda-cell-status > span {
-      font-size: 0.625rem;
-    }
-
-    .p-paginator {
-      padding: 0.5rem 0.25rem;
-    }
   }
 }

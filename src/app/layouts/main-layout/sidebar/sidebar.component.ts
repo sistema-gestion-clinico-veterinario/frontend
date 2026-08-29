@@ -7,6 +7,7 @@ import { RouteMapperService } from '../../../core/services/route-mapper.service'
 import { CompanyService } from '../../../core/services/company.service';
 import { MediaService } from '../../../core/services/media.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { SkeletonModule } from 'primeng/skeleton';
 
 interface MenuItemWithRuta extends MenuItemDTO {
   ruta: string;
@@ -19,7 +20,7 @@ interface MenuSection extends MenuStructureDTO {
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive],
+  imports: [CommonModule, RouterLink, RouterLinkActive, SkeletonModule],
   templateUrl: './sidebar.component.html'
 })
 export class SidebarComponent implements OnInit {
@@ -147,12 +148,12 @@ export class SidebarComponent implements OnInit {
   navItemClass(isActive: boolean): string {
     if (this.collapsed()) {
       return isActive
-        ? 'flex items-center justify-center mx-auto w-10 h-10 rounded-md bg-slate-100 transition-colors duration-150'
-        : 'flex items-center justify-center mx-auto w-10 h-10 rounded-md hover:bg-slate-50 transition-colors duration-150';
+        ? 'flex items-center justify-center mx-auto w-9 h-9 rounded-md bg-white/15 transition-colors duration-150'
+        : 'flex items-center justify-center mx-auto w-9 h-9 rounded-md hover:bg-white/10 transition-colors duration-150';
     }
     return isActive
-      ? 'flex items-center border-l-2 border-[#0057B8] bg-slate-50 pl-[16px] pr-4 py-[9px] transition-colors duration-150'
-      : 'flex items-center border-l-2 border-transparent pl-[16px] pr-4 py-[9px] hover:bg-slate-50 transition-colors duration-150';
+      ? 'mx-2 flex items-center rounded-md bg-white/15 px-3 py-1.5 transition-colors duration-150'
+      : 'mx-2 flex items-center rounded-md px-3 py-1.5 hover:bg-white/10 transition-colors duration-150';
   }
 
   getIcon(vista: MenuItemWithRuta): string {

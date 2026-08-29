@@ -1,19 +1,23 @@
 <p-toast position="top-right" />
 
-<main class="min-h-screen p-3 sm:p-5 lg:p-6 max-w-[1600px] mx-auto space-y-4 sm:space-y-5">
+<main class="mx-auto min-h-screen min-w-0 max-w-[1600px] space-y-4 overflow-x-hidden p-2 sm:space-y-5 sm:p-5 lg:p-6">
   <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-    <div>
-      <h1 class="text-2xl font-bold tracking-tight text-slate-900">Caja</h1>
-      <p class="text-sm text-slate-500 mt-1">Punto de venta y control de ingresos</p>
+    <div class="flex items-center gap-3">
+      <i class="pi pi-inbox text-[#0066AA] text-3xl shrink-0"></i>
+      <div>
+        <p class="text-[11px] font-bold uppercase tracking-[.14em] text-[#0066AA]">Finanzas</p>
+        <h1 class="text-xl font-extrabold leading-tight tracking-tight text-slate-900">Caja</h1>
+        <p class="mt-1 text-sm text-slate-400 font-medium hidden sm:block">Punto de venta y control de ingresos</p>
+      </div>
     </div>
-    <div class="flex items-center gap-2">
-      @if (!sesionCaja()) { <button (click)="abrirModalSesion('ABRIR')" class="h-10 px-4 rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-semibold hover:bg-slate-50">Abrir caja</button> }
-      <button (click)="nuevaOperacion()" class="h-10 px-4 rounded-lg bg-[#075db8] text-white text-sm font-semibold hover:bg-[#064f9c] flex items-center justify-center gap-2"><i class="pi pi-plus text-xs"></i><span>Nueva operación</span></button>
+    <div class="flex w-full items-center gap-2 sm:w-auto">
+      @if (!sesionCaja()) { <button (click)="abrirModalSesion('ABRIR')" class="h-10 flex-1 rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 sm:flex-none sm:px-4">Abrir caja</button> }
+      <button (click)="nuevaOperacion()" class="flex h-10 flex-1 items-center justify-center gap-2 rounded-lg bg-[#075db8] px-3 text-sm font-semibold text-white hover:bg-[#064f9c] sm:flex-none sm:px-4"><i class="pi pi-plus text-xs"></i><span>Nueva operación</span></button>
     </div>
   </header>
 
   @if (resumen()) {
-    <section class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+    <section class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
       <article class="bg-white border border-slate-200 rounded-xl p-4 flex items-center gap-3"><span class="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0"><i class="pi pi-arrow-up-right text-sm"></i></span><div class="min-w-0"><p class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Ingresos del periodo</p><p class="mt-1 text-lg font-semibold text-slate-900 truncate">{{ formatMonto(resumen()!.totalIngresos) }}</p></div></article>
       <article class="bg-white border border-slate-200 rounded-xl p-4 flex items-center gap-3"><span class="w-10 h-10 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center shrink-0"><i class="pi pi-arrow-down-left text-sm"></i></span><div class="min-w-0"><p class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Egresos del periodo</p><p class="mt-1 text-lg font-semibold text-slate-900 truncate">{{ formatMonto(resumen()!.totalEgresos) }}</p></div></article>
       <article class="bg-white border border-slate-200 rounded-xl p-4 flex items-center gap-3"><span class="w-10 h-10 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center shrink-0"><i class="pi pi-replay text-sm"></i></span><div class="min-w-0"><p class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Devoluciones</p><p class="mt-1 text-lg font-semibold text-slate-900 truncate">{{ formatMonto(resumen()!.totalDevoluciones) }}</p></div></article>
@@ -60,7 +64,15 @@
           <span class="self-start sm:self-auto px-2.5 py-1 rounded-full bg-white border border-amber-200 text-[10px] font-bold uppercase text-amber-700">{{ cuenta.estadoPago === 'PAGO_PARCIAL' ? 'Pago parcial' : 'Por cobrar' }}</span>
         </div>
 
-        <div class="overflow-x-auto">
+        <div class="divide-y divide-slate-100 md:hidden">
+          @for (detalle of cuenta.detalles; track detalle.id) {
+            <article class="space-y-3 p-4">
+              <div class="flex items-start justify-between gap-3"><div class="min-w-0"><h3 class="break-words text-sm font-semibold text-slate-800">{{ detalle.descripcion }}</h3><p class="text-[11px] text-slate-500">{{ tipoDetalleLabel(detalle.tipo) }}</p></div>@if (!detalle.esServicioBase) { <button (click)="eliminarDetalle(detalle.id)" aria-label="Eliminar concepto" class="grid size-9 shrink-0 place-items-center rounded-lg border border-slate-200 text-rose-500"><i class="pi pi-trash text-xs"></i></button> }</div>
+              <div class="flex items-center justify-between gap-3"><div>@if (detalle.esServicioBase) { <span class="text-xs text-slate-500">Cantidad: <b class="text-slate-700">{{ detalle.cantidad }}</b></span> } @else { <div class="inline-flex items-center overflow-hidden rounded-lg border border-slate-200"><button (click)="cambiarCantidad(detalle, -1)" class="size-9 text-slate-500">−</button><span class="w-9 text-center text-xs font-semibold">{{ detalle.cantidad }}</span><button (click)="cambiarCantidad(detalle, 1)" class="size-9 text-slate-500">+</button></div> }</div><div class="text-right"><p class="text-[10px] text-slate-400">{{ formatMonto(detalle.precioUnitario) }} c/u</p><p class="text-sm font-bold" [class]="detalle.subtotal < 0 ? 'text-rose-600' : 'text-slate-900'">{{ formatMonto(detalle.subtotal) }}</p></div></div>
+            </article>
+          }
+        </div>
+        <div class="hidden overflow-x-auto md:block">
           <table class="w-full min-w-[660px] text-sm">
             <thead class="bg-slate-50 border-b border-slate-200"><tr><th class="px-5 py-3 text-left text-[11px] font-semibold text-slate-500">Detalle</th><th class="px-4 py-3 text-center text-[11px] font-semibold text-slate-500">Cantidad</th><th class="px-4 py-3 text-right text-[11px] font-semibold text-slate-500">Precio</th><th class="px-4 py-3 text-right text-[11px] font-semibold text-slate-500">Total</th><th class="w-12"></th></tr></thead>
             <tbody class="divide-y divide-slate-100">
@@ -77,16 +89,16 @@
 
         <div class="p-4 sm:p-5 bg-slate-50/70 border-t border-slate-200">
           <p class="text-[11px] font-bold uppercase tracking-wide text-slate-500 mb-2">Agregar concepto</p>
-          <div class="grid grid-cols-1 sm:grid-cols-[150px_1fr_70px_110px_auto] gap-2">
+          <div class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-[150px_1fr_70px_110px_auto]">
             <select [(ngModel)]="nuevoDetalle.tipo" class="h-10 rounded-lg border border-slate-300 bg-white px-2 text-xs"><option value="VACUNA">Vacuna</option><option value="MEDICAMENTO">Medicamento</option><option value="INSUMO">Insumo</option><option value="PROCEDIMIENTO">Procedimiento</option><option value="SERVICIO_ADICIONAL">Servicio adicional</option><option value="DESCUENTO">Descuento</option><option value="OTRO">Otro</option></select>
-            <input [(ngModel)]="nuevoDetalle.descripcion" maxlength="180" placeholder="Descripción del concepto" class="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm" />
+            <input [(ngModel)]="nuevoDetalle.descripcion" maxlength="180" placeholder="Descripción del concepto" class="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm sm:col-span-2 lg:col-span-1" />
             <input [(ngModel)]="nuevoDetalle.cantidad" type="number" min="1" max="999" class="h-10 rounded-lg border border-slate-300 bg-white px-2 text-sm" />
             <input [(ngModel)]="nuevoDetalle.precioUnitario" type="number" min="0.01" step="0.01" placeholder="0.00" class="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm" />
-            <button (click)="agregarDetalle()" [disabled]="savingDetalle()" class="h-10 px-4 rounded-lg border border-[#075db8] text-[#075db8] text-xs font-bold hover:bg-blue-50 disabled:opacity-50">Agregar</button>
+            <button (click)="agregarDetalle()" [disabled]="savingDetalle()" class="h-10 rounded-lg border border-[#075db8] px-4 text-xs font-bold text-[#075db8] hover:bg-blue-50 disabled:opacity-50 sm:col-span-2 lg:col-span-1">Agregar</button>
           </div>
         </div>
 
-        <footer class="px-4 sm:px-5 py-4 border-t border-slate-200 flex items-center justify-between"><button (click)="limpiarCuenta()" class="text-xs font-semibold text-rose-500 hover:text-rose-700"><i class="pi pi-times mr-1"></i>Cancelar operación</button><div class="text-right"><span class="text-xs text-slate-500 mr-3">Total de cuenta</span><span class="text-2xl font-bold text-[#075db8]">{{ formatMonto(cuenta.total) }}</span></div></footer>
+        <footer class="flex flex-col-reverse items-stretch gap-3 border-t border-slate-200 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5"><button (click)="limpiarCuenta()" class="h-10 rounded-lg border border-rose-200 text-xs font-semibold text-rose-600 hover:bg-rose-50 sm:h-auto sm:border-0"><i class="pi pi-times mr-1"></i>Cancelar operación</button><div class="flex items-end justify-between text-right sm:block"><span class="mr-3 text-xs text-slate-500">Total de cuenta</span><span class="text-2xl font-bold text-[#075db8]">{{ formatMonto(cuenta.total) }}</span></div></footer>
       }
       }
     </article>
@@ -133,7 +145,8 @@
   <section class="grid grid-cols-1 xl:grid-cols-[minmax(0,1.65fr)_minmax(330px,.85fr)] gap-4">
     <article class="bg-white border border-slate-200 rounded-xl overflow-hidden">
       <div class="px-4 sm:px-5 py-3.5 border-b border-slate-200 bg-[#f8fafc] flex items-center justify-between gap-3"><div class="flex items-center gap-2"><i class="pi pi-history text-[#075db8]"></i><h2 class="text-sm font-bold text-slate-900">Últimos movimientos en caja</h2></div><span class="text-xs text-slate-500">{{ totalRecords() }} registros</span></div>
-      <div class="overflow-x-auto"><table class="w-full min-w-[760px] text-sm"><thead class="bg-slate-50 border-b border-slate-200"><tr><th class="px-4 py-2.5 text-left text-[10px] font-semibold text-slate-500">Fecha</th><th class="px-4 py-2.5 text-left text-[10px] font-semibold text-slate-500">Tipo</th><th class="px-4 py-2.5 text-left text-[10px] font-semibold text-slate-500">Descripción</th><th class="px-4 py-2.5 text-left text-[10px] font-semibold text-slate-500">Método</th><th class="px-4 py-2.5 text-right text-[10px] font-semibold text-slate-500">Monto</th><th class="px-4 py-2.5 text-left text-[10px] font-semibold text-slate-500">Usuario</th></tr></thead><tbody class="divide-y divide-slate-100">
+      <div class="divide-y divide-slate-100 md:hidden">@for (m of movimientos(); track m.id) { <article class="space-y-3 p-4"><div class="flex items-start justify-between gap-3"><div><span class="rounded-full px-2 py-1 text-[10px] font-semibold" [class]="tipoBadge(m.tipo)">{{ tipoLabel(m.tipo) }}</span><p class="mt-2 text-xs text-slate-500">{{ formatFecha(m.fecha) }}</p></div><strong class="text-sm" [class]="m.tipo === 'INGRESO' ? 'text-emerald-600' : 'text-rose-600'">{{ m.tipo === 'INGRESO' ? '+' : '-' }} {{ formatMonto(m.monto) }}</strong></div><p class="break-words text-xs text-slate-700">{{ m.descripcion || 'Sin descripción' }}</p><div class="flex items-center justify-between gap-3 border-t border-slate-100 pt-3 text-[11px] text-slate-500"><span>{{ m.metodoPago ? metodoPagoLabel($any(m.metodoPago)) : 'Sin método' }}</span><span class="truncate text-right">{{ m.registradoPor || '—' }}</span></div></article> } @empty { <p class="p-8 text-center text-sm text-slate-400">No hay movimientos registrados.</p> }</div>
+      <div class="hidden overflow-x-auto md:block"><table class="w-full min-w-[760px] text-sm"><thead class="bg-slate-50 border-b border-slate-200"><tr><th class="px-4 py-2.5 text-left text-[10px] font-semibold text-slate-500">Fecha</th><th class="px-4 py-2.5 text-left text-[10px] font-semibold text-slate-500">Tipo</th><th class="px-4 py-2.5 text-left text-[10px] font-semibold text-slate-500">Descripción</th><th class="px-4 py-2.5 text-left text-[10px] font-semibold text-slate-500">Método</th><th class="px-4 py-2.5 text-right text-[10px] font-semibold text-slate-500">Monto</th><th class="px-4 py-2.5 text-left text-[10px] font-semibold text-slate-500">Usuario</th></tr></thead><tbody class="divide-y divide-slate-100">
         @for (m of movimientos(); track m.id) { <tr><td class="px-4 py-3 text-xs text-slate-500 whitespace-nowrap">{{ formatFecha(m.fecha) }}</td><td class="px-4 py-3"><span class="px-2 py-1 rounded-full text-[10px] font-semibold" [class]="tipoBadge(m.tipo)">{{ tipoLabel(m.tipo) }}</span></td><td class="px-4 py-3 text-xs text-slate-700">{{ m.descripcion || '—' }}</td><td class="px-4 py-3 text-xs text-slate-500">{{ m.metodoPago ? metodoPagoLabel($any(m.metodoPago)) : '—' }}</td><td class="px-4 py-3 text-right text-xs font-bold" [class]="m.tipo === 'INGRESO' ? 'text-emerald-600' : 'text-rose-600'">{{ m.tipo === 'INGRESO' ? '+' : '-' }} {{ formatMonto(m.monto) }}</td><td class="px-4 py-3 text-xs text-slate-500">{{ m.registradoPor || '—' }}</td></tr> }
         @empty { <tr><td colspan="6" class="px-4 py-10 text-center text-sm text-slate-400">No hay movimientos registrados.</td></tr> }
       </tbody></table></div>

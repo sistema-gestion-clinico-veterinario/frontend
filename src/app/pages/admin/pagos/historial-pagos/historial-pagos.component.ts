@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { TableModule } from 'primeng/table';
 import { ToastModule } from 'primeng/toast';
 import { PaginatorModule } from 'primeng/paginator';
+import { SkeletonModule } from 'primeng/skeleton';
 import { MessageService } from 'primeng/api';
 import { PagoService } from '../../../../core/services/pago.service';
 import { PagoListResponse } from '../../../../models/response/pago-response';
@@ -12,7 +13,7 @@ import { AuthStore } from '../../../../store/auth.store';
 @Component({
   selector: 'app-historial-pagos',
   standalone: true,
-  imports: [CommonModule, FormsModule, TableModule, ToastModule, PaginatorModule],
+  imports: [CommonModule, FormsModule, TableModule, ToastModule, PaginatorModule, SkeletonModule],
   providers: [MessageService],
   templateUrl: './historial-pagos.component.html',
   styleUrl: './historial-pagos.component.scss'
@@ -22,6 +23,7 @@ export class HistorialPagosComponent implements OnInit {
   private readonly messageService = inject(MessageService);
   readonly authStore             = inject(AuthStore);
   pagos          = signal<PagoListResponse[]>([]);
+  cargando       = signal<boolean>(true);
   totalRecords   = signal<number>(0);
   currentPage    = signal<number>(0);
   pageSize       = signal<number>(10);
@@ -56,13 +58,16 @@ export class HistorialPagosComponent implements OnInit {
       this.currentPage.set(event.first / event.rows);
       this.pageSize.set(event.rows);
     }
+    this.cargando.set(true);
     this.pagoService.listarTodos(this.currentPage(), this.pageSize(), this.companyId).subscribe({
       next: (res) => {
         this.pagos.set(res.data?.content ?? []);
         this.totalRecords.set((res.data as any)?.page?.totalElements ?? res.data?.totalElements ?? 0);
+        this.cargando.set(false);
       },
       error: () => {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cargar el historial de pagos.' });
+        this.cargando.set(false);
       }
     });
   }

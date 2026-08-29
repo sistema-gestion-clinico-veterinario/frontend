@@ -1,12 +1,71 @@
 <div class="p-3 sm:p-4 lg:p-8 min-h-screen bg-slate-50 font-['Barlow']">
 
+  <!-- Skeleton Loading -->
+  <div *ngIf="cargando() && !requiresCompanySelection" class="animate-fade-in">
+    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-10">
+      <div class="flex items-center gap-3">
+        <p-skeleton shape="circle" size="3rem"></p-skeleton>
+        <div class="space-y-2">
+          <p-skeleton width="8rem" height="0.6rem" borderRadius="0.3rem"></p-skeleton>
+          <p-skeleton width="20rem" height="1.4rem" borderRadius="0.4rem"></p-skeleton>
+          <p-skeleton width="28rem" height="0.8rem" borderRadius="0.3rem"></p-skeleton>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-6 border-b border-slate-200 mb-6">
+      <p-skeleton width="8rem" height="2rem" borderRadius="0.5rem"></p-skeleton>
+      <p-skeleton width="10rem" height="2rem" borderRadius="0.5rem"></p-skeleton>
+      <p-skeleton width="6rem" height="2rem" borderRadius="0.5rem"></p-skeleton>
+      <p-skeleton width="5rem" height="2rem" borderRadius="0.5rem"></p-skeleton>
+      <p-skeleton width="10rem" height="2rem" borderRadius="0.5rem"></p-skeleton>
+    </div>
+
+    <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+      <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 px-4 sm:px-6 py-4 border-b border-slate-100">
+        <div class="space-y-2">
+          <p-skeleton width="12rem" height="1rem" borderRadius="0.3rem"></p-skeleton>
+          <p-skeleton width="20rem" height="0.7rem" borderRadius="0.3rem"></p-skeleton>
+        </div>
+        <p-skeleton width="12rem" height="2.5rem" borderRadius="0.5rem"></p-skeleton>
+      </div>
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-slate-100">
+            <th class="text-left px-6 py-4"><p-skeleton width="6rem" height="0.6rem" borderRadius="0.3rem"></p-skeleton></th>
+            <th class="text-left px-6 py-4"><p-skeleton width="8rem" height="0.6rem" borderRadius="0.3rem"></p-skeleton></th>
+            <th class="px-6 py-4 w-20"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let i of [1,2,3,4,5]" class="border-b border-slate-100">
+            <td class="px-6 py-4">
+              <div class="flex items-center gap-3">
+                <p-skeleton size="2.5rem" borderRadius="0.5rem"></p-skeleton>
+                <p-skeleton width="10rem" height="0.8rem" borderRadius="0.3rem"></p-skeleton>
+              </div>
+            </td>
+            <td class="px-6 py-4"><p-skeleton width="14rem" height="0.8rem" borderRadius="0.3rem"></p-skeleton></td>
+            <td class="px-6 py-4 text-right">
+              <div class="flex justify-end gap-1">
+                <p-skeleton size="2rem" borderRadius="0.5rem"></p-skeleton>
+                <p-skeleton size="2rem" borderRadius="0.5rem"></p-skeleton>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
   <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-10">
-    <div>
-      <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Configuración Complementaria</h1>
-      <p class="text-slate-500 font-medium mt-1 flex items-center gap-2">
-        <span class="w-2 h-2 rounded-full bg-[#0066AA]"></span>
-        Define especialidades, tipos de contrato y servicios de la clínica
-      </p>
+    <div class="flex items-center gap-3">
+      <i class="pi pi-cog text-[#0066AA] text-3xl shrink-0"></i>
+      <div>
+        <p class="text-[11px] font-bold uppercase tracking-[.14em] text-[#0066AA]">Configuración</p>
+        <h1 class="text-xl font-extrabold leading-tight tracking-tight text-slate-900">Configuración Complementaria</h1>
+        <p class="mt-1 text-sm text-slate-400 font-medium hidden sm:block">Define especialidades, tipos de contrato y servicios de la clínica</p>
+      </div>
     </div>
   </div>
 

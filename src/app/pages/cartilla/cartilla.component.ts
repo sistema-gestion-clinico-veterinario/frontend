@@ -11,6 +11,7 @@ import { TagModule } from 'primeng/tag';
 import { DialogModule } from 'primeng/dialog';
 import { TooltipModule } from 'primeng/tooltip';
 import { PaginatorModule } from 'primeng/paginator';
+import { SkeletonModule } from 'primeng/skeleton';
 import { CartillaService } from '../../core/services/cartilla.service';
 import { ControlPreventivoService } from '../../core/services/control-preventivo.service';
 import { MascotaService } from '../../core/services/mascota.service';
@@ -37,7 +38,8 @@ import { ActivatedRoute, Router } from '@angular/router';
     TagModule,
     DialogModule,
     TooltipModule,
-    PaginatorModule
+    PaginatorModule,
+    SkeletonModule
   ],
   providers: [MessageService],
   templateUrl: './cartilla.component.html',
@@ -54,6 +56,7 @@ export class CartillaComponent implements OnInit {
   private readonly route                   = inject(ActivatedRoute);
 
   readonly modo = signal<'VACUNACION' | 'DESPARASITACION'>('VACUNACION');
+  cargando = signal(true);
 
   // Búsqueda / selección de mascota
   searchQuery        = '';
@@ -220,6 +223,7 @@ export class CartillaComponent implements OnInit {
   }
 
   cargarMascotas(especie?: string) {
+    this.cargando.set(true);
     this.cartillaService.listarMascotasConCartilla(
       especie || undefined,
       this.paginaActual,
@@ -235,6 +239,9 @@ export class CartillaComponent implements OnInit {
         this.mascotasLista.set([]);
         this.totalPaginas = 0;
         this.totalRegistros = 0;
+      },
+      complete: () => {
+        this.cargando.set(false);
       }
     });
   }
@@ -758,6 +765,16 @@ export class CartillaComponent implements OnInit {
   confirmarFechaProgramacion(fecha: Date | null) {
     this.progFechaCalendario = fecha;
     this.progFecha = this.aFechaIso(fecha);
+  }
+
+  onprogFechaChange(event: Event) {
+    const value = (event.target as HTMLInputElement).value;
+    this.progFecha = value;
+  }
+
+  onFechaReprogramacionChange(event: Event) {
+    const value = (event.target as HTMLInputElement).value;
+    this.fechaReprogramacion.set(value);
   }
 
   confirmarFechaReprogramacion(fecha: Date | null) {

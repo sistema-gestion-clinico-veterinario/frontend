@@ -4,7 +4,7 @@
 
   <!-- HEADER -->
   <div class="bg-white border-b border-slate-100">
-    <div class="px-4 sm:px-4 lg:px-4 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div class="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div>
         <div class="flex items-center gap-2 mb-1.5">
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
@@ -12,7 +12,7 @@
             {{ formatDate(today) }}
           </p>
         </div>
-        <h1 class="text-[26px] font-black text-slate-900 leading-snug">
+        <h1 class="text-xl sm:text-[26px] font-black text-slate-900 leading-snug break-words">
           {{ dayGreeting }},&nbsp;<span class="text-[#0066AA]">{{ userName }}</span>
         </h1>
         <div class="flex items-center gap-2.5 mt-2 flex-wrap">
@@ -29,7 +29,7 @@
 
 
   <div *ngIf="!isCurrentlyOpen()"
-    class="mx-6 sm:mx-8 lg:mx-10 mt-6 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex items-start gap-3">
+    class="mx-4 sm:mx-6 lg:mx-8 mt-4 sm:mt-6 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex items-start gap-3">
     <i class="pi pi-exclamation-triangle text-amber-500 text-lg mt-0.5"></i>
     <div class="text-sm text-amber-800 leading-relaxed">
       <strong class="font-bold">En este momento no nos encontramos en horario de atención.</strong>
@@ -41,11 +41,11 @@
   </div>
 
 
-  <div class="px-6 sm:px-8 lg:px-10 py-7 space-y-6">
+  <div class="px-4 sm:px-6 lg:px-8 py-5 sm:py-7 space-y-5 sm:space-y-6">
 
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div class="grid grid-cols-1 min-[480px]:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
 
-      <div class="bg-white rounded-2xl border border-slate-200 p-5 flex items-center gap-4 hover:border-slate-300 transition-colors">
+      <div class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 flex items-center gap-4 hover:border-slate-300 transition-colors min-w-0">
         <div class="w-11 h-11 rounded-xl bg-pink-50 flex items-center justify-center shrink-0">
           <i class="pi pi-heart-fill text-base text-pink-500"></i>
         </div>
@@ -56,7 +56,7 @@
         </div>
       </div>
 
-      <div class="bg-white rounded-2xl border border-slate-200 p-5 flex items-center gap-4 hover:border-slate-300 transition-colors">
+      <div class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 flex items-center gap-4 hover:border-slate-300 transition-colors min-w-0">
         <div class="w-11 h-11 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
           <i class="pi pi-check-circle text-base text-emerald-600"></i>
         </div>
@@ -67,7 +67,7 @@
         </div>
       </div>
 
-      <div class="bg-white rounded-2xl border border-slate-200 p-5 flex items-center gap-4 hover:border-slate-300 transition-colors">
+      <div class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 flex items-center gap-4 hover:border-slate-300 transition-colors min-w-0">
         <div class="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
           <i class="pi pi-calendar text-base text-[#0066AA]"></i>
         </div>
@@ -78,7 +78,7 @@
         </div>
       </div>
 
-      <div class="bg-[#0066AA] rounded-2xl border border-blue-700/50 p-5 flex items-center gap-4 hover:bg-[#005a96] transition-colors">
+      <div class="bg-[#0066AA] rounded-2xl border border-blue-700/50 p-4 sm:p-5 flex items-center gap-4 hover:bg-[#005a96] transition-colors min-w-0">
         <div class="w-11 h-11 rounded-xl bg-white/15 flex items-center justify-center shrink-0">
           <i class="pi pi-calendar-clock text-base text-white"></i>
         </div>
@@ -98,7 +98,7 @@
 
         <!-- PRÓXIMAS CITAS -->
         <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-          <div class="px-6 py-5 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
+          <div class="px-4 sm:px-6 py-4 sm:py-5 border-b border-slate-200 flex flex-col min-[440px]:flex-row min-[440px]:items-center justify-between gap-3 bg-slate-50/50">
             <div>
               <h2 class="text-xs font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
                 <span class="w-2 h-2 rounded-full bg-[#0066AA]"></span>
@@ -117,8 +117,8 @@
             </div>
           </div>
 
-          <div class="p-6">
-            <div *ngIf="citasProximas().length > 0; else sinCitas" class="overflow-x-auto">
+          <div class="p-4 sm:p-6">
+            <div *ngIf="citasProximas().length > 0; else sinCitas" class="hidden md:block overflow-x-auto">
               <table class="w-full text-left border-collapse">
                 <thead>
                   <tr class="border-b border-slate-200">
@@ -158,6 +158,29 @@
                 </tbody>
               </table>
             </div>
+            <div *ngIf="citasProximas().length > 0" class="grid gap-3 md:hidden">
+              <article *ngFor="let cita of citasProximas()" class="rounded-xl border border-slate-200 bg-white p-4">
+                <div class="flex items-start justify-between gap-3 border-b border-slate-100 pb-3">
+                  <div class="min-w-0">
+                    <p class="truncate text-sm font-extrabold text-slate-900">{{ cita.mascotaNombre }}</p>
+                    <p class="mt-1 truncate text-[11px] font-medium text-slate-500">{{ cita.servicioNombre || 'Consulta General' }}</p>
+                  </div>
+                  <span [class]="'flex-none px-2 py-1 rounded text-[8px] font-black uppercase tracking-wider border ' + estadoBadgeClass(cita.estado)">
+                    {{ estadoLabel(cita.estado) }}
+                  </span>
+                </div>
+                <dl class="grid grid-cols-2 gap-3 pt-3">
+                  <div>
+                    <dt class="text-[9px] font-extrabold uppercase tracking-wider text-slate-400">Fecha</dt>
+                    <dd class="mt-1 text-xs font-bold text-slate-700">{{ formatFecha(cita.fechaHoraInicio) }}</dd>
+                  </div>
+                  <div>
+                    <dt class="text-[9px] font-extrabold uppercase tracking-wider text-slate-400">Hora</dt>
+                    <dd class="mt-1 text-xs font-black text-[#0066AA]">{{ formatHora(cita.fechaHoraInicio) }}</dd>
+                  </div>
+                </dl>
+              </article>
+            </div>
             <ng-template #sinCitas>
               <div class="py-12 text-center">
                 <i class="pi pi-calendar text-3xl text-slate-200 block mb-3"></i>
@@ -173,7 +196,7 @@
 
         <!-- MIS MASCOTAS (preview) -->
         <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-          <div class="px-6 py-5 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
+          <div class="px-4 sm:px-6 py-4 sm:py-5 border-b border-slate-200 flex items-center justify-between gap-3 bg-slate-50/50">
             <div>
               <h2 class="text-xs font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
                 <span class="w-2 h-2 rounded-full bg-pink-400"></span>
@@ -187,7 +210,7 @@
             </a>
           </div>
 
-          <div class="p-6">
+          <div class="p-4 sm:p-6">
             <div *ngIf="mascotas().length > 0; else sinMascotas"
               class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div *ngFor="let mascota of mascotas().slice(0, 4)"
@@ -221,7 +244,7 @@
       <div class="space-y-6">
 
         <!-- PERFIL -->
-        <div class="bg-white rounded-2xl border border-slate-200 p-6">
+        <div class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-6">
           <div class="flex items-center gap-3.5 pb-5 mb-5 border-b border-slate-200">
             <div class="w-12 h-12 rounded-2xl bg-[#0066AA] flex items-center justify-center
                         text-white font-black text-base shrink-0 select-none">
@@ -253,7 +276,7 @@
 
         <!-- ACCESOS RÁPIDOS -->
         <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-          <div class="px-6 py-5 border-b border-slate-200 bg-slate-50/50">
+          <div class="px-4 sm:px-6 py-4 sm:py-5 border-b border-slate-200 bg-slate-50/50">
             <h2 class="text-xs font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
               <i class="pi pi-th-large text-[#0066AA]"></i>
               Accesos Rápidos
@@ -288,7 +311,7 @@
 
     <!-- 💳 MIS PAGOS -->
     <div *ngIf="canViewMisPagos()" class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-      <div class="px-6 py-5 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
+      <div class="px-4 sm:px-6 py-4 sm:py-5 border-b border-slate-200 flex items-center justify-between gap-3 bg-slate-50/50">
         <div>
           <h2 class="text-xs font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
             <i class="pi pi-wallet text-emerald-600"></i>
@@ -302,9 +325,9 @@
         </a>
       </div>
 
-      <div class="p-6">
+      <div class="p-4 sm:p-6">
         <ng-container *ngIf="!loadingPagos(); else loadingTpl">
-          <div *ngIf="pagos().length > 0; else emptyTpl" class="overflow-x-auto">
+          <div *ngIf="pagos().length > 0; else emptyTpl" class="hidden md:block overflow-x-auto">
             <table class="w-full text-left border-collapse">
               <thead>
                 <tr class="border-b border-slate-200">
@@ -351,6 +374,36 @@
                 </tr>
               </tbody>
             </table>
+          </div>
+          <div *ngIf="pagos().length > 0" class="grid gap-3 md:hidden">
+            <article *ngFor="let p of pagos()" class="rounded-xl border border-slate-200 bg-white p-4">
+              <div class="flex items-start justify-between gap-3 border-b border-slate-100 pb-3">
+                <div class="min-w-0">
+                  <p class="truncate text-sm font-extrabold text-slate-900">{{ p.mascotaNombre || '—' }}</p>
+                  <p class="mt-1 truncate text-[11px] font-medium text-slate-500">{{ p.servicioNombre || '—' }}</p>
+                </div>
+                <p class="flex-none text-sm font-black text-slate-800">{{ formatMonto(p.monto) }}</p>
+              </div>
+              <dl class="grid grid-cols-2 gap-3 pt-3">
+                <div>
+                  <dt class="text-[9px] font-extrabold uppercase tracking-wider text-slate-400">Fecha</dt>
+                  <dd class="mt-1 text-xs font-semibold text-slate-700">{{ formatFechaSimple(p.fechaPago) }}</dd>
+                </div>
+                <div>
+                  <dt class="text-[9px] font-extrabold uppercase tracking-wider text-slate-400">Método</dt>
+                  <dd class="mt-1 text-xs font-semibold text-slate-700">{{ p.metodoPago ? metodoPagoLabel(p.metodoPago) : '—' }}</dd>
+                </div>
+                <div class="col-span-2">
+                  <dt class="text-[9px] font-extrabold uppercase tracking-wider text-slate-400">Estado</dt>
+                  <dd class="mt-1">
+                    <span [class]="'inline-flex items-center gap-1 px-2 py-1 rounded-full text-[9px] font-bold border ' + pagoEstadoBadge(p.estado)">
+                      <span class="h-1.5 w-1.5 rounded-full" [class]="pagoEstadoDot(p.estado)"></span>
+                      {{ pagoEstadoLabel(p.estado) }}
+                    </span>
+                  </dd>
+                </div>
+              </dl>
+            </article>
           </div>
           <ng-template #emptyTpl>
             <div class="py-8 text-center">

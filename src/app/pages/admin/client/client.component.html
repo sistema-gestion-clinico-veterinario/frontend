@@ -1,5 +1,64 @@
 <p-toast></p-toast>
 
+<!-- Skeleton Loading -->
+<div *ngIf="cargando() && clients().length === 0" class="p-3 sm:p-4 flex flex-col gap-5 sm:gap-8 animate-fade-in">
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+    <div class="flex items-center gap-3">
+      <p-skeleton shape="circle" size="3rem"></p-skeleton>
+      <div class="space-y-2">
+        <p-skeleton width="6rem" height="0.6rem" borderRadius="0.3rem"></p-skeleton>
+        <p-skeleton width="14rem" height="1.4rem" borderRadius="0.4rem"></p-skeleton>
+        <p-skeleton width="22rem" height="0.8rem" borderRadius="0.3rem"></p-skeleton>
+      </div>
+    </div>
+    <div class="flex gap-3">
+      <p-skeleton width="10rem" height="2.5rem" borderRadius="0.5rem"></p-skeleton>
+    </div>
+  </div>
+
+  <div class="bg-white border border-slate-200 rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row gap-3">
+    <p-skeleton class="flex-1" height="2.5rem" borderRadius="0.5rem"></p-skeleton>
+    <p-skeleton class="sm:max-w-xs" height="2.5rem" borderRadius="0.5rem"></p-skeleton>
+    <p-skeleton width="6rem" height="2.5rem" borderRadius="0.5rem"></p-skeleton>
+  </div>
+
+  <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-slate-100">
+          <th class="text-left px-6 py-4"><p-skeleton width="6rem" height="0.6rem" borderRadius="0.3rem"></p-skeleton></th>
+          <th class="text-left px-6 py-4"><p-skeleton width="6rem" height="0.6rem" borderRadius="0.3rem"></p-skeleton></th>
+          <th class="text-left px-6 py-4"><p-skeleton width="6rem" height="0.6rem" borderRadius="0.3rem"></p-skeleton></th>
+          <th class="text-left px-6 py-4"><p-skeleton width="6rem" height="0.6rem" borderRadius="0.3rem"></p-skeleton></th>
+          <th class="px-6 py-4 w-20"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let i of [1,2,3,4,5]" class="border-b border-slate-100">
+          <td class="px-6 py-4">
+            <div class="flex items-center gap-3">
+              <p-skeleton shape="circle" size="2.5rem"></p-skeleton>
+              <div class="space-y-1.5">
+                <p-skeleton width="10rem" height="0.8rem" borderRadius="0.3rem"></p-skeleton>
+                <p-skeleton width="7rem" height="0.6rem" borderRadius="0.3rem"></p-skeleton>
+              </div>
+            </div>
+          </td>
+          <td class="px-6 py-4">
+            <div class="space-y-1.5">
+              <p-skeleton width="12rem" height="0.8rem" borderRadius="0.3rem"></p-skeleton>
+              <p-skeleton width="8rem" height="0.6rem" borderRadius="0.3rem"></p-skeleton>
+            </div>
+          </td>
+          <td class="px-6 py-4"><p-skeleton width="8rem" height="1.2rem" borderRadius="0.3rem"></p-skeleton></td>
+          <td class="px-6 py-4"><p-skeleton width="5rem" height="1.4rem" borderRadius="999px"></p-skeleton></td>
+          <td class="px-6 py-4 text-right"><p-skeleton width="2rem" height="2rem" borderRadius="0.5rem"></p-skeleton></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
 <!-- Detail Modal -->
 <!-- Detail Modal -->
 <div *ngIf="displayDetailModal()" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm font-['Barlow']" (click)="displayDetailModal.set(false)">
@@ -178,9 +237,13 @@
 
 <div class="p-3 sm:p-4 flex flex-col gap-5 sm:gap-8 animate-fade-in">
   <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
-    <div class="flex flex-col gap-2">
-      <h1 class="text-2xl sm:text-4xl font-extrabold text-slate-800 tracking-tight">Gestión de Clientes</h1>
-      <p class="text-sm sm:text-base text-slate-500 font-medium">Administra los propietarios de mascotas y sus datos de contacto</p>
+    <div class="flex items-center gap-3">
+      <i class="pi pi-address-book text-[#0066AA] text-3xl shrink-0"></i>
+      <div>
+        <p class="text-[11px] font-bold uppercase tracking-[.14em] text-[#0066AA]">Admin</p>
+        <h1 class="text-xl font-extrabold leading-tight tracking-tight text-slate-900">Gestión de Clientes</h1>
+        <p class="mt-1 text-sm text-slate-400 font-medium hidden sm:block">Administra los propietarios de mascotas y sus datos de contacto</p>
+      </div>
     </div>
 
     <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">

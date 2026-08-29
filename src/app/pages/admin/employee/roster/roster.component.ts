@@ -46,6 +46,7 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
   loading             = signal<boolean>(false);
   currentTimeOffset   = signal<number>(0);
   selectedShift       = signal<any>(null);
+  selectedCalendarDay = signal<any>(null);
   displayShiftDetail  = signal<boolean>(false);
   shiftForDetail      = signal<any>(null);
   showCloneDayModal   = signal<boolean>(false);
@@ -450,6 +451,15 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
     return ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Set', 'Oct', 'Nov', 'Dic'][date.getMonth()];
   }
 
+  formatCalendarFullDate(date: Date): string {
+    return date.toLocaleDateString('es-PE', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+  }
+
   get hasWorkingHours(): boolean {
     return this.dayViewHours().some(h => h.isWorking);
   }
@@ -514,13 +524,23 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
   }
 
   onDayClick(item: any) {
-    if (!this.canCreate() || item.otherMonth) return;
+    if (item.otherMonth) return;
+
+    if (this.viewMode() === 'month' && item.shifts?.length) {
+      this.selectedCalendarDay.set(
+        this.selectedCalendarDay() === item ? null : item
+      );
+      return;
+    }
+
+    if (!this.canCreate()) return;
     const dateStr = this.formatLocalDate(item.date);
     this.openAddForm(dateStr);
   }
 
   // Cambio de vista (día/semana/mes) — regenera calendario sin nueva petición HTTP
   setViewMode(mode: 'day' | 'week' | 'month') {
+    this.selectedCalendarDay.set(null);
     this.viewMode.set(mode);
     if (this.selectedEmployeeId()) {
       this.generateCalendar();
