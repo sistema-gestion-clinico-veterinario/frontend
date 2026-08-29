@@ -2,6 +2,100 @@
 
 <div class="min-h-screen bg-slate-50 p-6">
   <div class="max-w-full mx-auto space-y-6">
+
+    <!-- Skeleton loading -->
+    <ng-container *ngIf="cargando()">
+      <div class="bg-white rounded-2xl border border-slate-100 p-6">
+        <div class="flex flex-col sm:flex-row items-center sm:items-start gap-5">
+          <p-skeleton shape="circle" size="6rem" styleClass="rounded-xl" />
+          <div class="flex-1 space-y-3">
+            <p-skeleton width="16rem" height="1.75rem" borderRadius="rounded-xl" />
+            <p-skeleton width="12rem" height="1rem" borderRadius="rounded-xl" />
+            <div class="flex gap-2 mt-2">
+              <p-skeleton width="6rem" height="1.5rem" borderRadius="rounded-xl" />
+              <p-skeleton width="8rem" height="1.5rem" borderRadius="rounded-xl" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-100 p-6 space-y-4">
+          <p-skeleton width="10rem" height="1.1rem" borderRadius="rounded-xl" />
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="space-y-1.5">
+              <p-skeleton width="5rem" height="0.75rem" borderRadius="rounded-xl" />
+              <p-skeleton width="100%" height="1rem" borderRadius="rounded-xl" />
+            </div>
+            <div class="space-y-1.5">
+              <p-skeleton width="5rem" height="0.75rem" borderRadius="rounded-xl" />
+              <p-skeleton width="100%" height="1rem" borderRadius="rounded-xl" />
+            </div>
+            <div class="space-y-1.5">
+              <p-skeleton width="5rem" height="0.75rem" borderRadius="rounded-xl" />
+              <p-skeleton width="100%" height="1rem" borderRadius="rounded-xl" />
+            </div>
+            <div class="space-y-1.5">
+              <p-skeleton width="5rem" height="0.75rem" borderRadius="rounded-xl" />
+              <p-skeleton width="100%" height="1rem" borderRadius="rounded-xl" />
+            </div>
+            <div class="space-y-1.5">
+              <p-skeleton width="5rem" height="0.75rem" borderRadius="rounded-xl" />
+              <p-skeleton width="100%" height="1rem" borderRadius="rounded-xl" />
+            </div>
+            <div class="space-y-1.5">
+              <p-skeleton width="5rem" height="0.75rem" borderRadius="rounded-xl" />
+              <p-skeleton width="100%" height="1rem" borderRadius="rounded-xl" />
+            </div>
+            <div class="sm:col-span-2 space-y-1.5">
+              <p-skeleton width="5rem" height="0.75rem" borderRadius="rounded-xl" />
+              <p-skeleton width="100%" height="1rem" borderRadius="rounded-xl" />
+            </div>
+            <div class="sm:col-span-2 space-y-1.5">
+              <p-skeleton width="5rem" height="0.75rem" borderRadius="rounded-xl" />
+              <p-skeleton width="100%" height="1rem" borderRadius="rounded-xl" />
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          <div class="bg-white rounded-2xl border border-slate-100 p-5 space-y-3">
+            <p-skeleton width="8rem" height="1rem" borderRadius="rounded-xl" />
+            <div class="flex flex-wrap gap-2">
+              <p-skeleton width="5rem" height="1.5rem" borderRadius="rounded-xl" />
+              <p-skeleton width="6rem" height="1.5rem" borderRadius="rounded-xl" />
+              <p-skeleton width="4rem" height="1.5rem" borderRadius="rounded-xl" />
+            </div>
+          </div>
+          <div class="bg-white rounded-2xl border border-slate-100 p-5 space-y-3">
+            <p-skeleton width="10rem" height="1rem" borderRadius="rounded-xl" />
+            <div class="flex flex-wrap gap-2">
+              <p-skeleton width="6rem" height="1.5rem" borderRadius="rounded-xl" />
+              <p-skeleton width="5rem" height="1.5rem" borderRadius="rounded-xl" />
+            </div>
+          </div>
+          <div class="bg-white rounded-2xl border border-slate-100 p-5 space-y-3">
+            <div class="flex items-center justify-between">
+              <p-skeleton width="8rem" height="1rem" borderRadius="rounded-xl" />
+              <p-skeleton width="6rem" height="1.5rem" borderRadius="rounded-xl" />
+            </div>
+            <div class="space-y-2">
+              <div class="flex items-center gap-3">
+                <p-skeleton shape="circle" size="2rem" />
+                <p-skeleton width="10rem" height="1rem" borderRadius="rounded-xl" />
+              </div>
+              <div class="flex items-center gap-3">
+                <p-skeleton shape="circle" size="2rem" />
+                <p-skeleton width="8rem" height="1rem" borderRadius="rounded-xl" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- Profile content -->
+    <ng-container *ngIf="!cargando()">
     <div class="bg-white rounded-2xl border border-slate-100 p-6">
       <div class="flex flex-col sm:flex-row items-center sm:items-start gap-5">
         <div class="relative shrink-0 group">
@@ -201,43 +295,95 @@
           </div>
         </div>
 
-        <!-- Horario de trabajo -->
+        <!-- Horario de trabajo — día actual -->
         <div *ngIf="profile()?.empleado && horariosResumen.length"
           class="bg-white rounded-2xl border border-slate-100 p-5">
-          <h3 class="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
-            <i class="pi pi-clock text-[#0066AA]"></i> Horario de trabajo
-          </h3>
+          <div class="mb-4 flex flex-col items-stretch justify-between gap-3 sm:flex-row sm:items-center">
+            <h3 class="text-sm font-semibold text-slate-700 flex items-center gap-2">
+              <i class="pi pi-clock text-[#0066AA]"></i> Horario de hoy
+            </h3>
+            <button (click)="mostrarHorario.set(true)"
+              class="inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#F0F7FF] border border-[#0066AA]/10 px-3 py-2 text-[11px] font-bold text-[#0066AA] hover:bg-[#0066AA] hover:text-white transition-colors">
+              <i class="pi pi-calendar text-[10px]"></i> Ver horario completo
+            </button>
+          </div>
 
-          <!-- Semana completa, Lunes a Domingo, siempre las 7 filas -->
-          <div class="space-y-1.5">
-            <div *ngFor="let dia of semanaCompleta"
-              class="flex items-start gap-3 rounded-xl px-3 py-2.5"
-              [ngClass]="dia.bloques.length ? 'bg-slate-50/70 border border-slate-100' : ''">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="w-8 h-8 rounded-lg bg-[#0066AA] text-white flex items-center justify-center text-xs font-bold">
+              {{ diaDeHoy.label | slice:0:2 }}
+            </span>
+            <span class="text-sm font-extrabold text-slate-800">{{ diaDeHoy.label }}</span>
+          </div>
 
-              <span class="text-xs font-extrabold w-[72px] shrink-0 pt-0.5"
-                [class.text-slate-700]="dia.bloques.length"
-                [class.text-slate-300]="!dia.bloques.length">
-                {{ dia.label }}
-              </span>
-
-              <!-- Día libre -->
-              <span *ngIf="!dia.bloques.length"
-                class="text-[10px] font-semibold text-slate-300 pt-0.5">Libre</span>
-
-              <!-- Bloques de horario del día -->
-              <div *ngIf="dia.bloques.length" class="flex-1 flex flex-col gap-1.5 min-w-0">
-                <div *ngFor="let b of dia.bloques" class="flex items-center justify-between gap-2 flex-wrap">
-                  <span class="text-xs font-extrabold text-[#0066AA] whitespace-nowrap">{{ b.horaInicio }} - {{ b.horaFin }}</span>
-                  <span class="flex items-center gap-1.5 text-[10px] font-semibold text-slate-400 min-w-0">
-                    <i class="pi pi-calendar text-[10px] shrink-0"></i>
-                    <span class="truncate">{{ b.rangoFechas }}</span>
-                    <span *ngIf="b.totalFechas > 1" class="font-bold whitespace-nowrap">· {{ b.totalFechas }} fechas</span>
-                  </span>
+          <div *ngIf="diaDeHoy.bloques.length; else sinHorario" class="space-y-3">
+            <div *ngFor="let b of diaDeHoy.bloques" class="space-y-2">
+              <div class="flex items-start gap-3 rounded-xl border border-slate-100 bg-slate-50/70 p-3 sm:items-center">
+                <span class="w-9 h-9 rounded-lg bg-[#0066AA]/10 flex items-center justify-center shrink-0">
+                  <i class="pi pi-clock text-sm text-[#0066AA]"></i>
+                </span>
+                <div class="min-w-0 text-sm font-bold text-slate-800">{{ b.horaInicio }} – {{ b.horaFin }}
+                  <div class="mt-1 flex items-start gap-1.5 text-[11px] font-semibold text-slate-400">
+                    <i class="pi pi-calendar text-[10px] text-[#0066AA]/60"></i>
+                    {{ b.rangoFechas }}
+                  </div>
                 </div>
               </div>
             </div>
           </div>
+          <ng-template #sinHorario>
+            <div class="flex items-center gap-2 text-xs text-slate-300 italic py-2">
+              <i class="pi pi-minus-circle"></i> Sin horario programado hoy
+            </div>
+          </ng-template>
         </div>
+
+        <!-- Modal: Horario completo -->
+        <p-dialog [(visible)]="mostrarHorario" [modal]="true" [draggable]="false" [resizable]="false"
+          [style]="{ width: '900px', maxWidth: 'calc(100vw - 16px)' }" header="Horario semanal">
+
+          <div class="mb-4 flex items-center justify-start gap-2 text-xs font-medium text-slate-500 sm:justify-end">
+            <i class="pi pi-calendar text-[#0066AA]"></i>
+            {{ fechaInicioSemana() }} – {{ fechaFinSemana() }}
+          </div>
+
+          <div class="space-y-3 sm:hidden">
+            <article *ngFor="let d of semanaCompleta" class="rounded-xl border border-slate-200 p-3">
+              <div class="flex items-center justify-between gap-3"><h4 class="text-xs font-bold uppercase tracking-wide text-slate-700">{{ d.label }}</h4><span class="text-[10px] font-semibold" [ngClass]="d.bloques.length ? 'text-[#0066AA]' : 'text-slate-400'">{{ d.bloques.length ? d.bloques.length + ' bloque(s)' : 'Sin horario' }}</span></div>
+              <div *ngIf="d.bloques.length" class="mt-3 space-y-2"><div *ngFor="let b of d.bloques" class="flex items-start gap-2 rounded-lg bg-slate-50 px-3 py-2"><i class="pi pi-clock mt-0.5 text-xs text-[#0066AA]"></i><div class="min-w-0"><p class="text-xs font-bold text-slate-800">{{ b.horaInicio }} – {{ b.horaFin }}</p><p class="mt-0.5 break-words text-[10px] text-slate-500">{{ b.rangoFechas }}</p></div></div></div>
+            </article>
+          </div>
+
+          <div class="hidden overflow-x-auto sm:block">
+            <table class="w-full border border-slate-200 rounded-xl overflow-hidden text-center text-xs border-collapse">
+              <thead>
+                <tr class="bg-slate-50">
+                  <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider border border-slate-200 whitespace-nowrap">Horas / Días</th>
+                  <th *ngFor="let d of semanaCompleta"
+                    class="px-3 py-2.5 text-[11px] font-bold uppercase tracking-wider border border-slate-200"
+                    [ngClass]="d.bloques.length ? 'text-[#0066AA] bg-[#F0F7FF]' : 'text-slate-300 bg-slate-50'">
+                    {{ d.label | slice:0:3 }}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let fila of gridHorario" class="hover:bg-slate-50/50 transition-colors">
+                  <td class="px-4 py-1.5 text-left whitespace-nowrap border border-slate-200">
+                    <span class="text-[11px] font-bold text-slate-500">{{ fila.hora }}</span>
+                  </td>
+                  <td *ngFor="let cubierto of fila.dias" class="px-2 py-1.5 border border-slate-200">
+                    <span class="block h-6 rounded"
+                      [ngClass]="cubierto ? 'bg-[#0066AA]' : 'bg-slate-100'"></span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <ng-template pTemplate="footer">
+            <button (click)="mostrarHorario.set(false)"
+              class="h-10 w-full rounded-lg bg-[#0066AA] px-4 text-xs font-bold text-white transition-colors hover:bg-[#00558F] sm:w-auto">Cerrar</button>
+          </ng-template>
+        </p-dialog>
 
         <!-- Account info -->
         <div class="bg-white rounded-2xl border border-slate-100 p-5">
@@ -268,5 +414,6 @@
 
       </div>
     </div>
+    </ng-container>
   </div>
 </div>

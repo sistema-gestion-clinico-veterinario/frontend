@@ -121,7 +121,6 @@
   gap: 0;
   border-left: 1px solid #dbe3ee;
   border-top: 1px solid #dbe3ee;
-  background: #dbe3ee;
 }
 
 .roster-calendar-day {
@@ -148,6 +147,12 @@
 
 .roster-calendar-day-today {
   background: #f8fcff;
+  outline: 2px solid #0066aa;
+  outline-offset: -2px;
+}
+
+.roster-calendar-day-selected {
+  background: #f1f7fb;
   outline: 2px solid #0066aa;
   outline-offset: -2px;
 }
@@ -392,37 +397,6 @@
 .roster-calendar-free-icon {
   color: #0066aa;
   font-size: 0.58rem;
-}
-
-.roster-detail-panel {
-  width: min(100%, 400px);
-  max-width: 100%;
-}
-
-@media (max-width: 900px) {
-  .roster-detail-panel {
-    width: 100% !important;
-    max-width: 100% !important;
-    left: 0;
-    border-left: none;
-    border-top: 1px solid #e2e8f0;
-  }
-  .roster-detail-panel .roster-detail-header,
-  .roster-detail-panel .roster-detail-body {
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
-}
-
-@media (max-width: 400px) {
-  .roster-detail-panel {
-    height: 100%;
-  }
-  .roster-detail-panel .roster-detail-header,
-  .roster-detail-panel .roster-detail-body {
-    padding-left: 0.75rem;
-    padding-right: 0.75rem;
-  }
 }
 
 @container roster (max-width: 760px) {

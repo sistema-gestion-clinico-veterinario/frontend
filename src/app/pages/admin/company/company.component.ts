@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { TableModule } from 'primeng/table';
 import { MenuModule } from 'primeng/menu';
+import { SkeletonModule } from 'primeng/skeleton';
 import { Toast } from 'primeng/toast';
 import { MessageService, MenuItem } from 'primeng/api';
 import { CompanyService } from '../../../core/services/company.service';
@@ -28,6 +29,7 @@ import { normalizeText } from '../../../core/utils/normalize-text.util';
     ReactiveFormsModule,
     TableModule,
     MenuModule,
+    SkeletonModule,
     Toast,
     HasPermissionDirective,
     InputFilterDirective
@@ -55,6 +57,8 @@ export class CompanyComponent implements OnInit {
       `https://www.google.com/maps?q=${encodeURIComponent(addr)}&output=embed`
     );
   });
+
+  cargando = signal(true);
 
   companies: CompanyListResponse[] = [];
   ownCompany = signal<CompanyDTO | null>(null);
@@ -127,35 +131,42 @@ export class CompanyComponent implements OnInit {
   loadCompanies(event: any = { first: 0, rows: 10 }) {
     const page = event.first / event.rows;
     this.loading = true;
+    this.cargando.set(true);
     this.companyService.listar(page, event.rows).subscribe({
       next: (res) => {
         this.companies = res.data.content;
         this.totalRecords = res.data?.page?.totalElements ?? res.data?.totalElements ?? 0;
         this.loading = false;
+        this.cargando.set(false);
       },
       error: () => {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar las empresas' });
         this.loading = false;
+        this.cargando.set(false);
       }
     });
   }
 
   loadOwnCompany() {
     this.loadingOwnCompany.set(true);
+    this.cargando.set(true);
     const companyId = this.authStore.companyId();
     if (!companyId) {
       this.messageService.add({ severity: 'warn', summary: 'Sin empresa', detail: 'No se encontró una empresa asociada a tu cuenta' });
       this.loadingOwnCompany.set(false);
+      this.cargando.set(false);
       return;
     }
     this.companyService.getById(companyId).subscribe({
       next: (res) => {
         this.ownCompany.set(res.data);
         this.loadingOwnCompany.set(false);
+        this.cargando.set(false);
       },
       error: () => {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cargar la información de tu empresa' });
         this.loadingOwnCompany.set(false);
+        this.cargando.set(false);
       }
     });
   }

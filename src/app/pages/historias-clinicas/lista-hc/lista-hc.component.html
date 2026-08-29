@@ -1,20 +1,21 @@
 <div class="p-4 sm:p-6 lg:p-4 min-h-screen bg-slate-50 font-['Barlow']">
 
-
-  <div class="mb-5 sm:mb-8">
-    <div class="flex items-center justify-between gap-3 mb-1.5">
-      <div class="min-w-0">
-        <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight leading-tight">
-          Historias Clínicas
-        </h1>
-        <p class="text-slate-500 font-medium flex items-center gap-2 text-sm mt-1">
-          <span class="w-2 h-2 rounded-full bg-[#0066AA] shrink-0"></span>
-          Consulta y gestiona los expedientes clínicos de los pacientes
-        </p>
-
+  <ng-container *ngIf="!cargando(); else skeletonHC">
+    <div class="mb-5 sm:mb-8">
+      <div class="flex items-center justify-between gap-3 mb-1.5">
+        <div class="flex items-center gap-3 min-w-0">
+          <i class="pi pi-folder-open text-[#0066AA] text-3xl shrink-0"></i>
+          <div>
+            <h1 class="text-xl font-extrabold text-slate-900 tracking-tight leading-tight">
+              Historias Clínicas
+            </h1>
+            <p class="text-slate-400 font-medium text-sm mt-1 hidden sm:block">
+              Consulta y gestiona los expedientes clínicos de los pacientes
+            </p>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
 
   <div class="mb-5 bg-white border border-slate-200 rounded-xl p-4">
 
@@ -251,5 +252,62 @@
       </p-paginator>
     </div>
   </div>
+
+  </ng-container>
+
+  <ng-template #skeletonHC>
+    <div class="mb-5 sm:mb-8">
+      <div class="flex items-center gap-3">
+        <p-skeleton shape="circle" size="3rem" styleClass="bg-slate-200" />
+        <div class="space-y-2">
+          <p-skeleton width="14rem" height="1.25rem" styleClass="bg-slate-200" />
+          <p-skeleton width="20rem" height="0.875rem" styleClass="bg-slate-100" />
+        </div>
+      </div>
+    </div>
+
+    <div class="mb-5 bg-white border border-slate-200 rounded-xl p-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+        <p-skeleton height="2.75rem" borderRadius="0.75rem" styleClass="bg-slate-100" />
+        <p-skeleton height="2.75rem" borderRadius="0.75rem" styleClass="bg-slate-100" />
+        <p-skeleton height="2.75rem" borderRadius="0.75rem" styleClass="bg-slate-100" />
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] gap-3 mt-3">
+        <p-skeleton height="2.75rem" borderRadius="0.75rem" styleClass="bg-slate-100" />
+        <p-skeleton height="2.75rem" borderRadius="0.75rem" styleClass="bg-slate-100" />
+        <p-skeleton height="2.75rem" width="8rem" borderRadius="0.75rem" styleClass="bg-slate-100" />
+      </div>
+    </div>
+
+    <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+      <table class="hidden xl:table w-full text-sm">
+        <thead>
+          <tr class="border-b border-slate-100">
+            <th class="bg-slate-50 px-5 py-3 text-left"><p-skeleton width="5rem" height="0.625rem" styleClass="bg-slate-200" /></th>
+            <th class="bg-slate-50 px-5 py-3 text-left"><p-skeleton width="6rem" height="0.625rem" styleClass="bg-slate-200" /></th>
+            <th class="bg-slate-50 px-5 py-3 text-left hidden md:table-cell"><p-skeleton width="5rem" height="0.625rem" styleClass="bg-slate-200" /></th>
+            <th class="bg-slate-50 px-5 py-3 text-left hidden lg:table-cell"><p-skeleton width="6rem" height="0.625rem" styleClass="bg-slate-200" /></th>
+            <th class="bg-slate-50 px-5 py-3 text-center"><p-skeleton width="4rem" height="0.625rem" styleClass="bg-slate-200" /></th>
+            <th class="bg-slate-50 px-5 py-3"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let i of [1,2,3,4,5]" class="border-b border-slate-100 last:border-0">
+            <td class="px-5 py-4"><p-skeleton width="5rem" height="1.5rem" borderRadius="0.5rem" styleClass="bg-slate-100" /></td>
+            <td class="px-5 py-4">
+              <div class="flex flex-col gap-1">
+                <p-skeleton width="8rem" height="0.875rem" styleClass="bg-slate-100" />
+                <p-skeleton width="6rem" height="0.625rem" styleClass="bg-slate-100" />
+              </div>
+            </td>
+            <td class="px-5 py-4 hidden md:table-cell"><p-skeleton width="7rem" height="0.875rem" styleClass="bg-slate-100" /></td>
+            <td class="px-5 py-4 hidden lg:table-cell"><p-skeleton width="5rem" height="0.875rem" styleClass="bg-slate-100" /></td>
+            <td class="px-5 py-4 text-center"><p-skeleton width="4rem" height="1.5rem" borderRadius="9999px" styleClass="bg-slate-100" /></td>
+            <td class="px-5 py-4 text-right"><p-skeleton width="6rem" height="2rem" borderRadius="0.5rem" styleClass="bg-slate-100" /></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </ng-template>
 
 </div>

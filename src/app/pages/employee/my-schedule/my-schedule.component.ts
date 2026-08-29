@@ -23,6 +23,7 @@ export class MyScheduleComponent implements OnInit {
   loading: boolean = false;
   currentDate = new Date();
   calendarDays: any[] = [];
+  selectedCalendarDay: any | null = null;
   monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 
   viewMode: 'day' | 'week' | 'month' = 'month';
@@ -47,6 +48,7 @@ export class MyScheduleComponent implements OnInit {
   }
 
   changeView(mode: 'day' | 'week' | 'month') {
+    this.selectedCalendarDay = null;
     this.viewMode = mode;
     this.generateCalendar();
   }
@@ -66,6 +68,7 @@ export class MyScheduleComponent implements OnInit {
   }
 
   generateCalendar() {
+    this.selectedCalendarDay = null;
     this.calendarDays = [];
     const today = new Date();
 
@@ -129,6 +132,37 @@ export class MyScheduleComponent implements OnInit {
   goToToday() {
     this.currentDate = new Date();
     this.generateCalendar();
+  }
+
+  openDayDetails(item: any): void {
+    if (item.otherMonth || !item.shifts?.length) return;
+    this.selectedCalendarDay = item;
+  }
+
+  closeDayDetails(): void {
+    this.selectedCalendarDay = null;
+  }
+
+  formatCalendarFullDate(date: Date): string {
+    return date.toLocaleDateString('es-PE', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+  }
+
+  calculateShiftDuration(horaInicio: string, horaFin: string): string {
+    if (!horaInicio || !horaFin) return '–';
+    const [startHour, startMinute] = horaInicio.split(':').map(Number);
+    const [endHour, endMinute] = horaFin.split(':').map(Number);
+    const totalMinutes = (endHour * 60 + endMinute) - (startHour * 60 + startMinute);
+    if (totalMinutes <= 0) return '–';
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    return hours > 0
+      ? `${hours}h${minutes ? ` ${minutes}min` : ''}`
+      : `${minutes}min`;
   }
 
   // --- LOGIC PARA EXPORTACIÓN ---

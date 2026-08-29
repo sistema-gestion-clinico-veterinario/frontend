@@ -287,11 +287,15 @@
 
     <!-- ============ VISTA SEMANA / MES ============ -->
     <ng-container *ngIf="viewMode() !== 'day'">
-      <div class="roster-calendar" [class.roster-calendar-month]="viewMode() === 'month'">
+      <div class="roster-calendar"
+        [class.roster-calendar-month]="viewMode() === 'month'"
+        [ngClass]="viewMode() === 'month' ? 'max-[760px]:!p-2 max-[380px]:!p-1' : ''">
         <!-- Cabecera de días -->
-        <div class="roster-calendar-weekdays grid grid-cols-7">
+        <div class="roster-calendar-weekdays grid grid-cols-7"
+          [ngClass]="viewMode() === 'month' ? 'max-[760px]:!grid max-[760px]:grid-cols-7' : ''">
           <div *ngFor="let i of [0,1,2,3,4,5,6]"
             class="roster-calendar-weekday"
+            [ngClass]="viewMode() === 'month' ? 'max-[760px]:!min-w-0 max-[760px]:!px-0.5 max-[760px]:!py-2 max-[760px]:!text-[9px] max-[760px]:!tracking-normal max-[380px]:!py-1.5 max-[380px]:!text-[8px]' : ''"
             [class.text-rose-500]="i === 0"
             [class.text-slate-500]="i !== 0">
             <span class="cal-day-name-full">{{ ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'][i] }}</span>
@@ -300,21 +304,29 @@
         </div>
 
         <!-- Grid de celdas -->
-        <div class="roster-calendar-days grid grid-cols-7">
+        <div class="roster-calendar-days grid grid-cols-7"
+          [ngClass]="viewMode() === 'month' ? 'max-[760px]:!grid-cols-7 max-[760px]:!border-l max-[760px]:!border-slate-200' : ''">
           <div *ngFor="let item of calendarDays()"
             (click)="onDayClick(item)"
             class="roster-calendar-day relative"
-            [ngClass]="{'roster-calendar-day-muted': item.otherMonth, 'roster-calendar-day-active': !item.otherMonth, 'roster-calendar-day-today': item.isToday}"
-            [class.cursor-pointer]="canCreate() && !item.otherMonth"
-            [class.cursor-default]="!canCreate() || item.otherMonth"
+            [ngClass]="[
+              {'roster-calendar-day-muted': item.otherMonth, 'roster-calendar-day-active': !item.otherMonth, 'roster-calendar-day-today': item.isToday},
+              viewMode() === 'month' ? 'max-[760px]:!min-h-[58px] max-[760px]:!min-w-0 max-[760px]:!border-r max-[760px]:!border-slate-200 max-[380px]:!min-h-[51px]' : ''
+            ]"
+            [class.roster-calendar-day-selected]="selectedCalendarDay() === item"
+            [class.cursor-pointer]="!item.otherMonth && (canCreate() || item.shifts?.length)"
+            [class.cursor-default]="item.otherMonth || (!canCreate() && !item.shifts?.length)"
             [style.min-height]="viewMode() === 'month' ? '132px' : '176px'">
 
             <div class="roster-calendar-day-card">
               <div class="roster-calendar-day-content">
-                <div class="roster-calendar-day-header">
-                  <div class="roster-calendar-day-title">
+                <div class="roster-calendar-day-header"
+                  [ngClass]="viewMode() === 'month' ? 'max-[760px]:!relative max-[760px]:!min-h-[58px] max-[760px]:!flex-nowrap max-[760px]:!items-center max-[760px]:!justify-center max-[760px]:!border-b-0 max-[760px]:!px-0.5 max-[760px]:!py-1.5 max-[380px]:!min-h-[51px]' : ''">
+                  <div class="roster-calendar-day-title"
+                    [ngClass]="viewMode() === 'month' ? 'max-[760px]:!justify-center' : ''">
                     <span
                       class="roster-calendar-date-pill"
+                      [ngClass]="viewMode() === 'month' ? 'max-[760px]:!h-6 max-[760px]:!w-6 max-[760px]:!basis-6 max-[760px]:!border-0 max-[760px]:!text-[11px] max-[380px]:!h-[22px] max-[380px]:!w-[22px] max-[380px]:!basis-[22px] max-[380px]:!text-[10px]' : ''"
                       [class.text-slate-300]="item.otherMonth"
                       [class.text-slate-600]="!item.otherMonth && !item.isToday"
                       [class.text-white]="item.isToday"
@@ -323,7 +335,8 @@
                       [class.border-transparent]="item.isToday">
                       {{ item.day }}
                     </span>
-                    <div class="roster-calendar-day-meta">
+                    <div class="roster-calendar-day-meta"
+                      [ngClass]="viewMode() === 'month' ? 'max-[760px]:!hidden' : ''">
                       <p class="roster-calendar-day-name"
                          [class.text-slate-400]="item.otherMonth"
                          [class.text-slate-600]="!item.otherMonth">
@@ -335,13 +348,21 @@
                     </div>
                   </div>
                   <span *ngIf="item.shifts?.length > 0"
-                    class="roster-calendar-shift-count">
+                    class="roster-calendar-shift-count"
+                    [ngClass]="viewMode() === 'month' ? 'max-[760px]:!hidden' : ''">
                     <i class="pi pi-briefcase roster-calendar-count-icon"></i>
                     {{ item.shifts.length }} turno{{ item.shifts.length === 1 ? '' : 's' }}
                   </span>
+                  <span *ngIf="viewMode() === 'month' && item.shifts?.length > 0"
+                    class="absolute bottom-1 right-1 hidden h-4 min-w-5 items-center justify-center gap-0.5 rounded px-0.5 text-[8px] font-extrabold leading-none text-white max-[760px]:inline-flex bg-[#0066AA]"
+                    [attr.aria-label]="item.shifts.length + (item.shifts.length === 1 ? ' turno' : ' turnos')">
+                    <i class="pi pi-clock text-[8px]" aria-hidden="true"></i>
+                    {{ item.shifts.length }}
+                  </span>
                 </div>
 
-                <div class="roster-calendar-shifts">
+                <div class="roster-calendar-shifts"
+                  [ngClass]="viewMode() === 'month' ? 'max-[760px]:!hidden' : ''">
                   <div *ngFor="let shift of (viewMode() === 'month' ? (item.shifts | slice:0:3) : item.shifts)" (click)="verDetalle(shift); $event.stopPropagation()"
                     class="roster-calendar-shift-chip"
                     [class.roster-calendar-shift-selected]="selectedShift()?.id === shift.id">
@@ -384,6 +405,51 @@
               </div>
             </div>
           </div>
+        </div>
+
+        <div *ngIf="viewMode() === 'month' && selectedCalendarDay() as selectedDay"
+          class="fixed inset-0 z-[112] flex items-center justify-center bg-slate-900/40 p-3 md:p-6"
+          (click)="selectedCalendarDay.set(null)"
+          role="presentation">
+        <section
+          class="flex max-h-[calc(100dvh-2rem)] w-full max-w-lg flex-col overflow-hidden rounded-xl border border-slate-200 bg-white"
+          (click)="$event.stopPropagation()"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="selected-day-title">
+          <div class="flex items-center justify-between gap-4 border-b border-slate-200 px-4 py-4 md:px-5">
+            <div class="min-w-0">
+              <p class="mb-0.5 text-[9px] font-extrabold uppercase tracking-wider text-[#0066AA]">Horario seleccionado</p>
+              <h3 id="selected-day-title" class="m-0 truncate text-base font-extrabold text-slate-900">{{ formatCalendarFullDate(selectedDay.date) | titlecase }}</h3>
+              <p class="mt-1 text-[11px] font-medium text-slate-500">{{ selectedDay.shifts.length }} turno{{ selectedDay.shifts.length === 1 ? '' : 's' }} programado{{ selectedDay.shifts.length === 1 ? '' : 's' }}</p>
+            </div>
+            <button type="button"
+              (click)="selectedCalendarDay.set(null)"
+              class="flex h-8 w-8 flex-none items-center justify-center rounded-lg border border-slate-300 bg-white text-slate-600"
+              aria-label="Cerrar detalle del día">
+              <i class="pi pi-times"></i>
+            </button>
+          </div>
+
+          <div class="grid overflow-y-auto">
+            <article *ngFor="let shift of selectedDay.shifts"
+              class="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 border-b border-slate-100 px-3 py-3 last:border-b-0 sm:grid-cols-[minmax(0,1fr)_auto_auto] md:px-4">
+              <div class="flex min-w-0 items-center gap-2 text-xs font-extrabold text-slate-800">
+                <i class="pi pi-clock text-[11px] text-[#0066AA]" aria-hidden="true"></i>
+                <span>{{ shift.horaInicio?.substring(0,5) }} – {{ shift.horaFin?.substring(0,5) }}</span>
+              </div>
+              <div class="text-right text-[11px] font-bold text-slate-500">
+                {{ calcularDuracion(shift.horaInicio, shift.horaFin) }}
+              </div>
+              <button type="button"
+                (click)="selectedCalendarDay.set(null); verDetalle(shift)"
+                class="col-span-2 flex h-8 w-full items-center justify-center gap-2 rounded-lg border border-[#0066AA] bg-white px-3 text-[11px] font-extrabold text-[#0066AA] sm:col-span-1 sm:w-auto">
+                Ver detalle
+                <i class="pi pi-chevron-right" aria-hidden="true"></i>
+              </button>
+            </article>
+          </div>
+        </section>
         </div>
       </div>
     </ng-container>
@@ -665,19 +731,22 @@
      class="fixed inset-0 z-[114] bg-slate-900/40 animate-in fade-in duration-200">
 </div>
 
-<!-- Panel lateral derecho — Detalle del Turno (Roster) -->
+<!-- Modal de detalle del turno (lectura; edición solo con permiso modificar) -->
 <div *ngIf="displayShiftDetail() && shiftForDetail()"
-     class="fixed inset-y-0 right-0 w-full sm:w-[400px] bg-white border-l border-slate-200 z-[115] flex flex-col animate-in slide-in-from-right duration-300 roster-detail-panel">
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="shift-detail-title"
+     class="fixed left-1/2 top-1/2 z-[115] flex max-h-[calc(100dvh-2rem)] w-[calc(100%-1.5rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white">
 
   <!-- Header -->
-  <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50 roster-detail-header">
+  <div class="flex items-center justify-between px-4 py-4 md:px-5 border-b border-slate-200 bg-slate-50">
     <div class="flex items-center gap-3">
       <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white font-extrabold text-base shrink-0"
            [class]="shiftForDetail().fecha ? 'bg-[#0066AA]' : 'bg-amber-500'">
         {{ selectedEmployeeName().charAt(0).toUpperCase() }}
       </div>
       <div class="min-w-0">
-        <h2 class="text-sm font-bold text-slate-800 leading-none truncate">{{ selectedEmployeeName() }}</h2>
+        <h2 id="shift-detail-title" class="text-sm font-bold text-slate-800 leading-none truncate">{{ selectedEmployeeName() }}</h2>
         <span class="inline-flex items-center mt-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold"
               [class]="shiftForDetail().fecha
                 ? 'bg-blue-100 text-blue-700'
@@ -693,7 +762,7 @@
   </div>
 
   <!-- Body -->
-  <div class="flex-1 overflow-y-auto p-6 space-y-6 roster-detail-body">
+  <div class="flex-1 overflow-y-auto p-4 md:p-5 space-y-5">
 
     <!-- Sección 1: Fecha -->
     <div class="space-y-3">
@@ -763,7 +832,7 @@
   </div>
 
   <!-- Footer -->
-  <div class="px-6 py-4 border-t border-slate-200 space-y-2">
+  <div class="px-4 py-4 md:px-5 border-t border-slate-200 space-y-2">
     <div class="flex gap-2" *ngIf="canModify()">
       <button (click)="editShift(shiftForDetail()); displayShiftDetail.set(false)"
               class="flex-1 flex items-center justify-center gap-2 py-2.5 bg-[#0066AA] hover:bg-[#005588] text-white text-xs font-bold rounded-lg transition-all">
