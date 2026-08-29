@@ -37,6 +37,134 @@
   ══════════════════════════════════════════ -->
   <div class="px-4 sm:px-8 lg:px-10 py-4 sm:py-7 space-y-4 sm:space-y-6">
 
+    <!-- ── SKELETON LOADING ── -->
+    <ng-container *ngIf="cargando()">
+      <!-- KPI Cards Skeleton -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4"
+           [ngClass]="isSuperAdmin ? 'lg:grid-cols-5' : 'lg:grid-cols-4'">
+        <div *ngFor="let i of [1,2,3,4,5]" class="bg-white rounded-2xl border border-slate-100 p-4 sm:p-5 flex items-center gap-4">
+          <p-skeleton shape="circle" size="3rem" styleClass="shrink-0"></p-skeleton>
+          <div class="flex-1 space-y-2">
+            <p-skeleton width="5rem" height="0.6rem" borderRadius="4px"></p-skeleton>
+            <p-skeleton width="3rem" height="1.5rem" borderRadius="4px"></p-skeleton>
+            <p-skeleton width="8rem" height="0.5rem" borderRadius="4px"></p-skeleton>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Grid Skeleton -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 items-start">
+        <!-- Left Column Skeleton (2/3) -->
+        <div class="md:col-span-1 lg:col-span-2 space-y-4 lg:space-y-6">
+          <!-- Chart Skeleton -->
+          <div class="bg-white rounded-2xl border border-slate-100 p-0 overflow-hidden">
+            <div class="px-3 sm:px-6 py-3 sm:py-5 border-b border-slate-100 bg-slate-50/50">
+              <p-skeleton width="10rem" height="0.7rem" borderRadius="4px"></p-skeleton>
+              <p-skeleton width="14rem" height="0.5rem" borderRadius="4px" styleClass="mt-2"></p-skeleton>
+            </div>
+            <div class="p-3 sm:p-6 flex gap-3">
+              <div class="w-8 flex flex-col justify-between h-60 pb-8 pt-4">
+                <p-skeleton width="2rem" height="0.5rem" borderRadius="4px"></p-skeleton>
+                <p-skeleton width="2rem" height="0.5rem" borderRadius="4px"></p-skeleton>
+                <p-skeleton width="2rem" height="0.5rem" borderRadius="4px"></p-skeleton>
+                <p-skeleton width="2rem" height="0.5rem" borderRadius="4px"></p-skeleton>
+              </div>
+              <div class="flex-1 space-y-2">
+                <div class="flex gap-2 h-60 pt-4">
+                  <p-skeleton *ngFor="let b of [1,2,3,4,5,6,7]" shape="rectangle" styleClass="flex-1 rounded-t-lg" heightStyle="100%"></p-skeleton>
+                </div>
+                <div class="flex justify-around pt-2 border-t border-slate-100">
+                  <p-skeleton *ngFor="let l of [1,2,3,4,5,6,7]" width="3rem" height="0.5rem" borderRadius="4px"></p-skeleton>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Table Skeleton -->
+          <div class="bg-white rounded-2xl border border-slate-100 p-0 overflow-hidden">
+            <div class="px-3 sm:px-6 py-2.5 sm:py-5 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+              <div>
+                <p-skeleton width="8rem" height="0.7rem" borderRadius="4px"></p-skeleton>
+                <p-skeleton width="12rem" height="0.4rem" borderRadius="4px" styleClass="mt-2"></p-skeleton>
+              </div>
+              <p-skeleton width="4rem" height="0.5rem" borderRadius="4px"></p-skeleton>
+            </div>
+            <div class="p-3 sm:p-6 space-y-3">
+              <div *ngFor="let r of [1,2,3,4]" class="flex items-center gap-3">
+                <p-skeleton shape="circle" size="2.5rem"></p-skeleton>
+                <div class="flex-1 space-y-1.5">
+                  <p-skeleton width="10rem" height="0.6rem" borderRadius="4px"></p-skeleton>
+                  <p-skeleton width="14rem" height="0.4rem" borderRadius="4px"></p-skeleton>
+                </div>
+                <p-skeleton width="3.5rem" height="1.2rem" borderRadius="9999px"></p-skeleton>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column Skeleton (1/3) -->
+        <div class="space-y-6">
+          <!-- Profile Card Skeleton -->
+          <div class="bg-white rounded-2xl border border-slate-100 p-3 sm:p-6">
+            <div class="flex items-center gap-3 pb-5 mb-5 border-b border-slate-100">
+              <p-skeleton shape="circle" size="3rem"></p-skeleton>
+              <div class="space-y-2">
+                <p-skeleton width="10rem" height="0.8rem" borderRadius="4px"></p-skeleton>
+                <p-skeleton width="5rem" height="1.2rem" borderRadius="9999px"></p-skeleton>
+              </div>
+            </div>
+            <div class="space-y-3">
+              <div class="flex items-center gap-2.5">
+                <p-skeleton shape="circle" size="1.5rem"></p-skeleton>
+                <p-skeleton width="12rem" height="0.5rem" borderRadius="4px"></p-skeleton>
+              </div>
+              <div class="flex items-center gap-2.5">
+                <p-skeleton shape="circle" size="1.5rem"></p-skeleton>
+                <p-skeleton width="8rem" height="0.5rem" borderRadius="4px"></p-skeleton>
+              </div>
+            </div>
+          </div>
+
+          <!-- List Card Skeleton -->
+          <div class="bg-white rounded-2xl border border-slate-100 p-0 overflow-hidden">
+            <div class="px-3 sm:px-6 py-2.5 sm:py-5 border-b border-slate-100 bg-slate-50/50">
+              <p-skeleton width="7rem" height="0.7rem" borderRadius="4px"></p-skeleton>
+              <p-skeleton width="10rem" height="0.4rem" borderRadius="4px" styleClass="mt-2"></p-skeleton>
+            </div>
+            <div class="p-3 sm:p-6 space-y-3">
+              <div *ngFor="let r of [1,2,3]" class="p-3 rounded-xl border border-slate-100 bg-slate-50/30 flex items-center justify-between gap-3">
+                <div class="flex-1 space-y-1.5">
+                  <p-skeleton width="8rem" height="0.6rem" borderRadius="4px"></p-skeleton>
+                  <p-skeleton width="12rem" height="0.4rem" borderRadius="4px"></p-skeleton>
+                </div>
+                <p-skeleton width="3rem" height="1rem" borderRadius="4px"></p-skeleton>
+              </div>
+            </div>
+          </div>
+
+          <!-- Another List Card Skeleton -->
+          <div class="bg-white rounded-2xl border border-slate-100 p-0 overflow-hidden">
+            <div class="px-3 sm:px-6 py-2.5 sm:py-5 border-b border-slate-100 bg-slate-50/50">
+              <p-skeleton width="6rem" height="0.7rem" borderRadius="4px"></p-skeleton>
+              <p-skeleton width="9rem" height="0.4rem" borderRadius="4px" styleClass="mt-2"></p-skeleton>
+            </div>
+            <div class="p-3 sm:p-6 space-y-3">
+              <div *ngFor="let r of [1,2,3]" class="flex items-center gap-3">
+                <p-skeleton shape="circle" size="2rem"></p-skeleton>
+                <div class="flex-1 space-y-1.5">
+                  <p-skeleton width="10rem" height="0.5rem" borderRadius="4px"></p-skeleton>
+                  <p-skeleton width="6rem" height="0.4rem" borderRadius="4px"></p-skeleton>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- ── CONTENIDO REAL (cuando no carga) ── -->
+    <ng-container *ngIf="!cargando()">
+
     <!-- ── KPI CARDS ── -->
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4"
          [ngClass]="isSuperAdmin ? 'lg:grid-cols-5' : 'lg:grid-cols-4'">
@@ -745,6 +873,8 @@
 
       </div>
     </div>
+
+    </ng-container>
 
   </div>
 </div>

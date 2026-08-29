@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
+import { SkeletonModule } from 'primeng/skeleton';
 import { RoleService, RolVentanaPermiso } from '../../../core/services/role.service';
 import { LoadingStore } from '../../../store/loading.store';
 import { AuthStore } from '../../../store/auth.store';
@@ -19,7 +20,7 @@ type Section = 'empresa' | 'sistema';
 @Component({
   selector: 'app-roles',
   standalone: true,
-  imports: [CommonModule, ToastModule, FormsModule, NgTemplateOutlet, RouterLink, HasPermissionDirective],
+  imports: [CommonModule, ToastModule, FormsModule, NgTemplateOutlet, RouterLink, SkeletonModule, HasPermissionDirective],
   providers: [MessageService],
   templateUrl: './roles.component.html',
   styleUrl: './roles.component.scss'
@@ -47,6 +48,7 @@ export class RolesComponent implements OnInit {
   }
 
   companyRoles        = signal<Role[]>([]);
+  cargando            = signal<boolean>(true);
   systemRoles         = signal<Role[]>([]);
   selectedRole        = signal<Role | null>(null);
   activeSection       = signal<Section>('empresa');
@@ -68,9 +70,16 @@ export class RolesComponent implements OnInit {
 
     if (this.isSuperAdmin()) {
       this.roleService.listarSistema().subscribe({
-        next: (res) => this.systemRoles.set(res.data),
-        error: () => {}
+        next: (res) => {
+          this.systemRoles.set(res.data);
+          this.cargando.set(false);
+        },
+        error: () => {
+          this.cargando.set(false);
+        }
       });
+    } else {
+      this.cargando.set(false);
     }
   }
 
@@ -92,9 +101,15 @@ export class RolesComponent implements OnInit {
       this.companyRoles.set([]);
       return;
     }
+    this.cargando.set(true);
     this.roleService.listarPorEmpresa(companyId).subscribe({
-      next: (res) => this.companyRoles.set(res.data),
-      error: () => {}
+      next: (res) => {
+        this.companyRoles.set(res.data);
+        this.cargando.set(false);
+      },
+      error: () => {
+        this.cargando.set(false);
+      }
     });
   }
 

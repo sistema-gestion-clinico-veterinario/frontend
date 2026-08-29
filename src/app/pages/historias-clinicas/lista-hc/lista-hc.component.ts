@@ -5,6 +5,7 @@ import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
 import { PaginatorModule } from 'primeng/paginator';
+import { SkeletonModule } from 'primeng/skeleton';
 import { HistoriaClinicaService } from '../../../core/services/historia-clinica.service';
 import { LoadingStore } from '../../../store/loading.store';
 import { AuthStore } from '../../../store/auth.store';
@@ -14,7 +15,7 @@ import { HistoriaClinicaResumen } from '../../../models/response/historia-clinic
 @Component({
   selector: 'app-lista-hc',
   standalone: true,
-  imports: [CommonModule, TableModule, ButtonModule, TagModule, FormsModule, PaginatorModule],
+  imports: [CommonModule, TableModule, ButtonModule, TagModule, FormsModule, PaginatorModule, SkeletonModule],
   templateUrl: './lista-hc.component.html'
 })
 export class ListaHcComponent implements OnInit {
@@ -22,6 +23,8 @@ export class ListaHcComponent implements OnInit {
   readonly loadingStore         = inject(LoadingStore);
   readonly authStore            = inject(AuthStore);
   private readonly router       = inject(Router);
+
+  cargando = signal(true);
 
   historias    = signal<HistoriaClinicaResumen[]>([]);
   totalRecords = signal(0);
@@ -58,6 +61,7 @@ export class ListaHcComponent implements OnInit {
     const dateRange = this.resolveDateRange();
 
     this.currentPage = page;
+    this.cargando.set(true);
     this.loadingStore.show();
     this.hcService.buscar({
       numeroHc:          this.searchNumeroHc       || undefined,
@@ -72,9 +76,10 @@ export class ListaHcComponent implements OnInit {
       next: (res) => {
         this.historias.set(res.data.content);
         this.totalRecords.set(res.data?.page?.totalElements ?? res.data?.totalElements ?? 0);
+        this.cargando.set(false);
         this.loadingStore.hide();
       },
-      error: () => this.loadingStore.hide()
+      error: () => { this.cargando.set(false); this.loadingStore.hide(); }
     });
   }
 

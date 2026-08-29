@@ -1,21 +1,20 @@
-<main class="mx-auto min-h-screen max-w-full  bg-slate-50 p-3 font-['Barlow'] text-slate-900 sm:p-5 lg:p-6">
+<main class="mx-auto min-h-screen min-w-0 max-w-full overflow-x-hidden bg-slate-50 p-2 font-['Barlow'] text-slate-900 sm:p-5 lg:p-6">
+  <ng-container *ngIf="!cargando()">
   <div class="space-y-5 sm:space-y-6">
     <header class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-      <div class="flex items-center gap-4">
-        <span class="grid size-14 shrink-0 place-items-center rounded-xl bg-[#EAF3FB] text-[#0066AA] ring-1 ring-[#0066AA]/10">
-          <svg *ngIf="modo() === 'VACUNACION'" viewBox="0 0 24 24" class="size-7" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m14.5 4.5 5 5M13 6l5 5M4 20l5.5-1.5L19 9l-4-4-9.5 9.5L4 20Z"/><path d="m7.5 16.5-2-2M15.5 12.5l-4-4"/></svg>
-          <svg *ngIf="modo() === 'DESPARASITACION'" viewBox="0 0 24 24" class="size-7" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5.2 12.8 12.8 5.2a4.25 4.25 0 0 1 6 6l-7.6 7.6a4.25 4.25 0 0 1-6-6Z"/><path d="m8.5 9.5 6 6"/></svg>
-        </span>
+      <div class="flex items-center gap-3">
+        <i *ngIf="modo() === 'VACUNACION'" class="pi pi-plus-circle text-[#0066AA] text-3xl shrink-0"></i>
+        <i *ngIf="modo() === 'DESPARASITACION'" class="pi pi-heart-fill text-[#0066AA] text-3xl shrink-0"></i>
         <div>
           <p class="text-[11px] font-bold uppercase tracking-[.14em] text-[#0066AA]">Salud preventiva</p>
-          <h1 class="mt-1 text-[26px] font-extrabold leading-tight tracking-tight text-slate-900">{{ modo() === 'VACUNACION' ? 'Cartilla de vacunación' : 'Control de desparasitación' }}</h1>
-          <p class="mt-1 text-sm text-slate-500 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-[#0066AA]"></span> Registro, seguimiento e historial preventivo del paciente</p>
+          <h1 class="text-xl font-extrabold leading-tight tracking-tight text-slate-900">{{ modo() === 'VACUNACION' ? 'Cartilla de vacunación' : 'Control de desparasitación' }}</h1>
+          <p class="mt-1 text-sm text-slate-400 font-medium hidden sm:block">Registro, seguimiento e historial preventivo del paciente</p>
         </div>
       </div>
 
-      <div class="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-slate-50 p-1">
+      <div class="flex w-full items-center gap-1 rounded-xl border border-slate-200 bg-slate-50 p-1 sm:w-auto">
         <button type="button" (click)="cambiarModo('VACUNACION')"
-          class="flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-all duration-200"
+          class="flex min-w-0 flex-1 items-center justify-center gap-2 rounded-lg px-2.5 py-2.5 text-xs font-semibold transition-all duration-200 sm:flex-none sm:px-4 sm:text-sm"
           [ngClass]="modo() === 'VACUNACION'
             ? 'bg-[#0066AA] text-white shadow-sm'
             : 'text-slate-500 hover:bg-white hover:text-slate-700'">
@@ -23,7 +22,7 @@
           Vacunación
         </button>
         <button type="button" (click)="cambiarModo('DESPARASITACION')"
-          class="flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-all duration-200"
+          class="flex min-w-0 flex-1 items-center justify-center gap-2 rounded-lg px-2.5 py-2.5 text-xs font-semibold transition-all duration-200 sm:flex-none sm:px-4 sm:text-sm"
           [ngClass]="modo() === 'DESPARASITACION'
             ? 'bg-[#0066AA] text-white shadow-sm'
             : 'text-slate-500 hover:bg-white hover:text-slate-700'">
@@ -64,10 +63,10 @@
             </div>
           </div>
         </label>
-        <button *ngIf="!mascotaSel()" type="button" (click)="registrarNuevaMascota()" class="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-600 transition-colors hover:border-slate-300 hover:bg-slate-50 hover:text-slate-800">
+        <button *ngIf="!mascotaSel()" type="button" (click)="registrarNuevaMascota()" class="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-600 transition-colors hover:border-slate-300 hover:bg-slate-50 hover:text-slate-800 sm:w-auto">
           <i class="pi pi-heart text-xs"></i> Nueva mascota
         </button>
-        <button *ngIf="!mascotaSel()" type="button" (click)="abrirNuevaCatalogo()" class="inline-flex h-11 items-center gap-2 rounded-xl border-2 border-dashed border-[#0066AA]/30 bg-[#EAF3FB] px-4 text-sm font-bold text-[#0066AA] transition-all hover:border-[#0066AA] hover:bg-[#d6e8f7]">
+        <button *ngIf="!mascotaSel()" type="button" (click)="abrirNuevaCatalogo()" class="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-[#0066AA]/30 bg-[#EAF3FB] px-4 text-sm font-bold text-[#0066AA] transition-all hover:border-[#0066AA] hover:bg-[#d6e8f7] sm:w-auto">
           <i class="pi pi-plus text-xs"></i>
           {{ modo() === 'VACUNACION' ? 'Nueva vacuna' : 'Nuevo desparasitante' }}
         </button>
@@ -75,9 +74,9 @@
     </section>
 
     <section *ngIf="!mascotaSel()" class="rounded-xl border border-slate-200 bg-white">
-      <div class="flex items-center justify-between gap-4 border-b border-slate-100 px-5 py-4">
+      <div class="flex flex-col items-start justify-between gap-3 border-b border-slate-100 px-4 py-4 sm:flex-row sm:items-center sm:px-5">
         <h2 class="text-sm font-bold text-slate-800">Mascotas registradas</h2>
-        <div class="flex items-center gap-3">
+        <div class="flex w-full items-center justify-between gap-3 sm:w-auto sm:justify-start">
           <label class="text-xs font-semibold text-slate-500">Especie:</label>
           <select [(ngModel)]="filtroEspecie" (ngModelChange)="filtrarPorEspecie($event)"
             class="h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 outline-none transition-colors focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15">
@@ -99,7 +98,30 @@
         <p class="text-xs text-slate-300 mt-1">Intenta con otro filtro o registra una nueva mascota.</p>
       </div>
 
-      <div *ngIf="mascotasLista().length > 0" class="overflow-x-auto">
+      <div *ngIf="mascotasLista().length > 0" class="divide-y divide-slate-100 md:hidden">
+        <article *ngFor="let m of mascotasLista()" class="space-y-3 p-4">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <h3 class="truncate text-sm font-bold text-slate-900">{{ m.nombreCompleto }}</h3>
+              <p class="mt-1 text-xs text-slate-500">{{ m.especie }} · {{ m.razaNombre || 'Sin raza' }}</p>
+            </div>
+            <button *ngIf="m.controlPendienteNombre && m.apoderadoTelefono" type="button" (click)="abrirWhatsAppMascota(m)" aria-label="Enviar recordatorio por WhatsApp" class="grid size-9 shrink-0 place-items-center rounded-lg bg-green-50 text-green-700">
+              <i class="pi pi-whatsapp text-sm"></i>
+            </button>
+          </div>
+          <dl class="grid grid-cols-2 gap-3 text-xs">
+            <div class="min-w-0"><dt class="text-[10px] font-bold uppercase tracking-wide text-slate-400">Propietario</dt><dd class="mt-1 break-words font-medium text-slate-700">{{ m.apoderadoNombreCompleto }}</dd></div>
+            <div><dt class="text-[10px] font-bold uppercase tracking-wide text-slate-400">Última aplicación</dt><dd class="mt-1 font-medium text-slate-700">{{ m.fechaUltimaAplicacion ? formatoFechaCorta(m.fechaUltimaAplicacion) : 'Sin aplicaciones' }}</dd></div>
+          </dl>
+          <div *ngIf="m.controlPendienteNombre" class="flex items-start gap-2 rounded-lg bg-slate-50 px-3 py-2">
+            <span class="mt-1 size-2 shrink-0 rounded-full" [ngClass]="m.controlPendienteEstado === 'ATRASADO' ? 'bg-red-500' : m.controlPendienteEstado === 'PENDIENTE' ? 'bg-amber-500' : 'bg-[#0066AA]'"></span>
+            <div class="min-w-0"><p class="truncate text-xs font-bold text-slate-800">{{ m.controlPendienteNombre }}</p><p class="text-[10px] text-slate-500">{{ m.controlPendienteResumen }}</p></div>
+          </div>
+          <button type="button" (click)="seleccionarMascota(m)" class="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-[#0066AA] px-3 text-xs font-bold text-white"><i class="pi pi-eye"></i> Ver cartilla</button>
+        </article>
+      </div>
+
+      <div *ngIf="mascotasLista().length > 0" class="hidden overflow-x-auto md:block">
         <table class="w-full text-left text-sm">
           <thead class="bg-slate-50 border-b border-slate-200">
             <tr>
@@ -169,18 +191,20 @@
     </section>
 
     <ng-container *ngIf="mascotaSel() as mascota">
-      <button type="button" (click)="volver()" class="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 transition-colors hover:text-slate-800">
-        <i class="pi pi-arrow-left"></i> Volver al listado
-      </button>
+      <div class="flex justify-end">
+        <button type="button" (click)="volver()" class="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-slate-600 shadow-sm transition-all hover:bg-[#EAF3FB] hover:text-[#0066AA] active:scale-95">
+          <i class="pi pi-arrow-left text-base"></i> Volver al listado
+        </button>
+      </div>
 
-      <section class="grid items-center gap-5 rounded-xl border border-slate-200 bg-white p-5 lg:grid-cols-[minmax(320px,1fr)_minmax(420px,1fr)]">
-        <div class="flex min-w-0 items-center gap-4">
-          <img *ngIf="mascota.fotoUrl" [src]="mascota.fotoUrl" [alt]="mascota.nombreCompleto" class="size-16 shrink-0 rounded-xl border-2 border-white object-cover ring-1 ring-slate-200" />
-          <span *ngIf="!mascota.fotoUrl" class="grid size-16 shrink-0 place-items-center rounded-xl bg-[#EAF3FB] text-lg font-bold text-[#0066AA] ring-1 ring-[#0066AA]/10">{{ mascota.nombreCompleto.charAt(0) }}</span>
+      <section class="grid items-center gap-5 rounded-xl border border-slate-200 bg-white p-4 sm:p-5 lg:grid-cols-[minmax(320px,1fr)_minmax(420px,1fr)]">
+        <div class="flex min-w-0 items-start gap-3 sm:items-center sm:gap-4">
+          <img *ngIf="mascota.fotoUrl" [src]="mascota.fotoUrl" [alt]="mascota.nombreCompleto" class="size-14 shrink-0 rounded-xl border-2 border-white object-cover ring-1 ring-slate-200 sm:size-16" />
+          <span *ngIf="!mascota.fotoUrl" class="grid size-14 shrink-0 place-items-center rounded-xl bg-[#EAF3FB] text-lg font-bold text-[#0066AA] ring-1 ring-[#0066AA]/10 sm:size-16">{{ mascota.nombreCompleto.charAt(0) }}</span>
           <div class="min-w-0">
-            <div class="flex items-center gap-2"><h2 class="truncate text-xl font-extrabold text-slate-900">{{ mascota.nombreCompleto }}</h2><span class="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold text-slate-600">{{ mascota.especie }}</span></div>
+            <div class="flex flex-wrap items-center gap-2"><h2 class="min-w-0 break-words text-lg font-extrabold text-slate-900 sm:text-xl">{{ mascota.nombreCompleto }}</h2><span class="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold text-slate-600">{{ mascota.especie }}</span></div>
             <p class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500"><span>Raza <b class="text-slate-700">{{ mascota.razaNombre || '—' }}</b></span><span>Sexo <b class="text-slate-700">{{ mascota.sexo }}</b></span><span>Peso <b class="text-slate-700">{{ mascota.peso ? mascota.peso + ' kg' : '—' }}</b></span></p>
-            <p class="mt-3 text-xs text-slate-500"><i class="pi pi-user mr-2 text-[#0066AA]"></i>Propietario: <b class="text-slate-700">{{ mascota.apoderadoNombreCompleto }}</b></p>
+            <p class="mt-3 break-words text-xs text-slate-500"><i class="pi pi-user mr-2 text-[#0066AA]"></i>Propietario: <b class="text-slate-700">{{ mascota.apoderadoNombreCompleto }}</b></p>
           </div>
         </div>
         <div class="grid overflow-hidden rounded-xl border border-slate-200 sm:grid-cols-3">
@@ -193,9 +217,9 @@
       <div class="grid grid-cols-1 items-start gap-5 xl:grid-cols-[minmax(0,1.65fr)_minmax(330px,.85fr)]">
         <div class="min-w-0 space-y-5">
           <section class="overflow-hidden rounded-xl border border-slate-200 bg-white">
-            <header class="flex items-center justify-between gap-3 border-b border-slate-200 bg-[#f8fafc] px-4 py-3.5 sm:px-5">
+            <header class="flex flex-col items-stretch justify-between gap-3 border-b border-slate-200 bg-[#f8fafc] px-4 py-3.5 sm:flex-row sm:items-center sm:px-5">
               <div><h3 class="text-sm font-extrabold text-slate-900">Próximos controles</h3><p class="mt-0.5 text-xs text-slate-500">{{ controlesOrdenados().length }} registros</p></div>
-               <button type="button" (click)="abrirProgramar()" class="inline-flex h-10 items-center gap-2 rounded-lg border border-[#0066AA] px-4 text-xs font-bold text-[#0066AA] transition-colors hover:bg-[#EAF3FB]"><i class="pi pi-calendar-plus"></i> Programar control</button>
+               <button type="button" (click)="abrirProgramar()" class="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-[#0066AA] px-4 text-xs font-bold text-[#0066AA] transition-colors hover:bg-[#EAF3FB]"><i class="pi pi-calendar-plus"></i> Programar control</button>
             </header>
 
             <div *ngIf="!cargandoCtrl() && !controlesOrdenados().length" class="flex flex-col items-center gap-2 px-5 py-8 text-center">
@@ -204,12 +228,12 @@
             </div>
 
             <div *ngIf="controlesOrdenados().length" class="px-4 sm:px-5">
-              <article *ngFor="let control of controlesOrdenados(); let last = last" class="relative flex gap-4 py-3" [class.opacity-50]="control.estado === 'CANCELADO'">
+              <article *ngFor="let control of controlesOrdenados(); let last = last" class="relative flex gap-2 py-3 sm:gap-4" [class.opacity-50]="control.estado === 'CANCELADO'">
                 <div class="flex flex-col items-center">
                   <span class="mt-1 size-2.5 shrink-0 rounded-full" [ngClass]="control.estado === 'CANCELADO' ? 'bg-slate-300' : 'bg-[#0066AA]'"></span>
                   <span *ngIf="!last" class="mt-1 w-px flex-1 bg-slate-200"></span>
                 </div>
-                <div class="flex h-14 w-16 shrink-0 flex-col items-center justify-center rounded-xl border border-slate-200 bg-slate-50/60">
+                <div class="flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-xl border border-slate-200 bg-slate-50/60 sm:w-16">
                   <strong class="text-lg leading-none text-slate-900">{{ parteFecha(control.fechaRecomendada, 'day') }}</strong>
                   <span class="mt-1 text-[9px] font-bold uppercase text-slate-500">{{ parteFecha(control.fechaRecomendada, 'month') }} {{ parteFecha(control.fechaRecomendada, 'year') }}</span>
                 </div>
@@ -218,8 +242,8 @@
                     <div class="flex flex-wrap items-center gap-2"><h4 class="truncate text-sm font-bold text-slate-900">{{ control.nombreControl }}</h4><span class="rounded-full px-2 py-0.5 text-[10px] font-bold" [ngClass]="claseEstadoPreventivo(control.estado)">{{ etiquetaEstadoPreventivo(control.estado) }}</span></div>
                     <p class="mt-1 text-xs text-slate-500">{{ tipoLabel(control.tipo) }} · {{ formatoFechaCorta(control.fechaRecomendada) }}</p>
                   </div>
-                  <div *ngIf="control.estado !== 'CANCELADO'" class="mt-2 flex flex-wrap gap-2 md:mt-0">
-                    <button type="button" (click)="prepararAplicacion(control)" class="inline-flex h-10 items-center gap-2 rounded-lg bg-[#0066AA] px-4 text-xs font-bold text-white transition-colors hover:bg-[#00558F]"><i class="pi pi-check-circle"></i> Aplicar ahora</button>
+                  <div *ngIf="control.estado !== 'CANCELADO'" class="mt-2 flex w-full gap-2 md:mt-0 md:w-auto">
+                    <button type="button" (click)="prepararAplicacion(control)" class="inline-flex h-10 min-w-0 flex-1 items-center justify-center gap-2 rounded-lg bg-[#0066AA] px-3 text-xs font-bold text-white transition-colors hover:bg-[#00558F] md:flex-none md:px-4"><i class="pi pi-check-circle"></i> Aplicar ahora</button>
                     <button type="button" (click)="iniciarReprogramacion(control)" pTooltip="Reprogramar" class="grid size-10 place-items-center rounded-xl border border-slate-200 text-slate-500 transition-colors hover:border-slate-300 hover:bg-slate-50 hover:text-slate-700"><i class="pi pi-calendar"></i></button>
                     <button type="button" (click)="solicitarCancelarControl(control)" pTooltip="Cancelar control" class="grid size-10 place-items-center rounded-xl border border-slate-200 text-slate-500 transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-600"><i class="pi pi-times"></i></button>
                   </div>
@@ -230,7 +254,15 @@
 
           <section class="overflow-hidden rounded-xl border border-slate-200 bg-white">
             <header class="border-b border-slate-200 bg-[#f8fafc] px-4 py-3.5 sm:px-5"><h3 class="text-sm font-extrabold text-slate-900">Historial de aplicaciones</h3><p class="mt-0.5 text-xs text-slate-500">Cartilla cronológica de {{ modo() === 'VACUNACION' ? 'vacunación' : 'desparasitación' }}</p></header>
-            <div class="overflow-x-auto">
+            <div class="divide-y divide-slate-100 md:hidden">
+              <article *ngFor="let aplicacion of aplicacionesModo()" class="space-y-3 p-4" [class.opacity-50]="aplicacion.activo === false">
+                <div class="flex items-start justify-between gap-3"><div><p class="text-xs font-bold text-[#0066AA]">{{ formatoFechaCorta(aplicacion.fechaAplicacion) }}</p><h4 class="mt-1 text-sm font-bold text-slate-900">{{ aplicacion.nombreControl }}</h4><p class="text-[10px] text-slate-500">{{ tipoLabel(aplicacion.tipo) }}</p></div><div class="flex gap-1"><button type="button" (click)="editarAplicacion(aplicacion)" aria-label="Editar aplicación" class="grid size-9 place-items-center rounded-lg border border-slate-200 text-slate-500"><i class="pi pi-pencil text-xs"></i></button><button type="button" (click)="confirmarToggleEstado(aplicacion)" [attr.aria-label]="aplicacion.activo === false ? 'Activar aplicación' : 'Desactivar aplicación'" class="grid size-9 place-items-center rounded-lg border border-slate-200 text-slate-500"><i class="text-xs" [ngClass]="aplicacion.activo === false ? 'pi pi-check-circle' : 'pi pi-times-circle'"></i></button></div></div>
+                <dl class="grid grid-cols-2 gap-3 text-xs"><div><dt class="text-[10px] font-bold uppercase text-slate-400">Responsable</dt><dd class="mt-1 break-words text-slate-700">{{ aplicacion.veterinarioNombre || '—' }}</dd></div><div><dt class="text-[10px] font-bold uppercase text-slate-400">Lote / dosis</dt><dd class="mt-1 text-slate-700">{{ aplicacion.lote || '—' }}<span *ngIf="aplicacion.dosis"> · {{ aplicacion.dosis }} {{ aplicacion.unidadDosis }}</span></dd></div></dl>
+                <div class="border-t border-slate-100 pt-3"><span class="text-[10px] font-bold uppercase text-slate-400">Próxima aplicación</span><p class="mt-1 text-xs font-bold text-[#0066AA]">{{ aplicacion.fechaProximaAplicacion ? formatoFechaCorta(aplicacion.fechaProximaAplicacion) : 'Última aplicación' }}</p></div>
+              </article>
+              <p *ngIf="!aplicacionesModo().length" class="px-4 py-10 text-center text-sm text-slate-500">Todavía no hay aplicaciones registradas.</p>
+            </div>
+            <div class="hidden overflow-x-auto md:block">
               <table class="w-full min-w-[760px] text-left">
                 <thead class="border-b border-slate-200 bg-slate-50/70"><tr><th class="px-5 py-3 text-[10px] font-bold uppercase tracking-wide text-slate-500">Aplicación</th><th class="px-4 py-3 text-[10px] font-bold uppercase tracking-wide text-slate-500">Producto</th><th class="px-4 py-3 text-[10px] font-bold uppercase tracking-wide text-slate-500">Responsable</th><th class="px-4 py-3 text-[10px] font-bold uppercase tracking-wide text-slate-500">Lote / dosis</th><th class="px-5 py-3 text-[10px] font-bold uppercase tracking-wide text-slate-500">Próxima aplicación</th><th class="px-5 py-3 text-right text-[10px] font-bold uppercase tracking-wide text-slate-500">Acciones</th></tr></thead>
                 <tbody class="divide-y divide-slate-100">
@@ -283,14 +315,14 @@
               <dl class="grid grid-cols-2 gap-x-3 gap-y-2.5 p-3 text-xs"><div><dt class="text-slate-400">Lote</dt><dd class="font-semibold text-slate-700">{{ lote || 'No registrado' }}</dd></div><div><dt class="text-slate-400">Vencimiento</dt><dd class="font-semibold text-slate-700">{{ fechaVencimientoProducto || 'No registrado' }}</dd></div><div><dt class="text-slate-400">Dosis</dt><dd class="font-semibold text-slate-700">{{ dosis ? dosis + ' ' + unidadDosis : 'No registrada' }}</dd></div><div><dt class="text-slate-400">Vía</dt><dd class="font-semibold text-slate-700">{{ viaAdministracion || 'No registrada' }}</dd></div></dl>
             </div>
 
-            <div *ngIf="modo() === 'VACUNACION'" class="grid grid-cols-2 gap-3">
+            <div *ngIf="modo() === 'VACUNACION'" class="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <label><span class="mb-1.5 block text-xs font-bold text-slate-700">Peso actual (kg)</span><input type="number" [(ngModel)]="pesoKg" min="0.01" step="0.01" class="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none transition-colors focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15" /></label>
               <label><span class="mb-1.5 block text-xs font-bold text-slate-700">Sitio de aplicación</span><input [(ngModel)]="sitioAplicacion" placeholder="Región anatómica" class="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none transition-colors focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15" /></label>
             </div>
 
             <div class="rounded-xl border border-slate-200 p-3">
               <label class="flex items-start gap-3"><input type="checkbox" [(ngModel)]="programarProximoControl" class="mt-0.5 size-4 accent-[#0066AA]" /><span><strong class="block text-xs text-slate-700">Programar próximo control</strong><small class="mt-0.5 block text-[10px] text-slate-500">Desmárcalo si esta es la última aplicación.</small></span></label>
-              <div *ngIf="programarProximoControl" class="mt-3 grid grid-cols-[1fr_120px] gap-3 border-t border-slate-100 pt-3">
+              <div *ngIf="programarProximoControl" class="mt-3 grid grid-cols-1 gap-3 border-t border-slate-100 pt-3 sm:grid-cols-[1fr_120px]">
                 <label><span class="mb-1.5 block text-[10px] font-bold text-slate-600">Intervalo</span><input type="number" [(ngModel)]="intervaloCantidad" min="1" class="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15" /></label>
                 <label><span class="mb-1.5 block text-[10px] font-bold text-slate-600">Unidad</span><p-select [(ngModel)]="intervaloUnidad" [options]="unidadesIntervalo" optionLabel="label" optionValue="value" styleClass="control-select compact-select" /></label>
               </div>
@@ -306,18 +338,93 @@
       </div>
     </ng-container>
   </div>
+  </ng-container>
+
+  <ng-container *ngIf="cargando()">
+    <div class="space-y-5 sm:space-y-6">
+      <header class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+        <div class="flex items-center gap-3">
+          <p-skeleton shape="circle" size="3rem" styleClass="bg-slate-200"></p-skeleton>
+          <div class="flex flex-col gap-2">
+            <p-skeleton width="120px" height="10px" borderRadius="8px"></p-skeleton>
+            <p-skeleton width="220px" height="22px" borderRadius="8px"></p-skeleton>
+            <p-skeleton width="300px" height="14px" borderRadius="8px" styleClass="hidden sm:block"></p-skeleton>
+          </div>
+        </div>
+      </header>
+
+      <section class="rounded-xl border border-slate-200 bg-white p-4 sm:p-5">
+        <div class="flex flex-col gap-3 lg:flex-row lg:items-end">
+          <label class="min-w-0 flex-1">
+            <span class="mb-1.5 block text-xs font-bold text-slate-700">Nombre de la mascota</span>
+            <p-skeleton width="100%" height="44px" borderRadius="12px"></p-skeleton>
+          </label>
+          <p-skeleton width="140px" height="44px" borderRadius="12px"></p-skeleton>
+          <p-skeleton width="180px" height="44px" borderRadius="12px"></p-skeleton>
+        </div>
+      </section>
+
+      <section class="rounded-xl border border-slate-200 bg-white">
+        <div class="flex items-center justify-between gap-4 border-b border-slate-100 px-5 py-4">
+          <h2 class="text-sm font-bold text-slate-800">Mascotas registradas</h2>
+          <p-skeleton width="120px" height="32px" borderRadius="8px"></p-skeleton>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-slate-50 border-b border-slate-200">
+              <tr>
+                <th class="text-left px-5 py-3"><p-skeleton width="80px" height="12px" borderRadius="6px"></p-skeleton></th>
+                <th class="text-left px-5 py-3"><p-skeleton width="60px" height="12px" borderRadius="6px"></p-skeleton></th>
+                <th class="text-left px-5 py-3"><p-skeleton width="50px" height="12px" borderRadius="6px"></p-skeleton></th>
+                <th class="text-left px-5 py-3"><p-skeleton width="70px" height="12px" borderRadius="6px"></p-skeleton></th>
+                <th class="text-left px-5 py-3"><p-skeleton width="90px" height="12px" borderRadius="6px"></p-skeleton></th>
+                <th class="text-left px-5 py-3"><p-skeleton width="100px" height="12px" borderRadius="6px"></p-skeleton></th>
+                <th class="text-right px-5 py-3"><p-skeleton width="60px" height="12px" borderRadius="6px"></p-skeleton></th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr *ngFor="let i of [1,2,3,4,5]">
+                <td class="px-5 py-3"><p-skeleton width="140px" height="16px" borderRadius="6px"></p-skeleton></td>
+                <td class="px-5 py-3"><p-skeleton width="60px" height="16px" borderRadius="6px"></p-skeleton></td>
+                <td class="px-5 py-3"><p-skeleton width="80px" height="16px" borderRadius="6px"></p-skeleton></td>
+                <td class="px-5 py-3"><p-skeleton width="120px" height="16px" borderRadius="6px"></p-skeleton></td>
+                <td class="px-5 py-3"><p-skeleton width="90px" height="16px" borderRadius="6px"></p-skeleton></td>
+                <td class="px-5 py-3">
+                  <div class="flex items-center gap-2">
+                    <p-skeleton shape="circle" size="8px"></p-skeleton>
+                    <div class="flex flex-col gap-1">
+                      <p-skeleton width="100px" height="12px" borderRadius="6px"></p-skeleton>
+                      <p-skeleton width="80px" height="10px" borderRadius="6px"></p-skeleton>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-5 py-3 text-right">
+                  <p-skeleton width="100px" height="32px" borderRadius="8px" styleClass="ml-auto"></p-skeleton>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </ng-container>
 </main>
 
 <p-toast position="top-right"></p-toast>
 
-<p-dialog [(visible)]="mostrarProgramar" [modal]="true" [draggable]="false" [resizable]="false" [style]="{width:'440px'}" header="Programar nuevo control">
+<p-dialog [(visible)]="mostrarProgramar" [modal]="true" [draggable]="false" [resizable]="false" [style]="{width:'440px', maxWidth:'calc(100vw - 24px)'}" header="Programar nuevo control">
   <div class="space-y-4 pt-2">
     <div class="rounded-lg bg-slate-50 px-3 py-2.5 text-xs font-semibold text-slate-600">
       <i class="pi pi-tag mr-1.5 text-[#0066AA]"></i>{{ modo() === 'VACUNACION' ? 'Vacunación' : 'Desparasitación' }}
     </div>
     <label *ngIf="progTipo === 'VACUNACION'" class="block"><span class="mb-1.5 block text-xs font-bold text-slate-700">Vacuna</span><p-select [(ngModel)]="progTipoVacunaId" [options]="tiposVacuna()" optionLabel="nombre" optionValue="id" placeholder="Seleccionar vacuna" styleClass="control-select" /></label>
     <label *ngIf="progTipo === 'DESPARASITACION'" class="block"><span class="mb-1.5 block text-xs font-bold text-slate-700">Producto</span><input [(ngModel)]="progNombreControl" class="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15" /></label>
-    <div><span class="mb-2 block text-xs font-bold text-slate-700">Fecha recomendada</span><p-datepicker [(ngModel)]="progFechaCalendario" (ngModelChange)="confirmarFechaProgramacion($event)" [showIcon]="true" [showButtonBar]="true" [minDate]="desdeFechaIso(fechaHoyLima)" dateFormat="dd/mm/yy" appendTo="body" styleClass="w-full" /></div>
+    <div>
+      <span class="mb-2 block text-xs font-bold text-slate-700">Fecha recomendada</span>
+      <input type="date" [value]="progFecha" (change)="onprogFechaChange($event)"
+        [min]="fechaHoyLima"
+        class="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 outline-none transition-all focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15" />
+    </div>
   </div>
   <ng-template pTemplate="footer">
     <button class="h-10 rounded-lg px-4 text-xs font-bold text-slate-600 transition-colors hover:bg-slate-50" (click)="mostrarProgramar.set(false)">Cancelar</button>
@@ -325,16 +432,21 @@
   </ng-template>
 </p-dialog>
 
-<p-dialog [visible]="!!controlReprogramando()" (visibleChange)="!$event && cerrarReprogramacion()" [modal]="true" [draggable]="false" [resizable]="false" [style]="{width:'420px'}" header="Reprogramar control">
+<p-dialog [visible]="!!controlReprogramando()" (visibleChange)="!$event && cerrarReprogramacion()" [modal]="true" [draggable]="false" [resizable]="false" [style]="{width:'420px', maxWidth:'calc(100vw - 24px)'}" header="Reprogramar control">
   <p class="mb-3 text-xs text-slate-500">{{ controlReprogramando()?.nombreControl }}</p>
-  <p-datepicker [(ngModel)]="fechaReprogramacionCalendario" (ngModelChange)="confirmarFechaReprogramacion($event)" [showIcon]="true" [showButtonBar]="true" [minDate]="desdeFechaIso(fechaHoyLima)" dateFormat="dd/mm/yy" appendTo="body" styleClass="w-full" />
+  <div>
+    <span class="mb-2 block text-xs font-bold text-slate-700">Nueva fecha</span>
+    <input type="date" [value]="fechaReprogramacion()" (change)="onFechaReprogramacionChange($event)"
+      [min]="fechaHoyLima"
+      class="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 outline-none transition-all focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15" />
+  </div>
   <ng-template pTemplate="footer">
     <button class="h-10 rounded-lg px-4 text-xs font-bold text-slate-600 transition-colors hover:bg-slate-50" (click)="cerrarReprogramacion()">Cancelar</button>
     <button class="h-10 rounded-lg bg-[#0066AA] px-4 text-xs font-bold text-white transition-colors hover:bg-[#00558F]" (click)="guardarReprogramacion(controlReprogramando()!)">Guardar nueva fecha</button>
   </ng-template>
 </p-dialog>
 
-<p-dialog [visible]="!!controlCancelar()" (visibleChange)="!$event && controlCancelar.set(null)" [modal]="true" [draggable]="false" [resizable]="false" [style]="{width:'400px'}" header="Cancelar control">
+<p-dialog [visible]="!!controlCancelar()" (visibleChange)="!$event && controlCancelar.set(null)" [modal]="true" [draggable]="false" [resizable]="false" [style]="{width:'400px', maxWidth:'calc(100vw - 24px)'}" header="Cancelar control">
   <div class="flex gap-3 py-2"><span class="grid size-10 shrink-0 place-items-center rounded-xl bg-red-50 text-red-700"><i class="pi pi-exclamation-triangle"></i></span><div><p class="text-sm font-bold text-slate-800">¿Confirmas esta cancelación?</p><p class="mt-1 text-xs leading-5 text-slate-500">{{ controlCancelar()?.nombreControl }} quedará visible en la cartilla con estado Cancelado.</p></div></div>
   <ng-template pTemplate="footer">
     <button class="h-10 rounded-lg px-4 text-xs font-bold text-slate-600 transition-colors hover:bg-slate-50" (click)="controlCancelar.set(null)">Volver</button>

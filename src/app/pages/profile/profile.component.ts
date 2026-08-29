@@ -3,6 +3,8 @@ import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ToastModule } from 'primeng/toast';
+import { DialogModule } from 'primeng/dialog';
+import { SkeletonModule } from 'primeng/skeleton';
 import { MessageService } from 'primeng/api';
 import { ProfileService } from '../../core/services/profile.service';
 import { MediaService } from '../../core/services/media.service';
@@ -34,7 +36,7 @@ const DIAS_SEMANA_ORDEN = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ToastModule, InputFilterDirective],
+  imports: [CommonModule, ReactiveFormsModule, ToastModule, DialogModule, SkeletonModule, InputFilterDirective],
   providers: [MessageService],
   templateUrl: './profile.component.html'
 })
@@ -54,6 +56,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
   uploadingPhoto = signal(false);
   previewUrl = signal<string | null>(null);
   selectedFile = signal<File | null>(null);
+  mostrarHorario = signal(false);
+  cargando = signal(true);
   readonly safePreviewUrl = computed(() => {
     const url = this.previewUrl();
     return url ? this.sanitizer.bypassSecurityTrustUrl(url) : null;
@@ -73,16 +77,19 @@ export class ProfileComponent implements OnInit, OnDestroy {
   }
 
   loadProfile() {
+    this.cargando.set(true);
     this.loadingStore.show();
     this.profileService.getProfile().subscribe({
       next: (res) => {
         this.profile.set(res.data);
         this.patchForm(res.data);
         this.loadingStore.hide();
+        this.cargando.set(false);
       },
       error: () => {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cargar el perfil' });
         this.loadingStore.hide();
+        this.cargando.set(false);
       }
     });
   }
@@ -231,7 +238,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
   get horariosResumen(): HorarioResumen[] {
     const horarios = this.profile()?.horarios?.filter(h => h.activo !== false) ?? [];
-    return this.buildHorarioResumen(horarios);
+    return this.buildHorarioResumen(horarios).filter(h => this.estaVigente(h));
   }
 
   get semanaCompleta(): HorarioDiaGrupo[] {
@@ -253,6 +260,94 @@ export class ProfileComponent implements OnInit, OnDestroy {
     return DIAS_SEMANA_ORDEN.map(dia =>
       groups.get(dia) ?? { diaSemana: dia, label: this.formatDiaSemana(dia), bloques: [] }
     );
+  }
+
+  get diaDeHoy(): HorarioDiaGrupo {
+    const nombres = ['DOMINGO', 'LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO'];
+    const dia = nombres[new Date().getDay()];
+    return this.semanaCompleta.find(d => d.diaSemana === dia) ?? { diaSemana: dia, label: this.formatDiaSemana(dia), bloques: [] };
+  }
+
+  get matrizHorario(): { horaSlot: string; dias: (HorarioResumen | null)[] }[] {
+    const slotMap = new Map<string, Map<string, HorarioResumen>>();
+    for (const h of this.horariosResumen) {
+      const slot = `${h.horaInicio} – ${h.horaFin}`;
+      if (!slotMap.has(slot)) slotMap.set(slot, new Map());
+      slotMap.get(slot)!.set(h.diaSemana, h);
+    }
+    const slots = Array.from(slotMap.keys()).sort();
+    return slots.map(slot => ({
+      horaSlot: slot,
+      dias: DIAS_SEMANA_ORDEN.map(dia => slotMap.get(slot)!.get(dia) ?? null)
+    }));
+  }
+
+  get gridHorario(): { hora: string; dias: boolean[] }[] {
+    const bloquesPorDia = new Map<string, { inicio: number; fin: number }[]>();
+    for (const h of this.horariosResumen) {
+      if (!bloquesPorDia.has(h.diaSemana)) bloquesPorDia.set(h.diaSemana, []);
+      bloquesPorDia.get(h.diaSemana)!.push({
+        inicio: parseInt(h.horaInicio.split(':')[0], 10),
+        fin: parseInt(h.horaFin.split(':')[0], 10)
+      });
+    }
+    let minHora = 24, maxHora = 0;
+    for (const bloques of bloquesPorDia.values()) {
+      for (const b of bloques) {
+        if (b.inicio < minHora) minHora = b.inicio;
+        if (b.fin > maxHora) maxHora = b.fin;
+      }
+    }
+    if (minHora >= maxHora) return [];
+    const filas: { hora: string; dias: boolean[] }[] = [];
+    for (let h = minHora; h < maxHora; h++) {
+      const horaInicio = `${String(h).padStart(2, '0')}:00`;
+      const horaFin = `${String(h + 1).padStart(2, '0')}:00`;
+      const dias = DIAS_SEMANA_ORDEN.map(dia => {
+        const bloques = bloquesPorDia.get(dia) ?? [];
+        return bloques.some(b => h >= b.inicio && h < b.fin);
+      });
+      filas.push({ hora: `${horaInicio} – ${horaFin}`, dias });
+    }
+    return filas;
+  }
+
+  get diasCortos(): string[] {
+    return ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+  }
+
+  fechaInicioSemana(): string {
+    const hoy = new Date();
+    const dia = hoy.getDay();
+    const diff = dia === 0 ? 6 : dia - 1;
+    const inicio = new Date(hoy);
+    inicio.setDate(hoy.getDate() - diff);
+    return this.formatFechaCorta(inicio.toISOString().substring(0, 10));
+  }
+
+  fechaFinSemana(): string {
+    const hoy = new Date();
+    const dia = hoy.getDay();
+    const diff = dia === 0 ? 0 : 7 - dia;
+    const fin = new Date(hoy);
+    fin.setDate(hoy.getDate() + diff);
+    return this.formatFechaCorta(fin.toISOString().substring(0, 10));
+  }
+
+  esHoy(colIndex: number): boolean {
+    const hoy = new Date().getDay();
+    const map = [1, 2, 3, 4, 5, 6, 0];
+    return map[colIndex] === hoy;
+  }
+
+  fechaDelDia(colIndex: number): number {
+    const map = [1, 2, 3, 4, 5, 6, 0];
+    const targetDay = map[colIndex];
+    const hoy = new Date();
+    const diff = targetDay - hoy.getDay();
+    const fecha = new Date(hoy);
+    fecha.setDate(hoy.getDate() + diff);
+    return fecha.getDate();
   }
 
   formatDiaSemana(dia: string): string {
@@ -327,5 +422,32 @@ export class ProfileComponent implements OnInit, OnDestroy {
     const [year, month, day] = fecha.split('-');
     if (!year || !month || !day) return fecha;
     return `${day}/${month}/${year}`;
+  }
+
+  private estaVigente(h: HorarioResumen): boolean {
+    if (h.rangoFechas === 'Horario recurrente') return true;
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    const inicioSemana = new Date(hoy);
+    inicioSemana.setDate(hoy.getDate() - hoy.getDay() + 1);
+    const finSemana = new Date(inicioSemana);
+    finSemana.setDate(inicioSemana.getDate() + 6);
+    let fechaInicio: string | null = null;
+    let fechaFin: string | null = null;
+    if (h.rangoFechas.startsWith('Fecha:')) {
+      const f = h.rangoFechas.replace('Fecha: ', '').split('/').reverse().join('-');
+      fechaInicio = f;
+      fechaFin = f;
+    } else if (h.rangoFechas.includes(' - ')) {
+      const parts = h.rangoFechas.split(' - ');
+      fechaInicio = parts[0].split('/').reverse().join('-');
+      fechaFin = parts[1].split('/').reverse().join('-');
+    }
+    if (!fechaInicio || !fechaFin) return true;
+    const [yi, mi, di] = fechaInicio.split('-').map(Number);
+    const [yf, mf, df] = fechaFin.split('-').map(Number);
+    const inicio = new Date(yi, mi - 1, di);
+    const fin = new Date(yf, mf - 1, df);
+    return fin >= inicioSemana && inicio <= finSemana;
   }
 }

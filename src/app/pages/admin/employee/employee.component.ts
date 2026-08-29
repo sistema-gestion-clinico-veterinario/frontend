@@ -10,6 +10,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { ToastModule } from 'primeng/toast';
 import { MenuModule } from 'primeng/menu';
+import { SkeletonModule } from 'primeng/skeleton';
 import { MenuItem, MessageService } from 'primeng/api';
 import { forkJoin } from 'rxjs';
 import { EmpleadoService } from '../../../core/services/empleado.service';
@@ -52,6 +53,7 @@ function passwordMatchValidator(control: AbstractControl): ValidationErrors | nu
     MultiSelectModule,
     ToastModule,
     MenuModule,
+    SkeletonModule,
     HasPermissionDirective,
     InputFilterDirective
   ],
@@ -79,6 +81,7 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   confirmDialog = signal<{ title: string; message: string; onConfirm: () => void } | null>(null);
 
   employees = signal<EmpleadoListResponse[]>([]);
+  cargando = signal<boolean>(true);
   displayModal = signal<boolean>(false);
   isEdit = signal<boolean>(false);
   showPasswordResetModal = signal<boolean>(false);
@@ -297,15 +300,19 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     const companyId = this.activeCompanyId ?? undefined;
     if (!companyId) return;
 
+    const isFirstLoad = this.employees().length === 0;
+    if (isFirstLoad) this.cargando.set(true);
     const page = event.first / event.rows;
 
     this.empleadoService.listar(companyId, undefined, page, event.rows).subscribe({
       next: (res) => {
         this.employees.set(res.data.content);
         this.totalRecords.set(res.data?.page?.totalElements ?? res.data?.totalElements ?? 0);
+        this.cargando.set(false);
       },
       error: () => {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar los empleados' });
+        this.cargando.set(false);
       }
     });
   }

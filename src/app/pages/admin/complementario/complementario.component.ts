@@ -19,6 +19,7 @@ import { ToastModule } from 'primeng/toast';
 import { CheckboxModule } from 'primeng/checkbox';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { PaginatorModule } from 'primeng/paginator';
+import { SkeletonModule } from 'primeng/skeleton';
 import { MessageService } from 'primeng/api';
 import { EspecialidadService } from '../../../core/services/especialidad.service';
 import { TipoEmpleadoService } from '../../../core/services/tipo-empleado.service';
@@ -52,6 +53,7 @@ import { textContentValidator } from '../../../core/validators/text-content.vali
     CheckboxModule,
     MultiSelectModule,
     PaginatorModule,
+    SkeletonModule,
     HasPermissionDirective
   ],
   providers: [MessageService],
@@ -95,6 +97,7 @@ export class ComplementarioComponent implements OnInit {
     });
   }
   activeTab = signal<number>(0);
+  cargando = signal<boolean>(true);
   confirmDialog = signal<{
     title: string;
     message: string;
@@ -301,12 +304,14 @@ export class ComplementarioComponent implements OnInit {
       return;
     }
 
+    this.cargando.set(true);
     this.loadEspecialidades();
     this.loadTiposEmpleado();
     this.loadTiposEmpleadoCatalogo();
     this.loadServicios();
     this.loadVacunas();
     this.loadDesparasitantes();
+    setTimeout(() => this.cargando.set(false), 500);
   }
 
   private resetPagination() {
