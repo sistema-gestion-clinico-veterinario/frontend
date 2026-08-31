@@ -11,9 +11,9 @@ import {
   AplicacionPreventiva,
   TipoVacuna,
   TipoDesparasitante,
-  CartillaDetalle,
-  RecordatorioWhatsApp
+  CartillaDetalle
 } from '../../models/cartilla.model';
+import { RecordatorioWhatsAppResponse } from '../../models/response/recordatorio-whatsapp-response';
 
 @Injectable({ providedIn: 'root' })
 export class CartillaService {
@@ -76,7 +76,7 @@ export class CartillaService {
     return this.http.post<ApiResponse<TipoDesparasitante>>(`${this.preventivosUrl}/deworming-products`, request);
   }
 
-  listarRecordatoriosWhatsApp() {
-    return this.http.get<ApiResponse<RecordatorioWhatsApp[]>>(`${this.url}/recordatorios-whatsapp`);
+  listarRecordatoriosPreventivosWhatsApp() {
+    return this.http.get<ApiResponse<RecordatorioWhatsAppResponse[]>>(`${this.url}/preventive-reminders/whatsapp`);
   }
 }

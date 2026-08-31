@@ -6,6 +6,7 @@ import { CitaResponse } from '../../models/response/cita-response';
 import { Page } from '../../models/response/page';
 import { ApiResponse } from '../../models/response/api-response';
 import { EstadoCita } from '../enums/estado-cita.enum';
+import { RecordatorioWhatsAppResponse } from '../../models/response/recordatorio-whatsapp-response';
 
 export interface AgendaCounters {
   programadas: number;
@@ -92,5 +93,9 @@ export class CitaService {
 
   getServiciosNoMedicos(mascotaId: number) {
     return this.http.get<ApiResponse<CitaResponse[]>>(`${this.apiUrl}/mascota/${mascotaId}/servicios`);
+  }
+
+  listarRecordatoriosWhatsApp() {
+    return this.http.get<ApiResponse<RecordatorioWhatsAppResponse[]>>(`${this.apiUrl}/reminders/whatsapp`);
   }
 }

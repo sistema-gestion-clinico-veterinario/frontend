@@ -103,18 +103,3 @@ export interface CartillaDetalle {
   controles: import('./response/control-preventivo-response').ControlPreventivoResponse[];
   aplicaciones: AplicacionPreventiva[];
 }
-
-export interface RecordatorioWhatsApp {
-  controlId: number;
-  mascotaNombre: string;
-  apoderadoId: number;
-  apoderadoNombre: string;
-  apoderadoTelefono: string;
-  tipoControl: string;
-  nombreControl: string;
-  fechaRecomendada: string;
-  estado: string;
-  diasRestantes: number;
-  resumenDias: string;
-  mensajeWhatsApp: string;
-}
