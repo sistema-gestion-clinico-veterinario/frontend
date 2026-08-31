@@ -30,6 +30,16 @@ export interface RolMenuConfiguration {
   orden: number;
 }
 
+export interface RolMenuOrderItem {
+  tipo: 'MODULE' | 'VIEW';
+  referenciaId: number;
+  codigo: string;
+  nombre: string;
+  icono?: string;
+  orden: number;
+  vistas: RolMenuOrderItem[];
+}
+
 interface RolVistaPermiso {
   vistaId: number;
   codigo: string;
@@ -123,6 +133,14 @@ export class RoleService {
 
   saveMenuConfiguration(roleId: number, configuration: RolMenuConfiguration[]) {
     return this.http.put<ApiResponse<RolMenuConfiguration[]>>(`${this.apiUrl}/${roleId}/menu-configuration`, configuration);
+  }
+
+  getMenuOrder(roleId: number) {
+    return this.http.get<ApiResponse<RolMenuOrderItem[]>>(`${this.apiUrl}/${roleId}/menu-order`);
+  }
+
+  saveMenuOrder(roleId: number, order: RolMenuOrderItem[]) {
+    return this.http.put<ApiResponse<RolMenuOrderItem[]>>(`${this.apiUrl}/${roleId}/menu-order`, order);
   }
 
   private toRolVentanaPermiso(vista: RolVistaPermiso): RolVentanaPermiso {

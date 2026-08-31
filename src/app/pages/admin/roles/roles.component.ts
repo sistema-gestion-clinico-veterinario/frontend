@@ -5,7 +5,7 @@ import { Router, RouterLink } from '@angular/router';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { SkeletonModule } from 'primeng/skeleton';
-import { RoleService, RolMenuConfiguration, RolVentanaPermiso } from '../../../core/services/role.service';
+import { RoleService, RolMenuConfiguration, RolMenuOrderItem, RolVentanaPermiso } from '../../../core/services/role.service';
 import { LoadingStore } from '../../../store/loading.store';
 import { AuthStore } from '../../../store/auth.store';
 import { AuthService } from '../../../core/services/auth.service';
@@ -15,6 +15,7 @@ import { resolveInitialRoute } from '../../../layouts/main-layout/navbar/navbar.
 import { hasMeaningfulText } from '../../../core/utils/input-validation.util';
 import { normalizeText } from '../../../core/utils/normalize-text.util';
 import { SessionService } from '../../../core/services/session.service';
+import { concatMap, map, of } from 'rxjs';
 
 type Section = 'empresa' | 'sistema';
 
@@ -55,6 +56,9 @@ export class RolesComponent implements OnInit {
   permisosModificados = signal<boolean>(false);
   menuConfiguration   = signal<RolMenuConfiguration[]>([]);
   menuConfigurationModified = signal<boolean>(false);
+  menuOrder           = signal<RolMenuOrderItem[]>([]);
+  menuOrderModified   = signal<boolean>(false);
+  menuOrganizationModified = computed(() => this.menuConfigurationModified() || this.menuOrderModified());
   loadingPermisos     = signal<boolean>(false);
   showCreateModal     = signal<boolean>(false);
   newRoleName         = signal<string>('');
@@ -94,6 +98,8 @@ export class RolesComponent implements OnInit {
   reloadForCompany(companyId: number) {
     this.selectedRole.set(null);
     this.ventanaPermisos.set([]);
+    this.menuConfiguration.set([]);
+    this.menuOrder.set([]);
     this.permisosModificados.set(false);
     this.loadCompanyRoles(companyId);
   }
@@ -127,15 +133,26 @@ export class RolesComponent implements OnInit {
     this.isEditingName.set(false);
     this.editingNameValue.set('');
     this.permisosModificados.set(false);
+    this.menuConfiguration.set([]);
+    this.menuOrder.set([]);
+    this.menuConfigurationModified.set(false);
+    this.menuOrderModified.set(false);
     this.loadVentanaPermisos(role.id);
     this.loadMenuConfiguration(role.id);
+    this.loadMenuOrder(role.id);
   }
 
   loadVentanaPermisos(roleId: number) {
     this.loadingPermisos.set(true);
     this.roleService.getVentanas(roleId).subscribe({
-      next: (res) => { this.ventanaPermisos.set(res.data); this.loadingPermisos.set(false); },
-      error: () => this.loadingPermisos.set(false)
+      next: (res) => {
+        if (this.selectedRole()?.id !== roleId) return;
+        this.ventanaPermisos.set(res.data);
+        this.loadingPermisos.set(false);
+      },
+      error: () => {
+        if (this.selectedRole()?.id === roleId) this.loadingPermisos.set(false);
+      }
     });
   }
 
@@ -146,10 +163,28 @@ export class RolesComponent implements OnInit {
   loadMenuConfiguration(roleId: number) {
     this.roleService.getMenuConfiguration(roleId).subscribe({
       next: ({ data }) => {
+        if (this.selectedRole()?.id !== roleId) return;
         this.menuConfiguration.set(data ?? []);
+        this.syncMenuConfigurationOrder(this.menuOrder());
         this.menuConfigurationModified.set(false);
       },
-      error: () => this.menuConfiguration.set([])
+      error: () => {
+        if (this.selectedRole()?.id === roleId) this.menuConfiguration.set([]);
+      }
+    });
+  }
+
+  loadMenuOrder(roleId: number) {
+    this.roleService.getMenuOrder(roleId).subscribe({
+      next: ({ data }) => {
+        if (this.selectedRole()?.id !== roleId) return;
+        this.menuOrder.set(data ?? []);
+        this.syncMenuConfigurationOrder(data ?? []);
+        this.menuOrderModified.set(false);
+      },
+      error: () => {
+        if (this.selectedRole()?.id === roleId) this.menuOrder.set([]);
+      }
     });
   }
 
@@ -159,17 +194,75 @@ export class RolesComponent implements OnInit {
     this.menuConfigurationModified.set(true);
   }
 
+  menuConfigurationFor(moduleId: number): RolMenuConfiguration | undefined {
+    return this.menuConfiguration().find(item => item.ventanaId === moduleId);
+  }
+
+  moveMenuItem(index: number, direction: -1 | 1) {
+    if (!this.hasModifyAccess()) return;
+    const items = [...this.menuOrder()];
+    const target = index + direction;
+    if (target < 0 || target >= items.length) return;
+    [items[index], items[target]] = [items[target], items[index]];
+    const orderedItems = this.resequence(items);
+    this.menuOrder.set(orderedItems);
+    this.syncMenuConfigurationOrder(orderedItems);
+    this.menuOrderModified.set(true);
+  }
+
+  moveNestedView(moduleId: number, index: number, direction: -1 | 1) {
+    if (!this.hasModifyAccess()) return;
+    this.menuOrder.update(items => items.map(item => {
+      if (item.tipo !== 'MODULE' || item.referenciaId !== moduleId) return item;
+      const vistas = [...(item.vistas ?? [])];
+      const target = index + direction;
+      if (target < 0 || target >= vistas.length) return item;
+      [vistas[index], vistas[target]] = [vistas[target], vistas[index]];
+      return { ...item, vistas: this.resequence(vistas) };
+    }));
+    this.menuOrderModified.set(true);
+  }
+
+  private resequence(items: RolMenuOrderItem[]): RolMenuOrderItem[] {
+    return items.map((item, index) => ({ ...item, orden: index }));
+  }
+
+  private syncMenuConfigurationOrder(items: RolMenuOrderItem[]) {
+    const moduleOrders = new Map(
+      items.filter(item => item.tipo === 'MODULE')
+        .map(item => [item.referenciaId, item.orden] as const)
+    );
+    this.menuConfiguration.update(configuration => configuration.map(item => ({
+      ...item,
+      orden: moduleOrders.get(item.ventanaId) ?? item.orden
+    })));
+  }
+
   saveMenuConfiguration() {
     const role = this.selectedRole();
     if (!role) return;
-    this.roleService.saveMenuConfiguration(role.id, this.menuConfiguration()).subscribe({
-      next: ({ data }) => {
-        this.menuConfiguration.set(data ?? []);
+    const presentationRequest = this.menuConfigurationModified()
+      ? this.roleService.saveMenuConfiguration(role.id, this.menuConfiguration())
+      : of({ data: this.menuConfiguration() });
+    const orderRequest = this.menuOrderModified()
+      ? this.roleService.saveMenuOrder(role.id, this.menuOrder())
+      : of({ data: this.menuOrder() });
+
+    presentationRequest.pipe(
+      concatMap(presentation => orderRequest.pipe(
+        map(order => ({ presentation, order }))
+      ))
+    ).subscribe({
+      next: ({ presentation, order }) => {
+        this.menuConfiguration.set(presentation.data ?? []);
+        this.menuOrder.set(order.data ?? []);
+        this.syncMenuConfigurationOrder(order.data ?? []);
         this.menuConfigurationModified.set(false);
-        this.messageService.add({ severity: 'success', summary: 'Menú actualizado', detail: 'La presentación del menú se guardó correctamente.' });
+        this.menuOrderModified.set(false);
+        this.messageService.add({ severity: 'success', summary: 'Menú actualizado', detail: 'La organización del menú se guardó correctamente.' });
         this.refreshCurrentSessionIfActiveRoleChanged(role.id);
       },
-      error: (err) => this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo guardar la presentación del menú.' })
+      error: (err) => this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo guardar la organización del menú.' })
     });
   }
 
@@ -222,6 +315,8 @@ export class RolesComponent implements OnInit {
             this.permisosModificados.set(false);
             this.messageService.add({ severity: 'success', summary: 'Guardado', detail: 'Permisos actualizados correctamente' });
             this.refreshCurrentSessionIfActiveRoleChanged(role.id);
+            this.loadMenuConfiguration(role.id);
+            this.loadMenuOrder(role.id);
           },
           error: (err) => {
             this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo guardar' });
