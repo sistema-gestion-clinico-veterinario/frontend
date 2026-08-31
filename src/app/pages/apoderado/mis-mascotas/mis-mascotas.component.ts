@@ -9,6 +9,7 @@ import { PaginatorModule } from 'primeng/paginator';
 import { FormsModule } from '@angular/forms';
 import { normalizeText } from '../../../core/utils/normalize-text.util';
 import { hasMeaningfulText } from '../../../core/utils/input-validation.util';
+import { MediaService } from '../../../core/services/media.service';
 
 @Component({
   selector: 'app-mis-mascotas',
@@ -21,6 +22,7 @@ export class MisMascotasComponent implements OnInit {
   private readonly apoderadoService = inject(ApoderadoService);
   private readonly router = inject(Router);
   private readonly messageService = inject(MessageService);
+  private readonly mediaService = inject(MediaService);
 
   mascotas = signal<MascotaResponse[]>([]);
   isLoading = signal(true);
@@ -135,5 +137,9 @@ export class MisMascotasComponent implements OnInit {
       return;
     }
     this.router.navigate(['/apoderado/mis-citas'], { queryParams: { mascotaId: mascota.id } });
+  }
+
+  resolvePhotoUrl(url?: string): string {
+    return this.mediaService.resolveUrl(url) ?? '';
   }
 }

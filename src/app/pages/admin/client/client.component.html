@@ -235,7 +235,7 @@
   </div>
 </div>
 
-<div class="p-3 sm:p-4 flex flex-col gap-5 sm:gap-8 animate-fade-in">
+<div *ngIf="!cargando() || clients().length > 0" class="p-3 sm:p-4 flex flex-col gap-5 sm:gap-8 animate-fade-in">
   <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
     <div class="flex items-center gap-3">
       <i class="pi pi-address-book text-[#0066AA] text-3xl shrink-0"></i>

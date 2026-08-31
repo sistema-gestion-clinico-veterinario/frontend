@@ -2,7 +2,7 @@
 
   <!-- ══════════════ TOP BAR ══════════════ -->
   <div class="bg-white/95 backdrop-blur-sm border-b border-slate-100  px-3 sm:px-6 py-3 sm:py-4 rounded-b-2xl">
-    <div class="agenda-topbar-content flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+    <div class="flex flex-col gap-3 min-[901px]:flex-row min-[901px]:items-center min-[901px]:justify-between min-[901px]:gap-4">
 
       <div class="flex items-center gap-3">
         <i class="pi pi-calendar text-[#0066AA] text-3xl shrink-0"></i>
@@ -12,9 +12,9 @@
         </div>
       </div>
 
-      <div class="agenda-topbar-actions flex w-full sm:w-auto items-center justify-between sm:justify-end gap-2">
+      <div class="flex w-full items-center justify-between gap-2 min-[901px]:w-auto min-[901px]:justify-end">
         <!-- View switcher -->
-        <div class="agenda-view-switcher flex min-w-0 flex-1 sm:flex-none items-center bg-slate-100 rounded-xl p-1 gap-0.5 overflow-x-auto">
+        <div class="flex min-w-0 flex-1 items-center gap-0.5 overflow-x-auto rounded-xl bg-slate-100 p-1 min-[901px]:flex-none [&>button]:min-w-10 [&>button]:flex-1 [&>button]:justify-center min-[901px]:[&>button]:flex-none">
           <button (click)="cambiarVista('lista')"
             [class.bg-white]="vistaActual()==='lista'"
             [class.text-[#0066AA]]="vistaActual()==='lista'"
@@ -137,8 +137,8 @@
 
   <div *ngIf="!cargando()" class="p-3 sm:p-6 space-y-4">
 
-    <div *ngIf="vistaActual() === 'lista'" class="agenda-kpis grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-      <div class="agenda-kpi min-h-[76px] flex items-center gap-4 rounded-xl border border-slate-100 bg-violet-50/70 px-4 py-3">
+    <div *ngIf="vistaActual() === 'lista'" class="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-4 min-[901px]:gap-3">
+      <div class="flex min-h-[62px] items-center gap-2 rounded-xl border border-slate-100 bg-violet-50/70 px-2.5 py-2 min-[901px]:min-h-[76px] min-[901px]:gap-4 min-[901px]:px-4 min-[901px]:py-3">
         <i class="pi pi-calendar text-violet-600 text-2xl shrink-0"></i>
         <div>
           <p class="text-xl font-extrabold text-slate-900 leading-none">{{ agendaCounters().programadas }}</p>
@@ -147,7 +147,7 @@
         </div>
       </div>
 
-      <div class="agenda-kpi min-h-[76px] flex items-center gap-4 rounded-xl border border-slate-100 bg-amber-50/70 px-4 py-3">
+      <div class="flex min-h-[62px] items-center gap-2 rounded-xl border border-slate-100 bg-amber-50/70 px-2.5 py-2 min-[901px]:min-h-[76px] min-[901px]:gap-4 min-[901px]:px-4 min-[901px]:py-3">
         <i class="pi pi-clock text-amber-600 text-2xl shrink-0"></i>
         <div>
           <p class="text-xl font-extrabold text-slate-900 leading-none">{{ agendaCounters().enProceso }}</p>
@@ -156,7 +156,7 @@
         </div>
       </div>
 
-      <div class="agenda-kpi min-h-[76px] flex items-center gap-4 rounded-xl border border-slate-100 bg-emerald-50/70 px-4 py-3">
+      <div class="flex min-h-[62px] items-center gap-2 rounded-xl border border-slate-100 bg-emerald-50/70 px-2.5 py-2 min-[901px]:min-h-[76px] min-[901px]:gap-4 min-[901px]:px-4 min-[901px]:py-3">
         <i class="pi pi-check-circle text-emerald-600 text-2xl shrink-0"></i>
         <div>
           <p class="text-xl font-extrabold text-slate-900 leading-none">{{ agendaCounters().completadas }}</p>
@@ -165,7 +165,7 @@
         </div>
       </div>
 
-      <div class="agenda-kpi min-h-[76px] flex items-center gap-4 rounded-xl border border-slate-100 bg-rose-50/70 px-4 py-3">
+      <div class="flex min-h-[62px] items-center gap-2 rounded-xl border border-slate-100 bg-rose-50/70 px-2.5 py-2 min-[901px]:min-h-[76px] min-[901px]:gap-4 min-[901px]:px-4 min-[901px]:py-3">
         <i class="pi pi-times-circle text-rose-600 text-2xl shrink-0"></i>
         <div>
           <p class="text-xl font-extrabold text-slate-900 leading-none">{{ agendaCounters().canceladas }}</p>
@@ -499,12 +499,12 @@
           <span class="text-sm font-medium">Cargando agenda...</span>
         </div>
 
-        <div *ngIf="!cargandoCal()" class="agenda-mobile-calendar">
+        <div *ngIf="!cargandoCal()" class="block min-[901px]:hidden">
           <ng-container *ngIf="vistaActual() === 'dia'">
-            <div *ngIf="getCitasDia(fechaBase()).length; else mobileDayEmpty" class="mobile-day-list">
+            <div *ngIf="getCitasDia(fechaBase()).length; else mobileDayEmpty" class="overflow-hidden">
               <button *ngFor="let cita of getCitasDia(fechaBase())" type="button"
-                (click)="verDetalleCita(cita)" class="mobile-calendar-appointment">
-                <div class="mobile-calendar-time">{{ cita.fechaHoraInicio | date:'HH:mm' }}</div>
+                (click)="verDetalleCita(cita)" class="grid min-h-[4.5rem] w-full grid-cols-[3.25rem_minmax(0,1fr)_auto_0.75rem] items-center gap-2.5 border-b border-slate-200 bg-white px-3 py-2.5 last:border-b-0 max-[420px]:grid-cols-[2.75rem_minmax(0,1fr)_auto] max-[420px]:gap-2 max-[420px]:px-2 max-[420px]:[&>.pi-chevron-right]:hidden">
+                <div class="flex self-stretch items-center justify-center border-r border-slate-200 text-[13px] font-extrabold text-[#0066AA]">{{ cita.fechaHoraInicio | date:'HH:mm' }}</div>
                 <div class="min-w-0 text-left">
                   <p class="truncate text-sm font-extrabold text-slate-800">{{ cita.mascotaNombre }}</p>
                   <p class="truncate text-[11px] text-slate-500">
@@ -512,14 +512,14 @@
                   </p>
                   <p class="truncate text-[10px] text-slate-400">{{ cita.veterinarioNombre }}</p>
                 </div>
-                <span [class]="'mobile-calendar-status ' + estadoClass(cita.estado)">
+                <span [class]="'inline-flex items-center justify-center whitespace-nowrap rounded-full px-2 py-0.5 text-[9px] font-extrabold ' + estadoClass(cita.estado)">
                   {{ estadoLabel(cita.estado) }}
                 </span>
                 <i class="pi pi-chevron-right text-[10px] text-slate-300"></i>
               </button>
             </div>
             <ng-template #mobileDayEmpty>
-              <div class="mobile-calendar-empty">
+              <div class="flex min-h-48 flex-col items-center justify-center gap-1.5 text-center">
                 <i class="pi pi-calendar text-xl text-slate-300"></i>
                 <p class="text-sm font-bold text-slate-500">Sin citas para este día</p>
                 <p class="text-[11px] text-slate-400">Puedes elegir otra fecha o crear una nueva cita.</p>
@@ -527,18 +527,18 @@
             </ng-template>
           </ng-container>
 
-          <div *ngIf="vistaActual() === 'semana'" class="mobile-week-list">
+          <div *ngIf="vistaActual() === 'semana'" class="flex flex-col overflow-hidden">
             <button *ngFor="let dia of diasSemanaActual()" type="button"
               (click)="clickDiaMes(dia)"
-              class="mobile-week-summary-row"
-              [class.mobile-week-day-today]="esHoy(dia)">
-              <span class="mobile-week-date">
-                <strong class="capitalize">{{ dia.toLocaleDateString('es-PE', { weekday: 'long' }) }}</strong>
-                <small>{{ dia.toLocaleDateString('es-PE', { day: 'numeric', month: 'short' }) }}</small>
+              class="grid min-h-[4.25rem] w-full grid-cols-[4.5rem_minmax(0,1fr)_auto] items-center gap-2.5 border-b border-slate-200 bg-white px-3 py-2.5 text-left text-slate-700 last-of-type:border-b-0 max-[420px]:grid-cols-[3.75rem_minmax(0,1fr)]"
+              [class.!bg-blue-50]="esHoy(dia)" [class.!text-[#0066AA]]="esHoy(dia)">
+              <span class="flex min-w-0 flex-col gap-1">
+                <strong class="truncate text-[11px] font-extrabold capitalize">{{ dia.toLocaleDateString('es-PE', { weekday: 'long' }) }}</strong>
+                <small class="text-[10px] font-semibold text-slate-500">{{ dia.toLocaleDateString('es-PE', { day: 'numeric', month: 'short' }) }}</small>
               </span>
 
-              <span class="mobile-week-summary">
-                <span class="mobile-week-icon">
+              <span class="flex min-w-0 items-center gap-2 text-[11px] font-semibold text-slate-500">
+                <span class="flex size-[30px] shrink-0 items-center justify-center rounded-full bg-slate-100 text-[11px] text-slate-500">
                   <i class="pi pi-calendar"></i>
                 </span>
                 <span class="truncate">
@@ -548,32 +548,32 @@
                 </span>
               </span>
 
-              <span class="mobile-week-count">
+              <span class="shrink-0 text-right text-[9px] font-extrabold text-slate-400 max-[420px]:hidden">
                 {{ getCitasDia(dia).length }} {{ getCitasDia(dia).length === 1 ? 'cita' : 'citas' }}
               </span>
             </button>
 
-            <div class="mobile-week-help">
-              <span class="mobile-week-help-icon"><i class="pi pi-info-circle"></i></span>
+            <div class="mt-1 grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2.5 border-t border-slate-200 px-3 pb-1 pt-3.5 text-slate-600">
+              <span class="text-xs text-blue-500"><i class="pi pi-info-circle"></i></span>
               <span>
-                <strong>Vista semanal</strong>
-                <small>Selecciona un día para consultar y gestionar sus citas.</small>
+                <strong class="block text-[11px] font-extrabold">Vista semanal</strong>
+                <small class="mt-1 block text-[9px] leading-snug text-slate-500">Selecciona un día para consultar y gestionar sus citas.</small>
               </span>
               <i class="pi pi-calendar text-xl text-blue-300"></i>
             </div>
           </div>
 
           <ng-container *ngIf="vistaActual() === 'mes'">
-            <div class="mobile-month-weekdays">
+            <div class="mb-1.5 grid grid-cols-7 text-center text-[9px] font-extrabold uppercase text-slate-400">
               <span *ngFor="let label of ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom']">{{ label }}</span>
             </div>
-            <div class="mobile-month-grid">
+            <div class="grid grid-cols-7 overflow-hidden rounded-[10px] border-l border-t border-slate-200">
               <button *ngFor="let dia of diasMesActual()" type="button"
-                (click)="clickDiaMes(dia)" class="mobile-month-day"
-                [class.mobile-month-day-other]="!esMesActual(dia)"
-                [class.mobile-month-day-today]="esHoy(dia)">
-                <span class="mobile-month-day-number">{{ dia | date:'d' }}</span>
-                <span *ngIf="getCitasDia(dia).length" class="mobile-month-day-count">
+                (click)="clickDiaMes(dia)" class="relative min-h-[52px] border-b border-r border-slate-200 bg-white text-[11px] font-bold text-slate-700"
+                [class.!bg-slate-50]="!esMesActual(dia)" [class.!text-slate-300]="!esMesActual(dia)"
+                [class.!bg-blue-50]="esHoy(dia)" [class.!text-[#0066AA]]="esHoy(dia)">
+                <span class="absolute left-2 top-1.5">{{ dia | date:'d' }}</span>
+                <span *ngIf="getCitasDia(dia).length" class="absolute bottom-1.5 right-1.5 flex size-4 items-center justify-center rounded-full bg-blue-100 text-[9px] font-extrabold text-[#0066AA]">
                   {{ getCitasDia(dia).length }}
                 </span>
               </button>
@@ -584,7 +584,7 @@
           </ng-container>
         </div>
 
-        <div class="agenda-desktop-calendar">
+        <div class="hidden min-[901px]:block">
           <full-calendar
             *ngIf="!cargandoCal()"
             #fullCalendar

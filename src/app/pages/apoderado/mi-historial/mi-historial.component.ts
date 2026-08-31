@@ -1,11 +1,11 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
-import { CommonModule, Location } from '@angular/common';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 
 import { ApoderadoService } from '../../../core/services/apoderado.service';
-import { LoadingStore } from '../../../store/loading.store';
+import { HistoriaClinicaDetalle } from '../../../models/response/historia-clinica-response';
 
 @Component({
   selector: 'app-mi-historial',
@@ -16,21 +16,34 @@ import { LoadingStore } from '../../../store/loading.store';
 })
 export class MiHistorialComponent implements OnInit {
   private readonly route      = inject(ActivatedRoute);
-  private readonly location   = inject(Location);
   private readonly apoderado  = inject(ApoderadoService);
   private readonly msgService = inject(MessageService);
-  readonly loadingStore       = inject(LoadingStore);
+  private historyRequestId = 0;
 
   // Mascotas del apoderado (panel izquierdo)
   mascotas        = signal<any[]>([]);
   mascotaActiva   = signal<any | null>(null);
+  loadingPets     = signal(true);
 
   // Historia clínica (panel derecho)
-  hc             = signal<any | null>(null);
+  hc             = signal<HistoriaClinicaDetalle | null>(null);
   consultaActiva = signal<any | null>(null);
   tabActiva      = signal<'clinico' | 'recetas' | 'archivos'>('clinico');
   noTieneHc      = signal<boolean>(false);
   loadingHc      = signal<boolean>(false);
+  controlesPendientes = computed(() => (this.hc()?.controlesPreventivos ?? [])
+    .filter(control => !['APLICADO', 'CANCELADO', 'SUSPENDIDO_POR_CITA'].includes(control.estado))
+    .sort((a, b) => a.fechaRecomendada.localeCompare(b.fechaRecomendada)));
+  aplicacionesPreventivas = computed(() => [...(this.hc()?.aplicacionesPreventivas ?? [])]
+    .sort((a, b) => b.fechaAplicacion.localeCompare(a.fechaAplicacion)));
+  vacunasPendientes = computed(() => this.controlesPendientes()
+    .filter(control => control.tipo === 'VACUNACION'));
+  desparasitacionesPendientes = computed(() => this.controlesPendientes()
+    .filter(control => control.tipo === 'DESPARASITACION'));
+  vacunasAplicadas = computed(() => this.aplicacionesPreventivas()
+    .filter(aplicacion => aplicacion.tipo === 'VACUNACION'));
+  desparasitacionesAplicadas = computed(() => this.aplicacionesPreventivas()
+    .filter(aplicacion => aplicacion.tipo === 'DESPARASITACION'));
 
   ngOnInit() {
     // Lee mascotaId por URL o query para abrir directamente el historial correcto.
@@ -42,11 +55,11 @@ export class MiHistorialComponent implements OnInit {
   }
 
   cargarMascotas(preselectedId: number | null) {
-    this.loadingStore.show();
+    this.loadingPets.set(true);
     this.apoderado.getPortalMascotas().subscribe({
       next: (res: any) => {
         this.mascotas.set(res.data || []);
-        this.loadingStore.hide();
+        this.loadingPets.set(false);
         if (preselectedId) {
           const pre = (res.data || []).find((m: any) => m.id === preselectedId);
           if (pre) this.seleccionarMascota(pre);
@@ -56,7 +69,7 @@ export class MiHistorialComponent implements OnInit {
         }
       },
       error: () => {
-        this.loadingStore.hide();
+        this.loadingPets.set(false);
         this.msgService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar tus mascotas.' });
       }
     });
@@ -72,9 +85,11 @@ export class MiHistorialComponent implements OnInit {
   }
 
   cargarHistoria(mascotaId: number) {
+    const requestId = ++this.historyRequestId;
     this.loadingHc.set(true);
     this.apoderado.getPortalMascotaHistoria(mascotaId).subscribe({
       next: (res: any) => {
+        if (requestId !== this.historyRequestId) return;
         this.hc.set(res.data);
         if (res.data?.consultas?.length > 0) {
           this.consultaActiva.set(res.data.consultas[0]);
@@ -82,6 +97,7 @@ export class MiHistorialComponent implements OnInit {
         this.loadingHc.set(false);
       },
       error: (err: any) => {
+        if (requestId !== this.historyRequestId) return;
         this.loadingHc.set(false);
         if (err.status === 404) this.noTieneHc.set(true);
         else this.msgService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cargar la historia clínica.' });
