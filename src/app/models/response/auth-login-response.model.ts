@@ -21,14 +21,33 @@ export interface MenuStructureDTO {
   ventanaId?: number;
   ventanaCodigo?: string;
   ventanaNombre: string;
+  ventanaIcono?: string;
+  presentacion?: MenuPresentation;
   grupo?: string;
   orden: number;
   vistas: MenuItemDTO[];
 }
 
+export type RoleScope = 'PLATFORM' | 'STAFF' | 'CLIENT';
+export type RolePurpose = 'PLATFORM_ADMIN' | 'COMPANY_ADMIN' | 'CLIENT_PORTAL' | 'CUSTOM';
+export type MenuPresentation = 'GROUPED' | 'FLAT';
+
+export interface AssignedRoleDTO {
+  id: number;
+  name: string;
+  scope: RoleScope;
+  purpose: RolePurpose;
+}
+
 export interface AuthLoginData {
   roles: string[];
   assignedRoles?: string[];
+  availableRoles?: AssignedRoleDTO[];
+  activeRoleId?: number;
+  activeRoleName?: string;
+  activeRoleScope?: RoleScope;
+  activeRolePurpose?: RolePurpose;
+  permissionVersion?: number;
   companyId: number;
   companyName: string;
   nombreCompleto: string;

@@ -94,6 +94,12 @@ export class ChangePasswordModalComponent {
           selectedEnterprise: this.authStore.selectedEnterprise(),
           menu: this.authStore.menu(),
           assignedRoles: this.authStore.assignedRoles()
+          ,availableRoles: this.authStore.availableRoles()
+          ,activeRoleId: this.authStore.activeRoleId()
+          ,activeRoleName: this.authStore.activeRoleName()
+          ,activeRoleScope: this.authStore.activeRoleScope()
+          ,activeRolePurpose: this.authStore.activeRolePurpose()
+          ,permissionVersion: this.authStore.permissionVersion()
         });
         this.isSubmitting.set(false);
         this.dismissed.emit();

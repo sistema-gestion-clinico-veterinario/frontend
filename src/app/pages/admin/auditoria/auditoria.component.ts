@@ -37,9 +37,7 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
   private lastSubscribedDestination: string | null = null;
   private loadTimeout: any = null;
 
-  readonly isSuperAdmin = computed(() =>
-    (this.authStore.roles() ?? []).some(r => r === 'ROLE_SUPER_ADMIN' || r === 'SUPER_ADMIN')
-  );
+  readonly isSuperAdmin = computed(() => this.authStore.isSuperAdmin());
 
   logs = signal<AuditLog[]>([]);
   totalRecords = signal<number>(0);

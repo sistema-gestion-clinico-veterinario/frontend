@@ -47,7 +47,7 @@
         </button>
       </div>
     </div>
-    <div *ngIf="authStore.assignedRoles().length > 1" id="active-role-dropdown-container" class="relative">
+    <div *ngIf="authStore.availableRoles().length > 1" id="active-role-dropdown-container" class="relative">
       <button
         type="button"
         (click)="toggleActiveRoleDropdown()"
@@ -66,14 +66,14 @@
       </button>
       <div *ngIf="activeRoleDropdownOpen()"
         class="fixed left-3 right-3 top-16 mt-1.5 w-auto bg-white rounded-xl border border-slate-100 py-1 z-[250] animate-in fade-in slide-in-from-top-1 duration-150 sm:absolute sm:left-0 sm:right-auto sm:top-full sm:w-52">
-        <button *ngFor="let role of authStore.assignedRoles()"
+        <button *ngFor="let role of authStore.availableRoles()"
           (click)="selectActiveRole(role)"
           [disabled]="roleSwitching()"
           class="w-full flex items-center justify-between px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-indigo-600 transition-colors text-left"
           [class.opacity-60]="roleSwitching()"
         >
-          <span class="truncate">{{ getRoleLabel(role) }}</span>
-          <i *ngIf="role === authStore.roles()[0]" class="pi pi-check text-indigo-600 text-[10px]"></i>
+          <span class="truncate">{{ getRoleLabel(role.name) }}</span>
+          <i *ngIf="role.id === authStore.activeRoleId()" class="pi pi-check text-indigo-600 text-[10px]"></i>
         </button>
       </div>
     </div>

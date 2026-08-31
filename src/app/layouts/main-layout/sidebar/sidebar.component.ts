@@ -46,9 +46,7 @@ export class SidebarComponent implements OnInit {
     const companyName = this.authStore.companyName();
     if (companyName) return companyName;
 
-    const roles = this.authStore.roles() ?? [];
-    const isSuperAdmin = roles.some(role => role === 'SUPER_ADMIN' || role === 'ROLE_SUPER_ADMIN');
-    return isSuperAdmin ? 'Vet Admin Pro' : '';
+    return this.authStore.isSuperAdmin() ? 'Vet Admin Pro' : '';
   });
   loadingEnterprise = computed(() => this.authStore.loadingEnterprise());
 
@@ -58,17 +56,9 @@ export class SidebarComponent implements OnInit {
   });
 
   userRole = computed(() => {
-    const roles = this.authStore.roles() ?? [];
-    const role = roles[0] ?? '';
-    const map: Record<string, string> = {
-      ADMIN: 'Administrador', ROLE_ADMIN: 'Administrador',
-      SUPER_ADMIN: 'Super Admin', ROLE_SUPER_ADMIN: 'Super Admin',
-      VETERINARIO: 'Veterinario', ROLE_VETERINARIO: 'Veterinario',
-      RECEPCIONISTA: 'Recepcionista', ROLE_RECEPCIONISTA: 'Recepcionista',
-      APODERADO: 'Apoderado', ROLE_APODERADO: 'Apoderado',
-      GROMMER: 'Groomer', ROLE_GROMMER: 'Groomer',
-    };
-    return map[role] || role;
+    return (this.authStore.activeRoleName() ?? '')
+      .replace(/^ROLE_/, '')
+      .replaceAll('_', ' ');
   });
 
   ngOnInit() {
@@ -162,6 +152,7 @@ export class SidebarComponent implements OnInit {
   }
 
   sectionIcon(structure: MenuSection): string {
+    if (structure.ventanaIcono) return `pi ${structure.ventanaIcono}`;
     const first = structure.vistas[0];
     return first ? this.getIcon(first) : 'pi pi-folder';
   }

@@ -12,7 +12,6 @@ import { ToastModule } from 'primeng/toast';
 import { MenuModule } from 'primeng/menu';
 import { SkeletonModule } from 'primeng/skeleton';
 import { MenuItem, MessageService } from 'primeng/api';
-import { forkJoin } from 'rxjs';
 import { EmpleadoService } from '../../../core/services/empleado.service';
 import { MediaService } from '../../../core/services/media.service';
 import { CompanyService } from '../../../core/services/company.service';
@@ -22,7 +21,6 @@ import { RoleService } from '../../../core/services/role.service';
 import { EmpleadoListResponse } from '../../../models/response/empleado-list-response';
 import { EmpleadoRequest, HorarioEmpleadoRequest } from '../../../models/request/empleado-request';
 import { AuthStore } from '../../../store/auth.store';
-import { Role } from '../../../core/enums/role.enum';
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 import { InputFilterDirective } from '../../../core/directives/input-filter.directive';
 import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
@@ -179,7 +177,7 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     return this.authStore.selectedEnterprise()?.establishmentId ?? this.authStore.companyId();
   }
 
-  roles = signal<{ label: string; value: string }[]>([]);
+  roles = signal<{ label: string; value: number }[]>([]);
 
   tipoDocumentos = [
     { label: 'DNI', value: 'DNI' },
@@ -215,7 +213,7 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     tipoDocumento: ['DNI', [Validators.required]],
     telefono: ['', [Validators.required, Validators.pattern(/^\d{9}$/)]],
     direccion: ['', [Validators.required, Validators.maxLength(200), Validators.pattern(/^[a-zA-Z0-9áéíóúÁÉÍÓÚüÜñÑ\s\.,#\-\/°:]+$/), noLeadingTrailingSpaceValidator(), textContentValidator()]],
-    roles: [[], [(c: AbstractControl) => c.value?.length ? null : { required: true }]],
+    roleIds: [[], [(c: AbstractControl) => c.value?.length ? null : { required: true }]],
     companyId: [null],
     genero: ['MASCULINO', [Validators.required]],
     observaciones: ['', [Validators.maxLength(500), noLeadingTrailingSpaceValidator(), textContentValidator()]],
@@ -234,8 +232,8 @@ export class EmployeeComponent implements OnInit, OnDestroy {
       this.employeeForm.get('companyId')?.setValue(companyId);
     }
 
-    this.employeeForm.get('roles')?.valueChanges.subscribe(roles => {
-      const isVet = roles?.includes(Role.VETERINARIO);
+    this.employeeForm.get('tiposEmpleado')?.valueChanges.subscribe(types => {
+      const isVet = types?.some((type: string) => type.toUpperCase() === 'VETERINARIO');
       const collegiatura = this.employeeForm.get('numeroColegiatura');
       const commonValidators = [noLeadingTrailingSpaceValidator(), textContentValidator({ requireLetter: false })];
       if (isVet) {
@@ -340,21 +338,17 @@ export class EmployeeComponent implements OnInit, OnDestroy {
 
   loadRoles(companyId?: number) {
     const id = companyId || this.activeCompanyId;
-    forkJoin({
-      empresa: this.roleService.listarPorEmpresa(id || undefined),
-      sistema: this.roleService.listarSistema()
-    }).subscribe({
-      next: ({ empresa, sistema }) => {
-        const hiddenRoles = ['ROLE_SUPER_ADMIN', 'ROLE_CLIENTE', 'ROLE_APODERADO'];
-        const roles = [
-          ...(empresa.data ?? []),
-          ...(sistema.data ?? []).filter(r => r.name === 'ROLE_ADMIN')
-        ];
-        const list = roles
-          .filter((r, index, items) => !hiddenRoles.includes(r.name) && items.findIndex(item => item.name === r.name) === index)
+    if (!id) {
+      this.roles.set([]);
+      return;
+    }
+    this.roleService.listarRolesPersonalAsignables(id).subscribe({
+      next: ({ data }) => {
+        const list = (data ?? [])
+          .filter(role => role.activo && role.scope === 'STAFF')
           .map(r => ({
             label: this.roleLabel(r.name),
-            value: r.name
+            value: r.id
           }));
         this.roles.set(list);
       },
@@ -365,19 +359,11 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   }
 
   roleLabel(name: string): string {
-    const map: Record<string, string> = {
-      'ROLE_SUPER_ADMIN': 'Super Administrador',
-      'ROLE_ADMIN': 'Administrador',
-      'ROLE_VETERINARIO': 'Veterinario',
-      'ROLE_RECEPCIONISTA': 'Recepcionista',
-      'ROLE_CLIENTE': 'Cliente',
-      'ROLE_APODERADO': 'Apoderado'
-    };
-    return map[name] ?? name.replace('ROLE_', '');
+    return name.replace(/^ROLE_/, '').replaceAll('_', ' ');
   }
 
   canEmployeeAction(tipo: 'leer' | 'modificar' | 'eliminar'): boolean {
-    return this.authStore.isSuperAdmin() || this.authStore.hasAccess('VISTA_EMPLEADOS', tipo);
+    return this.authStore.hasAccess('VISTA_EMPLEADOS', tipo);
   }
 
   viewEmployeeDetail(employee: EmpleadoListResponse) {
@@ -473,7 +459,7 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     this.employeeForm.reset({
       tipoDocumento: 'DNI',
       genero: 'MASCULINO',
-      roles: [],
+      roleIds: [],
       especialidades: [],
       tiposEmpleado: [],
       companyId: this.activeCompanyId

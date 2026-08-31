@@ -6,7 +6,6 @@ import { CitaService } from '../../../core/services/cita.service';
 import { ProfileService } from '../../../core/services/profile.service';
 import { HistoriaClinicaService } from '../../../core/services/historia-clinica.service';
 import { LoadingStore } from '../../../store/loading.store';
-import { Role } from '../../../core/enums/role.enum';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { catchError, finalize, forkJoin, of } from 'rxjs';
@@ -29,7 +28,6 @@ export class EmployeeDashboardComponent implements OnInit {
   private messageService = inject(MessageService);
 
   userName = this.authStore.nombreCompleto() ?? '';
-  roles = this.authStore.roles() ?? [];
   companyName = this.authStore.companyName() ?? '';
   empleadoId = this.authStore.empleadoId();
 
@@ -58,16 +56,10 @@ export class EmployeeDashboardComponent implements OnInit {
   }
 
   get rolePrincipal(): string {
-    if (this.roles.includes(Role.SUPER_ADMIN)) return 'Super Administrador';
-    if (this.roles.includes(Role.ADMIN)) return 'Administrador';
-    if (this.roles.includes(Role.VETERINARIO)) return 'Veterinario';
-    if (this.roles.includes(Role.RECEPCIONISTA)) return 'Recepcionista';
-    return this.roles[0]?.replace('ROLE_', '') ?? 'Empleado';
+    return (this.authStore.activeRoleName() ?? 'Empleado').replace(/^ROLE_/, '').replaceAll('_', ' ');
   }
 
   get roleBadgeClass(): string {
-    if (this.roles.includes(Role.VETERINARIO)) return 'bg-teal-50 text-teal-700 border border-teal-100';
-    if (this.roles.includes(Role.RECEPCIONISTA)) return 'bg-sky-50 text-sky-700 border border-sky-100';
     return 'bg-slate-100 text-slate-600 border border-slate-200';
   }
 

@@ -463,7 +463,38 @@
         <div class="space-y-4">
           <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
             <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
-            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">{{ authStore.roles().includes('ROLE_SUPER_ADMIN') ? '3' : '2' }}. Contacto y Ubicación</h3>
+            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">2. Acceso al portal</h3>
+          </div>
+
+          <div>
+            <label class="text-xs font-semibold text-slate-700">Rol del cliente <span class="text-rose-500">*</span></label>
+            <p class="mt-1 text-xs text-slate-500">Define las vistas y acciones disponibles cuando el cliente inicia sesión.</p>
+            <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2" role="group" aria-label="Roles de acceso del cliente">
+              <label *ngFor="let role of clientRoles()"
+                class="flex items-start gap-3 rounded border px-3 py-3 cursor-pointer transition-colors"
+                [ngClass]="isClientRoleSelected(role.id) ? 'border-[#0066AA] bg-blue-50/40' : 'border-slate-200 hover:border-slate-300'">
+                <input type="checkbox" class="mt-0.5 h-4 w-4 accent-[#0066AA]"
+                  [checked]="isClientRoleSelected(role.id)"
+                  (change)="toggleClientRole(role.id, $any($event.target).checked)" />
+                <span class="min-w-0">
+                  <span class="block text-sm font-semibold text-slate-800">{{ role.name }}</span>
+                  <span class="block mt-0.5 text-xs text-slate-500">{{ role.descripcion || 'Acceso personalizado al portal del cliente' }}</span>
+                </span>
+              </label>
+            </div>
+            <p *ngIf="clientRoles().length === 0" class="mt-3 text-xs text-rose-600">
+              No hay roles de cliente activos. Crea o activa uno antes de registrar al cliente.
+            </p>
+            <p *ngIf="clientForm.get('roleIds')?.invalid && clientForm.get('roleIds')?.touched" class="mt-2 text-[11px] text-rose-500">
+              Selecciona al menos un rol de cliente.
+            </p>
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
+            <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
+            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">3. Contacto y Ubicación</h3>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">

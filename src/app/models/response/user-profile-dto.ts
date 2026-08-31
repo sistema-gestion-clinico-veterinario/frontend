@@ -10,4 +10,5 @@ export interface UserProfileDTO {
   roles: string[];
   activo: boolean;
   companyName?: string;
+  roleIds?: number[];
 }

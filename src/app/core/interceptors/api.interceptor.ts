@@ -88,6 +88,12 @@ const handle401Error = (req: HttpRequest<any>, next: HttpHandlerFn, authStore: a
           originalMenu: res.data.menu,
           originalRoles: res.data.assignedRoles ?? res.data.roles,
           assignedRoles: res.data.assignedRoles ?? authStore.assignedRoles()
+          ,availableRoles: res.data.availableRoles ?? authStore.availableRoles()
+          ,activeRoleId: res.data.activeRoleId ?? authStore.activeRoleId()
+          ,activeRoleName: res.data.activeRoleName ?? authStore.activeRoleName()
+          ,activeRoleScope: res.data.activeRoleScope ?? authStore.activeRoleScope()
+          ,activeRolePurpose: res.data.activeRolePurpose ?? authStore.activeRolePurpose()
+          ,permissionVersion: res.data.permissionVersion ?? authStore.permissionVersion()
         });
         refreshTokenSubject.next(true);
         return next(req.clone({ withCredentials: true }));
