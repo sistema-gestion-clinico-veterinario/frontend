@@ -5,6 +5,9 @@ module.exports = {
   ],
   theme: {
     extend: {
+      fontSize: {
+        base: ['15px', '1.5'],
+      },
       fontFamily: {
         sans: ['Barlow', 'sans-serif'],
       },

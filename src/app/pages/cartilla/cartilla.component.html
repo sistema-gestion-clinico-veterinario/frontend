@@ -3,16 +3,15 @@
   <div class="space-y-5 sm:space-y-6">
     <header class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
       <div class="flex items-center gap-3">
-        <i *ngIf="modo() === 'VACUNACION'" class="pi pi-plus-circle text-[#0066AA] text-3xl shrink-0"></i>
-        <i *ngIf="modo() === 'DESPARASITACION'" class="pi pi-heart-fill text-[#0066AA] text-3xl shrink-0"></i>
+        <i class="pi pi-plus-circle text-[#0066AA] text-3xl shrink-0"></i>
         <div>
           <p class="text-[11px] font-bold uppercase tracking-[.14em] text-[#0066AA]">Salud preventiva</p>
-          <h1 class="text-xl font-extrabold leading-tight tracking-tight text-slate-900">{{ modo() === 'VACUNACION' ? 'Cartilla de vacunación' : 'Control de desparasitación' }}</h1>
+          <h1 class="text-xl font-extrabold leading-tight tracking-tight text-slate-900">{{ mascotaSel() ? (modo() === 'VACUNACION' ? 'Cartilla de vacunación' : 'Control de desparasitación') : 'Cartilla de vacunación' }}</h1>
           <p class="mt-1 text-sm text-slate-400 font-medium hidden sm:block">Registro, seguimiento e historial preventivo del paciente</p>
         </div>
       </div>
 
-      <div class="flex w-full items-center gap-1 rounded-xl border border-slate-200 bg-slate-50 p-1 sm:w-auto">
+      <div *ngIf="mascotaSel()" class="flex w-full items-center gap-1 rounded-xl border border-slate-200 bg-slate-50 p-1 sm:w-auto">
         <button type="button" (click)="cambiarModo('VACUNACION')"
           class="flex min-w-0 flex-1 items-center justify-center gap-2 rounded-lg px-2.5 py-2.5 text-xs font-semibold transition-all duration-200 sm:flex-none sm:px-4 sm:text-sm"
           [ngClass]="modo() === 'VACUNACION'
