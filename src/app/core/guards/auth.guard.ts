@@ -18,9 +18,8 @@ export const AuthGuard: CanActivateFn = (route, state) => {
 };
 
 function validateAccess(route: ActivatedRouteSnapshot, authStore: any, router: Router) {
-  const currentRoles = authStore.roles() ?? [];
   const currentMenu = authStore.menu() ?? [];
-  if (currentRoles.length === 0 && currentMenu.length === 0) {
+  if (!authStore.activeRoleId() && currentMenu.length === 0) {
     authStore.logout();
     return router.createUrlTree(['/login']);
   }
@@ -31,22 +30,21 @@ function validateAccess(route: ActivatedRouteSnapshot, authStore: any, router: R
 
   // Dynamic route pattern access check
   const pattern = getRoutePattern(route);
-  if (pattern && !isRoleDashboardRoute(pattern, currentRoles) && !authStore.hasRouteAccess(pattern)) {
-    return router.createUrlTree([resolveInitialRoute(authStore.roles() ?? [], authStore.menu() ?? [])]);
+  if (pattern && !isPurposeDashboardRoute(pattern, authStore.activeRolePurpose()) && !authStore.hasRouteAccess(pattern)) {
+    return router.createUrlTree([resolveInitialRoute(authStore.menu() ?? [], authStore.activeRolePurpose())]);
   }
 
   // Fallback checks (legacy or explicit data parameters)
   const requiredVentana = route.data?.['ventana'] as string | undefined;
   if (requiredVentana) {
     if (!authStore.hasAccess(requiredVentana, 'leer')) {
-      return router.createUrlTree([resolveInitialRoute(authStore.roles() ?? [], authStore.menu() ?? [])]);
+      return router.createUrlTree([resolveInitialRoute(authStore.menu() ?? [], authStore.activeRolePurpose())]);
     }
   }
 
-  const requiredRoles = route.data?.['roles'] as string[] | undefined;
-  const roles = authStore.roles() ?? [];
-  if (requiredRoles && requiredRoles.length > 0 && !requiredRoles.some((role) => roles.includes(role))) {
-    return router.createUrlTree([resolveDashboardRoute(roles)]);
+  const requiredPurposes = route.data?.['purposes'] as string[] | undefined;
+  if (requiredPurposes?.length && !requiredPurposes.includes(authStore.activeRolePurpose())) {
+    return router.createUrlTree([resolveDashboardRoute(authStore.activeRolePurpose())]);
   }
 
   return true;
@@ -59,21 +57,21 @@ function getRoutePattern(route: ActivatedRouteSnapshot): string {
   return segments.join('/');
 }
 
-function isRoleDashboardRoute(pattern: string, roles: string[]): boolean {
+function isPurposeDashboardRoute(pattern: string, purpose: string | null): boolean {
   if (pattern === 'dashboard') {
-    return roles.some(role => role === 'ROLE_SUPER_ADMIN' || role === 'SUPER_ADMIN');
+    return purpose === 'PLATFORM_ADMIN';
   }
 
   if (pattern === 'admin/dashboard') {
-    return roles.some(role => role === 'ROLE_ADMIN' || role === 'ADMIN');
+    return purpose === 'COMPANY_ADMIN';
   }
 
   if (pattern === 'apoderado/dashboard') {
-    return roles.some(role => role.includes('APODERADO') || role.includes('CLIENTE'));
+    return purpose === 'CLIENT_PORTAL';
   }
 
   if (pattern === 'empleado/dashboard') {
-    return roles.some(role => !role.includes('ADMIN') && !role.includes('APODERADO') && !role.includes('CLIENTE'));
+    return purpose === 'CUSTOM';
   }
 
   return false;

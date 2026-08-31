@@ -248,7 +248,7 @@
 
           <!-- Bloque de hora -->
           <div class="flex-1 relative h-[44px] border-l border-slate-100"
-            [ngClass]="{'bg-slate-50/50': slot.isWorking, 'border-l-[#0066AA] border-l-2': slot.isWorking}">
+            [ngClass]="slot.isWorking ? 'bg-slate-50/50 border-l-2 border-l-[#0066AA]' : ''">
 
             <!-- Etiqueta del turno -->
             <div *ngIf="slot.isShiftStart && slot.shift" class="px-4 py-2 flex items-center h-full">
@@ -309,13 +309,13 @@
           <div *ngFor="let item of calendarDays()"
             (click)="onDayClick(item)"
             class="roster-calendar-day relative"
-            [ngClass]="[
-              {'roster-calendar-day-muted': item.otherMonth, 'roster-calendar-day-active': !item.otherMonth, 'roster-calendar-day-today': item.isToday},
-              viewMode() === 'month' ? 'max-[760px]:!min-h-[58px] max-[760px]:!min-w-0 max-[760px]:!border-r max-[760px]:!border-slate-200 max-[380px]:!min-h-[51px]' : ''
-            ]"
+            [class.roster-calendar-day-muted]="item.otherMonth"
+            [class.roster-calendar-day-active]="!item.otherMonth"
+            [class.roster-calendar-day-today]="item.isToday"
             [class.roster-calendar-day-selected]="selectedCalendarDay() === item"
             [class.cursor-pointer]="!item.otherMonth && (canCreate() || item.shifts?.length)"
             [class.cursor-default]="item.otherMonth || (!canCreate() && !item.shifts?.length)"
+            [ngClass]="viewMode() === 'month' ? 'max-[760px]:!min-h-[58px] max-[760px]:!min-w-0 max-[760px]:!border-r max-[760px]:!border-slate-200 max-[380px]:!min-h-[51px]' : ''"
             [style.min-height]="viewMode() === 'month' ? '132px' : '176px'">
 
             <div class="roster-calendar-day-card">

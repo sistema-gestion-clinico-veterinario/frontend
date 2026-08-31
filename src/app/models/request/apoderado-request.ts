@@ -11,4 +11,5 @@ export interface ApoderadoRequest {
   referencias?: string;
   observaciones?: string;
   companyId?: number;
+  roleIds?: number[];
 }

@@ -22,7 +22,6 @@ import { PrescripcionRequest } from '../../../models/request/prescripcion-reques
 import { ArchivoClinicoResponse } from '../../../models/response/archivo-clinico-response';
 import { RecetaModalsComponent } from '../form-hc/receta-modals/receta-modals.component';
 import { ArchivoModalsComponent } from '../form-hc/archivo-modals/archivo-modals.component';
-import { Role } from '../../../core/enums/role.enum';
 import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
 import { textContentValidator } from '../../../core/validators/text-content.validator';
 import { normalizeText } from '../../../core/utils/normalize-text.util';
@@ -66,7 +65,7 @@ export class ConsultaFormComponent implements OnInit, OnDestroy {
   readonly canCreate = computed(() => this.authStore.hasAccess('VISTA_HISTORIAS', 'escribir'));
   readonly canModify = computed(() => this.authStore.hasAccess('VISTA_HISTORIAS', 'modificar'));
   readonly canDelete = computed(() => this.authStore.hasAccess('VISTA_HISTORIAS', 'eliminar'));
-  readonly isAdminOrSuper = computed(() => this.authStore.roles().includes(Role.ADMIN) || this.authStore.roles().includes(Role.SUPER_ADMIN));
+  readonly isAdminOrSuper = computed(() => this.authStore.isAdmin());
   readonly accessMode = signal<'auto' | 'view' | 'edit'>('auto');
   readonly canEditConsulta = computed(() =>
     this.canModify()

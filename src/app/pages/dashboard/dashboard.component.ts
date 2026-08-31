@@ -9,7 +9,6 @@ import { DashboardService, DashboardStats } from '../../core/services/dashboard.
 import { DropdownModule } from 'primeng/dropdown';
 import { SkeletonModule } from 'primeng/skeleton';
 import { FormsModule } from '@angular/forms';
-import { Role } from '../../core/enums/role.enum';
 import { LoadingStore } from '../../store/loading.store';
 import { ChangePasswordModalComponent } from '../../layouts/main-layout/change-password-modal/change-password-modal.component';
 import { PagoListResponse } from '../../models/response/pago-response';
@@ -29,11 +28,8 @@ export class DashboardComponent implements OnInit {
   private destroyRef       = inject(DestroyRef);
 
   userName        = this.authStore.nombreCompleto() ?? '';
-  roles           = this.authStore.roles() ?? [];
-  isSuperAdmin    = this.roles.includes(Role.SUPER_ADMIN);
-  isAdmin         = this.roles.includes(Role.ADMIN);
-  isVeterinario   = this.roles.includes(Role.VETERINARIO);
-  isRecepcionista = this.roles.includes(Role.RECEPCIONISTA);
+  isSuperAdmin    = this.authStore.activeRolePurpose() === 'PLATFORM_ADMIN';
+  isAdmin         = this.authStore.activeRolePurpose() === 'COMPANY_ADMIN';
 
   readonly today       = new Date();
   get dashboardScopeLabel(): string {
@@ -248,15 +244,12 @@ export class DashboardComponent implements OnInit {
   get rolePrincipal(): string {
     if (this.isSuperAdmin)    return 'Super Administrador';
     if (this.isAdmin)         return 'Administrador';
-    if (this.isVeterinario)   return 'Veterinario';
-    if (this.isRecepcionista) return 'Recepcionista';
-    return this.roles[0]?.replace('ROLE_', '') ?? 'Usuario';
+    return (this.authStore.activeRoleName() ?? 'Usuario').replace(/^ROLE_/, '').replaceAll('_', ' ');
   }
 
   get roleBadgeClass(): string {
     if (this.isSuperAdmin)    return 'bg-violet-50 text-violet-700 border border-violet-100';
     if (this.isAdmin)         return 'bg-blue-50 text-[#0066AA] border border-blue-100';
-    if (this.isVeterinario)   return 'bg-teal-50 text-teal-700 border border-teal-100';
     return 'bg-slate-100 text-slate-600 border border-slate-200';
   }
 
@@ -434,20 +427,6 @@ export class DashboardComponent implements OnInit {
     if (action.includes('CONSULTA'))
       return { icon: 'pi-search', bg: 'bg-blue-50', text: 'text-blue-700', dot: 'bg-blue-400' };
     return { icon: 'pi-bolt', bg: 'bg-indigo-50', text: 'text-indigo-700', dot: 'bg-indigo-400' };
-  }
-
-  permissionLabel(perm: string): string {
-    const map: Record<string, string> = {
-      EMPLOYEE_READ: 'Ver Personal',        EMPLOYEE_MANAGE: 'Gestionar Personal',
-      CLIENT_READ: 'Ver Clientes',          CLIENT_MANAGE: 'Gestionar Clientes',
-      APPOINTMENT_READ: 'Ver Citas',        APPOINTMENT_MANAGE: 'Gestionar Citas',
-      CLINICAL_RECORD_READ: 'Ver HC',       CLINICAL_RECORD_MANAGE: 'Gestionar HC',
-      COMPANY_READ: 'Ver Empresa',          COMPANY_MANAGE: 'Gestionar Empresa',
-      ROLE_READ: 'Ver Roles',               ROLE_MANAGE: 'Gestionar Roles',
-      SERVICE_READ: 'Ver Servicios',        SERVICE_MANAGE: 'Gestionar Servicios',
-      PAYMENT_READ: 'Ver Pagos',            PAYMENT_MANAGE: 'Gestionar Pagos',
-    };
-    return map[perm] ?? perm.replace(/_/g, ' ').toLowerCase();
   }
 
   dismissPasswordModal() {

@@ -29,7 +29,6 @@ import { CitaRequest } from '../../../models/request/cita-request';
 import { EstadoCita } from '../../../core/enums/estado-cita.enum';
 import { LoadingStore } from '../../../store/loading.store';
 import { AuthStore } from '../../../store/auth.store';
-import { Role } from '../../../core/enums/role.enum';
 import { Router } from '@angular/router';
 import { forkJoin, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
@@ -127,14 +126,11 @@ export class AgendaComponent implements OnInit, OnDestroy {
   private stompClient: AgendaStompClient | null = null;
   private lastWsDestination: string | null = null;
 
-  readonly isSuperAdmin = computed(() => this.authStore.roles().includes(Role.SUPER_ADMIN));
-  readonly isAdmin      = computed(() => this.authStore.roles().includes(Role.ADMIN));
-  readonly canManage    = computed(() => this.isAdmin() || this.isSuperAdmin());
   readonly canReadHistoria   = computed(() => this.authStore.hasAccess('VISTA_HISTORIAS', 'leer'));
   readonly canCreateHistoria = computed(() => this.authStore.hasAccess('VISTA_HISTORIAS', 'escribir'));
   readonly canModifyHistoria = computed(() => this.authStore.hasAccess('VISTA_HISTORIAS', 'modificar'));
   readonly canViewAllCitas   = computed(() =>
-    this.canManage() || this.authStore.hasAccess('CITA_VER_TODAS', 'leer')
+    this.authStore.hasAccess('VISTA_CITAS_AGENDA', 'modificar')
   );
 
   readonly canBookEmergency = computed(() =>
@@ -1939,11 +1935,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
 
   private getEffectiveVeterinarioFilter(): number | undefined {
     if (this.filterVeterinarioId) return this.filterVeterinarioId;
-    const roles = this.authStore.roles();
-    const isAdmin = roles.includes('ROLE_SUPER_ADMIN') || roles.includes('SUPER_ADMIN')
-                 || roles.includes('ROLE_ADMIN')       || roles.includes('ADMIN');
-    if (isAdmin) return undefined;
-    if (!this.authStore.hasAccess('CITA_VER_TODAS', 'leer')) {
+    if (!this.canViewAllCitas()) {
       return this.authStore.empleadoId() ?? undefined;
     }
     return undefined;

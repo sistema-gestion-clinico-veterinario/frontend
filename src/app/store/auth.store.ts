@@ -1,5 +1,5 @@
 import { signalStore, withState, withMethods, patchState } from '@ngrx/signals';
-import { MenuItemDTO, MenuStructureDTO } from '../models/response/auth-login-response.model';
+import { AssignedRoleDTO, MenuItemDTO, MenuStructureDTO, RolePurpose, RoleScope } from '../models/response/auth-login-response.model';
 
 interface Enterprise {
   establishmentId: number;
@@ -15,7 +15,13 @@ interface AuthState {
   refreshToken: string | null;
   roles: string[];
   assignedRoles: string[];
+  availableRoles: AssignedRoleDTO[];
   originalRoles: string[];
+  activeRoleId: number | null;
+  activeRoleName: string | null;
+  activeRoleScope: RoleScope | null;
+  activeRolePurpose: RolePurpose | null;
+  permissionVersion: number;
   companyId: number | null;
   companyName: string | null;
   nombreCompleto: string | null;
@@ -36,7 +42,13 @@ export interface AuthPayload {
   refreshToken: string | null;
   roles: string[];
   assignedRoles?: string[];
+  availableRoles?: AssignedRoleDTO[];
   originalRoles?: string[];
+  activeRoleId?: number | null;
+  activeRoleName?: string | null;
+  activeRoleScope?: RoleScope | null;
+  activeRolePurpose?: RolePurpose | null;
+  permissionVersion?: number;
   companyId?: number | null;
   companyName?: string | null;
   nombreCompleto?: string | null;
@@ -75,7 +87,13 @@ const createInitialState = (useStorage = true): AuthState => {
     refreshToken: null,
     roles: [],
     assignedRoles: [],
+    availableRoles: [],
     originalRoles: [],
+    activeRoleId: null,
+    activeRoleName: null,
+    activeRoleScope: null,
+    activeRolePurpose: null,
+    permissionVersion: 0,
     companyId: null,
     companyName: null,
     nombreCompleto: null,
@@ -116,7 +134,13 @@ export const AuthStore = signalStore(
         refreshToken: auth.refreshToken,
         roles: auth.roles,
         assignedRoles: auth.assignedRoles ?? auth.roles ?? [],
+        availableRoles: auth.availableRoles ?? [],
         originalRoles: auth.originalRoles ?? auth.roles ?? [],
+        activeRoleId: auth.activeRoleId ?? null,
+        activeRoleName: auth.activeRoleName ?? auth.roles?.[0] ?? null,
+        activeRoleScope: auth.activeRoleScope ?? null,
+        activeRolePurpose: auth.activeRolePurpose ?? null,
+        permissionVersion: auth.permissionVersion ?? 0,
         companyId: auth.companyId ?? null,
         companyName: auth.companyName ?? null,
         nombreCompleto: auth.nombreCompleto ?? null,
@@ -234,15 +258,6 @@ export const AuthStore = signalStore(
     },
     
     hasRouteAccess(routePattern: string): boolean {
-      const roles = store.originalRoles()?.length ? store.originalRoles() : store.roles();
-
-      // SUPER_ADMIN y ADMIN tienen acceso irrestricto a todas las rutas
-      const isPrivileged = roles.some(r =>
-        r === 'ROLE_SUPER_ADMIN' || r === 'SUPER_ADMIN' ||
-        r === 'ROLE_ADMIN'       || r === 'ADMIN'
-      );
-      if (isPrivileged) return true;
-
       const normalized = normalizeRoute(routePattern);
       if (!normalized || normalized === 'profile' || normalized === 'password-change') return true;
 
@@ -280,16 +295,16 @@ export const AuthStore = signalStore(
     },
 
     isSuperAdmin(): boolean {
-      return (store.originalRoles() ?? store.roles()).some(r =>
-        r === 'ROLE_SUPER_ADMIN' || r === 'SUPER_ADMIN'
-      );
+      return store.activeRolePurpose() === 'PLATFORM_ADMIN';
     },
 
     isAdmin(): boolean {
-      return (store.originalRoles() ?? store.roles()).some(r =>
-        r === 'ROLE_SUPER_ADMIN' || r === 'SUPER_ADMIN' ||
-        r === 'ROLE_ADMIN'       || r === 'ADMIN'
-      );
+      const purpose = store.activeRolePurpose();
+      return purpose === 'PLATFORM_ADMIN' || purpose === 'COMPANY_ADMIN';
+    },
+
+    isClientPortal(): boolean {
+      return store.activeRolePurpose() === 'CLIENT_PORTAL';
     },
 
     logout() {
@@ -310,7 +325,13 @@ function buildCurrentState(store: any): AuthState {
     refreshToken: store.refreshToken(),
     roles: store.roles(),
     assignedRoles: store.assignedRoles(),
+    availableRoles: store.availableRoles(),
     originalRoles: store.originalRoles(),
+    activeRoleId: store.activeRoleId(),
+    activeRoleName: store.activeRoleName(),
+    activeRoleScope: store.activeRoleScope(),
+    activeRolePurpose: store.activeRolePurpose(),
+    permissionVersion: store.permissionVersion(),
     companyId: store.companyId(),
     companyName: store.companyName(),
     nombreCompleto: store.nombreCompleto(),

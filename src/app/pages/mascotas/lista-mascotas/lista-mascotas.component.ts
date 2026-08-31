@@ -20,7 +20,6 @@ import { MascotaResponse } from '../../../models/response/mascota-response';
 import { ApoderadoRequest } from '../../../models/request/apoderado-request';
 import { LoadingStore } from '../../../store/loading.store';
 import { AuthStore } from '../../../store/auth.store';
-import { Role } from '../../../core/enums/role.enum';
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 import { InputFilterDirective } from '../../../core/directives/input-filter.directive';
 
@@ -57,7 +56,7 @@ export class ListaMascotasComponent implements OnInit {
   readonly authStore                = inject(AuthStore);
   readonly loadingStore             = inject(LoadingStore);
 
-  readonly isSuperAdmin = computed(() => this.authStore.roles().includes(Role.SUPER_ADMIN));
+  readonly isSuperAdmin = computed(() => this.authStore.isSuperAdmin());
 
   mascotas     = signal<MascotaResponse[]>([]);
   cargando     = signal<boolean>(true);
@@ -101,7 +100,7 @@ export class ListaMascotasComponent implements OnInit {
   otroMotivo = signal<string>('');
 
   canMascotaModify(): boolean {
-    return this.authStore.isSuperAdmin() || this.authStore.hasAccess('VISTA_MASCOTAS', 'modificar');
+    return this.authStore.hasAccess('VISTA_MASCOTAS', 'modificar');
   }
 
   viewPetDetail(mascota: MascotaResponse) {

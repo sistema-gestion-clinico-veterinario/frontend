@@ -2,7 +2,7 @@ import { Component, OnInit, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Subject, debounceTime, forkJoin } from 'rxjs';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators, AbstractControl } from '@angular/forms';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
@@ -16,18 +16,19 @@ import { ApoderadoService } from '../../../core/services/apoderado.service';
 import { MascotaService } from '../../../core/services/mascota.service';
 import { MediaService } from '../../../core/services/media.service';
 import { CompanyService } from '../../../core/services/company.service';
+import { RoleService } from '../../../core/services/role.service';
 import { ApoderadoListResponse } from '../../../models/response/apoderado-list-response';
 import { ApoderadoRequest } from '../../../models/request/apoderado-request';
 import { MascotaResponse } from '../../../models/response/mascota-response';
 import { LoadingStore } from '../../../store/loading.store';
 import { AuthStore } from '../../../store/auth.store';
-import { Role } from '../../../core/enums/role.enum';
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 import { InputFilterDirective } from '../../../core/directives/input-filter.directive';
 import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
 import { lowercaseEmailValidator } from '../../../core/validators/lowercase-email.validator';
 import { textContentValidator } from '../../../core/validators/text-content.validator';
 import { normalizeText } from '../../../core/utils/normalize-text.util';
+import { Role } from '../../../models/response/permission';
 
 @Component({
   selector: 'app-client',
@@ -58,6 +59,7 @@ export class ClientComponent implements OnInit {
   private readonly mascotaService = inject(MascotaService);
   readonly mediaService = inject(MediaService);
   private readonly companyService = inject(CompanyService);
+  private readonly roleService = inject(RoleService);
   private readonly messageService = inject(MessageService);
   readonly authStore = inject(AuthStore);
   readonly loadingStore = inject(LoadingStore);
@@ -72,6 +74,7 @@ export class ClientComponent implements OnInit {
   displayDetailModal = signal<boolean>(false);
   selectedClientDetail = signal<ApoderadoRequest | null>(null);
   clientPets = signal<MascotaResponse[]>([]);
+  clientRoles = signal<Role[]>([]);
 
   searchNombre = signal('');
   searchDocumento = signal('');
@@ -129,7 +132,7 @@ export class ClientComponent implements OnInit {
   }
 
   canClientAction(tipo: 'leer' | 'modificar' | 'eliminar'): boolean {
-    return this.authStore.isSuperAdmin() || this.authStore.hasAccess('VISTA_CLIENTES', tipo);
+    return this.authStore.hasAccess('VISTA_CLIENTES', tipo);
   }
 
   clientActionItems(client: ApoderadoListResponse): MenuItem[] {
@@ -188,6 +191,7 @@ export class ClientComponent implements OnInit {
     telefono: ['', [Validators.required, Validators.pattern(/^\d{9}$/)]],
     direccion: ['', [Validators.required, Validators.maxLength(200), Validators.pattern(/^[a-zA-Z0-9áéíóúÁÉÍÓÚüÜñÑ\s\.,#\-\/°:]+$/), noLeadingTrailingSpaceValidator(), textContentValidator()]],
     companyId: [null],
+    roleIds: [[], [(control: AbstractControl) => control.value?.length ? null : { required: true }]],
     genero: ['MASCULINO', [Validators.required]],
     referencias: ['', [Validators.maxLength(500), noLeadingTrailingSpaceValidator(), textContentValidator()]],
     observaciones: ['', [Validators.maxLength(500), noLeadingTrailingSpaceValidator(), textContentValidator()]]
@@ -224,6 +228,12 @@ export class ClientComponent implements OnInit {
   }
 
   ngOnInit() {
+    const companyId = this.activeCompanyId;
+    if (companyId) {
+      this.loadClientRoles(companyId);
+      this.clientForm.get('companyId')?.setValue(companyId);
+    }
+
     this.searchTrigger.pipe(
       debounceTime(400),
       takeUntilDestroyed(this.destroyRef)
@@ -341,13 +351,42 @@ export class ClientComponent implements OnInit {
 
 
   openNew() {
+    const defaultRole = this.clientRoles().find(role => role.purpose === 'CLIENT_PORTAL')
+      ?? this.clientRoles()[0];
     this.clientForm.reset({
       tipoDocumento: 'DNI',
       genero: 'MASCULINO',
-      companyId: this.activeCompanyId
+      companyId: this.activeCompanyId,
+      roleIds: defaultRole ? [defaultRole.id] : []
     });
     this.isEdit.set(false);
     this.displayModal.set(true);
+  }
+
+  loadClientRoles(companyId: number) {
+    this.roleService.listarRolesClienteAsignables(companyId).subscribe({
+      next: ({ data }) => this.clientRoles.set(data ?? []),
+      error: () => {
+        this.clientRoles.set([]);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'No se pudieron cargar los roles de acceso para clientes'
+        });
+      }
+    });
+  }
+
+  isClientRoleSelected(roleId: number): boolean {
+    return (this.clientForm.get('roleIds')?.value ?? []).includes(roleId);
+  }
+
+  toggleClientRole(roleId: number, checked: boolean) {
+    const control = this.clientForm.get('roleIds');
+    const selected = new Set<number>(control?.value ?? []);
+    checked ? selected.add(roleId) : selected.delete(roleId);
+    control?.setValue([...selected]);
+    control?.markAsTouched();
   }
 
   viewClientDetail(client: ApoderadoListResponse) {

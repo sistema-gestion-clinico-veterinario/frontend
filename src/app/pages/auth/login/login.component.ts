@@ -95,7 +95,7 @@ export class LoginComponent implements OnInit {
 
         this.sessionService.establish(data);
         sessionStorage.removeItem('pw_modal_dismissed');
-        return from(this.router.navigateByUrl(resolveInitialRoute(roles, data.menu ?? [])));
+        return from(this.router.navigateByUrl(resolveInitialRoute(data.menu ?? [], data.activeRolePurpose)));
       }),
       finalize(() => {
         this.isSubmitting = false;
@@ -126,8 +126,7 @@ export class LoginComponent implements OnInit {
   }
 
   private navigateToInitialRoute(): void {
-    const roles = this.authStore.roles() ?? [];
-    this.router.navigateByUrl(resolveInitialRoute(roles, this.authStore.menu() ?? []));
+    this.router.navigateByUrl(resolveInitialRoute(this.authStore.menu() ?? [], this.authStore.activeRolePurpose()));
   }
 }
 

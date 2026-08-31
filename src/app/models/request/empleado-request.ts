@@ -14,7 +14,7 @@ export interface EmpleadoRequest {
   tipoDocumento: string;
   telefono: string;
   direccion: string;
-  roles: string[];
+  roleIds: number[];
   companyId?: number;
   genero: string;
   observaciones?: string;

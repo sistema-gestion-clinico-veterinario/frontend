@@ -9,9 +9,9 @@ import { AuthStore } from '../../../store/auth.store';
 import { CompanyService } from '../../../core/services/company.service';
 import { RoleService } from '../../../core/services/role.service';
 import { AuthService } from '../../../core/services/auth.service';
-import { Role } from '../../../core/enums/role.enum';
 import { Role as CompanyRole } from '../../../models/response/permission';
-import { MenuItemDTO, MenuStructureDTO } from '../../../models/response/auth-login-response.model';
+import { AssignedRoleDTO, MenuItemDTO, MenuStructureDTO, RolePurpose } from '../../../models/response/auth-login-response.model';
+import { SessionService } from '../../../core/services/session.service';
 
 @Component({
   selector: 'app-navbar',
@@ -27,6 +27,7 @@ export class NavbarComponent implements OnInit {
   private companyService = inject(CompanyService);
   private roleService = inject(RoleService);
   private authService = inject(AuthService);
+  private sessionService = inject(SessionService);
   private messageService = inject(MessageService);
   private router = inject(Router);
 
@@ -41,7 +42,7 @@ export class NavbarComponent implements OnInit {
   get companyName(): string { return this.authStore.selectedEnterprise()?.name ?? this.authStore.companyName() ?? 'VargasVet'; }
   get userInitial(): string { return this.userName.charAt(0).toUpperCase(); }
 
-  get isSuperAdmin(): boolean { return this.authStore.originalRoles().includes(Role.SUPER_ADMIN); }
+  get isSuperAdmin(): boolean { return this.authStore.isSuperAdmin(); }
   get activeCompanyId(): number | null { return this.authStore.selectedEnterprise()?.establishmentId ?? this.authStore.companyId(); }
 
   get activeCompanyLabel(): string {
@@ -52,8 +53,7 @@ export class NavbarComponent implements OnInit {
   }
 
   get activeRoleLabelText(): string {
-    const role = this.authStore.roles()[0];
-    return this.getRoleLabel(role);
+    return this.getRoleLabel(this.authStore.activeRoleName() ?? '');
   }
 
   @HostListener('document:click', ['$event'])
@@ -148,53 +148,27 @@ export class NavbarComponent implements OnInit {
   }
 
   getRoleLabel(roleName: string): string {
-    const mapping: Record<string, string> = {
-      'ROLE_SUPER_ADMIN': 'Super Administrador',
-      'ROLE_ADMIN': 'Administrador',
-      'ROLE_VETERINARIO': 'Veterinario',
-      'ROLE_APODERADO': 'Apoderado',
-      'ROLE_GROOMER': 'Estilista (Groomer)',
-      'ROLE_RECEPCIONISTA': 'Recepcionista'
-    };
-    return mapping[roleName] || roleName.replace('ROLE_', '');
+    return roleName.replace(/^ROLE_/, '').replaceAll('_', ' ');
   }
 
-  selectActiveRole(selectedRole: string) {
-    if (!selectedRole || this.roleSwitching()) return;
+  selectActiveRole(selectedRole: AssignedRoleDTO) {
+    if (!selectedRole?.id || this.roleSwitching()) return;
 
-    if (selectedRole === this.authStore.roles()[0]) {
+    if (selectedRole.id === this.authStore.activeRoleId()) {
       this.activeRoleDropdownOpen.set(false);
       return;
     }
 
     this.roleSwitching.set(true);
-    this.authService.switchRole(selectedRole).pipe(
+    this.authService.switchRole(selectedRole.id).pipe(
       finalize(() => {
         this.roleSwitching.set(false);
         this.activeRoleDropdownOpen.set(false);
       })
     ).subscribe({
         next: (res) => {
-          this.authStore.setAuth({
-            token: null,
-            refreshToken: null,
-            roles: res.data.roles,
-            companyId: res.data.companyId,
-            companyName: res.data.companyName,
-            nombreCompleto: res.data.nombreCompleto,
-            userType: res.data.userType,
-            empleadoId: res.data.empleadoId,
-            passwordChanged: res.data.passwordChanged,
-            needsCompanySelection: res.data.needsCompanySelection,
-            selectedEnterprise: this.authStore.selectedEnterprise(),
-            menu: res.data.menu,
-            simulatedRoleId: this.authStore.simulatedRoleId(),
-            originalMenu: res.data.menu,
-            originalRoles: res.data.assignedRoles || this.authStore.assignedRoles(),
-            assignedRoles: res.data.assignedRoles || this.authStore.assignedRoles()
-          });
-
-          this.router.navigateByUrl(resolveInitialRoute(res.data.roles ?? [], res.data.menu ?? []), { replaceUrl: true });
+          this.sessionService.establish(res.data, true);
+          this.router.navigateByUrl(resolveInitialRoute(res.data.menu ?? [], res.data.activeRolePurpose), { replaceUrl: true });
         },
         error: (err) => {
           const msg = err.error?.message || 'No se pudo cambiar el rol';
@@ -228,20 +202,16 @@ export class NavbarComponent implements OnInit {
   }
 }
 
-export function resolveDashboardRoute(roles: string[]): string {
-  if (roles.includes('ROLE_SUPER_ADMIN') || roles.includes('SUPER_ADMIN')) return '/dashboard';
-
-  const role = roles[0] ?? '';
-  if (role.includes('APODERADO') || role.includes('CLIENTE')) return '/apoderado/dashboard';
-  if (role.includes('ADMIN')) return '/admin/dashboard';
+export function resolveDashboardRoute(purpose?: RolePurpose | null): string {
+  if (purpose === 'PLATFORM_ADMIN') return '/dashboard';
+  if (purpose === 'COMPANY_ADMIN') return '/admin/dashboard';
+  if (purpose === 'CLIENT_PORTAL') return '/apoderado/dashboard';
   return '/empleado/dashboard';
 }
 
-export function resolveInitialRoute(roles: string[], menu: (MenuStructureDTO | MenuItemDTO)[]): string {
-  const dashboardRoute = resolveDashboardRoute(roles);
-  if (dashboardRoute) return dashboardRoute;
+export function resolveInitialRoute(menu: (MenuStructureDTO | MenuItemDTO)[], purpose?: RolePurpose | null): string {
   const menuRoute = findFirstMenuRoute(menu);
-  return menuRoute ? normalizeInitialRoute(menuRoute) : '/dashboard';
+  return menuRoute ? normalizeInitialRoute(menuRoute) : resolveDashboardRoute(purpose);
 }
 
 function findFirstMenuRoute(menu: (MenuStructureDTO | MenuItemDTO)[]): string | null {

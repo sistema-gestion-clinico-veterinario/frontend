@@ -12,4 +12,9 @@ export interface Role {
   descripcion?: string;
   activo: boolean;
   companyId: number | null;
+  scope: 'PLATFORM' | 'STAFF' | 'CLIENT';
+  purpose: 'PLATFORM_ADMIN' | 'COMPANY_ADMIN' | 'CLIENT_PORTAL' | 'CUSTOM';
+  systemManaged: boolean;
+  protectedRole: boolean;
+  permissionVersion: number;
 }

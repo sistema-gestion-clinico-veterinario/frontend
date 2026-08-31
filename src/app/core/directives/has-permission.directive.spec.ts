@@ -47,11 +47,11 @@ describe('HasPermissionDirective', () => {
     expect(fixture.nativeElement.querySelector('#content')).not.toBeNull();
   });
 
-  it('renders content for ROLE_SUPER_ADMIN regardless of menu', () => {
-    store.setAuth({ ...baseAuth, roles: ['ROLE_SUPER_ADMIN'] });
+  it('does not bypass view permissions for a platform administrator', () => {
+    store.setAuth({ ...baseAuth, activeRolePurpose: 'PLATFORM_ADMIN' });
     host.permission = 'VISTA_MASCOTAS';
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('#content')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('#content')).toBeNull();
   });
 
   it('renders content when user has the required access in the menu', () => {

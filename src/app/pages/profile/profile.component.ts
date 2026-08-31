@@ -210,15 +210,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
   get roleLabel(): string {
     const roles = this.profile()?.roles ?? [];
-    const map: Record<string, string> = {
-      'ROLE_SUPER_ADMIN': 'Super Administrador',
-      'ROLE_ADMIN': 'Administrador',
-      'ROLE_VETERINARIO': 'Veterinario',
-      'ROLE_RECEPCIONISTA': 'Recepcionista',
-      'ROLE_CLIENTE': 'Cliente',
-      'ROLE_APODERADO': 'Apoderado'
-    };
-    return roles.map(r => map[r] ?? r).join(', ');
+    return roles.map(role => role.replace(/^ROLE_/, '').replaceAll('_', ' ')).join(', ');
   }
 
   get userInitials(): string {
