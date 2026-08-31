@@ -84,9 +84,9 @@ describe('AuthStore', () => {
   });
 
   describe('hasRouteAccess', () => {
-    it('returns true unconditionally for ROLE_SUPER_ADMIN', () => {
-      store.setAuth({ ...cleanAuth, roles: ['ROLE_SUPER_ADMIN'], menu: [] });
-      expect(store.hasRouteAccess('cualquier/ruta')).toBeTrue();
+    it('does not bypass route permissions for a platform administrator', () => {
+      store.setAuth({ ...cleanAuth, activeRolePurpose: 'PLATFORM_ADMIN', menu: [] });
+      expect(store.hasRouteAccess('cualquier/ruta')).toBeFalse();
     });
 
     it('normalizes a route with leading and trailing slashes before matching', () => {
@@ -125,18 +125,18 @@ describe('AuthStore', () => {
   });
 
   describe('isSuperAdmin / isAdmin', () => {
-    it('isSuperAdmin returns true for ROLE_SUPER_ADMIN', () => {
-      store.setAuth({ ...cleanAuth, roles: ['ROLE_SUPER_ADMIN'], menu: [] });
+    it('isSuperAdmin returns true for PLATFORM_ADMIN purpose', () => {
+      store.setAuth({ ...cleanAuth, activeRolePurpose: 'PLATFORM_ADMIN', menu: [] });
       expect(store.isSuperAdmin()).toBeTrue();
     });
 
-    it('isAdmin returns true for ROLE_ADMIN', () => {
-      store.setAuth({ ...cleanAuth, roles: ['ROLE_ADMIN'], menu: [] });
+    it('isAdmin returns true for COMPANY_ADMIN purpose', () => {
+      store.setAuth({ ...cleanAuth, activeRolePurpose: 'COMPANY_ADMIN', menu: [] });
       expect(store.isAdmin()).toBeTrue();
     });
 
-    it('isSuperAdmin returns false for plain ROLE_ADMIN', () => {
-      store.setAuth({ ...cleanAuth, roles: ['ROLE_ADMIN'], menu: [] });
+    it('isSuperAdmin returns false for COMPANY_ADMIN purpose', () => {
+      store.setAuth({ ...cleanAuth, activeRolePurpose: 'COMPANY_ADMIN', menu: [] });
       expect(store.isSuperAdmin()).toBeFalse();
     });
   });

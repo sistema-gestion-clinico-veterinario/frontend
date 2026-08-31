@@ -198,7 +198,7 @@ export class CompanyComponent implements OnInit {
     const cached = this.companyActionItemsCache.get(company);
     if (cached) return cached;
 
-    const canModify = this.authStore.isSuperAdmin() || this.authStore.hasAccess('VISTA_COMPANY', 'modificar');
+    const canModify = this.authStore.hasAccess('VISTA_COMPANY', 'modificar');
     const items: MenuItem[] = [
       {
         label: 'Ver información',

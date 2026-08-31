@@ -5,7 +5,7 @@ import { Router, RouterLink } from '@angular/router';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { SkeletonModule } from 'primeng/skeleton';
-import { RoleService, RolVentanaPermiso } from '../../../core/services/role.service';
+import { RoleService, RolMenuConfiguration, RolVentanaPermiso } from '../../../core/services/role.service';
 import { LoadingStore } from '../../../store/loading.store';
 import { AuthStore } from '../../../store/auth.store';
 import { AuthService } from '../../../core/services/auth.service';
@@ -14,6 +14,7 @@ import { HasPermissionDirective } from '../../../core/directives/has-permission.
 import { resolveInitialRoute } from '../../../layouts/main-layout/navbar/navbar.component';
 import { hasMeaningfulText } from '../../../core/utils/input-validation.util';
 import { normalizeText } from '../../../core/utils/normalize-text.util';
+import { SessionService } from '../../../core/services/session.service';
 
 type Section = 'empresa' | 'sistema';
 
@@ -30,17 +31,15 @@ export class RolesComponent implements OnInit {
   private readonly messageService = inject(MessageService);
   private readonly authStore = inject(AuthStore);
   private readonly authService = inject(AuthService);
+  private readonly sessionService = inject(SessionService);
   private readonly router = inject(Router);
   readonly loadingStore = inject(LoadingStore);
 
-  isSuperAdmin = computed(() => (this.authStore.roles() ?? []).includes('ROLE_SUPER_ADMIN'));
-  isAdminOrSuperAdmin = computed(() => {
-    const userRoles = this.authStore.roles() ?? [];
-    return userRoles.includes('ROLE_SUPER_ADMIN') || userRoles.includes('ROLE_ADMIN');
-  });
+  isSuperAdmin = computed(() => this.authStore.isSuperAdmin());
+  isAdminOrSuperAdmin = computed(() => this.authStore.hasAccess('VISTA_ROLES', 'escribir'));
 
   hasModifyAccess = computed(() => {
-    return this.isSuperAdmin() || this.authStore.hasAccess('VISTA_ROLES', 'modificar');
+    return this.authStore.hasAccess('VISTA_ROLES', 'modificar');
   });
 
   get activeCompanyId(): number | null {
@@ -54,10 +53,13 @@ export class RolesComponent implements OnInit {
   activeSection       = signal<Section>('empresa');
   ventanaPermisos     = signal<RolVentanaPermiso[]>([]);
   permisosModificados = signal<boolean>(false);
+  menuConfiguration   = signal<RolMenuConfiguration[]>([]);
+  menuConfigurationModified = signal<boolean>(false);
   loadingPermisos     = signal<boolean>(false);
   showCreateModal     = signal<boolean>(false);
   newRoleName         = signal<string>('');
   newRoleDesc         = signal<string>('');
+  newRoleScope        = signal<'STAFF' | 'CLIENT'>('STAFF');
   confirmDialog       = signal<{ title: string; message: string; onConfirm: () => void; variant?: 'danger' | 'primary' } | null>(null);
   isEditingName       = signal<boolean>(false);
   editingNameValue    = signal<string>('');
@@ -126,6 +128,7 @@ export class RolesComponent implements OnInit {
     this.editingNameValue.set('');
     this.permisosModificados.set(false);
     this.loadVentanaPermisos(role.id);
+    this.loadMenuConfiguration(role.id);
   }
 
   loadVentanaPermisos(roleId: number) {
@@ -137,7 +140,37 @@ export class RolesComponent implements OnInit {
   }
 
   isSuperAdminRole(role: Role | null): boolean {
-    return role?.name === 'ROLE_SUPER_ADMIN';
+    return role?.purpose === 'PLATFORM_ADMIN';
+  }
+
+  loadMenuConfiguration(roleId: number) {
+    this.roleService.getMenuConfiguration(roleId).subscribe({
+      next: ({ data }) => {
+        this.menuConfiguration.set(data ?? []);
+        this.menuConfigurationModified.set(false);
+      },
+      error: () => this.menuConfiguration.set([])
+    });
+  }
+
+  setMenuPresentation(item: RolMenuConfiguration, presentation: 'GROUPED' | 'FLAT') {
+    this.menuConfiguration.update(items => items.map(current =>
+      current.ventanaId === item.ventanaId ? { ...current, presentacion: presentation } : current));
+    this.menuConfigurationModified.set(true);
+  }
+
+  saveMenuConfiguration() {
+    const role = this.selectedRole();
+    if (!role) return;
+    this.roleService.saveMenuConfiguration(role.id, this.menuConfiguration()).subscribe({
+      next: ({ data }) => {
+        this.menuConfiguration.set(data ?? []);
+        this.menuConfigurationModified.set(false);
+        this.messageService.add({ severity: 'success', summary: 'Menú actualizado', detail: 'La presentación del menú se guardó correctamente.' });
+        this.refreshCurrentSessionIfActiveRoleChanged(role.id);
+      },
+      error: (err) => this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo guardar la presentación del menú.' })
+    });
   }
 
   rootVentanas(): RolVentanaPermiso[] {
@@ -188,7 +221,7 @@ export class RolesComponent implements OnInit {
             this.ventanaPermisos.set(res.data);
             this.permisosModificados.set(false);
             this.messageService.add({ severity: 'success', summary: 'Guardado', detail: 'Permisos actualizados correctamente' });
-            this.refreshCurrentSessionIfActiveRoleChanged(role.name);
+            this.refreshCurrentSessionIfActiveRoleChanged(role.id);
           },
           error: (err) => {
             this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo guardar' });
@@ -210,14 +243,16 @@ export class RolesComponent implements OnInit {
 
   canEditRole(role: Role | null): boolean {
     if (!role) return false;
-    return this.isAdminOrSuperAdmin();
+    return this.hasModifyAccess();
   }
 
   canRenameRole(role: Role | null): boolean {
     if (!role) return false;
-    if (!this.isAdminOrSuperAdmin()) return false;
-    const protectedRoles = ['ROLE_SUPER_ADMIN', 'ROLE_ADMIN'];
-    return !protectedRoles.includes(role.name);
+    return this.hasModifyAccess();
+  }
+
+  canToggleRole(role: Role | null): boolean {
+    return !!role && this.hasModifyAccess() && !role.protectedRole;
   }
 
   startEditName() {
@@ -267,7 +302,8 @@ export class RolesComponent implements OnInit {
         this.roleService.actualizar(role.id, {
           name: formattedName,
           descripcion,
-          companyId: role.companyId ?? undefined
+          companyId: role.companyId ?? undefined,
+          scope: role.scope
         }).subscribe({
           next: (res) => {
             if (this.activeSection() === 'empresa') {
@@ -307,20 +343,13 @@ export class RolesComponent implements OnInit {
   }
 
   roleLabel(name: string): string {
-    const map: Record<string, string> = {
-      'ROLE_SUPER_ADMIN': 'Super Administrador',
-      'ROLE_ADMIN': 'Administrador',
-      'ROLE_VETERINARIO': 'Veterinario',
-      'ROLE_RECEPCIONISTA': 'Recepcionista',
-      'ROLE_CLIENTE': 'Cliente / Apoderado',
-      'ROLE_APODERADO': 'Cliente / Apoderado'
-    };
-    return map[name] ?? name.replace('ROLE_', '').replace(/_/g, ' ');
+    return name.replace(/^ROLE_/, '').replaceAll('_', ' ');
   }
 
   openCreateModal() {
     this.newRoleName.set('');
     this.newRoleDesc.set('');
+    this.newRoleScope.set('STAFF');
     this.showCreateModal.set(true);
   }
 
@@ -373,7 +402,8 @@ export class RolesComponent implements OnInit {
         this.roleService.crear({
           name: formattedName,
           descripcion: descripcion || undefined,
-          companyId: section === 'empresa' ? (this.activeCompanyId ?? undefined) : undefined
+          companyId: section === 'empresa' ? (this.activeCompanyId ?? undefined) : undefined,
+          scope: section === 'empresa' ? this.newRoleScope() : 'PLATFORM'
         }).subscribe({
           next: (res) => {
             if (section === 'empresa') {
@@ -427,9 +457,7 @@ export class RolesComponent implements OnInit {
 
   canDeleteRole(role: Role | null): boolean {
     if (!role) return false;
-    if (!this.isAdminOrSuperAdmin()) return false;
-    const protectedRoles = ['ROLE_SUPER_ADMIN', 'ROLE_ADMIN'];
-    return !protectedRoles.includes(role.name);
+    return this.hasModifyAccess() && !role.protectedRole;
   }
 
   deleteRole(role: Role) {
@@ -464,36 +492,17 @@ export class RolesComponent implements OnInit {
     this.confirmDialog.set(null);
   }
 
-  private refreshCurrentSessionIfActiveRoleChanged(roleName: string) {
-    const activeRole = this.authStore.roles()[0];
-
-    if (activeRole !== roleName) {
+  private refreshCurrentSessionIfActiveRoleChanged(roleId: number) {
+    if (this.authStore.activeRoleId() !== roleId) {
       return;
     }
 
     this.authService.refreshToken().subscribe({
       next: ({ data }) => {
-        this.authStore.setAuth({
-          token: null,
-          refreshToken: null,
-          roles: data.roles,
-          assignedRoles: data.assignedRoles ?? this.authStore.assignedRoles(),
-          originalRoles: data.assignedRoles ?? this.authStore.assignedRoles(),
-          companyId: data.companyId,
-          companyName: data.companyName,
-          nombreCompleto: data.nombreCompleto,
-          userType: data.userType,
-          empleadoId: data.empleadoId ?? null,
-          passwordChanged: data.passwordChanged,
-          needsCompanySelection: data.needsCompanySelection,
-          selectedEnterprise: this.authStore.selectedEnterprise(),
-          menu: data.menu,
-          originalMenu: data.menu,
-          simulatedRoleId: this.authStore.simulatedRoleId()
-        });
+        this.sessionService.establish(data, true);
 
         if (!this.authStore.hasRouteAccess(this.router.url)) {
-          this.router.navigateByUrl(resolveInitialRoute(data.roles ?? [], data.menu ?? []), { replaceUrl: true });
+          this.router.navigateByUrl(resolveInitialRoute(data.menu ?? [], data.activeRolePurpose), { replaceUrl: true });
         }
       },
       error: () => {}

@@ -184,7 +184,7 @@
       </div>
 
       <!-- Tab 1: Tipos de Empleado -->
-      <div *ngIf="activeTab() === 1" class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-none">
+      <div *ngIf="activeTab() === 1" class="bg-white border border-slate-200 rounded-xl overflow-hidden">
         <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 px-4 sm:px-6 py-4 border-b border-slate-100">
           <div>
             <h2 class="text-base font-bold text-slate-800">Tipos de Empleado</h2>
@@ -511,7 +511,7 @@
 
 <!-- Modal: Vacuna -->
 <div *ngIf="showVacunaModal()" class="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/50 backdrop-blur-sm">
-  <div class="bg-white w-full max-w-lg rounded-t-2xl sm:rounded-lg shadow-2xl flex flex-col max-h-[95dvh]">
+  <div class="bg-white w-full max-w-lg rounded-t-2xl sm:rounded-lg  flex flex-col max-h-[95dvh]">
     <div class="px-4 sm:px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50 rounded-t-lg">
       <h2 class="text-base sm:text-lg font-bold text-slate-800">{{ editingVacuna() ? 'Modificar Vacuna' : 'Registrar vacuna en el catálogo' }}</h2>
       <button (click)="showVacunaModal.set(false)" class="text-slate-400 hover:text-slate-600 transition-colors p-2"><i class="pi pi-times"></i></button>

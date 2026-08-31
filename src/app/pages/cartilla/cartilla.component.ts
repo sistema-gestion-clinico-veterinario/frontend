@@ -213,13 +213,30 @@ export class CartillaComponent implements OnInit {
       return;
     }
     const nombre = m.nombreCompleto;
+    const cliente = m.apoderadoNombreCompleto?.trim().split(/\s+/)[0] || 'estimado cliente';
+    const veterinaria = this.authStore.selectedEnterprise()?.name || this.authStore.companyName() || 'la clínica veterinaria';
     const control = m.controlPendienteNombre || 'su control preventivo';
-    const fecha = m.controlPendienteFecha || '';
-    const resumen = m.controlPendienteResumen || '';
+    const tipo = m.controlPendienteTipo === 'VACUNACION'
+      ? 'Vacunación'
+      : m.controlPendienteTipo === 'DESPARASITACION' ? 'Desparasitación' : 'Control preventivo';
+    const fecha = this.formatearFechaRecordatorio(m.controlPendienteFecha);
+    const resumen = m.controlPendienteResumen || 'Pendiente de coordinación';
     const msg = encodeURIComponent(
-      `Hola ${m.apoderadoNombreCompleto}, le recordamos que ${nombre} tiene pendiente: ${control}${fecha ? ' (' + resumen + ')' : ''}. Por favor acérquese a la clínica para aplicarlo. Gracias.`
+      `Hola, ${cliente} 👋\n\n` +
+      `Te escribimos de *${veterinaria}* para recordarte el control preventivo de *${nombre}*.\n\n` +
+      `🩺 *Control:* ${tipo} — ${control}\n` +
+      `${fecha ? `📅 *Fecha recomendada:* ${fecha}\n` : ''}` +
+      `⏳ *Estado:* ${resumen}\n\n` +
+      `Para programar la atención o realizar una consulta, responde a este mensaje.`
     );
     window.open(`https://wa.me/51${tel}?text=${msg}`, '_blank');
+  }
+
+  private formatearFechaRecordatorio(fecha: string | null): string {
+    if (!fecha) return '';
+    const partes = fecha.substring(0, 10).split('-');
+    if (partes.length !== 3) return fecha;
+    return `${partes[2]}/${partes[1]}/${partes[0]}`;
   }
 
   cargarMascotas(especie?: string) {

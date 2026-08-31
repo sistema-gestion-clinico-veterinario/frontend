@@ -340,7 +340,7 @@
               class="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 hover:border-blue-200 transition-all">
               <div class="flex items-center gap-3">
                 <div class="w-9 h-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-sm font-bold shrink-0">
-                  {{ role.name === 'ROLE_ADMIN' ? 'A' : (role.name.replace('ROLE_', '').charAt(0)) }}
+                  {{ role.name.replace('ROLE_', '').charAt(0) }}
                 </div>
                 <div class="min-w-0">
                   <p class="text-sm font-semibold text-slate-800 truncate">{{ role.name.replace('ROLE_', '') }}</p>

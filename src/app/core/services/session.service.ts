@@ -36,16 +36,20 @@ export class SessionService {
   }
 
   establish(data: AuthLoginData, preserveEnterprise = false): void {
-    const isSuperAdmin = (data.roles ?? []).some((role) =>
-      role === 'ROLE_SUPER_ADMIN' || role === 'SUPER_ADMIN'
-    );
+    const isPlatformAdmin = data.activeRolePurpose === 'PLATFORM_ADMIN';
 
     this.authStore.setAuth({
       token: null,
       refreshToken: null,
       roles: data.roles ?? [],
       assignedRoles: data.assignedRoles ?? data.roles ?? [],
+      availableRoles: data.availableRoles ?? [],
       originalRoles: data.assignedRoles ?? data.roles ?? [],
+      activeRoleId: data.activeRoleId ?? null,
+      activeRoleName: data.activeRoleName ?? data.roles?.[0] ?? null,
+      activeRoleScope: data.activeRoleScope ?? null,
+      activeRolePurpose: data.activeRolePurpose ?? null,
+      permissionVersion: data.permissionVersion ?? 0,
       companyId: data.companyId,
       companyName: data.companyName,
       nombreCompleto: data.nombreCompleto,
@@ -53,7 +57,7 @@ export class SessionService {
       empleadoId: data.empleadoId ?? null,
       passwordChanged: data.passwordChanged,
       needsCompanySelection: data.needsCompanySelection,
-      selectedEnterprise: preserveEnterprise && isSuperAdmin
+      selectedEnterprise: preserveEnterprise && isPlatformAdmin
         ? this.authStore.selectedEnterprise()
         : null,
       menu: data.menu ?? [],

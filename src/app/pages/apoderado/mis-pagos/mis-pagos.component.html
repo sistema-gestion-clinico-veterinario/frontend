@@ -52,7 +52,7 @@
     <div class="flex items-center gap-2 w-full sm:w-auto">
       <i class="pi pi-filter text-xs text-slate-400"></i>
       <select [ngModel]="filtroEstado()" (ngModelChange)="filtroEstado.set($event)"
-        class="!border-0 !bg-transparent !shadow-none !p-0 !text-sm !font-medium !text-slate-700 !outline-none !cursor-pointer">
+        class="!border-0 !bg-transparent !p-0 !text-sm !font-medium !text-slate-700 !outline-none !cursor-pointer">
         <option value="">Todos los estados</option>
         <option value="PAID">Pagado</option>
         <option value="PENDING">Pendiente</option>

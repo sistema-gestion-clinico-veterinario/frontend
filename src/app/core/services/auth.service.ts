@@ -45,8 +45,8 @@ export class AuthService {
     return this.http.post<ApiResponse<void>>(`${this.baseUrl}/logout`, {}, { withCredentials: true });
   }
 
-  switchRole(roleName: string): Observable<AuthLoginResponse> {
-    return this.http.post<AuthLoginResponse>(`${this.baseUrl}/switch-role`, { roleName });
+  switchRole(roleId: number): Observable<AuthLoginResponse> {
+    return this.http.post<AuthLoginResponse>(`${this.baseUrl}/switch-role`, { roleId });
   }
 
   forgotPassword(email: string): Observable<ApiResponse<void>> {

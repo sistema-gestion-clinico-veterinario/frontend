@@ -95,10 +95,10 @@ describe('PasswordChangeComponent', () => {
   });
 
   describe('cancel routing', () => {
-    it('navigates to /admin/company for ROLE_SUPER_ADMIN', () => {
-      store.setAuth({ ...cleanAuth, roles: ['ROLE_SUPER_ADMIN'] });
+    it('navigates to the platform dashboard for PLATFORM_ADMIN', () => {
+      store.setAuth({ ...cleanAuth, activeRolePurpose: 'PLATFORM_ADMIN' });
       component.cancel();
-      expect(router.navigateByUrl).toHaveBeenCalledWith('/admin/company');
+      expect(router.navigateByUrl).toHaveBeenCalledWith('/dashboard');
     });
   });
 });

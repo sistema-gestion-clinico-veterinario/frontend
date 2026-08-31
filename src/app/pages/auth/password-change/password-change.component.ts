@@ -7,6 +7,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { strongPasswordValidators } from '../../../core/validators/password-policy.validator';
+import { resolveDashboardRoute } from '../../../layouts/main-layout/navbar/navbar.component';
 
 function passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
   const newPassword = control.get('newPassword')?.value;
@@ -114,15 +115,6 @@ export class PasswordChangeComponent {
   }
 
   cancel() {
-    const roles = this.authStore.roles() ?? [];
-    if (roles.includes('ROLE_SUPER_ADMIN')) {
-      this.router.navigateByUrl('/admin/company');
-    } else if (roles.includes('ROLE_CLIENTE') || roles.includes('ROLE_APODERADO')) {
-      this.router.navigateByUrl('/apoderado/dashboard');
-    } else if (roles.includes('ROLE_ADMIN')) {
-      this.router.navigateByUrl('/admin/dashboard');
-    } else {
-      this.router.navigateByUrl('/empleado/dashboard');
-    }
+    this.router.navigateByUrl(resolveDashboardRoute(this.authStore.activeRolePurpose()));
   }
 }

@@ -21,6 +21,15 @@ export interface RolVentanaPermiso {
   vistas?: any[]; // For vistas inside the ventana
 }
 
+export interface RolMenuConfiguration {
+  ventanaId: number;
+  codigo: string;
+  nombre: string;
+  icono?: string;
+  presentacion: 'GROUPED' | 'FLAT';
+  orden: number;
+}
+
 interface RolVistaPermiso {
   vistaId: number;
   codigo: string;
@@ -53,11 +62,11 @@ export class RoleService {
     return this.http.get<ApiResponse<Role[]>>(`${this.apiUrl}/system`);
   }
 
-  crear(data: { name: string; descripcion?: string; companyId?: number }) {
+  crear(data: { name: string; descripcion?: string; companyId?: number; scope?: 'PLATFORM' | 'STAFF' | 'CLIENT' }) {
     return this.http.post<ApiResponse<Role>>(this.apiUrl, data);
   }
 
-  actualizar(id: number, data: { name: string; descripcion?: string; companyId?: number }) {
+  actualizar(id: number, data: { name: string; descripcion?: string; companyId?: number; scope?: 'PLATFORM' | 'STAFF' | 'CLIENT' }) {
     return this.http.put<ApiResponse<Role>>(`${this.apiUrl}/${id}`, data);
   }
 
@@ -96,6 +105,24 @@ export class RoleService {
         data: res.data.map((vista) => this.toRolVentanaPermiso(vista))
       }))
     );
+  }
+
+  listarRolesClienteAsignables(companyId?: number) {
+    const params = companyId ? `?companyId=${companyId}` : '';
+    return this.http.get<ApiResponse<Role[]>>(`${this.apiUrl}/company/client-options${params}`);
+  }
+
+  listarRolesPersonalAsignables(companyId?: number) {
+    const params = companyId ? `?companyId=${companyId}` : '';
+    return this.http.get<ApiResponse<Role[]>>(`${this.apiUrl}/company/staff-options${params}`);
+  }
+
+  getMenuConfiguration(roleId: number) {
+    return this.http.get<ApiResponse<RolMenuConfiguration[]>>(`${this.apiUrl}/${roleId}/menu-configuration`);
+  }
+
+  saveMenuConfiguration(roleId: number, configuration: RolMenuConfiguration[]) {
+    return this.http.put<ApiResponse<RolMenuConfiguration[]>>(`${this.apiUrl}/${roleId}/menu-configuration`, configuration);
   }
 
   private toRolVentanaPermiso(vista: RolVistaPermiso): RolVentanaPermiso {
