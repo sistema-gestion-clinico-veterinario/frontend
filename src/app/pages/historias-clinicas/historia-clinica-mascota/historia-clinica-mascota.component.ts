@@ -75,9 +75,16 @@ export class HistoriaClinicaMascotaComponent implements OnInit {
   readonly desparasitacionesDiaSeleccionado = computed(() =>
     this.controlesDiaSeleccionado().filter(control => control.tipo === 'DESPARASITACION'));
   readonly controlesVacunacion = computed(() =>
-    (this.hc()?.controlesPreventivos ?? []).filter(control => control.tipo === 'VACUNACION'));
+    (this.hc()?.controlesPreventivos ?? [])
+      .filter(control => control.tipo === 'VACUNACION' && this.esControlPendiente(control.estado))
+      .sort((a, b) => a.fechaRecomendada.localeCompare(b.fechaRecomendada)));
   readonly controlesDesparasitacion = computed(() =>
-    (this.hc()?.controlesPreventivos ?? []).filter(control => control.tipo === 'DESPARASITACION'));
+    (this.hc()?.controlesPreventivos ?? [])
+      .filter(control => control.tipo === 'DESPARASITACION' && this.esControlPendiente(control.estado))
+      .sort((a, b) => a.fechaRecomendada.localeCompare(b.fechaRecomendada)));
+
+  readonly controlesAtrasados = computed(() =>
+    (this.hc()?.controlesPreventivos ?? []).filter(control => control.estado === 'ATRASADO').length);
 
   readonly fechaCalendarioSeleccionada = computed(() => {
     const dia = this.calendarioDiaSeleccionado();
@@ -142,6 +149,13 @@ export class HistoriaClinicaMascotaComponent implements OnInit {
     this.calendarioDiaSeleccionado.set(dia);
   }
 
+  irAHoy() {
+    const hoy = new Date();
+    this.calendarioMes.set(hoy.getMonth());
+    this.calendarioAnio.set(hoy.getFullYear());
+    this.calendarioDiaSeleccionado.set(hoy.getDate());
+  }
+
   calendarioEsMesActual(): boolean {
     const hoy = new Date();
     return this.calendarioMes() === hoy.getMonth() && this.calendarioAnio() === hoy.getFullYear();
@@ -152,6 +166,10 @@ export class HistoriaClinicaMascotaComponent implements OnInit {
     return match
       ? new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]))
       : new Date(value);
+  }
+
+  private esControlPendiente(estado: string): boolean {
+    return !['APLICADO', 'CANCELADO', 'SUSPENDIDO_POR_CITA'].includes(estado);
   }
 
   private enfocarProximoControl(historia: HistoriaClinicaDetalle) {

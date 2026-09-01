@@ -91,23 +91,13 @@ describe('LoginComponent - submit validations', () => {
     expect(authService.login).not.toHaveBeenCalled();
   });
 
-  it('bloquea password con espacios y no llama al servicio de login', () => {
+  it('bloquea password con espacios al inicio o al final y no llama al servicio de login', () => {
     createLoginInput('email', 'admin@test.com');
-    createLoginInput('password', 'secret 123');
+    createLoginInput('password', ' secret123 ');
 
     component.submit();
 
-    expect(component.authError).toBe('La contraseña no debe contener espacios.');
-    expect(authService.login).not.toHaveBeenCalled();
-  });
-
-  it('bloquea password con puntos suspensivos y no llama al servicio de login', () => {
-    createLoginInput('email', 'admin@test.com');
-    createLoginInput('password', 'secret...');
-
-    component.submit();
-
-    expect(component.authError).toBe('La contraseña no debe contener "...".');
+    expect(component.authError).toBe('La contraseña no debe iniciar ni terminar con espacios.');
     expect(authService.login).not.toHaveBeenCalled();
   });
 

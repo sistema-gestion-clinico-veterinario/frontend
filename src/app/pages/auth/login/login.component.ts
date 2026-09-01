@@ -2,7 +2,6 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
-import { lowercaseEmailValidator } from '../../../core/validators/lowercase-email.validator';
 import { Router, RouterModule } from '@angular/router';
 import { finalize, from, switchMap, timeout } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
@@ -37,8 +36,8 @@ export class LoginComponent implements OnInit {
   }
 
   loginForm = inject(FormBuilder).group({
-    email: ['', [Validators.required, Validators.email, lowercaseEmailValidator(), noLeadingTrailingSpaceValidator(), Validators.maxLength(255)]],
-    password: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(72), Validators.pattern(/^(?!.*\.\.\.)(?!.*\s).+$/)]]
+    email: ['', [Validators.required, Validators.email, noLeadingTrailingSpaceValidator(), Validators.maxLength(255)]],
+    password: ['', [Validators.required, Validators.maxLength(72)]]
   });
 
   get email() { return this.loginForm.get('email'); }
@@ -58,18 +57,14 @@ export class LoginComponent implements OnInit {
     this.loginForm.get('password')?.setValue(rawPassword, { emitEvent: false });
 
     const hasUntrimmedEmail = rawEmail !== rawEmail.trim();
-    const hasSpacesPassword = /\s/.test(rawPassword);
-    const hasEllipsisPassword = /\.\.\./.test(rawPassword);
+    const hasUntrimmedPassword = rawPassword !== rawPassword.trim();
 
-    if (hasUntrimmedEmail || hasSpacesPassword || hasEllipsisPassword) {
+    if (hasUntrimmedEmail || hasUntrimmedPassword) {
       if (hasUntrimmedEmail) {
         this.authError = 'El correo no debe contener espacios al inicio o al final.';
         this.loginForm.get('email')?.markAsTouched();
-      } else if (hasEllipsisPassword) {
-        this.authError = 'La contraseña no debe contener "...".';
-        this.loginForm.get('password')?.markAsTouched();
       } else {
-        this.authError = 'La contraseña no debe contener espacios.';
+        this.authError = 'La contraseña no debe iniciar ni terminar con espacios.';
         this.loginForm.get('password')?.markAsTouched();
       }
       return;

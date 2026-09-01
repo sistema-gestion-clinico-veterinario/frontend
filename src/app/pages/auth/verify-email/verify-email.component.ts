@@ -19,7 +19,7 @@ export class VerifyEmailComponent {
   private readonly authService = inject(AuthService);
   private readonly fb = inject(FormBuilder);
 
-  token = this.route.snapshot.paramMap.get('token') ?? '';
+  token = this.readAndClearToken();
   estado = signal<'form' | 'enviando' | 'exito' | 'error' | 'reenviando' | 'reenviado'>('form');
   errorMsg = signal('');
 
@@ -42,7 +42,7 @@ export class VerifyEmailComponent {
     const rawPwd = this.passwordForm.getRawValue().password ?? '';
     if (rawPwd !== rawPwd.trim()) {
       this.passwordForm.markAllAsTouched();
-      this.errorMsg.set('La contraseña no debe contener espacios.');
+      this.errorMsg.set('La contraseña no debe iniciar ni terminar con espacios.');
       return;
     }
     if (this.passwordForm.invalid || !this.token) {
@@ -78,5 +78,14 @@ export class VerifyEmailComponent {
 
   irAlLogin() {
     this.router.navigate(['/login']);
+  }
+
+  private readAndClearToken(): string {
+    const fragmentParams = new URLSearchParams(this.route.snapshot.fragment ?? '');
+    const token = fragmentParams.get('token') ?? this.route.snapshot.paramMap.get('token') ?? '';
+    if (fragmentParams.has('token')) {
+      history.replaceState(null, '', location.pathname + location.search);
+    }
+    return token;
   }
 }

@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, finalize, shareReplay } from 'rxjs';
+import { Observable, catchError, finalize, shareReplay, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { LoginRequest } from '../../models/request/login-request.model';
 import { AuthLoginResponse } from '../../models/response/auth-login-response.model';
@@ -54,10 +54,26 @@ export class AuthService {
   }
 
   validateResetToken(token: string): Observable<ApiResponse<void>> {
-    return this.http.get<ApiResponse<void>>(`${this.baseUrl}/validate-reset-token?token=${token}`);
+    return this.http.post<ApiResponse<void>>(`${this.baseUrl}/validate-reset-token`, { token }).pipe(
+      catchError((error) => error?.status === 404 || error?.status === 405
+        ? this.http.get<ApiResponse<void>>(`${this.baseUrl}/validate-reset-token`, { params: { token } })
+        : throwError(() => error))
+    );
   }
 
   resetPassword(token: string, newPassword: string): Observable<ApiResponse<void>> {
     return this.http.post<ApiResponse<void>>(`${this.baseUrl}/reset-password`, { token, newPassword });
+  }
+
+  requestEmailChange(currentPassword: string, newEmail: string): Observable<ApiResponse<void>> {
+    return this.http.post<ApiResponse<void>>(`${this.baseUrl}/email-change/request`, {
+      currentPassword,
+      newEmail
+    });
+  }
+
+  confirmEmailChange(type: 'actual' | 'nuevo', token: string): Observable<ApiResponse<boolean>> {
+    const endpoint = type === 'actual' ? 'confirm-current' : 'confirm-new';
+    return this.http.post<ApiResponse<boolean>>(`${this.baseUrl}/email-change/${endpoint}`, { token });
   }
 }
