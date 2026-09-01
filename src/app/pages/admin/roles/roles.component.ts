@@ -346,6 +346,13 @@ export class RolesComponent implements OnInit {
     return this.hasModifyAccess();
   }
 
+  setDataScope(v: RolVentanaPermiso, dataScope: 'OWN' | 'COMPANY') {
+    this.ventanaPermisos.update(list =>
+      list.map(item => item.ventanaId === v.ventanaId ? { ...item, dataScope } : item)
+    );
+    this.permisosModificados.set(true);
+  }
+
   canToggleRole(role: Role | null): boolean {
     return !!role && this.hasModifyAccess() && !role.protectedRole;
   }

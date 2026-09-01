@@ -129,8 +129,8 @@ export class AgendaComponent implements OnInit, OnDestroy {
   readonly canReadHistoria   = computed(() => this.authStore.hasAccess('VISTA_HISTORIAS', 'leer'));
   readonly canCreateHistoria = computed(() => this.authStore.hasAccess('VISTA_HISTORIAS', 'escribir'));
   readonly canModifyHistoria = computed(() => this.authStore.hasAccess('VISTA_HISTORIAS', 'modificar'));
-  readonly canViewAllCitas   = computed(() =>
-    this.authStore.hasAccess('VISTA_CITAS_AGENDA', 'modificar')
+  readonly canViewAllCitas = computed(() =>
+    this.authStore.dataScope('VISTA_CITAS_AGENDA') === 'COMPANY'
   );
 
   readonly canBookEmergency = computed(() =>
@@ -453,6 +453,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
   }
 
   setVeterinarioFilter(value: number | null) {
+    if (!this.canViewAllCitas()) return;
     this.filterVeterinarioId = value;
     this.showVeterinarioFilter.set(false);
     this.refreshCurrentView();
@@ -545,6 +546,11 @@ export class AgendaComponent implements OnInit, OnDestroy {
     this.loadTodosEmpleados();
     this.loadClientes();
     this.loadAllMascotas();
+    if (!this.canViewAllCitas() && this.authStore.empleadoId()) {
+      const empleadoId = this.authStore.empleadoId();
+      this.filterVeterinarioId = empleadoId;
+      this.citaForm.patchValue({ veterinarioId: empleadoId }, { emitEvent: false });
+    }
     this.citaForm.get('esEmergencia')?.valueChanges.subscribe((isEmergencia: boolean) => {
       if (isEmergencia) {
         const now = new Date();
@@ -574,6 +580,10 @@ export class AgendaComponent implements OnInit, OnDestroy {
   }
 
   setupWebSocket() {
+    // El canal por empresa contiene citas de todo el personal. Los roles con
+    // alcance OWN se actualizan mediante sus consultas filtradas y nunca se
+    // suscriben a información ajena.
+    if (!this.canViewAllCitas()) return;
     const companyId = this.activeCompanyId;
     if (!companyId) return;
 
@@ -1934,10 +1944,10 @@ export class AgendaComponent implements OnInit, OnDestroy {
   }
 
   private getEffectiveVeterinarioFilter(): number | undefined {
-    if (this.filterVeterinarioId) return this.filterVeterinarioId;
     if (!this.canViewAllCitas()) {
       return this.authStore.empleadoId() ?? undefined;
     }
+    if (this.filterVeterinarioId) return this.filterVeterinarioId;
     return undefined;
   }
 

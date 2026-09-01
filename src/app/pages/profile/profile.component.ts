@@ -16,6 +16,7 @@ import { InputFilterDirective } from '../../core/directives/input-filter.directi
 import { noLeadingTrailingSpaceValidator } from '../../core/validators/no-leading-trailing-space.validator';
 import { textContentValidator } from '../../core/validators/text-content.validator';
 import { normalizeText } from '../../core/utils/normalize-text.util';
+import { AuthService } from '../../core/services/auth.service';
 
 interface HorarioResumen {
   diaSemana: string;
@@ -46,6 +47,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
   private readonly mediaService = inject(MediaService);
   private readonly messageService = inject(MessageService);
   private readonly authStore = inject(AuthStore);
+  private readonly authService = inject(AuthService);
   private readonly sanitizer = inject(DomSanitizer);
   readonly loadingStore = inject(LoadingStore);
 
@@ -58,6 +60,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
   selectedFile = signal<File | null>(null);
   mostrarHorario = signal(false);
   cargando = signal(true);
+  showEmailChangeModal = signal(false);
+  requestingEmailChange = signal(false);
   readonly safePreviewUrl = computed(() => {
     const url = this.previewUrl();
     return url ? this.sanitizer.bypassSecurityTrustUrl(url) : null;
@@ -70,6 +74,12 @@ export class ProfileComponent implements OnInit, OnDestroy {
     direccion:     ['', [Validators.maxLength(200), noLeadingTrailingSpaceValidator(), textContentValidator()]],
     observaciones: ['', [Validators.maxLength(500), noLeadingTrailingSpaceValidator(), textContentValidator()]],
     fotoUrl:       ['', [Validators.maxLength(500)]]
+  });
+
+  emailChangeForm: FormGroup = this.fb.group({
+    newEmail: ['', [Validators.required, Validators.email, Validators.maxLength(254)]],
+    confirmEmail: ['', [Validators.required, Validators.email, Validators.maxLength(254)]],
+    currentPassword: ['', [Validators.required, Validators.maxLength(72)]]
   });
 
   ngOnInit() {
@@ -226,6 +236,40 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
   get canModifyProfile(): boolean {
     return this.authStore.hasAccess('VISTA_PROFILE', 'modificar');
+  }
+
+  openEmailChange() {
+    this.emailChangeForm.reset();
+    this.showEmailChangeModal.set(true);
+  }
+
+  requestEmailChange() {
+    if (this.emailChangeForm.invalid) {
+      this.emailChangeForm.markAllAsTouched();
+      return;
+    }
+    const { newEmail, confirmEmail, currentPassword } = this.emailChangeForm.getRawValue();
+    if (newEmail.trim().toLowerCase() !== confirmEmail.trim().toLowerCase()) {
+      this.messageService.add({ severity: 'warn', summary: 'Revisa los correos', detail: 'Los correos nuevos no coinciden' });
+      return;
+    }
+
+    this.requestingEmailChange.set(true);
+    this.authService.requestEmailChange(currentPassword, newEmail.trim().toLowerCase()).subscribe({
+      next: () => {
+        this.requestingEmailChange.set(false);
+        this.showEmailChangeModal.set(false);
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Confirmaciones enviadas',
+          detail: 'Confirma la operación desde tu correo actual y desde el nuevo.'
+        });
+      },
+      error: (err) => {
+        this.requestingEmailChange.set(false);
+        this.messageService.add({ severity: 'error', summary: 'No se pudo solicitar el cambio', detail: err.error?.message || 'Inténtalo nuevamente' });
+      }
+    });
   }
 
   get horariosResumen(): HorarioResumen[] {

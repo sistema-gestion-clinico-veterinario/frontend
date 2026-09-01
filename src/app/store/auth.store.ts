@@ -256,6 +256,20 @@ export const AuthStore = signalStore(
       }
       return false;
     },
+
+    dataScope(codigo: string): 'OWN' | 'COMPANY' {
+      const menu = store.menu() ?? [];
+      for (const item of menu) {
+        if (item && typeof item === 'object' && 'vistas' in item && Array.isArray(item.vistas)) {
+          const vista = item.vistas.find(v => v.codigo === codigo);
+          if (vista) return vista.dataScope ?? 'OWN';
+        } else {
+          const vista = item as MenuItemDTO;
+          if (vista.codigo === codigo) return vista.dataScope ?? 'OWN';
+        }
+      }
+      return 'OWN';
+    },
     
     hasRouteAccess(routePattern: string): boolean {
       const normalized = normalizeRoute(routePattern);

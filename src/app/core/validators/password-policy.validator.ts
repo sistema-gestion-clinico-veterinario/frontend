@@ -1,7 +1,7 @@
 import { AbstractControl, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 
 export const PASSWORD_POLICY_MESSAGE =
-  'Debe tener minimo 8 caracteres, una mayuscula, una minuscula, un numero y un simbolo como ! o @.';
+  'Usa al menos 12 caracteres y evita datos personales, secuencias o contraseñas comunes.';
 
 export function passwordPolicyValidator(): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
@@ -13,13 +13,12 @@ export function passwordPolicyValidator(): ValidatorFn {
 
     const failedRules: Record<string, boolean> = {};
 
-    if (value.length < 8) failedRules['minLength'] = true;
+    if ([...value].length < 12) failedRules['minLength'] = true;
     if (value.length > 72) failedRules['maxLength'] = true;
-    if (/\s/.test(value)) failedRules['noSpaces'] = true;
-    if (!/[A-Z]/.test(value)) failedRules['uppercase'] = true;
-    if (!/[a-z]/.test(value)) failedRules['lowercase'] = true;
-    if (!/\d/.test(value)) failedRules['number'] = true;
-    if (!/[^\w\s]/.test(value)) failedRules['special'] = true;
+    if (new TextEncoder().encode(value).length > 72) failedRules['maxBytes'] = true;
+    if (/(012345|123456|234567|345678|456789|abcdef|qwerty)/i.test(value)) {
+      failedRules['predictable'] = true;
+    }
 
     return Object.keys(failedRules).length ? { passwordPolicy: failedRules } : null;
   };

@@ -1,10 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, input, computed, signal, output, OnInit } from '@angular/core';
+import { Component, inject, input, computed, signal, output } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthStore } from '../../../store/auth.store';
 import { MenuItemDTO, MenuStructureDTO } from '../../../models/response/auth-login-response.model';
 import { RouteMapperService } from '../../../core/services/route-mapper.service';
-import { CompanyService } from '../../../core/services/company.service';
 import { MediaService } from '../../../core/services/media.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { SkeletonModule } from 'primeng/skeleton';
@@ -23,7 +22,7 @@ interface MenuSection extends MenuStructureDTO {
   imports: [CommonModule, RouterLink, RouterLinkActive, SkeletonModule],
   templateUrl: './sidebar.component.html'
 })
-export class SidebarComponent implements OnInit {
+export class SidebarComponent {
   collapsed = input(false);
   toggleSidebar = output<void>();
   navigate = output<void>();
@@ -31,7 +30,6 @@ export class SidebarComponent implements OnInit {
   private authStore = inject(AuthStore);
   private router = inject(Router);
   private routeMapper = inject(RouteMapperService);
-  private companyService = inject(CompanyService);
   private mediaService = inject(MediaService);
   private authService = inject(AuthService);
 
@@ -60,28 +58,6 @@ export class SidebarComponent implements OnInit {
       .replace(/^ROLE_/, '')
       .replaceAll('_', ' ');
   });
-
-  ngOnInit() {
-    const companyId = this.authStore.companyId();
-    if (!companyId) return;
-
-    const current = this.authStore.selectedEnterprise();
-    const yaTieneLogo = current?.establishmentId === companyId && current?.logoUrl !== undefined;
-    if (yaTieneLogo) return;
-
-    this.companyService.getById(companyId).subscribe({
-      next: (res) => {
-        if (res.data?.logoUrl) {
-          const enterprise = this.authStore.selectedEnterprise();
-          this.authStore.setSelectedEnterprise({
-            establishmentId: enterprise?.establishmentId ?? companyId,
-            name: enterprise?.name ?? res.data.name ?? '',
-            logoUrl: res.data.logoUrl
-          });
-        }
-      }
-    });
-  }
 
   private sectionKey(structure: MenuSection): string {
     return structure.ventanaNombre || structure.grupo || 'default';

@@ -104,18 +104,6 @@ export class CartillaComponent implements OnInit {
   ];
   readonly fechaHoyLima = this.fechaLocalLima();
 
-  // Alta en catálogo (vacuna / desparasitante)
-  dialogVisible = signal(false);
-  dialogTipo: 'VACUNACION' | 'DESPARASITACION' = 'VACUNACION';
-  nuevoCatNombre = '';
-  nuevoCatPeriodicidad = 12;
-  nuevoCatPrecio: number | null = null;
-  nuevoCatLote = '';
-  nuevoCatVencimiento = '';
-  nuevoCatDosis: number | null = null;
-  nuevoCatUnidad = '';
-  nuevoCatVia = '';
-
   readonly precioSeleccionado = computed(() => {
     if (this.modo() === 'VACUNACION') {
       return this.tiposVacuna().find((v) => v.id === this.tipoVacunaId)?.precio ?? null;
@@ -242,6 +230,7 @@ export class CartillaComponent implements OnInit {
   cargarMascotas(especie?: string) {
     this.cargando.set(true);
     this.cartillaService.listarMascotasConCartilla(
+      this.companyId,
       especie || undefined,
       this.paginaActual,
       this.tamanoPagina
@@ -623,83 +612,6 @@ export class CartillaComponent implements OnInit {
     this.observaciones = '';
   }
 
-  crearVacuna() {
-    const m = this.mascotaSel();
-    if (!m) { this.msgService.add({ severity: 'warn', summary: 'Falta mascota', detail: 'Seleccione la mascota' }); return; }
-    if (!this.nuevoCatNombre?.trim() || this.nuevoCatPrecio == null) {
-      this.msgService.add({ severity: 'warn', summary: 'Datos incompletos', detail: 'Nombre y precio son obligatorios' }); return;
-    }
-    this.cartillaService.crearTipoVacuna({
-      nombre: this.nuevoCatNombre.trim(),
-      especie: m.especie,
-      periodicidadMesesSugerida: this.nuevoCatPeriodicidad || undefined,
-      precio: this.nuevoCatPrecio,
-      lote: this.nuevoCatLote.trim() || undefined,
-      fechaVencimientoProducto: this.nuevoCatVencimiento || undefined,
-      dosis: this.nuevoCatDosis ?? undefined,
-      unidadDosis: this.nuevoCatUnidad.trim() || undefined,
-      viaAdministracion: this.nuevoCatVia.trim() || undefined
-    }).subscribe({
-      next: (res) => {
-        this.tiposVacuna.update(items => [...items.filter(item => item.id !== res.data.id), res.data]
-          .sort((a, b) => a.nombre.localeCompare(b.nombre)));
-        this.tipoVacunaId = res.data.id;
-        this.actualizarIntervaloSugerido(res.data.id);
-        this.msgService.add({ severity: 'success', summary: 'Vacuna agregada al catálogo', detail: `${res.data.nombre} quedó seleccionada para esta aplicación` });
-        this.dialogVisible.set(false);
-        this.limpiarCatalogoForm();
-      },
-      error: (err) => this.msgService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo crear la vacuna' })
-    });
-  }
-
-  crearDesparasitante() {
-    const m = this.mascotaSel();
-    if (!m) { this.msgService.add({ severity: 'warn', summary: 'Falta mascota', detail: 'Seleccione la mascota' }); return; }
-    if (!this.nuevoCatNombre?.trim() || this.nuevoCatPrecio == null) {
-      this.msgService.add({ severity: 'warn', summary: 'Datos incompletos', detail: 'Nombre y precio son obligatorios' }); return;
-    }
-    this.cartillaService.crearTipoDesparasitante({
-      nombre: this.nuevoCatNombre.trim(),
-      especie: m.especie,
-      periodicidadMesesSugerida: this.nuevoCatPeriodicidad || undefined,
-      precio: this.nuevoCatPrecio,
-      lote: this.nuevoCatLote.trim() || undefined,
-      fechaVencimientoProducto: this.nuevoCatVencimiento || undefined,
-      dosis: this.nuevoCatDosis ?? undefined,
-      unidadDosis: this.nuevoCatUnidad.trim() || undefined,
-      viaAdministracion: this.nuevoCatVia.trim() || undefined
-    }).subscribe({
-      next: (res) => {
-        this.tiposDesparasitante.update(items => [...items.filter(item => item.id !== res.data.id), res.data]
-          .sort((a, b) => a.nombre.localeCompare(b.nombre)));
-        this.tipoDesparasitanteId = res.data.id;
-        this.actualizarIntervaloSugerido(res.data.id);
-        this.msgService.add({ severity: 'success', summary: 'Desparasitante agregado al catálogo', detail: `${res.data.nombre} quedó seleccionado para esta aplicación` });
-        this.dialogVisible.set(false);
-        this.limpiarCatalogoForm();
-      },
-      error: (err) => this.msgService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo crear el desparasitante' })
-    });
-  }
-
-  abrirNuevaCatalogo() {
-    this.limpiarCatalogoForm();
-    this.dialogTipo = this.modo();
-    this.dialogVisible.set(true);
-  }
-
-  private limpiarCatalogoForm() {
-    this.nuevoCatNombre = '';
-    this.nuevoCatPeriodicidad = 12;
-    this.nuevoCatPrecio = null;
-    this.nuevoCatLote = '';
-    this.nuevoCatVencimiento = '';
-    this.nuevoCatDosis = null;
-    this.nuevoCatUnidad = '';
-    this.nuevoCatVia = '';
-  }
-
   private cargarMatriz(petId: number) {
     this.cartillaService.obtenerMatriz(petId).subscribe({
       next: (res) => this.matriz.set(res.data ?? []),
@@ -772,8 +684,6 @@ export class CartillaComponent implements OnInit {
     this.tipoDesparasitanteId = null;
     this.tipoProducto = '';
     this.tiposDesparasitante.set([]);
-    this.dialogVisible.set(false);
-    this.limpiarCatalogoForm();
     this.fechaAplicacion = '';
     this.fechaProxima = '';
     this.limpiarAplicacion();

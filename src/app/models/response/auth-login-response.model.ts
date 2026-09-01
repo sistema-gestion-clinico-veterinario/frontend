@@ -15,6 +15,7 @@ export interface MenuItemDTO extends VistaDTO {
   escribir: boolean;
   modificar: boolean;
   eliminar: boolean;
+  dataScope?: 'OWN' | 'COMPANY';
 }
 
 export interface MenuStructureDTO {
@@ -50,6 +51,7 @@ export interface AuthLoginData {
   permissionVersion?: number;
   companyId: number;
   companyName: string;
+  companyLogoUrl?: string;
   nombreCompleto: string;
   userType: string;
   empleadoId?: number;

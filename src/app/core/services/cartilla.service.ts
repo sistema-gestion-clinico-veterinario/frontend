@@ -37,8 +37,9 @@ export class CartillaService {
     return this.http.get<ApiResponse<CartillaDetalle>>(`${this.url}/pets/${petId}/detail`);
   }
 
-  listarMascotasConCartilla(especie?: string, page: number = 0, size: number = 10) {
+  listarMascotasConCartilla(companyId?: number, especie?: string, page: number = 0, size: number = 10) {
     let query = `?page=${page}&size=${size}`;
+    if (companyId != null) query += `&companyId=${companyId}`;
     if (especie) query += `&especie=${especie}`;
     const context = new HttpContext().set(SKIP_GLOBAL_LOADING, true);
     return this.http.get<ApiResponse<Page<MascotaCartillaResponse>>>(`${this.url}/pets${query}`, { context });
@@ -66,14 +67,6 @@ export class CartillaService {
 
   listarTiposDesparasitante(petId: number) {
     return this.http.get<ApiResponse<TipoDesparasitante[]>>(`${this.preventivosUrl}/pets/${petId}/deworming-products`);
-  }
-
-  crearTipoVacuna(request: { nombre: string; especie: string; periodicidadMesesSugerida?: number; precio: number; lote?: string; fechaVencimientoProducto?: string; dosis?: number; unidadDosis?: string; viaAdministracion?: string }) {
-    return this.http.post<ApiResponse<TipoVacuna>>(`${this.preventivosUrl}/vaccine-types`, request);
-  }
-
-  crearTipoDesparasitante(request: { nombre: string; especie: string; periodicidadMesesSugerida?: number; precio: number; lote?: string; fechaVencimientoProducto?: string; dosis?: number; unidadDosis?: string; viaAdministracion?: string }) {
-    return this.http.post<ApiResponse<TipoDesparasitante>>(`${this.preventivosUrl}/deworming-products`, request);
   }
 
   listarRecordatoriosPreventivosWhatsApp() {

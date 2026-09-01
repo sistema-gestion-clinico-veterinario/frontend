@@ -65,10 +65,6 @@
         <button *ngIf="!mascotaSel()" type="button" (click)="registrarNuevaMascota()" class="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-600 transition-colors hover:border-slate-300 hover:bg-slate-50 hover:text-slate-800 sm:w-auto">
           <i class="pi pi-heart text-xs"></i> Nueva mascota
         </button>
-        <button *ngIf="!mascotaSel()" type="button" (click)="abrirNuevaCatalogo()" class="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-[#0066AA]/30 bg-[#EAF3FB] px-4 text-sm font-bold text-[#0066AA] transition-all hover:border-[#0066AA] hover:bg-[#d6e8f7] sm:w-auto">
-          <i class="pi pi-plus text-xs"></i>
-          {{ modo() === 'VACUNACION' ? 'Nueva vacuna' : 'Nuevo desparasitante' }}
-        </button>
       </div>
     </section>
 
@@ -430,7 +426,6 @@
     <button class="h-10 rounded-lg bg-[#0066AA] px-4 text-xs font-bold text-white transition-colors hover:bg-[#00558F]" (click)="programarControl()">Programar control</button>
   </ng-template>
 </p-dialog>
-
 <p-dialog [visible]="!!controlReprogramando()" (visibleChange)="!$event && cerrarReprogramacion()" [modal]="true" [draggable]="false" [resizable]="false" [style]="{width:'420px', maxWidth:'calc(100vw - 24px)'}" header="Reprogramar control">
   <p class="mb-3 text-xs text-slate-500">{{ controlReprogramando()?.nombreControl }}</p>
   <div>
@@ -453,19 +448,3 @@
   </ng-template>
 </p-dialog>
 
-<p-dialog [(visible)]="dialogVisible" [modal]="true" [draggable]="false" [resizable]="false" [style]="{width: '100%', maxWidth: '560px'}" [header]="dialogTipo === 'VACUNACION' ? 'Registrar vacuna en el catálogo' : 'Registrar desparasitante en el catálogo'">
-  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-    <label class="sm:col-span-2"><span class="mb-1.5 block text-xs font-bold text-slate-700">Nombre comercial *</span><input [(ngModel)]="nuevoCatNombre" placeholder="Ej. VanguardPlus 5CV" class="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15" /></label>
-    <label><span class="mb-1.5 block text-xs font-bold text-slate-700">Periodicidad sugerida (meses)</span><input type="number" [(ngModel)]="nuevoCatPeriodicidad" min="1" max="120" class="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15" /></label>
-    <label><span class="mb-1.5 block text-xs font-bold text-slate-700">Precio para Caja *</span><input type="number" [(ngModel)]="nuevoCatPrecio" min="0" step="0.01" class="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15" /></label>
-    <label><span class="mb-1.5 block text-xs font-bold text-slate-700">Lote</span><input [(ngModel)]="nuevoCatLote" placeholder="Ej. L2408A" class="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15" /></label>
-    <label><span class="mb-1.5 block text-xs font-bold text-slate-700">Vencimiento</span><input type="date" [(ngModel)]="nuevoCatVencimiento" class="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15" /></label>
-    <label><span class="mb-1.5 block text-xs font-bold text-slate-700">Dosis</span><input type="number" [(ngModel)]="nuevoCatDosis" min="0.001" step="0.001" class="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15" /></label>
-    <label><span class="mb-1.5 block text-xs font-bold text-slate-700">Unidad</span><input [(ngModel)]="nuevoCatUnidad" placeholder="ml, tableta..." class="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15" /></label>
-    <label class="sm:col-span-2"><span class="mb-1.5 block text-xs font-bold text-slate-700">Vía de administración</span><input [(ngModel)]="nuevoCatVia" placeholder="Oral, subcutánea..." class="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15" /></label>
-  </div>
-  <ng-template pTemplate="footer">
-    <button class="h-10 rounded-lg px-4 text-xs font-bold text-slate-600 transition-colors hover:bg-slate-50" (click)="dialogVisible.set(false)">Cancelar</button>
-    <button class="h-10 rounded-lg bg-[#0066AA] px-4 text-xs font-bold text-white transition-colors hover:bg-[#00558F]" (click)="dialogTipo === 'VACUNACION' ? crearVacuna() : crearDesparasitante()">Guardar en catálogo</button>
-  </ng-template>
-</p-dialog>

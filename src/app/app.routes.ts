@@ -16,6 +16,14 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/auth/reset-password/reset-password.component').then((m) => m.ResetPasswordComponent) // reset password route
   },
   {
+    path: 'confirm-email-change',
+    loadComponent: () => import('./pages/auth/confirm-email-change/confirm-email-change.component').then((m) => m.ConfirmEmailChangeComponent)
+  },
+  {
+    path: 'auth/verify',
+    loadComponent: () => import('./pages/auth/verify-email/verify-email.component').then((m) => m.VerifyEmailComponent)
+  },
+  {
     path: 'auth/verify/:token',
     loadComponent: () => import('./pages/auth/verify-email/verify-email.component').then((m) => m.VerifyEmailComponent)
   },

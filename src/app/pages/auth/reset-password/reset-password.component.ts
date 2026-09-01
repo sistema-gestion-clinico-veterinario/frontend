@@ -33,7 +33,11 @@ export class ResetPasswordComponent implements OnInit {
 
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
-      this.token = params['token'];
+      const fragmentParams = new URLSearchParams(this.route.snapshot.fragment ?? '');
+      this.token = fragmentParams.get('token') ?? params['token'] ?? '';
+      if (fragmentParams.has('token')) {
+        history.replaceState(null, '', location.pathname + location.search);
+      }
       if (!this.token) {
         this.isTokenValid = false;
         this.isValidating = false;
@@ -68,7 +72,7 @@ export class ResetPasswordComponent implements OnInit {
   submit() {
     const rawPwd = this.resetForm.getRawValue().password ?? '';
     if (rawPwd !== rawPwd.trim()) {
-      this.errorMessage = 'La contraseña no debe contener espacios.';
+      this.errorMessage = 'La contraseña no debe iniciar ni terminar con espacios.';
       return;
     }
     if (this.resetForm.invalid || !this.token) {

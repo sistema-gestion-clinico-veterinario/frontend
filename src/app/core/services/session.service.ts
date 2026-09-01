@@ -59,7 +59,9 @@ export class SessionService {
       needsCompanySelection: data.needsCompanySelection,
       selectedEnterprise: preserveEnterprise && isPlatformAdmin
         ? this.authStore.selectedEnterprise()
-        : null,
+        : data.companyId
+          ? { establishmentId: data.companyId, name: data.companyName, logoUrl: data.companyLogoUrl }
+          : null,
       menu: data.menu ?? [],
       originalMenu: data.menu ?? [],
       simulatedRoleId: null,
