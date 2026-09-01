@@ -54,11 +54,123 @@ export class HistoriaClinicaMascotaComponent implements OnInit {
   readonly desparasitaciones = computed(() =>
     (this.hc()?.aplicacionesPreventivas ?? []).filter(a => a.tipo === 'DESPARASITACION'));
 
+  calendarioMes = signal(new Date().getMonth());
+  calendarioAnio = signal(new Date().getFullYear());
+  calendarioDiaSeleccionado = signal<number | null>(new Date().getDate());
+
+  readonly controlesMesCalendario = computed(() => (this.hc()?.controlesPreventivos ?? [])
+    .filter(control => {
+      const fecha = this.parseLocalDate(control.fechaRecomendada);
+      return fecha.getMonth() === this.calendarioMes() && fecha.getFullYear() === this.calendarioAnio();
+    }));
+
+  readonly controlesDiaSeleccionado = computed(() => {
+    const dia = this.calendarioDiaSeleccionado();
+    if (dia == null) return [];
+    return this.controlesMesCalendario().filter(control =>
+      this.parseLocalDate(control.fechaRecomendada).getDate() === dia);
+  });
+  readonly vacunasDiaSeleccionado = computed(() =>
+    this.controlesDiaSeleccionado().filter(control => control.tipo === 'VACUNACION'));
+  readonly desparasitacionesDiaSeleccionado = computed(() =>
+    this.controlesDiaSeleccionado().filter(control => control.tipo === 'DESPARASITACION'));
+  readonly controlesVacunacion = computed(() =>
+    (this.hc()?.controlesPreventivos ?? []).filter(control => control.tipo === 'VACUNACION'));
+  readonly controlesDesparasitacion = computed(() =>
+    (this.hc()?.controlesPreventivos ?? []).filter(control => control.tipo === 'DESPARASITACION'));
+
+  readonly fechaCalendarioSeleccionada = computed(() => {
+    const dia = this.calendarioDiaSeleccionado();
+    if (dia == null) return null;
+    return new Date(this.calendarioAnio(), this.calendarioMes(), dia);
+  });
+
+  readonly fechaCalendarioSeleccionadaTexto = computed(() => {
+    const fecha = this.fechaCalendarioSeleccionada();
+    return fecha
+      ? fecha.toLocaleDateString('es-PE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+      : 'Selecciona un día del calendario';
+  });
+
+  readonly diasCalendario = computed(() => {
+    const mes = this.calendarioMes();
+    const anio = this.calendarioAnio();
+    const primerDia = new Date(anio, mes, 1).getDay();
+    const diasEnMes = new Date(anio, mes + 1, 0).getDate();
+    const dias: { dia: number; vacias: string[]; desparas: string[] }[] = [];
+
+    const controles = this.hc()?.controlesPreventivos ?? [];
+    const mapa = new Map<number, { vacias: string[]; desparas: string[] }>();
+    for (const c of controles) {
+      const f = this.parseLocalDate(c.fechaRecomendada);
+      if (f.getMonth() === mes && f.getFullYear() === anio) {
+        const dia = f.getDate();
+        const entry = mapa.get(dia) || { vacias: [], desparas: [] };
+        if (c.tipo === 'VACUNACION') entry.vacias.push(c.nombreControl);
+        else entry.desparas.push(c.nombreControl);
+        mapa.set(dia, entry);
+      }
+    }
+
+    for (let i = 1; i <= diasEnMes; i++) {
+      const entry = mapa.get(i) || { vacias: [], desparas: [] };
+      dias.push({ dia: i, vacias: entry.vacias, desparas: entry.desparas });
+    }
+    return { primerDia, dias };
+  });
+
+  mesNombre(mes: number): string {
+    return ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+            'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'][mes];
+  }
+
+  calendarioMesAnterior() {
+    const m = this.calendarioMes();
+    if (m === 0) { this.calendarioMes.set(11); this.calendarioAnio.update(a => a - 1); }
+    else this.calendarioMes.set(m - 1);
+    this.calendarioDiaSeleccionado.set(null);
+  }
+
+  calendarioMesSiguiente() {
+    const m = this.calendarioMes();
+    if (m === 11) { this.calendarioMes.set(0); this.calendarioAnio.update(a => a + 1); }
+    else this.calendarioMes.set(m + 1);
+    this.calendarioDiaSeleccionado.set(null);
+  }
+
+  seleccionarDiaCalendario(dia: number) {
+    this.calendarioDiaSeleccionado.set(dia);
+  }
+
+  calendarioEsMesActual(): boolean {
+    const hoy = new Date();
+    return this.calendarioMes() === hoy.getMonth() && this.calendarioAnio() === hoy.getFullYear();
+  }
+
+  private parseLocalDate(value: string): Date {
+    const match = value?.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    return match
+      ? new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]))
+      : new Date(value);
+  }
+
+  private enfocarProximoControl(historia: HistoriaClinicaDetalle) {
+    const controles = [...(historia.controlesPreventivos ?? [])]
+      .filter(control => !['APLICADO', 'CANCELADO', 'SUSPENDIDO_POR_CITA'].includes(control.estado))
+      .sort((a, b) => a.fechaRecomendada.localeCompare(b.fechaRecomendada));
+    if (!controles.length) return;
+    const fecha = this.parseLocalDate(controles[0].fechaRecomendada);
+    this.calendarioMes.set(fecha.getMonth());
+    this.calendarioAnio.set(fecha.getFullYear());
+    this.calendarioDiaSeleccionado.set(fecha.getDate());
+  }
+
   previewArchivo   = signal<ArchivoClinicoResponse | null>(null);
   previewUrl       = signal<SafeResourceUrl | string>('');
   previewRawUrl    = signal<string>('');
   previewTipo      = signal<'imagen' | 'pdf' | 'dcm' | 'docx' | null>(null);
   previewCargando  = signal<boolean>(false);
+  hoy = signal(new Date());
 
   ngOnInit() {
     this.route.queryParamMap.subscribe(qp => {
@@ -76,6 +188,7 @@ export class HistoriaClinicaMascotaComponent implements OnInit {
       next: (res) => {
         this.mascotaId = res.data.mascotaId;
         this.hc.set(res.data);
+        this.enfocarProximoControl(res.data);
         if (res.data.consultas.length > 0) {
           this.consultaActiva.set(res.data.consultas[0]);
         }
