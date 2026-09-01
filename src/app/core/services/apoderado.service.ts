@@ -52,7 +52,8 @@ export class ApoderadoService {
   }
 
   getPortalMascotas() {
-    return this.http.get<ApiResponse<any[]>>(`${environment.apiUrl}/clients/portal/pets`);
+    const context = new HttpContext().set(SKIP_GLOBAL_LOADING, true);
+    return this.http.get<ApiResponse<any[]>>(`${environment.apiUrl}/clients/portal/pets`, { context });
   }
 
   getPortalMascotasPaginated(page: number = 0, size: number = 6, nombre?: string, especie?: string, activo?: boolean) {
@@ -60,11 +61,13 @@ export class ApoderadoService {
     if (nombre) params += `&nombre=${nombre}`;
     if (especie) params += `&especie=${especie}`;
     if (activo !== undefined && activo !== null) params += `&activo=${activo}`;
-    return this.http.get<ApiResponse<Page<any>>>(`${environment.apiUrl}/clients/portal/pets/paginated${params}`);
+    const context = new HttpContext().set(SKIP_GLOBAL_LOADING, true);
+    return this.http.get<ApiResponse<Page<any>>>(`${environment.apiUrl}/clients/portal/pets/paginated${params}`, { context });
   }
 
   getPortalMascotaHistoria(mascotaId: number) {
-    return this.http.get<ApiResponse<any>>(`${environment.apiUrl}/clients/portal/pets/${mascotaId}/medical-record`);
+    const context = new HttpContext().set(SKIP_GLOBAL_LOADING, true);
+    return this.http.get<ApiResponse<any>>(`${environment.apiUrl}/clients/portal/pets/${mascotaId}/medical-record`, { context });
   }
 
   getPortalCitas() {

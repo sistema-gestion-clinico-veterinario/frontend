@@ -58,8 +58,8 @@
     </div>
   </div>
 
-  <!-- Main Content (always rendered) -->
-  <div>
+  <!-- Main content: avoid rendering an empty duplicate under the initial skeleton. -->
+  <div *ngIf="!cargando() || employees().length > 0">
     <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-10">
     <div class="flex items-center gap-3">
       <i class="pi pi-users text-[#0066AA] text-3xl shrink-0"></i>
