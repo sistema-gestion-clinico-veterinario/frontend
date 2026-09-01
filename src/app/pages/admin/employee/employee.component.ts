@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, inject, signal, HostListener, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators, AbstractControl } from '@angular/forms';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
@@ -27,13 +27,6 @@ import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-lea
 import { lowercaseEmailValidator } from '../../../core/validators/lowercase-email.validator';
 import { textContentValidator } from '../../../core/validators/text-content.validator';
 import { normalizeText } from '../../../core/utils/normalize-text.util';
-import { strongPasswordValidators } from '../../../core/validators/password-policy.validator';
-
-function passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
-  const newPassword = control.get('newPassword')?.value;
-  const confirmPassword = control.get('confirmPassword')?.value;
-  return newPassword === confirmPassword ? null : { mismatch: true };
-}
 
 @Component({
   selector: 'app-employee',
@@ -84,13 +77,7 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   isEdit = signal<boolean>(false);
   showPasswordResetModal = signal<boolean>(false);
   selectedEmployeeForReset = signal<EmpleadoListResponse | null>(null);
-  showResetNew = signal<boolean>(false);
-  showResetConfirm = signal<boolean>(false);
-
-  resetPasswordForm: FormGroup = this.fb.group({
-    newPassword: ['', strongPasswordValidators()],
-    confirmPassword: ['', strongPasswordValidators()]
-  }, { validators: passwordMatchValidator });
+  requestingPasswordReset = signal<boolean>(false);
   especialidadesList = signal<any[]>([]);
   tiposEmpleadoList = signal<any[]>([]);
   totalRecords = signal<number>(0);
@@ -615,40 +602,29 @@ export class EmployeeComponent implements OnInit, OnDestroy {
 
   openPasswordResetModal(employee: EmpleadoListResponse) {
     this.selectedEmployeeForReset.set(employee);
-    this.resetPasswordForm.reset();
-    this.showResetNew.set(false);
-    this.showResetConfirm.set(false);
     this.showPasswordResetModal.set(true);
   }
 
   submitPasswordReset() {
-    const rawPwd = this.resetPasswordForm.getRawValue().newPassword ?? '';
-    if (rawPwd !== rawPwd.trim()) {
-      this.messageService.add({ severity: 'error', summary: 'Error', detail: 'La contraseña no debe contener espacios.' });
-      return;
-    }
-    if (this.resetPasswordForm.invalid) {
-      this.resetPasswordForm.markAllAsTouched();
-      return;
-    }
-    const { newPassword, confirmPassword } = this.resetPasswordForm.value;
-    if (newPassword !== confirmPassword) {
-      this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Las contraseñas no coinciden' });
-      return;
-    }
     const emp = this.selectedEmployeeForReset();
     if (!emp || (!emp.userId && !emp.email)) {
       this.messageService.add({ severity: 'error', summary: 'Error', detail: 'El empleado no tiene un usuario o correo asignado en el sistema' });
       return;
     }
-    this.empleadoService.resetPassword(emp.userId ?? null, newPassword!, emp.email).subscribe({
+    this.requestingPasswordReset.set(true);
+    this.empleadoService.requestPasswordReset(emp.userId ?? null, emp.email).subscribe({
       next: () => {
-        this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Contraseña restablecida correctamente' });
+        this.requestingPasswordReset.set(false);
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Instrucciones enviadas',
+          detail: 'El empleado deberá establecer personalmente su nueva contraseña desde el enlace recibido.'
+        });
         this.showPasswordResetModal.set(false);
-        this.resetPasswordForm.reset();
       },
       error: (err) => {
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo restablecer la contraseña' });
+        this.requestingPasswordReset.set(false);
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudieron enviar las instrucciones' });
       }
     });
   }

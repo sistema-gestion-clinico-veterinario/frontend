@@ -83,8 +83,8 @@ export class EmpleadoService {
     return this.http.get<ApiResponse<any[]>>(`${this.apiUrl}/schedules-report${params}`);
   }
 
-  resetPassword(userId: number | null, newPassword: string, email?: string): Observable<ApiResponse<void>> {
+  requestPasswordReset(userId: number | null, email?: string): Observable<ApiResponse<void>> {
     const url = `${environment.apiUrl}/admin/users/reset-password`;
-    return this.http.post<ApiResponse<void>>(url, { userId, newPassword, email });
+    return this.http.post<ApiResponse<void>>(url, { userId, email });
   }
 }

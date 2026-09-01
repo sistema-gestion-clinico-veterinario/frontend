@@ -20,7 +20,9 @@ const AUTH_ENDPOINTS_WITHOUT_REFRESH = [
   '/auth/resend-verification',
   '/auth/forgot-password',
   '/auth/validate-reset-token',
-  '/auth/reset-password'
+  '/auth/reset-password',
+  '/auth/email-change/confirm-current',
+  '/auth/email-change/confirm-new'
 ];
 
 const shouldSkipRefresh = (url: string): boolean =>

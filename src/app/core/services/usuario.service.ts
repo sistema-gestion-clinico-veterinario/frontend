@@ -10,7 +10,7 @@ export class UsuarioService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = `${environment.apiUrl}/admin/users`;
 
-  resetPassword(userId: number, newPassword: string) {
-    return this.http.post<ApiResponse<void>>(`${this.apiUrl}/reset-password`, { userId, newPassword });
+  requestPasswordReset(userId: number) {
+    return this.http.post<ApiResponse<void>>(`${this.apiUrl}/reset-password`, { userId });
   }
 }

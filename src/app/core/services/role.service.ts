@@ -18,6 +18,8 @@ export interface RolVentanaPermiso {
   escribir: boolean;
   modificar: boolean;
   eliminar: boolean;
+  dataScope: 'OWN' | 'COMPANY';
+  visibleMenu: boolean;
   vistas?: any[]; // For vistas inside the ventana
 }
 
@@ -50,6 +52,8 @@ interface RolVistaPermiso {
   escribir: boolean;
   modificar: boolean;
   eliminar: boolean;
+  dataScope: 'OWN' | 'COMPANY';
+  visibleMenu: boolean;
 }
 
 @Injectable({
@@ -106,7 +110,8 @@ export class RoleService {
       leer: permiso.leer,
       escribir: permiso.escribir,
       modificar: permiso.modificar,
-      eliminar: permiso.eliminar
+      eliminar: permiso.eliminar,
+      dataScope: permiso.dataScope ?? 'OWN'
     }));
 
     return this.http.put<ApiResponse<RolVistaPermiso[]>>(`${this.apiUrl}/${roleId}/views`, payload).pipe(
@@ -157,6 +162,8 @@ export class RoleService {
       escribir: vista.escribir,
       modificar: vista.modificar,
       eliminar: vista.eliminar,
+      dataScope: vista.dataScope ?? 'OWN',
+      visibleMenu: vista.visibleMenu ?? true,
       vistas: []
     };
   }
