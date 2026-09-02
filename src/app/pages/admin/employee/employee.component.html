@@ -70,16 +70,18 @@
       </div>
     </div>
     <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
-      <a routerLink="/admin/empleados/horarios"
+      <a *ngIf="activeCompanyId" routerLink="/admin/empleados/horarios"
         class="flex items-center justify-center gap-2 bg-white border border-slate-200 hover:border-[#0066AA] hover:text-[#0066AA] text-slate-600 text-sm font-medium px-5 h-10 rounded-lg transition-all">
         <i class="pi pi-calendar text-xs"></i>
         Gestión de Horarios
       </a>
-      <button *appHasPermission="'VISTA_EMPLEADOS:escribir'" (click)="openNew()"
-        class="flex items-center justify-center gap-2 bg-[#0066AA] hover:bg-[#005a96] text-white text-sm font-medium px-5 h-10 rounded-lg transition-colors">
-        <i class="pi pi-plus text-xs"></i>
-        Registrar empleado
-      </button>
+      <ng-container *appHasPermission="'VISTA_EMPLEADOS:escribir'">
+        <button *ngIf="activeCompanyId" (click)="openNew()"
+          class="flex items-center justify-center gap-2 bg-[#0066AA] hover:bg-[#005a96] text-white text-sm font-medium px-5 h-10 rounded-lg transition-colors">
+          <i class="pi pi-plus text-xs"></i>
+          Registrar empleado
+        </button>
+      </ng-container>
     </div>
   </div>
 

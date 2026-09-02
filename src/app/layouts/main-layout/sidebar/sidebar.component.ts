@@ -114,12 +114,12 @@ export class SidebarComponent {
   navItemClass(isActive: boolean): string {
     if (this.collapsed()) {
       return isActive
-        ? 'flex items-center justify-center mx-auto w-9 h-9 border-l-2 border-l-white bg-white/20 transition-colors duration-150'
-        : 'flex items-center justify-center mx-auto w-9 h-9 border-l-2 border-l-transparent hover:bg-white/10 transition-colors duration-150';
+        ? 'mx-auto flex h-10 w-10 items-center justify-center rounded-md bg-white text-[#123B5A] transition-colors duration-150'
+        : 'mx-auto flex h-10 w-10 items-center justify-center rounded-md text-slate-200 hover:bg-white/10 hover:text-white transition-colors duration-150';
     }
     return isActive
-      ? 'mx-2 flex items-center border-l-2 border-l-white bg-white/20 px-3 py-1.5 transition-colors duration-150'
-      : 'mx-2 flex items-center border-l-2 border-l-transparent hover:bg-white/10 px-3 py-1.5 transition-colors duration-150';
+      ? 'flex min-h-10 items-center rounded-md bg-white px-3 text-[#123B5A] transition-colors duration-150'
+      : 'flex min-h-10 items-center rounded-md px-3 text-slate-200 hover:bg-white/10 hover:text-white transition-colors duration-150';
   }
 
   getIcon(vista: MenuItemWithRuta): string {

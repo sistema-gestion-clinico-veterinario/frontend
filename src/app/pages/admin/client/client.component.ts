@@ -1,6 +1,6 @@
 import { Component, OnInit, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Subject, debounceTime, forkJoin } from 'rxjs';
+import { Subject, debounceTime, finalize, forkJoin } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators, AbstractControl } from '@angular/forms';
 import { TableModule } from 'primeng/table';
@@ -233,6 +233,7 @@ export class ClientComponent implements OnInit {
       this.loadClientRoles(companyId);
       this.clientForm.get('companyId')?.setValue(companyId);
     }
+    this.loadClients({ first: 0, rows: this.pageSize });
 
     this.searchTrigger.pipe(
       debounceTime(400),
@@ -278,8 +279,6 @@ export class ClientComponent implements OnInit {
 
   loadClients(event: any = { first: 0, rows: this.pageSize }) {
     const companyId = this.activeCompanyId;
-    if (!companyId) return;
-
     const isFirstLoad = this.clients().length === 0;
     if (isFirstLoad) this.cargando.set(true);
     this.pageSize = event.rows;
@@ -288,15 +287,15 @@ export class ClientComponent implements OnInit {
     const nombre = this.normalizeNameFilter(this.searchNombre()) || undefined;
     const numeroDocumento = this.searchDocumento().trim().toUpperCase() || undefined;
 
-    this.apoderadoService.listar(companyId, nombre, numeroDocumento, page, event.rows).subscribe({
+    this.apoderadoService.listar(companyId ?? undefined, nombre, numeroDocumento, page, event.rows).pipe(
+      finalize(() => this.cargando.set(false))
+    ).subscribe({
       next: (res) => {
         this.clients.set(res.data.content);
         this.totalRecords.set(res.data?.page?.totalElements ?? res.data?.totalElements ?? 0);
-        this.cargando.set(false);
       },
       error: () => {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar los propietarios' });
-        this.cargando.set(false);
       }
     });
   }
@@ -391,11 +390,10 @@ export class ClientComponent implements OnInit {
 
   viewClientDetail(client: ApoderadoListResponse) {
     const companyId = this.activeCompanyId;
-    if (!companyId) return;
     this.loadingStore.show();
     forkJoin({
       detail: this.apoderadoService.getById(client.id),
-      pets: this.mascotaService.listar(companyId, undefined, undefined, 0, 500, undefined)
+      pets: this.mascotaService.listar(companyId ?? undefined, undefined, undefined, 0, 500, undefined)
     }).subscribe({
       next: (res) => {
         const allPets = res.pets.data?.content ?? [];

@@ -5,8 +5,8 @@
 
   <div [class.hidden]="!mobileSidebarOpen()" class="fixed inset-0 z-[180] lg:hidden">
     <button type="button" class="absolute inset-0 bg-slate-950/35" (click)="closeMobileSidebar()" aria-label="Cerrar menú"></button>
-    <div class="relative z-[181] h-full w-[17rem] max-w-[86vw] bg-[#004F85] [&_aside]:!border-r-0">
-      <button type="button" class="absolute right-3 top-3 z-[182] flex h-8 w-8 items-center justify-center rounded-lg text-white/80 transition-colors hover:text-white" (click)="closeMobileSidebar()" aria-label="Cerrar menú"><i class="pi pi-times text-xs"></i></button>
+    <div class="relative z-[181] h-full w-64 max-w-[86vw] bg-[#123B5A] [&_aside]:!w-full">
+      <button type="button" class="absolute right-3 top-5 z-[182] flex h-8 w-8 items-center justify-center rounded-md bg-white/10 text-white/80 transition-colors hover:bg-white/15 hover:text-white" (click)="closeMobileSidebar()" aria-label="Cerrar menú"><i class="pi pi-times text-xs"></i></button>
       <app-sidebar [collapsed]="false" (toggleSidebar)="closeMobileSidebar()" (navigate)="closeMobileSidebar()" />
     </div>
   </div>
