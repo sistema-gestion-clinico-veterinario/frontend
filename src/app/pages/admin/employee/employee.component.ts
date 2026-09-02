@@ -283,8 +283,6 @@ export class EmployeeComponent implements OnInit, OnDestroy {
 
   loadEmployees(event: any = { first: 0, rows: 10 }) {
     const companyId = this.activeCompanyId ?? undefined;
-    if (!companyId) return;
-
     const isFirstLoad = this.employees().length === 0;
     if (isFirstLoad) this.cargando.set(true);
     const page = event.first / event.rows;

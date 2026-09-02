@@ -232,10 +232,8 @@ export class ClientComponent implements OnInit {
     if (companyId) {
       this.loadClientRoles(companyId);
       this.clientForm.get('companyId')?.setValue(companyId);
-      this.loadClients({ first: 0, rows: this.pageSize });
-    } else {
-      this.cargando.set(false);
     }
+    this.loadClients({ first: 0, rows: this.pageSize });
 
     this.searchTrigger.pipe(
       debounceTime(400),
@@ -281,8 +279,6 @@ export class ClientComponent implements OnInit {
 
   loadClients(event: any = { first: 0, rows: this.pageSize }) {
     const companyId = this.activeCompanyId;
-    if (!companyId) return;
-
     const isFirstLoad = this.clients().length === 0;
     if (isFirstLoad) this.cargando.set(true);
     this.pageSize = event.rows;
@@ -291,7 +287,7 @@ export class ClientComponent implements OnInit {
     const nombre = this.normalizeNameFilter(this.searchNombre()) || undefined;
     const numeroDocumento = this.searchDocumento().trim().toUpperCase() || undefined;
 
-    this.apoderadoService.listar(companyId, nombre, numeroDocumento, page, event.rows).pipe(
+    this.apoderadoService.listar(companyId ?? undefined, nombre, numeroDocumento, page, event.rows).pipe(
       finalize(() => this.cargando.set(false))
     ).subscribe({
       next: (res) => {
@@ -394,11 +390,10 @@ export class ClientComponent implements OnInit {
 
   viewClientDetail(client: ApoderadoListResponse) {
     const companyId = this.activeCompanyId;
-    if (!companyId) return;
     this.loadingStore.show();
     forkJoin({
       detail: this.apoderadoService.getById(client.id),
-      pets: this.mascotaService.listar(companyId, undefined, undefined, 0, 500, undefined)
+      pets: this.mascotaService.listar(companyId ?? undefined, undefined, undefined, 0, 500, undefined)
     }).subscribe({
       next: (res) => {
         const allPets = res.pets.data?.content ?? [];

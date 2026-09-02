@@ -81,7 +81,12 @@ export class CajaComponent implements OnInit, OnDestroy {
     return this.authStore.selectedEnterprise()?.establishmentId ?? this.authStore.companyId() ?? 0;
   }
 
+  get requiresCompanySelection(): boolean {
+    return this.authStore.isSuperAdmin() && !this.companyId;
+  }
+
   ngOnInit() {
+    if (this.requiresCompanySelection) return;
     this.cargar();
     this.cargarPendientes();
     this.cargarSesion();

@@ -635,12 +635,6 @@ export class AgendaComponent implements OnInit, OnDestroy {
   private executeLoadCitas() {
     const event = this.lastLazyEvent;
     const companyId = this.activeCompanyId;
-    if (!companyId) {
-      this.citas.set([]);
-      this.totalRecords.set(0);
-      return;
-    }
-
     const page      = Math.floor(event.first / event.rows);
     const esAgenda = this.vistaActual() === 'lista';
     const fechaStr = esAgenda ? undefined : (this.filterFecha || undefined);
@@ -654,11 +648,11 @@ export class AgendaComponent implements OnInit, OnDestroy {
     const veterinarioId = this.getEffectiveVeterinarioFilter();
     if (esAgenda) {
       const rangoContadores = rangoAgenda;
-      this.loadAgendaCounters(companyId, rangoContadores?.desde, rangoContadores?.hasta, veterinarioId);
+      this.loadAgendaCounters(companyId ?? undefined, rangoContadores?.desde, rangoContadores?.hasta, veterinarioId);
     }
 
     this.citaService.listar(
-      companyId,
+      companyId ?? undefined,
       fechaStr,
       this.filterEstado    || undefined,
       veterinarioId,
@@ -1851,7 +1845,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
   }
 
   private loadAgendaCounters(
-    companyId: number,
+    companyId?: number,
     fechaDesde?: string,
     fechaHasta?: string,
     veterinarioId?: number
@@ -1873,7 +1867,6 @@ export class AgendaComponent implements OnInit, OnDestroy {
 
   loadCitasCalendario() {
     const companyId = this.activeCompanyId ?? undefined;
-    if (!companyId) { this.citasPorDia.set({}); return; }
     const veterinarioId = this.getEffectiveVeterinarioFilter();
 
     this.cargandoCal.set(true);

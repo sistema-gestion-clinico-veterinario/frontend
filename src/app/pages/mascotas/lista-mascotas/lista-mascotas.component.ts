@@ -168,19 +168,13 @@ export class ListaMascotasComponent implements OnInit {
 
   loadMascotas(page: number = 0) {
     const companyId = this.activeCompanyId;
-    if (!companyId) {
-      this.mascotas.set([]);
-      this.totalRecords.set(0);
-      return;
-    }
-
     this.cargando.set(true);
     this.currentPage = page;
     const nombre = this.normalizeNameFilter(this.searchNombre);
     this.searchNombre = nombre;
 
     this.mascotaService.listar(
-      companyId,
+      companyId ?? undefined,
       nombre || undefined,
       this.filterEspecie || undefined,
       page,

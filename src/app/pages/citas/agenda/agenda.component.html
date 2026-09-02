@@ -53,11 +53,13 @@
           </button>
         </div>
 
-        <button *appHasPermission="'VISTA_CITAS_AGENDA:escribir'" (click)="openNew()"
-          class="shrink-0 flex items-center gap-1.5 bg-[#0066AA] hover:bg-[#005a96] text-white font-bold rounded-xl px-3 sm:px-4 py-2 text-sm transition-all active:scale-95">
-          <i class="pi pi-plus text-sm"></i>
-          <span class="hidden sm:inline">Nueva Cita</span>
-        </button>
+        <ng-container *appHasPermission="'VISTA_CITAS_AGENDA:escribir'">
+          <button *ngIf="activeCompanyId" (click)="openNew()"
+            class="shrink-0 flex items-center gap-1.5 bg-[#0066AA] hover:bg-[#005a96] text-white font-bold rounded-xl px-3 sm:px-4 py-2 text-sm transition-all active:scale-95">
+            <i class="pi pi-plus text-sm"></i>
+            <span class="hidden sm:inline">Nueva Cita</span>
+          </button>
+        </ng-container>
       </div>
     </div>
   </div>

@@ -184,6 +184,10 @@ export class CartillaComponent implements OnInit {
   });
 
   ngOnInit() {
+    if (!this.companyId) {
+      this.cargando.set(false);
+      return;
+    }
     this.cargarServiciosPreventivos();
     this.cargarMascotas();
     const petId = Number(this.route.snapshot.queryParamMap.get('petId'));
@@ -275,6 +279,10 @@ export class CartillaComponent implements OnInit {
 
   private get companyId(): number | undefined {
     return this.authStore.selectedEnterprise()?.establishmentId ?? this.authStore.companyId() ?? undefined;
+  }
+
+  get requiresCompanySelection(): boolean {
+    return this.authStore.isSuperAdmin() && !this.companyId;
   }
 
   buscar() {
