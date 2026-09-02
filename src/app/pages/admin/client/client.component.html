@@ -283,7 +283,7 @@
   </div>
 
   <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-    <p-table [value]="clients()" [lazy]="true" (onLazyLoad)="loadClients($event)" [paginator]="true" [rows]="10"
+    <p-table [value]="clients()" [lazy]="true" [lazyLoadOnInit]="false" (onLazyLoad)="loadClients($event)" [paginator]="true" [rows]="10"
       [totalRecords]="totalRecords()" responsiveLayout="stack" breakpoint="768px" [rowHover]="true"
       styleClass="p-datatable-borderless">
       <ng-template pTemplate="header">

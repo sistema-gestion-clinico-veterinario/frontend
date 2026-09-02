@@ -1,6 +1,6 @@
 import { Component, OnInit, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Subject, debounceTime, forkJoin } from 'rxjs';
+import { Subject, debounceTime, finalize, forkJoin } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators, AbstractControl } from '@angular/forms';
 import { TableModule } from 'primeng/table';
@@ -232,6 +232,9 @@ export class ClientComponent implements OnInit {
     if (companyId) {
       this.loadClientRoles(companyId);
       this.clientForm.get('companyId')?.setValue(companyId);
+      this.loadClients({ first: 0, rows: this.pageSize });
+    } else {
+      this.cargando.set(false);
     }
 
     this.searchTrigger.pipe(
@@ -288,15 +291,15 @@ export class ClientComponent implements OnInit {
     const nombre = this.normalizeNameFilter(this.searchNombre()) || undefined;
     const numeroDocumento = this.searchDocumento().trim().toUpperCase() || undefined;
 
-    this.apoderadoService.listar(companyId, nombre, numeroDocumento, page, event.rows).subscribe({
+    this.apoderadoService.listar(companyId, nombre, numeroDocumento, page, event.rows).pipe(
+      finalize(() => this.cargando.set(false))
+    ).subscribe({
       next: (res) => {
         this.clients.set(res.data.content);
         this.totalRecords.set(res.data?.page?.totalElements ?? res.data?.totalElements ?? 0);
-        this.cargando.set(false);
       },
       error: () => {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar los propietarios' });
-        this.cargando.set(false);
       }
     });
   }

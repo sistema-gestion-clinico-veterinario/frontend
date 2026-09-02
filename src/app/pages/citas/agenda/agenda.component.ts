@@ -32,7 +32,6 @@ import { AuthStore } from '../../../store/auth.store';
 import { Router } from '@angular/router';
 import { forkJoin, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
-import { environment } from '../../../../environments/environment';
 import { FullCalendarComponent, FullCalendarModule } from '@fullcalendar/angular';
 import { CalendarOptions, EventContentArg, EventInput } from '@fullcalendar/core';
 import dayGridPlugin from '@fullcalendar/daygrid';
@@ -54,7 +53,7 @@ import { normalizeText } from '../../../core/utils/normalize-text.util';
 import { hasMeaningfulText, isLowercaseEmail } from '../../../core/utils/input-validation.util';
 import { ControlPreventivoService } from '../../../core/services/control-preventivo.service';
 import { ControlPreventivoResponse } from '../../../models/response/control-preventivo-response';
-import { RealtimeTicketService } from '../../../core/services/realtime-ticket.service';
+import { RealtimeStompConnection, RealtimeStompService } from '../../../core/services/realtime-stomp.service';
 export type Vista = 'lista' | 'dia' | 'semana' | 'mes';
 export type PeriodoAgenda = '' | 'hoy' | '7dias' | '30dias' | 'personalizado';
 
@@ -116,14 +115,14 @@ export class AgendaComponent implements OnInit, OnDestroy {
   private readonly preventivoService = inject(ControlPreventivoService);
   private readonly pagoService       = inject(PagoService);
   private readonly cajaService       = inject(CajaService);
-  private readonly realtimeTicketService = inject(RealtimeTicketService);
+  private readonly realtimeStompService = inject(RealtimeStompService);
   private readonly messageService    = inject(MessageService);
   private readonly confirmationService = inject(ConfirmationService);
   private readonly router            = inject(Router);
   readonly authStore                 = inject(AuthStore);
   readonly loadingStore              = inject(LoadingStore);
 
-  private stompClient: AgendaStompClient | null = null;
+  private realtimeConnection: RealtimeStompConnection | null = null;
   private lastWsDestination: string | null = null;
 
   readonly canReadHistoria   = computed(() => this.authStore.hasAccess('VISTA_HISTORIAS', 'leer'));
@@ -569,7 +568,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.stompClient?.disconnect();
+    this.realtimeConnection?.disconnect();
   }
 
   private checkInitialLoadsComplete() {
@@ -588,32 +587,15 @@ export class AgendaComponent implements OnInit, OnDestroy {
     if (!companyId) return;
 
     const destination = `/topic/citas/${companyId}`;
-    if (this.lastWsDestination === destination && this.stompClient?.isConnected()) return;
-    if (this.stompClient) this.stompClient.disconnect();
+    if (this.lastWsDestination === destination && this.realtimeConnection?.isActive()) return;
+    this.realtimeConnection?.disconnect();
     this.lastWsDestination = destination;
 
-    try {
-      const urlObj = new URL(environment.wsApiUrl);
-      const wsProtocol = urlObj.protocol === 'https:' ? 'wss:' : 'ws:';
-      let path = urlObj.pathname.trim();
-      if (path.endsWith('/')) path = path.slice(0, -1);
-      const wsUrl = `${wsProtocol}//${urlObj.host}${path}/ws/websocket`;
-
-      this.realtimeTicketService.issue().subscribe({
-        next: ({ data }) => {
-          this.stompClient = new AgendaStompClient(wsUrl, data.ticket);
-          this.stompClient.connect(() => {
-            this.stompClient?.subscribe(destination, (event: CitaWsEvent) => {
-            this.handleCitaWsEvent(event);
-            });
-          }, (err) => console.error('[Agenda WS] Error:', err),
-          () => setTimeout(() => this.setupWebSocket(), 5000));
-        },
-        error: err => console.error('[Agenda WS] No se pudo autorizar:', err)
-      });
-    } catch (e) {
-      console.error('[Agenda WS] Init error:', e);
-    }
+    this.realtimeConnection = this.realtimeStompService.connect<CitaWsEvent>(
+      destination,
+      event => this.handleCitaWsEvent(event),
+      { label: 'Agenda' }
+    );
   }
 
   private handleCitaWsEvent(event: CitaWsEvent) {
@@ -2319,77 +2301,3 @@ export class AgendaComponent implements OnInit, OnDestroy {
     this.cambiarVista('dia');
   }
 }
-
-class AgendaStompClient {
-  private socket: WebSocket | null = null;
-  private connected = false;
-  private subscriptions = new Map<string, (payload: any) => void>();
-  private subIdCounter = 0;
-
-  constructor(private url: string, private ticket: string) {}
-
-  isConnected(): boolean { return this.connected; }
-
-  connect(onConnect: () => void, onError: (err: any) => void, onClose?: () => void) {
-    try {
-      this.socket = new WebSocket(this.url);
-
-      this.socket.onopen = () => {
-        this.socket?.send(`CONNECT\naccept-version:1.1,1.2\nheart-beat:10000,10000\nticket:${this.ticket}\n\n\0`);
-      };
-
-      this.socket.onmessage = (event) => {
-        let data = (event.data as string).replace(/\r\n/g, '\n');
-        if (!data || data === '\n') return;
-
-        if (data.startsWith('CONNECTED')) {
-          this.connected = true;
-          onConnect();
-          this.subscriptions.forEach((_, dest) => this.sendSubscribeFrame(dest));
-        } else if (data.startsWith('MESSAGE')) {
-          const bodyStart = data.indexOf('\n\n');
-          if (bodyStart === -1) return;
-          const body = data.substring(bodyStart + 2, data.lastIndexOf('\0')).trim();
-          try {
-            const parsed = JSON.parse(body);
-            const destMatch = data.match(/destination:([^\n]+)/);
-            if (destMatch) {
-              const cb = this.subscriptions.get(destMatch[1].trim());
-              if (cb) cb(parsed);
-            }
-          } catch (e) { console.error('[Agenda WS] Parse error', e); }
-        }
-      };
-
-      this.socket.onerror  = (err) => onError(err);
-      this.socket.onclose  = () => {
-        this.connected = false;
-        onClose?.();
-      };
-    } catch (e) { onError(e); }
-  }
-
-  subscribe(destination: string, callback: (payload: any) => void) {
-    this.subscriptions.set(destination, callback);
-    if (this.connected) this.sendSubscribeFrame(destination);
-  }
-
-  private sendSubscribeFrame(destination: string) {
-    this.socket?.send(`SUBSCRIBE\nid:sub-${this.subIdCounter++}\ndestination:${destination}\n\n\0`);
-  }
-
-  disconnect() {
-    this.connected = false;
-    this.subscriptions.clear();
-    if (this.socket) {
-      this.socket.onclose = null;
-      this.socket.onerror = null;
-      this.socket.onmessage = null;
-      this.socket.onopen = null;
-      this.socket.close();
-      this.socket = null;
-    }
-  }
-}
-
-
