@@ -8,10 +8,9 @@ import { AuditLogService, AuditLog } from '../../../core/services/audit-log.serv
 import { CompanyService } from '../../../core/services/company.service';
 import { AuthStore } from '../../../store/auth.store';
 import { CompanyListResponse } from '../../../models/response/company-list-response';
-import { environment } from '../../../../environments/environment';
 import { normalizeText } from '../../../core/utils/normalize-text.util';
 import { isDateRangeValid, isLowercaseEmail } from '../../../core/utils/input-validation.util';
-import { RealtimeTicketService } from '../../../core/services/realtime-ticket.service';
+import { RealtimeStompConnection, RealtimeStompService } from '../../../core/services/realtime-stomp.service';
 
 @Component({
   selector: 'app-auditoria',
@@ -30,10 +29,10 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
   private readonly auditLogService = inject(AuditLogService);
   private readonly companyService = inject(CompanyService);
   private readonly messageService = inject(MessageService);
-  private readonly realtimeTicketService = inject(RealtimeTicketService);
+  private readonly realtimeStompService = inject(RealtimeStompService);
   readonly authStore = inject(AuthStore);
 
-  private stompClient: LightweightStompClient | null = null;
+  private realtimeConnection: RealtimeStompConnection | null = null;
   private lastSubscribedDestination: string | null = null;
   private loadTimeout: any = null;
 
@@ -112,9 +111,8 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    if (this.stompClient) {
-      this.stompClient.disconnect();
-    }
+    this.realtimeConnection?.disconnect();
+    if (this.loadTimeout) clearTimeout(this.loadTimeout);
   }
 
   setupWebSocket(targetCompanyId: number | undefined) {
@@ -123,51 +121,24 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
       : '/topic/audit-logs';
 
     // Evitar reconexiones si ya estamos escuchando o conectando al mismo destino y está activo
-    if (this.lastSubscribedDestination === destination && this.stompClient && this.stompClient.isConnected()) {
+    if (this.lastSubscribedDestination === destination && this.realtimeConnection?.isActive()) {
       return;
     }
 
-    if (this.stompClient) {
-      this.stompClient.disconnect();
-    }
+    this.realtimeConnection?.disconnect();
 
     this.lastSubscribedDestination = destination;
 
-    try {
-      const urlObj = new URL(environment.wsApiUrl);
-      const wsProtocol = urlObj.protocol === 'https:' ? 'wss:' : 'ws:';
-
-      // Obtener el context-path de forma dinámica (ej: '/api/v1')
-      let path = urlObj.pathname.trim();
-      if (path.endsWith('/')) {
-        path = path.substring(0, path.length - 1);
+    this.realtimeConnection = this.realtimeStompService.connect<AuditLog>(destination, newLog => {
+      // Incorporar el log en tiempo real al principio de la tabla si el usuario está en la página 0.
+      if (this.currentPage === 0) {
+        this.logs.update(current => {
+          if (current.some(log => log.id === newLog.id)) return current;
+          return [newLog, ...current.slice(0, this.pageSize - 1)];
+        });
       }
-      const wsUrl = `${wsProtocol}//${urlObj.host}${path}/ws/websocket`;
-
-      this.realtimeTicketService.issue().subscribe({
-        next: ({ data }) => {
-          this.stompClient = new LightweightStompClient(wsUrl, data.ticket);
-          this.stompClient.connect(() => {
-            this.stompClient?.subscribe(destination, (newLog: AuditLog) => {
-            // Incorporar el log en tiempo real al principio de la tabla si el usuario está en la página 0
-            if (this.currentPage === 0) {
-              this.logs.update(current => {
-                if (current.some(l => l.id === newLog.id)) return current;
-                return [newLog, ...current.slice(0, this.pageSize - 1)];
-              });
-              this.totalRecords.update(total => total + 1);
-            } else {
-              this.totalRecords.update(total => total + 1);
-            }
-            });
-          }, (err) => console.error('WebSocket Error:', err),
-          () => setTimeout(() => this.setupWebSocket(targetCompanyId), 5000));
-        },
-        error: (err) => console.error('No se pudo autorizar WebSocket:', err)
-      });
-    } catch (e) {
-      console.error('WebSocket Initialization Error:', e);
-    }
+      this.totalRecords.update(total => total + 1);
+    }, { label: 'Auditoría' });
   }
 
   loadLogs(page: number = 0) {
@@ -322,100 +293,6 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
         return 'bg-orange-50 border-orange-200 text-orange-700';
       default:
         return 'bg-gray-50 border-gray-200 text-gray-700';
-    }
-  }
-}
-
-class LightweightStompClient {
-  private socket: WebSocket | null = null;
-  private connected = false;
-  private subscriptions = new Map<string, (payload: any) => void>();
-  private subIdCounter = 0;
-
-  constructor(private url: string, private ticket: string) { }
-
-  isConnected(): boolean {
-    return this.connected;
-  }
-
-  connect(onConnect: () => void, onError: (err: any) => void, onClose?: () => void) {
-    try {
-      this.socket = new WebSocket(this.url);
-
-      this.socket.onopen = () => {
-        const connectFrame = `CONNECT\naccept-version:1.1,1.2\nheart-beat:10000,10000\nticket:${this.ticket}\n\n\0`;
-        this.socket?.send(connectFrame);
-      };
-
-      this.socket.onmessage = (event) => {
-        let data = event.data as string;
-        if (!data || data === '\n' || data === '\r\n') return; // Heartbeat check
-
-        data = data.replace(/\r\n/g, '\n');
-
-        if (data.startsWith('CONNECTED')) {
-          this.connected = true;
-          onConnect();
-          this.subscriptions.forEach((callback, dest) => {
-            this.sendSubscribeFrame(dest);
-          });
-        } else if (data.startsWith('MESSAGE')) {
-          const bodyStart = data.indexOf('\n\n');
-          if (bodyStart !== -1) {
-            const body = data.substring(bodyStart + 2, data.lastIndexOf('\0')).trim();
-            try {
-              const parsed = JSON.parse(body);
-
-              const destMatch = data.match(/destination:([^\n]+)/);
-              if (destMatch) {
-                const destination = destMatch[1].trim();
-                const callback = this.subscriptions.get(destination);
-                if (callback) {
-                  callback(parsed);
-                }
-              }
-            } catch (e) {
-              console.error('Failed to parse STOMP message body', e);
-            }
-          }
-        }
-      };
-
-      this.socket.onerror = (err) => {
-        onError(err);
-      };
-
-      this.socket.onclose = () => {
-        this.connected = false;
-        onClose?.();
-      };
-    } catch (e) {
-      onError(e);
-    }
-  }
-
-  subscribe(destination: string, callback: (payload: any) => void) {
-    this.subscriptions.set(destination, callback);
-    if (this.connected) {
-      this.sendSubscribeFrame(destination);
-    }
-  }
-
-  private sendSubscribeFrame(destination: string) {
-    const subFrame = `SUBSCRIBE\nid:sub-${this.subIdCounter++}\ndestination:${destination}\n\n\0`;
-    this.socket?.send(subFrame);
-  }
-
-  disconnect() {
-    this.connected = false;
-    this.subscriptions.clear();
-    if (this.socket) {
-      this.socket.onclose = null;
-      this.socket.onerror = null;
-      this.socket.onmessage = null;
-      this.socket.onopen = null;
-      this.socket.close();
-      this.socket = null;
     }
   }
 }

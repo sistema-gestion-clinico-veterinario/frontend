@@ -71,6 +71,11 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
   canDelete = computed(() => this.authStore.hasAccess('VISTA_HORARIOS', 'eliminar'));
   canClone  = computed(() => this.canCreate() && this.canModify());
 
+  get requiresCompanySelection(): boolean {
+    const companyId = this.authStore.selectedEnterprise()?.establishmentId ?? this.authStore.companyId();
+    return this.authStore.isSuperAdmin() && !companyId;
+  }
+
   selectedEmployeeName = computed(() => {
     const id = this.selectedEmployeeId();
     const list = this.employees();
