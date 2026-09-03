@@ -3,6 +3,7 @@ import { Observable, catchError, finalize, map, of, shareReplay, tap } from 'rxj
 import { AuthLoginData } from '../../models/response/auth-login-response.model';
 import { AuthStore } from '../../store/auth.store';
 import { AuthService } from './auth.service';
+import { NavigationService } from './navigation.service';
 
 /**
  * Application service responsible for establishing the authenticated session.
@@ -12,6 +13,7 @@ import { AuthService } from './auth.service';
 export class SessionService {
   private readonly authService = inject(AuthService);
   private readonly authStore = inject(AuthStore);
+  private readonly navigationService = inject(NavigationService);
   private initializationInFlight$: Observable<boolean> | null = null;
 
   initialize(): Observable<boolean> {
@@ -65,6 +67,13 @@ export class SessionService {
       menu: data.menu ?? [],
       originalMenu: data.menu ?? [],
       simulatedRoleId: null,
+    });
+
+    // La navegación se refresca mediante su propio contrato. Durante la
+    // transición se conserva el menú incluido en la sesión como fallback.
+    this.navigationService.getEffectiveNavigation().subscribe({
+      next: ({ data: navigation }) => this.authStore.setMenu(navigation ?? []),
+      error: () => {}
     });
   }
 }

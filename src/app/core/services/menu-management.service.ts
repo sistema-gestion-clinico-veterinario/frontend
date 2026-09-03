@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../../models/response/api-response';
-import { MenuItemDTO, VistaDTO } from '../../models/response/auth-login-response.model';
+import { VistaDTO } from '../../models/response/auth-login-response.model';
 
 @Injectable({
   providedIn: 'root'
@@ -10,7 +10,6 @@ import { MenuItemDTO, VistaDTO } from '../../models/response/auth-login-response
 export class MenuManagementService {
   private readonly http = inject(HttpClient);
   private readonly vistaUrl = `${environment.apiUrl}/admin/views`;
-  private readonly roleUrl = `${environment.apiUrl}/admin/roles`;
 
   // Vistas API
   listarVistas(grupo?: string) {
@@ -32,14 +31,5 @@ export class MenuManagementService {
 
   reordenarVistas(items: { id: number; orden: number; grupo: string; ordenGrupo: number | null }[]) {
     return this.http.put<ApiResponse<void>>(`${this.vistaUrl}/reorder`, items);
-  }
-
-  // Roles Vistas Permisos
-  obtenerVistasPorRol(rolId: number) {
-    return this.http.get<ApiResponse<MenuItemDTO[]>>(`${this.roleUrl}/${rolId}/views`);
-  }
-
-  asignarVistasPorRol(rolId: number, permisos: any[]) {
-    return this.http.put<ApiResponse<MenuItemDTO[]>>(`${this.roleUrl}/${rolId}/views`, permisos);
   }
 }

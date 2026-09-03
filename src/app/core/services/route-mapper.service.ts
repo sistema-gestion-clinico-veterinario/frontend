@@ -16,6 +16,7 @@ export class RouteMapperService {
     VISTA_COMPANY_ADMIN: '/admin/company',
 
     VISTA_AUDITORIA_ADMIN: '/admin/auditoria',
+    VISTA_AUDITORIA: '/auditoria',
 
     VISTA_ROLES: '/admin/roles',
     VISTA_ROLES_ADMIN: '/admin/roles',
@@ -26,9 +27,12 @@ export class RouteMapperService {
 
     VISTA_EMPLEADOS: '/admin/empleados',
     VISTA_EMPLEADOS_ADMIN: '/admin/empleados',
+    VISTA_EMPLEADOS_LISTAR: '/empleados',
 
     VISTA_CLIENTES: '/clientes',
     VISTA_CLIENTES_ADMIN: '/admin/clientes',
+    VISTA_APODERADOS: '/clientes',
+    VISTA_APODERADOS_ADMIN: '/admin/clientes',
 
     VISTA_MASCOTAS: '/mascotas',
     VISTA_MASCOTAS_ADMIN: '/admin/mascotas',
@@ -39,6 +43,7 @@ export class RouteMapperService {
     VISTA_RECETAS_EMPLEADO: '/empleado/recetas',
 
     VISTA_HISTORIAS: '/historias-clinicas',
+    VISTA_HISTORIAS_CLINICAS: '/historias-clinicas',
     VISTA_HISTORIAS_MASCOTA: '/historias-clinicas/mascota/:numeroHc',
     VISTA_HISTORIAS_CONSULTA: '/historias-clinicas/consulta/:consultaId',
     VISTA_HISTORIAS_ADMIN: '/admin/historias-clinicas',
@@ -51,6 +56,8 @@ export class RouteMapperService {
     VISTA_CARTILLA: '/historias-clinicas/cartilla',
 
     VISTA_CITAS_AGENDA: '/citas/agenda',
+    VISTA_CITAS: '/citas/agenda',
+    VISTA_AGENDA: '/citas/agenda',
     VISTA_CITAS_AGENDA_ADMIN: '/admin/citas/agenda',
     VISTA_CITAS_AGENDA_EMPLEADO: '/empleado/citas/agenda',
 
@@ -63,9 +70,11 @@ export class RouteMapperService {
     VISTA_MI_HORARIO_EMPLEADO: '/empleado/mi-horario',
 
     VISTA_PROFILE: '/profile',
+    VISTA_PERFIL: '/profile',
     VISTA_PASSWORD_CHANGE: '/password-change',
 
     VISTA_APODERADO_PORTAL: '/apoderado',
+    VISTA_APODERADO: '/apoderado/dashboard',
     VISTA_APODERADO_DASHBOARD: '/apoderado/dashboard',
 
     VISTA_MIS_CITAS: '/apoderado/mis-citas',
@@ -88,6 +97,43 @@ export class RouteMapperService {
 
     VISTA_CAJA: '/admin/caja',
     VISTA_CAJA_ADMIN: '/admin/caja',
+    VISTA_LABORATORIO: '/laboratorio',
+    VISTA_EMPLEADO_DASHBOARD: '/empleado/dashboard',
+    VISTA_EMPRESA: '/company',
+    VISTA_APODERADO_MI_HISTORIAL: '/apoderado/mi-historial',
+    VISTA_EMPLEADOS_HORARIOS: '/empleados/horarios',
+  };
+
+  private readonly iconMap: Record<string, string> = {
+    VISTA_DASHBOARD: 'pi pi-home',
+    VISTA_DASHBOARD_ADMIN: 'pi pi-home',
+    VISTA_DASHBOARD_EMPLEADO: 'pi pi-home',
+    VISTA_EMPLEADO_DASHBOARD: 'pi pi-home',
+    VISTA_REPORTES: 'pi pi-chart-pie',
+    VISTA_COMPANY: 'pi pi-building',
+    VISTA_AUDITORIA_ADMIN: 'pi pi-list-check',
+    VISTA_ROLES: 'pi pi-shield',
+    VISTA_VENTANAS: 'pi pi-sitemap',
+    VISTA_COMPLEMENTARIO: 'pi pi-database',
+    VISTA_PAGOS: 'pi pi-wallet',
+    VISTA_CAJA: 'pi pi-money-bill',
+    VISTA_EMPLEADOS: 'pi pi-users',
+    VISTA_HORARIOS: 'pi pi-calendar-clock',
+    VISTA_MI_HORARIO: 'pi pi-clock',
+    VISTA_CLIENTES: 'pi pi-address-book',
+    VISTA_MASCOTAS: 'pi pi-heart',
+    VISTA_RECETAS: 'pi pi-file-edit',
+    VISTA_HISTORIAS: 'pi pi-folder-open',
+    VISTA_CARTILLA: 'pi pi-shield',
+    VISTA_CITAS_AGENDA: 'pi pi-calendar',
+    VISTA_APODERADO_DASHBOARD: 'pi pi-chart-line',
+    VISTA_MIS_MASCOTAS: 'pi pi-heart-fill',
+    VISTA_MIS_CITAS: 'pi pi-calendar-plus',
+    VISTA_MI_HISTORIAL: 'pi pi-book',
+    VISTA_MIS_RECETAS: 'pi pi-file-edit',
+    VISTA_MIS_PAGOS: 'pi pi-credit-card',
+    VISTA_PROFILE: 'pi pi-user',
+    VISTA_LABORATORIO: 'pi pi-circle'
   };
 
   getRoute(codigo: string): string | null {
@@ -96,5 +142,9 @@ export class RouteMapperService {
 
   getRouteOrDefault(codigo: string, defaultRoute: string = '/'): string {
     return this.routeMap[codigo] || defaultRoute;
+  }
+
+  getIcon(codigo: string): string {
+    return this.iconMap[codigo] || 'pi pi-circle';
   }
 }
