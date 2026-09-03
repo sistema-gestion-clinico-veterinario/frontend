@@ -180,7 +180,7 @@ export const AuthStore = signalStore(
       patchState(store, { loadingEnterprise });
     },
 
-    setMenu(menu: MenuItemDTO[]) {
+    setMenu(menu: (MenuItemDTO | MenuStructureDTO)[]) {
       const allowedRoutes = Array.from(extractAllowedRoutes(menu));
       patchState(store, { menu, originalMenu: menu, allowedRoutes });
       saveToStorage({ ...buildCurrentState(store), menu, originalMenu: menu, allowedRoutes });
