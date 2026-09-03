@@ -23,25 +23,6 @@ export interface RolVentanaPermiso {
   vistas?: any[]; // For vistas inside the ventana
 }
 
-export interface RolMenuConfiguration {
-  ventanaId: number;
-  codigo: string;
-  nombre: string;
-  icono?: string;
-  presentacion: 'GROUPED' | 'FLAT';
-  orden: number;
-}
-
-export interface RolMenuOrderItem {
-  tipo: 'MODULE' | 'VIEW';
-  referenciaId: number;
-  codigo: string;
-  nombre: string;
-  icono?: string;
-  orden: number;
-  vistas: RolMenuOrderItem[];
-}
-
 interface RolVistaPermiso {
   vistaId: number;
   codigo: string;
@@ -101,8 +82,8 @@ export class RoleService {
     );
   }
 
-  saveVentanas(roleId: number, permisos: RolVentanaPermiso[]) {
-    const payload = permisos.map((permiso) => ({
+  saveVentanas(roleId: number, expectedVersion: number, permisos: RolVentanaPermiso[]) {
+    const permissions = permisos.map((permiso) => ({
       vistaId: permiso.vistaId ?? permiso.ventanaId,
       codigo: permiso.codigo,
       nombre: permiso.nombre,
@@ -114,7 +95,11 @@ export class RoleService {
       dataScope: permiso.dataScope ?? 'OWN'
     }));
 
-    return this.http.put<ApiResponse<RolVistaPermiso[]>>(`${this.apiUrl}/${roleId}/views`, payload).pipe(
+    return this.http.put<ApiResponse<RolVistaPermiso[]>>(
+      `${this.apiUrl}/${roleId}/views/versioned`,
+      permissions,
+      { headers: { 'If-Match': String(expectedVersion) } }
+    ).pipe(
       map((res) => ({
         ...res,
         data: res.data.map((vista) => this.toRolVentanaPermiso(vista))
@@ -130,22 +115,6 @@ export class RoleService {
   listarRolesPersonalAsignables(companyId?: number) {
     const params = companyId ? `?companyId=${companyId}` : '';
     return this.http.get<ApiResponse<Role[]>>(`${this.apiUrl}/company/staff-options${params}`);
-  }
-
-  getMenuConfiguration(roleId: number) {
-    return this.http.get<ApiResponse<RolMenuConfiguration[]>>(`${this.apiUrl}/${roleId}/menu-configuration`);
-  }
-
-  saveMenuConfiguration(roleId: number, configuration: RolMenuConfiguration[]) {
-    return this.http.put<ApiResponse<RolMenuConfiguration[]>>(`${this.apiUrl}/${roleId}/menu-configuration`, configuration);
-  }
-
-  getMenuOrder(roleId: number) {
-    return this.http.get<ApiResponse<RolMenuOrderItem[]>>(`${this.apiUrl}/${roleId}/menu-order`);
-  }
-
-  saveMenuOrder(roleId: number, order: RolMenuOrderItem[]) {
-    return this.http.put<ApiResponse<RolMenuOrderItem[]>>(`${this.apiUrl}/${roleId}/menu-order`, order);
   }
 
   private toRolVentanaPermiso(vista: RolVistaPermiso): RolVentanaPermiso {

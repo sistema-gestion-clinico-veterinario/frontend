@@ -3,17 +3,24 @@ import { of, throwError } from 'rxjs';
 import { AuthService } from './auth.service';
 import { SessionService } from './session.service';
 import { AuthStore } from '../../store/auth.store';
+import { NavigationService } from './navigation.service';
 
 describe('SessionService', () => {
   let service: SessionService;
   let authService: jasmine.SpyObj<AuthService>;
   let authStore: InstanceType<typeof AuthStore>;
+  let navigationService: jasmine.SpyObj<NavigationService>;
 
   beforeEach(() => {
     localStorage.clear();
     authService = jasmine.createSpyObj<AuthService>('AuthService', ['refreshToken']);
+    navigationService = jasmine.createSpyObj<NavigationService>('NavigationService', ['getEffectiveNavigation']);
+    navigationService.getEffectiveNavigation.and.returnValue(of({ success: true, message: 'ok', data: [] }));
     TestBed.configureTestingModule({
-      providers: [{ provide: AuthService, useValue: authService }],
+      providers: [
+        { provide: AuthService, useValue: authService },
+        { provide: NavigationService, useValue: navigationService }
+      ],
     });
     service = TestBed.inject(SessionService);
     authStore = TestBed.inject(AuthStore);

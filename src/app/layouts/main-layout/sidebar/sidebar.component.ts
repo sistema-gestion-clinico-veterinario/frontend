@@ -92,19 +92,24 @@ export class SidebarComponent {
       if (isMenuStructure(item)) {
         const vistasConRuta: MenuItemWithRuta[] = item.vistas
           .filter(v => v.leer !== false)
-          .map(v => ({ ...v, ruta: v.ruta || this.routeMapper.getRoute(v.codigo) || '/' }));
+          .flatMap(v => {
+            const ruta = this.routeMapper.getRoute(v.codigo);
+            return ruta ? [{ ...v, ruta }] : [];
+          });
 
         if (vistasConRuta.length === 0) continue;
         structures.push({ ...item, vistas: vistasConRuta });
       } else {
         const vistaItem = item as MenuItemDTO;
         if (vistaItem.leer === false) continue;
+        const ruta = this.routeMapper.getRoute(vistaItem.codigo);
+        if (!ruta) continue;
         structures.push({
           ventanaId: undefined,
           ventanaNombre: vistaItem.nombre,
           grupo: vistaItem.grupo,
           orden: vistaItem.orden || 0,
-          vistas: [{ ...vistaItem, ruta: vistaItem.ruta || this.routeMapper.getRoute(vistaItem.codigo) || '/' }]
+          vistas: [{ ...vistaItem, ruta }]
         });
       }
     }
@@ -123,45 +128,13 @@ export class SidebarComponent {
   }
 
   getIcon(vista: MenuItemWithRuta): string {
-    if (vista.icono) return `pi ${vista.icono}`;
-    return this.vistaIcon(vista.codigo);
+    return this.routeMapper.getIcon(vista.codigo);
   }
 
   sectionIcon(structure: MenuSection): string {
     if (structure.ventanaIcono) return `pi ${structure.ventanaIcono}`;
     const first = structure.vistas[0];
     return first ? this.getIcon(first) : 'pi pi-folder';
-  }
-
-  vistaIcon(codigo: string): string {
-    const icons: Record<string, string> = {
-      VISTA_DASHBOARD: 'pi pi-home',
-      VISTA_REPORTES: 'pi pi-chart-pie',
-      VISTA_COMPANY: 'pi pi-building',
-      VISTA_AUDITORIA_ADMIN: 'pi pi-list-check',
-      VISTA_ROLES: 'pi pi-shield',
-      VISTA_VENTANAS: 'pi pi-sitemap',
-      VISTA_COMPLEMENTARIO: 'pi pi-database',
-      VISTA_PAGOS: 'pi pi-wallet',
-      VISTA_CAJA: 'pi pi-money-bill',
-      VISTA_EMPLEADOS: 'pi pi-users',
-      VISTA_HORARIOS: 'pi pi-calendar-clock',
-      VISTA_MI_HORARIO: 'pi pi-clock',
-      VISTA_CLIENTES: 'pi pi-address-book',
-      VISTA_MASCOTAS: 'pi pi-heart',
-      VISTA_RECETAS: 'pi pi-file-edit',
-      VISTA_HISTORIAS: 'pi pi-folder-open',
-      VISTA_CARTILLA: 'pi pi-shield',
-      VISTA_CITAS_AGENDA: 'pi pi-calendar',
-      VISTA_APODERADO_DASHBOARD: 'pi pi-chart-line',
-      VISTA_MIS_MASCOTAS: 'pi pi-heart-fill',
-      VISTA_MIS_CITAS: 'pi pi-calendar-plus',
-      VISTA_MI_HISTORIAL: 'pi pi-book',
-      VISTA_MIS_RECETAS: 'pi pi-file-edit',
-      VISTA_MIS_PAGOS: 'pi pi-credit-card',
-      VISTA_PROFILE: 'pi pi-user',
-    };
-    return icons[codigo] || 'pi pi-circle';
   }
 
   logout() {
