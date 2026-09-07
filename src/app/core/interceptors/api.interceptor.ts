@@ -5,6 +5,8 @@ import { BehaviorSubject, catchError, filter, finalize, Observable, switchMap, t
 import { AuthStore } from '../../store/auth.store';
 import { LoadingStore } from '../../store/loading.store';
 import { AuthService } from '../services/auth.service';
+import { ThesisPerformanceSessionService } from '../services/thesis-performance-session.service';
+import { environment } from '../../../environments/environment';
 
 let isRefreshing = false;
 let refreshTokenSubject: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
@@ -33,14 +35,19 @@ export const apiInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, nex
   const loadingStore = inject(LoadingStore);
   const authService = inject(AuthService);
   const router = inject(Router);
+  const thesisPerformanceSession = inject(ThesisPerformanceSessionService);
   const skipGlobalLoading = req.context.get(SKIP_GLOBAL_LOADING);
 
   if (!skipGlobalLoading) {
     loadingStore.show();
   }
 
+  const measurementHeaders = req.url.startsWith(environment.apiUrl)
+    ? thesisPerformanceSession.requestHeaders()
+    : null;
   const authReq = req.clone({
-    withCredentials: true
+    withCredentials: true,
+    ...(measurementHeaders ? { setHeaders: measurementHeaders } : {})
   });
 
   const requestTimeout = req.url.includes('/media/upload')
