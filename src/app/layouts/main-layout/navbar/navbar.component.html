@@ -79,6 +79,15 @@
     </div>
   </div>
   <div id="user-menu-container" class="relative flex items-center gap-3 shrink-0">
+    <button
+      *ngIf="authStore.needsLegalAcceptance()"
+      (click)="goToLegalAcceptance()"
+      title="Hay una actualización de Términos y Condiciones / Política de Privacidad pendiente de aceptar"
+      class="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 transition-colors"
+    >
+      <i class="pi pi-bell text-lg"></i>
+      <span class="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-rose-500"></span>
+    </button>
     <div class="hidden text-right sm:block">
       <p class="text-sm font-semibold text-slate-800 leading-tight">{{ userName }}</p>
       <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5" *ngIf="!isSuperAdmin">{{ companyName }}</p>

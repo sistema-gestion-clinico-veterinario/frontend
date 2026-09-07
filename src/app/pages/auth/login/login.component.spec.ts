@@ -150,6 +150,58 @@ describe('LoginComponent - submit validations', () => {
     expect(router.navigateByUrl).toHaveBeenCalled();
   });
 
+  it('redirige a /legal/accept cuando el consentimiento legal esta vencido (fuera del periodo de gracia)', () => {
+    const router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
+    createLoginInput('email', 'admin@test.com');
+    createLoginInput('password', 'secret123');
+    authService.login.and.returnValue(of({
+      data: {
+        roles: ['ROLE_ADMIN'],
+        assignedRoles: ['ROLE_ADMIN'],
+        companyId: 1,
+        companyName: 'VargasVet',
+        nombreCompleto: 'Admin Test',
+        userType: 'EMPLEADO',
+        empleadoId: 1,
+        passwordChanged: true,
+        needsCompanySelection: false,
+        needsLegalAcceptance: true,
+        legalAcceptanceOverdue: true,
+        menu: [],
+      }
+    } as any));
+
+    component.submit();
+
+    expect(router.navigateByUrl).toHaveBeenCalledWith('/legal/accept');
+  });
+
+  it('no redirige a /legal/accept si solo hay un pendiente dentro del periodo de gracia (aviso no intrusivo)', () => {
+    const router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
+    createLoginInput('email', 'admin@test.com');
+    createLoginInput('password', 'secret123');
+    authService.login.and.returnValue(of({
+      data: {
+        roles: ['ROLE_ADMIN'],
+        assignedRoles: ['ROLE_ADMIN'],
+        companyId: 1,
+        companyName: 'VargasVet',
+        nombreCompleto: 'Admin Test',
+        userType: 'EMPLEADO',
+        empleadoId: 1,
+        passwordChanged: true,
+        needsCompanySelection: false,
+        needsLegalAcceptance: true,
+        legalAcceptanceOverdue: false,
+        menu: [],
+      }
+    } as any));
+
+    component.submit();
+
+    expect(router.navigateByUrl).not.toHaveBeenCalledWith('/legal/accept');
+  });
+
   it('mantiene bloqueada la interfaz hasta que finaliza la navegacion', fakeAsync(() => {
     const router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
     const loadingStore = TestBed.inject(LoadingStore);

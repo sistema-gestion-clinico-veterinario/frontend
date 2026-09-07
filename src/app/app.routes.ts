@@ -329,6 +329,10 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/auth/password-change/password-change.component').then((m) => m.PasswordChangeComponent)
       },
       {
+        path: 'legal/accept',
+        loadComponent: () => import('./pages/legal/accept/legal-accept.component').then((m) => m.LegalAcceptComponent)
+      },
+      {
         path: 'apoderado/dashboard',
         data: { ventana: 'VISTA_APODERADO_DASHBOARD' },
         loadComponent: () => import('./pages/apoderado/dashboard/apoderado-dashboard.component').then((m) => m.ApoderadoDashboardComponent)
