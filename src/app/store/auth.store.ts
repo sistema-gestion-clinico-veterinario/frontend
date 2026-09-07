@@ -29,6 +29,8 @@ interface AuthState {
   empleadoId: number | null;
   passwordChanged: boolean;
   needsCompanySelection: boolean;
+  needsLegalAcceptance: boolean;
+  legalAcceptanceOverdue: boolean;
   selectedEnterprise: Enterprise | null;
   menu: (MenuItemDTO | MenuStructureDTO)[];
   originalMenu: (MenuItemDTO | MenuStructureDTO)[];
@@ -56,6 +58,8 @@ export interface AuthPayload {
   empleadoId?: number | null;
   passwordChanged: boolean;
   needsCompanySelection: boolean;
+  needsLegalAcceptance?: boolean;
+  legalAcceptanceOverdue?: boolean;
   selectedEnterprise?: Enterprise | null;
   menu: (MenuItemDTO | MenuStructureDTO)[];
   originalMenu?: (MenuItemDTO | MenuStructureDTO)[];
@@ -101,6 +105,8 @@ const createInitialState = (useStorage = true): AuthState => {
     empleadoId: null,
     passwordChanged: false,
     needsCompanySelection: false,
+    needsLegalAcceptance: false,
+    legalAcceptanceOverdue: false,
     selectedEnterprise,
     menu: [],
     originalMenu: [],
@@ -148,6 +154,8 @@ export const AuthStore = signalStore(
         empleadoId: auth.empleadoId ?? null,
         passwordChanged: auth.passwordChanged,
         needsCompanySelection: auth.needsCompanySelection,
+        needsLegalAcceptance: auth.needsLegalAcceptance ?? false,
+        legalAcceptanceOverdue: auth.legalAcceptanceOverdue ?? false,
         selectedEnterprise: auth.selectedEnterprise ?? null,
         menu: auth.menu,
         originalMenu: auth.originalMenu ?? auth.menu ?? [],
@@ -353,6 +361,8 @@ function buildCurrentState(store: any): AuthState {
     empleadoId: store.empleadoId(),
     passwordChanged: store.passwordChanged(),
     needsCompanySelection: store.needsCompanySelection(),
+    needsLegalAcceptance: store.needsLegalAcceptance(),
+    legalAcceptanceOverdue: store.legalAcceptanceOverdue(),
     selectedEnterprise: store.selectedEnterprise(),
     menu: store.menu(),
     originalMenu: store.originalMenu(),

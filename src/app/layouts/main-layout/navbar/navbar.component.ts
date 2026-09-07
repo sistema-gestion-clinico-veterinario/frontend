@@ -195,6 +195,10 @@ export class NavbarComponent implements OnInit {
     this.router.navigate(['/password-change']);
   }
 
+  goToLegalAcceptance() {
+    this.router.navigate(['/legal/accept']);
+  }
+
   logout() {
     this.authService.logout().subscribe({ error: () => {} });
     this.authStore.logout();

@@ -59,6 +59,8 @@ export class SessionService {
       empleadoId: data.empleadoId ?? null,
       passwordChanged: data.passwordChanged,
       needsCompanySelection: data.needsCompanySelection,
+      needsLegalAcceptance: data.needsLegalAcceptance,
+      legalAcceptanceOverdue: data.legalAcceptanceOverdue,
       selectedEnterprise: preserveEnterprise && isPlatformAdmin
         ? this.authStore.selectedEnterprise()
         : data.companyId

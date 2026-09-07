@@ -57,6 +57,8 @@ export interface AuthLoginData {
   empleadoId?: number;
   passwordChanged: boolean;
   needsCompanySelection: boolean;
+  needsLegalAcceptance: boolean;
+  legalAcceptanceOverdue: boolean;
   menu: (MenuStructureDTO | MenuItemDTO)[];
 }
 

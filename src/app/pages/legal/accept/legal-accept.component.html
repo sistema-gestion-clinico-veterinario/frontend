@@ -1,0 +1,36 @@
+<div class="legal-accept-page">
+  <div class="legal-accept-card">
+    <h1>Actualización de Términos y Condiciones</h1>
+    <p class="subtitle">
+      Para continuar usando el sistema necesitamos que revises y aceptes los siguientes documentos.
+    </p>
+
+    <div *ngIf="loading()" class="state-msg">Cargando…</div>
+    <div *ngIf="errorMsg()" class="state-msg error">{{ errorMsg() }}</div>
+
+    <div *ngIf="!loading()" class="documents">
+      <div class="document" *ngFor="let doc of documents()">
+        <div class="document-header">
+          <h2>{{ labelFor(doc) }}</h2>
+          <span class="version">v{{ doc.version }}</span>
+        </div>
+        <div class="document-content">{{ doc.contenido }}</div>
+        <label class="accept-checkbox">
+          <input
+            type="checkbox"
+            [ngModel]="checked()[doc.id] ?? false"
+            (ngModelChange)="toggle(doc.id, $event)"
+          />
+          He leído y acepto {{ labelFor(doc) }}
+        </label>
+      </div>
+    </div>
+
+    <div class="actions" *ngIf="!loading()">
+      <button type="button" class="btn-secondary" (click)="logout()">Cerrar sesión</button>
+      <button type="button" class="btn-primary" [disabled]="!allChecked() || submitting()" (click)="submit()">
+        {{ submitting() ? 'Guardando…' : 'Aceptar y continuar' }}
+      </button>
+    </div>
+  </div>
+</div>

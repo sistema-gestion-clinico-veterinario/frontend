@@ -90,7 +90,10 @@ export class LoginComponent implements OnInit {
 
         this.sessionService.establish(data);
         sessionStorage.removeItem('pw_modal_dismissed');
-        return from(this.router.navigateByUrl(resolveInitialRoute(data.menu ?? [], data.activeRolePurpose)));
+        const targetUrl = data.legalAcceptanceOverdue
+          ? '/legal/accept'
+          : resolveInitialRoute(data.menu ?? [], data.activeRolePurpose);
+        return from(this.router.navigateByUrl(targetUrl));
       }),
       finalize(() => {
         this.isSubmitting = false;
