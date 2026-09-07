@@ -399,6 +399,11 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/laboratorio/laboratorio.component').then((m) => m.LaboratorioComponent)
       },
       {
+        path: 'tesis/instrumento-1',
+        data: { thesisTool: true },
+        loadComponent: () => import('./pages/tesis/instrumento-1/instrumento-1.component').then((m) => m.Instrumento1Component)
+      },
+      {
         path: 'tesis/instrumento-5',
         data: { thesisTool: true },
         loadComponent: () => import('./pages/tesis/instrumento-5/instrumento-5.component').then((m) => m.Instrumento5Component)
