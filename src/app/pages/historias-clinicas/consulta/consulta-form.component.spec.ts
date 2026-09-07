@@ -1,11 +1,12 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { ConsultaFormComponent } from './consulta-form.component';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { AuthStore } from '../../../store/auth.store';
 import { of } from 'rxjs';
 import { MenuItemDTO } from '../../../models/response/auth-login-response.model';
+import { HistoriaClinicaService } from '../../../core/services/historia-clinica.service';
 
 describe('ConsultaFormComponent – permission computed signals', () => {
   let component: ConsultaFormComponent;
@@ -38,6 +39,7 @@ describe('ConsultaFormComponent – permission computed signals', () => {
             snapshot: { paramMap: { get: () => '1' } },
             params: of({ id: '1' }),
             queryParams: of({}),
+            queryParamMap: of(convertToParamMap({})),
           },
         },
         { provide: Router, useValue: jasmine.createSpyObj('Router', ['navigate', 'navigateByUrl']) },
@@ -66,11 +68,12 @@ describe('ConsultaFormComponent – permission computed signals', () => {
     expect(component.canCreateReceta()).toBeFalse();
   });
 
-  it('canModifyReceta is true for admin with modify access even when consulta is closed', () => {
+  it('keeps a closed consultation read-only even for an administrator', () => {
     store.setAuth({ ...baseAuth, activeRolePurpose: 'COMPANY_ADMIN', menu: [makeHistoriasItem()] });
     component.isCerrada.set(true);
     component.accessMode.set('edit');
-    expect(component.canModifyReceta()).toBeTrue();
+    expect(component.canEditConsulta()).toBeFalse();
+    expect(component.canModifyReceta()).toBeFalse();
   });
 
   it('canDeleteReceta is true when user has delete access and consulta is open', () => {
@@ -78,4 +81,21 @@ describe('ConsultaFormComponent – permission computed signals', () => {
     component.isCerrada.set(false);
     expect(component.canDeleteReceta()).toBeTrue();
   });
+
+  it('does not persist the consultation when a clinical field changes', fakeAsync(() => {
+    const service = TestBed.inject(HistoriaClinicaService);
+    const updateSpy = spyOn(service, 'updateConsulta');
+    store.setAuth({ ...baseAuth, roles: ['ROLE_EMPLEADO'], menu: [makeHistoriasItem()] });
+
+    component.ngOnInit();
+    component.form.patchValue({
+      version: 1,
+      tipoConsulta: 'CONTROL_RUTINA',
+      pesoEnConsulta: 10,
+      anamnesis: 'Paciente estable',
+    });
+    tick(1500);
+
+    expect(updateSpy).not.toHaveBeenCalled();
+  }));
 });
