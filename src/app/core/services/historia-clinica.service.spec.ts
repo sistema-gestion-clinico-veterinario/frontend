@@ -50,7 +50,13 @@ describe('HistoriaClinicaService integration', () => {
     });
   });
   it('debe cerrar consulta clinica y recibir estado cerrado', () => {
-    service.cerrarConsulta(44, { version: 4 }).subscribe((response) => {
+    const request = {
+      version: 4,
+      tipoConsulta: 'CONTROL_RUTINA',
+      pesoEnConsulta: 12.8,
+      anamnesis: 'Paciente estable',
+    };
+    service.cerrarConsulta(44, request).subscribe((response) => {
       expect(response.success).toBeTrue();
       expect(response.data.id).toBe(44);
       expect(response.data.estado).toBe('CERRADA');
@@ -58,7 +64,7 @@ describe('HistoriaClinicaService integration', () => {
     });
     const req = httpMock.expectOne(`${environment.apiUrl}/consultations/44/close`);
     expect(req.request.method).toBe('PATCH');
-    expect(req.request.body).toEqual({ version: 4 });
+    expect(req.request.body).toEqual(request);
     req.flush({
       success: true,
       message: 'Consulta cerrada',

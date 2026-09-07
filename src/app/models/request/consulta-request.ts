@@ -23,6 +23,4 @@ export interface ConsultaRequest {
   indicacionesReceta?: string;
 }
 
-export interface CerrarConsultaRequest {
-  version: number;
-}
+export interface CerrarConsultaRequest extends ConsultaRequest {}
