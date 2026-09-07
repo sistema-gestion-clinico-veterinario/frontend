@@ -61,6 +61,11 @@ export const apiInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, nex
       if (error instanceof HttpErrorResponse && error.status === 401 && !isAuthRecoveryRequest) {
         return handle401Error(authReq, next, authStore, authService, router);
       }
+      if (error instanceof HttpErrorResponse && error.status === 403
+          && error.error?.code === 'TERMS_NOT_ACCEPTED'
+          && !router.url.startsWith('/legal')) {
+        router.navigateByUrl('/legal/accept');
+      }
       return throwError(() => error);
     }),
     finalize(() => {
@@ -91,6 +96,8 @@ const handle401Error = (req: HttpRequest<any>, next: HttpHandlerFn, authStore: a
           empleadoId: res.data.empleadoId ?? null,
           passwordChanged: res.data.passwordChanged,
           needsCompanySelection: res.data.needsCompanySelection,
+          needsLegalAcceptance: res.data.needsLegalAcceptance,
+          legalAcceptanceOverdue: res.data.legalAcceptanceOverdue,
           selectedEnterprise: authStore.selectedEnterprise(),
           menu: res.data.menu,
           simulatedRoleId: authStore.simulatedRoleId(),
