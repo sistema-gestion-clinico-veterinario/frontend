@@ -127,6 +127,11 @@ export class SidebarComponent {
       : 'flex min-h-10 items-center rounded-md px-3 text-slate-200 hover:bg-white/10 hover:text-white transition-colors duration-150';
   }
 
+  isGrouped(structure: MenuSection): boolean {
+    return structure.presentacion === 'GROUPED'
+      || (structure.presentacion == null && structure.vistas.length > 1);
+  }
+
   getIcon(vista: MenuItemWithRuta): string {
     return this.routeMapper.getIcon(vista.codigo);
   }

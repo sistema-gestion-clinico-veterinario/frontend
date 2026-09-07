@@ -28,7 +28,7 @@
         </div>
       </ng-container>
       <ng-container *ngFor="let structure of menuStructure()">
-        <div *ngIf="structure.vistas.length > 1" class="space-y-0.5">
+        <div *ngIf="isGrouped(structure)" class="space-y-0.5">
           <button
             *ngIf="!collapsed() && structure.ventanaNombre"
             (click)="toggleSection(structure)"
@@ -73,7 +73,7 @@
         </div>
 
         <a
-          *ngIf="structure.vistas.length === 1"
+          *ngIf="!isGrouped(structure) && structure.vistas.length === 1"
           [routerLink]="structure.vistas[0].ruta"
           routerLinkActive="active-link"
           #rlaItem="routerLinkActive"
