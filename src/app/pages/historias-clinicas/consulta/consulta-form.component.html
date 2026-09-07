@@ -9,25 +9,10 @@
       <div>
         <div class="flex items-center gap-2 flex-wrap">
           <h1 class="text-2xl font-extrabold text-slate-900 leading-tight">Atención Clínica</h1>
-          <span *ngIf="canEditConsulta()"
-            class="text-[15px] font-bold inline-flex items-center gap-1.5"
-            [ngClass]="{
-              'text-[#0066AA]': autoSaveStatus() === 'saving' || (form.dirty && autoSaveStatus() !== 'error' && autoSaveStatus() !== 'invalid'),
-              'text-emerald-700': !form.dirty && autoSaveStatus() === 'saved',
-              'bg-rose-50 text-rose-600 border-rose-100': autoSaveStatus() === 'error' || autoSaveStatus() === 'invalid'
-            }">
-            <i class="pi text-[16px]"
-              [ngClass]="{
-                'pi-sync': autoSaveStatus() === 'saving',
-                'pi-circle-fill text-[7px]': autoSaveStatus() !== 'saving' && form.dirty && autoSaveStatus() !== 'error' && autoSaveStatus() !== 'invalid',
-                'pi-check-circle': !form.dirty && autoSaveStatus() === 'saved',
-                'pi-exclamation-circle': autoSaveStatus() === 'error' || autoSaveStatus() === 'invalid'
-              }"></i>
-            <ng-container *ngIf="autoSaveStatus() === 'saving'">Guardando...</ng-container>
-            <ng-container *ngIf="autoSaveStatus() !== 'saving' && form.dirty && autoSaveStatus() !== 'error' && autoSaveStatus() !== 'invalid'">Cambios sin guardar</ng-container>
-            <ng-container *ngIf="!form.dirty && autoSaveStatus() === 'saved'">Guardado automáticamente</ng-container>
-            <ng-container *ngIf="autoSaveStatus() === 'error'">Error al guardar</ng-container>
-            <ng-container *ngIf="autoSaveStatus() === 'invalid'">Corrige los campos marcados</ng-container>
+          <span *ngIf="canEditConsulta() && form.dirty"
+            class="text-sm font-bold inline-flex items-center gap-1.5 text-amber-700">
+            <i class="pi pi-pencil text-sm"></i>
+            Cambios pendientes de cierre
           </span>
         </div>
         <p *ngIf="consulta()" class="text-sm text-slate-400 font-medium mt-0.5">
@@ -58,26 +43,6 @@
   </div>
 
   <ng-container *ngIf="consulta()">
-
-    <div *ngIf="canEditConsulta() && (autoSaveStatus() === 'error' || autoSaveStatus() === 'invalid')"
-      class="mb-5 rounded-xl border border-rose-100 bg-rose-50 text-rose-600 px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-      <div class="flex items-start gap-3">
-        <div class="w-9 h-9 rounded-xl bg-white/80 flex items-center justify-center border border-white">
-          <i class="pi pi-exclamation-circle text-sm"></i>
-        </div>
-        <div>
-          <p *ngIf="autoSaveStatus() === 'error'" class="text-sm font-extrabold">No se pudo guardar la última modificación</p>
-          <p *ngIf="autoSaveStatus() === 'invalid'" class="text-sm font-extrabold">Hay valores inválidos en la consulta</p>
-          <p *ngIf="autoSaveStatus() === 'error'" class="text-xs opacity-80 mt-0.5">Revisa tu conexión o vuelve a intentar antes de salir de la consulta.</p>
-          <p *ngIf="autoSaveStatus() === 'invalid'" class="text-xs opacity-80 mt-0.5">Corrige los campos marcados para continuar con el guardado automático.</p>
-        </div>
-      </div>
-      <button *ngIf="autoSaveStatus() === 'error'" type="button" (click)="reintentarGuardado()"
-        class="self-start sm:self-center flex items-center gap-2 px-3 py-2 rounded-xl bg-white text-rose-600 text-xs font-bold border border-rose-100 hover:border-rose-200 hover:bg-rose-50 transition-all">
-        <i class="pi pi-refresh text-[11px]"></i>
-        Reintentar
-      </button>
-    </div>
 
     <div
       class="bg-white border border-slate-200 rounded-xl p-4 mb-5 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
@@ -630,10 +595,10 @@
 
       <div *ngIf="canEditConsulta()" class="flex flex-col gap-3 mt-4 items-end">
         <div class="flex flex-col sm:flex-row gap-3 justify-end w-full">
-          <button *ngIf="!isCerrada()" type="button" (click)="confirmarCerrar()" [disabled]="autoSaveStatus() === 'saving'"
+          <button *ngIf="!isCerrada()" type="button" (click)="confirmarCerrar()" [disabled]="closingConsulta()"
             class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 text-white text-sm font-bold hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
-            <i class="pi pi-check-circle"></i>
-            Cerrar consulta
+            <i class="pi" [ngClass]="closingConsulta() ? 'pi-spin pi-spinner' : 'pi-check-circle'"></i>
+            {{ closingConsulta() ? 'Cerrando...' : 'Cerrar consulta' }}
           </button>
         </div>
       </div>
