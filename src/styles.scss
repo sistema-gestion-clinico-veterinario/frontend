@@ -394,6 +394,142 @@
   }
 }
 
+/* ============================================================
+   Accesibilidad — clases aplicadas dinámicamente sobre <html>
+   por AccessibilityService (frontend/src/app/core/services/accessibility.service.ts)
+   ============================================================ */
+:root {
+  --a11y-saturate: 100%;
+  --a11y-brightness: 100%;
+  --a11y-text-scale: 1;
+  --a11y-letter-spacing: 0em;
+  --a11y-line-height: 1.4;
+}
+
+html {
+  filter: saturate(var(--a11y-saturate)) brightness(var(--a11y-brightness));
+}
+
+html.a11y-grayscale {
+  filter: saturate(var(--a11y-saturate)) brightness(var(--a11y-brightness)) grayscale(100%);
+}
+
+html.a11y-contrast-high {
+  filter: saturate(var(--a11y-saturate)) brightness(var(--a11y-brightness)) contrast(1.5);
+}
+
+html.a11y-contrast-inverted {
+  filter: saturate(var(--a11y-saturate)) brightness(var(--a11y-brightness)) invert(100%) hue-rotate(180deg);
+}
+
+html.a11y-contrast-high.a11y-grayscale {
+  filter: saturate(var(--a11y-saturate)) brightness(var(--a11y-brightness)) contrast(1.5) grayscale(100%);
+}
+
+html.a11y-contrast-inverted.a11y-grayscale {
+  filter: saturate(var(--a11y-saturate)) brightness(var(--a11y-brightness)) invert(100%) hue-rotate(180deg) grayscale(100%);
+}
+
+/* El tamaño de texto se aplica sobre el font-size RAÍZ (<html>), no sobre <body>:
+   Tailwind define sus utilidades text-sm/text-base/text-lg/etc. en unidades
+   "rem", que siempre se calculan contra el font-size de <html> — cambiar solo
+   el de <body> no afecta a ningún elemento con una clase de texto de Tailwind,
+   que es prácticamente todo el sitio. Por eso antes "no se notaba".*/
+html {
+  font-size: calc(16px * var(--a11y-text-scale));
+}
+
+/* Espaciado de letras e interlineado: solo se fuerzan con !important sobre TODOS
+   los elementos (incluyendo inputs/botones/selects, que por defecto NO heredan
+   tipografía del body en ningún navegador) cuando el usuario realmente activó
+   el ajuste — así no se altera el diseño por defecto del resto del sitio. */
+html.a11y-letter-spacing-active * {
+  letter-spacing: var(--a11y-letter-spacing) !important;
+}
+
+html.a11y-line-height-active * {
+  line-height: var(--a11y-line-height) !important;
+}
+
+html.a11y-text-align-left body { text-align: left; }
+html.a11y-text-align-center body { text-align: center; }
+html.a11y-text-align-right body { text-align: right; }
+html.a11y-text-align-justify body { text-align: justify; }
+
+html.a11y-highlight-links a {
+  background-color: #fff59d !important;
+  color: #1a1a1a !important;
+  text-decoration: underline !important;
+  outline: 2px solid #f9a825 !important;
+}
+
+html.a11y-highlight-headings h1,
+html.a11y-highlight-headings h2,
+html.a11y-highlight-headings h3,
+html.a11y-highlight-headings h4,
+html.a11y-highlight-headings h5,
+html.a11y-highlight-headings h6 {
+  background-color: #fff59d !important;
+  color: #1a1a1a !important;
+  outline: 2px dashed #f9a825 !important;
+}
+
+html.a11y-readable-font body,
+html.a11y-readable-font input,
+html.a11y-readable-font textarea,
+html.a11y-readable-font select {
+  font-family: Verdana, Tahoma, Arial, sans-serif !important;
+  word-spacing: 0.15em;
+}
+
+html.a11y-stop-animations *,
+html.a11y-stop-animations *::before,
+html.a11y-stop-animations *::after {
+  animation-duration: 0s !important;
+  animation-delay: 0s !important;
+  transition-duration: 0s !important;
+  transition-delay: 0s !important;
+  scroll-behavior: auto !important;
+}
+
+html.a11y-hide-images img,
+html.a11y-hide-images svg image,
+html.a11y-hide-images [style*="background-image"] {
+  visibility: hidden !important;
+}
+
+html.a11y-cursor-large,
+html.a11y-cursor-large * {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path d="M4 2l16 8-6.5 2L11 20z" fill="black" stroke="white" stroke-width="1"/></svg>') 4 4, auto !important;
+}
+
+html.a11y-cursor-xlarge,
+html.a11y-cursor-xlarge * {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"><path d="M4 2l16 8-6.5 2L11 20z" fill="black" stroke="white" stroke-width="1.2"/></svg>') 6 6, auto !important;
+}
+
+.a11y-reading-guide-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  height: 32px;
+  background: rgba(255, 235, 59, 0.35);
+  border-top: 2px solid #f9a825;
+  border-bottom: 2px solid #f9a825;
+  pointer-events: none;
+  z-index: 2147483000;
+}
+
+.a11y-reading-mask-top,
+.a11y-reading-mask-bottom {
+  position: fixed;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+  z-index: 2147483000;
+}
+
 @media (max-width: 480px) {
   .p-paginator .p-paginator-rpp-dropdown {
     display: none !important;

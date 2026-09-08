@@ -27,10 +27,24 @@ export class LegalAcceptComponent implements OnInit {
   private readonly router = inject(Router);
 
   readonly documents = signal<LegalDocumentDTO[]>([]);
-  readonly checked = signal<Record<number, boolean>>({});
+  readonly checked = signal<Partial<Record<number, boolean>>>({});
   readonly loading = signal(true);
   readonly submitting = signal(false);
   readonly errorMsg = signal<string | null>(null);
+  readonly currentIndex = signal(0);
+
+  readonly currentDoc = computed<LegalDocumentDTO | null>(() => {
+    const docs = this.documents();
+    return docs[this.currentIndex()] ?? null;
+  });
+
+  readonly isLastDoc = computed(() => this.currentIndex() === this.documents().length - 1);
+  readonly isFirstDoc = computed(() => this.currentIndex() === 0);
+
+  readonly currentChecked = computed(() => {
+    const doc = this.currentDoc();
+    return doc ? !!this.checked()[doc.id] : false;
+  });
 
   readonly allChecked = computed(() => {
     const docs = this.documents();
@@ -58,8 +72,28 @@ export class LegalAcceptComponent implements OnInit {
     });
   }
 
-  toggle(docId: number, value: boolean): void {
-    this.checked.update(state => ({ ...state, [docId]: value }));
+  toggleCurrent(value: boolean): void {
+    const doc = this.currentDoc();
+    if (!doc) return;
+    this.checked.update(state => ({ ...state, [doc.id]: value }));
+  }
+
+  goTo(index: number): void {
+    if (index < 0 || index >= this.documents().length) return;
+    this.currentIndex.set(index);
+  }
+
+  next(): void {
+    if (!this.currentChecked()) return;
+    if (this.isLastDoc()) {
+      this.submit();
+      return;
+    }
+    this.currentIndex.update(i => i + 1);
+  }
+
+  back(): void {
+    this.currentIndex.update(i => Math.max(0, i - 1));
   }
 
   submit(): void {

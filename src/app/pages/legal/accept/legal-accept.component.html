@@ -1,36 +1,47 @@
 <div class="legal-accept-page">
-  <div class="legal-accept-card">
-    <h1>Actualización de Términos y Condiciones</h1>
-    <p class="subtitle">
-      Para continuar usando el sistema necesitamos que revises y aceptes los siguientes documentos.
-    </p>
 
-    <div *ngIf="loading()" class="state-msg">Cargando…</div>
-    <div *ngIf="errorMsg()" class="state-msg error">{{ errorMsg() }}</div>
+  <div *ngIf="loading()" class="state-msg">Cargando…</div>
+  <div *ngIf="errorMsg()" class="state-msg error">{{ errorMsg() }}</div>
 
-    <div *ngIf="!loading()" class="documents">
-      <div class="document" *ngFor="let doc of documents()">
-        <div class="document-header">
-          <h2>{{ labelFor(doc) }}</h2>
-          <span class="version">v{{ doc.version }}</span>
-        </div>
-        <div class="document-content">{{ doc.contenido }}</div>
-        <label class="accept-checkbox">
-          <input
-            type="checkbox"
-            [ngModel]="checked()[doc.id] ?? false"
-            (ngModelChange)="toggle(doc.id, $event)"
-          />
-          He leído y acepto {{ labelFor(doc) }}
-        </label>
-      </div>
+  <ng-container *ngIf="!loading() && currentDoc() as doc">
+    <div class="legal-accept-inner">
+      <nav class="tabs">
+        <button
+          type="button"
+          class="tab"
+          *ngFor="let d of documents(); let i = index"
+          [class.is-current]="i === currentIndex()"
+          [disabled]="i > currentIndex() && !checked()[documents()[i - 1].id]"
+          (click)="goTo(i)"
+        >
+          {{ labelFor(d) }}
+          <span class="tab-check" *ngIf="checked()[d.id]">✓</span>
+        </button>
+      </nav>
+
+      <main class="document-reader">
+        <header class="reader-header">
+          <h1>{{ labelFor(doc) }}</h1>
+          <span class="reader-version">Versión {{ doc.version }}</span>
+        </header>
+
+        <div class="reader-body">{{ doc.contenido }}</div>
+
+        <footer class="reader-footer">
+          <label class="agree-checkbox">
+            <input type="checkbox" [ngModel]="currentChecked()" (ngModelChange)="toggleCurrent($event)" />
+            <span>He leído y acepto {{ labelFor(doc) }}</span>
+          </label>
+
+          <div class="reader-actions">
+            <button type="button" class="btn-text" (click)="logout()">Cerrar sesión</button>
+            <button type="button" class="btn-text" *ngIf="!isFirstDoc()" (click)="back()">Atrás</button>
+            <button type="button" class="btn-solid" [disabled]="!currentChecked() || submitting()" (click)="next()">
+              {{ submitting() ? 'Guardando…' : (isLastDoc() ? 'Aceptar y continuar' : 'Continuar') }}
+            </button>
+          </div>
+        </footer>
+      </main>
     </div>
-
-    <div class="actions" *ngIf="!loading()">
-      <button type="button" class="btn-secondary" (click)="logout()">Cerrar sesión</button>
-      <button type="button" class="btn-primary" [disabled]="!allChecked() || submitting()" (click)="submit()">
-        {{ submitting() ? 'Guardando…' : 'Aceptar y continuar' }}
-      </button>
-    </div>
-  </div>
+  </ng-container>
 </div>
