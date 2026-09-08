@@ -1,0 +1,137 @@
+<button
+  type="button"
+  class="a11y-fab"
+  (click)="togglePanel()"
+  [attr.aria-expanded]="panelOpen()"
+  aria-label="Menú de accesibilidad"
+  title="Menú de accesibilidad"
+>
+  <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" aria-hidden="true">
+    <path d="M12 2a2 2 0 1 1 0 4 2 2 0 0 1 0-4zm8 7h-5v2.2l3 8.3-1.9.7-2.6-7.2h-1.6l-2.6 7.2-1.9-.7 3-8.3V9H4a1 1 0 0 1 0-2h16a1 1 0 0 1 0 2z"/>
+  </svg>
+</button>
+
+<div class="a11y-overlay" *ngIf="panelOpen()" (click)="closePanel()"></div>
+
+<!-- Card de ajuste por niveles: un solo tap avanza y da la vuelta; barra inferior = progreso -->
+<ng-template #levelCard let-icon="icon" let-label="label" let-level="level" let-maxLevel="maxLevel"
+             let-subtitle="subtitle" let-onClick="onClick">
+  <button type="button" class="a11y-tile" [class.active]="level > 0" (click)="onClick()"
+          [attr.aria-label]="label + (subtitle ? ', ' + subtitle : '')">
+    <span class="a11y-check" *ngIf="level > 0">✓</span>
+    <span class="a11y-icon">{{ icon }}</span>
+    <span class="a11y-label">{{ label }}</span>
+    <span class="a11y-sublabel" *ngIf="subtitle">{{ subtitle }}</span>
+    <span class="a11y-progress">
+      <span *ngFor="let seg of dotsArray(maxLevel); let i = index" class="a11y-progress-seg"
+            [class.filled]="i < level"></span>
+    </span>
+  </button>
+</ng-template>
+
+<!-- Card de ajuste on/off simple -->
+<ng-template #toggleCard let-icon="icon" let-label="label" let-active="active" let-onClick="onClick">
+  <button type="button" class="a11y-tile" [class.active]="active" (click)="onClick()" [attr.aria-pressed]="active">
+    <span class="a11y-check" *ngIf="active">✓</span>
+    <span class="a11y-icon">{{ icon }}</span>
+    <span class="a11y-label">{{ label }}</span>
+  </button>
+</ng-template>
+
+<aside class="a11y-panel" *ngIf="panelOpen()" role="dialog" aria-label="Menú de accesibilidad">
+  <header class="a11y-panel-header">
+    <span>Menú de Accesibilidad</span>
+    <button type="button" class="a11y-close" (click)="closePanel()" aria-label="Cerrar">✕</button>
+  </header>
+
+  <div class="a11y-panel-body">
+    <div class="a11y-grid">
+
+      <ng-container [ngTemplateOutlet]="levelCard" [ngTemplateOutletContext]="{
+        icon: '◐', label: 'Contraste', level: a11y.contrastLevel(), maxLevel: a11y.maxLevels.contrast,
+        onClick: stepContrast
+      }"></ng-container>
+
+      <ng-container [ngTemplateOutlet]="toggleCard" [ngTemplateOutletContext]="{
+        icon: '🔗', label: 'Resaltar enlaces', active: a11y.settings().highlightLinks, onClick: toggleHighlightLinks
+      }"></ng-container>
+
+      <ng-container [ngTemplateOutlet]="levelCard" [ngTemplateOutletContext]="{
+        icon: 'A A', label: 'Agrandar texto', level: a11y.textSizeLevel(), maxLevel: a11y.maxLevels.textSize,
+        onClick: stepTextSize
+      }"></ng-container>
+
+      <ng-container [ngTemplateOutlet]="levelCard" [ngTemplateOutletContext]="{
+        icon: '↔', label: 'Espaciado de texto', level: a11y.settings().letterSpacing, maxLevel: a11y.maxLevels.letterSpacing,
+        onClick: stepLetterSpacing
+      }"></ng-container>
+
+      <ng-container [ngTemplateOutlet]="toggleCard" [ngTemplateOutletContext]="{
+        icon: '⏸', label: 'Detener animaciones', active: a11y.settings().stopAnimations, onClick: toggleStopAnimations
+      }"></ng-container>
+
+      <ng-container [ngTemplateOutlet]="toggleCard" [ngTemplateOutletContext]="{
+        icon: '🖼', label: 'Ocultar imágenes', active: a11y.settings().hideImages, onClick: toggleHideImages
+      }"></ng-container>
+
+      <ng-container [ngTemplateOutlet]="toggleCard" [ngTemplateOutletContext]="{
+        icon: 'Df', label: 'Apto para dislexia', active: a11y.settings().readableFont, onClick: toggleReadableFont
+      }"></ng-container>
+
+      <ng-container [ngTemplateOutlet]="levelCard" [ngTemplateOutletContext]="{
+        icon: '➤', label: 'Cursor', level: a11y.cursorLevel(), maxLevel: a11y.maxLevels.cursor,
+        onClick: stepCursorSize
+      }"></ng-container>
+
+      <ng-container [ngTemplateOutlet]="levelCard" [ngTemplateOutletContext]="{
+        icon: '↕', label: 'Altura de línea', level: a11y.settings().lineHeight, maxLevel: a11y.maxLevels.lineHeight,
+        onClick: stepLineHeight
+      }"></ng-container>
+
+      <ng-container [ngTemplateOutlet]="levelCard" [ngTemplateOutletContext]="{
+        icon: '≡', label: 'Texto alineado', level: a11y.textAlignLevel(), maxLevel: a11y.maxLevels.textAlign,
+        onClick: stepTextAlign
+      }"></ng-container>
+
+      <ng-container [ngTemplateOutlet]="levelCard" [ngTemplateOutletContext]="{
+        icon: '◑', label: 'Saturación', level: a11y.saturationLevel(), maxLevel: a11y.maxLevels.saturation,
+        onClick: stepSaturation
+      }"></ng-container>
+
+      <ng-container [ngTemplateOutlet]="levelCard" [ngTemplateOutletContext]="{
+        icon: '☀', label: 'Brillo', level: a11y.brightnessLevel(), maxLevel: a11y.maxLevels.brightness,
+        onClick: stepBrightness
+      }"></ng-container>
+
+      <ng-container [ngTemplateOutlet]="toggleCard" [ngTemplateOutletContext]="{
+        icon: '▬', label: 'Guía de lectura', active: a11y.settings().readingGuide, onClick: toggleReadingGuide
+      }"></ng-container>
+
+      <ng-container [ngTemplateOutlet]="toggleCard" [ngTemplateOutletContext]="{
+        icon: '▭', label: 'Máscara de lectura', active: a11y.settings().readingMask, onClick: toggleReadingMask
+      }"></ng-container>
+
+      <ng-container [ngTemplateOutlet]="toggleCard" [ngTemplateOutletContext]="{
+        icon: 'H', label: 'Resaltar títulos', active: a11y.settings().highlightHeadings, onClick: toggleHighlightHeadings
+      }"></ng-container>
+
+      <ng-container [ngTemplateOutlet]="toggleCard" [ngTemplateOutletContext]="{
+        icon: '◑', label: 'Escala de grises', active: a11y.settings().grayscale, onClick: toggleGrayscale
+      }"></ng-container>
+
+    </div>
+  </div>
+
+  <footer class="a11y-panel-footer">
+    <button type="button" class="a11y-reset" [disabled]="!a11y.hasActiveAdjustments()" (click)="a11y.resetAll()">
+      Restablecer todo
+    </button>
+  </footer>
+</aside>
+
+<div class="a11y-reading-guide-bar" *ngIf="a11y.settings().readingGuide" [style.top.px]="guideY() - 16"></div>
+
+<ng-container *ngIf="a11y.settings().readingMask">
+  <div class="a11y-reading-mask-top" [style.height.px]="maskY() - 60" style="top: 0;"></div>
+  <div class="a11y-reading-mask-bottom" [style.top.px]="maskY() + 60" style="bottom: 0;"></div>
+</ng-container>

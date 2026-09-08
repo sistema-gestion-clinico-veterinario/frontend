@@ -13,7 +13,7 @@
 
   <div class="flex flex-1 flex-col overflow-hidden min-w-0">
     <app-navbar (toggleSidebar)="toggleSidebar()" />
-    <main class="flex-1 overflow-auto p-3 sm:p-4 lg:p-6">
+    <main class="flex-1 overflow-auto p-3 sm:p-4 lg:p-6" #scrollContainer>
       <router-outlet />
     </main>
   </div>

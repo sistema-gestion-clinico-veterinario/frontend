@@ -98,6 +98,12 @@ describe('AuthStore', () => {
       store.setAuth({ ...cleanAuth, roles: ['ROLE_EMPLEADO'], menu: [flatItem('VISTA_MASCOTAS', { ruta: '/mascotas' })] });
       expect(store.hasRouteAccess('admin/mascotas')).toBeTrue();
     });
+
+    it('allows legal/accept for any authenticated user regardless of RBAC menu (utility route, like profile/password-change)', () => {
+      store.setAuth({ ...cleanAuth, activeRolePurpose: 'PLATFORM_ADMIN', menu: [] });
+      expect(store.hasRouteAccess('legal/accept')).toBeTrue();
+      expect(store.hasRouteAccess('/legal/accept/')).toBeTrue();
+    });
   });
 
   describe('rutas hijas y simulacion de rol', () => {

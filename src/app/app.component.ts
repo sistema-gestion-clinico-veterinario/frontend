@@ -1,13 +1,14 @@
 import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { ProcessLoadingPanelComponent } from './shared/components/process-loading-panel/process-loading-panel.component';
+import { AccessibilityWidgetComponent } from './shared/components/accessibility-widget/accessibility-widget.component';
 import { AuthStore } from './store/auth.store';
 import { effect } from '@angular/core';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, ProcessLoadingPanelComponent],
+  imports: [RouterOutlet, ProcessLoadingPanelComponent, AccessibilityWidgetComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
