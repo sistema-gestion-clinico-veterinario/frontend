@@ -209,9 +209,9 @@ export default class ReportesComponent {
     if (reporte) await this.exportService.exportarPdf(reporte);
   }
 
-  exportarExcel(): void {
+  async exportarExcel(): Promise<void> {
     const reporte = this.data();
-    if (reporte) this.exportService.exportarExcel(reporte);
+    if (reporte) await this.exportService.exportarExcel(reporte);
   }
 
   private actualizarRangoSeleccionado(): void {

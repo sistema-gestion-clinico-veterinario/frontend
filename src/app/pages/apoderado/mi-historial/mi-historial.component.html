@@ -51,8 +51,9 @@
             <!-- Datos rápidos -->
             <div class="text-left min-w-0">
               <p class="text-sm font-extrabold text-slate-800 truncate">{{ m.nombreCompleto }}</p>
-              <p class="text-xs text-slate-400 font-medium truncate">
-                {{ m.especie === 'PERRO' ? '🐶 Perro' : m.especie === 'GATO' ? '🐱 Gato' : '🐾 ' + m.especie }} · {{ m.raza || 'Sin Raza' }}
+              <p class="text-xs text-slate-400 font-medium truncate flex items-center gap-1">
+                <i class="pi pi-heart-fill text-[9px] text-pink-400"></i>
+                {{ m.especie | titlecase }} · {{ m.raza || 'Sin Raza' }}
               </p>
             </div>
           </button>
@@ -76,10 +77,23 @@
       </div>
 
       <!-- Estado: Cargando Historia Clínica -->
-      <div *ngIf="mascotaActiva() && loadingHc()"
-        class="bg-white border border-slate-200 rounded-xl py-24 text-center px-6">
-        <i class="pi pi-spin pi-spinner text-3xl text-[#0066AA] mb-4"></i>
-        <p class="text-sm text-slate-500 font-medium">Cargando historial médico de {{ mascotaActiva()!.nombreCompleto }}...</p>
+      <div *ngIf="mascotaActiva() && loadingHc()" class="animate-pulse space-y-5" aria-label="Cargando historial médico">
+        <div class="bg-white border border-slate-200 rounded-xl p-5 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4">
+          <div *ngFor="let i of [1,2,3,4,5,6]" class="space-y-2">
+            <div class="h-2.5 w-2/3 rounded bg-slate-100"></div>
+            <div class="h-3.5 w-full rounded bg-slate-200"></div>
+          </div>
+        </div>
+        <div class="flex flex-col lg:flex-row gap-5">
+          <div class="w-full lg:w-72 shrink-0 bg-white border border-slate-200 rounded-xl p-4 space-y-3">
+            <div *ngFor="let i of [1,2,3]" class="h-16 rounded-lg bg-slate-100"></div>
+          </div>
+          <div class="flex-1 bg-white border border-slate-200 rounded-xl p-5 space-y-3">
+            <div class="h-4 w-1/3 rounded bg-slate-200"></div>
+            <div class="h-24 rounded-lg bg-slate-100"></div>
+            <div class="h-24 rounded-lg bg-slate-100"></div>
+          </div>
+        </div>
       </div>
 
       <!-- Estado: Sin HC registrada -->
@@ -98,27 +112,27 @@
         <!-- Tarjeta de Datos de la Mascota Seleccionada -->
         <div class="bg-white border border-slate-200 rounded-xl p-5 mb-5 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4">
           <div>
-            <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-0.5">Mascota</p>
+            <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-0.5 flex items-center gap-1"><i class="pi pi-heart text-[9px]"></i> Mascota</p>
             <p class="text-sm font-bold text-[#0066AA]">{{ hc()!.mascotaNombre }}</p>
           </div>
           <div>
-            <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-0.5">Especie</p>
+            <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-0.5 flex items-center gap-1"><i class="pi pi-tag text-[9px]"></i> Especie</p>
             <p class="text-sm font-bold text-slate-700">{{ hc()!.especie || '—' }}</p>
           </div>
           <div>
-            <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-0.5">Raza</p>
+            <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-0.5 flex items-center gap-1"><i class="pi pi-sitemap text-[9px]"></i> Raza</p>
             <p class="text-sm font-bold text-slate-700">{{ hc()!.raza || '—' }}</p>
           </div>
           <div>
-            <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-0.5">Sexo</p>
+            <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-0.5 flex items-center gap-1"><i class="pi pi-venus-mars text-[9px]"></i> Sexo</p>
             <p class="text-sm font-bold text-slate-700">{{ hc()!.sexo || '—' }}</p>
           </div>
           <div>
-            <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-0.5">Edad</p>
+            <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-0.5 flex items-center gap-1"><i class="pi pi-calendar text-[9px]"></i> Edad</p>
             <p class="text-sm font-bold text-slate-700">{{ edadTexto(hc()!.edadAproximadaMeses) }}</p>
           </div>
           <div>
-            <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-0.5">N° Historia</p>
+            <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-0.5 flex items-center gap-1"><i class="pi pi-hashtag text-[9px]"></i> N° Historia</p>
             <p class="text-sm font-bold text-slate-700">{{ hc()!.numeroHc }}</p>
           </div>
         </div>
@@ -398,68 +412,90 @@
         <!-- Cartillas preventivas: se muestran después del historial clínico. -->
         <section class="mt-6">
           <div class="mb-4 flex items-center gap-3">
-            <span class="grid size-10 shrink-0 place-items-center rounded-lg bg-[#0066AA] text-white">
-              <i class="pi pi-shield"></i>
-            </span>
+            <i class="pi pi-shield text-xl text-[#0066AA]"></i>
             <div>
               <h2 class="text-base font-extrabold text-slate-900">Cartillas preventivas</h2>
               <p class="mt-0.5 text-xs text-slate-500">Historial y próximos controles de {{ hc()!.mascotaNombre }}</p>
             </div>
           </div>
 
-          <div class="grid grid-cols-1 gap-5 xl:grid-cols-2">
+          <div class="grid grid-cols-1 gap-6 xl:grid-cols-2">
             <!-- Cartilla de vacunación -->
             <article class="overflow-hidden rounded-xl border border-slate-200 bg-white">
-              <header class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
-                <div class="flex items-center gap-3">
-                  <span class="grid size-9 place-items-center rounded-lg border border-blue-200 text-blue-700"><i class="pi pi-shield text-sm"></i></span>
-                  <div><h3 class="text-sm font-extrabold text-slate-900">Vacunación</h3><p class="text-[11px] text-slate-500">Cartilla de vacunas aplicadas</p></div>
-                </div>
-                <span class="rounded-md bg-[#0066AA] px-2.5 py-1 text-xs font-extrabold text-white">{{ vacunasAplicadas().length }}</span>
+              <header class="flex items-center gap-3 border-b border-slate-200 px-5 py-4 bg-slate-50">
+                <i class="pi pi-shield text-lg text-[#0066AA]"></i>
+                <div><h3 class="text-sm font-extrabold text-slate-900">Cartilla de vacunación</h3><p class="text-[11px] text-slate-500">Registro cronológico de vacunas</p></div>
               </header>
 
-              <div *ngIf="vacunasPendientes().length" class="border-b border-slate-200 px-5 py-4">
-                <p class="mb-2 text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Próxima vacuna</p>
-                <div *ngFor="let control of vacunasPendientes().slice(0, 2)" class="flex items-center justify-between gap-3 py-2">
-                  <p class="truncate text-xs font-bold text-slate-800">{{ control.nombreControl }}</p>
-                  <div class="shrink-0 text-right"><p class="text-xs font-extrabold text-[#0066AA]">{{ formatFecha(control.fechaRecomendada) }}</p><p [class.text-red-600]="control.estado === 'ATRASADO'" class="text-[9px] font-bold uppercase text-slate-500">{{ control.estado }}</p></div>
-                </div>
+              <div *ngIf="filasCartillaVacunacion().length; else sinVacunasPortal" class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                  <thead>
+                    <tr class="bg-slate-50 border-b border-slate-200">
+                      <th class="px-4 py-2.5 text-[9px] font-extrabold uppercase tracking-wider text-slate-400">Vacuna</th>
+                      <th class="px-4 py-2.5 text-[9px] font-extrabold uppercase tracking-wider text-slate-400">Fecha</th>
+                      <th class="px-4 py-2.5 text-[9px] font-extrabold uppercase tracking-wider text-slate-400">Próxima</th>
+                      <th class="px-4 py-2.5 text-[9px] font-extrabold uppercase tracking-wider text-slate-400 text-right">Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100">
+                    <tr *ngFor="let fila of filasCartillaVacunacion()">
+                      <td class="px-4 py-3"><p class="text-xs font-bold text-slate-800 truncate max-w-[140px]">{{ fila.producto }}</p></td>
+                      <td class="px-4 py-3"><p class="text-xs font-semibold text-slate-600">{{ formatFecha(fila.fecha) }}</p></td>
+                      <td class="px-4 py-3"><p class="text-xs font-semibold text-slate-500">{{ fila.proxima ? formatFecha(fila.proxima) : '—' }}</p></td>
+                      <td class="px-4 py-3 text-right">
+                        <span [class]="'inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide ' + estadoCartillaBadge(fila.estado)">
+                          {{ estadoCartillaLabel(fila.estado) }}
+                        </span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
-
-              <div *ngIf="vacunasAplicadas().length; else sinVacunasPortal" class="divide-y divide-slate-100">
-                <div *ngFor="let aplicacion of vacunasAplicadas()" class="grid grid-cols-[minmax(0,1fr)_auto] gap-3 px-5 py-3.5">
-                  <div class="min-w-0"><p class="truncate text-xs font-extrabold text-slate-800">{{ aplicacion.nombreControl }}</p><p class="mt-1 text-[10px] text-slate-500">Aplicada: {{ formatFecha(aplicacion.fechaAplicacion) }}</p></div>
-                  <div class="text-right"><p class="text-[9px] font-bold uppercase text-slate-400">Próxima</p><p class="mt-1 text-xs font-bold text-slate-700">{{ aplicacion.fechaProximaAplicacion ? formatFecha(aplicacion.fechaProximaAplicacion) : 'No indicada' }}</p></div>
+              <ng-template #sinVacunasPortal>
+                <div class="py-10 text-center px-5">
+                  <i class="pi pi-shield text-2xl text-slate-200 block mb-2"></i>
+                  <p class="text-xs text-slate-500 font-medium">Aún no hay vacunas registradas.</p>
                 </div>
-              </div>
-              <ng-template #sinVacunasPortal><p class="px-5 py-8 text-center text-xs text-slate-500">Aún no hay vacunas aplicadas.</p></ng-template>
+              </ng-template>
             </article>
 
             <!-- Cartilla de desparasitación -->
             <article class="overflow-hidden rounded-xl border border-slate-200 bg-white">
-              <header class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
-                <div class="flex items-center gap-3">
-                  <span class="grid size-9 place-items-center rounded-lg border border-emerald-200 text-emerald-700"><i class="pi pi-refresh text-sm"></i></span>
-                  <div><h3 class="text-sm font-extrabold text-slate-900">Desparasitación</h3><p class="text-[11px] text-slate-500">Cartilla de productos aplicados</p></div>
-                </div>
-                <span class="rounded-md bg-emerald-700 px-2.5 py-1 text-xs font-extrabold text-white">{{ desparasitacionesAplicadas().length }}</span>
+              <header class="flex items-center gap-3 border-b border-slate-200 px-5 py-4 bg-slate-50">
+                <i class="pi pi-refresh text-lg text-emerald-700"></i>
+                <div><h3 class="text-sm font-extrabold text-slate-900">Cartilla de desparasitación</h3><p class="text-[11px] text-slate-500">Registro cronológico de productos</p></div>
               </header>
 
-              <div *ngIf="desparasitacionesPendientes().length" class="border-b border-slate-200 px-5 py-4">
-                <p class="mb-2 text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Próxima desparasitación</p>
-                <div *ngFor="let control of desparasitacionesPendientes().slice(0, 2)" class="flex items-center justify-between gap-3 py-2">
-                  <p class="truncate text-xs font-bold text-slate-800">{{ control.nombreControl }}</p>
-                  <div class="shrink-0 text-right"><p class="text-xs font-extrabold text-emerald-700">{{ formatFecha(control.fechaRecomendada) }}</p><p [class.text-red-600]="control.estado === 'ATRASADO'" class="text-[9px] font-bold uppercase text-slate-500">{{ control.estado }}</p></div>
-                </div>
+              <div *ngIf="filasCartillaDesparasitacion().length; else sinDesparasitacionesPortal" class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                  <thead>
+                    <tr class="bg-slate-50 border-b border-slate-200">
+                      <th class="px-4 py-2.5 text-[9px] font-extrabold uppercase tracking-wider text-slate-400">Producto</th>
+                      <th class="px-4 py-2.5 text-[9px] font-extrabold uppercase tracking-wider text-slate-400">Fecha</th>
+                      <th class="px-4 py-2.5 text-[9px] font-extrabold uppercase tracking-wider text-slate-400">Próxima</th>
+                      <th class="px-4 py-2.5 text-[9px] font-extrabold uppercase tracking-wider text-slate-400 text-right">Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100">
+                    <tr *ngFor="let fila of filasCartillaDesparasitacion()">
+                      <td class="px-4 py-3"><p class="text-xs font-bold text-slate-800 truncate max-w-[140px]">{{ fila.producto }}</p></td>
+                      <td class="px-4 py-3"><p class="text-xs font-semibold text-slate-600">{{ formatFecha(fila.fecha) }}</p></td>
+                      <td class="px-4 py-3"><p class="text-xs font-semibold text-slate-500">{{ fila.proxima ? formatFecha(fila.proxima) : '—' }}</p></td>
+                      <td class="px-4 py-3 text-right">
+                        <span [class]="'inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide ' + estadoCartillaBadge(fila.estado)">
+                          {{ estadoCartillaLabel(fila.estado) }}
+                        </span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
-
-              <div *ngIf="desparasitacionesAplicadas().length; else sinDesparasitacionesPortal" class="divide-y divide-slate-100">
-                <div *ngFor="let aplicacion of desparasitacionesAplicadas()" class="grid grid-cols-[minmax(0,1fr)_auto] gap-3 px-5 py-3.5">
-                  <div class="min-w-0"><p class="truncate text-xs font-extrabold text-slate-800">{{ aplicacion.nombreControl }}</p><p class="mt-1 text-[10px] text-slate-500">Aplicada: {{ formatFecha(aplicacion.fechaAplicacion) }}</p></div>
-                  <div class="text-right"><p class="text-[9px] font-bold uppercase text-slate-400">Próxima</p><p class="mt-1 text-xs font-bold text-slate-700">{{ aplicacion.fechaProximaAplicacion ? formatFecha(aplicacion.fechaProximaAplicacion) : 'No indicada' }}</p></div>
+              <ng-template #sinDesparasitacionesPortal>
+                <div class="py-10 text-center px-5">
+                  <i class="pi pi-refresh text-2xl text-slate-200 block mb-2"></i>
+                  <p class="text-xs text-slate-500 font-medium">Aún no hay desparasitaciones registradas.</p>
                 </div>
-              </div>
-              <ng-template #sinDesparasitacionesPortal><p class="px-5 py-8 text-center text-xs text-slate-500">Aún no hay desparasitaciones aplicadas.</p></ng-template>
+              </ng-template>
             </article>
           </div>
         </section>

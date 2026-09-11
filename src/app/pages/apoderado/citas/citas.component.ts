@@ -626,6 +626,35 @@ export class CitasComponent implements OnInit {
     return this.buildHorarioResumen(this.horariosActivos);
   }
 
+  get horariosPorDia(): { diaSemana: string; franjas: { label: string; turno: 'manana' | 'tarde' }[] }[] {
+    const order = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO', 'DOMINGO'];
+    const franjasPorDia = new Map<string, Map<string, 'manana' | 'tarde'>>();
+
+    for (const horario of this.horariosResumen) {
+      const franjas = franjasPorDia.get(horario.diaSemana) ?? new Map<string, 'manana' | 'tarde'>();
+      const label = `${horario.horaInicio}–${horario.horaFin}`;
+      franjas.set(label, horario.horaInicio < '12:00' ? 'manana' : 'tarde');
+      franjasPorDia.set(horario.diaSemana, franjas);
+    }
+
+    return order
+      .filter(dia => franjasPorDia.has(dia))
+      .map(dia => ({
+        diaSemana: dia,
+        franjas: Array.from(franjasPorDia.get(dia)!.entries())
+          .sort(([a], [b]) => a.localeCompare(b))
+          .map(([label, turno]) => ({ label, turno }))
+      }));
+  }
+
+  get slotsManana(): string[] {
+    return this.availableSlots().filter(slot => slot < '12:00');
+  }
+
+  get slotsTarde(): string[] {
+    return this.availableSlots().filter(slot => slot >= '12:00');
+  }
+
   formatDiaSemana(dia: string): string {
     const labels: Record<string, string> = {
       LUNES: 'Lunes',

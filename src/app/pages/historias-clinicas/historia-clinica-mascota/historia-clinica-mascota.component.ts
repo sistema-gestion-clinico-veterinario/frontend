@@ -18,6 +18,7 @@ import { ArchivoClinicoResponse } from '../../../models/response/archivo-clinico
 import { CitaResponse } from '../../../models/response/cita-response';
 import { ArchivoModalsComponent } from '../form-hc/archivo-modals/archivo-modals.component';
 import { DiagnosticoIaComponent } from './diagnostico-ia/diagnostico-ia.component';
+import { formatearFechaClinica } from '../../../shared/utils/fecha-clinica.util';
 
 @Component({
   selector: 'app-historia-clinica-mascota',
@@ -265,8 +266,7 @@ export class HistoriaClinicaMascotaComponent implements OnInit {
   }
 
   formatFecha(fecha: string): string {
-    if (!fecha) return '—';
-    return new Date(fecha).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' });
+    return formatearFechaClinica(fecha);
   }
 
   formatFechaHora(fecha: string): string {

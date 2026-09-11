@@ -502,12 +502,21 @@
                 </div>
               </div>
             </div>
-            <div class="flex flex-col gap-1">
-              <label class="text-xs font-bold text-slate-600">Descripción <span class="text-slate-400 font-normal">(opcional)</span></label>
-              <input type="text" [value]="descripcionArchivo()" (input)="descripcionArchivo.set($any($event.target).value)"
-                placeholder="Ej: Hemograma completo — 09/05/2026"
-                class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20" />
+            <div class="flex items-start gap-3 flex-wrap sm:flex-nowrap">
+              <div class="flex-1 min-w-0 flex flex-col gap-1">
+                <label class="text-xs font-bold text-slate-600">Descripción</label>
+                <input type="text" [value]="descripcionArchivo()" (input)="descripcionArchivo.set($any($event.target).value)"
+                  placeholder="Ej: Hemograma completo"
+                  class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20" />
+              </div>
+              <div class="w-full sm:w-44 flex flex-col gap-1">
+                <label class="text-xs font-bold text-slate-600">Fecha del examen/documento</label>
+                <input type="date" [value]="fechaDocumentoArchivo()" (input)="fechaDocumentoArchivo.set($any($event.target).value)"
+                  [max]="hoyIso"
+                  class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20" />
+              </div>
             </div>
+            <p class="text-[10px] text-slate-400 -mt-2">La fecha de carga se registra automáticamente y se conserva por separado como metadato técnico.</p>
             <div class="flex justify-end">
               <button type="button" (click)="subirArchivo()" [disabled]="!archivoPendiente() || archivoSubiendo()"
                 class="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#0066AA] text-white text-xs font-bold hover:bg-[#0055aa] disabled:opacity-50 disabled:cursor-not-allowed transition-all">
@@ -582,15 +591,22 @@
 
       </div>
 
-      <div *ngIf="isCerrada()" class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-center gap-3">
-        <i class="pi pi-lock text-emerald-600"></i>
-        <div>
-          <p class="text-sm font-bold text-emerald-800">Consulta cerrada</p>
-          <p class="text-xs text-emerald-600">
-            Cerrada el {{ formatFecha(consulta()!.fechaCierre) }}
-            <span *ngIf="consulta()!.cerradoPor"> por {{ consulta()!.cerradoPor }}</span>
-          </p>
+      <div *ngIf="isCerrada()" class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-center justify-between gap-3 flex-wrap">
+        <div class="flex items-center gap-3">
+          <i class="pi pi-lock text-emerald-600"></i>
+          <div>
+            <p class="text-sm font-bold text-emerald-800">Consulta cerrada</p>
+            <p class="text-xs text-emerald-600">
+              Cerrada el {{ formatFecha(consulta()!.fechaCierre) }}
+              <span *ngIf="consulta()!.cerradoPor"> por {{ consulta()!.cerradoPor }}</span>
+            </p>
+          </div>
         </div>
+        <button *ngIf="canReabrirConsulta()" type="button" (click)="confirmarReabrir()" [disabled]="reopeningConsulta()"
+          class="flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-white border border-emerald-300 text-emerald-700 text-sm font-bold hover:bg-emerald-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+          <i class="pi" [ngClass]="reopeningConsulta() ? 'pi-spin pi-spinner' : 'pi-lock-open'"></i>
+          {{ reopeningConsulta() ? 'Reabriendo...' : 'Reabrir para editar' }}
+        </button>
       </div>
 
       <div *ngIf="canEditConsulta()" class="flex flex-col gap-3 mt-4 items-end">

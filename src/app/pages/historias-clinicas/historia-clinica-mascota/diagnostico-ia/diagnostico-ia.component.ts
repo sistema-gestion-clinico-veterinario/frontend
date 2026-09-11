@@ -10,6 +10,7 @@ import {
   ArchivoClinico,
 } from '../../../../models/response/historia-clinica-response';
 import { MarkdownPipe } from './markdown.pipe';
+import { formatearFechaClinica } from '../../../../shared/utils/fecha-clinica.util';
 
 @Component({
   selector: 'app-diagnostico-ia',
@@ -379,16 +380,11 @@ export class DiagnosticoIaComponent implements OnChanges {
   }
 
   formatFecha(fecha: string): string {
-    if (!fecha) return '—';
-    return new Date(fecha).toLocaleDateString('es-PE', {
-      day: '2-digit', month: 'short', year: 'numeric',
-    });
+    return formatearFechaClinica(fecha);
   }
 
   private formatFechaLarga(fecha: string): string {
     if (!fecha) return 'fecha desconocida';
-    return new Date(fecha).toLocaleDateString('es-PE', {
-      day: '2-digit', month: 'long', year: 'numeric',
-    });
+    return formatearFechaClinica(fecha, { day: '2-digit', month: 'long', year: 'numeric' });
   }
 }

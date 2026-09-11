@@ -65,6 +65,10 @@ export class ApoderadoService {
     return this.http.get<ApiResponse<Page<any>>>(`${environment.apiUrl}/clients/portal/pets/paginated${params}`, { context });
   }
 
+  updatePortalMascota(mascotaId: number, request: { peso?: number | null; fotoUrl?: string | null }) {
+    return this.http.put<ApiResponse<any>>(`${environment.apiUrl}/clients/portal/pets/${mascotaId}`, request);
+  }
+
   getPortalMascotaHistoria(mascotaId: number) {
     const context = new HttpContext().set(SKIP_GLOBAL_LOADING, true);
     return this.http.get<ApiResponse<any>>(`${environment.apiUrl}/clients/portal/pets/${mascotaId}/medical-record`, { context });
