@@ -71,6 +71,8 @@ export class ConsultaFormComponent implements OnInit {
     && this.accessMode() !== 'view'
     && !this.isCerrada()
   );
+  readonly canReabrirConsulta = computed(() => this.isCerrada() && this.authStore.isAdmin());
+  readonly reopeningConsulta = signal<boolean>(false);
   readonly canCreateReceta = computed(() => this.canCreate() && this.canEditConsulta());
   readonly canModifyReceta = computed(() => this.canEditConsulta());
   readonly canDeleteReceta = computed(() => this.canDelete() && this.canEditConsulta());
@@ -135,6 +137,8 @@ export class ConsultaFormComponent implements OnInit {
   archivoPendiente   = signal<File | null>(null);
   tipoSeleccionado   = signal<string>('LABORATORIO');
   descripcionArchivo = signal<string>('');
+  fechaDocumentoArchivo = signal<string>('');
+  readonly hoyIso = new Date().toISOString().slice(0, 10);
   archivoEliminando  = signal<ArchivoClinicoResponse | null>(null);
   showConfirmEliminarArchivo = signal<boolean>(false);
   previewArchivo     = signal<ArchivoClinicoResponse | null>(null);
@@ -823,20 +827,30 @@ version: res.data.version,
     const file = this.archivoPendiente();
     if (!file) return;
     const descripcion = normalizeText(this.descripcionArchivo());
-    if (descripcion && (descripcion.length > 300 || !hasMeaningfulText(descripcion))) {
+    if (!descripcion || descripcion.length > 300 || !hasMeaningfulText(descripcion)) {
       this.msgService.add({
         severity: 'warn',
         summary: 'Descripcion invalida',
-        detail: 'La descripcion del archivo debe contener texto real y no superar 300 caracteres.'
+        detail: 'La descripcion del archivo es obligatoria, debe contener texto real y no superar 300 caracteres.'
+      });
+      return;
+    }
+    const fechaDocumento = this.fechaDocumentoArchivo();
+    if (!fechaDocumento) {
+      this.msgService.add({
+        severity: 'warn',
+        summary: 'Fecha requerida',
+        detail: 'Indica la fecha propia del examen o documento adjunto.'
       });
       return;
     }
     this.archivoSubiendo.set(true);
-    this.hcService.subirArchivo(this.consultaId, file, this.tipoSeleccionado(), descripcion || undefined).subscribe({
+    this.hcService.subirArchivo(this.consultaId, file, this.tipoSeleccionado(), descripcion, fechaDocumento).subscribe({
       next: () => {
         this.msgService.add({ severity: 'success', summary: 'Examen', detail: 'Archivo subido correctamente' });
         this.archivoPendiente.set(null);
         this.descripcionArchivo.set('');
+        this.fechaDocumentoArchivo.set('');
         this.archivoSubiendo.set(false);
         this.loadArchivos();
       },
@@ -1160,6 +1174,41 @@ version: res.data.version,
       },
       error: (err) => {
         this.msgService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error al cerrar la consulta' });
+      }
+    });
+  }
+
+  confirmarReabrir() {
+    if (!this.canReabrirConsulta() || this.reopeningConsulta()) return;
+    this.confirmSvc.confirm({
+      message: 'Esta historia clínica está cerrada. ¿Deseas reabrirla para poder editarla? La acción quedará registrada en la auditoría.',
+      header: 'Reabrir historia clínica',
+      icon: 'pi pi-lock-open',
+      acceptLabel: 'Sí, reabrir',
+      rejectLabel: 'Cancelar',
+      acceptButtonProps: { style: 'background-color: #0066aa; color: white; border: none; font-weight: bold; padding: 0.5rem 1rem; border-radius: 0.375rem;' },
+      rejectButtonStyleClass: 'bg-slate-300 hover:bg-slate-400 text-slate-700 font-bold',
+      accept: () => this.reabrir()
+    });
+  }
+
+  private reabrir() {
+    if (!this.canReabrirConsulta() || this.reopeningConsulta()) return;
+
+    this.reopeningConsulta.set(true);
+    this.loadingStore.show();
+    this.hcService.reabrirConsulta(this.consultaId).pipe(
+      finalize(() => {
+        this.reopeningConsulta.set(false);
+        this.loadingStore.hide();
+      })
+    ).subscribe({
+      next: (res) => {
+        this.sincronizarConsultaGuardada(res.data);
+        this.msgService.add({ severity: 'success', summary: 'Reabierta', detail: 'La historia clínica fue reabierta. Ya puedes editarla.' });
+      },
+      error: (err) => {
+        this.msgService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Error al reabrir la historia clínica' });
       }
     });
   }

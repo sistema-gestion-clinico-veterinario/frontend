@@ -698,7 +698,7 @@ export class ComplementarioComponent implements OnInit {
     this.controlPreventivoService.listarTiposVacunaPorCompany(page, this.pageSize).subscribe({
       next: (res) => {
         this.vacunas.set(res.data?.content ?? []);
-        this.vacunasTotal.set(res.data?.totalElements ?? 0);
+        this.vacunasTotal.set(res.data?.page?.totalElements ?? res.data?.totalElements ?? 0);
         this.vacunasPage.set(page);
         this.loadingStore.hide();
       },
@@ -712,7 +712,7 @@ export class ComplementarioComponent implements OnInit {
     this.controlPreventivoService.listarTiposDesparasitantePorCompany(page, this.pageSize).subscribe({
       next: (res) => {
         this.desparasitantes.set(res.data?.content ?? []);
-        this.desparasitantesTotal.set(res.data?.totalElements ?? 0);
+        this.desparasitantesTotal.set(res.data?.page?.totalElements ?? res.data?.totalElements ?? 0);
         this.desparasitantesPage.set(page);
         this.loadingStore.hide();
       },

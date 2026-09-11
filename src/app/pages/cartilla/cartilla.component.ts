@@ -242,8 +242,8 @@ export class CartillaComponent implements OnInit {
       next: (res) => {
         const page = res.data;
         this.mascotasLista.set(page?.content ?? []);
-        this.totalPaginas = page?.totalPages ?? 0;
-        this.totalRegistros = page?.totalElements ?? 0;
+        this.totalPaginas = page?.page?.totalPages ?? page?.totalPages ?? 0;
+        this.totalRegistros = page?.page?.totalElements ?? page?.totalElements ?? 0;
       },
       error: () => {
         this.mascotasLista.set([]);

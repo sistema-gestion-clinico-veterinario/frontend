@@ -2,7 +2,7 @@
 
   <!-- ══════════════ TOP BAR ══════════════ -->
   <div class="bg-white/95 backdrop-blur-sm border-b border-slate-100  px-3 sm:px-6 py-3 sm:py-4 rounded-b-2xl">
-    <div class="flex flex-col gap-3 min-[901px]:flex-row min-[901px]:items-center min-[901px]:justify-between min-[901px]:gap-4">
+    <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between lg:gap-4">
 
       <div class="flex items-center gap-3">
         <i class="pi pi-calendar text-[#0066AA] text-3xl shrink-0"></i>
@@ -12,9 +12,9 @@
         </div>
       </div>
 
-      <div class="flex w-full items-center justify-between gap-2 min-[901px]:w-auto min-[901px]:justify-end">
+      <div class="flex w-full items-center justify-between gap-2 lg:w-auto lg:justify-end">
         <!-- View switcher -->
-        <div class="flex min-w-0 flex-1 items-center gap-0.5 overflow-x-auto rounded-xl bg-slate-100 p-1 min-[901px]:flex-none [&>button]:min-w-10 [&>button]:flex-1 [&>button]:justify-center min-[901px]:[&>button]:flex-none">
+        <div class="flex min-w-0 flex-1 items-center gap-0.5 overflow-x-auto rounded-xl bg-slate-100 p-1 lg:flex-none [&>button]:min-w-10 [&>button]:flex-1 [&>button]:justify-center lg:[&>button]:flex-none">
           <button (click)="cambiarVista('lista')"
             [class.bg-white]="vistaActual()==='lista'"
             [class.text-[#0066AA]]="vistaActual()==='lista'"
@@ -139,9 +139,11 @@
 
   <div *ngIf="!cargando()" class="p-3 sm:p-6 space-y-4">
 
-    <div *ngIf="vistaActual() === 'lista'" class="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-4 min-[901px]:gap-3">
-      <div class="flex min-h-[62px] items-center gap-2 rounded-xl border border-slate-100 bg-violet-50/70 px-2.5 py-2 min-[901px]:min-h-[76px] min-[901px]:gap-4 min-[901px]:px-4 min-[901px]:py-3">
-        <i class="pi pi-calendar text-violet-600 text-2xl shrink-0"></i>
+    <div *ngIf="vistaActual() === 'lista'" class="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-4 lg:gap-3">
+      <div class="flex min-h-[62px] items-center gap-3 rounded-xl border border-slate-200 bg-white px-2.5 py-2 lg:min-h-[76px] lg:gap-4 lg:px-4 lg:py-3">
+        <div class="grid size-10 shrink-0 place-items-center rounded-lg bg-slate-100 text-slate-600">
+          <i class="pi pi-calendar text-lg"></i>
+        </div>
         <div>
           <p class="text-xl font-extrabold text-slate-900 leading-none">{{ agendaCounters().programadas }}</p>
           <p class="text-xs font-bold text-slate-700 mt-1">Programadas</p>
@@ -149,8 +151,10 @@
         </div>
       </div>
 
-      <div class="flex min-h-[62px] items-center gap-2 rounded-xl border border-slate-100 bg-amber-50/70 px-2.5 py-2 min-[901px]:min-h-[76px] min-[901px]:gap-4 min-[901px]:px-4 min-[901px]:py-3">
-        <i class="pi pi-clock text-amber-600 text-2xl shrink-0"></i>
+      <div class="flex min-h-[62px] items-center gap-3 rounded-xl border border-slate-200 bg-white px-2.5 py-2 lg:min-h-[76px] lg:gap-4 lg:px-4 lg:py-3">
+        <div class="grid size-10 shrink-0 place-items-center rounded-lg bg-amber-50 text-amber-600">
+          <i class="pi pi-clock text-lg"></i>
+        </div>
         <div>
           <p class="text-xl font-extrabold text-slate-900 leading-none">{{ agendaCounters().enProceso }}</p>
           <p class="text-xs font-bold text-slate-700 mt-1">En proceso</p>
@@ -158,8 +162,10 @@
         </div>
       </div>
 
-      <div class="flex min-h-[62px] items-center gap-2 rounded-xl border border-slate-100 bg-emerald-50/70 px-2.5 py-2 min-[901px]:min-h-[76px] min-[901px]:gap-4 min-[901px]:px-4 min-[901px]:py-3">
-        <i class="pi pi-check-circle text-emerald-600 text-2xl shrink-0"></i>
+      <div class="flex min-h-[62px] items-center gap-3 rounded-xl border border-slate-200 bg-white px-2.5 py-2 lg:min-h-[76px] lg:gap-4 lg:px-4 lg:py-3">
+        <div class="grid size-10 shrink-0 place-items-center rounded-lg bg-emerald-50 text-emerald-600">
+          <i class="pi pi-check-circle text-lg"></i>
+        </div>
         <div>
           <p class="text-xl font-extrabold text-slate-900 leading-none">{{ agendaCounters().completadas }}</p>
           <p class="text-xs font-bold text-slate-700 mt-1">Completadas</p>
@@ -167,8 +173,10 @@
         </div>
       </div>
 
-      <div class="flex min-h-[62px] items-center gap-2 rounded-xl border border-slate-100 bg-rose-50/70 px-2.5 py-2 min-[901px]:min-h-[76px] min-[901px]:gap-4 min-[901px]:px-4 min-[901px]:py-3">
-        <i class="pi pi-times-circle text-rose-600 text-2xl shrink-0"></i>
+      <div class="flex min-h-[62px] items-center gap-3 rounded-xl border border-slate-200 bg-white px-2.5 py-2 lg:min-h-[76px] lg:gap-4 lg:px-4 lg:py-3">
+        <div class="grid size-10 shrink-0 place-items-center rounded-lg bg-rose-50 text-rose-600">
+          <i class="pi pi-times-circle text-lg"></i>
+        </div>
         <div>
           <p class="text-xl font-extrabold text-slate-900 leading-none">{{ agendaCounters().canceladas }}</p>
           <p class="text-xs font-bold text-slate-700 mt-1">Canceladas</p>
@@ -345,7 +353,7 @@
               <i class="pi pi-filter-slash text-base"></i>
             </button>
             <button (click)="refreshCurrentView()" [disabled]="vistaActual() === 'lista' && !!agendaRangoError()"
-              class="flex-1 h-10 flex items-center justify-center gap-2 bg-slate-50 text-slate-500 hover:bg-slate-100 text-sm font-semibold rounded-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+              class="flex-1 h-10 flex items-center justify-center gap-2 bg-[#0066AA] text-white hover:bg-[#005a96] text-sm font-semibold rounded-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400">
               <i class="pi pi-refresh text-base" [class.pi-spin]="loadingStore.isLoading()"></i>
               <span>{{ loadingStore.isLoading() ? 'Cargando...' : 'Actualizar' }}</span>
             </button>
@@ -355,128 +363,124 @@
       </div>
     </div>
 
-    <!-- ══════════════ VISTA LISTA ══════════════ -->
+    <!-- ══════════════ VISTA LISTA — timeline vertical ══════════════ -->
     <ng-container *ngIf="vistaActual() === 'lista'">
       <div class="overflow-hidden rounded-xl border border-slate-200 bg-white">
-        <div class="divide-y divide-slate-100 md:hidden">
-          <ng-container *ngFor="let grupo of citasAgrupadas()">
-            <div class="flex items-center gap-2 border-y border-slate-100 bg-slate-50/80 px-4 py-2 text-slate-500"><i class="pi pi-calendar text-[10px]"></i><span class="text-xs font-bold capitalize">{{ grupo.label }}</span></div>
-            <article *ngFor="let cita of grupo.items" (click)="verDetalleCita(cita)" class="space-y-3 p-4 transition-colors hover:bg-slate-50/60">
-              <div class="flex items-start justify-between gap-3"><div class="flex min-w-0 items-center gap-3"><div class="grid size-9 shrink-0 place-items-center rounded-full text-xs font-extrabold" [ngClass]="avatarPastelClass(cita.mascotaNombre)">{{ cita.mascotaNombre.charAt(0) }}</div><div class="min-w-0"><div class="flex flex-wrap items-center gap-2"><h3 class="truncate text-sm font-bold text-slate-900">{{ cita.mascotaNombre }}</h3><span *ngIf="cita.esEmergencia" class="rounded-full bg-rose-100 px-1.5 py-0.5 text-[9px] font-extrabold uppercase text-rose-600">Urgente</span></div><p class="mt-0.5 truncate text-[11px] text-slate-500">{{ cita.apoderadoNombre }}</p></div></div><strong class="shrink-0 text-sm text-[#0066AA]">{{ cita.fechaHoraInicio | date:'HH:mm' }}</strong></div>
-              <div class="grid grid-cols-2 gap-3 text-xs"><div class="min-w-0"><p class="text-[10px] font-bold uppercase text-slate-400">Veterinario</p><p class="mt-1 truncate text-slate-700">{{ cita.veterinarioNombre || 'Sin asignar' }}</p></div><div class="min-w-0"><p class="text-[10px] font-bold uppercase text-slate-400">Motivo</p><p class="mt-1 truncate text-slate-700">{{ cita.motivoCita || '—' }}</p></div></div>
-              <div class="flex items-center justify-between gap-3 border-t border-slate-100 pt-3"><span [class]="'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wider ' + estadoClass(cita.estado)"><span class="size-1.5 rounded-full bg-current opacity-70"></span>{{ estadoLabel(cita.estado) }}</span><div (click)="$event.stopPropagation()"><p-menu #citaMenuMobile [model]="citaActionItems(cita)" [popup]="true" appendTo="body"></p-menu><button type="button" (click)="citaMenuMobile.toggle($event)" aria-label="Acciones de la cita" class="grid size-9 place-items-center rounded-lg border border-slate-200 text-slate-500"><i class="pi pi-ellipsis-h"></i></button></div></div>
-            </article>
-          </ng-container>
-          <div *ngIf="citasAgenda().length === 0" class="px-4 py-14 text-center"><i class="pi pi-calendar text-2xl text-slate-300"></i><p class="mt-3 text-sm font-semibold text-slate-400">{{ agendaEmptyTitle() }}</p><p class="mt-1 text-xs text-slate-300">Cambia el periodo o crea una nueva cita</p></div>
+
+        <!-- Encabezado de columnas (alineado con la estructura de cada fila) -->
+        <div class="hidden items-center gap-3 border-b border-slate-200 bg-slate-50 px-5 py-2 text-[10px] font-extrabold uppercase tracking-wider text-slate-500 sm:flex sm:gap-4">
+          <span class="w-14 shrink-0 sm:w-44">Fecha y hora</span>
+          <span class="size-2 shrink-0"></span>
+          <span class="size-9 shrink-0"></span>
+          <span class="min-w-0 flex-1 basis-32 sm:basis-40">Paciente</span>
+          <span class="hidden min-w-0 flex-1 basis-40 border-l border-slate-200 pl-4 md:block">Apoderado</span>
+          <span class="hidden min-w-0 flex-1 basis-40 border-l border-slate-200 pl-4 lg:block">Veterinario</span>
+          <span class="hidden min-w-0 flex-1 basis-32 border-l border-slate-200 pl-4 lg:block">Motivo</span>
+          <span class="w-24 shrink-0 border-l border-slate-200 pl-4">Estado</span>
+          <span class="size-9 shrink-0"></span>
         </div>
-        <div class="hidden overflow-x-auto md:block">
-          <table class="w-full text-sm min-w-[800px]">
-            <thead class="bg-white border-b border-slate-200">
-              <tr>
-                <th class="text-left px-5 py-3 text-[10px] font-extrabold text-slate-700 uppercase tracking-wider">Fecha / Hora</th>
-                <th class="text-left px-5 py-3 text-[10px] font-extrabold text-slate-700 uppercase tracking-wider">Paciente</th>
-                <th class="text-left px-5 py-3 text-[10px] font-extrabold text-slate-700 uppercase tracking-wider hidden md:table-cell">Apoderado</th>
-                <th class="text-left px-5 py-3 text-[10px] font-extrabold text-slate-700 uppercase tracking-wider hidden lg:table-cell">Veterinario</th>
-                <th class="text-left px-5 py-3 text-[10px] font-extrabold text-slate-700 uppercase tracking-wider hidden lg:table-cell">Motivo</th>
-                <th class="text-left px-5 py-3 text-[10px] font-extrabold text-slate-700 uppercase tracking-wider">Estado</th>
-                <th class="text-center px-5 py-3 text-[10px] font-extrabold text-slate-700 uppercase tracking-wider w-16">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              <ng-container *ngFor="let grupo of citasAgrupadas()">
-                <!-- Fila de grupo por fecha -->
-                <tr>
-                  <td colspan="7" class="bg-slate-50/80 border-y border-slate-100 px-5 py-2">
-                    <div class="flex items-center gap-2 text-slate-500">
-                      <i class="pi pi-calendar text-[10px]"></i>
-                      <span class="text-xs font-bold capitalize">{{ grupo.label }}</span>
-                    </div>
-                  </td>
-                </tr>
-                <!-- Filas de citas -->
-                <tr *ngFor="let cita of grupo.items"
-                  class="border-b border-slate-100 last:border-0 hover:bg-slate-50/60 transition-colors cursor-pointer"
-                  (click)="verDetalleCita(cita)">
 
-                  <!-- Fecha / Hora -->
-                  <td class="px-5 py-3">
-                    <p class="text-sm font-bold text-[#0066AA]">{{ cita.fechaHoraInicio | date:'HH:mm' }}</p>
-                  </td>
+        <ng-container *ngFor="let grupo of citasAgrupadas()">
+          <!-- Citas del día (la fecha completa va en la columna "Fecha y hora" de cada fila) -->
+          <div *ngFor="let cita of grupo.items" (click)="verDetalleCita(cita)"
+            class="cursor-pointer border-b border-slate-100 px-4 py-3 transition-colors last:border-0 hover:bg-slate-50 sm:px-5">
 
-                  <!-- Paciente -->
-                  <td class="px-5 py-3">
-                    <div class="flex items-center gap-3 min-w-0">
-                      <div class="w-8 h-8 rounded-full flex items-center justify-center font-extrabold text-xs shrink-0"
-                        [ngClass]="avatarPastelClass(cita.mascotaNombre)">
-                        {{ cita.mascotaNombre.charAt(0) }}
-                      </div>
-                      <div class="min-w-0">
-                        <div class="flex items-center gap-2 flex-wrap">
-                          <p class="text-sm font-bold text-slate-800 truncate max-w-[160px]">{{ cita.mascotaNombre }}</p>
-                          <span *ngIf="cita.esEmergencia"
-                            class="bg-rose-100 text-rose-600 text-[9px] font-extrabold px-1.5 py-0.5 rounded-full uppercase tracking-tight">
-                            Urgente
-                          </span>
-                        </div>
-                        <p class="md:hidden text-[11px] text-slate-500 truncate mt-0.5">{{ cita.apoderadoNombre }}</p>
-                      </div>
-                    </div>
-                  </td>
-
-                  <!-- Apoderado -->
-                  <td class="px-5 py-3 hidden md:table-cell">
-                    <span class="text-sm text-slate-600 font-medium truncate max-w-[140px] block">{{ cita.apoderadoNombre }}</span>
-                  </td>
-
-                  <!-- Veterinario -->
-                  <td class="px-5 py-3 hidden lg:table-cell">
-                    <div class="flex items-center gap-2">
-                      <i class="pi pi-user text-slate-300 text-xs shrink-0"></i>
-                      <span class="text-sm text-slate-600 font-medium">{{ cita.veterinarioNombre }}</span>
-                    </div>
-                  </td>
-
-                  <!-- Motivo -->
-                  <td class="px-5 py-3 hidden lg:table-cell">
-                    <span class="inline-flex max-w-[160px] px-2 py-0.5 rounded-full text-[11px] font-semibold"
-                      [ngClass]="motivoPastelClass(cita)">
-                      <span class="truncate">{{ cita.motivoCita }}</span>
+            <!-- Tarjeta mobile: agrupa lo esencial (hora, paciente, estado) y una 2ª línea con apoderado/veterinario/motivo -->
+            <div class="flex flex-col gap-1.5 sm:hidden">
+              <div class="flex items-center gap-2.5">
+                <span class="size-2 shrink-0 rounded-full" [ngClass]="estadoColor(cita.estado)"></span>
+                <div class="grid size-8 shrink-0 place-items-center rounded-full bg-slate-100 text-xs font-extrabold text-slate-600">
+                  {{ cita.mascotaNombre.charAt(0) }}
+                </div>
+                <div class="min-w-0 flex-1">
+                  <div class="flex flex-wrap items-center gap-1.5">
+                    <p class="truncate text-sm font-bold text-slate-900">{{ cita.mascotaNombre }}</p>
+                    <span *ngIf="cita.esEmergencia"
+                      class="rounded-full bg-rose-100 px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-tight text-rose-600">
+                      Urgente
                     </span>
-                  </td>
-
-                  <!-- Estado -->
-                  <td class="px-5 py-3">
-                    <span [class]="'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider ' + estadoClass(cita.estado)">
-                      <span class="w-1.5 h-1.5 rounded-full bg-current opacity-70"></span>
-                      {{ estadoLabel(cita.estado) }}
-                    </span>
-                  </td>
-
-                  <!-- Acciones -->
-                  <td class="px-5 py-3 text-center" (click)="$event.stopPropagation()">
-                    <p-menu #citaMenu [model]="citaActionItems(cita)" [popup]="true" appendTo="body"></p-menu>
-                    <button type="button" (click)="citaMenu.toggle($event)" pTooltip="Acciones" tooltipPosition="top"
-                      class="w-9 h-9 inline-flex items-center justify-center rounded-lg text-slate-500 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-95">
-                      <i class="pi pi-ellipsis-h text-base"></i>
-                    </button>
-                  </td>
-                </tr>
-              </ng-container>
-
-              <!-- Empty state -->
-              <tr *ngIf="citasAgenda().length === 0">
-                <td colspan="7" class="py-20 text-center">
-                  <div class="flex flex-col items-center gap-3">
-                    <div class="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center">
-                      <i class="pi pi-calendar text-2xl text-slate-300"></i>
-                    </div>
-                    <p class="text-sm font-semibold text-slate-400">{{ agendaEmptyTitle() }}</p>
-                    <p class="text-xs text-slate-300">Cambia el periodo o crea una nueva cita</p>
                   </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                  <p class="text-xs font-semibold text-slate-500">{{ cita.fechaHoraInicio | date:'HH:mm' }}</p>
+                </div>
+                <span class="shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold" [ngClass]="estadoClass(cita.estado)">
+                  {{ estadoLabel(cita.estado) }}
+                </span>
+                <div class="shrink-0" (click)="$event.stopPropagation()">
+                  <p-menu #citaMenuMobile [model]="citaActionItems(cita)" [popup]="true" appendTo="body"></p-menu>
+                  <button type="button" (click)="citaMenuMobile.toggle($event)" pTooltip="Acciones" tooltipPosition="top"
+                    class="inline-flex size-8 items-center justify-center rounded-lg text-slate-500 transition-all hover:bg-blue-50 hover:text-[#0066AA] active:scale-95">
+                    <i class="pi pi-ellipsis-h text-base"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1 pl-[3.15rem] text-xs text-slate-500">
+                <span class="inline-flex items-center gap-1"><i class="pi pi-user text-[10px]"></i>{{ cita.apoderadoNombre }}</span>
+                <span class="inline-flex items-center gap-1"><i class="pi pi-heart text-[10px]"></i>{{ cita.veterinarioNombre || 'Sin asignar' }}</span>
+                <span *ngIf="cita.motivoCita" class="truncate text-slate-400">{{ cita.motivoCita }}</span>
+              </div>
+            </div>
+
+            <!-- Fila desktop/tablet: columnas alineadas con el encabezado -->
+            <div class="hidden items-center gap-3 sm:flex sm:gap-4">
+              <div class="w-14 shrink-0 sm:w-44">
+                <div class="flex min-w-0 items-baseline gap-1.5" [title]="fechaHoraCompleta(cita.fechaHoraInicio)">
+                  <span class="truncate text-sm capitalize text-slate-500">{{ fechaSinHora(cita.fechaHoraInicio) }}</span>
+                  <span class="shrink-0 text-sm font-semibold text-slate-700">{{ cita.fechaHoraInicio | date:'HH:mm' }}</span>
+                </div>
+              </div>
+
+              <span class="size-2 shrink-0 rounded-full" [ngClass]="estadoColor(cita.estado)"></span>
+
+              <div class="grid size-9 shrink-0 place-items-center rounded-full bg-slate-100 text-xs font-extrabold text-slate-600">
+                {{ cita.mascotaNombre.charAt(0) }}
+              </div>
+
+              <div class="min-w-0 flex-1 basis-32 sm:basis-40">
+                <div class="flex flex-wrap items-center gap-2">
+                  <p class="truncate text-sm font-bold text-slate-900">{{ cita.mascotaNombre }}</p>
+                  <span *ngIf="cita.esEmergencia"
+                    class="rounded-full bg-rose-100 px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-tight text-rose-600">
+                    Urgente
+                  </span>
+                </div>
+                <!-- En pantallas medianas, donde no cabe la columna de apoderado, se muestra aquí debajo -->
+                <p class="truncate text-xs text-slate-500 md:hidden">{{ cita.apoderadoNombre }}</p>
+              </div>
+
+              <div class="hidden min-w-0 flex-1 basis-40 truncate border-l border-slate-100 pl-4 text-sm text-slate-600 md:block" [title]="cita.apoderadoNombre">
+                {{ cita.apoderadoNombre }}
+              </div>
+
+              <div class="hidden min-w-0 flex-1 basis-40 truncate border-l border-slate-100 pl-4 text-sm text-slate-600 lg:block" [title]="cita.veterinarioNombre">
+                {{ cita.veterinarioNombre || 'Sin asignar' }}
+              </div>
+
+              <div class="hidden min-w-0 flex-1 basis-32 truncate border-l border-slate-100 pl-4 text-sm text-slate-500 lg:block">
+                {{ cita.motivoCita || '—' }}
+              </div>
+
+              <span class="hidden w-24 shrink-0 border-l border-slate-100 pl-4 text-xs font-semibold text-slate-600 sm:block">
+                {{ estadoLabel(cita.estado) }}
+              </span>
+
+              <div class="shrink-0" (click)="$event.stopPropagation()">
+                <p-menu #citaMenu [model]="citaActionItems(cita)" [popup]="true" appendTo="body"></p-menu>
+                <button type="button" (click)="citaMenu.toggle($event)" pTooltip="Acciones" tooltipPosition="top"
+                  class="inline-flex size-9 items-center justify-center rounded-lg text-slate-500 transition-all hover:bg-blue-50 hover:text-[#0066AA] active:scale-95">
+                  <i class="pi pi-ellipsis-h text-base"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- Empty state -->
+        <div *ngIf="citasAgenda().length === 0" class="flex flex-col items-center gap-3 py-20 text-center">
+          <div class="flex size-14 items-center justify-center rounded-2xl bg-slate-100">
+            <i class="pi pi-calendar text-2xl text-slate-300"></i>
+          </div>
+          <p class="text-sm font-semibold text-slate-400">{{ agendaEmptyTitle() }}</p>
+          <p class="text-xs text-slate-300">Cambia el periodo o crea una nueva cita</p>
         </div>
       </div>
 
@@ -501,7 +505,7 @@
           <span class="text-sm font-medium">Cargando agenda...</span>
         </div>
 
-        <div *ngIf="!cargandoCal()" class="block min-[901px]:hidden">
+        <div *ngIf="!cargandoCal()" class="block lg:hidden">
           <ng-container *ngIf="vistaActual() === 'dia'">
             <div *ngIf="getCitasDia(fechaBase()).length; else mobileDayEmpty" class="overflow-hidden">
               <button *ngFor="let cita of getCitasDia(fechaBase())" type="button"
@@ -586,7 +590,7 @@
           </ng-container>
         </div>
 
-        <div class="hidden min-[901px]:block">
+        <div class="hidden lg:block">
           <full-calendar
             *ngIf="!cargandoCal()"
             #fullCalendar

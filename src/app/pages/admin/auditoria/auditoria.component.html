@@ -9,6 +9,11 @@
       </h1>
       <p class="text-slate-500 text-sm mt-1">Supervisión y control en tiempo real de operaciones críticas y seguridad del sistema.</p>
     </div>
+    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide shrink-0"
+      [ngClass]="realtimeConnected() ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-500 border border-slate-200'">
+      <span class="w-1.5 h-1.5 rounded-full" [ngClass]="realtimeConnected() ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'"></span>
+      {{ realtimeConnected() ? 'En vivo' : 'Desconectado' }}
+    </span>
   </div>
   <div class="bg-white rounded-xl border border-slate-200 p-4 space-y-4">
     
@@ -187,9 +192,7 @@
         [first]="currentPage * pageSize"
         (onPageChange)="loadLogs($event.page)"
         [showCurrentPageReport]="false"
-        [showPageLinks]="true"
-        [pageLinkSize]="3"
-        styleClass="audit-paginator-control !border-none !bg-transparent !py-0">
+        styleClass="!border-none !bg-transparent !py-3">
       </p-paginator>
     </div>
 

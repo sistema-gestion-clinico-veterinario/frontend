@@ -6,7 +6,7 @@ import { Router, RouterModule } from '@angular/router';
 import { finalize, from, switchMap, timeout } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
 import { AuthStore } from '../../../store/auth.store';
-import { resolveInitialRoute } from '../../../layouts/main-layout/navbar/navbar.component';
+import { resolveInitialRoute, resolveDashboardRoute } from '../../../layouts/main-layout/navbar/navbar.component';
 import { SessionService } from '../../../core/services/session.service';
 import { LoadingStore } from '../../../store/loading.store';
 
@@ -93,7 +93,7 @@ export class LoginComponent implements OnInit {
         const targetUrl = data.legalAcceptanceOverdue
           ? '/legal/accept'
           : resolveInitialRoute(data.menu ?? [], data.activeRolePurpose);
-        return from(this.router.navigateByUrl(targetUrl));
+        return from(this.navigateWithFallback(targetUrl, data.activeRolePurpose));
       }),
       finalize(() => {
         this.isSubmitting = false;
@@ -124,7 +124,24 @@ export class LoginComponent implements OnInit {
   }
 
   private navigateToInitialRoute(): void {
-    this.router.navigateByUrl(resolveInitialRoute(this.authStore.menu() ?? [], this.authStore.activeRolePurpose()));
+    const targetUrl = resolveInitialRoute(this.authStore.menu() ?? [], this.authStore.activeRolePurpose());
+    this.navigateWithFallback(targetUrl, this.authStore.activeRolePurpose()).subscribe();
+  }
+
+  /**
+   * Some vistas configured in the menu may not have a matching Angular route
+   * (e.g. a view removed or never built). If navigation silently fails
+   * (navigateByUrl resolves false, caught by the wildcard route), fall back
+   * to the purpose-based dashboard instead of stranding the user on /login.
+   */
+  private navigateWithFallback(targetUrl: string, purpose?: string | null) {
+    return from(this.router.navigateByUrl(targetUrl)).pipe(
+      switchMap((navigated) => {
+        if (navigated || this.router.url === targetUrl) return from(Promise.resolve(true));
+        const fallbackUrl = resolveDashboardRoute(purpose as any);
+        return from(this.router.navigateByUrl(fallbackUrl));
+      })
+    );
   }
 }
 

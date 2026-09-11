@@ -35,7 +35,10 @@ export class ApoderadoDashboardComponent implements OnInit {
   pagos    = signal<PagoListResponse[]>([]);
   loadingPagos = signal(true);
 
-  canViewMisPagos = computed(() => this.authStore.hasAccess('VISTA_MIS_PAGOS', 'leer'));
+  canViewMisPagos     = computed(() => this.authStore.hasAccess('VISTA_MIS_PAGOS', 'leer'));
+  canViewMisCitas     = computed(() => this.authStore.hasAccess('VISTA_MIS_CITAS', 'leer'));
+  canViewMisMascotas  = computed(() => this.authStore.hasAccess('VISTA_MIS_MASCOTAS', 'leer'));
+  canViewMiHistorial  = computed(() => this.authStore.hasAccess('VISTA_MI_HISTORIAL', 'leer'));
 
   totalPagos      = computed(() => this.pagos().length);
   pagosPagados    = computed(() => this.pagos().filter(p => p.estado === 'PAID' || p.estado === 'COMPLETADO').length);
@@ -86,17 +89,26 @@ private loadCompanyInfo() {
 }
 
   loadDashboard() {
-    this.loadingStore.show();
-    this.apoderadoService.getPortalCitas().subscribe({
-      next: (res) => {
-        this.citas.set(res.data?.content ?? res.data ?? []);
-        this.loadingStore.hide();
-      },
-      error: () => {
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar tus citas.' });
-        this.loadingStore.hide();
-      }
-    });
+    if (!this.canViewMisCitas()) {
+      this.loadingStore.hide();
+    } else {
+      this.loadingStore.show();
+      this.apoderadoService.getPortalCitas().subscribe({
+        next: (res) => {
+          this.citas.set(res.data?.content ?? res.data ?? []);
+          this.loadingStore.hide();
+        },
+        error: () => {
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar tus citas.' });
+          this.loadingStore.hide();
+        }
+      });
+    }
+
+    if (!this.canViewMisPagos()) {
+      this.loadingPagos.set(false);
+      return;
+    }
 
     this.loadingPagos.set(true);
 

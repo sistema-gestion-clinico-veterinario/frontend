@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, ElementRef, OnInit, inject, signal, computed } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
@@ -25,6 +25,7 @@ export class LegalAcceptComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly authStore = inject(AuthStore);
   private readonly router = inject(Router);
+  private readonly elementRef = inject(ElementRef<HTMLElement>);
 
   readonly documents = signal<LegalDocumentDTO[]>([]);
   readonly checked = signal<Partial<Record<number, boolean>>>({});
@@ -81,6 +82,7 @@ export class LegalAcceptComponent implements OnInit {
   goTo(index: number): void {
     if (index < 0 || index >= this.documents().length) return;
     this.currentIndex.set(index);
+    this.scrollToTop();
   }
 
   next(): void {
@@ -90,10 +92,30 @@ export class LegalAcceptComponent implements OnInit {
       return;
     }
     this.currentIndex.update(i => i + 1);
+    this.scrollToTop();
   }
 
   back(): void {
     this.currentIndex.update(i => Math.max(0, i - 1));
+    this.scrollToTop();
+  }
+
+  /**
+   * Cambiar de documento no navega de ruta (sigue siendo /legal/accept), así
+   * que ni el scroll de la ventana ni el reset de scroll del layout principal
+   * se disparan solos. El contenedor real con scroll puede ser la ventana
+   * (página standalone) o un ancestro con overflow propio (dentro del layout
+   * principal autenticado) — se resetean ambos por las dudas.
+   */
+  private scrollToTop(): void {
+    window.scrollTo({ top: 0 });
+    let node: HTMLElement | null = this.elementRef.nativeElement.parentElement;
+    while (node) {
+      if (node.scrollHeight > node.clientHeight) {
+        node.scrollTo({ top: 0 });
+      }
+      node = node.parentElement;
+    }
   }
 
   submit(): void {
