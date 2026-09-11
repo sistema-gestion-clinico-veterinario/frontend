@@ -23,6 +23,8 @@ function reporteFixture(overrides: Partial<ReportesClinicos> = {}): ReportesClin
     proximasVacunas: [], proximasDesparasitaciones: [], consultasPorMes: [], consultasPorVeterinario: [],
     frecuenciaConsultasPorPaciente: [], serviciosMasSolicitados: [], controlesPreventivosProximos: [],
     demandaPorHorario: [],
+    ingresosPorMetodoPago: [], ingresosPorServicio: [],
+    cumplimientoVacunacion: [], cumplimientoDesparasitacion: [],
     ...overrides
   };
 }

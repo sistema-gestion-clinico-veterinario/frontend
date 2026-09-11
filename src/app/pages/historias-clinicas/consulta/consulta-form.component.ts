@@ -12,6 +12,7 @@ import { MessageService, ConfirmationService } from 'primeng/api';
 import { DrawerModule } from 'primeng/drawer';
 import { BadgeModule } from 'primeng/badge';
 import { finalize } from 'rxjs';
+import { formatearFechaClinica } from '../../../shared/utils/fecha-clinica.util';
 
 import { HistoriaClinicaService } from '../../../core/services/historia-clinica.service';
 import { LoadingStore } from '../../../store/loading.store';
@@ -1235,8 +1236,7 @@ version: res.data.version,
   }
 
   formatFecha(fecha: string | undefined): string {
-    if (!fecha) return '—';
-    return new Date(fecha).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' });
+    return formatearFechaClinica(fecha);
   }
 
   formatFechaHora(fecha: string | undefined): string {
