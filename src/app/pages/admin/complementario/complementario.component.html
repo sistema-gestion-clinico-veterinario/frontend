@@ -175,8 +175,7 @@
             [rows]="pageSize"
             [totalRecords]="especialidadesTotal()"
             [first]="especialidadesPage() * pageSize"
-            [showCurrentPageReport]="true"
-            currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} especialidades"
+            [showCurrentPageReport]="false"
             (onPageChange)="onEspecialidadesPageChange($event)"
             styleClass="!border-none !bg-transparent !py-3"
           ></p-paginator>
@@ -264,8 +263,7 @@
             [rows]="pageSize"
             [totalRecords]="tiposEmpleadoTotal()"
             [first]="tiposEmpleadoPage() * pageSize"
-            [showCurrentPageReport]="true"
-            currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} tipos"
+            [showCurrentPageReport]="false"
             (onPageChange)="onTiposEmpleadoPageChange($event)"
             styleClass="!border-none !bg-transparent !py-3"
           ></p-paginator>
@@ -355,8 +353,7 @@
             [rows]="pageSize"
             [totalRecords]="serviciosTotal()"
             [first]="serviciosPage() * pageSize"
-            [showCurrentPageReport]="true"
-            currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} servicios"
+            [showCurrentPageReport]="false"
             (onPageChange)="onServiciosPageChange($event)"
             styleClass="!border-none !bg-transparent !py-3"
           ></p-paginator>
@@ -429,7 +426,7 @@
         <p-paginator *ngIf="vacunasTotal() > 0"
           [rows]="pageSize" [totalRecords]="vacunasTotal()" [first]="vacunasPage() * pageSize"
           (onPageChange)="onVacunasPageChange($event)"
-          [showCurrentPageReport]="true" currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} vacunas"
+          [showCurrentPageReport]="false"
           styleClass="!border-none !bg-transparent !py-3"
         ></p-paginator>
       </div>
@@ -500,7 +497,7 @@
         <p-paginator *ngIf="desparasitantesTotal() > 0"
           [rows]="pageSize" [totalRecords]="desparasitantesTotal()" [first]="desparasitantesPage() * pageSize"
           (onPageChange)="onDesparasitantesPageChange($event)"
-          [showCurrentPageReport]="true" currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} desparasitantes"
+          [showCurrentPageReport]="false"
           styleClass="!border-none !bg-transparent !py-3"
         ></p-paginator>
       </div>

@@ -281,8 +281,8 @@
       [totalRecords]="totalRecords()"
       [first]="currentPage() * pageSize()"
       (onPageChange)="cargar($event)"
-      [rowsPerPageOptions]="[10, 20, 50]"
-      styleClass="border-0 shadow-none bg-transparent">
+      [showCurrentPageReport]="false"
+      styleClass="!border-none !bg-transparent !py-3">
     </p-paginator>
   </div>
 

@@ -15,7 +15,6 @@
           (click)="goTo(i)"
         >
           {{ labelFor(d) }}
-          <span class="tab-check" *ngIf="checked()[d.id]">✓</span>
         </button>
       </nav>
 
@@ -34,11 +33,13 @@
           </label>
 
           <div class="reader-actions">
-            <button type="button" class="btn-text" (click)="logout()">Cerrar sesión</button>
-            <button type="button" class="btn-text" *ngIf="!isFirstDoc()" (click)="back()">Atrás</button>
-            <button type="button" class="btn-solid" [disabled]="!currentChecked() || submitting()" (click)="next()">
-              {{ submitting() ? 'Guardando…' : (isLastDoc() ? 'Aceptar y continuar' : 'Continuar') }}
-            </button>
+            <button type="button" class="btn-link" (click)="logout()">Cerrar sesión</button>
+            <div class="reader-actions-right">
+              <button type="button" class="btn-outline" *ngIf="!isFirstDoc()" (click)="back()">Atrás</button>
+              <button type="button" class="btn-solid" [disabled]="!currentChecked() || submitting()" (click)="next()">
+                {{ submitting() ? 'Guardando…' : (isLastDoc() ? 'Aceptar y continuar' : 'Continuar') }}
+              </button>
+            </div>
           </div>
         </footer>
       </main>

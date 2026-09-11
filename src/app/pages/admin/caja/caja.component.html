@@ -152,6 +152,7 @@
   </section>
 
   <section class="grid grid-cols-1 xl:grid-cols-[minmax(0,1.65fr)_minmax(330px,.85fr)] gap-4">
+    <div class="flex flex-col gap-3 min-w-0">
     <article class="bg-white border border-slate-200 rounded-xl overflow-hidden">
       <div class="px-4 sm:px-5 py-3.5 border-b border-slate-200 bg-[#f8fafc] flex items-center justify-between gap-3"><div class="flex items-center gap-2"><i class="pi pi-history text-[#0066AA]"></i><h2 class="text-sm font-bold text-slate-900">Últimos movimientos en caja</h2></div><span class="text-xs text-slate-500">{{ totalRecords() }} registros</span></div>
       <div class="divide-y divide-slate-100 md:hidden">@for (m of movimientos(); track m.id) { <article class="space-y-3 p-4"><div class="flex items-start justify-between gap-3"><div><span class="rounded-full px-2 py-1 text-[10px] font-semibold" [class]="tipoBadge(m.tipo)">{{ tipoLabel(m.tipo) }}</span><p class="mt-2 text-xs text-slate-500">{{ formatFecha(m.fecha) }}</p></div><strong class="text-sm" [class]="m.tipo === 'INGRESO' ? 'text-emerald-600' : 'text-rose-600'">{{ m.tipo === 'INGRESO' ? '+' : '-' }} {{ formatMonto(m.monto) }}</strong></div><p class="break-words text-xs text-slate-700">{{ m.descripcion || 'Sin descripción' }}</p><div class="flex items-center justify-between gap-3 border-t border-slate-100 pt-3 text-[11px] text-slate-500"><span>{{ m.metodoPago ? metodoPagoLabel($any(m.metodoPago)) : 'Sin método' }}</span><span class="truncate text-right">{{ m.registradoPor || '—' }}</span></div></article> } @empty { <p class="p-8 text-center text-sm text-slate-400">No hay movimientos registrados.</p> }</div>
@@ -159,8 +160,9 @@
         @for (m of movimientos(); track m.id) { <tr><td class="px-4 py-3 text-xs text-slate-500 whitespace-nowrap">{{ formatFecha(m.fecha) }}</td><td class="px-4 py-3"><span class="px-2 py-1 rounded-full text-[10px] font-semibold" [class]="tipoBadge(m.tipo)">{{ tipoLabel(m.tipo) }}</span></td><td class="px-4 py-3 text-xs text-slate-700">{{ m.descripcion || '—' }}</td><td class="px-4 py-3 text-xs text-slate-500">{{ m.metodoPago ? metodoPagoLabel($any(m.metodoPago)) : '—' }}</td><td class="px-4 py-3 text-right text-xs font-bold" [class]="m.tipo === 'INGRESO' ? 'text-emerald-600' : 'text-rose-600'">{{ m.tipo === 'INGRESO' ? '+' : '-' }} {{ formatMonto(m.monto) }}</td><td class="px-4 py-3 text-xs text-slate-500">{{ m.registradoPor || '—' }}</td></tr> }
         @empty { <tr><td colspan="6" class="px-4 py-10 text-center text-sm text-slate-400">No hay movimientos registrados.</td></tr> }
       </tbody></table></div>
-      @if (totalRecords() > pageSize()) { <div class="border-t border-slate-200"><p-paginator [first]="currentPage() * pageSize()" [rows]="pageSize()" [totalRecords]="totalRecords()" [rowsPerPageOptions]="[5, 10, 20]" (onPageChange)="cargar($event)" /></div> }
     </article>
+    @if (totalRecords() > pageSize()) { <div class="bg-white border border-slate-200 rounded-xl"><p-paginator [first]="currentPage() * pageSize()" [rows]="pageSize()" [totalRecords]="totalRecords()" [showCurrentPageReport]="false" styleClass="!border-none !bg-transparent !py-3" (onPageChange)="cargar($event)" /></div> }
+    </div>
 
     <aside class="bg-white border border-slate-200 rounded-xl p-4 h-fit">
       <h2 class="text-sm font-bold text-slate-900">Acciones rápidas</h2>

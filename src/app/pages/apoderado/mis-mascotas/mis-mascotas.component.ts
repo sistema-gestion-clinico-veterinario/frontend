@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ApoderadoService } from '../../../core/services/apoderado.service';
 import { Router } from '@angular/router';
@@ -10,6 +10,7 @@ import { FormsModule } from '@angular/forms';
 import { normalizeText } from '../../../core/utils/normalize-text.util';
 import { hasMeaningfulText } from '../../../core/utils/input-validation.util';
 import { MediaService } from '../../../core/services/media.service';
+import { AuthStore } from '../../../store/auth.store';
 
 @Component({
   selector: 'app-mis-mascotas',
@@ -23,15 +24,25 @@ export class MisMascotasComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly messageService = inject(MessageService);
   private readonly mediaService = inject(MediaService);
+  private readonly authStore = inject(AuthStore);
+
+  canEdit = computed(() => this.authStore.hasAccess('VISTA_MIS_MASCOTAS', 'modificar'));
+
+  esMascotaUnica = computed<MascotaResponse | null>(() =>
+    this.totalRecords() === 1 && this.mascotas().length === 1 ? this.mascotas()[0] : null
+  );
 
   mascotas = signal<MascotaResponse[]>([]);
   isLoading = signal(true);
   totalRecords = signal(0);
   page = signal(0);
   size = signal(6);
-  
-  viewMode = signal<'list' | 'card'>('card');
-  
+
+  editMascota = signal<MascotaResponse | null>(null);
+  editFotoPreview: string | null = null;
+  editFotoFile: File | null = null;
+  guardandoEdicion = signal(false);
+
   filtroNombre = signal<string>('');
   filtroEspecie = signal<string | null>(null);
   filtroEstado = signal<boolean | null>(null);
@@ -57,13 +68,20 @@ export class MisMascotasComponent implements OnInit {
     this.cargarMascotas();
   }
 
+  hayFiltrosActivos = computed(() =>
+    !!this.filtroNombre().trim() || this.filtroEspecie() !== null || this.filtroEstado() !== null
+  );
+
+  limpiarFiltros() {
+    this.filtroNombre.set('');
+    this.filtroEspecie.set(null);
+    this.filtroEstado.set(null);
+    this.onFilterChange();
+  }
+
   onFilterChange() {
     this.page.set(0);
     this.cargarMascotas();
-  }
-
-  setViewMode(mode: 'list' | 'card') {
-    this.viewMode.set(mode);
   }
 
   cargarMascotas(event?: any) {
@@ -141,5 +159,61 @@ export class MisMascotasComponent implements OnInit {
 
   resolvePhotoUrl(url?: string): string {
     return this.mediaService.resolveUrl(url) ?? '';
+  }
+
+  abrirEdicion(mascota: MascotaResponse) {
+    this.editMascota.set(mascota);
+    this.editFotoPreview = this.mediaService.resolveUrl(mascota.fotoUrl);
+    this.editFotoFile = null;
+  }
+
+  cerrarEdicion() {
+    this.editMascota.set(null);
+    this.editFotoFile = null;
+    this.editFotoPreview = null;
+  }
+
+  onEditFotoSeleccionada(event: Event) {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    this.editFotoFile = file;
+    this.editFotoPreview = URL.createObjectURL(file);
+  }
+
+  guardarEdicion() {
+    const mascota = this.editMascota();
+    if (!mascota) return;
+
+    if (!this.editFotoFile) {
+      this.messageService.add({ severity: 'warn', summary: 'Sin cambios', detail: 'Selecciona una nueva foto para guardar.' });
+      return;
+    }
+
+    this.guardandoEdicion.set(true);
+
+    const doUpdate = (fotoUrl?: string) => {
+      this.apoderadoService.updatePortalMascota(mascota.id, {
+        ...(fotoUrl ? { fotoUrl } : {})
+      }).subscribe({
+        next: () => {
+          this.messageService.add({ severity: 'success', summary: 'Listo', detail: 'Mascota actualizada correctamente' });
+          this.guardandoEdicion.set(false);
+          this.cerrarEdicion();
+          this.cargarMascotas();
+        },
+        error: (err) => {
+          this.guardandoEdicion.set(false);
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo actualizar la mascota' });
+        }
+      });
+    };
+
+    this.mediaService.upload(this.editFotoFile).subscribe({
+      next: (path) => doUpdate(path),
+      error: () => {
+        this.guardandoEdicion.set(false);
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo subir la foto' });
+      }
+    });
   }
 }

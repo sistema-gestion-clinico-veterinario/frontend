@@ -177,15 +177,15 @@
         </tr>
       </ng-template>
     </p-table>
-    <p-paginator *ngIf="citasViewMode() === 'list'"
-      [first]="currentPage() * pageSize()"
-      [rows]="pageSize()"
-      [totalRecords]="totalRecords()"
-      [rowsPerPageOptions]="[5, 10, 20]"
-      (onPageChange)="onPageChange($event)"
-      styleClass="border-t border-slate-100 bg-slate-50/50 px-2">
-    </p-paginator>
   </div>
+  <p-paginator *ngIf="citasViewMode() === 'list'"
+    [first]="currentPage() * pageSize()"
+    [rows]="pageSize()"
+    [totalRecords]="totalRecords()"
+    (onPageChange)="onPageChange($event)"
+    [showCurrentPageReport]="false"
+    styleClass="!border-none !bg-transparent !py-3">
+  </p-paginator>
 
   <!-- GRID VIEW -->
   <div *ngIf="citasViewMode() === 'grid'" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -268,11 +268,11 @@
       <p class="text-xs text-slate-400 mt-1">Programa una nueva cita para verla aquí.</p>
     </div>
   </div>
-  <p-paginator *ngIf="citasViewMode() === 'grid'" styleClass="mt-4"
+  <p-paginator *ngIf="citasViewMode() === 'grid'" styleClass="!border-none !bg-transparent !py-3"
     [first]="currentPage() * pageSize()"
     [rows]="pageSize()"
     [totalRecords]="totalRecords()"
-    [rowsPerPageOptions]="[5, 10, 20]"
+    [showCurrentPageReport]="false"
     (onPageChange)="onPageChange($event)">
   </p-paginator>
 </div>
@@ -280,8 +280,8 @@
 <!-- BOOKING / RESCHEDULING DIALOG -->
 <div *ngIf="displayCitaModal()"
   class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
-  <div class="bg-white w-full max-w-lg rounded-2xl shadow-xl flex flex-col max-h-[90vh]">
-    <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+  <div class="bg-white w-full max-w-4xl rounded-2xl shadow-xl flex flex-col max-h-[92vh]">
+    <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between shrink-0">
       <h2 class="text-base font-bold text-slate-800">
         {{ isEditing() ? 'Editar Cita' : (isRescheduling() ? 'Reprogramar Cita' : 'Nueva Cita') }}
       </h2>
@@ -290,144 +290,171 @@
         <i class="pi pi-times text-sm"></i>
       </button>
     </div>
-    <div class="flex-1 overflow-y-auto p-5">
-      <form [formGroup]="citaForm" (ngSubmit)="saveCita()" class="space-y-5">
-        <!-- Section 1 -->
-        <div>
-          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-            <span class="w-4 h-0.5 rounded bg-[#0066AA]"></span>
-            Paciente
-          </p>
-          <div *ngIf="!isRescheduling()" class="flex flex-col gap-1.5">
-            <label class="text-xs font-semibold text-slate-600">Mascota <span class="text-rose-400">*</span></label>
-            <select formControlName="mascotaId"
-              class="w-full h-10 px-3 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 focus:ring-2 focus:ring-[#0066AA]/20 focus:border-[#0066AA] outline-none bg-white transition-all cursor-pointer">
-              <option *ngFor="let m of mascotas()" [value]="m.id">{{ m.nombreCompleto }}</option>
-            </select>
-          </div>
-          <div *ngIf="isRescheduling()" class="bg-blue-50/50 border border-blue-100 rounded-xl px-4 py-3 space-y-1.5">
-            <div class="flex justify-between text-xs"><span class="text-slate-500">Mascota:</span> <span class="font-semibold text-slate-700">{{ getPetName(citaForm.get('mascotaId')?.value) }}</span></div>
-            <div class="flex justify-between text-xs"><span class="text-slate-500">Servicio:</span> <span class="font-semibold text-slate-700">{{ getServiceName(citaForm.get('servicioId')?.value) }}</span></div>
-          </div>
-        </div>
+    <div class="flex-1 overflow-y-auto p-6">
+      <form [formGroup]="citaForm" (ngSubmit)="saveCita()">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-6">
 
-        <!-- Section 2 -->
-        <div>
-          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-            <span class="w-4 h-0.5 rounded bg-[#0066AA]"></span>
-            Atención
-          </p>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <!-- COLUMNA IZQUIERDA: datos de la cita -->
+          <div class="space-y-6">
+            <!-- Section 1 -->
+            <div>
+              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                <span class="w-4 h-0.5 rounded bg-[#0066AA]"></span>
+                Paciente
+              </p>
+              <div *ngIf="!isRescheduling()" class="flex flex-col gap-1.5">
+                <label class="text-xs font-semibold text-slate-600">Mascota <span class="text-rose-400">*</span></label>
+                <select formControlName="mascotaId"
+                  class="w-full h-10 px-3 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 focus:ring-2 focus:ring-[#0066AA]/20 focus:border-[#0066AA] outline-none bg-white transition-all cursor-pointer">
+                  <option *ngFor="let m of mascotas()" [value]="m.id">{{ m.nombreCompleto }}</option>
+                </select>
+              </div>
+              <div *ngIf="isRescheduling()" class="bg-blue-50/50 border border-blue-100 rounded-xl px-4 py-3 space-y-1.5">
+                <div class="flex justify-between text-xs"><span class="text-slate-500">Mascota:</span> <span class="font-semibold text-slate-700">{{ getPetName(citaForm.get('mascotaId')?.value) }}</span></div>
+                <div class="flex justify-between text-xs"><span class="text-slate-500">Servicio:</span> <span class="font-semibold text-slate-700">{{ getServiceName(citaForm.get('servicioId')?.value) }}</span></div>
+              </div>
+            </div>
+
+            <!-- Section 2 -->
+            <div>
+              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                <span class="w-4 h-0.5 rounded bg-[#0066AA]"></span>
+                Atención
+              </p>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div *ngIf="!isRescheduling()" class="flex flex-col gap-1.5">
+                  <label class="text-xs font-semibold text-slate-600">Servicio <span class="text-rose-400">*</span></label>
+                  <select formControlName="servicioId"
+                    [attr.disabled]="isEditing() ? '' : null"
+                    (change)="onServiceChange(citaForm.get('servicioId')?.value)"
+                    class="w-full h-10 px-3 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 focus:ring-2 focus:ring-[#0066AA]/20 focus:border-[#0066AA] outline-none bg-white transition-all disabled:opacity-60 disabled:cursor-not-allowed">
+                    <option [value]="null" disabled selected hidden>Seleccionar...</option>
+                    <option *ngFor="let s of servicios()" [value]="s.value">{{ s.label }}</option>
+                  </select>
+                </div>
+                <div class="flex flex-col gap-1.5" [class.col-span-2]="isRescheduling()">
+                  <label class="text-xs font-semibold text-slate-600">Veterinario <span class="text-rose-400">*</span></label>
+                  <select formControlName="veterinarioId"
+                    [attr.disabled]="isEditing() ? '' : null"
+                    (change)="onVeterinarioChange()"
+                    class="w-full h-10 px-3 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 focus:ring-2 focus:ring-[#0066AA]/20 focus:border-[#0066AA] outline-none bg-white transition-all disabled:opacity-60 disabled:cursor-not-allowed">
+                    <option [value]="null" disabled selected hidden>Seleccionar...</option>
+                    <option *ngFor="let v of vets()" [value]="v.value">{{ v.label }}</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Section 3 -->
+            <div>
+              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                <span class="w-4 h-0.5 rounded bg-[#0066AA]"></span>
+                Fecha y Motivo
+              </p>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div class="flex flex-col gap-1.5">
+                  <label class="text-xs font-semibold text-slate-600">Fecha <span class="text-rose-400">*</span></label>
+                  <input type="date" formControlName="fechaCita" [min]="toDateInputValue(today)"
+                    [attr.disabled]="isEditing() ? '' : null"
+                    (change)="onBookingParamsChange()"
+                    class="w-full h-10 px-3 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 focus:ring-2 focus:ring-[#0066AA]/20 focus:border-[#0066AA] outline-none transition-all bg-white disabled:opacity-60 disabled:cursor-not-allowed" />
+                </div>
+                <div class="flex flex-col gap-1.5">
+                  <label class="text-xs font-semibold text-slate-600">Hora de Atención <span class="text-rose-400">*</span></label>
+                  <input type="time" formControlName="horaCita"
+                    [attr.disabled]="isEditing() ? '' : null"
+                    class="w-full h-10 px-3 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 outline-none bg-white disabled:opacity-60 disabled:cursor-not-allowed" />
+                </div>
+                <div class="flex flex-col gap-1.5 sm:col-span-2">
+                  <label class="text-xs font-semibold text-slate-600">Motivo <span class="text-rose-400">*</span></label>
+                  <input type="text" formControlName="motivoCita" maxlength="250" placeholder="Ej: Control de rutina"
+                    [ngClass]="citaForm.get('motivoCita')?.invalid && citaForm.get('motivoCita')?.touched ? 'border-rose-300' : 'border-slate-200'"
+                    class="w-full h-10 px-3 border rounded-xl text-sm font-medium text-slate-700 focus:ring-2 focus:ring-[#0066AA]/20 focus:border-[#0066AA] outline-none transition-all placeholder:text-slate-300 bg-white" />
+                  <p *ngIf="citaForm.get('motivoCita')?.invalid && citaForm.get('motivoCita')?.touched" class="text-[10px] text-rose-500 font-medium mt-0.5">Mínimo 5 caracteres</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Notas -->
             <div *ngIf="!isRescheduling()" class="flex flex-col gap-1.5">
-              <label class="text-xs font-semibold text-slate-600">Servicio <span class="text-rose-400">*</span></label>
-              <select formControlName="servicioId"
-                [attr.disabled]="isEditing() ? '' : null"
-                (change)="onServiceChange(citaForm.get('servicioId')?.value)"
-                class="w-full h-10 px-3 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 focus:ring-2 focus:ring-[#0066AA]/20 focus:border-[#0066AA] outline-none bg-white transition-all disabled:opacity-60 disabled:cursor-not-allowed">
-                <option [value]="null" disabled selected hidden>Seleccionar...</option>
-                <option *ngFor="let s of servicios()" [value]="s.value">{{ s.label }}</option>
-              </select>
-            </div>
-            <div class="flex flex-col gap-1.5" [class.col-span-2]="isRescheduling()">
-              <label class="text-xs font-semibold text-slate-600">Veterinario <span class="text-rose-400">*</span></label>
-              <select formControlName="veterinarioId"
-                [attr.disabled]="isEditing() ? '' : null"
-                (change)="onVeterinarioChange()"
-                class="w-full h-10 px-3 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 focus:ring-2 focus:ring-[#0066AA]/20 focus:border-[#0066AA] outline-none bg-white transition-all disabled:opacity-60 disabled:cursor-not-allowed">
-                <option [value]="null" disabled selected hidden>Seleccionar...</option>
-                <option *ngFor="let v of vets()" [value]="v.value">{{ v.label }}</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <!-- Section 3 -->
-        <div>
-          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-            <span class="w-4 h-0.5 rounded bg-[#0066AA]"></span>
-            Fecha y Motivo
-          </p>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div class="flex flex-col gap-1.5">
-              <label class="text-xs font-semibold text-slate-600">Fecha <span class="text-rose-400">*</span></label>
-              <input type="date" formControlName="fechaCita" [min]="toDateInputValue(today)"
-                [attr.disabled]="isEditing() ? '' : null"
-                (change)="onBookingParamsChange()"
-                class="w-full h-10 px-3 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 focus:ring-2 focus:ring-[#0066AA]/20 focus:border-[#0066AA] outline-none transition-all bg-white disabled:opacity-60 disabled:cursor-not-allowed" />
-            </div>
-            <div class="flex flex-col gap-1.5">
-              <label class="text-xs font-semibold text-slate-600">Hora de Atención <span class="text-rose-400">*</span></label>
-              <input type="time" formControlName="horaCita"
-                [attr.disabled]="isEditing() ? '' : null"
-                class="w-full h-10 px-3 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 outline-none bg-white disabled:opacity-60 disabled:cursor-not-allowed" />
-            </div>
-            <div class="flex flex-col gap-1.5" [class.col-span-2]="isEditing()">
-              <label class="text-xs font-semibold text-slate-600">Motivo <span class="text-rose-400">*</span></label>
-              <input type="text" formControlName="motivoCita" maxlength="250" placeholder="Ej: Control de rutina"
-                [ngClass]="citaForm.get('motivoCita')?.invalid && citaForm.get('motivoCita')?.touched ? 'border-rose-300' : 'border-slate-200'"
-                class="w-full h-10 px-3 border rounded-xl text-sm font-medium text-slate-700 focus:ring-2 focus:ring-[#0066AA]/20 focus:border-[#0066AA] outline-none transition-all placeholder:text-slate-300 bg-white" />
-              <p *ngIf="citaForm.get('motivoCita')?.invalid && citaForm.get('motivoCita')?.touched" class="text-[10px] text-rose-500 font-medium mt-0.5">Mínimo 5 caracteres</p>
+              <label class="text-xs font-semibold text-slate-600">Notas</label>
+              <textarea formControlName="notas" rows="3" maxlength="500" placeholder="Síntomas o indicaciones adicionales..."
+                class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 focus:ring-2 focus:ring-[#0066AA]/20 focus:border-[#0066AA] outline-none transition-all resize-none bg-white placeholder:text-slate-300"></textarea>
             </div>
           </div>
 
-          <!-- Horario del profesional -->
-          <div *ngIf="citaForm.get('veterinarioId')?.value && !isEditing()" class="mt-3 bg-slate-50 border border-slate-200 rounded-xl p-3.5">
-            <div class="flex items-center justify-between mb-2.5">
-              <div>
-                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Horario disponible</p>
-                <p class="text-xs font-bold text-slate-700">{{ selectedVetName }}</p>
-              </div>
-              <i class="pi pi-clock text-[#0066AA]"></i>
-            </div>
-            <div *ngIf="horariosResumen.length > 0; else noHorarioVet" class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-36 overflow-y-auto">
-              <div *ngFor="let horario of horariosResumen" class="bg-white rounded-lg border border-slate-100 px-3 py-2">
-                <div class="flex items-center justify-between">
-                  <span class="text-[11px] font-bold text-slate-700">{{ formatDiaSemana(horario.diaSemana) }}</span>
-                  <span class="text-[11px] font-bold text-[#0066AA]">{{ horario.horaInicio }}–{{ horario.horaFin }}</span>
+          <!-- COLUMNA DERECHA: disponibilidad -->
+          <div class="space-y-6">
+            <!-- Horario del profesional -->
+            <div *ngIf="citaForm.get('veterinarioId')?.value && !isEditing()" class="bg-slate-50 border border-slate-200 rounded-xl p-3.5">
+              <div class="flex items-center justify-between mb-2.5">
+                <div>
+                  <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Horario disponible</p>
+                  <p class="text-xs font-bold text-slate-700">{{ selectedVetName }}</p>
                 </div>
-                <div class="flex items-center gap-1 mt-1">
-                  <i class="pi pi-calendar text-[9px] text-slate-400"></i>
-                  <span class="text-[10px] text-slate-400 font-medium truncate">{{ horario.rangoFechas }}</span>
+                <i class="pi pi-clock text-[#0066AA]"></i>
+              </div>
+              <div *ngIf="horariosPorDia.length > 0; else noHorarioVet" class="flex flex-col divide-y divide-slate-100 max-h-44 overflow-y-auto bg-white rounded-lg border border-slate-100">
+                <div *ngFor="let dia of horariosPorDia" class="flex items-center justify-between gap-3 px-3 py-2">
+                  <span class="text-[11px] font-bold text-slate-700 shrink-0">{{ formatDiaSemana(dia.diaSemana) }}</span>
+                  <div class="flex flex-wrap justify-end gap-1">
+                    <span *ngFor="let franja of dia.franjas" class="inline-flex items-center gap-1 text-[10px] font-bold text-[#0066AA] bg-blue-50 rounded-md px-2 py-0.5">
+                      <i class="pi text-[9px]" [ngClass]="franja.turno === 'manana' ? 'pi-sun' : 'pi-moon'"></i>
+                      {{ franja.label }}
+                    </span>
+                  </div>
                 </div>
               </div>
+              <ng-template #noHorarioVet>
+                <p class="text-xs text-slate-400 font-medium bg-white rounded-lg px-3 py-2 border border-slate-100">Sin horarios registrados</p>
+              </ng-template>
             </div>
-            <ng-template #noHorarioVet>
-              <p class="text-xs text-slate-400 font-medium bg-white rounded-lg px-3 py-2 border border-slate-100">Sin horarios registrados</p>
-            </ng-template>
-          </div>
 
-          <!-- Time slots -->
-          <div *ngIf="citaForm.get('fechaCita')?.value && !isEditing()" class="mt-3">
-            <label class="text-xs font-semibold text-slate-600 mb-2 flex items-center gap-2">
-              Horario <span class="text-rose-400">*</span>
-              <i *ngIf="loadingSlots()" class="pi pi-spin pi-spinner text-[10px] text-[#0066AA]"></i>
-            </label>
-            <div *ngIf="availableSlots().length > 0; else noSlots" class="flex flex-wrap gap-1.5">
-              <button *ngFor="let slot of availableSlots()" type="button" (click)="selectTimeSlot(slot)"
-                [class]="citaForm.get('horaCita')?.value === slot ? 'bg-[#0066AA] text-white border-[#0066AA]' : 'bg-white hover:bg-slate-50 text-slate-600 border-slate-200 hover:border-slate-300'"
-                class="px-3 py-1.5 border rounded-lg text-xs font-semibold transition-all active:scale-95 cursor-pointer">
-                {{ slot }}
-              </button>
-            </div>
-            <ng-template #noSlots>
-              <div *ngIf="!loadingSlots()" class="bg-amber-50 border border-amber-200 rounded-xl px-3.5 py-2.5 flex items-start gap-2">
-                <i class="pi pi-info-circle text-amber-500 text-xs mt-0.5"></i>
-                <span class="text-xs font-medium text-amber-800">No hay disponibilidad para esta fecha. Elige otra fecha o profesional.</span>
+            <!-- Time slots -->
+            <div *ngIf="citaForm.get('fechaCita')?.value && !isEditing()">
+              <label class="text-xs font-semibold text-slate-600 mb-2 flex items-center gap-2">
+                Horario <span class="text-rose-400">*</span>
+                <i *ngIf="loadingSlots()" class="pi pi-spin pi-spinner text-[10px] text-[#0066AA]"></i>
+              </label>
+              <div *ngIf="availableSlots().length > 0; else noSlots" class="flex flex-col gap-3">
+                <div *ngIf="slotsManana.length > 0">
+                  <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                    <i class="pi pi-sun text-[10px]"></i> Mañana
+                  </p>
+                  <div class="grid grid-cols-5 gap-1.5">
+                    <button *ngFor="let slot of slotsManana" type="button" (click)="selectTimeSlot(slot)"
+                      [class]="citaForm.get('horaCita')?.value === slot ? 'bg-[#0066AA] text-white border-[#0066AA]' : 'bg-white hover:bg-slate-50 text-slate-600 border-slate-200 hover:border-slate-300'"
+                      class="py-1.5 border rounded-lg text-xs font-semibold transition-all active:scale-95 cursor-pointer">
+                      {{ slot }}
+                    </button>
+                  </div>
+                </div>
+                <div *ngIf="slotsTarde.length > 0">
+                  <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                    <i class="pi pi-moon text-[10px]"></i> Tarde
+                  </p>
+                  <div class="grid grid-cols-5 gap-1.5">
+                    <button *ngFor="let slot of slotsTarde" type="button" (click)="selectTimeSlot(slot)"
+                      [class]="citaForm.get('horaCita')?.value === slot ? 'bg-[#0066AA] text-white border-[#0066AA]' : 'bg-white hover:bg-slate-50 text-slate-600 border-slate-200 hover:border-slate-300'"
+                      class="py-1.5 border rounded-lg text-xs font-semibold transition-all active:scale-95 cursor-pointer">
+                      {{ slot }}
+                    </button>
+                  </div>
+                </div>
               </div>
-            </ng-template>
-          </div>
-
-          <!-- Notas -->
-          <div *ngIf="!isRescheduling()" class="flex flex-col gap-1.5 mt-3">
-            <label class="text-xs font-semibold text-slate-600">Notas</label>
-            <textarea formControlName="notas" rows="2" maxlength="500" placeholder="Síntomas o indicaciones adicionales..."
-              class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 focus:ring-2 focus:ring-[#0066AA]/20 focus:border-[#0066AA] outline-none transition-all resize-none bg-white placeholder:text-slate-300"></textarea>
+              <ng-template #noSlots>
+                <div *ngIf="!loadingSlots()" class="bg-amber-50 border border-amber-200 rounded-xl px-3.5 py-2.5 flex items-start gap-2">
+                  <i class="pi pi-info-circle text-amber-500 text-xs mt-0.5"></i>
+                  <span class="text-xs font-medium text-amber-800">No hay disponibilidad para esta fecha. Elige otra fecha o profesional.</span>
+                </div>
+              </ng-template>
+            </div>
           </div>
         </div>
 
         <!-- Warning fuera de horario en modal -->
         <div *ngIf="!isCurrentlyOpen()"
-          class="bg-amber-50 border border-amber-200 rounded-xl px-3.5 py-2.5 flex items-start gap-2">
+          class="mt-6 bg-amber-50 border border-amber-200 rounded-xl px-3.5 py-2.5 flex items-start gap-2">
           <i class="pi pi-exclamation-triangle text-amber-500 text-xs mt-0.5"></i>
           <p class="text-xs text-amber-800 leading-relaxed">
             <strong>Atención:</strong> Actualmente no estamos en horario de atención.
@@ -438,7 +465,7 @@
         </div>
 
         <!-- Footer -->
-        <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
+        <div class="flex justify-end gap-3 mt-6 pt-4 border-t border-slate-100">
           <button type="button" (click)="displayCitaModal.set(false)"
             class="h-10 px-4 text-sm font-semibold text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-all cursor-pointer">
             Cancelar

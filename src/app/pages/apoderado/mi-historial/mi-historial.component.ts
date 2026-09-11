@@ -45,6 +45,27 @@ export class MiHistorialComponent implements OnInit {
   desparasitacionesAplicadas = computed(() => this.aplicacionesPreventivas()
     .filter(aplicacion => aplicacion.tipo === 'DESPARASITACION'));
 
+  filasCartillaVacunacion = computed(() => this.filasCartilla(this.vacunasPendientes(), this.vacunasAplicadas()));
+  filasCartillaDesparasitacion = computed(() => this.filasCartilla(this.desparasitacionesPendientes(), this.desparasitacionesAplicadas()));
+
+  private filasCartilla(pendientes: any[], aplicadas: any[]) {
+    const filasPendientes = pendientes.map(control => ({
+      producto: control.nombreControl,
+      fecha: control.fechaRecomendada,
+      proxima: null as string | null,
+      estado: control.estado,
+      aplicada: false
+    }));
+    const filasAplicadas = aplicadas.map(aplicacion => ({
+      producto: aplicacion.nombreControl,
+      fecha: aplicacion.fechaAplicacion,
+      proxima: aplicacion.fechaProximaAplicacion,
+      estado: 'APLICADO',
+      aplicada: true
+    }));
+    return [...filasPendientes, ...filasAplicadas];
+  }
+
   ngOnInit() {
     // Lee mascotaId por URL o query para abrir directamente el historial correcto.
     this.route.queryParamMap.subscribe(queryParams => {
@@ -150,6 +171,24 @@ export class MiHistorialComponent implements OnInit {
       case 'PDF':         return 'bg-red-50 text-red-600';
       case 'IMAGEN':      return 'bg-blue-50 text-blue-700';
       default:            return 'bg-slate-100 text-slate-500';
+    }
+  }
+
+  estadoCartillaLabel(estado: string): string {
+    const map: Record<string, string> = {
+      APLICADO: 'Aplicada', PROGRAMADO: 'Programada', PROXIMO: 'Próximo',
+      PENDIENTE: 'Pendiente', ATRASADO: 'Atrasado'
+    };
+    return map[estado] ?? estado;
+  }
+
+  estadoCartillaBadge(estado: string): string {
+    switch (estado) {
+      case 'APLICADO':  return 'bg-emerald-50 text-emerald-700 border border-emerald-200';
+      case 'ATRASADO':  return 'bg-red-50 text-red-600 border border-red-200';
+      case 'PENDIENTE':
+      case 'PROXIMO':   return 'bg-amber-50 text-amber-700 border border-amber-200';
+      default:          return 'bg-slate-100 text-slate-500 border border-slate-200';
     }
   }
 

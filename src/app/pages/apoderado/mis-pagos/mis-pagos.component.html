@@ -6,12 +6,10 @@
   <div class="mb-1 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
     <div>
       <h1 class="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-3">
-        <span class="w-10 h-10 rounded-xl bg-[#0066AA]/10 flex items-center justify-center">
-          <i class="pi pi-credit-card text-xl text-[#0066AA]"></i>
-        </span>
+        <i class="pi pi-credit-card text-xl text-[#0066AA]"></i>
         Mis Pagos
       </h1>
-      <p class="text-sm text-slate-500 mt-1 sm:ml-[3.25rem]">Historial de transacciones por los servicios veterinarios de tus mascotas</p>
+      <p class="text-sm text-slate-500 mt-1">Historial de transacciones por los servicios veterinarios de tus mascotas</p>
     </div>
   </div>
 
@@ -48,17 +46,18 @@
   </div>
 
   <!-- Toolbar -->
-  <div class="bg-white rounded-xl border border-slate-200/70 px-4 py-3 mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-    <div class="flex items-center gap-2 w-full sm:w-auto">
-      <i class="pi pi-filter text-xs text-slate-400"></i>
+  <div class="bg-white rounded-xl border border-slate-200/70 p-4 mb-6">
+    <div class="relative w-full sm:w-56">
+      <i class="pi pi-filter text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 text-xs pointer-events-none"></i>
       <select [ngModel]="filtroEstado()" (ngModelChange)="filtroEstado.set($event)"
-        class="!border-0 !bg-transparent !p-0 !text-sm !font-medium !text-slate-700 !outline-none !cursor-pointer">
+        class="w-full appearance-none h-11 pl-9 pr-8 text-sm font-medium border border-slate-200 rounded-xl bg-slate-50 text-slate-700 focus:outline-none focus:border-[#0066AA] transition-all cursor-pointer">
         <option value="">Todos los estados</option>
         <option value="PAID">Pagado</option>
         <option value="PENDING">Pendiente</option>
         <option value="PENDING_TRANSFER">Transf. Pendiente</option>
         <option value="REJECTED">Rechazado</option>
       </select>
+      <i class="pi pi-chevron-down text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 text-[10px] pointer-events-none"></i>
     </div>
   </div>
 
@@ -153,15 +152,15 @@
             </tr>
           </ng-template>
         </p-table>
-        <p-paginator
-          [first]="page() * size()"
-          [rows]="size()"
-          [totalRecords]="totalRecords()"
-          [rowsPerPageOptions]="[5, 10, 20]"
-          (onPageChange)="onPageChange($event)"
-          styleClass="border-t border-slate-100 bg-slate-50/50 px-2">
-        </p-paginator>
       </div>
+      <p-paginator *ngIf="!isLoading() && pagosFiltrados.length > 0"
+        [first]="page() * size()"
+        [rows]="size()"
+        [totalRecords]="totalRecords()"
+        (onPageChange)="onPageChange($event)"
+        [showCurrentPageReport]="false"
+        styleClass="!border-none !bg-transparent !py-3">
+      </p-paginator>
 
       <!-- EMPTY STATE -->
       <div *ngIf="!isLoading() && pagosFiltrados.length === 0"

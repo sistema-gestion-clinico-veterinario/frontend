@@ -1605,32 +1605,35 @@ export class AgendaComponent implements OnInit, OnDestroy {
     return labels[estado] ?? estado;
   }
 
+  /**
+   * Antes usaba 9 colores distintos (uno por estado), lo que sobrecargaba la
+   * vista de color sin necesidad. Se agrupa en 4 significados reales:
+   * neutro (aún no ocurre), en curso, completada, y cancelada/no asistió.
+   */
   estadoClass(estado: EstadoCita): string {
     switch (estado) {
-      case EstadoCita.PROGRAMADA:     return 'bg-sky-50 text-sky-700';
-      case EstadoCita.PENDIENTE:      return 'bg-yellow-50 text-yellow-700';
-      case EstadoCita.CONFIRMADA:     return 'bg-blue-50 text-blue-700';
-      case EstadoCita.REPROGRAMADA:   return 'bg-orange-50 text-orange-700';
-      case EstadoCita.SALA_DE_ESPERA: return 'bg-violet-50 text-violet-700';
       case EstadoCita.EN_PROCESO:     return 'bg-amber-50 text-amber-700';
       case EstadoCita.COMPLETADA:     return 'bg-emerald-50 text-emerald-700';
-      case EstadoCita.NO_ASISTIO:     return 'bg-slate-100 text-slate-500';
-      case EstadoCita.CANCELADA:      return 'bg-rose-50 text-rose-700';
-      case EstadoCita.ELIMINADA:      return 'bg-red-50 text-red-700';
-      default:                        return 'bg-slate-100 text-slate-500';
+      case EstadoCita.NO_ASISTIO:
+      case EstadoCita.CANCELADA:
+      case EstadoCita.ELIMINADA:      return 'bg-rose-50 text-rose-700';
+      case EstadoCita.PROGRAMADA:
+      case EstadoCita.PENDIENTE:
+      case EstadoCita.CONFIRMADA:
+      case EstadoCita.REPROGRAMADA:
+      case EstadoCita.SALA_DE_ESPERA:
+      default:                        return 'bg-slate-100 text-slate-600';
     }
   }
 
   estadoColor(estado: EstadoCita): string {
     switch (estado) {
-      case EstadoCita.PROGRAMADA:     return 'bg-sky-400';
-      case EstadoCita.CONFIRMADA:     return 'bg-blue-500';
-      case EstadoCita.SALA_DE_ESPERA: return 'bg-violet-500';
-      case EstadoCita.EN_PROCESO:     return 'bg-amber-500';
+      case EstadoCita.EN_PROCESO:     return 'bg-amber-400';
       case EstadoCita.COMPLETADA:     return 'bg-emerald-500';
-      case EstadoCita.CANCELADA:      return 'bg-rose-400';
-      case EstadoCita.ELIMINADA:      return 'bg-red-400';
-      default:                        return 'bg-slate-400';
+      case EstadoCita.NO_ASISTIO:
+      case EstadoCita.CANCELADA:
+      case EstadoCita.ELIMINADA:      return 'bg-rose-400';
+      default:                        return 'bg-slate-300';
     }
   }
 
@@ -1758,6 +1761,31 @@ export class AgendaComponent implements OnInit, OnDestroy {
     return dias > 90 ? 'El periodo máximo permitido es de 90 días.' : null;
   }
 
+  /** Fecha y hora completas de una cita, para mostrarse en su propia fila (sin encabezado de grupo por día). */
+  fechaHoraCompleta(fechaHoraInicio: string | Date): string {
+    const fechaDate = new Date(fechaHoraInicio);
+    const fecha = fechaDate.toLocaleDateString('es-PE', {
+      weekday: 'long',
+      day: '2-digit',
+      month: 'long'
+    });
+    const hora = fechaDate.toLocaleTimeString('es-PE', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    });
+    return `${fecha} · ${hora}`;
+  }
+
+  /** Solo la fecha (sin hora), para mostrarse con menor peso visual junto a la hora. */
+  fechaSinHora(fechaHoraInicio: string | Date): string {
+    return new Date(fechaHoraInicio).toLocaleDateString('es-PE', {
+      weekday: 'short',
+      day: '2-digit',
+      month: 'short'
+    });
+  }
+
   formatAgendaGroupLabel(fecha: string): string {
     const fechaDate = this.parseDateStr(fecha);
     return fechaDate.toLocaleDateString('es-PE', {
@@ -1766,27 +1794,6 @@ export class AgendaComponent implements OnInit, OnDestroy {
       month: 'long',
       year: 'numeric'
     });
-  }
-
-  avatarPastelClass(nombre?: string): string {
-    const palettes = [
-      'bg-sky-100 text-sky-700',
-      'bg-indigo-100 text-indigo-700',
-      'bg-violet-100 text-violet-700',
-      'bg-amber-100 text-amber-700',
-      'bg-rose-100 text-rose-700'
-    ];
-    const seed = (nombre ?? '').split('').reduce((total, char) => total + char.charCodeAt(0), 0);
-    return palettes[seed % palettes.length];
-  }
-
-  motivoPastelClass(cita: CitaResponse): string {
-    const texto = `${cita.servicioNombre ?? ''} ${cita.motivoCita ?? ''}`.toLowerCase();
-    if (texto.includes('vacun')) return 'bg-violet-100 text-violet-700';
-    if (texto.includes('desparasit')) return 'bg-cyan-50 text-cyan-700';
-    if (texto.includes('emerg')) return 'bg-rose-100 text-rose-700';
-    if (texto.includes('control')) return 'bg-sky-100 text-sky-700';
-    return 'bg-slate-100 text-slate-600';
   }
 
   agendaEmptyTitle(): string {

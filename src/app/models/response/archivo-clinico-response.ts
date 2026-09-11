@@ -8,4 +8,5 @@ export interface ArchivoClinicoResponse {
   descripcion?: string;
   subidoPor?: string;
   fechaCarga?: string;
+  fechaDocumento?: string;
 }

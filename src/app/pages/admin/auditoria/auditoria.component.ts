@@ -35,6 +35,9 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
   private realtimeConnection: RealtimeStompConnection | null = null;
   private lastSubscribedDestination: string | null = null;
   private loadTimeout: any = null;
+  private realtimeStatusInterval: any = null;
+
+  readonly realtimeConnected = signal(false);
 
   readonly isSuperAdmin = computed(() => this.authStore.isSuperAdmin());
 
@@ -66,7 +69,7 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
     'CONSULTAR_APODERADOS', 'CONSULTAR_DETALLE_APODERADO',
     'CONSULTAR_MASCOTAS',
     'CONSULTAR_HISTORIAS_CLINICAS', 'CONSULTAR_DETALLE_HISTORIA_CLINICA', 'CONSULTAR_HISTORIA_CLINICA_MASCOTA',
-    'CONSULTAR_CITAS',
+    'CONSULTAR_CITAS', 'CONSULTAR_CAJA',
     'CREAR_EMPLEADO', 'ACTUALIZAR_EMPLEADO',
     'ACTIVAR_EMPLEADO', 'DESACTIVAR_EMPLEADO', 'ELIMINAR_EMPLEADO', 'ASIGNAR_HORARIOS_MASIVO',
     'CLONAR_HORARIOS_SEMANA', 'CLONAR_HORARIOS_DIA', 'ELIMINAR_HORARIOS_MASIVO',
@@ -108,11 +111,15 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
       });
     }
     // La carga inicial de logs la gestiona el effect() del constructor
+    this.realtimeStatusInterval = setInterval(() => {
+      this.realtimeConnected.set(this.realtimeConnection?.isConnected() ?? false);
+    }, 3000);
   }
 
   ngOnDestroy() {
     this.realtimeConnection?.disconnect();
     if (this.loadTimeout) clearTimeout(this.loadTimeout);
+    if (this.realtimeStatusInterval) clearInterval(this.realtimeStatusInterval);
   }
 
   setupWebSocket(targetCompanyId: number | undefined) {
@@ -130,7 +137,8 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
     this.lastSubscribedDestination = destination;
 
     this.realtimeConnection = this.realtimeStompService.connect<AuditLog>(destination, newLog => {
-      // Incorporar el log en tiempo real al principio de la tabla si el usuario está en la página 0.
+      if (!this.matchesActiveFilters(newLog)) return;
+
       if (this.currentPage === 0) {
         this.logs.update(current => {
           if (current.some(log => log.id === newLog.id)) return current;
@@ -139,6 +147,29 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
       }
       this.totalRecords.update(total => total + 1);
     }, { label: 'Auditoría' });
+  }
+
+  private matchesActiveFilters(log: AuditLog): boolean {
+    const userEmail = this.userEmailFilter.trim().toLowerCase();
+    if (userEmail && !log.userEmail?.toLowerCase().includes(userEmail)) return false;
+
+    const action = normalizeText(this.actionFilter);
+    if (action && normalizeText(log.action) !== action) return false;
+
+    const module = normalizeText(this.moduleFilter);
+    if (module && normalizeText(log.module) !== module) return false;
+
+    const timestamp = new Date(log.timestamp).getTime();
+    if (this.startDateFilter) {
+      const start = new Date(`${this.startDateFilter}T00:00:00`).getTime();
+      if (timestamp < start) return false;
+    }
+    if (this.endDateFilter) {
+      const end = new Date(`${this.endDateFilter}T23:59:59`).getTime();
+      if (timestamp > end) return false;
+    }
+
+    return true;
   }
 
   loadLogs(page: number = 0) {
@@ -232,6 +263,7 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
       case 'CONSULTAR_DETALLE_HISTORIA_CLINICA':
       case 'CONSULTAR_HISTORIA_CLINICA_MASCOTA':
       case 'CONSULTAR_CITAS':
+      case 'CONSULTAR_CAJA':
         return 'bg-slate-50 border-slate-200 text-slate-700';
       case 'SUSPENSION_CUENTA':
         return 'bg-rose-50 border-rose-200 text-rose-700';

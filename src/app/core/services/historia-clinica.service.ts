@@ -56,6 +56,10 @@ export class HistoriaClinicaService {
     return this.http.patch<ApiResponse<ConsultaResponse>>(`${this.citasUrl}/${consultaId}/close`, request);
   }
 
+  reabrirConsulta(consultaId: number) {
+    return this.http.patch<ApiResponse<ConsultaResponse>>(`${this.citasUrl}/${consultaId}/reopen`, {});
+  }
+
   crearReceta(consultaId: number, request: PrescripcionRequest) {
     return this.http.post<ApiResponse<PrescripcionResponse>>(`${this.recetasUrl}/consultation/${consultaId}`, request);
   }
@@ -99,11 +103,12 @@ export class HistoriaClinicaService {
     return this.http.get<ApiResponse<ArchivoClinicoResponse[]>>(`${this.citasUrl}/${consultaId}/files`);
   }
 
-  subirArchivo(consultaId: number, file: File, tipo: string, descripcion?: string) {
+  subirArchivo(consultaId: number, file: File, tipo: string, descripcion: string, fechaDocumento: string) {
     const form = new FormData();
     form.append('file', file);
     form.append('tipo', tipo);
-    if (descripcion) form.append('descripcion', descripcion);
+    form.append('descripcion', descripcion);
+    form.append('fechaDocumento', fechaDocumento);
     return this.http.post<ApiResponse<ArchivoClinicoResponse>>(`${this.citasUrl}/${consultaId}/files`, form);
   }
 

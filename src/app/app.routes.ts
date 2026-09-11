@@ -47,11 +47,6 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/reportes/reportes.component').then((m) => m.default)
       },
       {
-        path: 'admin/reportes',
-        data: { ventana: 'VISTA_REPORTES_ADMIN' },
-        loadComponent: () => import('./pages/reportes/reportes.component').then((m) => m.default)
-      },
-      {
         path: 'company',
         data: { ventana: 'VISTA_COMPANY' },
         loadComponent: () => import('./pages/admin/company/company.component').then((m) => m.CompanyComponent)
