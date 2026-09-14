@@ -435,8 +435,7 @@ export class DashboardComponent implements OnInit {
   }
 
   logout() {
-    const slug = this.authStore.companySlug();
     this.authStore.logout();
-    this.router.navigateByUrl(slug ? `/${slug}/login` : '/login', { replaceUrl: true });
+    this.router.navigateByUrl('/login', { replaceUrl: true });
   }
 }

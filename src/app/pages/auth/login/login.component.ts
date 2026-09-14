@@ -2,10 +2,11 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
-import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { finalize, from, switchMap, timeout } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
 import { CompanyService } from '../../../core/services/company.service';
+import { CompanySlugContext } from '../../../core/services/company-slug-context.service';
 import { AuthStore } from '../../../store/auth.store';
 import { resolveInitialRoute, resolveDashboardRoute } from '../../../layouts/main-layout/navbar/navbar.component';
 import { SessionService } from '../../../core/services/session.service';
@@ -25,9 +26,9 @@ const DEFAULT_COMPANY_NAME = 'SystemVet';
 export class LoginComponent implements OnInit {
   private authStore = inject(AuthStore);
   private router = inject(Router);
-  private route = inject(ActivatedRoute);
   private authService = inject(AuthService);
   private companyService = inject(CompanyService);
+  private slugContext = inject(CompanySlugContext);
   private sessionService = inject(SessionService);
   private loadingStore = inject(LoadingStore);
 
@@ -42,16 +43,22 @@ export class LoginComponent implements OnInit {
   brandLoaded = false;
   brandNotFound = false;
   companyName = DEFAULT_COMPANY_NAME;
-  logoUrl: string | null = DEFAULT_LOGO_URL;
+  // Nulo mientras se resuelve el slug: mostrar el logo generico del sistema
+  // de entrada (aunque sea un instante, al recargar la pagina) se veia como
+  // que "cargó mal" - mejor un espacio vacio/skeleton hasta tener el real.
+  logoUrl: string | null = null;
   colorPrimario = DEFAULT_BRAND_COLOR;
 
   ngOnInit() {
     this.isAdminRoute = this.router.url.startsWith('/admin/login');
-    this.slug = this.isAdminRoute ? null : this.route.snapshot.paramMap.get('slug');
+    this.slug = this.isAdminRoute ? null : this.slugContext.slug();
 
     if (this.slug) {
       this.loadBranding(this.slug);
     } else {
+      // Sin slug (login global o SuperAdmin): no hay empresa que marcar, usa
+      // el logo/color por defecto del sistema de una vez.
+      this.logoUrl = DEFAULT_LOGO_URL;
       this.brandLoaded = true;
     }
 
@@ -77,7 +84,7 @@ export class LoginComponent implements OnInit {
   }
 
   loginForm = inject(FormBuilder).group({
-    username: ['', [Validators.required, noLeadingTrailingSpaceValidator(), Validators.maxLength(50)]],
+    username: ['', [Validators.required, noLeadingTrailingSpaceValidator(), Validators.maxLength(255)]],
     password: ['', [Validators.required, Validators.maxLength(72)]]
   });
 

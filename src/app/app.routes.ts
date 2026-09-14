@@ -16,12 +16,6 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/auth/login/login.component').then((m) => m.LoginComponent)
   },
   {
-    // La empresa la resuelve la URL (slug), nunca una pantalla de seleccion
-    // posterior al login - ver plan de login por slug de empresa.
-    path: ':slug/login',
-    loadComponent: () => import('./pages/auth/login/login.component').then((m) => m.LoginComponent)
-  },
-  {
     path: 'forgot-password',
     loadComponent: () => import('./pages/auth/forgot-password/forgot-password.component').then((m) => m.ForgotPasswordComponent) // forgot password route
   },
@@ -30,18 +24,7 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/auth/reset-password/reset-password.component').then((m) => m.ResetPasswordComponent) // reset password route
   },
   {
-    // Los enlaces de correo generados por la empresa incluyen su slug
-    // (ver EmailLinkUtils en el backend) para que el enlace aterrice aqui
-    // igual que la ruta sin slug de arriba.
-    path: ':slug/reset-password',
-    loadComponent: () => import('./pages/auth/reset-password/reset-password.component').then((m) => m.ResetPasswordComponent)
-  },
-  {
     path: 'confirm-email-change',
-    loadComponent: () => import('./pages/auth/confirm-email-change/confirm-email-change.component').then((m) => m.ConfirmEmailChangeComponent)
-  },
-  {
-    path: ':slug/confirm-email-change',
     loadComponent: () => import('./pages/auth/confirm-email-change/confirm-email-change.component').then((m) => m.ConfirmEmailChangeComponent)
   },
   {
@@ -50,14 +33,6 @@ export const routes: Routes = [
   },
   {
     path: 'auth/verify/:token',
-    loadComponent: () => import('./pages/auth/verify-email/verify-email.component').then((m) => m.VerifyEmailComponent)
-  },
-  {
-    path: ':slug/auth/verify',
-    loadComponent: () => import('./pages/auth/verify-email/verify-email.component').then((m) => m.VerifyEmailComponent)
-  },
-  {
-    path: ':slug/auth/verify/:token',
     loadComponent: () => import('./pages/auth/verify-email/verify-email.component').then((m) => m.VerifyEmailComponent)
   },
   {

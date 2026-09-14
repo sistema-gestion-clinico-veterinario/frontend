@@ -115,6 +115,9 @@ export class CompanyComponent implements OnInit {
   readonly currentOrigin = window.location.origin;
 
   private slugTouchedManually = false;
+  /** Slug con el que se abrio el formulario de edicion - el aviso de que
+   * cambiarlo invalida enlaces solo debe verse si realmente se modifico. */
+  originalSlug: string | null = null;
 
   private slugify(value: string): string {
     return value
@@ -278,6 +281,7 @@ export class CompanyComponent implements OnInit {
     this.companyForm.reset({ colorPrimario: '#006BA8' });
     this.initOperatingHours();
     this.slugTouchedManually = false;
+    this.originalSlug = null;
     this.isEdit = false;
     this.displayModal = true;
   }
@@ -289,6 +293,7 @@ export class CompanyComponent implements OnInit {
     this.companyService.getById(company.id).subscribe({
       next: (res) => {
         const data = res.data;
+        this.originalSlug = data.slug || null;
         this.companyForm.patchValue({
           ...data,
           colorPrimario: data.colorPrimario || '#006BA8',
@@ -322,15 +327,27 @@ export class CompanyComponent implements OnInit {
     });
   }
 
-  async saveCompany() {
+  saveCompany() {
     if (this.companyForm.invalid) {
       this.companyForm.markAllAsTouched();
       this.messageService.add({ severity: 'warn', summary: 'Formulario inválido', detail: 'Revisa los campos resaltados en rojo.' });
       return;
     }
 
-    this.loading = true;
     const formValue = this.companyForm.value;
+
+    // La subida del logo (si aplica) se hace recien al confirmar, no antes -
+    // el dialogo de confirmacion debe aparecer de inmediato al enviar el
+    // formulario, sin un preloader intermedio.
+    this.confirmDialog.set({
+      title: this.isEdit ? '¿Actualizar empresa?' : '¿Registrar empresa?',
+      message: `Se ${this.isEdit ? 'actualizarán los datos de' : 'registrará una nueva'} la empresa "${normalizeText(formValue.name)}". ¿Deseas continuar?`,
+      onConfirm: () => this.confirmSaveCompany(formValue)
+    });
+  }
+
+  private async confirmSaveCompany(formValue: any) {
+    this.loading = true;
     let logoUrl = formValue.logoUrl;
 
     const logo = this.logoFile();
@@ -341,6 +358,7 @@ export class CompanyComponent implements OnInit {
         });
       } catch {
         this.loading = false;
+        this.confirmDialog.set(null);
         this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo subir el logo' });
         return;
       }
@@ -359,51 +377,42 @@ export class CompanyComponent implements OnInit {
         : ''
     };
 
-    this.loading = false;
+    const request = this.isEdit
+      ? this.companyService.updateCompany(companyData)
+      : this.companyService.saveCompany(companyData);
 
-    this.confirmDialog.set({
-      title: this.isEdit ? '¿Actualizar empresa?' : '¿Registrar empresa?',
-      message: `Se ${this.isEdit ? 'actualizarán los datos de' : 'registrará una nueva'} la empresa "${companyData.name}". ¿Deseas continuar?`,
-      onConfirm: () => {
-        this.loading = true;
-        const request = this.isEdit
-          ? this.companyService.updateCompany(companyData)
-          : this.companyService.saveCompany(companyData);
-
-        request.subscribe({
-          next: () => {
-            this.confirmDialog.set(null);
-            this.logoFile.set(null);
-            if (logoUrl && !this.isSuperAdmin()) {
-              const current = this.authStore.selectedEnterprise();
-              this.authStore.setSelectedEnterprise({
-                establishmentId: current?.establishmentId ?? (this.authStore.companyId() ?? 0),
-                name: current?.name ?? formValue.name ?? '',
-                logoUrl
-              });
-            }
-            this.messageService.add({
-              severity: 'success',
-              summary: 'Éxito',
-              detail: this.isEdit ? 'Empresa actualizada' : 'Empresa creada'
-            });
-            this.displayModal = false;
-            this.loading = false;
-            if (this.isSuperAdmin()) {
-              this.loadCompanies();
-            } else {
-              this.loadOwnCompany();
-            }
-          },
-          error: (err) => {
-            this.confirmDialog.set(null);
-            this.loading = false;
-            const detail = typeof err?.error?.message === 'string'
-              ? err.error.message
-              : 'Ocurrió un error al guardar';
-            this.messageService.add({ severity: 'error', summary: 'Error', detail });
-          }
+    request.subscribe({
+      next: () => {
+        this.confirmDialog.set(null);
+        this.logoFile.set(null);
+        if (logoUrl && !this.isSuperAdmin()) {
+          const current = this.authStore.selectedEnterprise();
+          this.authStore.setSelectedEnterprise({
+            establishmentId: current?.establishmentId ?? (this.authStore.companyId() ?? 0),
+            name: current?.name ?? formValue.name ?? '',
+            logoUrl
+          });
+        }
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Éxito',
+          detail: this.isEdit ? 'Empresa actualizada' : 'Empresa creada'
         });
+        this.displayModal = false;
+        this.loading = false;
+        if (this.isSuperAdmin()) {
+          this.loadCompanies();
+        } else {
+          this.loadOwnCompany();
+        }
+      },
+      error: (err) => {
+        this.confirmDialog.set(null);
+        this.loading = false;
+        const detail = typeof err?.error?.message === 'string'
+          ? err.error.message
+          : 'Ocurrió un error al guardar';
+        this.messageService.add({ severity: 'error', summary: 'Error', detail });
       }
     });
   }

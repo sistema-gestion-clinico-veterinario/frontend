@@ -119,9 +119,10 @@ const handle401Error = (req: HttpRequest<any>, next: HttpHandlerFn, authStore: a
         isRefreshing = false;
         refreshTokenSubject.next(false);
         refreshTokenSubject = new BehaviorSubject<boolean>(false);
-        const slug = authStore.companySlug();
+        // El SlugUrlSerializer conoce el slug actual y lo antepone solo en
+        // la barra de direcciones.
         authStore.logout();
-        router.navigate([slug ? `/${slug}/login` : '/login']);
+        router.navigate(['/login']);
         return throwError(() => err);
       })
     );

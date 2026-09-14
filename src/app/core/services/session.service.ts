@@ -3,6 +3,7 @@ import { Observable, catchError, finalize, map, of, shareReplay, tap } from 'rxj
 import { AuthLoginData } from '../../models/response/auth-login-response.model';
 import { AuthStore } from '../../store/auth.store';
 import { AuthService } from './auth.service';
+import { CompanySlugContext } from './company-slug-context.service';
 import { NavigationService } from './navigation.service';
 
 /**
@@ -14,6 +15,7 @@ export class SessionService {
   private readonly authService = inject(AuthService);
   private readonly authStore = inject(AuthStore);
   private readonly navigationService = inject(NavigationService);
+  private readonly slugContext = inject(CompanySlugContext);
   private initializationInFlight$: Observable<boolean> | null = null;
 
   initialize(): Observable<boolean> {
@@ -39,6 +41,11 @@ export class SessionService {
 
   establish(data: AuthLoginData, preserveEnterprise = false): void {
     const isPlatformAdmin = data.activeRolePurpose === 'PLATFORM_ADMIN';
+
+    // La sesion real es la fuente de verdad del slug que se muestra en la
+    // URL de aqui en adelante - incluso si se entro por el login "global"
+    // sin slug, a partir de este punto toda navegacion interna lo lleva.
+    this.slugContext.setSlug(data.companySlug ?? null);
 
     this.authStore.setAuth({
       token: null,
