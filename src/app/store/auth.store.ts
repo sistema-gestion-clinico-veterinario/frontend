@@ -24,6 +24,7 @@ interface AuthState {
   permissionVersion: number;
   companyId: number | null;
   companyName: string | null;
+  companySlug: string | null;
   nombreCompleto: string | null;
   userType: string | null;
   empleadoId: number | null;
@@ -53,6 +54,7 @@ export interface AuthPayload {
   permissionVersion?: number;
   companyId?: number | null;
   companyName?: string | null;
+  companySlug?: string | null;
   nombreCompleto?: string | null;
   userType?: string | null;
   empleadoId?: number | null;
@@ -100,6 +102,7 @@ const createInitialState = (useStorage = true): AuthState => {
     permissionVersion: 0,
     companyId: null,
     companyName: null,
+    companySlug: null,
     nombreCompleto: null,
     userType: null,
     empleadoId: null,
@@ -149,6 +152,7 @@ export const AuthStore = signalStore(
         permissionVersion: auth.permissionVersion ?? 0,
         companyId: auth.companyId ?? null,
         companyName: auth.companyName ?? null,
+        companySlug: auth.companySlug ?? null,
         nombreCompleto: auth.nombreCompleto ?? null,
         userType: auth.userType ?? null,
         empleadoId: auth.empleadoId ?? null,
@@ -356,6 +360,7 @@ function buildCurrentState(store: any): AuthState {
     permissionVersion: store.permissionVersion(),
     companyId: store.companyId(),
     companyName: store.companyName(),
+    companySlug: store.companySlug(),
     nombreCompleto: store.nombreCompleto(),
     userType: store.userType(),
     empleadoId: store.empleadoId(),

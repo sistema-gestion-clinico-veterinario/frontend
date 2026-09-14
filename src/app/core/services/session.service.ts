@@ -54,6 +54,7 @@ export class SessionService {
       permissionVersion: data.permissionVersion ?? 0,
       companyId: data.companyId,
       companyName: data.companyName,
+      companySlug: data.companySlug ?? null,
       nombreCompleto: data.nombreCompleto,
       userType: data.userType,
       empleadoId: data.empleadoId ?? null,

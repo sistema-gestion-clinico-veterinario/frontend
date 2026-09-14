@@ -20,8 +20,9 @@ export const AuthGuard: CanActivateFn = (route, state) => {
 function validateAccess(route: ActivatedRouteSnapshot, authStore: any, router: Router) {
   const currentMenu = authStore.menu() ?? [];
   if (!authStore.activeRoleId() && currentMenu.length === 0) {
+    const slug = authStore.companySlug();
     authStore.logout();
-    return router.createUrlTree(['/login']);
+    return router.createUrlTree([slug ? `/${slug}/login` : '/login']);
   }
 
   if (route.data?.['thesisTool']) {

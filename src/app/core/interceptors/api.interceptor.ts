@@ -119,8 +119,9 @@ const handle401Error = (req: HttpRequest<any>, next: HttpHandlerFn, authStore: a
         isRefreshing = false;
         refreshTokenSubject.next(false);
         refreshTokenSubject = new BehaviorSubject<boolean>(false);
+        const slug = authStore.companySlug();
         authStore.logout();
-        router.navigate(['/login']);
+        router.navigate([slug ? `/${slug}/login` : '/login']);
         return throwError(() => err);
       })
     );
