@@ -16,6 +16,7 @@ export const SKIP_GLOBAL_LOADING = new HttpContextToken<boolean>(() => false);
 
 const AUTH_ENDPOINTS_WITHOUT_REFRESH = [
   '/auth/login',
+  '/auth/admin-login',
   '/auth/refresh',
   '/auth/logout',
   '/auth/setup-account',
