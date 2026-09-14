@@ -470,6 +470,7 @@ export class EmployeeComponent implements OnInit, OnDestroy {
         if (res.data.companyId) {
           this.loadEspecialidades(res.data.companyId);
           this.loadTypesEmpleado(res.data.companyId);
+          this.loadRoles(res.data.companyId);
         }
         this.empleadoService.getHorario(employee.id).subscribe({
           next: (hRes) => {
