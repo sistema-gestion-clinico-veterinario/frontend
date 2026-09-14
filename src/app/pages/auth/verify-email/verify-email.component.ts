@@ -77,8 +77,10 @@ export class VerifyEmailComponent {
   }
 
   irAlLogin() {
-    const slug = this.route.snapshot.paramMap.get('slug');
-    this.router.navigate([slug ? `/${slug}/login` : '/login']);
+    // El SlugUrlSerializer ya sabe el slug de esta pagina (si lo hay) y lo
+    // vuelve a anteponer solo en la barra de direcciones - no hace falta
+    // construirlo a mano aqui.
+    this.router.navigate(['/login']);
   }
 
   private readAndClearToken(): string {
