@@ -12,7 +12,7 @@ import { SessionService } from '../../../core/services/session.service';
 import { LoadingStore } from '../../../store/loading.store';
 
 const DEFAULT_BRAND_COLOR = '#006BA8';
-const DEFAULT_LOGO_URL = 'https://toqqwxveqxhlottwetev.supabase.co/storage/v1/object/public/vargas_vet/84b31891-44b7-4621-b272-58ae0f11e2d4-Photoroom.png';
+const DEFAULT_LOGO_URL = 'https://toqqwxveqxhlottwetev.supabase.co/storage/v1/object/public/vargas_vet/image-Photoroom.png';
 const DEFAULT_COMPANY_NAME = 'SystemVet';
 
 @Component({
@@ -44,12 +44,6 @@ export class LoginComponent implements OnInit {
   companyName = DEFAULT_COMPANY_NAME;
   logoUrl: string | null = DEFAULT_LOGO_URL;
   colorPrimario = DEFAULT_BRAND_COLOR;
-
-  /** El fallback sin slug (enlace raiz, marcadores viejos) no puede loguear a
-   * nadie: no hay a que empresa dirigir la sesion. */
-  get canSubmit(): boolean {
-    return this.isAdminRoute || !!this.slug;
-  }
 
   ngOnInit() {
     this.isAdminRoute = this.router.url.startsWith('/admin/login');
@@ -98,8 +92,6 @@ export class LoginComponent implements OnInit {
   }
 
   submit() {
-    if (!this.canSubmit) return;
-
     const rawUsername = (document.getElementById('username') as HTMLInputElement)?.value ?? '';
     const rawPassword = (document.getElementById('password') as HTMLInputElement)?.value ?? '';
     this.loginForm.get('username')?.setValue(rawUsername, { emitEvent: false });
@@ -128,9 +120,13 @@ export class LoginComponent implements OnInit {
     this.isSubmitting = true;
     this.loadingStore.show();
 
+    // Con slug, la empresa la resuelve la URL. Sin slug (login "global", sin
+    // marca de ninguna empresa en particular), el backend solo lo permite si
+    // el username tiene exactamente una empresa activa - con cero o varias
+    // rechaza con el mismo mensaje generico, nunca una pantalla para elegir.
     const request$ = this.isAdminRoute
       ? this.authService.adminLogin({ username: rawUsername, password: rawPassword })
-      : this.authService.login({ slug: this.slug!, username: rawUsername, password: rawPassword });
+      : this.authService.login({ slug: this.slug ?? undefined, username: rawUsername, password: rawPassword });
 
     request$.pipe(
       timeout(15000),

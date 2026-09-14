@@ -99,8 +99,46 @@ export class CompanyComponent implements OnInit {
     description: ['', [Validators.maxLength(500), noLeadingTrailingSpaceValidator(), textContentValidator()]],
     businessHours: ['', [Validators.maxLength(100), textContentValidator({ requireLetter: false })]],
     logoUrl: ['', [Validators.maxLength(500), Validators.pattern(/^$|^https?:\/\/[^\s<>]+$/)]],
+    // Lo elige quien crea la empresa - no se deriva del nombre en silencio
+    // (distintas veterinarias pueden compartir nombre o preferir otra URL).
+    slug: ['', [
+      Validators.required,
+      Validators.maxLength(100),
+      Validators.pattern(/^[a-z0-9]+(-[a-z0-9]+)*$/)
+    ]],
+    colorPrimario: ['#006BA8', [Validators.pattern(/^#[0-9a-fA-F]{6}$/)]],
     operatingHours: this.fb.array([])
   });
+
+  /** Origen actual (dominio) para armar el link completo de acceso - no se
+   * hardcodea, porque el slug funciona igual sin importar el dominio. */
+  readonly currentOrigin = window.location.origin;
+
+  private slugTouchedManually = false;
+
+  private slugify(value: string): string {
+    return value
+      .toLowerCase()
+      .normalize('NFD').replace(/[̀-ͯ]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  }
+
+  onSlugInput() {
+    this.slugTouchedManually = true;
+  }
+
+  loginUrlFor(slug: string | null | undefined): string {
+    return slug ? `${this.currentOrigin}/${slug}/login` : '';
+  }
+
+  copyLoginUrl(slug: string | null | undefined) {
+    const url = this.loginUrlFor(slug);
+    if (!url) return;
+    navigator.clipboard.writeText(url).then(() => {
+      this.messageService.add({ severity: 'success', summary: 'Copiado', detail: 'Enlace de acceso copiado' });
+    });
+  }
 
   get operatingHours() {
     return this.companyForm.get('operatingHours') as FormArray;
@@ -126,6 +164,11 @@ export class CompanyComponent implements OnInit {
       const companyId = this.authStore.companyId();
       if (companyId) this.loadCompanyRoles(companyId);
     }
+
+    this.companyForm.get('name')?.valueChanges.subscribe(name => {
+      if (this.slugTouchedManually || !name) return;
+      this.companyForm.get('slug')?.setValue(this.slugify(name), { emitEvent: false });
+    });
   }
 
   loadCompanies(event: any = { first: 0, rows: 10 }) {
@@ -232,8 +275,9 @@ export class CompanyComponent implements OnInit {
   }
 
   openNew() {
-    this.companyForm.reset();
+    this.companyForm.reset({ colorPrimario: '#006BA8' });
     this.initOperatingHours();
+    this.slugTouchedManually = false;
     this.isEdit = false;
     this.displayModal = true;
   }
@@ -241,11 +285,13 @@ export class CompanyComponent implements OnInit {
   editCompany(company: CompanyListResponse) {
     this.isEdit = true;
     this.loading = true;
+    this.slugTouchedManually = true;
     this.companyService.getById(company.id).subscribe({
       next: (res) => {
         const data = res.data;
         this.companyForm.patchValue({
           ...data,
+          colorPrimario: data.colorPrimario || '#006BA8',
           hasWebsite: !!data.website
         });
         
@@ -349,10 +395,13 @@ export class CompanyComponent implements OnInit {
               this.loadOwnCompany();
             }
           },
-          error: () => {
+          error: (err) => {
             this.confirmDialog.set(null);
             this.loading = false;
-            this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Ocurrió un error al guardar' });
+            const detail = typeof err?.error?.message === 'string'
+              ? err.error.message
+              : 'Ocurrió un error al guardar';
+            this.messageService.add({ severity: 'error', summary: 'Error', detail });
           }
         });
       }
