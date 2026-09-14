@@ -1,14 +1,19 @@
-﻿import { CommonModule } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { finalize, from, switchMap, timeout } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
+import { CompanyService } from '../../../core/services/company.service';
 import { AuthStore } from '../../../store/auth.store';
 import { resolveInitialRoute, resolveDashboardRoute } from '../../../layouts/main-layout/navbar/navbar.component';
 import { SessionService } from '../../../core/services/session.service';
 import { LoadingStore } from '../../../store/loading.store';
+
+const DEFAULT_BRAND_COLOR = '#006BA8';
+const DEFAULT_LOGO_URL = 'https://toqqwxveqxhlottwetev.supabase.co/storage/v1/object/public/vargas_vet/84b31891-44b7-4621-b272-58ae0f11e2d4-Photoroom.png';
+const DEFAULT_COMPANY_NAME = 'SystemVet';
 
 @Component({
   selector: 'app-login',
@@ -20,7 +25,9 @@ import { LoadingStore } from '../../../store/loading.store';
 export class LoginComponent implements OnInit {
   private authStore = inject(AuthStore);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private authService = inject(AuthService);
+  private companyService = inject(CompanyService);
   private sessionService = inject(SessionService);
   private loadingStore = inject(LoadingStore);
 
@@ -28,19 +35,59 @@ export class LoginComponent implements OnInit {
   isSubmitting = false;
   showPassword = false;
 
+  /** La empresa la resuelve la URL (slug), nunca una pantalla de seleccion
+   * posterior al login. */
+  slug: string | null = null;
+  isAdminRoute = false;
+  brandLoaded = false;
+  brandNotFound = false;
+  companyName = DEFAULT_COMPANY_NAME;
+  logoUrl: string | null = DEFAULT_LOGO_URL;
+  colorPrimario = DEFAULT_BRAND_COLOR;
+
+  /** El fallback sin slug (enlace raiz, marcadores viejos) no puede loguear a
+   * nadie: no hay a que empresa dirigir la sesion. */
+  get canSubmit(): boolean {
+    return this.isAdminRoute || !!this.slug;
+  }
+
   ngOnInit() {
+    this.isAdminRoute = this.router.url.startsWith('/admin/login');
+    this.slug = this.isAdminRoute ? null : this.route.snapshot.paramMap.get('slug');
+
+    if (this.slug) {
+      this.loadBranding(this.slug);
+    } else {
+      this.brandLoaded = true;
+    }
+
     this.sessionService.initialize().subscribe((authenticated) => {
       if (!authenticated) return;
       this.navigateToInitialRoute();
     });
   }
 
+  private loadBranding(slug: string): void {
+    this.companyService.getBrandingBySlug(slug).subscribe({
+      next: ({ data }) => {
+        this.companyName = data?.name || DEFAULT_COMPANY_NAME;
+        this.logoUrl = data?.logoUrl || DEFAULT_LOGO_URL;
+        this.colorPrimario = data?.colorPrimario || DEFAULT_BRAND_COLOR;
+        this.brandLoaded = true;
+      },
+      error: () => {
+        this.brandNotFound = true;
+        this.brandLoaded = true;
+      }
+    });
+  }
+
   loginForm = inject(FormBuilder).group({
-    email: ['', [Validators.required, Validators.email, noLeadingTrailingSpaceValidator(), Validators.maxLength(255)]],
+    username: ['', [Validators.required, noLeadingTrailingSpaceValidator(), Validators.maxLength(50)]],
     password: ['', [Validators.required, Validators.maxLength(72)]]
   });
 
-  get email() { return this.loginForm.get('email'); }
+  get username() { return this.loginForm.get('username'); }
   get password() { return this.loginForm.get('password'); }
 
   get greeting(): string {
@@ -51,18 +98,20 @@ export class LoginComponent implements OnInit {
   }
 
   submit() {
-    const rawEmail = (document.getElementById('email') as HTMLInputElement)?.value ?? '';
+    if (!this.canSubmit) return;
+
+    const rawUsername = (document.getElementById('username') as HTMLInputElement)?.value ?? '';
     const rawPassword = (document.getElementById('password') as HTMLInputElement)?.value ?? '';
-    this.loginForm.get('email')?.setValue(rawEmail, { emitEvent: false });
+    this.loginForm.get('username')?.setValue(rawUsername, { emitEvent: false });
     this.loginForm.get('password')?.setValue(rawPassword, { emitEvent: false });
 
-    const hasUntrimmedEmail = rawEmail !== rawEmail.trim();
+    const hasUntrimmedUsername = rawUsername !== rawUsername.trim();
     const hasUntrimmedPassword = rawPassword !== rawPassword.trim();
 
-    if (hasUntrimmedEmail || hasUntrimmedPassword) {
-      if (hasUntrimmedEmail) {
-        this.authError = 'El correo no debe contener espacios al inicio o al final.';
-        this.loginForm.get('email')?.markAsTouched();
+    if (hasUntrimmedUsername || hasUntrimmedPassword) {
+      if (hasUntrimmedUsername) {
+        this.authError = 'El usuario no debe contener espacios al inicio o al final.';
+        this.loginForm.get('username')?.markAsTouched();
       } else {
         this.authError = 'La contraseña no debe iniciar ni terminar con espacios.';
         this.loginForm.get('password')?.markAsTouched();
@@ -79,7 +128,11 @@ export class LoginComponent implements OnInit {
     this.isSubmitting = true;
     this.loadingStore.show();
 
-    this.authService.login({ email: rawEmail, password: rawPassword }).pipe(
+    const request$ = this.isAdminRoute
+      ? this.authService.adminLogin({ username: rawUsername, password: rawPassword })
+      : this.authService.login({ slug: this.slug!, username: rawUsername, password: rawPassword });
+
+    request$.pipe(
       timeout(15000),
       switchMap(({ data }) => {
         const roles = data.roles ?? [];
@@ -120,7 +173,7 @@ export class LoginComponent implements OnInit {
       ? payload
       : payload?.message || payload?.error;
 
-    return serverMessage || 'Correo o contraseña incorrectos.';
+    return serverMessage || 'Usuario o contraseña incorrectos.';
   }
 
   private navigateToInitialRoute(): void {

@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, catchError, finalize, shareReplay, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { LoginRequest } from '../../models/request/login-request.model';
+import { AdminLoginRequest, LoginRequest } from '../../models/request/login-request.model';
 import { AuthLoginResponse } from '../../models/response/auth-login-response.model';
 import { ApiResponse } from '../../models/response/api-response';
 
@@ -15,6 +15,11 @@ export class AuthService {
 
   login(credentials: LoginRequest): Observable<AuthLoginResponse> {
     return this.http.post<AuthLoginResponse>(`${this.baseUrl}/login`, credentials);
+  }
+
+  /** Ruta reservada para SuperAdmin - no depende del slug de ninguna empresa. */
+  adminLogin(credentials: AdminLoginRequest): Observable<AuthLoginResponse> {
+    return this.http.post<AuthLoginResponse>(`${this.baseUrl}/admin-login`, credentials);
   }
 
   setupAccount(token: string, password: string): Observable<ApiResponse<void>> {
