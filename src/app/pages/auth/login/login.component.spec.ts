@@ -1,10 +1,12 @@
 import { ComponentFixture, fakeAsync, flushMicrotasks, TestBed } from '@angular/core/testing';
 import { LoginComponent } from './login.component';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { of, throwError } from 'rxjs';
 import { LoadingStore } from '../../../store/loading.store';
+
+const activatedRouteStub = { snapshot: { paramMap: convertToParamMap({}) } };
 
 describe('LoginComponent – greeting', () => {
   let component: LoginComponent;
@@ -17,7 +19,8 @@ describe('LoginComponent – greeting', () => {
       imports: [LoginComponent, HttpClientTestingModule],
       providers: [
         { provide: Router, useValue: jasmine.createSpyObj('Router', ['navigateByUrl']) },
-        { provide: AuthService, useValue: jasmine.createSpyObj('AuthService', ['login', 'refreshToken']) },
+        { provide: ActivatedRoute, useValue: activatedRouteStub },
+        { provide: AuthService, useValue: jasmine.createSpyObj('AuthService', ['login', 'adminLogin', 'refreshToken']) },
       ],
     })
       .overrideComponent(LoginComponent, { set: { template: '' } })
@@ -31,7 +34,7 @@ describe('LoginComponent – greeting', () => {
   });
 
   afterEach(() => {
-    document.getElementById('email')?.remove();
+    document.getElementById('username')?.remove();
     document.getElementById('password')?.remove();
     jasmine.clock().uninstall();
   });
@@ -64,7 +67,8 @@ describe('LoginComponent - submit validations', () => {
       imports: [LoginComponent, HttpClientTestingModule],
       providers: [
         { provide: Router, useValue: jasmine.createSpyObj('Router', ['navigateByUrl']) },
-        { provide: AuthService, useValue: jasmine.createSpyObj('AuthService', ['login', 'refreshToken']) },
+        { provide: ActivatedRoute, useValue: activatedRouteStub },
+        { provide: AuthService, useValue: jasmine.createSpyObj('AuthService', ['login', 'adminLogin', 'refreshToken']) },
       ],
     })
       .overrideComponent(LoginComponent, { set: { template: '' } })
@@ -72,27 +76,31 @@ describe('LoginComponent - submit validations', () => {
 
     fixture = TestBed.createComponent(LoginComponent);
     component = fixture.componentInstance;
+    // La empresa la resuelve el slug de la URL - en produccion lo asigna
+    // ngOnInit al leer el parametro de ruta; aqui se fija directo porque
+    // estas pruebas no ejecutan el ciclo de vida completo del componente.
+    component.slug = 'duquedecan';
     authService = TestBed.inject(AuthService) as jasmine.SpyObj<AuthService>;
     (TestBed.inject(Router) as jasmine.SpyObj<Router>).navigateByUrl.and.resolveTo(true);
   });
 
   afterEach(() => {
-    document.getElementById('email')?.remove();
+    document.getElementById('username')?.remove();
     document.getElementById('password')?.remove();
   });
 
-  it('bloquea email con espacios y no llama al servicio de login', () => {
-    createLoginInput('email', ' admin@test.com ');
+  it('bloquea usuario con espacios y no llama al servicio de login', () => {
+    createLoginInput('username', ' admin.test ');
     createLoginInput('password', 'secret123');
 
     component.submit();
 
-    expect(component.authError).toBe('El correo no debe contener espacios al inicio o al final.');
+    expect(component.authError).toBe('El usuario no debe contener espacios al inicio o al final.');
     expect(authService.login).not.toHaveBeenCalled();
   });
 
   it('bloquea password con espacios al inicio o al final y no llama al servicio de login', () => {
-    createLoginInput('email', 'admin@test.com');
+    createLoginInput('username', 'admin.test');
     createLoginInput('password', ' secret123 ');
 
     component.submit();
@@ -102,7 +110,7 @@ describe('LoginComponent - submit validations', () => {
   });
 
   it('rechaza respuesta exitosa sin roles asignados', () => {
-    createLoginInput('email', 'admin@test.com');
+    createLoginInput('username', 'admin.test');
     createLoginInput('password', 'secret123');
     authService.login.and.returnValue(of({
       data: {
@@ -126,7 +134,7 @@ describe('LoginComponent - submit validations', () => {
 
   it('[BB-001] permite iniciar sesion con credenciales validas y redirige al usuario', () => {
     const router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
-    createLoginInput('email', 'admin@test.com');
+    createLoginInput('username', 'admin.test');
     createLoginInput('password', 'secret123');
     authService.login.and.returnValue(of({
       data: {
@@ -146,13 +154,13 @@ describe('LoginComponent - submit validations', () => {
     component.submit();
 
     expect(component.authError).toBeNull();
-    expect(authService.login).toHaveBeenCalledWith({ email: 'admin@test.com', password: 'secret123' });
+    expect(authService.login).toHaveBeenCalledWith({ slug: 'duquedecan', username: 'admin.test', password: 'secret123' });
     expect(router.navigateByUrl).toHaveBeenCalled();
   });
 
   it('redirige a /legal/accept cuando el consentimiento legal esta vencido (fuera del periodo de gracia)', () => {
     const router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
-    createLoginInput('email', 'admin@test.com');
+    createLoginInput('username', 'admin.test');
     createLoginInput('password', 'secret123');
     authService.login.and.returnValue(of({
       data: {
@@ -178,7 +186,7 @@ describe('LoginComponent - submit validations', () => {
 
   it('no redirige a /legal/accept si solo hay un pendiente dentro del periodo de gracia (aviso no intrusivo)', () => {
     const router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
-    createLoginInput('email', 'admin@test.com');
+    createLoginInput('username', 'admin.test');
     createLoginInput('password', 'secret123');
     authService.login.and.returnValue(of({
       data: {
@@ -209,7 +217,7 @@ describe('LoginComponent - submit validations', () => {
     router.navigateByUrl.and.returnValue(new Promise<boolean>((resolve) => {
       completeNavigation = resolve;
     }));
-    createLoginInput('email', 'admin@test.com');
+    createLoginInput('username', 'admin.test');
     createLoginInput('password', 'secret123');
     authService.login.and.returnValue(of({
       data: {
@@ -239,16 +247,51 @@ describe('LoginComponent - submit validations', () => {
   }));
 
   it('[BB-002] rechaza credenciales invalidas y muestra el mensaje del servidor', () => {
-    createLoginInput('email', 'admin@test.com');
+    createLoginInput('username', 'admin.test');
     createLoginInput('password', 'incorrecta');
     authService.login.and.returnValue(throwError(() => ({
       status: 401,
-      error: { message: 'Correo o contrasena incorrectos.' },
+      error: { message: 'Usuario o contrasena incorrectos.' },
     })));
 
     component.submit();
 
-    expect(component.authError).toBe('Correo o contrasena incorrectos.');
+    expect(component.authError).toBe('Usuario o contrasena incorrectos.');
+  });
+
+  it('no llama al servicio de login cuando no hay slug ni es la ruta de SuperAdmin', () => {
+    component.slug = null;
+    component.isAdminRoute = false;
+    createLoginInput('username', 'admin.test');
+    createLoginInput('password', 'secret123');
+
+    component.submit();
+
+    expect(authService.login).not.toHaveBeenCalled();
+  });
+
+  it('usa adminLogin sin slug cuando la ruta es la reservada de SuperAdmin', () => {
+    component.slug = null;
+    component.isAdminRoute = true;
+    createLoginInput('username', 'superadmin');
+    createLoginInput('password', 'secret123');
+    authService.adminLogin.and.returnValue(of({
+      data: {
+        roles: ['ROLE_SUPER_ADMIN'],
+        assignedRoles: ['ROLE_SUPER_ADMIN'],
+        companyId: null,
+        nombreCompleto: 'Super Admin',
+        userType: 'SUPER_ADMIN',
+        passwordChanged: true,
+        needsCompanySelection: false,
+        menu: [],
+      }
+    } as any));
+
+    component.submit();
+
+    expect(authService.adminLogin).toHaveBeenCalledWith({ username: 'superadmin', password: 'secret123' });
+    expect(authService.login).not.toHaveBeenCalled();
   });
 });
 

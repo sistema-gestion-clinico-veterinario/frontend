@@ -381,6 +381,19 @@
               </p>
             </div>
 
+            <div class="flex flex-col gap-1" *ngIf="!isEdit()">
+              <label class="text-xs font-semibold text-slate-700 ml-0.5">Usuario <span class="text-rose-500">*</span></label>
+              <input type="text" formControlName="username" placeholder="Ej: jperez" maxlength="50"
+                [ngClass]="employeeForm.get('username')?.invalid && employeeForm.get('username')?.touched ? 'border-rose-400' : 'border-slate-300'"
+                class="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all font-bold" />
+              <p *ngIf="employeeForm.get('username')?.invalid && employeeForm.get('username')?.touched" class="text-[11px] text-rose-500 ml-0.5">
+                <ng-container *ngIf="employeeForm.get('username')?.errors?.['required']">El usuario es requerido</ng-container>
+                <ng-container *ngIf="employeeForm.get('username')?.errors?.['pattern']">Solo letras, números, puntos, guiones y guiones bajos</ng-container>
+                <ng-container *ngIf="employeeForm.get('username')?.errors?.['leadingTrailingSpace']">No debe tener espacios al inicio o al final</ng-container>
+                <ng-container *ngIf="employeeForm.get('username')?.errors?.['maxlength']">Máximo 50 caracteres</ng-container>
+              </p>
+            </div>
+
             <div class="flex flex-col gap-1">
               <label class="text-xs font-semibold text-slate-700 ml-0.5">Teléfono de Contacto <span class="text-rose-500">*</span></label>
               <input type="text" formControlName="telefono" appInputFilter="digits" [appInputFilterMaxLength]="9" inputmode="numeric" maxlength="9" placeholder="Ej: 987654321"

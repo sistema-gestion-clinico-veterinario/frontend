@@ -3,6 +3,7 @@ export interface ApoderadoRequest {
   nombre: string;
   apellido: string;
   email: string;
+  username?: string;
   telefono: string;
   tipoDocumento: string;
   numeroDocumento: string;

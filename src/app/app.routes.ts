@@ -4,7 +4,21 @@ import { AuthGuard } from './core/guards/auth.guard';
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   {
+    // Ruta reservada para SuperAdmin - no depende del slug de ninguna empresa,
+    // declarada antes del patron ':slug/login' para que no choque con el.
+    path: 'admin/login',
+    loadComponent: () => import('./pages/auth/login/login.component').then((m) => m.LoginComponent)
+  },
+  {
+    // Fallback sin slug (enlace raiz, marcadores viejos, etc.) - el mismo
+    // componente detecta la ausencia de slug y no permite enviar el formulario.
     path: 'login',
+    loadComponent: () => import('./pages/auth/login/login.component').then((m) => m.LoginComponent)
+  },
+  {
+    // La empresa la resuelve la URL (slug), nunca una pantalla de seleccion
+    // posterior al login - ver plan de login por slug de empresa.
+    path: ':slug/login',
     loadComponent: () => import('./pages/auth/login/login.component').then((m) => m.LoginComponent)
   },
   {
@@ -16,7 +30,18 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/auth/reset-password/reset-password.component').then((m) => m.ResetPasswordComponent) // reset password route
   },
   {
+    // Los enlaces de correo generados por la empresa incluyen su slug
+    // (ver EmailLinkUtils en el backend) para que el enlace aterrice aqui
+    // igual que la ruta sin slug de arriba.
+    path: ':slug/reset-password',
+    loadComponent: () => import('./pages/auth/reset-password/reset-password.component').then((m) => m.ResetPasswordComponent)
+  },
+  {
     path: 'confirm-email-change',
+    loadComponent: () => import('./pages/auth/confirm-email-change/confirm-email-change.component').then((m) => m.ConfirmEmailChangeComponent)
+  },
+  {
+    path: ':slug/confirm-email-change',
     loadComponent: () => import('./pages/auth/confirm-email-change/confirm-email-change.component').then((m) => m.ConfirmEmailChangeComponent)
   },
   {
@@ -25,6 +50,14 @@ export const routes: Routes = [
   },
   {
     path: 'auth/verify/:token',
+    loadComponent: () => import('./pages/auth/verify-email/verify-email.component').then((m) => m.VerifyEmailComponent)
+  },
+  {
+    path: ':slug/auth/verify',
+    loadComponent: () => import('./pages/auth/verify-email/verify-email.component').then((m) => m.VerifyEmailComponent)
+  },
+  {
+    path: ':slug/auth/verify/:token',
     loadComponent: () => import('./pages/auth/verify-email/verify-email.component').then((m) => m.VerifyEmailComponent)
   },
   {

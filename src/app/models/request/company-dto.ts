@@ -10,6 +10,8 @@ export interface CompanyDTO {
   description?: string;
   businessHours?: string;
   operatingHours?: CompanyOperatingHourDTO[];
+  slug?: string;
+  colorPrimario?: string;
   createdAt?: string;
   updatedAt?: string;
   createdBy?: string;
