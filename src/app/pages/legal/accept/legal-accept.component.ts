@@ -133,10 +133,11 @@ export class LegalAcceptComponent implements OnInit {
   }
 
   logout(): void {
+    const slug = this.authStore.companySlug();
     this.authService.logout().subscribe({
       complete: () => {
         this.authStore.logout();
-        this.router.navigateByUrl('/login');
+        this.router.navigateByUrl(slug ? `/${slug}/login` : '/login');
       }
     });
   }

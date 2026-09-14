@@ -98,8 +98,9 @@ export class PasswordChangeComponent {
 
         setTimeout(() => {
           this.isSubmitting.set(false);
+          const slug = this.authStore.companySlug();
           this.authStore.logout();
-          this.router.navigateByUrl('/login', { replaceUrl: true });
+          this.router.navigateByUrl(slug ? `/${slug}/login` : '/login', { replaceUrl: true });
         }, 1500);
       },
       error: (err) => {

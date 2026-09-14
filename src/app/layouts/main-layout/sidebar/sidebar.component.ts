@@ -143,8 +143,11 @@ export class SidebarComponent {
   }
 
   logout() {
+    // La empresa la resuelve la URL (slug) - al cerrar sesion se vuelve a la
+    // pantalla de login marcada de la propia empresa, no al fallback generico.
+    const slug = this.authStore.companySlug();
     this.authService.logout().subscribe({ error: () => {} });
     this.authStore.logout();
-    this.router.navigateByUrl('/login', { replaceUrl: true });
+    this.router.navigateByUrl(slug ? `/${slug}/login` : '/login', { replaceUrl: true });
   }
 }

@@ -52,6 +52,7 @@ export interface AuthLoginData {
   companyId: number;
   companyName: string;
   companyLogoUrl?: string;
+  companySlug?: string;
   nombreCompleto: string;
   userType: string;
   empleadoId?: number;

@@ -205,6 +205,13 @@
                 <div class="min-w-0">
                   <h2 class="text-base sm:text-lg font-semibold text-slate-800 truncate">{{ company.name }}</h2>
                   <p class="text-xs text-slate-400">RUC: {{ company.ruc }}</p>
+                  <div *ngIf="company.slug" class="flex items-center gap-1.5 mt-1">
+                    <p class="text-xs text-blue-600 truncate max-w-[220px] sm:max-w-[320px]">{{ loginUrlFor(company.slug) }}</p>
+                    <button type="button" (click)="copyLoginUrl(company.slug)"
+                      class="text-[11px] font-semibold text-blue-600 hover:text-blue-800 shrink-0">
+                      <i class="pi pi-copy"></i>
+                    </button>
+                  </div>
                 </div>
               </div>
               <button *appHasPermission="'VISTA_COMPANY:modificar'" (click)="openEditOwnCompany()"
@@ -536,7 +543,56 @@
         <div class="space-y-4">
           <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
             <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
-            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">2. Ubicación y Presencia Digital</h3>
+            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">2. Acceso y Marca</h3>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-[1fr_140px] gap-4">
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-semibold text-slate-700 ml-0.5">Slug (URL de acceso) <span class="text-rose-500">*</span></label>
+              <div class="flex items-stretch rounded border overflow-hidden h-10"
+                [class.border-rose-400]="companyForm.get('slug')?.invalid && companyForm.get('slug')?.touched"
+                [class.border-slate-300]="!(companyForm.get('slug')?.invalid && companyForm.get('slug')?.touched)">
+                <span class="px-3 flex items-center bg-slate-50 text-slate-400 text-xs truncate max-w-[45%]">{{ currentOrigin }}/</span>
+                <input type="text" formControlName="slug" (input)="onSlugInput()" placeholder="mi-veterinaria" maxlength="100"
+                  class="flex-1 min-w-0 px-2 text-sm outline-none" />
+                <span class="px-3 flex items-center bg-slate-50 text-slate-400 text-xs">/login</span>
+              </div>
+              <p *ngIf="companyForm.get('slug')?.invalid && companyForm.get('slug')?.touched" class="text-[11px] text-rose-500 ml-0.5">
+                <ng-container *ngIf="companyForm.get('slug')?.errors?.['required']">El slug es requerido</ng-container>
+                <ng-container *ngIf="companyForm.get('slug')?.errors?.['pattern']">Solo minúsculas, números y guiones (ej: mi-veterinaria)</ng-container>
+                <ng-container *ngIf="companyForm.get('slug')?.errors?.['maxlength']">Máximo 100 caracteres</ng-container>
+              </p>
+              <p *ngIf="isEdit" class="text-[11px] text-amber-600 ml-0.5">
+                <i class="pi pi-exclamation-triangle"></i> Cambiarlo invalida los enlaces de acceso ya compartidos con esta empresa.
+              </p>
+              <div *ngIf="companyForm.get('slug')?.value" class="flex items-center gap-2 mt-1">
+                <p class="text-[11px] text-slate-500 truncate">{{ loginUrlFor(companyForm.get('slug')?.value) }}</p>
+                <button type="button" (click)="copyLoginUrl(companyForm.get('slug')?.value)"
+                  class="text-[11px] font-semibold text-blue-600 hover:text-blue-800 shrink-0">
+                  <i class="pi pi-copy"></i> Copiar
+                </button>
+              </div>
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-semibold text-slate-700 ml-0.5">Color de marca</label>
+              <div class="flex items-center gap-2 h-10">
+                <input type="color" formControlName="colorPrimario"
+                  class="w-10 h-10 p-0.5 border border-slate-300 rounded cursor-pointer" />
+                <input type="text" formControlName="colorPrimario" maxlength="7"
+                  class="flex-1 min-w-0 px-2 h-10 border border-slate-300 rounded text-sm outline-none uppercase" />
+              </div>
+              <p *ngIf="companyForm.get('colorPrimario')?.invalid && companyForm.get('colorPrimario')?.touched" class="text-[11px] text-rose-500 ml-0.5">
+                Debe ser un color hexadecimal, ej. #006BA8
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
+            <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
+            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">3. Ubicación y Presencia Digital</h3>
           </div>
           
           <div class="grid grid-cols-1 gap-4">
@@ -605,7 +661,7 @@
           <div class="space-y-4">
             <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
               <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
-              <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">3. Horarios de Atención del Sistema</h3>
+              <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">4. Horarios de Atención del Sistema</h3>
             </div>
 
             <div class="grid grid-cols-1 gap-3">
@@ -697,6 +753,18 @@
 
       <!-- Grid -->
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
+        <!-- Enlace de acceso -->
+        <div class="sm:col-span-2" *ngIf="comp.slug">
+          <label class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Enlace de acceso</label>
+          <div class="flex items-center gap-2 mt-0.5">
+            <div *ngIf="comp.colorPrimario" class="w-4 h-4 rounded-full border border-slate-200 shrink-0" [style.background]="comp.colorPrimario"></div>
+            <p class="text-sm font-semibold text-slate-800 truncate">{{ loginUrlFor(comp.slug) }}</p>
+            <button type="button" (click)="copyLoginUrl(comp.slug)"
+              class="text-xs font-semibold text-blue-600 hover:text-blue-800 shrink-0">
+              <i class="pi pi-copy"></i> Copiar
+            </button>
+          </div>
+        </div>
         <!-- Correo Electrónico -->
         <div>
           <label class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Correo Electrónico</label>
