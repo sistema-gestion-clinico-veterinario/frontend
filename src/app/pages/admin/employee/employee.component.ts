@@ -196,6 +196,12 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     nombre: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(80), Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/), noLeadingTrailingSpaceValidator()]],
     apellido: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(80), Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/), noLeadingTrailingSpaceValidator()]],
     email: ['', [Validators.required, Validators.email, lowercaseEmailValidator(), Validators.maxLength(100)]],
+    username: ['', [
+      (control: AbstractControl) => (!this.isEdit() && !control.value?.trim()) ? { required: true } : null,
+      noLeadingTrailingSpaceValidator(),
+      Validators.maxLength(50),
+      Validators.pattern(/^$|^[a-zA-Z0-9._-]+$/)
+    ]],
     numeroDocumento: ['', [Validators.required, Validators.pattern(/^\d{8}$/)]],
     tipoDocumento: ['DNI', [Validators.required]],
     telefono: ['', [Validators.required, Validators.pattern(/^\d{9}$/)]],
@@ -512,6 +518,7 @@ export class EmployeeComponent implements OnInit, OnDestroy {
         nombre:            normalizeText(rawData.nombre),
         apellido:          normalizeText(rawData.apellido),
         email:             rawData.email?.trim(),
+        username:          rawData.username?.trim().toLowerCase(),
         direccion:         normalizeText(rawData.direccion),
         observaciones:     normalizeText(rawData.observaciones),
         numeroColegiatura: normalizeText(rawData.numeroColegiatura),

@@ -77,7 +77,8 @@ export class VerifyEmailComponent {
   }
 
   irAlLogin() {
-    this.router.navigate(['/login']);
+    const slug = this.route.snapshot.paramMap.get('slug');
+    this.router.navigate([slug ? `/${slug}/login` : '/login']);
   }
 
   private readAndClearToken(): string {

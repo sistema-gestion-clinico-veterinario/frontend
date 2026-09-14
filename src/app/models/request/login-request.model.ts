@@ -1,4 +1,10 @@
 export interface LoginRequest {
-  email: string;
+  slug: string;
+  username: string;
+  password: string;
+}
+
+export interface AdminLoginRequest {
+  username: string;
   password: string;
 }

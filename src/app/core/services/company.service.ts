@@ -36,4 +36,17 @@ export class CompanyService {
   toggleActivo(id: number) {
     return this.http.patch<ApiResponse<CompanyListResponse>>(`${this.apiUrl}/${id}/toggle-active`, {});
   }
+
+  /** Publico, sin autenticacion - pinta el login antes de iniciar sesion. */
+  getBrandingBySlug(slug: string) {
+    return this.http.get<ApiResponse<CompanyBrandingResponse>>(
+      `${environment.apiUrl}/company/branding/${slug}`
+    );
+  }
+}
+
+export interface CompanyBrandingResponse {
+  name: string;
+  logoUrl: string | null;
+  colorPrimario: string | null;
 }

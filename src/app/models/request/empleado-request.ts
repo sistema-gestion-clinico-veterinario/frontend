@@ -10,6 +10,7 @@ export interface EmpleadoRequest {
   nombre: string;
   apellido: string;
   email: string;
+  username?: string;
   numeroDocumento: string;
   tipoDocumento: string;
   telefono: string;
