@@ -421,6 +421,9 @@ export class ClientComponent implements OnInit {
     this.apoderadoService.getById(client.id).subscribe({
       next: (res) => {
         this.clientForm.patchValue(res.data);
+        if (res.data.companyId) {
+          this.loadClientRoles(res.data.companyId);
+        }
         this.displayModal.set(true);
         this.loadingStore.hide();
       },
