@@ -1,12 +1,21 @@
 <div class="min-h-screen bg-white md:flex">
   <section class="relative hidden min-h-screen overflow-hidden text-white md:flex md:w-3/5 md:items-center md:justify-center md:px-8 lg:px-14 xl:w-[68%] xl:px-20" [style.background]="colorPrimario">
     <div class="relative z-10 w-full max-w-sm text-center lg:max-w-md">
-      <img
-        *ngIf="logoUrl"
-        [src]="logoUrl"
-        [alt]="companyName"
-        class="mx-auto mb-7 h-auto w-52 max-w-full object-contain lg:mb-9 lg:w-72"
-      />
+      <!-- Tarjeta clara de respaldo: el color de marca puede ser oscuro o
+           parecido al propio logo (choca y no se distingue) - un fondo casi
+           blanco detras del logo garantiza contraste sin importar el color
+           elegido. -->
+      <div *ngIf="logoUrl" class="mx-auto mb-7 inline-flex items-center justify-center rounded-2xl bg-white/95 px-8 py-6 shadow-lg lg:mb-9">
+        <img
+          [src]="logoUrl"
+          [alt]="companyName"
+          class="h-auto w-40 max-w-full object-contain lg:w-56"
+        />
+      </div>
+      <!-- Mientras se resuelve la marca de la empresa del slug (ej. al
+           recargar la pagina con F5), un espacio neutro en vez de mostrar
+           por un instante el logo generico del sistema. -->
+      <div *ngIf="!logoUrl && !brandLoaded" class="mx-auto mb-7 h-[104px] w-40 animate-pulse rounded-2xl bg-white/20 lg:mb-9 lg:h-[136px] lg:w-56"></div>
       <div class="mx-auto mb-7 h-px w-20 bg-white/35"></div>
       <p class="text-xl font-bold leading-tight tracking-tight lg:text-2xl">
         Gestión veterinaria simple y segura
@@ -50,7 +59,7 @@
       <form [formGroup]="loginForm" (ngSubmit)="submit()" class="space-y-5">
         <div class="space-y-2">
           <label for="username" class="block text-sm font-semibold text-slate-700">
-            Usuario
+            Usuario o correo electrónico
           </label>
           <div class="relative">
             <span class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
@@ -63,7 +72,7 @@
               id="username"
               type="text"
               formControlName="username"
-              placeholder="tu.usuario"
+              placeholder="tu.usuario o tu@correo.com"
               autocomplete="username"
               class="h-12 w-full rounded-lg border border-slate-300 bg-white pl-11 pr-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15"
             />

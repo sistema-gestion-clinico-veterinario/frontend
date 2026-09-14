@@ -20,9 +20,12 @@ export const AuthGuard: CanActivateFn = (route, state) => {
 function validateAccess(route: ActivatedRouteSnapshot, authStore: any, router: Router) {
   const currentMenu = authStore.menu() ?? [];
   if (!authStore.activeRoleId() && currentMenu.length === 0) {
-    const slug = authStore.companySlug();
+    // El SlugUrlSerializer ya conoce el slug de la sesion actual y lo vuelve
+    // a anteponer solo en la barra de direcciones - no hace falta construirlo
+    // a mano (y hacerlo rompe el enrutado: el slug dejo de ser un segmento
+    // real que Angular Router conozca).
     authStore.logout();
-    return router.createUrlTree([slug ? `/${slug}/login` : '/login']);
+    return router.createUrlTree(['/login']);
   }
 
   if (route.data?.['thesisTool']) {
