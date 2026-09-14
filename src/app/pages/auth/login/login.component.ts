@@ -12,7 +12,7 @@ import { SessionService } from '../../../core/services/session.service';
 import { LoadingStore } from '../../../store/loading.store';
 
 const DEFAULT_BRAND_COLOR = '#006BA8';
-const DEFAULT_LOGO_URL = 'https://toqqwxveqxhlottwetev.supabase.co/storage/v1/object/public/vargas_vet/image-Photoroom.png';
+const DEFAULT_LOGO_URL = 'https://toqqwxveqxhlottwetev.supabase.co/storage/v1/object/public/vargas_vet/Fondo%20de%20Pantalla%20Computador%20Simple%20Beige%20(4).png';
 const DEFAULT_COMPANY_NAME = 'SystemVet';
 
 @Component({
