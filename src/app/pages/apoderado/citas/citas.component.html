@@ -13,7 +13,7 @@
       </h1>
       <p class="text-sm text-slate-500 mt-1 ml-[3.25rem]">Agenda, reprograma y gestiona las citas de tus mascotas</p>
     </div>
-    <button (click)="openNuevaCita()"
+    <button *appHasPermission="'VISTA_MIS_CITAS:escribir'" (click)="openNuevaCita()"
       class="h-10 flex items-center gap-2 bg-[#0066AA] text-white font-semibold rounded-xl px-5 text-sm shadow-[#0066AA]/20 hover:shadow-md hover:shadow-[#0066AA]/30 hover:brightness-110 transition-all active:scale-[0.97] cursor-pointer">
       <i class="pi pi-plus text-xs"></i>
       Nueva Cita
