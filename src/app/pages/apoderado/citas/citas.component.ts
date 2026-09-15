@@ -19,6 +19,7 @@ import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-lea
 import { textContentValidator } from '../../../core/validators/text-content.validator';
 import { isLowercaseEmail } from '../../../core/utils/input-validation.util';
 import { normalizeText } from '../../../core/utils/normalize-text.util';
+import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 
 interface HorarioResumen {
   diaSemana: string;
@@ -43,7 +44,8 @@ interface HorarioResumen {
     DropdownModule,
     ToastModule,
     CalendarModule,
-    RouterModule
+    RouterModule,
+    HasPermissionDirective
   ],
   providers: [MessageService],
   templateUrl: './citas.component.html',
