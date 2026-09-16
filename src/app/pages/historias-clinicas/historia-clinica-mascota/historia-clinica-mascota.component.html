@@ -52,31 +52,109 @@
         <p class="text-sm font-bold text-slate-700">{{ hc()!.propietarioTelefono || '—' }}</p>
       </div>
     </div>
-    <div class="mb-6 overflow-x-auto border-b border-slate-200">
-    <nav class="flex min-w-max items-center gap-7 px-1" aria-label="Secciones de la historia de la mascota">
+
+    <div class="bg-white border border-slate-200 rounded-xl p-5 mb-5">
+      <div class="flex items-center justify-between gap-3 mb-3">
+        <div class="flex items-center gap-2">
+          <i class="pi pi-heart-fill text-sm text-slate-400"></i>
+          <p class="text-xs font-extrabold text-slate-500 uppercase tracking-widest">Antecedentes y ficha médica</p>
+        </div>
+        <button *ngIf="canModify() && !editandoAntecedentes()" type="button" (click)="editarAntecedentes()"
+          class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600 text-[10px] font-bold hover:bg-slate-200 transition-all">
+          <i class="pi pi-pencil text-[9px]"></i> Editar
+        </button>
+      </div>
+
+      <div *ngIf="!editandoAntecedentes()" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div>
+          <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Enfermedades previas</p>
+          <p class="text-sm text-slate-700">{{ hc()!.enfermedades || '—' }}</p>
+        </div>
+        <div>
+          <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Procedimientos previos</p>
+          <p class="text-sm text-slate-700">{{ hc()!.procedimientos || '—' }}</p>
+        </div>
+        <div>
+          <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Antecedentes personales</p>
+          <p class="text-sm text-slate-700">{{ hc()!.antecedentesPersonales || '—' }}</p>
+        </div>
+        <div>
+          <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Antecedentes familiares</p>
+          <p class="text-sm text-slate-700">{{ hc()!.antecedentesFamiliares || '—' }}</p>
+        </div>
+        <div>
+          <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Grupo sanguíneo</p>
+          <p class="text-sm text-slate-700">{{ hc()!.grupoSanguineo || '—' }}</p>
+        </div>
+      </div>
+
+      <div *ngIf="editandoAntecedentes()" class="flex flex-col gap-3">
+        <div class="grid sm:grid-cols-2 gap-3">
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-bold text-slate-600">Enfermedades previas</label>
+            <textarea [(ngModel)]="antecedentesForm.enfermedades" rows="2" maxlength="500"
+              class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"></textarea>
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-bold text-slate-600">Procedimientos previos</label>
+            <textarea [(ngModel)]="antecedentesForm.procedimientos" rows="2" maxlength="500"
+              class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"></textarea>
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-bold text-slate-600">Antecedentes personales</label>
+            <textarea [(ngModel)]="antecedentesForm.antecedentesPersonales" rows="2" maxlength="500"
+              class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"></textarea>
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-bold text-slate-600">Antecedentes familiares</label>
+            <textarea [(ngModel)]="antecedentesForm.antecedentesFamiliares" rows="2" maxlength="500"
+              class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"></textarea>
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-bold text-slate-600">Grupo sanguíneo</label>
+            <input [(ngModel)]="antecedentesForm.grupoSanguineo" type="text" maxlength="20"
+              class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 bg-white outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20" />
+          </div>
+        </div>
+        <div class="flex items-center justify-end gap-2">
+          <button type="button" (click)="cancelarEdicionAntecedentes()" [disabled]="guardandoAntecedentes()"
+            class="px-3 py-1.5 rounded-lg text-slate-500 text-xs font-bold hover:bg-slate-100 transition-all disabled:opacity-50">
+            Cancelar
+          </button>
+          <button type="button" (click)="guardarAntecedentes()" [disabled]="guardandoAntecedentes()"
+            class="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-[#0066AA] text-white text-xs font-bold hover:bg-[#0055aa] transition-all disabled:opacity-60">
+            <i *ngIf="guardandoAntecedentes()" class="pi pi-spin pi-spinner text-[10px]"></i>
+            Guardar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="mb-6 overflow-x-auto border-b border-slate-200 flex justify-end">
+    <nav class="flex min-w-max items-center gap-7 px-1 font-['Barlow']" aria-label="Secciones de la historia de la mascota">
       <button type="button" (click)="seleccionarSeccion('consultas')"
         [class]="seccionActiva() === 'consultas'
           ? 'flex items-center gap-2 border-b-2 border-[#0066AA] px-1 py-3.5 text-[#0066AA]'
           : 'flex items-center gap-2 border-b-2 border-transparent px-1 py-3.5 text-slate-500 hover:text-slate-800'">
         <i class="pi pi-file-edit text-sm"></i>
-        <strong class="text-base font-extrabold">Consultas</strong>
-        <span class="grid min-w-6 place-items-center rounded-full bg-slate-100 px-1.5 py-0.5 text-xs font-extrabold text-slate-600">{{ hc()!.consultas.length }}</span>
+        <strong class="text-base font-bold">Consultas</strong>
+        <span class="grid min-w-6 place-items-center rounded-full bg-slate-100 px-1.5 py-0.5 text-xs font-bold text-slate-600">{{ hc()!.consultas.length }}</span>
       </button>
       <button type="button" (click)="seleccionarSeccion('servicios')"
         [class]="seccionActiva() === 'servicios'
           ? 'flex items-center gap-2 border-b-2 border-[#0066AA] px-1 py-3.5 text-[#0066AA]'
           : 'flex items-center gap-2 border-b-2 border-transparent px-1 py-3.5 text-slate-500 hover:text-slate-800'">
         <i class="pi pi-scissors text-sm"></i>
-        <strong class="text-base font-extrabold">Servicios</strong>
-        <span class="grid min-w-6 place-items-center rounded-full bg-slate-100 px-1.5 py-0.5 text-xs font-extrabold text-slate-600">{{ serviciosNoMedicos().length }}</span>
+        <strong class="text-base font-bold">Servicios</strong>
+        <span class="grid min-w-6 place-items-center rounded-full bg-slate-100 px-1.5 py-0.5 text-xs font-bold text-slate-600">{{ serviciosNoMedicos().length }}</span>
       </button>
       <button type="button" (click)="seleccionarSeccion('preventivos')"
         [class]="seccionActiva() === 'preventivos'
           ? 'flex items-center gap-2 border-b-2 border-[#0066AA] px-1 py-3.5 text-[#0066AA]'
           : 'flex items-center gap-2 border-b-2 border-transparent px-1 py-3.5 text-slate-500 hover:text-slate-800'">
         <i class="pi pi-shield text-sm"></i>
-        <strong class="text-base font-extrabold">Preventivos</strong>
-        <span class="grid min-w-6 place-items-center rounded-full bg-slate-100 px-1.5 py-0.5 text-xs font-extrabold text-slate-600">{{ hc()!.controlesPreventivos?.length || 0 }}</span>
+        <strong class="text-base font-bold">Preventivos</strong>
+        <span class="grid min-w-6 place-items-center rounded-full bg-slate-100 px-1.5 py-0.5 text-xs font-bold text-slate-600">{{ hc()!.controlesPreventivos?.length || 0 }}</span>
       </button>
     </nav>
     </div>
@@ -119,6 +197,20 @@
               <p *ngIf="consulta.veterinarioNombre" class="text-[10px] text-slate-400 mt-1 truncate">
                 <i class="pi pi-user mr-1"></i>{{ consulta.veterinarioNombre }}
               </p>
+              <div class="flex items-center gap-2.5 mt-1.5 flex-wrap">
+                <span *ngIf="consulta.pesoEnConsulta" class="text-[10px] font-bold text-slate-400 flex items-center gap-1">
+                  <i class="pi pi-chart-line text-[9px]"></i>{{ consulta.pesoEnConsulta }} kg
+                </span>
+                <span *ngIf="consulta.diagnosticos.length > 0" class="text-[10px] font-bold text-slate-400 flex items-center gap-1">
+                  <i class="pi pi-heart-fill text-[9px]"></i>{{ consulta.diagnosticos.length }}
+                </span>
+                <span *ngIf="consulta.prescripciones.length > 0" class="text-[10px] font-bold text-slate-400 flex items-center gap-1">
+                  <i class="pi pi-file-edit text-[9px]"></i>{{ consulta.prescripciones.length }}
+                </span>
+                <span *ngIf="consulta.archivos.length > 0" class="text-[10px] font-bold text-slate-400 flex items-center gap-1">
+                  <i class="pi pi-paperclip text-[9px]"></i>{{ consulta.archivos.length }}
+                </span>
+              </div>
             </button>
           </div>
         </div>
@@ -149,44 +241,16 @@
               </div>
             </div>
           </div>
-          <div class="flex border-b border-slate-100 px-5">
-            <button
-              (click)="seleccionarTab('clinico')"
-              [class]="tabActiva() === 'clinico'
-                ? 'py-3 text-xs font-extrabold text-[#0066AA] border-b-2 border-[#0066AA] mr-6'
-                : 'py-3 text-xs font-bold text-slate-400 border-b-2 border-transparent mr-6 hover:text-slate-600'">
-              Clínico
-            </button>
-            <button
-              (click)="seleccionarTab('recetas')"
-              [class]="tabActiva() === 'recetas'
-                ? 'py-3 text-xs font-extrabold text-[#0066AA] border-b-2 border-[#0066AA] mr-6'
-                : 'py-3 text-xs font-bold text-slate-400 border-b-2 border-transparent mr-6 hover:text-slate-600'">
-              Recetas
-              <span *ngIf="consultaActiva() && consultaActiva()!.prescripciones.length > 0"
-                class="ml-1 bg-blue-100 text-[#0066AA] rounded-full px-1.5 py-0.5 text-[10px]">
-                {{ consultaActiva()!.prescripciones.length }}
-              </span>
-            </button>
-            <button
-              (click)="seleccionarTab('archivos')"
-              [class]="tabActiva() === 'archivos'
-                ? 'py-3 text-xs font-extrabold text-[#0066AA] border-b-2 border-[#0066AA] mr-6'
-                : 'py-3 text-xs font-bold text-slate-400 border-b-2 border-transparent mr-6 hover:text-slate-600'">
-              Archivos
-              <span *ngIf="consultaActiva() && consultaActiva()!.archivos.length > 0"
-                class="ml-1 bg-blue-100 text-[#0066AA] rounded-full px-1.5 py-0.5 text-[10px]">
-                {{ consultaActiva()!.archivos.length }}
-              </span>
-            </button>
-          </div>
-
           <div *ngIf="!consultaActiva()"
             class="py-20 text-center px-6">
             <i class="pi pi-arrow-left text-2xl text-slate-200 block mb-3"></i>
             <p class="text-xs text-slate-400 font-medium">Selecciona una consulta para ver su detalle</p>
           </div>
-          <div *ngIf="consultaActiva() && tabActiva() === 'clinico'" class="p-5 flex flex-col gap-5">
+
+          <!-- Todo el detalle de la consulta en un solo scroll: sin tabs ni clics extra -->
+          <div *ngIf="consultaActiva()" class="max-h-[75vh] overflow-y-auto divide-y divide-slate-100">
+
+          <div class="p-5 flex flex-col gap-5">
             <div>
               <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-3">Signos vitales</p>
               <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -271,11 +335,19 @@
               <p class="text-xs font-medium">Sin información clínica registrada</p>
             </div>
           </div>
-          <div *ngIf="consultaActiva() && tabActiva() === 'recetas'" class="p-5">
+          <div class="p-5 grid grid-cols-1 lg:grid-cols-2 gap-5">
+          <div>
+            <div class="flex items-center gap-2 mb-3">
+              <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Recetas</p>
+              <span *ngIf="consultaActiva()!.prescripciones.length > 0"
+                class="bg-blue-100 text-[#0066AA] rounded-full px-1.5 py-0.5 text-[10px]">
+                {{ consultaActiva()!.prescripciones.length }}
+              </span>
+            </div>
 
             <div *ngIf="consultaActiva()!.prescripciones.length === 0"
-              class="py-12 text-center text-slate-300">
-              <i class="pi pi-file-edit text-2xl block mb-2"></i>
+              class="py-8 text-center text-slate-300">
+              <i class="pi pi-file-edit text-xl block mb-2"></i>
               <p class="text-xs font-medium">Sin recetas en esta consulta</p>
             </div>
 
@@ -319,24 +391,33 @@
               </div>
             </div>
           </div>
-          <div *ngIf="consultaActiva() && tabActiva() === 'archivos'" class="p-5">
+          <div>
+            <div class="flex items-center gap-2 mb-3">
+              <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Archivos</p>
+              <span *ngIf="consultaActiva()!.archivos.length > 0"
+                class="bg-blue-100 text-[#0066AA] rounded-full px-1.5 py-0.5 text-[10px]">
+                {{ consultaActiva()!.archivos.length }}
+              </span>
+            </div>
 
             <div *ngIf="consultaActiva()!.archivos.length === 0"
-              class="py-12 text-center text-slate-300">
-              <i class="pi pi-paperclip text-2xl block mb-2"></i>
+              class="py-8 text-center text-slate-300">
+              <i class="pi pi-paperclip text-xl block mb-2"></i>
               <p class="text-xs font-medium">Sin archivos adjuntos en esta consulta</p>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="divide-y divide-slate-100 -mx-5">
               <button *ngFor="let a of consultaActiva()!.archivos"
                 type="button"
                 (click)="visualizarArchivo(a)"
                 [disabled]="previewCargando()"
-                class="flex items-center gap-3 border border-slate-200 rounded-xl p-3.5 text-left
-                       hover:border-[#0066AA] hover:bg-blue-50 group
+                class="w-full flex items-center gap-3 px-5 py-3 text-left
+                       hover:bg-slate-50 group
                        disabled:opacity-60 disabled:cursor-wait transition-colors">
-                <div class="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center shrink-0 group-hover:bg-white">
-                  <i *ngIf="!previewCargando()" class="pi pi-file text-slate-400 group-hover:text-[#0066AA]"></i>
+                <div class="w-10 h-10 rounded-lg bg-slate-100 overflow-hidden flex items-center justify-center shrink-0">
+                  <img *ngIf="esImagen(a) && miniaturas().get(a.id) as miniatura" [src]="miniatura"
+                    class="w-full h-full object-cover" alt="" />
+                  <i *ngIf="!(esImagen(a) && miniaturas().get(a.id)) && !previewCargando()" class="pi pi-file text-slate-400 group-hover:text-[#0066AA]"></i>
                   <i *ngIf="previewCargando()" class="pi pi-spin pi-spinner text-[#0066AA]"></i>
                 </div>
                 <div class="flex-1 min-w-0">
@@ -355,7 +436,9 @@
               </button>
             </div>
           </div>
+          </div>
 
+          </div>
         </div>
       </div>
     </div>
