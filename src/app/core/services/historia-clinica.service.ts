@@ -41,6 +41,16 @@ export class HistoriaClinicaService {
     return this.http.get<ApiResponse<HistoriaClinicaDetalle>>(`${this.hcUrl}/numero/${encodeURIComponent(numeroHc)}`);
   }
 
+  actualizarAntecedentes(id: number, request: {
+    enfermedades?: string;
+    procedimientos?: string;
+    antecedentesPersonales?: string;
+    antecedentesFamiliares?: string;
+    grupoSanguineo?: string;
+  }) {
+    return this.http.put<ApiResponse<HistoriaClinicaDetalle>>(`${this.hcUrl}/${id}/antecedentes`, request);
+  }
+
   getConsulta(consultaId: number) {
     return this.http.get<ApiResponse<ConsultaResponse>>(`${this.citasUrl}/${consultaId}`);
   }

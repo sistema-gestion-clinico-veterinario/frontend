@@ -1,5 +1,6 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ToastModule } from 'primeng/toast';
@@ -23,11 +24,11 @@ import { formatearFechaClinica } from '../../../shared/utils/fecha-clinica.util'
 @Component({
   selector: 'app-historia-clinica-mascota',
   standalone: true,
-  imports: [CommonModule, ToastModule, ArchivoModalsComponent, DiagnosticoIaComponent],
+  imports: [CommonModule, FormsModule, ToastModule, ArchivoModalsComponent, DiagnosticoIaComponent],
   providers: [MessageService],
   templateUrl: './historia-clinica-mascota.component.html'
 })
-export class HistoriaClinicaMascotaComponent implements OnInit {
+export class HistoriaClinicaMascotaComponent implements OnInit, OnDestroy {
   private readonly route        = inject(ActivatedRoute);
   private readonly router       = inject(Router);
   private readonly hcService    = inject(HistoriaClinicaService);
@@ -44,11 +45,21 @@ export class HistoriaClinicaMascotaComponent implements OnInit {
   numeroHc            = '';
   hc                  = signal<HistoriaClinicaDetalle | null>(null);
   consultaActiva      = signal<ConsultaResumen | null>(null);
+  miniaturas          = signal<Map<number, string>>(new Map());
   seccionActiva       = signal<'consultas' | 'servicios' | 'preventivos'>('consultas');
-  tabActiva           = signal<'clinico' | 'recetas' | 'archivos'>('clinico');
   noTieneHc           = signal<boolean>(false);
   serviciosNoMedicos  = signal<CitaResponse[]>([]);
   loadingServicios    = signal(false);
+
+  editandoAntecedentes = signal(false);
+  guardandoAntecedentes = signal(false);
+  antecedentesForm = {
+    enfermedades: '',
+    procedimientos: '',
+    antecedentesPersonales: '',
+    antecedentesFamiliares: '',
+    grupoSanguineo: ''
+  };
 
   readonly vacunas = computed(() =>
     (this.hc()?.aplicacionesPreventivas ?? []).filter(a => a.tipo === 'VACUNACION'));
@@ -210,6 +221,7 @@ export class HistoriaClinicaMascotaComponent implements OnInit {
         this.enfocarProximoControl(res.data);
         if (res.data.consultas.length > 0) {
           this.consultaActiva.set(res.data.consultas[0]);
+          this.cargarMiniaturas(res.data.consultas[0]);
         }
         this.loadingStore.hide();
       },
@@ -224,13 +236,74 @@ export class HistoriaClinicaMascotaComponent implements OnInit {
     });
   }
 
+  editarAntecedentes() {
+    if (!this.canModify()) return;
+    const hc = this.hc();
+    if (!hc) return;
+    this.antecedentesForm = {
+      enfermedades: hc.enfermedades ?? '',
+      procedimientos: hc.procedimientos ?? '',
+      antecedentesPersonales: hc.antecedentesPersonales ?? '',
+      antecedentesFamiliares: hc.antecedentesFamiliares ?? '',
+      grupoSanguineo: hc.grupoSanguineo ?? ''
+    };
+    this.editandoAntecedentes.set(true);
+  }
+
+  cancelarEdicionAntecedentes() {
+    this.editandoAntecedentes.set(false);
+  }
+
+  guardarAntecedentes() {
+    const hc = this.hc();
+    if (!hc) return;
+    this.guardandoAntecedentes.set(true);
+    this.hcService.actualizarAntecedentes(hc.id, this.antecedentesForm).subscribe({
+      next: (res) => {
+        this.hc.set({ ...hc, ...res.data });
+        this.guardandoAntecedentes.set(false);
+        this.editandoAntecedentes.set(false);
+        this.msgService.add({ severity: 'success', summary: 'Guardado', detail: 'Antecedentes actualizados' });
+      },
+      error: () => {
+        this.guardandoAntecedentes.set(false);
+        this.msgService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron guardar los antecedentes' });
+      }
+    });
+  }
+
   seleccionarConsulta(consulta: ConsultaResumen) {
     this.consultaActiva.set(consulta);
     this.seccionActiva.set('consultas');
+    this.cargarMiniaturas(consulta);
   }
 
-  seleccionarTab(tab: 'clinico' | 'recetas' | 'archivos') {
-    this.tabActiva.set(tab);
+  esImagen(archivo: ArchivoClinico): boolean {
+    if (archivo.tipo === 'IMAGEN') return true;
+    const ext = archivo.nombre?.split('.').pop()?.toLowerCase();
+    return ext === 'jpg' || ext === 'jpeg' || ext === 'png';
+  }
+
+  private cargarMiniaturas(consulta: ConsultaResumen) {
+    const actuales = this.miniaturas();
+    for (const archivo of consulta.archivos) {
+      if (!this.esImagen(archivo) || actuales.has(archivo.id)) continue;
+      this.hcService.obtenerContenidoArchivo(consulta.id, archivo.id).subscribe({
+        next: (blob) => {
+          const url = URL.createObjectURL(blob);
+          const mapa = new Map(this.miniaturas());
+          mapa.set(archivo.id, url);
+          this.miniaturas.set(mapa);
+        },
+        error: () => {}
+      });
+    }
+  }
+
+  ngOnDestroy() {
+    for (const url of this.miniaturas().values()) {
+      URL.revokeObjectURL(url);
+    }
   }
 
   seleccionarSeccion(seccion: 'consultas' | 'servicios' | 'preventivos') {

@@ -9,7 +9,7 @@ import { ToastModule } from 'primeng/toast';
 import { MenuModule } from 'primeng/menu';
 import { SkeletonModule } from 'primeng/skeleton';
 import { MenuItem, MessageService } from 'primeng/api';
-import { forkJoin } from 'rxjs';
+import { forkJoin, firstValueFrom } from 'rxjs';
 
 import { MascotaService } from '../../../core/services/mascota.service';
 import { ApoderadoService } from '../../../core/services/apoderado.service';
@@ -266,6 +266,76 @@ export class ListaMascotasComponent implements OnInit {
 
   irANueva() {
     this.router.navigate(['/mascotas/form']);
+  }
+
+  async descargarMascotas() {
+    try {
+      const nombre = this.normalizeNameFilter(this.searchNombre) || undefined;
+      const mascotas: MascotaResponse[] = [];
+      const pageSize = 10;
+      let page = 0;
+      let totalPages = 1;
+
+      while (page < totalPages) {
+        const res = await firstValueFrom(this.mascotaService.listar(
+          this.activeCompanyId ?? undefined,
+          nombre,
+          this.filterEspecie || undefined,
+          page,
+          pageSize,
+          this.filterActivo ?? undefined,
+          true
+        ));
+        const data = res.data;
+        mascotas.push(...(data.content ?? []));
+        totalPages = data.page?.totalPages ?? data.totalPages ?? Math.ceil(
+          (data.page?.totalElements ?? data.totalElements ?? mascotas.length) / pageSize
+        );
+        page += 1;
+
+        if (!data.content?.length) break;
+      }
+
+      if (!mascotas.length) {
+        this.messageService.add({ severity: 'info', summary: 'Sin registros', detail: 'No hay mascotas para descargar' });
+        return;
+      }
+
+      const ExcelJSModule = await import('exceljs');
+      const ExcelJS = ExcelJSModule.default ?? ExcelJSModule;
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('Mascotas');
+      worksheet.columns = [
+        { header: 'Nombre', key: 'nombre', width: 24 },
+        { header: 'Especie', key: 'especie', width: 14 },
+        { header: 'Raza', key: 'raza', width: 22 },
+        { header: 'Sexo', key: 'sexo', width: 12 },
+        { header: 'Edad', key: 'edad', width: 14 },
+        { header: 'Propietario', key: 'propietario', width: 28 },
+        { header: 'Estado', key: 'estado', width: 12 }
+      ];
+      mascotas.forEach(mascota => worksheet.addRow({
+        nombre: mascota.nombreCompleto,
+        especie: this.especieLabel(mascota.especie),
+        raza: mascota.razaNombre || 'Sin raza',
+        sexo: this.sexoLabel(mascota.sexo),
+        edad: this.calcularEdad(mascota.fechaNacimiento),
+        propietario: mascota.apoderadoNombreCompleto,
+        estado: mascota.activo ? 'Activo' : 'Inactivo'
+      }));
+      worksheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+      worksheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0066AA' } };
+
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `mascotas_${new Date().toISOString().slice(0, 10)}.xlsx`;
+      link.click();
+      URL.revokeObjectURL(link.href);
+    } catch {
+      this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron descargar las mascotas' });
+    }
   }
 
   irAEditar(mascota: MascotaResponse) {

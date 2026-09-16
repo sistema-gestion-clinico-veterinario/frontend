@@ -1235,6 +1235,12 @@ version: res.data.version,
     this.router.navigateByUrl(this.returnUrl);
   }
 
+  irAHistoriaClinicaCompleta() {
+    const numeroHc = this.historia()?.numeroHc;
+    if (!numeroHc) return;
+    this.router.navigate(['/historias-clinicas/mascota', numeroHc]);
+  }
+
   formatFecha(fecha: string | undefined): string {
     return formatearFechaClinica(fecha);
   }
