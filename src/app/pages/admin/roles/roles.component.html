@@ -295,7 +295,7 @@
               </div>
 
               <div *ngIf="!loadingPermisos()" class="overflow-hidden rounded-xl border border-slate-200">
-                <div class="divide-y divide-slate-100 md:hidden">
+                <div class="divide-y divide-slate-100 lg:hidden">
                   <ng-container *ngFor="let grupo of rootVentanas()">
                     <div *ngIf="childrenOf(grupo.codigo).length > 0" class="flex items-center gap-2 bg-slate-50 px-4 py-2.5"><i [class]="grupo.icono + ' text-xs text-slate-400'"></i><p class="text-xs font-bold uppercase tracking-wider text-slate-600">{{ grupo.nombre }}</p></div>
                     <ng-container *ngIf="childrenOf(grupo.codigo).length === 0" [ngTemplateOutlet]="permissionCard" [ngTemplateOutletContext]="{ v: grupo }"></ng-container>

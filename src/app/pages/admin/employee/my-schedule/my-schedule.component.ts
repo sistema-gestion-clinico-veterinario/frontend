@@ -20,6 +20,7 @@ export class MyScheduleComponent implements OnInit {
   private readonly messageService = inject(MessageService);
 
   horarios: HorarioEmpleadoResponse[] = [];
+  profileData: ProfileResponse | null = null;
   loading: boolean = false;
   currentDate = new Date();
   calendarDays: any[] = [];
@@ -35,6 +36,7 @@ export class MyScheduleComponent implements OnInit {
     this.loading = true;
     this.profileService.getMySchedule().subscribe({
       next: (res: ApiResponse<ProfileResponse>) => {
+        this.profileData = res.data;
         this.horarios = res.data.horarios || [];
         this.generateCalendar();
         this.loading = false;
@@ -135,8 +137,13 @@ export class MyScheduleComponent implements OnInit {
 
   // --- LOGIC PARA EXPORTACIÓN ---
 
-  get authStore(): any {
-    return (this as any)._profileData || { nombre: 'Empleado', cargo: 'Personal' };
+  get authStore(): { nombre: string; cargo: string; companyName: string } {
+    const p = this.profileData;
+    return {
+      nombre: p ? `${p.nombre} ${p.apellido}`.trim() : 'Empleado',
+      cargo: p?.tiposEmpleado?.length ? p.tiposEmpleado.join(', ') : (p?.especialidades?.length ? p.especialidades.join(', ') : 'Personal'),
+      companyName: p?.companyName || 'Empresa'
+    };
   }
 
   calculateTotalHours(shifts: any[]): number {
@@ -336,9 +343,11 @@ export class MyScheduleComponent implements OnInit {
         { width: 22 }, { width: 18 }, { width: 18 }, { width: 18 }, { width: 18 }, { width: 18 }, { width: 18 }, { width: 18 },
       ];
 
+      const companyName = this.authStore.companyName;
+
       sheet.mergeCells('A1:H1');
       const titleCell = sheet.getCell('A1');
-      titleCell.value = 'VARGASVET — MI HORARIO DE TRABAJO';
+      titleCell.value = `${companyName.toUpperCase()} — MI HORARIO DE TRABAJO`;
       titleCell.font  = { name: 'Calibri', bold: true, size: 16, color: { argb: 'FF0F172A' } };
       titleCell.fill  = headerFill('FFF8FAFC');
       titleCell.alignment = { horizontal: 'left', vertical: 'middle' };

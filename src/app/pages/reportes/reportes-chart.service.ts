@@ -13,6 +13,38 @@ const FONT: Partial<FontSpec> = {
 };
 const GRID_COLOR = '#eef2f7';
 
+// Paleta única para datos puramente categóricos (sin significado propio: servicios,
+// veterinarios, rangos de edad, métodos de pago...) — mismo orden y tono en todos los
+// gráficos para que la misma posición siempre se vea igual entre tarjetas.
+const CATEGORICAL_PALETTE = ['#397ce8', '#27ad6f', '#f59e0b', '#8b5cf6', '#ef5b5b', '#64748b', '#06b6d4', '#f97316'];
+
+// Colores por NOMBRE de etiqueta, no por posición en el array: el backend ordena estos
+// grupos por frecuencia (el más numeroso primero), así que un color fijo por índice
+// terminaría pintando "Cancelada" de verde un período y de rojo el siguiente. Asignar
+// el color al texto de la etiqueta evita ese problema y le da significado real al color.
+const ESTADO_CONSULTA_COLORS: Record<string, string> = {
+  'Completada': '#22a06b',
+  'En proceso': '#f59e0b',
+  'Programada': '#4f86e8',
+  'Confirmada': '#4f86e8',
+  'Sala de espera': '#06b6d4',
+  'Pendiente': '#f59e0b',
+  'Reprogramada': '#8b5cf6',
+  'Cancelada': '#ef5b5b',
+  'No asistio': '#ef5b5b',
+  'Eliminada': '#64748b',
+  'Otro': '#64748b'
+};
+
+const CUMPLIMIENTO_COLORS: Record<string, string> = {
+  'Al día': '#22a06b',
+  'Atrasado': '#ef5b5b'
+};
+
+function colorsForLabels(labels: string[], byLabel: Record<string, string>, fallback: string[] = CATEGORICAL_PALETTE): string[] {
+  return labels.map((label, index) => byLabel[label] ?? fallback[index % fallback.length]);
+}
+
 /**
  * Chart.js muta/normaliza los objetos de `scales` que recibe (les adjunta estado interno de
  * escala). Si varias instancias de Chart comparten el mismo objeto anidado (p. ej. vía
@@ -77,48 +109,42 @@ export class ReportesChartService implements OnDestroy {
     this.createHorizontalBar(
       canvasByName.get('estados'),
       reporte.consultasPorEstado,
-      ['#22a06b', '#f59e0b', '#4f86e8', '#ef5b5b', '#8b5cf6', '#64748b']
+      ESTADO_CONSULTA_COLORS
     );
     this.createDoughnut(canvasByName.get('especies'), reporte.pacientesPorEspecie);
     this.createHorizontalBar(
       canvasByName.get('servicios'),
-      reporte.serviciosMasSolicitados,
-      ['#397ce8', '#27ad6f', '#f5a524', '#8b5cf6', '#ef667d']
+      reporte.serviciosMasSolicitados
     );
     this.createBar(
       canvasByName.get('edades'),
-      reporte.pacientesPorRangoEdad,
-      ['#397ce8', '#27ad6f', '#f5a524', '#8b5cf6', '#64748b']
+      reporte.pacientesPorRangoEdad
     );
     this.createHorizontalBar(
       canvasByName.get('veterinarios'),
-      reporte.consultasPorVeterinario,
-      ['#397ce8', '#27ad6f', '#f5a524', '#8b5cf6', '#ef667d', '#64748b']
+      reporte.consultasPorVeterinario
     );
     this.createBar(
       canvasByName.get('frecuencia'),
-      reporte.frecuenciaConsultasPorPaciente,
-      ['#397ce8', '#27ad6f', '#f5a524']
+      reporte.frecuenciaConsultasPorPaciente
     );
     this.createHorizontalBarMonto(
       canvasByName.get('ingresosMetodo'),
-      reporte.ingresosPorMetodoPago,
-      ['#397ce8', '#27ad6f', '#f5a524', '#8b5cf6', '#ef667d', '#64748b']
+      reporte.ingresosPorMetodoPago
     );
     this.createHorizontalBarMonto(
       canvasByName.get('ingresosServicio'),
-      reporte.ingresosPorServicio,
-      ['#397ce8', '#27ad6f', '#f5a524', '#8b5cf6', '#ef667d', '#64748b']
+      reporte.ingresosPorServicio
     );
     this.createDoughnut(
       canvasByName.get('cumplimientoVacunacion'),
       reporte.cumplimientoVacunacion,
-      ['#27ad6f', '#ef5b5b']
+      CUMPLIMIENTO_COLORS
     );
     this.createDoughnut(
       canvasByName.get('cumplimientoDesparasitacion'),
       reporte.cumplimientoDesparasitacion,
-      ['#27ad6f', '#ef5b5b']
+      CUMPLIMIENTO_COLORS
     );
   }
 
@@ -155,12 +181,12 @@ export class ReportesChartService implements OnDestroy {
   private createBar(
     canvas: HTMLCanvasElement | undefined,
     items: ItemCount[] | null,
-    colors: string[]
+    colorsByLabel: Record<string, string> = {}
   ): void {
     if (!canvas || !items || items.length === 0) return;
     this.charts.push(new Chart(canvas, {
       type: 'bar',
-      data: this.barData(items, colors, 34),
+      data: this.barData(items, colorsByLabel, 34),
       options: barOptions('x')
     }));
   }
@@ -168,12 +194,12 @@ export class ReportesChartService implements OnDestroy {
   private createHorizontalBar(
     canvas: HTMLCanvasElement | undefined,
     items: ItemCount[] | null,
-    colors: string[]
+    colorsByLabel: Record<string, string> = {}
   ): void {
     if (!canvas || !items || items.length === 0) return;
     this.charts.push(new Chart(canvas, {
       type: 'bar',
-      data: this.barData(items, colors, 22),
+      data: this.barData(items, colorsByLabel, 22),
       options: barOptions('y')
     }));
   }
@@ -181,7 +207,7 @@ export class ReportesChartService implements OnDestroy {
   private createDoughnut(
     canvas: HTMLCanvasElement | undefined,
     items: ItemCount[] | null,
-    colors: string[] = ['#397ce8', '#27ad6f', '#f5a524', '#8b5cf6', '#ef667d', '#64748b']
+    colorsByLabel: Record<string, string> = {}
   ): void {
     if (!canvas || !items || items.length === 0) return;
     this.charts.push(new Chart(canvas, {
@@ -190,7 +216,7 @@ export class ReportesChartService implements OnDestroy {
         labels: items.map(item => item.label),
         datasets: [{
           data: items.map(item => item.count),
-          backgroundColor: colors,
+          backgroundColor: colorsForLabels(items.map(item => item.label), colorsByLabel),
           borderWidth: 3,
           borderColor: '#fff'
         }]
@@ -209,12 +235,12 @@ export class ReportesChartService implements OnDestroy {
     }));
   }
 
-  private barData(items: ItemCount[], colors: string[], maxBarThickness: number) {
+  private barData(items: ItemCount[], colorsByLabel: Record<string, string>, maxBarThickness: number) {
     return {
       labels: items.map(item => item.label),
       datasets: [{
         data: items.map(item => item.count),
-        backgroundColor: items.map((_, index) => colors[index % colors.length]),
+        backgroundColor: colorsForLabels(items.map(item => item.label), colorsByLabel),
         borderRadius: 5,
         maxBarThickness
       }]
@@ -224,7 +250,7 @@ export class ReportesChartService implements OnDestroy {
   private createHorizontalBarMonto(
     canvas: HTMLCanvasElement | undefined,
     items: ItemMonto[] | null,
-    colors: string[]
+    colorsByLabel: Record<string, string> = {}
   ): void {
     if (!canvas || !items || items.length === 0) return;
     this.charts.push(new Chart(canvas, {
@@ -233,7 +259,7 @@ export class ReportesChartService implements OnDestroy {
         labels: items.map(item => item.label),
         datasets: [{
           data: items.map(item => item.monto),
-          backgroundColor: items.map((_, index) => colors[index % colors.length]),
+          backgroundColor: colorsForLabels(items.map(item => item.label), colorsByLabel),
           borderRadius: 5,
           maxBarThickness: 22
         }]

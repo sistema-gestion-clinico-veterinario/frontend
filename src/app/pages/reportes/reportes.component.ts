@@ -15,6 +15,8 @@ import { FormsModule } from '@angular/forms';
 import { EMPTY, Subject, combineLatest } from 'rxjs';
 import { catchError, distinctUntilChanged, startWith, switchMap } from 'rxjs/operators';
 import { EmpleadoService } from '../../core/services/empleado.service';
+import { CompanyService } from '../../core/services/company.service';
+import { CompanyDTO } from '../../models/request/company-dto';
 import { ReportesClinicosService } from '../../core/services/reportes-clinicos.service';
 import { EmpleadoListResponse } from '../../models/response/empleado-list-response';
 import {
@@ -23,7 +25,7 @@ import {
 } from '../../models/response/reportes-clinicos-response';
 import { AuthStore } from '../../store/auth.store';
 import { ReportesChartService } from './reportes-chart.service';
-import { ReportesExportService } from './reportes-export.service';
+import { ReportesExportService, ReportChartImage } from './reportes-export.service';
 import { Periodo, calcularRangoPeriodo } from './reportes-periodo.utils';
 
 @Component({
@@ -39,6 +41,7 @@ export default class ReportesComponent {
   private readonly authStore = inject(AuthStore);
   private readonly reportesService = inject(ReportesClinicosService);
   private readonly empleadoService = inject(EmpleadoService);
+  private readonly companyService = inject(CompanyService);
   private readonly chartService = inject(ReportesChartService);
   private readonly exportService = inject(ReportesExportService);
   private readonly destroyRef = inject(DestroyRef);
@@ -53,6 +56,7 @@ export default class ReportesComponent {
 
   readonly data = signal<ReportesClinicos | null>(null);
   readonly veterinarios = signal<EmpleadoListResponse[]>([]);
+  readonly companyInfo = signal<CompanyDTO | null>(null);
   readonly diasSemana = [
     { id: 1, label: 'Lun' },
     { id: 2, label: 'Mar' },
@@ -73,7 +77,7 @@ export default class ReportesComponent {
     ['OTRO', 'Otro']
   ] as const;
 
-  periodo: Periodo = 'todos';
+  periodo: Periodo = 'mes';
   fechaDesde = '';
   fechaHasta = '';
   veterinarioId: number | null = null;
@@ -108,14 +112,20 @@ export default class ReportesComponent {
       .subscribe(response => {
         const empleados = response.data.content ?? [];
         this.veterinarios.set(
-          empleados.filter(empleado =>
-            empleado.activo
-            && empleado.tiposEmpleado?.some(tipo =>
-              tipo.toUpperCase().includes('VETERIN')
-            )
-          )
+          empleados.filter(empleado => empleado.activo)
         );
       });
+
+    companyId$
+      .pipe(
+        switchMap(companyId =>
+          companyId == null
+            ? EMPTY
+            : this.companyService.getById(companyId).pipe(catchError(() => EMPTY))
+        ),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe(response => this.companyInfo.set(response.data));
 
     combineLatest([
       companyId$,
@@ -155,7 +165,7 @@ export default class ReportesComponent {
   }
 
   limpiarFiltros(): void {
-    this.periodo = 'todos';
+    this.periodo = 'mes';
     this.veterinarioId = null;
     this.especie = '';
     this.actualizarRangoSeleccionado();
@@ -206,12 +216,48 @@ export default class ReportesComponent {
 
   async exportarPdf(): Promise<void> {
     const reporte = this.data();
-    if (reporte) await this.exportService.exportarPdf(reporte);
+    if (!reporte) return;
+    const empresa = this.companyInfo();
+    const logoDataUrl = empresa?.logoUrl ? await this.descargarComoDataUrl(empresa.logoUrl) : null;
+    await this.exportService.exportarPdf(reporte, this.chartImagenesPorNombre(), empresa, logoDataUrl);
+  }
+
+  private async descargarComoDataUrl(url: string): Promise<string | null> {
+    try {
+      const blob = await fetch(url).then(r => r.blob());
+      return await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    } catch {
+      return null;
+    }
+  }
+
+  private chartImagenesPorNombre(): Map<string, ReportChartImage> {
+    const imagenes = new Map<string, ReportChartImage>();
+    for (const ref of this.chartCanvases()) {
+      const canvas = ref.nativeElement;
+      const nombre = canvas.dataset['reportChart'];
+      if (nombre && canvas.width > 0 && canvas.height > 0) {
+        imagenes.set(nombre, {
+          dataUrl: canvas.toDataURL('image/png', 1.0),
+          width: canvas.width,
+          height: canvas.height
+        });
+      }
+    }
+    return imagenes;
   }
 
   async exportarExcel(): Promise<void> {
     const reporte = this.data();
-    if (reporte) await this.exportService.exportarExcel(reporte);
+    if (!reporte) return;
+    const empresa = this.companyInfo();
+    const logoDataUrl = empresa?.logoUrl ? await this.descargarComoDataUrl(empresa.logoUrl) : null;
+    await this.exportService.exportarExcel(reporte, empresa, logoDataUrl);
   }
 
   private actualizarRangoSeleccionado(): void {
