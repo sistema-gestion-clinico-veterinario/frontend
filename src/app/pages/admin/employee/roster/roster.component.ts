@@ -7,6 +7,7 @@ import { EmpleadoListResponse } from '../../../../models/response/empleado-list-
 import { AuthStore } from '../../../../store/auth.store';
 import { CompanyService } from '../../../../core/services/company.service';
 import { CompanyDTO } from '../../../../models/request/company-dto';
+import { AuditLogService } from '../../../../core/services/audit-log.service';
 
 import { DropdownModule } from 'primeng/dropdown';
 import { ButtonModule } from 'primeng/button';
@@ -32,6 +33,7 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
   private readonly authStore = inject(AuthStore);
   private readonly companyService = inject(CompanyService);
   private readonly messageService = inject(MessageService);
+  private readonly auditLogService = inject(AuditLogService);
   private readonly confirmationService = inject(ConfirmationService);
 
   company             = signal<CompanyDTO | null>(null);
@@ -1036,6 +1038,7 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
     );
 
     pdf.save(`Cuadrante_Horario_${empName.replace(/\s+/g, '_')}.pdf`);
+    this.auditLogService.registrarDescarga('HORARIO_PDF', empName).subscribe();
   }
 
   async exportExcel() {
@@ -1055,6 +1058,8 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
     const totalHrs = this.totalShiftsHours();
     const weeks    = this.printableWeeks();
     const days     = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+    const co       = this.company();
+    const companyName = co?.name || this.authStore.selectedEnterprise()?.name || 'Empresa';
 
     const headerFill = (hex: string): ExcelJS.Fill => ({ type: 'pattern', pattern: 'solid', fgColor: { argb: hex } });
     const thinBorder = (): Partial<ExcelJS.Borders> => ({ top: { style: 'thin', color: { argb: 'FF94A3B8' } }, left: { style: 'thin', color: { argb: 'FF94A3B8' } }, bottom: { style: 'thin', color: { argb: 'FF94A3B8' } }, right: { style: 'thin', color: { argb: 'FF94A3B8' } } });
@@ -1076,7 +1081,7 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
 
     sheet.mergeCells('A1:H1');
     const titleCell = sheet.getCell('A1');
-    titleCell.value     = 'VARGASVET — CUADRANTE CONSOLIDADO DE TRABAJO';
+    titleCell.value     = `${companyName.toUpperCase()} — CUADRANTE CONSOLIDADO DE TRABAJO`;
     titleCell.font      = { name: 'Calibri', bold: true, size: 16, color: { argb: 'FF0F172A' } };
     titleCell.fill      = headerFill('FFF8FAFC');
     titleCell.alignment = { horizontal: 'left', vertical: 'middle' };
@@ -1182,7 +1187,7 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
     currentRow++;
     sheet.mergeCells(`A${currentRow}:H${currentRow}`);
     const footerCell      = sheet.getCell(`A${currentRow}`);
-    footerCell.value      = `Este cuadrante representa la planificación de turnos vigente. Toda modificación deberá ser autorizada por la Gerencia de Operaciones de VargasVet S.A.C. — Emitido el ${dateStr}`;
+    footerCell.value      = `Este cuadrante representa la planificación de turnos vigente. Toda modificación deberá ser autorizada por la Gerencia de Operaciones de ${companyName}. — Emitido el ${dateStr}`;
     footerCell.font       = { name: 'Calibri', italic: true, size: 8, color: { argb: 'FF94A3B8' } };
     footerCell.alignment  = { horizontal: 'center', vertical: 'middle', wrapText: true };
     footerCell.border     = { top: { style: 'thin', color: { argb: 'FFE2E8F0' } } };
@@ -1197,5 +1202,6 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    this.auditLogService.registrarDescarga('HORARIO_EXCEL', empName).subscribe();
   }
 }

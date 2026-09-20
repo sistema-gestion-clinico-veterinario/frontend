@@ -6,6 +6,7 @@ import { PaginatorModule } from 'primeng/paginator';
 import { InputTextModule } from 'primeng/inputtext';
 import { FormsModule } from '@angular/forms';
 import { HistoriaClinicaService } from '../../../core/services/historia-clinica.service';
+import { AuditLogService } from '../../../core/services/audit-log.service';
 import { LoadingStore } from '../../../store/loading.store';
 import { AuthStore } from '../../../store/auth.store';
 import { PrescripcionResponse } from '../../../models/response/prescripcion-response';
@@ -27,6 +28,7 @@ import { hasMeaningfulText, isDateRangeValid } from '../../../core/utils/input-v
 })
 export class ListaRecetasComponent implements OnInit {
   private readonly hcService = inject(HistoriaClinicaService);
+  private readonly auditLogService = inject(AuditLogService);
   readonly loadingStore = inject(LoadingStore);
   readonly authStore    = inject(AuthStore);
 
@@ -218,5 +220,7 @@ export class ListaRecetasComponent implements OnInit {
     iframe.contentDocument!.close();
     iframe.contentWindow!.onafterprint = () => document.body.removeChild(iframe);
     setTimeout(() => iframe.contentWindow!.print(), 300);
+
+    this.auditLogService.registrarDescarga('RECETA_PDF', receta.pacienteNombre).subscribe();
   }
 }
