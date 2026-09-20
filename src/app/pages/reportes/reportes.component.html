@@ -14,13 +14,14 @@
       <label class="flex min-w-0 flex-col rounded-lg border border-slate-200 bg-white px-3 py-1.5">
         <span class="text-[10px] text-slate-500">Periodo</span>
         <select class="h-7 min-w-0 bg-transparent text-sm font-semibold outline-none" [(ngModel)]="periodo" (change)="onFiltrosChange()">
-          <option value="todos" title="Incluye los últimos 3 años, no el historial completo de la clínica">Últimos 3 años</option><option value="hoy">Hoy</option>
-          <option value="semana">Esta semana</option><option value="mes">Este mes</option>
+          <option value="hoy">Hoy</option><option value="semana">Esta semana</option>
+          <option value="mes">Este mes</option>
+          <option value="todos" title="Incluye los últimos 3 años, no el historial completo de la clínica">Últimos 3 años</option>
           <option value="personalizado">Personalizado</option>
         </select>
       </label>
       <label class="flex min-w-0 flex-col rounded-lg border border-slate-200 bg-white px-3 py-1.5">
-        <span class="text-[10px] text-slate-500">Veterinario</span>
+        <span class="text-[10px] text-slate-500">Empleado</span>
         <select class="h-7 min-w-0 bg-transparent text-sm font-semibold outline-none" [(ngModel)]="veterinarioId" (change)="onFiltrosChange()">
           <option [ngValue]="null">Todos</option>
           <option *ngFor="let vet of veterinarios()" [ngValue]="vet.id">{{ vet.nombre }} {{ vet.apellido }}</option>
@@ -63,7 +64,7 @@
     <article class="chart-panel" *ngIf="report.pacientesPorEspecie as items"><div class="panel-heading"><h2>Consultas por especie</h2><span>{{ report.resumen.consultas }} total</span></div><div class="chart-area" *ngIf="items.length; else noChart"><canvas #reportChart data-report-chart="especies"></canvas></div></article>
     <article class="chart-panel" *ngIf="report.serviciosMasSolicitados as items"><div class="panel-heading"><h2>Servicios más solicitados</h2><span>Top {{ items.length }}</span></div><div class="chart-area" *ngIf="items.length; else noChart"><canvas #reportChart data-report-chart="servicios"></canvas></div></article>
     <article class="chart-panel" *ngIf="report.pacientesPorRangoEdad as items"><div class="panel-heading"><h2>Pacientes por edad</h2><span>Pacientes únicos</span></div><div class="chart-area" *ngIf="items.length; else noChart"><canvas #reportChart data-report-chart="edades"></canvas></div></article>
-    <article class="chart-panel" *ngIf="report.consultasPorVeterinario as items"><div class="panel-heading"><h2>Consultas por veterinario</h2><span>{{ report.resumen.consultas }} total</span></div><div class="chart-area" *ngIf="items.length; else noChart"><canvas #reportChart data-report-chart="veterinarios"></canvas></div></article>
+    <article class="chart-panel" *ngIf="report.consultasPorVeterinario as items"><div class="panel-heading"><h2>Consultas por empleado</h2><span>{{ report.resumen.consultas }} total</span></div><div class="chart-area" *ngIf="items.length; else noChart"><canvas #reportChart data-report-chart="veterinarios"></canvas></div></article>
     <article class="chart-panel" *ngIf="report.frecuenciaConsultasPorPaciente as items"><div class="panel-heading"><h2>Frecuencia de consultas por paciente</h2><span>Pacientes únicos</span></div><div class="chart-area" *ngIf="items.length; else noChart"><canvas #reportChart data-report-chart="frecuencia"></canvas></div></article>
     <article class="chart-panel" *ngIf="report.ingresosPorMetodoPago as items"><div class="panel-heading"><h2>Ingresos por método de pago</h2><span>Periodo seleccionado</span></div><div class="chart-area" *ngIf="items.length; else noChart"><canvas #reportChart data-report-chart="ingresosMetodo"></canvas></div></article>
     <article class="chart-panel" *ngIf="report.ingresosPorServicio as items"><div class="panel-heading"><h2>Ingresos por servicio</h2><span>Periodo seleccionado</span></div><div class="chart-area" *ngIf="items.length; else noChart"><canvas #reportChart data-report-chart="ingresosServicio"></canvas></div></article>

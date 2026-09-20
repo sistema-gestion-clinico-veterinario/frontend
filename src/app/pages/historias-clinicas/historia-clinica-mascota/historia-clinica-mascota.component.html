@@ -1,14 +1,14 @@
 <div class="p-4 sm:p-6 lg:p-4 min-h-screen bg-slate-50 font-['Barlow']">
 
-  <div class="mb-6 flex items-center justify-between gap-3">
-    <div class="flex items-center gap-3">
+  <div class="mb-6 flex items-center justify-between gap-3 flex-wrap">
+    <div class="flex items-center gap-3 min-w-0">
       <button (click)="volver()"
-        class="w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-400 hover:text-[#0066AA] hover:border-[#0066AA]">
+        class="w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-400 hover:text-[#0066AA] hover:border-[#0066AA] shrink-0">
         <i class="pi pi-arrow-left text-sm"></i>
       </button>
-      <div>
-        <h1 class="text-2xl font-extrabold text-slate-900 leading-tight">Historia Clínica</h1>
-        <p *ngIf="hc()" class="text-sm text-slate-400 font-medium mt-0.5">
+      <div class="min-w-0">
+        <h1 class="text-2xl font-extrabold text-slate-900 leading-tight truncate">Historia Clínica</h1>
+        <p *ngIf="hc()" class="text-sm text-slate-400 font-medium mt-0.5 truncate">
           {{ hc()!.mascotaNombre }} · {{ hc()!.numeroHc }}
         </p>
       </div>
@@ -506,37 +506,36 @@
 
     <section *ngIf="seccionActiva() === 'preventivos'" class="flex flex-col gap-4">
 
-      <div class="grid grid-cols-1 gap-5 lg:grid-cols-[380px_1fr]">
+      <div class="grid grid-cols-1 items-start gap-5 lg:grid-cols-[380px_1fr]">
 
         <!-- Calendario preventivo interactivo -->
         <div class="bg-white border border-slate-200 rounded-xl overflow-hidden h-fit">
-          <div class="flex items-center gap-3 border-b border-slate-200 px-5 py-4">
-            <span class="grid size-10 shrink-0 place-items-center rounded-lg bg-[#0066AA] text-white">
-              <i class="pi pi-calendar"></i>
-            </span>
+          <div class="flex items-center gap-3 border-b border-slate-200 px-5 py-3">
+            <i class="pi pi-calendar text-base text-[#0066AA]"></i>
             <div class="min-w-0">
               <h2 class="text-sm font-extrabold text-slate-900">Calendario preventivo</h2>
               <p class="mt-0.5 text-[11px] text-slate-500">Selecciona un día para consultar sus controles</p>
             </div>
           </div>
-          <div class="flex items-center justify-between border-b border-slate-200 px-4 py-3">
+          <div class="flex items-center justify-between gap-2 border-b border-slate-200 px-4 py-2">
             <button (click)="calendarioMesAnterior()"
-              class="grid size-8 place-items-center rounded-lg border border-slate-200 text-slate-500 hover:border-[#0066AA] hover:text-[#0066AA]">
+              class="grid size-7 shrink-0 place-items-center rounded-lg border border-slate-200 text-slate-500 hover:border-[#0066AA] hover:text-[#0066AA]">
               <i class="pi pi-chevron-left text-[10px]"></i>
             </button>
-            <div class="text-center">
-              <span class="block text-xs font-extrabold uppercase tracking-wide text-slate-700">{{ mesNombre(calendarioMes()) }} {{ calendarioAnio() }}</span>
-              <button type="button" (click)="irAHoy()" class="mt-0.5 text-[10px] font-bold text-[#0066AA] hover:underline">Ir a hoy</button>
+            <div class="flex items-center gap-2">
+              <input type="month" [value]="calendarioMesInput()" (change)="onCalendarioMesInputChange($any($event.target).value)"
+                class="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs font-extrabold text-slate-700 outline-none focus:border-[#0066AA]" />
+              <button type="button" (click)="irAHoy()" class="text-[10px] font-bold text-[#0066AA] hover:underline">Ir a hoy</button>
             </div>
             <button (click)="calendarioMesSiguiente()"
-              class="grid size-8 place-items-center rounded-lg border border-slate-200 text-slate-500 hover:border-[#0066AA] hover:text-[#0066AA]">
+              class="grid size-7 shrink-0 place-items-center rounded-lg border border-slate-200 text-slate-500 hover:border-[#0066AA] hover:text-[#0066AA]">
               <i class="pi pi-chevron-right text-[10px]"></i>
             </button>
           </div>
-          <div class="p-5">
+          <div class="p-4">
             <div class="grid grid-cols-7 gap-0">
               <div *ngFor="let d of ['D','L','M','X','J','V','S']"
-                class="py-2 text-center text-[10px] font-extrabold text-slate-500">{{ d }}</div>
+                class="py-1 text-center text-[10px] font-extrabold text-slate-500">{{ d }}</div>
               <ng-container *ngFor="let _ of [].constructor(diasCalendario().primerDia)">
                 <div></div>
               </ng-container>
@@ -544,7 +543,7 @@
                 (click)="seleccionarDiaCalendario(item.dia)"
                 [attr.aria-label]="'Ver controles del día ' + item.dia"
                 [title]="item.vacias.concat(item.desparas).join(', ') || 'Sin controles programados'"
-                class="relative flex h-11 flex-col items-center justify-center rounded-lg border border-transparent transition-colors hover:border-slate-300"
+                class="relative flex h-8 flex-col items-center justify-center rounded-lg border border-transparent transition-colors hover:border-slate-300"
                 [class.!border-[#0066AA]]="calendarioDiaSeleccionado() === item.dia || (item.dia === hoy().getDate() && calendarioEsMesActual())"
                 [class.bg-[#0066AA]]="calendarioDiaSeleccionado() === item.dia">
                 <span class="text-xs leading-none text-slate-600"
@@ -554,13 +553,13 @@
                   [class.text-slate-500]="!item.vacias.length && !item.desparas.length && !(item.dia === hoy().getDate() && calendarioEsMesActual())">
                   {{ item.dia }}
                 </span>
-                <div *ngIf="item.vacias.length || item.desparas.length" class="mt-1 flex gap-1">
+                <div *ngIf="item.vacias.length || item.desparas.length" class="mt-0.5 flex gap-1">
                   <span *ngIf="item.vacias.length" class="h-1 w-3 rounded-full bg-blue-600"></span>
                   <span *ngIf="item.desparas.length" class="h-1 w-3 rounded-full bg-emerald-600"></span>
                 </div>
               </button>
             </div>
-            <div class="mt-4 grid grid-cols-2 gap-2 border-t border-slate-200 pt-4">
+            <div class="mt-3 grid grid-cols-2 gap-2 border-t border-slate-200 pt-3">
               <div class="flex items-center gap-1">
                 <span class="h-1.5 w-4 rounded-full bg-blue-600"></span>
                 <span class="text-[10px] font-bold text-slate-600">Vacunación</span>
@@ -570,19 +569,29 @@
                 <span class="text-[10px] font-bold text-slate-600">Desparasitación</span>
               </div>
             </div>
-            <p class="mt-3 text-[10px] text-slate-500">{{ controlesMesCalendario().length }} control{{ controlesMesCalendario().length === 1 ? '' : 'es' }} en este mes</p>
+            <p class="mt-2 text-[10px] text-slate-500">{{ controlesMesCalendario().length }} control{{ controlesMesCalendario().length === 1 ? '' : 'es' }} en este mes</p>
           </div>
         </div>
 
       <!-- Controles Pendientes -->
-      <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-        <header class="px-5 py-4 border-b border-slate-100 flex items-center gap-3">
-          <span class="w-8 h-8 rounded-lg border border-slate-200 text-[#0066AA] flex items-center justify-center shrink-0">
-            <i class="pi pi-clock text-xs"></i>
-          </span>
-          <div>
-            <h2 class="text-sm font-extrabold text-slate-800">Agenda preventiva</h2>
-            <p class="text-[11px] text-slate-400 mt-0.5">Detalle de la fecha y próximos controles</p>
+      <div class="bg-white border border-slate-200 rounded-xl overflow-hidden h-fit">
+        <header class="px-5 py-4 border-b border-slate-100 flex items-center justify-between gap-3 flex-wrap">
+          <div class="flex items-center gap-3">
+            <i class="pi pi-clock text-base text-[#0066AA]"></i>
+            <div>
+              <h2 class="text-sm font-extrabold text-slate-800">Agenda preventiva</h2>
+              <p class="text-[11px] text-slate-400 mt-0.5">Detalle del día seleccionado</p>
+            </div>
+          </div>
+          <div *ngIf="canModify()" class="flex items-center gap-2">
+            <button type="button" (click)="irARegistrarControl('VACUNACION')"
+              class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0066AA] text-white text-[10px] font-bold hover:bg-[#0055aa] transition-all">
+              <i class="pi pi-plus text-[9px]"></i> Registrar vacuna
+            </button>
+            <button type="button" (click)="irARegistrarControl('DESPARASITACION')"
+              class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-[10px] font-bold hover:bg-emerald-700 transition-all">
+              <i class="pi pi-plus text-[9px]"></i> Registrar desparasitación
+            </button>
           </div>
         </header>
 
@@ -602,108 +611,166 @@
         </div>
 
         <ng-template #controlPreventivoItem let-control>
-          <article class="flex items-center gap-3 rounded-lg border px-3 py-3"
-            [ngClass]="control.estado === 'ATRASADO' || control.estado === 'PENDIENTE' ? 'border-red-600' : 'border-slate-200'">
-            <span class="grid size-8 shrink-0 place-items-center rounded-lg border"
-              [ngClass]="control.tipo === 'VACUNACION' ? 'border-blue-200 text-blue-700' : 'border-emerald-200 text-emerald-700'">
-              <i [class]="control.tipo === 'VACUNACION' ? 'pi pi-shield text-xs' : 'pi pi-refresh text-xs'"></i>
-            </span>
+          <div class="flex items-center gap-3 py-2.5 px-2 border-b border-slate-100 last:border-0"
+            [class]="control.estado === 'ATRASADO' || control.estado === 'PENDIENTE' ? 'rounded-lg bg-red-50' : ''">
+            <i [class]="(control.tipo === 'VACUNACION' ? 'pi pi-shield ' : 'pi pi-refresh ') + (control.tipo === 'VACUNACION' ? 'text-blue-600' : 'text-emerald-600') + ' text-sm shrink-0'"></i>
             <div class="min-w-0 flex-1">
-              <p class="truncate text-xs font-extrabold text-slate-800">{{ control.nombreControl }}</p>
-              <p class="mt-1 text-[10px] font-semibold text-slate-500">{{ control.fechaRecomendada | date:'dd/MM/yyyy' }}</p>
+              <p class="truncate text-xs font-bold text-slate-800">{{ control.nombreControl }}</p>
+              <p class="text-[10px] text-slate-400">{{ control.fechaRecomendada | date:'dd/MM/yyyy' }}</p>
             </div>
-            <span class="shrink-0 rounded px-2 py-1 text-[9px] font-extrabold uppercase"
-              [ngClass]="control.estado === 'ATRASADO' || control.estado === 'PENDIENTE' ? 'bg-red-600 text-white' : 'border border-slate-200 text-slate-600'">
+            <span class="shrink-0 rounded-full px-2 py-0.5 text-[9px] font-extrabold uppercase"
+              [ngClass]="control.estado === 'ATRASADO' || control.estado === 'PENDIENTE' ? 'bg-red-600 text-white' : 'bg-slate-100 text-slate-600'">
               {{ control.estado }}
             </span>
-          </article>
+          </div>
         </ng-template>
 
         <div class="border-b border-slate-200 p-4">
-          <div class="rounded-lg border border-slate-200 bg-white px-4 py-3">
           <div class="flex items-start gap-3">
-            <span class="grid size-8 shrink-0 place-items-center rounded-lg bg-slate-100 text-[#0066AA]"><i class="pi pi-calendar text-xs"></i></span>
+            <i class="pi pi-calendar text-sm text-[#0066AA] mt-0.5"></i>
             <div>
               <p class="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Día seleccionado</p>
               <p class="mt-1 text-sm font-extrabold capitalize text-slate-800">{{ fechaCalendarioSeleccionadaTexto() }}</p>
             </div>
           </div>
-          <div *ngIf="controlesDiaSeleccionado().length; else fechaSinControles" class="mt-4 grid gap-4 sm:grid-cols-2">
-            <section class="rounded-lg border border-blue-200 bg-white p-3">
-              <div class="mb-2 flex items-center justify-between">
+          <div *ngIf="controlesDiaSeleccionado().length; else fechaSinControles" class="mt-4 grid gap-5 sm:grid-cols-2">
+            <div>
+              <div class="mb-1 flex items-center justify-between border-b border-blue-100 pb-1.5">
                 <h3 class="text-[11px] font-extrabold uppercase tracking-wide text-blue-700">Vacunación</h3>
                 <span class="text-[10px] font-bold text-slate-500">{{ vacunasDiaSeleccionado().length }}</span>
               </div>
-              <div *ngIf="vacunasDiaSeleccionado().length; else sinVacunasFecha" class="space-y-2">
+              <div *ngIf="vacunasDiaSeleccionado().length; else sinVacunasFecha">
                 <ng-container *ngFor="let control of vacunasDiaSeleccionado()" [ngTemplateOutlet]="controlPreventivoItem" [ngTemplateOutletContext]="{ $implicit: control }"></ng-container>
               </div>
               <ng-template #sinVacunasFecha><p class="py-3 text-xs text-slate-500">Sin vacunas este día.</p></ng-template>
-            </section>
+            </div>
 
-            <section class="rounded-lg border border-emerald-200 bg-white p-3">
-              <div class="mb-2 flex items-center justify-between">
+            <div>
+              <div class="mb-1 flex items-center justify-between border-b border-emerald-100 pb-1.5">
                 <h3 class="text-[11px] font-extrabold uppercase tracking-wide text-emerald-700">Desparasitación</h3>
                 <span class="text-[10px] font-bold text-slate-500">{{ desparasitacionesDiaSeleccionado().length }}</span>
               </div>
-              <div *ngIf="desparasitacionesDiaSeleccionado().length; else sinDesparasitacionesFecha" class="space-y-2">
+              <div *ngIf="desparasitacionesDiaSeleccionado().length; else sinDesparasitacionesFecha">
                 <ng-container *ngFor="let control of desparasitacionesDiaSeleccionado()" [ngTemplateOutlet]="controlPreventivoItem" [ngTemplateOutletContext]="{ $implicit: control }"></ng-container>
               </div>
               <ng-template #sinDesparasitacionesFecha><p class="py-3 text-xs text-slate-500">Sin desparasitación este día.</p></ng-template>
-            </section>
+            </div>
           </div>
           <ng-template #fechaSinControles>
             <p class="mt-3 border-t border-slate-100 pt-3 text-xs text-slate-500">No hay controles programados para esta fecha.</p>
           </ng-template>
+        </div>
+
+      </div>
+      </div>
+
+      <!-- Historial completo de controles: todo junto, sin navegar mes a mes -->
+      <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+        <header class="px-5 py-4 border-b border-slate-100 flex items-center gap-3">
+          <i class="pi pi-list text-base text-violet-600"></i>
+          <div>
+            <h2 class="text-sm font-extrabold text-slate-800">Historial completo de controles</h2>
+            <p class="text-[11px] text-slate-400 mt-0.5">Todos los controles preventivos, de cualquier fecha</p>
+          </div>
+        </header>
+
+        <div *ngIf="todosLosControles().length" class="flex flex-col gap-3 px-5 py-3 border-b border-slate-100 sm:flex-row sm:items-center">
+          <div class="relative flex-1">
+            <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-[11px] text-slate-400"></i>
+            <input type="text" [ngModel]="historialBusqueda()" (ngModelChange)="historialBusqueda.set($event)"
+              placeholder="Buscar por nombre..."
+              class="w-full rounded-lg border border-slate-200 bg-slate-50 pl-8 pr-3 py-1.5 text-xs text-slate-700 outline-none focus:border-[#0066AA] focus:bg-white" />
+          </div>
+          <div class="flex items-center gap-1.5 shrink-0">
+            <button type="button" (click)="historialFiltroTipo.set('TODOS')"
+              [class]="historialFiltroTipo() === 'TODOS' ? 'bg-[#0066AA] text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'"
+              class="rounded-full px-3 py-1 text-[10px] font-extrabold uppercase transition-colors">Todos</button>
+            <button type="button" (click)="historialFiltroTipo.set('VACUNACION')"
+              [class]="historialFiltroTipo() === 'VACUNACION' ? 'bg-[#0066AA] text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'"
+              class="rounded-full px-3 py-1 text-[10px] font-extrabold uppercase transition-colors">Vacunación</button>
+            <button type="button" (click)="historialFiltroTipo.set('DESPARASITACION')"
+              [class]="historialFiltroTipo() === 'DESPARASITACION' ? 'bg-[#0066AA] text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'"
+              class="rounded-full px-3 py-1 text-[10px] font-extrabold uppercase transition-colors">Desparasitación</button>
           </div>
         </div>
 
-        <div *ngIf="hc()!.controlesPreventivos?.length; else sinPreventivos" class="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2">
-          <section>
-            <div class="mb-3 flex items-center justify-between border-b border-blue-200 pb-2">
-              <h3 class="text-xs font-extrabold text-blue-700">Próximas vacunas</h3>
-              <span class="text-[10px] font-bold text-slate-500">{{ controlesVacunacion().length }}</span>
-            </div>
-            <div *ngIf="controlesVacunacion().length; else sinControlesVacunas" class="space-y-2">
-              <ng-container *ngFor="let control of controlesVacunacion()" [ngTemplateOutlet]="controlPreventivoItem" [ngTemplateOutletContext]="{ $implicit: control }"></ng-container>
-            </div>
-            <ng-template #sinControlesVacunas><p class="py-5 text-center text-xs text-slate-500">Sin vacunas pendientes.</p></ng-template>
-          </section>
-
-          <section>
-            <div class="mb-3 flex items-center justify-between border-b border-emerald-200 pb-2">
-              <h3 class="text-xs font-extrabold text-emerald-700">Próximas desparasitaciones</h3>
-              <span class="text-[10px] font-bold text-slate-500">{{ controlesDesparasitacion().length }}</span>
-            </div>
-            <div *ngIf="controlesDesparasitacion().length; else sinControlesDesparasitacion" class="space-y-2">
-              <ng-container *ngFor="let control of controlesDesparasitacion()" [ngTemplateOutlet]="controlPreventivoItem" [ngTemplateOutletContext]="{ $implicit: control }"></ng-container>
-            </div>
-            <ng-template #sinControlesDesparasitacion><p class="py-5 text-center text-xs text-slate-500">Sin desparasitaciones pendientes.</p></ng-template>
-          </section>
+        <div *ngIf="todosLosControles().length; else sinHistorialControles" class="overflow-x-auto">
+          <table class="w-full min-w-[520px] text-left text-xs">
+            <thead>
+              <tr class="text-[10px] font-extrabold uppercase tracking-wider text-white bg-[#0066AA]">
+                <th class="px-3 py-2.5 w-10">N°</th>
+                <th class="px-2 py-2.5">Control</th>
+                <th class="px-4 py-2.5">Tipo</th>
+                <th class="px-4 py-2.5">Fecha</th>
+                <th class="px-5 py-2.5">Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let c of historialFiltrado(); let i = index" [class]="i % 2 === 1 ? 'bg-slate-50/60' : ''">
+                <td class="px-3 py-3 text-slate-400 font-semibold">{{ i + 1 }}</td>
+                <td class="px-2 py-3 font-semibold text-slate-700">{{ c.nombreControl }}</td>
+                <td class="px-4 py-3 text-slate-500">{{ tipoConsultaLabel(c.tipo) }}</td>
+                <td class="px-4 py-3 text-slate-500">{{ formatFecha(c.fechaRecomendada) }}</td>
+                <td class="px-5 py-3">
+                  <span [class]="'rounded-full px-2 py-0.5 text-[9px] font-extrabold uppercase ' + estadoControlBadge(c.estado)">
+                    {{ estadoControlLabel(c.estado) }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <p *ngIf="!historialFiltrado().length" class="py-8 text-center text-xs text-slate-400">
+            Sin resultados para "{{ historialBusqueda() }}".
+          </p>
         </div>
-        <ng-template #sinPreventivos>
-          <p class="py-8 text-center text-[11px] text-slate-400">Sin controles preventivos registrados.</p>
+        <ng-template #sinHistorialControles>
+          <p class="py-10 text-center text-xs text-slate-400">Sin controles preventivos registrados.</p>
         </ng-template>
-      </div>
       </div>
 
       <div class="grid grid-cols-1 gap-5 xl:grid-cols-2">
       <!-- Cartilla de Vacunación -->
       <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-        <header class="px-5 py-4 border-b border-slate-100 flex items-center gap-3">
-          <span class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-            <i class="pi pi-shield text-xs"></i>
-          </span>
-          <div>
-            <h2 class="text-sm font-extrabold text-slate-800">Cartilla de Vacunación</h2>
-            <p class="text-[11px] text-slate-400 mt-0.5">Historial de vacunas aplicadas</p>
+        <header class="px-5 py-4 border-b border-slate-100 flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3 min-w-0">
+            <i class="pi pi-shield text-base text-blue-600"></i>
+            <div class="min-w-0">
+              <h2 class="text-sm font-extrabold text-slate-800">Cartilla de Vacunación</h2>
+              <p class="text-[11px] text-slate-400 mt-0.5">Historial de vacunas aplicadas</p>
+            </div>
           </div>
+          <button type="button" (click)="descargarCartilla('vacunacion')" [disabled]="!vacunas().length"
+            [title]="vacunas().length ? '' : 'Aún no hay vacunas registradas para esta mascota'"
+            class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0066AA] text-white text-[10px] font-bold hover:bg-[#0055aa] transition-all disabled:opacity-40 disabled:cursor-not-allowed shrink-0">
+            <i class="pi pi-download text-[9px]"></i> Descargar
+          </button>
         </header>
+
+        <div class="px-5 py-3 bg-slate-50/70 border-b border-slate-100 grid grid-cols-2 gap-x-4 gap-y-2">
+          <div>
+            <p class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest">Mascota</p>
+            <p class="text-xs font-bold text-slate-700 truncate">{{ hc()!.mascotaNombre }}</p>
+          </div>
+          <div>
+            <p class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest">Especie / Raza</p>
+            <p class="text-xs font-bold text-slate-700 truncate">{{ hc()!.especie || '—' }} / {{ hc()!.raza || '—' }}</p>
+          </div>
+          <div>
+            <p class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest">Propietario</p>
+            <p class="text-xs font-bold text-slate-700 truncate">{{ hc()!.propietarioNombre || '—' }}</p>
+          </div>
+          <div>
+            <p class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest">N° HC</p>
+            <p class="text-xs font-bold text-slate-700 truncate">{{ hc()!.numeroHc }}</p>
+          </div>
+        </div>
 
         <div *ngIf="vacunas().length; else sinVacunas" class="overflow-x-auto">
           <table class="w-full min-w-[560px] text-left text-xs">
             <thead>
-              <tr class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 border-b border-slate-100">
-                <th class="px-5 py-2.5">Vacuna</th>
+              <tr class="text-[10px] font-extrabold uppercase tracking-wider text-white bg-[#0066AA]">
+                <th class="px-3 py-2.5 w-10">N°</th>
+                <th class="px-2 py-2.5">Vacuna</th>
                 <th class="px-4 py-2.5">Aplicada</th>
                 <th class="px-4 py-2.5">Próxima</th>
                 <th class="px-4 py-2.5">Cada</th>
@@ -711,8 +778,9 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let v of vacunas()" class="border-b border-slate-50 last:border-0 hover:bg-slate-50/60">
-                <td class="px-5 py-3 font-semibold text-slate-700">{{ v.nombreControl }}</td>
+              <tr *ngFor="let v of vacunas(); let i = index" [class]="i % 2 === 1 ? 'bg-slate-50/60' : ''">
+                <td class="px-3 py-3 text-slate-400 font-semibold">{{ i + 1 }}</td>
+                <td class="px-2 py-3 font-semibold text-slate-700">{{ v.nombreControl }}</td>
                 <td class="px-4 py-3 text-slate-500">{{ formatFecha(v.fechaAplicacion) }}</td>
                 <td class="px-4 py-3">
                   <span *ngIf="v.fechaProximaAplicacion" class="text-slate-500">{{ formatFecha(v.fechaProximaAplicacion) }}</span>
@@ -734,21 +802,46 @@
 
       <!-- Cartilla de Desparasitación -->
       <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-        <header class="px-5 py-4 border-b border-slate-100 flex items-center gap-3">
-          <span class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-            <i class="pi pi-briefcase text-xs"></i>
-          </span>
-          <div>
-            <h2 class="text-sm font-extrabold text-slate-800">Cartilla de Desparasitación</h2>
-            <p class="text-[11px] text-slate-400 mt-0.5">Historial de desparasitaciones aplicadas</p>
+        <header class="px-5 py-4 border-b border-slate-100 flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3 min-w-0">
+            <i class="pi pi-briefcase text-base text-emerald-600"></i>
+            <div class="min-w-0">
+              <h2 class="text-sm font-extrabold text-slate-800">Cartilla de Desparasitación</h2>
+              <p class="text-[11px] text-slate-400 mt-0.5">Historial de desparasitaciones aplicadas</p>
+            </div>
           </div>
+          <button type="button" (click)="descargarCartilla('desparasitacion')" [disabled]="!desparasitaciones().length"
+            [title]="desparasitaciones().length ? '' : 'Aún no hay desparasitaciones registradas para esta mascota'"
+            class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0066AA] text-white text-[10px] font-bold hover:bg-[#0055aa] transition-all disabled:opacity-40 disabled:cursor-not-allowed shrink-0">
+            <i class="pi pi-download text-[9px]"></i> Descargar
+          </button>
         </header>
+
+        <div class="px-5 py-3 bg-slate-50/70 border-b border-slate-100 grid grid-cols-2 gap-x-4 gap-y-2">
+          <div>
+            <p class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest">Mascota</p>
+            <p class="text-xs font-bold text-slate-700 truncate">{{ hc()!.mascotaNombre }}</p>
+          </div>
+          <div>
+            <p class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest">Especie / Raza</p>
+            <p class="text-xs font-bold text-slate-700 truncate">{{ hc()!.especie || '—' }} / {{ hc()!.raza || '—' }}</p>
+          </div>
+          <div>
+            <p class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest">Propietario</p>
+            <p class="text-xs font-bold text-slate-700 truncate">{{ hc()!.propietarioNombre || '—' }}</p>
+          </div>
+          <div>
+            <p class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest">N° HC</p>
+            <p class="text-xs font-bold text-slate-700 truncate">{{ hc()!.numeroHc }}</p>
+          </div>
+        </div>
 
         <div *ngIf="desparasitaciones().length; else sinDesparasitaciones" class="overflow-x-auto">
           <table class="w-full min-w-[560px] text-left text-xs">
             <thead>
-              <tr class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 border-b border-slate-100">
-                <th class="px-5 py-2.5">Producto</th>
+              <tr class="text-[10px] font-extrabold uppercase tracking-wider text-white bg-[#0066AA]">
+                <th class="px-3 py-2.5 w-10">N°</th>
+                <th class="px-2 py-2.5">Producto</th>
                 <th class="px-4 py-2.5">Aplicada</th>
                 <th class="px-4 py-2.5">Próxima</th>
                 <th class="px-4 py-2.5">Cada</th>
@@ -756,8 +849,9 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let d of desparasitaciones()" class="border-b border-slate-50 last:border-0 hover:bg-slate-50/60">
-                <td class="px-5 py-3 font-semibold text-slate-700">{{ d.nombreControl }}</td>
+              <tr *ngFor="let d of desparasitaciones(); let i = index" [class]="i % 2 === 1 ? 'bg-slate-50/60' : ''">
+                <td class="px-3 py-3 text-slate-400 font-semibold">{{ i + 1 }}</td>
+                <td class="px-2 py-3 font-semibold text-slate-700">{{ d.nombreControl }}</td>
                 <td class="px-4 py-3 text-slate-500">{{ formatFecha(d.fechaAplicacion) }}</td>
                 <td class="px-4 py-3">
                   <span *ngIf="d.fechaProximaAplicacion" class="text-slate-500">{{ formatFecha(d.fechaProximaAplicacion) }}</span>

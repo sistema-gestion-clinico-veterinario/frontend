@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy, inject, signal, computed } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -8,6 +9,8 @@ import { MessageService } from 'primeng/api';
 
 import { HistoriaClinicaService } from '../../../core/services/historia-clinica.service';
 import { CitaService } from '../../../core/services/cita.service';
+import { CompanyService } from '../../../core/services/company.service';
+import { AuditLogService } from '../../../core/services/audit-log.service';
 import { LoadingStore } from '../../../store/loading.store';
 import { AuthStore } from '../../../store/auth.store';
 import {
@@ -33,6 +36,8 @@ export class HistoriaClinicaMascotaComponent implements OnInit, OnDestroy {
   private readonly router       = inject(Router);
   private readonly hcService    = inject(HistoriaClinicaService);
   private readonly citaService  = inject(CitaService);
+  private readonly companyService = inject(CompanyService);
+  private readonly auditLogService = inject(AuditLogService);
   private readonly msgService   = inject(MessageService);
   private readonly sanitizer    = inject(DomSanitizer);
   readonly loadingStore         = inject(LoadingStore);
@@ -70,6 +75,9 @@ export class HistoriaClinicaMascotaComponent implements OnInit, OnDestroy {
   calendarioAnio = signal(new Date().getFullYear());
   calendarioDiaSeleccionado = signal<number | null>(new Date().getDate());
 
+  readonly calendarioMesInput = computed(() =>
+    `${this.calendarioAnio()}-${String(this.calendarioMes() + 1).padStart(2, '0')}`);
+
   readonly controlesMesCalendario = computed(() => (this.hc()?.controlesPreventivos ?? [])
     .filter(control => {
       const fecha = this.parseLocalDate(control.fechaRecomendada);
@@ -97,6 +105,44 @@ export class HistoriaClinicaMascotaComponent implements OnInit, OnDestroy {
 
   readonly controlesAtrasados = computed(() =>
     (this.hc()?.controlesPreventivos ?? []).filter(control => control.estado === 'ATRASADO').length);
+
+  /** Historial completo (todos los estados, todos los meses) para no depender de navegar el calendario. */
+  readonly todosLosControles = computed(() =>
+    [...(this.hc()?.controlesPreventivos ?? [])].sort((a, b) => b.fechaRecomendada.localeCompare(a.fechaRecomendada)));
+
+  historialBusqueda = signal('');
+  historialFiltroTipo = signal<'TODOS' | 'VACUNACION' | 'DESPARASITACION'>('TODOS');
+
+  readonly historialFiltrado = computed(() => {
+    const texto = this.historialBusqueda().trim().toLowerCase();
+    const tipo = this.historialFiltroTipo();
+    return this.todosLosControles().filter(c =>
+      (tipo === 'TODOS' || c.tipo === tipo)
+      && (!texto || c.nombreControl.toLowerCase().includes(texto))
+    );
+  });
+
+  estadoControlBadge(estado: string): string {
+    const map: Record<string, string> = {
+      APLICADO: 'bg-green-50 text-green-700',
+      ATRASADO: 'bg-red-600 text-white',
+      PENDIENTE: 'bg-amber-50 text-amber-700',
+      PROXIMO: 'bg-blue-50 text-blue-700',
+      PROGRAMADO: 'bg-slate-100 text-slate-600',
+      SUSPENDIDO_POR_CITA: 'bg-slate-100 text-slate-500',
+      CANCELADO: 'bg-slate-100 text-slate-500',
+    };
+    return map[estado] ?? 'bg-slate-100 text-slate-600';
+  }
+
+  estadoControlLabel(estado: string): string {
+    const map: Record<string, string> = {
+      APLICADO: 'Aplicado', ATRASADO: 'Atrasado', PENDIENTE: 'Pendiente',
+      PROXIMO: 'Próximo', PROGRAMADO: 'Programado',
+      SUSPENDIDO_POR_CITA: 'Suspendido', CANCELADO: 'Cancelado',
+    };
+    return map[estado] ?? estado;
+  }
 
   readonly fechaCalendarioSeleccionada = computed(() => {
     const dia = this.calendarioDiaSeleccionado();
@@ -159,6 +205,14 @@ export class HistoriaClinicaMascotaComponent implements OnInit, OnDestroy {
 
   seleccionarDiaCalendario(dia: number) {
     this.calendarioDiaSeleccionado.set(dia);
+  }
+
+  onCalendarioMesInputChange(valor: string) {
+    const [anio, mes] = valor.split('-').map(Number);
+    if (!anio || !mes) return;
+    this.calendarioAnio.set(anio);
+    this.calendarioMes.set(mes - 1);
+    this.calendarioDiaSeleccionado.set(null);
   }
 
   irAHoy() {
@@ -338,6 +392,10 @@ export class HistoriaClinicaMascotaComponent implements OnInit, OnDestroy {
     this.router.navigateByUrl(this.returnUrl);
   }
 
+  irARegistrarControl(tipo: 'VACUNACION' | 'DESPARASITACION') {
+    this.router.navigate(['/historias-clinicas/cartilla'], { queryParams: { petId: this.mascotaId, modo: tipo } });
+  }
+
   formatFecha(fecha: string): string {
     return formatearFechaClinica(fecha);
   }
@@ -345,6 +403,151 @@ export class HistoriaClinicaMascotaComponent implements OnInit, OnDestroy {
   formatFechaHora(fecha: string): string {
     if (!fecha) return '—';
     return new Date(fecha).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  }
+
+  private async descargarComoDataUrl(url: string): Promise<string | null> {
+    try {
+      const blob = await fetch(url).then(r => r.blob());
+      return await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    } catch {
+      return null;
+    }
+  }
+
+  async descargarCartilla(tipo: 'vacunacion' | 'desparasitacion'): Promise<void> {
+    const hc = this.hc();
+    if (!hc) return;
+    const items = tipo === 'vacunacion' ? this.vacunas() : this.desparasitaciones();
+    const titulo = tipo === 'vacunacion' ? 'Cartilla de vacunación' : 'Cartilla de desparasitación';
+    const columnaProducto = tipo === 'vacunacion' ? 'Vacuna' : 'Producto';
+
+    const companyId = this.authStore.selectedEnterprise()?.establishmentId ?? this.authStore.companyId() ?? null;
+    const empresa = companyId != null
+      ? await firstValueFrom(this.companyService.getById(companyId)).then(r => r.data).catch(() => null)
+      : null;
+    const logoDataUrl = empresa?.logoUrl ? await this.descargarComoDataUrl(empresa.logoUrl) : null;
+
+    const [{ default: JsPdf }, { default: autoTable }] = await Promise.all([
+      import('jspdf'),
+      import('jspdf-autotable')
+    ]);
+    const doc = new JsPdf();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const marginX = 14;
+    const contentWidth = pageWidth - marginX * 2;
+    const primary: [number, number, number] = [0, 102, 170];
+    const muted: [number, number, number] = [71, 85, 105];
+    const dark: [number, number, number] = [30, 41, 59];
+    const border: [number, number, number] = [226, 232, 240];
+
+    // Encabezado: logo y datos reales de la empresa (igual que en los reportes clínicos)
+    let textoX = marginX;
+    let logoAlto = 0;
+    if (logoDataUrl) {
+      try {
+        // Respetar la proporción real del logo en vez de forzarlo a un cuadro fijo,
+        // que lo deja estirado si el logo no es cuadrado.
+        const props = doc.getImageProperties(logoDataUrl);
+        const maxAncho = 18;
+        const maxAlto = 16;
+        let ancho = maxAncho;
+        let alto = (ancho * props.height) / props.width;
+        if (alto > maxAlto) {
+          alto = maxAlto;
+          ancho = (alto * props.width) / props.height;
+        }
+        doc.addImage(logoDataUrl, marginX, 10, ancho, alto);
+        textoX = marginX + ancho + 6;
+        logoAlto = alto;
+      } catch {
+        // Si el logo no se pudo decodificar, se omite sin bloquear el resto del PDF
+      }
+    }
+    doc.setTextColor(...dark);
+    doc.setFontSize(13);
+    doc.setFont('helvetica', 'bold');
+    doc.text(empresa?.name ?? this.authStore.companyName() ?? 'Clínica veterinaria', textoX, 16);
+
+    doc.setFontSize(8.5);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...muted);
+    const detalle = [empresa?.address, empresa?.phone, empresa?.email].filter(Boolean).join('   ·   ');
+    if (detalle) doc.text(detalle, textoX, 21.5);
+    if (empresa?.ruc) doc.text(`RUC: ${empresa.ruc}`, textoX, 26);
+
+    let y = Math.max(10 + logoAlto, 30) + 4;
+    doc.setDrawColor(...border);
+    doc.line(marginX, y, pageWidth - marginX, y);
+    y += 10;
+
+    doc.setTextColor(...dark);
+    doc.setFontSize(17);
+    doc.setFont('helvetica', 'bold');
+    doc.text(titulo, marginX, y);
+    y += 10;
+
+    // Ficha de identificación de la mascota, en una tarjeta con fondo para que
+    // resalte claramente del resto (esto es lo que hace que se vea como cartilla).
+    const fichaAlto = 34;
+    doc.setFillColor(248, 250, 252);
+    doc.setDrawColor(...border);
+    doc.roundedRect(marginX, y, contentWidth, fichaAlto, 2, 2, 'FD');
+
+    const datos: [string, string][] = [
+      ['Mascota', hc.mascotaNombre],
+      ['Especie / Raza', `${hc.especie ?? '—'} / ${hc.raza ?? '—'}`],
+      ['Sexo', hc.sexo ?? '—'],
+      ['Propietario', hc.propietarioNombre ?? '—'],
+      ['N° de historia clínica', hc.numeroHc],
+    ];
+    const filaAltura = 12;
+    datos.forEach(([label, valor], index) => {
+      const col = index % 2;
+      const fila = Math.floor(index / 2);
+      const colX = marginX + 6 + col * (contentWidth / 2);
+      const filaY = y + 8 + fila * filaAltura;
+      doc.setTextColor(...muted);
+      doc.setFontSize(7.5);
+      doc.setFont('helvetica', 'bold');
+      doc.text(label.toUpperCase(), colX, filaY);
+      doc.setTextColor(...dark);
+      doc.setFontSize(11);
+      doc.text(valor, colX, filaY + 5.5);
+      doc.setFont('helvetica', 'normal');
+    });
+    y += fichaAlto + 10;
+
+    autoTable(doc, {
+      startY: y,
+      margin: { left: marginX, right: marginX },
+      styles: { font: 'helvetica', fontSize: 9, textColor: dark, lineColor: [226, 232, 240], lineWidth: 0.1 },
+      headStyles: { fillColor: primary, textColor: 255, fontStyle: 'bold' },
+      alternateRowStyles: { fillColor: [248, 250, 252] },
+      head: [['N°', columnaProducto, 'Aplicada', 'Próxima', 'Cada', 'Veterinario']],
+      body: items.map((item, index) => [
+        `${index + 1}`,
+        item.nombreControl,
+        this.formatFecha(item.fechaAplicacion),
+        item.fechaProximaAplicacion ? this.formatFecha(item.fechaProximaAplicacion) : '—',
+        item.periodicidadMeses ? `${item.periodicidadMeses} meses` : '—',
+        item.veterinarioNombre || '—'
+      ]),
+      columnStyles: { 0: { cellWidth: 10 } }
+    });
+
+    // El nombre del archivo no debe llevar el número de historia clínica (dato interno
+    // identificable) ni quedar expuesto en el historial de descargas del navegador.
+    const nombreArchivo = hc.mascotaNombre.replace(/[\\/:*?"<>|]/g, '').trim().replace(/\s+/g, '-') || 'mascota';
+    doc.save(`${tipo === 'vacunacion' ? 'cartilla-vacunacion' : 'cartilla-desparasitacion'}-${nombreArchivo}.pdf`);
+    this.auditLogService.registrarDescarga(
+      tipo === 'vacunacion' ? 'CARTILLA_VACUNACION' : 'CARTILLA_DESPARASITACION',
+      hc.mascotaNombre
+    ).subscribe();
   }
 
   edadTexto(meses: number | undefined): string {

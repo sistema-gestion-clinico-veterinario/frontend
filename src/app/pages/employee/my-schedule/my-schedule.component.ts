@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Toast } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { ProfileService } from '../../../core/services/profile.service';
+import { AuditLogService } from '../../../core/services/audit-log.service';
 import { HorarioEmpleadoResponse } from '../../../models/response/horario-empleado-response';
 import { ApiResponse } from '../../../models/response/api-response';
 import { ProfileResponse } from '../../../models/response/profile-response';
@@ -18,8 +19,10 @@ import { ProfileResponse } from '../../../models/response/profile-response';
 export class MyScheduleComponent implements OnInit {
   private readonly profileService = inject(ProfileService);
   private readonly messageService = inject(MessageService);
+  private readonly auditLogService = inject(AuditLogService);
 
   horarios: HorarioEmpleadoResponse[] = [];
+  profileData: ProfileResponse | null = null;
   loading: boolean = false;
   currentDate = new Date();
   calendarDays: any[] = [];
@@ -36,6 +39,7 @@ export class MyScheduleComponent implements OnInit {
     this.loading = true;
     this.profileService.getMySchedule().subscribe({
       next: (res: ApiResponse<ProfileResponse>) => {
+        this.profileData = res.data;
         this.horarios = res.data.horarios || [];
         this.generateCalendar();
         this.loading = false;
@@ -167,10 +171,13 @@ export class MyScheduleComponent implements OnInit {
 
   // --- LOGIC PARA EXPORTACIÓN ---
 
-  get authStore(): any {
-    // We can extract user details from ProfileService or assuming we have name/role
-    // We'll just grab it from local profile response if we save it
-    return (this as any)._profileData || { nombre: 'Empleado', cargo: 'Personal' };
+  get authStore(): { nombre: string; cargo: string; companyName: string } {
+    const p = this.profileData;
+    return {
+      nombre: p ? `${p.nombre} ${p.apellido}`.trim() : 'Empleado',
+      cargo: p?.tiposEmpleado?.length ? p.tiposEmpleado.join(', ') : (p?.especialidades?.length ? p.especialidades.join(', ') : 'Personal'),
+      companyName: p?.companyName || 'Empresa'
+    };
   }
 
   calculateTotalHours(shifts: any[]): number {
@@ -339,6 +346,8 @@ export class MyScheduleComponent implements OnInit {
         iframe.contentWindow?.print();
         document.body.removeChild(iframe);
       }, 500);
+
+      this.auditLogService.registrarDescarga('HORARIO_PDF', empName).subscribe();
     }
   }
 
@@ -370,9 +379,11 @@ export class MyScheduleComponent implements OnInit {
         { width: 22 }, { width: 18 }, { width: 18 }, { width: 18 }, { width: 18 }, { width: 18 }, { width: 18 }, { width: 18 },
       ];
 
+      const companyName = this.authStore.companyName;
+
       sheet.mergeCells('A1:H1');
       const titleCell = sheet.getCell('A1');
-      titleCell.value = 'VARGASVET — MI HORARIO DE TRABAJO';
+      titleCell.value = `${companyName.toUpperCase()} — MI HORARIO DE TRABAJO`;
       titleCell.font  = { name: 'Calibri', bold: true, size: 16, color: { argb: 'FF0F172A' } };
       titleCell.fill  = headerFill('FFF8FAFC');
       titleCell.alignment = { horizontal: 'left', vertical: 'middle' };
@@ -495,6 +506,7 @@ export class MyScheduleComponent implements OnInit {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      this.auditLogService.registrarDescarga('HORARIO_EXCEL', this.authStore.nombre).subscribe();
     } catch (err) {
       console.error(err);
       this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Hubo un error generando el Excel.' });

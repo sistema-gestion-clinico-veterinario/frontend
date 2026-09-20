@@ -59,7 +59,8 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
 
   modulesList = [
     'Seguridad', 'Citas', 'Mascotas', 'Usuarios',
-    'Clientes', 'Facturación', 'Consultas', 'Horarios', 'Empleados'
+    'Clientes', 'Facturación', 'Consultas', 'Horarios', 'Empleados',
+    'Cartilla', 'Recetas', 'Reportes'
   ];
 
   actionsList = [
@@ -78,7 +79,11 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
     'ELIMINAR_APODERADO', 'CREAR_CITA', 'REPROGRAMAR_CITA', 'CANCELAR_CITA',
     'ELIMINAR_CITA', 'INICIAR_ATENCION', 'ACTUALIZAR_CONSULTA', 'CERRAR_CONSULTA',
     'REGISTRAR_PAGO', 'CREAR_ROL', 'ACTUALIZAR_ROL', 'ELIMINAR_ROL',
-    'CREAR_MENU', 'ACTUALIZAR_MENU', 'ELIMINAR_MENU'
+    'CREAR_MENU', 'ACTUALIZAR_MENU', 'ELIMINAR_MENU',
+    'DESCARGAR_PDF_HORARIO', 'DESCARGAR_EXCEL_HORARIO',
+    'DESCARGAR_CARTILLA_VACUNACION', 'DESCARGAR_CARTILLA_DESPARASITACION',
+    'IMPRIMIR_RECETA', 'DESCARGAR_REPORTE_PDF', 'DESCARGAR_REPORTE_EXCEL',
+    'EXPORTAR_AUDITORIA'
   ];
 
   private initialized = false;
@@ -185,18 +190,21 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
     }, 50);
   }
 
-  private executeLoadLogs(page: number, initialLoad = false) {
+  /** Devuelve los filtros activos ya validados/normalizados, o null si son inválidos (y avisa al usuario). */
+  private buildActiveFilters(): {
+    companyId?: number; userEmail?: string; action?: string; module?: string; startDate?: string; endDate?: string;
+  } | null {
     const userEmail = this.userEmailFilter.trim();
     const action = normalizeText(this.actionFilter).slice(0, 80);
     const module = normalizeText(this.moduleFilter).slice(0, 80);
 
     if (userEmail && !isLowercaseEmail(userEmail, 100)) {
       this.messageService.add({ severity: 'warn', summary: 'Correo invalido', detail: 'El filtro de correo debe ser valido y estar en minusculas.' });
-      return;
+      return null;
     }
     if (!isDateRangeValid(this.startDateFilter, this.endDateFilter)) {
       this.messageService.add({ severity: 'warn', summary: 'Rango invalido', detail: 'La fecha final no puede ser anterior a la fecha inicial.' });
-      return;
+      return null;
     }
 
     const formattedStart = this.startDateFilter ? `${this.startDateFilter}T00:00:00` : undefined;
@@ -209,13 +217,22 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
       targetCompanyId = this.authStore.companyId() || undefined;
     }
 
-    this.auditLogService.getLogs({
+    return {
       companyId: targetCompanyId,
       userEmail: userEmail || undefined,
       action: action || undefined,
       module: module || undefined,
       startDate: formattedStart,
-      endDate: formattedEnd,
+      endDate: formattedEnd
+    };
+  }
+
+  private executeLoadLogs(page: number, initialLoad = false) {
+    const filters = this.buildActiveFilters();
+    if (!filters) return;
+
+    this.auditLogService.getLogs({
+      ...filters,
       page: page,
       size: this.pageSize,
       sort: 'timestamp,desc',
@@ -226,7 +243,7 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
         const total = data.totalElements ?? data.page?.totalElements ?? 0;
         this.logs.set(data.content ?? []);
         this.totalRecords.set(total);
-        this.setupWebSocket(targetCompanyId);
+        this.setupWebSocket(filters.companyId);
       },
       error: () => {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron obtener los registros de auditoría' });
@@ -246,6 +263,188 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
     this.startDateFilter = '';
     this.endDateFilter = '';
     this.applyFilters();
+  }
+
+  readonly exportando = signal(false);
+
+  /** true si hay al menos un filtro activo (además del scope de empresa forzado a usuarios no superadmin) */
+  private hayFiltrosActivos(): boolean {
+    return !!(this.userEmailFilter.trim() || this.actionFilter || this.moduleFilter
+      || this.startDateFilter || this.endDateFilter || (this.isSuperAdmin() && this.selectedCompanyId));
+  }
+
+  private nombreEmpresaParaExport(companyId?: number): string {
+    if (companyId != null) {
+      const found = this.companies().find(c => c.id === companyId);
+      if (found) return found.name;
+    }
+    if (!this.isSuperAdmin()) {
+      return this.authStore.companyName() || 'Mi empresa';
+    }
+    return 'Todas las empresas (Multi-sede)';
+  }
+
+  private fetchLogsParaExport(): Promise<AuditLog[]> {
+    const filters = this.buildActiveFilters();
+    if (!filters) return Promise.reject(new Error('Filtros inválidos'));
+
+    return new Promise((resolve, reject) => {
+      this.auditLogService.exportLogs(filters).subscribe({
+        next: res => resolve(res.data ?? []),
+        error: () => reject(new Error('No se pudieron obtener los registros'))
+      });
+    });
+  }
+
+  async exportarPdf() {
+    if (this.exportando()) return;
+    this.exportando.set(true);
+    try {
+      const filters = this.buildActiveFilters();
+      if (!filters) { this.exportando.set(false); return; }
+      const logs = await this.fetchLogsParaExport();
+      const conFiltros = this.hayFiltrosActivos();
+      const empresaNombre = this.nombreEmpresaParaExport(filters.companyId);
+      const fechaEmision = new Date().toLocaleDateString('es-PE', { day: '2-digit', month: 'long', year: 'numeric' });
+
+      const [{ default: JsPdf }, { default: autoTable }] = await Promise.all([
+        import('jspdf'),
+        import('jspdf-autotable')
+      ]);
+      const doc = new JsPdf('l', 'mm', 'a4');
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const marginX = 12;
+      const dark: [number, number, number] = [15, 23, 42];
+      const gray: [number, number, number] = [71, 85, 105];
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(16);
+      doc.setTextColor(...dark);
+      doc.text('Historial de Auditoría', marginX, 14);
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.setTextColor(...gray);
+      doc.text(`${empresaNombre} — ${conFiltros ? 'Reporte filtrado' : 'Reporte completo'} — Emitido: ${fechaEmision}`, marginX, 20);
+      doc.text(`Total de registros: ${logs.length}`, pageWidth - marginX, 20, { align: 'right' });
+
+      autoTable(doc, {
+        startY: 25,
+        head: [['Fecha / Hora', 'Usuario', 'Rol', 'Clínica', 'Módulo', 'Acción', 'Detalle', 'IP']],
+        body: logs.map(l => [
+          new Date(l.timestamp).toLocaleString('es-PE'),
+          l.userEmail || 'Anónimo / Sistema',
+          l.userRole || '-',
+          l.companyName || 'Multi-Sede',
+          l.module,
+          l.action,
+          l.details || '',
+          l.ipAddress || 'Interna'
+        ]),
+        styles: { fontSize: 6.5, cellPadding: 1.5, textColor: dark, lineColor: [226, 232, 240], lineWidth: 0.1 },
+        headStyles: { fillColor: [248, 250, 252], textColor: dark, fontStyle: 'bold', lineColor: dark, lineWidth: 0.2 },
+        alternateRowStyles: { fillColor: [248, 250, 252] },
+        columnStyles: {
+          0: { cellWidth: 30 }, 1: { cellWidth: 38 }, 2: { cellWidth: 20 }, 3: { cellWidth: 28 },
+          4: { cellWidth: 22 }, 5: { cellWidth: 30 }, 7: { cellWidth: 22 }
+        },
+        margin: { left: marginX, right: marginX }
+      });
+
+      doc.save(`auditoria-${conFiltros ? 'filtrada' : 'completa'}-${new Date().toISOString().slice(0, 10)}.pdf`);
+    } catch {
+      this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo generar el PDF de auditoría' });
+    } finally {
+      this.exportando.set(false);
+    }
+  }
+
+  async exportarExcel() {
+    if (this.exportando()) return;
+    this.exportando.set(true);
+    try {
+      const filters = this.buildActiveFilters();
+      if (!filters) { this.exportando.set(false); return; }
+      const logs = await this.fetchLogsParaExport();
+      const conFiltros = this.hayFiltrosActivos();
+      const empresaNombre = this.nombreEmpresaParaExport(filters.companyId);
+      const fechaEmision = new Date().toLocaleDateString('es-PE');
+
+      const ExcelJSModule = await import('exceljs');
+      const ExcelJSRuntime = ExcelJSModule.default ?? ExcelJSModule;
+      const workbook = new ExcelJSRuntime.Workbook();
+      workbook.creator = empresaNombre;
+      workbook.created = new Date();
+      const sheet = workbook.addWorksheet('Auditoría', {
+        pageSetup: { paperSize: 9, orientation: 'landscape', fitToPage: true, fitToWidth: 1 }
+      });
+
+      sheet.columns = [
+        { width: 20 }, { width: 26 }, { width: 14 }, { width: 20 },
+        { width: 16 }, { width: 22 }, { width: 45 }, { width: 16 }
+      ];
+
+      sheet.mergeCells('A1:H1');
+      const titleCell = sheet.getCell('A1');
+      titleCell.value = `HISTORIAL DE AUDITORÍA — ${empresaNombre.toUpperCase()} (${conFiltros ? 'FILTRADO' : 'COMPLETO'})`;
+      titleCell.font = { name: 'Calibri', bold: true, size: 14, color: { argb: 'FF0F172A' } };
+      titleCell.alignment = { horizontal: 'left', vertical: 'middle' };
+      titleCell.border = { bottom: { style: 'medium', color: { argb: 'FF0F172A' } } };
+      sheet.getRow(1).height = 28;
+
+      sheet.mergeCells('A2:H2');
+      const subtitleCell = sheet.getCell('A2');
+      subtitleCell.value = `Emitido: ${fechaEmision}  —  Total de registros: ${logs.length}`;
+      subtitleCell.font = { name: 'Calibri', italic: true, size: 9, color: { argb: 'FF64748B' } };
+      sheet.getRow(2).height = 16;
+      sheet.getRow(3).height = 6;
+
+      const hdrRow = sheet.getRow(4);
+      hdrRow.height = 20;
+      ['Fecha / Hora', 'Usuario', 'Rol', 'Clínica', 'Módulo', 'Acción', 'Detalle', 'IP'].forEach((label, col) => {
+        const cell = hdrRow.getCell(col + 1);
+        cell.value = label;
+        cell.font = { name: 'Calibri', bold: true, size: 10, color: { argb: 'FFFFFFFF' } };
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E293B' } };
+        cell.alignment = { horizontal: 'left', vertical: 'middle', indent: 1 };
+      });
+
+      logs.forEach((l, idx) => {
+        const row = sheet.getRow(5 + idx);
+        const values = [
+          new Date(l.timestamp).toLocaleString('es-PE'),
+          l.userEmail || 'Anónimo / Sistema',
+          l.userRole || '-',
+          l.companyName || 'Multi-Sede',
+          l.module,
+          l.action,
+          l.details || '',
+          l.ipAddress || 'Interna'
+        ];
+        values.forEach((v, col) => {
+          const cell = row.getCell(col + 1);
+          cell.value = v;
+          cell.font = { name: 'Calibri', size: 9, color: { argb: 'FF1E293B' } };
+          cell.alignment = { horizontal: 'left', vertical: 'middle', wrapText: col === 6, indent: 1 };
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: idx % 2 === 1 ? 'FFF8FAFC' : 'FFFFFFFF' } };
+        });
+      });
+
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `auditoria-${conFiltros ? 'filtrada' : 'completa'}-${new Date().toISOString().slice(0, 10)}.xlsx`;
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(link.href);
+    } catch {
+      this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo generar el Excel de auditoría' });
+    } finally {
+      this.exportando.set(false);
+    }
   }
 
   getActionBadgeClass(action: string): string {

@@ -295,12 +295,12 @@
 <div id="print-area" class="hidden print:block font-sans p-10 text-[#0f172a] bg-white">
   <div class="print-header-container">
     <div class="print-logo-title">
-      <span class="print-logo-text">VARGASVET</span>
+      <span class="print-logo-text">{{ authStore.companyName }}</span>
       <span class="print-subtitle">Mi Horario de Trabajo</span>
     </div>
     <div class="print-report-info">
       <span>Reporte Personal</span><br>
-      <strong>VargasVet S.A.C.</strong><br>
+      <strong>{{ authStore.companyName }}</strong><br>
       <span style="font-size: 9px; color: #94a3b8; margin-top: 4px; display: inline-block;">Emitido: {{ currentDateFormatted }}</span>
     </div>
   </div>

@@ -191,9 +191,15 @@ export class CartillaComponent implements OnInit {
     this.cargarServiciosPreventivos();
     this.cargarMascotas();
     const petId = Number(this.route.snapshot.queryParamMap.get('petId'));
+    const modoParam = this.route.snapshot.queryParamMap.get('modo');
     if (Number.isInteger(petId) && petId > 0) {
       this.mascotaService.obtenerPorId(petId).subscribe({
-        next: response => this.onAutocompleteSelect(response.data)
+        next: response => {
+          this.onAutocompleteSelect(response.data);
+          if (modoParam === 'VACUNACION' || modoParam === 'DESPARASITACION') {
+            this.cambiarModo(modoParam);
+          }
+        }
       });
     }
   }

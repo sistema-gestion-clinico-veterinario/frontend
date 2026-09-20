@@ -128,13 +128,13 @@ describe('ReportesComponent', () => {
   it('limpiarFiltros() restablece periodo, veterinario y especie a sus valores por defecto', () => {
     flushInitialRequests();
 
-    component.periodo = 'mes';
+    component.periodo = 'todos';
     component.veterinarioId = 7;
     component.especie = 'PERRO';
 
     component.limpiarFiltros();
 
-    expect(component.periodo).toBe('todos');
+    expect(component.periodo).toBe('mes');
     expect(component.veterinarioId).toBeNull();
     expect(component.especie).toBe('');
 

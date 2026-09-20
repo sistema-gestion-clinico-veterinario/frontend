@@ -25,7 +25,7 @@
       </div>
     </div>
 
-    <div class="hidden md:block bg-white border border-slate-200 rounded-xl overflow-hidden mb-6">
+    <div class="hidden lg:block bg-white border border-slate-200 rounded-xl overflow-hidden mb-6">
       <div class="overflow-x-auto">
         <table class="w-full text-sm">
           <thead class="bg-slate-50 border-b border-slate-200">
@@ -61,7 +61,7 @@
       </div>
     </div>
 
-    <div class="md:hidden space-y-3 mb-6">
+    <div class="lg:hidden space-y-3 mb-6">
       <div *ngFor="let i of [1,2,3]" class="bg-white border border-slate-200 rounded-xl p-4">
         <div class="flex items-start gap-3">
           <p-skeleton shape="circle" size="2.75rem"></p-skeleton>
@@ -186,7 +186,7 @@
     </div>
 
 
-    <div *ngIf="mascotas().length > 0" class="md:hidden space-y-3 mb-6">
+    <div *ngIf="mascotas().length > 0" class="lg:hidden space-y-3 mb-6">
       <div *ngFor="let mascota of mascotas()" class="bg-white border border-slate-200 rounded-xl p-4">
         <div class="flex items-start gap-3">
           <div [class]="'w-11 h-11 rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0 ' + especieAvatarClass(mascota.especie)">
@@ -236,7 +236,7 @@
       </div>
     </div>
     <div *ngIf="mascotas().length > 0"
-      class="hidden md:block bg-white border border-slate-200 rounded-xl overflow-hidden mb-6">
+      class="hidden lg:block bg-white border border-slate-200 rounded-xl overflow-hidden mb-6">
 
       <div class="overflow-x-auto">
         <table class="w-full text-sm">
