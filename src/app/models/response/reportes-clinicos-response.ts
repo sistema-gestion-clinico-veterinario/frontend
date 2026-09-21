@@ -79,3 +79,31 @@ export interface ReportesClinicosFiltros {
   veterinarioId?: number;
   especie?: string;
 }
+
+export interface EmpresaResumen {
+  companyId: number;
+  companyName: string;
+  consultas: number;
+  pacientesAtendidos: number;
+  /** null cuando el usuario no tiene permiso VISTA_PAGOS: el dato financiero no se expone. */
+  ingresos: number | null;
+  nuevosPacientes: number;
+  porcentajeCitasCompletadas: number;
+  noAsistieron: number;
+}
+
+/** Solo para administración de plataforma: un resumen por empresa, sin mezclar sus cifras. */
+export interface ReportesComparativoEmpresas {
+  fechaDesde: string;
+  fechaHasta: string;
+  empresas: EmpresaResumen[];
+}
+
+/** Página de "Pacientes sin visitar hace 3+ meses", calculada y paginada desde el backend. */
+export interface PacientesInactivosPage {
+  content: PacienteInactivo[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+}

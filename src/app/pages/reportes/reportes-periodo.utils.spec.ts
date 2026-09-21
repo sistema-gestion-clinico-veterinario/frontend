@@ -18,9 +18,19 @@ describe('calcularRangoPeriodo', () => {
       .toEqual({ fechaDesde: '2026-07-01', fechaHasta: '2026-07-31' });
   });
 
-  it('debe devolver los últimos 36 meses para el periodo todos, alineado con el tope del backend', () => {
-    expect(calcularRangoPeriodo('todos', referencia))
-      .toEqual({ fechaDesde: '2023-07-30', fechaHasta: '2026-07-30' });
+  it('debe devolver los últimos 3 meses', () => {
+    expect(calcularRangoPeriodo('3meses', referencia))
+      .toEqual({ fechaDesde: '2026-04-30', fechaHasta: '2026-07-30' });
+  });
+
+  it('debe devolver los últimos 6 meses', () => {
+    expect(calcularRangoPeriodo('6meses', referencia))
+      .toEqual({ fechaDesde: '2026-01-30', fechaHasta: '2026-07-30' });
+  });
+
+  it('debe devolver los últimos 12 meses', () => {
+    expect(calcularRangoPeriodo('12meses', referencia))
+      .toEqual({ fechaDesde: '2025-07-30', fechaHasta: '2026-07-30' });
   });
 
   it('debe dejar el rango vacío para un periodo personalizado', () => {
