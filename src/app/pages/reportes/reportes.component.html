@@ -22,12 +22,18 @@
           <option value="personalizado">Personalizado</option>
         </select>
       </label>
-      <label *ngIf="!verComparativoEmpresas()" class="flex min-w-0 flex-col rounded-lg border border-slate-200 bg-white px-3 py-1.5">
+      <label *ngIf="!verComparativoEmpresas() && canViewAllCitas()" class="flex min-w-0 flex-col rounded-lg border border-slate-200 bg-white px-3 py-1.5">
         <span class="text-[10px] text-slate-500">Empleado</span>
         <select class="h-7 min-w-0 bg-transparent text-sm font-semibold outline-none" [(ngModel)]="veterinarioId" (change)="onFiltrosChange()">
           <option [ngValue]="null">Todos</option>
           <option *ngFor="let vet of veterinarios()" [ngValue]="vet.id">{{ vet.nombre }} {{ vet.apellido }}</option>
         </select>
+      </label>
+      <!-- Alcance propio (OWN): el backend ya fuerza los datos al empleado actual, así que en
+           vez del selector se muestra solo su nombre para dejar claro qué se está viendo. -->
+      <label *ngIf="!verComparativoEmpresas() && !canViewAllCitas()" class="flex min-w-0 flex-col rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5">
+        <span class="text-[10px] text-slate-500">Empleado</span>
+        <span class="h-7 flex items-center text-sm font-semibold text-slate-600 truncate">{{ userName }}</span>
       </label>
       <label class="flex min-w-0 flex-col rounded-lg border border-slate-200 bg-white px-3 py-1.5">
         <span class="text-[10px] text-slate-500">Especie</span>
