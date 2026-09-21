@@ -65,6 +65,14 @@ export default class ReportesComponent {
   readonly isPlatformAdmin = computed(() => this.authStore.activeRolePurpose() === 'PLATFORM_ADMIN');
   readonly verComparativoEmpresas = computed(() => this.isPlatformAdmin() && this.selectedCompanyId() == null);
 
+  /** Igual que en Agenda: un usuario con alcance propio (OWN) solo ve sus propios datos aunque
+   * el backend ignore lo que elija aquí — el filtro "Todos"/otros nombres es engañoso si se
+   * muestra de todas formas, así que se oculta y se fija a su propio empleado. */
+  readonly canViewAllCitas = computed(() =>
+    this.authStore.dataScope('VISTA_CITAS_AGENDA') === 'COMPANY'
+  );
+  readonly userName = this.authStore.nombreCompleto() ?? '';
+
   readonly data = signal<ReportesClinicos | null>(null);
   readonly comparativo = signal<ReportesComparativoEmpresas | null>(null);
   readonly pacientesInactivos = signal<PacientesInactivosPage | null>(null);
@@ -110,6 +118,10 @@ export default class ReportesComponent {
 
   constructor() {
     this.actualizarRangoSeleccionado();
+
+    if (!this.canViewAllCitas() && this.authStore.empleadoId()) {
+      this.veterinarioId = this.authStore.empleadoId() ?? null;
+    }
 
     const companyId$ = toObservable(this.selectedCompanyId).pipe(
       distinctUntilChanged()
