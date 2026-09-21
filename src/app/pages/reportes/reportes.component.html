@@ -16,11 +16,13 @@
         <select class="h-7 min-w-0 bg-transparent text-sm font-semibold outline-none" [(ngModel)]="periodo" (change)="onFiltrosChange()">
           <option value="hoy">Hoy</option><option value="semana">Esta semana</option>
           <option value="mes">Este mes</option>
-          <option value="todos" title="Incluye los últimos 3 años, no el historial completo de la clínica">Últimos 3 años</option>
+          <option value="3meses">Últimos 3 meses</option>
+          <option value="6meses">Últimos 6 meses</option>
+          <option value="12meses">Últimos 12 meses</option>
           <option value="personalizado">Personalizado</option>
         </select>
       </label>
-      <label class="flex min-w-0 flex-col rounded-lg border border-slate-200 bg-white px-3 py-1.5">
+      <label *ngIf="!verComparativoEmpresas()" class="flex min-w-0 flex-col rounded-lg border border-slate-200 bg-white px-3 py-1.5">
         <span class="text-[10px] text-slate-500">Empleado</span>
         <select class="h-7 min-w-0 bg-transparent text-sm font-semibold outline-none" [(ngModel)]="veterinarioId" (change)="onFiltrosChange()">
           <option [ngValue]="null">Todos</option>
@@ -34,10 +36,10 @@
           <option *ngFor="let item of especies" [value]="item[0]">{{ item[1] }}</option>
         </select>
       </label>
-      <button class="flex h-12 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold hover:bg-slate-50" type="button" (click)="exportarPdf()">
+      <button class="flex h-12 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold hover:bg-slate-50 disabled:opacity-40" type="button" (click)="exportarPdf()" [disabled]="verComparativoEmpresas()">
         <i class="pi pi-file-pdf text-red-500"></i> Exportar PDF
       </button>
-      <button class="flex h-12 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold hover:bg-slate-50" type="button" (click)="exportarExcel()">
+      <button class="flex h-12 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold hover:bg-slate-50 disabled:opacity-40" type="button" (click)="exportarExcel()" [disabled]="verComparativoEmpresas()">
         <i class="pi pi-file-excel text-emerald-600"></i> Exportar Excel
       </button>
     </div>
@@ -49,12 +51,47 @@
     <button class="h-10 rounded-lg bg-slate-100 px-5 text-sm font-semibold text-slate-600" type="button" (click)="limpiarFiltros()">Limpiar</button>
   </div>
 
+  <ng-container *ngIf="verComparativoEmpresas(); else reporteUnaEmpresa">
+    <section *ngIf="comparativo() as cmp" class="overflow-hidden rounded-xl border border-slate-200 bg-white">
+      <div class="overflow-x-auto">
+        <table class="w-full min-w-[720px] text-left text-sm">
+          <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+            <tr>
+              <th class="px-4 py-3 font-semibold">Empresa</th>
+              <th class="px-4 py-3 text-right font-semibold">Consultas</th>
+              <th class="px-4 py-3 text-right font-semibold">Pacientes atendidos</th>
+              <th class="px-4 py-3 text-right font-semibold">Nuevos pacientes</th>
+              <th class="px-4 py-3 text-right font-semibold">Ingresos</th>
+              <th class="px-4 py-3 text-right font-semibold">% citas completadas</th>
+              <th class="px-4 py-3 text-right font-semibold">No asistieron</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let empresa of cmp.empresas" class="border-t border-slate-100">
+              <td class="px-4 py-3 font-medium text-slate-800">{{ empresa.companyName }}</td>
+              <td class="px-4 py-3 text-right">{{ empresa.consultas }}</td>
+              <td class="px-4 py-3 text-right">{{ empresa.pacientesAtendidos }}</td>
+              <td class="px-4 py-3 text-right">{{ empresa.nuevosPacientes }}</td>
+              <td class="px-4 py-3 text-right">{{ empresa.ingresos != null ? formatMoney(empresa.ingresos) : '—' }}</td>
+              <td class="px-4 py-3 text-right">{{ empresa.porcentajeCitasCompletadas | number:'1.0-1' }}%</td>
+              <td class="px-4 py-3 text-right">{{ empresa.noAsistieron }}</td>
+            </tr>
+            <tr *ngIf="!cmp.empresas.length">
+              <td colspan="7" class="px-4 py-10 text-center text-slate-400">No hay empresas activas para comparar.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </ng-container>
+
+  <ng-template #reporteUnaEmpresa>
   <section class="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-7">
     <article class="kpi-card"><span class="kpi-icon bg-emerald-50 text-emerald-600"><i class="pi pi-calendar"></i></span><div class="min-w-0"><p>Consultas del periodo</p><strong>{{ report.resumen.consultas }}</strong><small [class.negative]="(variacion(report.resumen.consultas, report.resumenAnterior.consultas) ?? 0) < 0">{{ variacionTexto(report.resumen.consultas, report.resumenAnterior.consultas) }}</small></div></article>
     <article class="kpi-card"><span class="kpi-icon bg-violet-50 text-violet-600"><i class="pi pi-users"></i></span><div class="min-w-0"><p>Pacientes atendidos</p><strong>{{ report.resumen.pacientesAtendidos }}</strong><small [class.negative]="(variacion(report.resumen.pacientesAtendidos, report.resumenAnterior.pacientesAtendidos) ?? 0) < 0">{{ variacionTexto(report.resumen.pacientesAtendidos, report.resumenAnterior.pacientesAtendidos) }}</small></div></article>
     <article class="kpi-card" *ngIf="report.resumen.ingresos != null"><span class="kpi-icon bg-emerald-50 text-emerald-600"><i class="pi pi-dollar"></i></span><div class="min-w-0"><p>Ingresos</p><strong class="truncate">{{ formatMoney(report.resumen.ingresos) }}</strong><small [class.negative]="(variacion(report.resumen.ingresos, report.resumenAnterior.ingresos ?? 0) ?? 0) < 0">{{ variacionTexto(report.resumen.ingresos, report.resumenAnterior.ingresos ?? 0) }}</small></div></article>
     <article class="kpi-card"><span class="kpi-icon bg-orange-50 text-orange-500"><i class="pi pi-user-plus"></i></span><div class="min-w-0"><p>Nuevos pacientes</p><strong>{{ report.resumen.nuevosPacientes }}</strong><small [class.negative]="(variacion(report.resumen.nuevosPacientes, report.resumenAnterior.nuevosPacientes) ?? 0) < 0">{{ variacionTexto(report.resumen.nuevosPacientes, report.resumenAnterior.nuevosPacientes) }}</small></div></article>
-    <article class="kpi-card"><span class="kpi-icon bg-blue-50 text-blue-600"><i class="pi pi-clock"></i></span><div class="min-w-0"><p>Tiempo promedio atención</p><strong>{{ report.resumen.tiempoPromedioAtencionMinutos }} min</strong><small class="!text-slate-400">Consultas cerradas del periodo</small></div></article>
+    <article class="kpi-card"><span class="kpi-icon bg-teal-50 text-teal-600"><i class="pi pi-clock"></i></span><div class="min-w-0"><p>Tiempo promedio atención</p><strong>{{ report.resumen.tiempoPromedioAtencionMinutos }} min</strong><small class="!text-slate-400">Consultas cerradas del periodo</small></div></article>
     <article class="kpi-card"><span class="kpi-icon bg-emerald-50 text-emerald-600"><i class="pi pi-check-circle"></i></span><div class="min-w-0"><p>Citas completadas</p><strong>{{ report.resumen.porcentajeCitasCompletadas | number:'1.0-1' }}%</strong><small [class.negative]="(variacion(report.resumen.porcentajeCitasCompletadas, report.resumenAnterior.porcentajeCitasCompletadas) ?? 0) < 0">{{ variacionTexto(report.resumen.porcentajeCitasCompletadas, report.resumenAnterior.porcentajeCitasCompletadas) }}</small></div></article>
     <article class="kpi-card"><span class="kpi-icon bg-rose-50 text-rose-600"><i class="pi pi-user-minus"></i></span><div class="min-w-0"><p>No asistieron</p><strong>{{ report.resumen.noAsistieron }}</strong><small [class.negative]="(variacion(report.resumen.noAsistieron, report.resumenAnterior.noAsistieron) ?? 0) > 0">{{ variacionTexto(report.resumen.noAsistieron, report.resumenAnterior.noAsistieron) }}</small></div></article>
   </section>
@@ -63,17 +100,17 @@
     <article class="chart-panel" *ngIf="report.consultasPorMes as items"><div class="panel-heading"><h2>Evolución de consultas</h2><span>{{ formatShortDate(report.fechaDesde) }} – {{ formatShortDate(report.fechaHasta) }}</span></div><div class="chart-area" *ngIf="items.length; else noChart"><canvas #reportChart data-report-chart="evolucion"></canvas></div></article>
     <article class="chart-panel" *ngIf="report.consultasPorEstado as items"><div class="panel-heading"><h2>Estado de consultas</h2><span>Periodo seleccionado</span></div><div class="chart-area" *ngIf="items.length; else noChart"><canvas #reportChart data-report-chart="estados"></canvas></div></article>
     <article class="chart-panel" *ngIf="report.pacientesPorEspecie as items"><div class="panel-heading"><h2>Consultas por especie</h2><span>{{ report.resumen.consultas }} total</span></div><div class="chart-area" *ngIf="items.length; else noChart"><canvas #reportChart data-report-chart="especies"></canvas></div></article>
-    <article class="chart-panel" *ngIf="report.serviciosMasSolicitados as items"><div class="panel-heading"><h2>Servicios más solicitados</h2><span>Top {{ items.length }}</span></div><div class="chart-area" *ngIf="items.length; else noChart"><canvas #reportChart data-report-chart="servicios"></canvas></div></article>
+    <article class="chart-panel" *ngIf="report.serviciosMasSolicitados as items"><div class="panel-heading"><h2>Servicios más solicitados</h2><span>Top {{ items.length }}</span></div><div class="mt-3"><app-reportes-top-list [items]="items" colorHue="#1baf7a" /></div></article>
     <article class="chart-panel" *ngIf="report.pacientesPorRangoEdad as items"><div class="panel-heading"><h2>Pacientes por edad</h2><span>Pacientes únicos</span></div><div class="chart-area" *ngIf="items.length; else noChart"><canvas #reportChart data-report-chart="edades"></canvas></div></article>
-    <article class="chart-panel" *ngIf="report.consultasPorVeterinario as items"><div class="panel-heading"><h2>Consultas por empleado</h2><span>{{ report.resumen.consultas }} total</span></div><div class="chart-area" *ngIf="items.length; else noChart"><canvas #reportChart data-report-chart="veterinarios"></canvas></div></article>
+    <article class="chart-panel" *ngIf="report.consultasPorVeterinario as items"><div class="panel-heading"><h2>Consultas por empleado</h2><span>{{ report.resumen.consultas }} total</span></div><div class="relative mt-3 h-56 w-full sm:h-64" *ngIf="items.length; else noChart"><canvas #reportChart data-report-chart="veterinarios"></canvas></div></article>
     <article class="chart-panel" *ngIf="report.frecuenciaConsultasPorPaciente as items"><div class="panel-heading"><h2>Frecuencia de consultas por paciente</h2><span>Pacientes únicos</span></div><div class="chart-area" *ngIf="items.length; else noChart"><canvas #reportChart data-report-chart="frecuencia"></canvas></div></article>
     <article class="chart-panel" *ngIf="report.ingresosPorMetodoPago as items"><div class="panel-heading"><h2>Ingresos por método de pago</h2><span>Periodo seleccionado</span></div><div class="chart-area" *ngIf="items.length; else noChart"><canvas #reportChart data-report-chart="ingresosMetodo"></canvas></div></article>
     <article class="chart-panel" *ngIf="report.ingresosPorServicio as items"><div class="panel-heading"><h2>Ingresos por servicio</h2><span>Periodo seleccionado</span></div><div class="chart-area" *ngIf="items.length; else noChart"><canvas #reportChart data-report-chart="ingresosServicio"></canvas></div></article>
-    <article class="chart-panel" *ngIf="report.cumplimientoVacunacion as items"><div class="panel-heading"><h2>Cumplimiento de vacunación</h2><span>Mascotas activas</span></div><div class="chart-area" *ngIf="items.length; else noChart"><canvas #reportChart data-report-chart="cumplimientoVacunacion"></canvas></div></article>
-    <article class="chart-panel" *ngIf="report.cumplimientoDesparasitacion as items"><div class="panel-heading"><h2>Cumplimiento de desparasitación</h2><span>Mascotas activas</span></div><div class="chart-area" *ngIf="items.length; else noChart"><canvas #reportChart data-report-chart="cumplimientoDesparasitacion"></canvas></div></article>
-    <article class="chart-panel" *ngIf="report.pacientesFrecuentes as items"><div class="panel-heading"><h2>Pacientes que más visitan</h2><span>Top {{ items.length }}</span></div><div class="chart-area" *ngIf="items.length; else noChart"><canvas #reportChart data-report-chart="pacientesFrecuentes"></canvas></div></article>
-    <article class="chart-panel" *ngIf="report.vacunasMasAplicadas as items"><div class="panel-heading"><h2>Vacunas más aplicadas</h2><span>Periodo seleccionado</span></div><div class="chart-area" *ngIf="items.length; else noChart"><canvas #reportChart data-report-chart="vacunasMasAplicadas"></canvas></div></article>
-    <article class="chart-panel" *ngIf="report.desparasitantesMasAplicados as items"><div class="panel-heading"><h2>Desparasitantes más aplicados</h2><span>Periodo seleccionado</span></div><div class="chart-area" *ngIf="items.length; else noChart"><canvas #reportChart data-report-chart="desparasitantesMasAplicados"></canvas></div></article>
+    <article class="chart-panel" *ngIf="report.cumplimientoVacunacion as items"><div class="panel-heading"><h2>Cumplimiento de vacunación</h2><span>Mascotas activas</span></div><app-reportes-meter [items]="items" color="#0ca30c" /></article>
+    <article class="chart-panel" *ngIf="report.cumplimientoDesparasitacion as items"><div class="panel-heading"><h2>Cumplimiento de desparasitación</h2><span>Mascotas activas</span></div><app-reportes-meter [items]="items" color="#2a78d6" /></article>
+    <article class="chart-panel" *ngIf="report.pacientesFrecuentes as items"><div class="panel-heading"><h2>Pacientes que más visitan</h2><span>Top {{ items.length }}</span></div><div class="mt-3"><app-reportes-top-list [items]="items" colorHue="#e34948" /></div></article>
+    <article class="chart-panel" *ngIf="report.vacunasMasAplicadas as items"><div class="panel-heading"><h2>Vacunas más aplicadas</h2><span>Periodo seleccionado</span></div><div class="mt-3"><app-reportes-emphasis [items]="items" color="#4a3aa7" /></div></article>
+    <article class="chart-panel" *ngIf="report.desparasitantesMasAplicados as items"><div class="panel-heading"><h2>Desparasitantes más aplicados</h2><span>Periodo seleccionado</span></div><div class="mt-3"><app-reportes-emphasis [items]="items" color="#eb6834" /></div></article>
     <article class="chart-panel" *ngIf="report.demandaPorHorario">
       <div class="panel-heading"><h2>Horarios con mayor demanda</h2><span>Intensidad por citas</span></div>
       <div class="mt-3 overflow-x-auto pb-1">
@@ -94,10 +131,10 @@
     <article class="upcoming-panel" *ngIf="report.controlesPreventivosProximos as items"><div class="panel-heading"><h2>Controles preventivos próximos</h2><span>{{ items.length }}</span></div><div class="mt-2" *ngIf="items.length; else noControls"><div class="upcoming-row" *ngFor="let item of items"><span class="pet-avatar bg-violet-50 text-violet-600">{{ item.mascota.charAt(0) }}</span><div><strong>{{ item.mascota }}</strong><small>{{ item.producto }}</small></div><time class="bg-violet-50 text-violet-600">{{ formatShortDate(item.fechaProxima) }}</time></div></div><ng-template #noControls><div class="empty-list">No hay controles próximos en los siguientes 30 días.</div></ng-template></article>
   </section>
 
-  <section class="mt-4" *ngIf="report.pacientesInactivos as items">
+  <section class="mt-4" *ngIf="pacientesInactivos() as pagina">
     <article class="upcoming-panel">
-      <div class="panel-heading"><h2>Pacientes sin visitar hace 3+ meses</h2><span>{{ items.length }}</span></div>
-      <div class="mt-2 overflow-x-auto" *ngIf="items.length; else noInactivos">
+      <div class="panel-heading"><h2>Pacientes sin visitar hace 3+ meses</h2><span>{{ pagina.totalElements }}</span></div>
+      <div class="mt-2 overflow-x-auto" *ngIf="pagina.content.length; else noInactivos">
         <table class="w-full text-left text-xs">
           <thead>
             <tr class="text-slate-400">
@@ -108,7 +145,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr class="border-t border-slate-100" *ngFor="let item of items">
+            <tr class="border-t border-slate-100" *ngFor="let item of pagina.content">
               <td class="py-1.5 font-medium text-slate-700">{{ item.mascota }}</td>
               <td class="py-1.5 text-slate-500">{{ item.apoderado }}</td>
               <td class="py-1.5 text-slate-500">{{ item.ultimaVisita === 'Nunca visitó' ? item.ultimaVisita : formatShortDate(item.ultimaVisita) }}</td>
@@ -116,8 +153,16 @@
             </tr>
           </tbody>
         </table>
+        <div class="mt-3 flex items-center justify-between text-xs text-slate-500" *ngIf="pagina.totalPages > 1">
+          <span>Página {{ pagina.page + 1 }} de {{ pagina.totalPages }}</span>
+          <div class="flex gap-2">
+            <button type="button" class="rounded-md border border-slate-200 px-2.5 py-1 font-semibold hover:bg-slate-50 disabled:opacity-40" [disabled]="pagina.page <= 0" (click)="cambiarPaginaInactivos(-1)">Anterior</button>
+            <button type="button" class="rounded-md border border-slate-200 px-2.5 py-1 font-semibold hover:bg-slate-50 disabled:opacity-40" [disabled]="pagina.page >= pagina.totalPages - 1" (click)="cambiarPaginaInactivos(1)">Siguiente</button>
+          </div>
+        </div>
       </div>
       <ng-template #noInactivos><div class="empty-list">No hay pacientes inactivos por más de 3 meses.</div></ng-template>
     </article>
   </section>
+  </ng-template>
 </div>

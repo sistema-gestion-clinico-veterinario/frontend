@@ -4,9 +4,8 @@ import { ItemCount, ItemMonto, ReportesClinicos } from '../../models/response/re
 
 Chart.register(...registerables);
 
-export type ReportChartName = 'evolucion' | 'estados' | 'especies' | 'servicios' | 'edades' | 'veterinarios' | 'frecuencia'
-  | 'ingresosMetodo' | 'ingresosServicio' | 'cumplimientoVacunacion' | 'cumplimientoDesparasitacion'
-  | 'pacientesFrecuentes' | 'vacunasMasAplicadas' | 'desparasitantesMasAplicados';
+export type ReportChartName = 'evolucion' | 'estados' | 'especies' | 'edades' | 'veterinarios' | 'frecuencia'
+  | 'ingresosMetodo' | 'ingresosServicio';
 
 const FONT: Partial<FontSpec> = {
   family: "'Barlow', sans-serif",
@@ -14,36 +13,65 @@ const FONT: Partial<FontSpec> = {
 };
 const GRID_COLOR = '#eef2f7';
 
-// Paleta única para datos puramente categóricos (sin significado propio: servicios,
-// veterinarios, rangos de edad, métodos de pago...) — mismo orden y tono en todos los
-// gráficos para que la misma posición siempre se vea igual entre tarjetas.
-const CATEGORICAL_PALETTE = ['#397ce8', '#27ad6f', '#f59e0b', '#8b5cf6', '#ef5b5b', '#64748b', '#06b6d4', '#f97316'];
+// Paleta para datos categóricos donde la categoría SÍ tiene identidad propia (especies,
+// por ejemplo) — sin rosado/magenta a pedido del usuario. Orden validado contra
+// separación por daltonismo y contraste (ver skill de dataviz); empieza en verde
+// azulado en vez de azul para no repetir el acento de la marca.
+const CATEGORICAL_PALETTE = ['#1baf7a', '#eda100', '#4a3aa7', '#e34948', '#008300', '#2a78d6', '#eb6834'];
 
 // Colores por NOMBRE de etiqueta, no por posición en el array: el backend ordena estos
 // grupos por frecuencia (el más numeroso primero), así que un color fijo por índice
 // terminaría pintando "Cancelada" de verde un período y de rojo el siguiente. Asignar
 // el color al texto de la etiqueta evita ese problema y le da significado real al color.
 const ESTADO_CONSULTA_COLORS: Record<string, string> = {
-  'Completada': '#22a06b',
-  'En proceso': '#f59e0b',
-  'Programada': '#4f86e8',
-  'Confirmada': '#4f86e8',
-  'Sala de espera': '#06b6d4',
-  'Pendiente': '#f59e0b',
-  'Reprogramada': '#8b5cf6',
-  'Cancelada': '#ef5b5b',
-  'No asistió': '#ef5b5b',
-  'Eliminada': '#64748b',
-  'Otro': '#64748b'
+  'Completada': '#0ca30c',
+  'En proceso': '#fab219',
+  'Programada': '#4a3aa7',
+  'Confirmada': '#4a3aa7',
+  'Sala de espera': '#1baf7a',
+  'Pendiente': '#fab219',
+  'Reprogramada': '#2a78d6',
+  'Cancelada': '#d03b3b',
+  'No asistió': '#d03b3b',
+  'Eliminada': '#898781',
+  'Otro': '#898781'
 };
 
-const CUMPLIMIENTO_COLORS: Record<string, string> = {
-  'Al día': '#22a06b',
-  'Atrasado': '#ef5b5b'
+/** Reutilizado también por el medidor HTML de cumplimiento (ver reportes.component.html). */
+export const CUMPLIMIENTO_COLORS: Record<string, string> = {
+  'Al día': '#0ca30c',
+  'Atrasado': '#d03b3b'
 };
 
-function colorsForLabels(labels: string[], byLabel: Record<string, string>, fallback: string[] = CATEGORICAL_PALETTE): string[] {
-  return labels.map((label, index) => byLabel[label] ?? fallback[index % fallback.length]);
+// `offset` rota el punto de partida en la paleta: así dos gráficos de "top N" en la misma
+// pantalla no arrancan ambos en el mismo color y se distinguen entre sí a simple vista,
+// aunque los dos usen la misma paleta multicolor.
+function colorsForLabels(
+  labels: string[],
+  byLabel: Record<string, string>,
+  fallback: string[] = CATEGORICAL_PALETTE,
+  offset = 0
+): string[] {
+  return labels.map((label, index) => byLabel[label] ?? fallback[(index + offset) % fallback.length]);
+}
+
+// Las formas radiales (dona, anillo polar) se rompen visualmente con muchas categorías: las
+// porciones chicas se vuelven invisibles junto al centro y la leyenda se llena de nombres. Por
+// eso, antes de graficar, se agrupan las categorías que sobran más allá de `max` en "Otros" —
+// nunca se generan más colores ni se intenta mostrar todo. El backend ya entrega estas listas
+// ordenadas de mayor a menor, así que tomar las primeras `max - 1` conserva lo más relevante.
+function capToTopWithOthers(items: ItemCount[], max: number): ItemCount[] {
+  if (items.length <= max) return items;
+  const top = items.slice(0, max - 1);
+  const resto = items.slice(max - 1).reduce((acc, item) => acc + item.count, 0);
+  return [...top, { label: 'Otros', count: resto }];
+}
+
+function capToTopWithOthersMonto(items: ItemMonto[], max: number): ItemMonto[] {
+  if (items.length <= max) return items;
+  const top = items.slice(0, max - 1);
+  const resto = items.slice(max - 1).reduce((acc, item) => acc + item.monto, 0);
+  return [...top, { label: 'Otros', monto: resto }];
 }
 
 /**
@@ -113,52 +141,33 @@ export class ReportesChartService implements OnDestroy {
       ESTADO_CONSULTA_COLORS
     );
     this.createDoughnut(canvasByName.get('especies'), reporte.pacientesPorEspecie);
-    this.createHorizontalBar(
-      canvasByName.get('servicios'),
-      reporte.serviciosMasSolicitados
-    );
-    this.createBar(
-      canvasByName.get('edades'),
-      reporte.pacientesPorRangoEdad
-    );
-    this.createHorizontalBar(
-      canvasByName.get('veterinarios'),
-      reporte.consultasPorVeterinario
-    );
+    // "Consultas por empleado" vuelve a barra horizontal: el número de empleados no tiene techo
+    // (una clínica grande puede tener decenas), y a diferencia de una forma radial (dona, anillo
+    // polar), una barra no se rompe con muchas filas — el panel simplemente crece o hace scroll,
+    // sin porciones invisibles ni leyenda ilegible. "Pacientes por edad" se queda en dona porque
+    // sus categorías están acotadas por diseño (los rangos de edad son un catálogo fijo y corto).
+    // "Cumplimiento" ya no es <canvas>: se muestra como medidor de progreso (ver plantilla).
+    // "Servicios más solicitados", "Pacientes frecuentes", "Vacunas más aplicadas" y
+    // "Desparasitantes más aplicados" tampoco son <canvas>: dos se renderizan como lista
+    // numerada y dos como tarjeta de destacado (ver reportes.component.html).
+    this.createHorizontalBar(canvasByName.get('veterinarios'), reporte.consultasPorVeterinario, {}, 4);
+    this.createDoughnut(canvasByName.get('edades'), reporte.pacientesPorRangoEdad, {}, 2);
     this.createBar(
       canvasByName.get('frecuencia'),
-      reporte.frecuenciaConsultasPorPaciente
+      reporte.frecuenciaConsultasPorPaciente,
+      {},
+      6
     );
     this.createHorizontalBarMonto(
       canvasByName.get('ingresosMetodo'),
-      reporte.ingresosPorMetodoPago
+      reporte.ingresosPorMetodoPago,
+      {},
+      1
     );
-    this.createHorizontalBarMonto(
-      canvasByName.get('ingresosServicio'),
-      reporte.ingresosPorServicio
-    );
-    this.createDoughnut(
-      canvasByName.get('cumplimientoVacunacion'),
-      reporte.cumplimientoVacunacion,
-      CUMPLIMIENTO_COLORS
-    );
-    this.createDoughnut(
-      canvasByName.get('cumplimientoDesparasitacion'),
-      reporte.cumplimientoDesparasitacion,
-      CUMPLIMIENTO_COLORS
-    );
-    this.createHorizontalBar(
-      canvasByName.get('pacientesFrecuentes'),
-      reporte.pacientesFrecuentes
-    );
-    this.createHorizontalBar(
-      canvasByName.get('vacunasMasAplicadas'),
-      reporte.vacunasMasAplicadas
-    );
-    this.createHorizontalBar(
-      canvasByName.get('desparasitantesMasAplicados'),
-      reporte.desparasitantesMasAplicados
-    );
+    // Dona en vez de otra barra de dinero más: el ingreso por servicio es literalmente un reparto
+    // del ingreso total (cada porción = % de lo facturado), distinto de "Ingresos por método"
+    // (que sigue en barra, más apropiado para comparar montos exactos entre pocas formas de pago).
+    this.createDoughnutMonto(canvasByName.get('ingresosServicio'), reporte.ingresosPorServicio, 3);
   }
 
   destroy(): void {
@@ -194,12 +203,13 @@ export class ReportesChartService implements OnDestroy {
   private createBar(
     canvas: HTMLCanvasElement | undefined,
     items: ItemCount[] | null,
-    colorsByLabel: Record<string, string> = {}
+    colorsByLabel: Record<string, string> = {},
+    offset = 0
   ): void {
     if (!canvas || !items || items.length === 0) return;
     this.charts.push(new Chart(canvas, {
       type: 'bar',
-      data: this.barData(items, colorsByLabel, 34),
+      data: this.barData(items, colorsByLabel, 34, offset),
       options: barOptions('x')
     }));
   }
@@ -207,12 +217,13 @@ export class ReportesChartService implements OnDestroy {
   private createHorizontalBar(
     canvas: HTMLCanvasElement | undefined,
     items: ItemCount[] | null,
-    colorsByLabel: Record<string, string> = {}
+    colorsByLabel: Record<string, string> = {},
+    offset = 0
   ): void {
     if (!canvas || !items || items.length === 0) return;
     this.charts.push(new Chart(canvas, {
       type: 'bar',
-      data: this.barData(items, colorsByLabel, 22),
+      data: this.barData(items, colorsByLabel, 22, offset),
       options: barOptions('y')
     }));
   }
@@ -220,16 +231,20 @@ export class ReportesChartService implements OnDestroy {
   private createDoughnut(
     canvas: HTMLCanvasElement | undefined,
     items: ItemCount[] | null,
-    colorsByLabel: Record<string, string> = {}
+    colorsByLabel: Record<string, string> = {},
+    offset = 0
   ): void {
     if (!canvas || !items || items.length === 0) return;
+    const capped = capToTopWithOthers(items, 6);
     this.charts.push(new Chart(canvas, {
       type: 'doughnut',
       data: {
-        labels: items.map(item => item.label),
+        labels: capped.map(item => item.label),
         datasets: [{
-          data: items.map(item => item.count),
-          backgroundColor: colorsForLabels(items.map(item => item.label), colorsByLabel),
+          data: capped.map(item => item.count),
+          backgroundColor: capped.map((item, index) =>
+            item.label === 'Otros' ? '#cbd5e1' : (colorsByLabel[item.label] ?? CATEGORICAL_PALETTE[(index + offset) % CATEGORICAL_PALETTE.length])
+          ),
           borderWidth: 3,
           borderColor: '#fff'
         }]
@@ -248,12 +263,54 @@ export class ReportesChartService implements OnDestroy {
     }));
   }
 
-  private barData(items: ItemCount[], colorsByLabel: Record<string, string>, maxBarThickness: number) {
+  private createDoughnutMonto(
+    canvas: HTMLCanvasElement | undefined,
+    items: ItemMonto[] | null,
+    offset = 0
+  ): void {
+    if (!canvas || !items || items.length === 0) return;
+    const capped = capToTopWithOthersMonto(items, 6);
+    this.charts.push(new Chart(canvas, {
+      type: 'doughnut',
+      data: {
+        labels: capped.map(item => item.label),
+        datasets: [{
+          data: capped.map(item => item.monto),
+          backgroundColor: capped.map((item, index) =>
+            item.label === 'Otros' ? '#cbd5e1' : CATEGORICAL_PALETTE[(index + offset) % CATEGORICAL_PALETTE.length]
+          ),
+          borderWidth: 3,
+          borderColor: '#fff'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '66%',
+        plugins: {
+          legend: {
+            position: canvas.clientWidth < 480 ? 'bottom' : 'right',
+            labels: { usePointStyle: true, pointStyle: 'circle', font: FONT }
+          },
+          tooltip: {
+            callbacks: {
+              label: context => {
+                const value = typeof context.raw === 'number' ? context.raw : 0;
+                return ` ${context.label}: ${new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN' }).format(value)}`;
+              }
+            }
+          }
+        }
+      }
+    }));
+  }
+
+  private barData(items: ItemCount[], colorsByLabel: Record<string, string>, maxBarThickness: number, offset = 0) {
     return {
       labels: items.map(item => item.label),
       datasets: [{
         data: items.map(item => item.count),
-        backgroundColor: colorsForLabels(items.map(item => item.label), colorsByLabel),
+        backgroundColor: colorsForLabels(items.map(item => item.label), colorsByLabel, CATEGORICAL_PALETTE, offset),
         borderRadius: 5,
         maxBarThickness
       }]
@@ -263,7 +320,8 @@ export class ReportesChartService implements OnDestroy {
   private createHorizontalBarMonto(
     canvas: HTMLCanvasElement | undefined,
     items: ItemMonto[] | null,
-    colorsByLabel: Record<string, string> = {}
+    colorsByLabel: Record<string, string> = {},
+    offset = 0
   ): void {
     if (!canvas || !items || items.length === 0) return;
     this.charts.push(new Chart(canvas, {
@@ -272,7 +330,7 @@ export class ReportesChartService implements OnDestroy {
         labels: items.map(item => item.label),
         datasets: [{
           data: items.map(item => item.monto),
-          backgroundColor: colorsForLabels(items.map(item => item.label), colorsByLabel),
+          backgroundColor: colorsForLabels(items.map(item => item.label), colorsByLabel, CATEGORICAL_PALETTE, offset),
           borderRadius: 5,
           maxBarThickness: 22
         }]

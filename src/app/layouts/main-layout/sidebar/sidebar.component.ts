@@ -119,11 +119,11 @@ export class SidebarComponent {
   navItemClass(isActive: boolean): string {
     if (this.collapsed()) {
       return isActive
-        ? 'mx-auto flex h-10 w-10 items-center justify-center rounded-md bg-white text-[#123B5A] transition-colors duration-150'
+        ? 'mx-auto flex h-10 w-10 items-center justify-center rounded-md bg-white text-[#00517F] transition-colors duration-150'
         : 'mx-auto flex h-10 w-10 items-center justify-center rounded-md text-slate-200 hover:bg-white/10 hover:text-white transition-colors duration-150';
     }
     return isActive
-      ? 'flex min-h-10 items-center rounded-md bg-white px-3 text-[#123B5A] transition-colors duration-150'
+      ? 'flex min-h-10 items-center rounded-md bg-white px-3 text-[#00517F] transition-colors duration-150'
       : 'flex min-h-10 items-center rounded-md px-3 text-slate-200 hover:bg-white/10 hover:text-white transition-colors duration-150';
   }
 

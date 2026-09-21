@@ -21,17 +21,22 @@ import { ReportesClinicosService } from '../../core/services/reportes-clinicos.s
 import { EmpleadoListResponse } from '../../models/response/empleado-list-response';
 import {
   ReportesClinicos,
-  ReportesClinicosFiltros
+  ReportesClinicosFiltros,
+  ReportesComparativoEmpresas,
+  PacientesInactivosPage
 } from '../../models/response/reportes-clinicos-response';
 import { AuthStore } from '../../store/auth.store';
 import { ReportesChartService } from './reportes-chart.service';
 import { ReportesExportService, ReportChartImage } from './reportes-export.service';
 import { Periodo, calcularRangoPeriodo } from './reportes-periodo.utils';
+import { ReportesTopListComponent } from './top-list/top-list.component';
+import { ReportesMeterComponent } from './meter/meter.component';
+import { ReportesEmphasisComponent } from './emphasis/emphasis.component';
 
 @Component({
   selector: 'app-reportes',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ReportesTopListComponent, ReportesMeterComponent, ReportesEmphasisComponent],
   providers: [ReportesChartService, ReportesExportService],
   templateUrl: './reportes.component.html',
   styleUrls: ['./reportes.component.scss'],
@@ -54,7 +59,17 @@ export default class ReportesComponent {
       ?? undefined
   );
 
+  /** Administración de plataforma sin una empresa activa seleccionada: no hay "un" reporte que
+   * mostrar (mezclar cifras de empresas distintas sería engañoso), así que se muestra el
+   * comparativo por empresa en su lugar. Ver `comparativo` más abajo. */
+  readonly isPlatformAdmin = computed(() => this.authStore.activeRolePurpose() === 'PLATFORM_ADMIN');
+  readonly verComparativoEmpresas = computed(() => this.isPlatformAdmin() && this.selectedCompanyId() == null);
+
   readonly data = signal<ReportesClinicos | null>(null);
+  readonly comparativo = signal<ReportesComparativoEmpresas | null>(null);
+  readonly pacientesInactivos = signal<PacientesInactivosPage | null>(null);
+  readonly pacientesInactivosPage = signal(0);
+  private readonly pacientesInactivosPageSize = 10;
   readonly veterinarios = signal<EmpleadoListResponse[]>([]);
   readonly companyInfo = signal<CompanyDTO | null>(null);
   readonly diasSemana = [
@@ -77,7 +92,7 @@ export default class ReportesComponent {
     ['OTRO', 'Otro']
   ] as const;
 
-  periodo: Periodo = 'mes';
+  periodo: Periodo = 'hoy';
   fechaDesde = '';
   fechaHasta = '';
   veterinarioId: number | null = null;
@@ -99,6 +114,8 @@ export default class ReportesComponent {
     const companyId$ = toObservable(this.selectedCompanyId).pipe(
       distinctUntilChanged()
     );
+
+    companyId$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.pacientesInactivosPage.set(0));
 
     companyId$
       .pipe(
@@ -141,11 +158,44 @@ export default class ReportesComponent {
       )
       .subscribe(response => this.data.set(response.data));
 
+    combineLatest([
+      toObservable(this.verComparativoEmpresas),
+      this.reloadReports.pipe(startWith(undefined))
+    ])
+      .pipe(
+        switchMap(([verComparativo]) =>
+          verComparativo
+            ? this.reportesService
+                .obtenerComparativoEmpresas(this.fechaDesde, this.fechaHasta, this.especie || undefined)
+                .pipe(catchError(() => EMPTY))
+            : EMPTY
+        ),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe(response => this.comparativo.set(response.data));
+
+    combineLatest([
+      companyId$,
+      toObservable(this.pacientesInactivosPage),
+      this.reloadReports.pipe(startWith(undefined))
+    ])
+      .pipe(
+        switchMap(([companyId, page]) =>
+          companyId == null
+            ? EMPTY
+            : this.reportesService
+                .obtenerPacientesInactivos(companyId, page, this.pacientesInactivosPageSize)
+                .pipe(catchError(() => EMPTY))
+        ),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe(response => this.pacientesInactivos.set(response.data));
+
     afterRenderEffect(() => {
       const reporte = this.data();
       const canvases = this.chartCanvases().map(reference => reference.nativeElement);
 
-      if (reporte) {
+      if (reporte && !this.verComparativoEmpresas()) {
         this.chartService.render(reporte, canvases);
       } else {
         this.chartService.destroy();
@@ -156,20 +206,31 @@ export default class ReportesComponent {
   onFiltrosChange(): void {
     if (this.periodo === 'personalizado') return;
     this.actualizarRangoSeleccionado();
+    this.pacientesInactivosPage.set(0);
     this.reloadReports.next();
   }
 
   aplicarFiltros(): void {
     if (!this.rangoValido()) return;
+    this.pacientesInactivosPage.set(0);
     this.reloadReports.next();
   }
 
   limpiarFiltros(): void {
-    this.periodo = 'mes';
+    this.periodo = 'hoy';
     this.veterinarioId = null;
     this.especie = '';
     this.actualizarRangoSeleccionado();
+    this.pacientesInactivosPage.set(0);
     this.reloadReports.next();
+  }
+
+  cambiarPaginaInactivos(delta: number): void {
+    const pagina = this.pacientesInactivos();
+    if (!pagina) return;
+    const nueva = this.pacientesInactivosPage() + delta;
+    if (nueva < 0 || nueva >= pagina.totalPages) return;
+    this.pacientesInactivosPage.set(nueva);
   }
 
   variacion(actual: number, anterior: number): number | null {
