@@ -1,0 +1,28 @@
+<div *ngIf="sugerencias().length > 0" class="bg-white border border-slate-200 rounded-xl overflow-hidden mb-4">
+  <button type="button" (click)="colapsado.set(!colapsado())"
+    class="w-full flex items-center justify-between px-4 py-3 hover:bg-slate-50 transition-all">
+    <div class="flex items-center gap-2.5">
+      <i class="pi pi-bell text-amber-500 text-sm"></i>
+      <span class="text-sm font-extrabold text-slate-800">Sugerencias de control</span>
+      <span class="grid min-w-5 place-items-center rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-700">{{ sugerencias().length }}</span>
+    </div>
+    <i class="pi text-[10px] text-slate-400" [ngClass]="colapsado() ? 'pi-chevron-down' : 'pi-chevron-up'"></i>
+  </button>
+
+  <div *ngIf="!colapsado()" class="px-4 pb-4 flex flex-wrap gap-2.5">
+    <div *ngFor="let s of sugerencias()"
+      class="flex items-center gap-3 border rounded-xl px-3 py-2"
+      [ngClass]="urgenciaClase(s.diasRestantes)">
+      <div class="min-w-0">
+        <p class="text-xs font-bold leading-tight">{{ s.mascotaNombre }} — {{ s.nombre }}</p>
+        <p class="text-[10px] opacity-80 mt-0.5">
+          {{ s.origen === 'TRATAMIENTO' ? 'Fin de tratamiento' : 'Control de diagnóstico' }} · {{ etiquetaDias(s.diasRestantes) }} ({{ s.fechaControl }})
+        </p>
+      </div>
+      <button type="button" (click)="agendarControl.emit(s)"
+        class="shrink-0 px-2.5 py-1 rounded-lg bg-white text-[10px] font-bold border border-current hover:opacity-80 transition-all whitespace-nowrap">
+        Agendar control
+      </button>
+    </div>
+  </div>
+</div>

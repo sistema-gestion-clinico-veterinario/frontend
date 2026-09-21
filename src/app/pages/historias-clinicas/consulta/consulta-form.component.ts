@@ -20,8 +20,14 @@ import { AuthStore } from '../../../store/auth.store';
 import { ConsultaResponse } from '../../../models/response/consulta-response';
 import { PrescripcionResponse } from '../../../models/response/prescripcion-response';
 import { PrescripcionRequest } from '../../../models/request/prescripcion-request';
+import { DiagnosticoResponse } from '../../../models/response/diagnostico-response';
+import { DiagnosticoRequest } from '../../../models/request/diagnostico-request';
+import { TratamientoResponse } from '../../../models/response/tratamiento-response';
+import { TratamientoRequest } from '../../../models/request/tratamiento-request';
 import { ArchivoClinicoResponse } from '../../../models/response/archivo-clinico-response';
 import { RecetaModalsComponent } from '../form-hc/receta-modals/receta-modals.component';
+import { DiagnosticoModalsComponent } from '../form-hc/diagnostico-modals/diagnostico-modals.component';
+import { TratamientoModalsComponent } from '../form-hc/tratamiento-modals/tratamiento-modals.component';
 import { ArchivoModalsComponent } from '../form-hc/archivo-modals/archivo-modals.component';
 import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
 import { textContentValidator } from '../../../core/validators/text-content.validator';
@@ -45,6 +51,8 @@ import { AplicacionPreventivaResponse, ControlPreventivoResponse, TipoControlPre
     DrawerModule,
     BadgeModule,
     RecetaModalsComponent,
+    DiagnosticoModalsComponent,
+    TratamientoModalsComponent,
     ArchivoModalsComponent
   ],
   providers: [MessageService, ConfirmationService],
@@ -77,12 +85,20 @@ export class ConsultaFormComponent implements OnInit {
   readonly canCreateReceta = computed(() => this.canCreate() && this.canEditConsulta());
   readonly canModifyReceta = computed(() => this.canEditConsulta());
   readonly canDeleteReceta = computed(() => this.canDelete() && this.canEditConsulta());
+
+  readonly canCreateDiagnostico = computed(() => this.canCreate() && this.canEditConsulta());
+  readonly canModifyDiagnostico = computed(() => this.canEditConsulta());
+  readonly canDeleteDiagnostico = computed(() => this.canDelete() && this.canEditConsulta());
+
+  readonly canCreateTratamiento = computed(() => this.canCreate() && this.canEditConsulta());
+  readonly canModifyTratamiento = computed(() => this.canEditConsulta());
+  readonly canDeleteTratamiento = computed(() => this.canDelete() && this.canEditConsulta());
   readonly canCreateArchivo = computed(() => this.canCreate() && this.canEditConsulta());
   readonly canDeleteArchivo = computed(() => this.canDelete() && this.canEditConsulta());
 
   consulta   = signal<ConsultaResponse | null>(null);
   historia   = signal<any | null>(null); 
-  tabActiva  = signal<'signos' | 'clinico' | 'antecedentes' | 'historial' | 'recetas' | 'examenes'>('signos');
+  tabActiva  = signal<'signos' | 'clinico' | 'diagnosticos' | 'tratamientos' | 'antecedentes' | 'historial' | 'recetas' | 'examenes'>('signos');
   isCerrada  = signal<boolean>(false);
   closingConsulta = signal(false);
   consultaId = 0;
@@ -172,6 +188,35 @@ export class ConsultaFormComponent implements OnInit {
     instrucciones:     ['', [Validators.maxLength(500), noLeadingTrailingSpaceValidator(), textContentValidator()]],
     fechaInicio:       ['', Validators.required],
     fechaFin:          [''],
+  });
+
+  diagnosticos          = signal<DiagnosticoResponse[]>([]);
+  showDiagnosticoModal  = signal<boolean>(false);
+  diagnosticoEditando   = signal<DiagnosticoResponse | null>(null);
+  diagnosticoEliminando = signal<DiagnosticoResponse | null>(null);
+  showConfirmEliminarDiagnostico = signal<boolean>(false);
+
+  diagnosticoForm: FormGroup = this.fb.group({
+    nombre:      ['', [Validators.required, Validators.maxLength(200), noLeadingTrailingSpaceValidator(), textContentValidator()]],
+    codigoCIE:   ['', [Validators.maxLength(20)]],
+    descripcion: ['', [Validators.maxLength(500), noLeadingTrailingSpaceValidator(), textContentValidator()]],
+    tipo:        ['', Validators.required],
+    estado:      ['', Validators.required],
+    fechaProximoControl: [''],
+  });
+
+  tratamientos          = signal<TratamientoResponse[]>([]);
+  showTratamientoModal  = signal<boolean>(false);
+  tratamientoEditando   = signal<TratamientoResponse | null>(null);
+  tratamientoEliminando = signal<TratamientoResponse | null>(null);
+  showConfirmEliminarTratamiento = signal<boolean>(false);
+
+  tratamientoForm: FormGroup = this.fb.group({
+    nombre:      ['', [Validators.required, Validators.maxLength(200), noLeadingTrailingSpaceValidator(), textContentValidator()]],
+    descripcion: ['', [Validators.maxLength(1000), noLeadingTrailingSpaceValidator(), textContentValidator()]],
+    fechaInicio: ['', Validators.required],
+    fechaFin:    [''],
+    estado:      ['', Validators.required],
   });
 
   readonly tiposConsulta = [
@@ -401,6 +446,8 @@ export class ConsultaFormComponent implements OnInit {
           this.loadHistoria(res.data.mascotaId);
         }
         this.loadRecetas();
+        this.loadDiagnosticos();
+        this.loadTratamientos();
         this.loadArchivos();
 
         this.syncingForm = true;
@@ -806,6 +853,174 @@ version: res.data.version,
   loadRecetas() {
     this.hcService.listarRecetas(this.consultaId).subscribe({
       next: (res) => this.recetas.set(res.data ?? [])
+    });
+  }
+
+  loadDiagnosticos() {
+    this.hcService.listarDiagnosticos(this.consultaId).subscribe({
+      next: (res) => this.diagnosticos.set(res.data ?? [])
+    });
+  }
+
+  abrirNuevoDiagnostico() {
+    if (!this.canCreateDiagnostico()) return;
+    this.diagnosticoEditando.set(null);
+    this.diagnosticoForm.reset({ nombre: '', codigoCIE: '', descripcion: '', tipo: '', estado: 'ACTIVO', fechaProximoControl: '' });
+    this.showDiagnosticoModal.set(true);
+  }
+
+  abrirEditarDiagnostico(diagnostico: DiagnosticoResponse) {
+    if (!this.canModifyDiagnostico()) return;
+    this.diagnosticoEditando.set(diagnostico);
+    this.diagnosticoForm.patchValue({
+      nombre:      diagnostico.nombre,
+      codigoCIE:   diagnostico.codigoCIE ?? '',
+      descripcion: diagnostico.descripcion ?? '',
+      tipo:        diagnostico.tipo,
+      estado:      diagnostico.estado,
+      fechaProximoControl: diagnostico.fechaProximoControl ?? '',
+    });
+    this.showDiagnosticoModal.set(true);
+  }
+
+  guardarDiagnostico() {
+    if (this.diagnosticoEditando() ? !this.canModifyDiagnostico() : !this.canCreateDiagnostico()) return;
+    if (this.diagnosticoForm.invalid) {
+      this.diagnosticoForm.markAllAsTouched();
+      return;
+    }
+    const rawPayload = this.diagnosticoForm.value;
+    const payload: DiagnosticoRequest = {
+      ...rawPayload,
+      nombre:      normalizeText(rawPayload.nombre),
+      descripcion: normalizeText(rawPayload.descripcion),
+    };
+    if (!payload.codigoCIE) delete payload.codigoCIE;
+    if (!payload.descripcion) delete payload.descripcion;
+    if (!payload.fechaProximoControl) delete payload.fechaProximoControl;
+
+    const editando = this.diagnosticoEditando();
+    const obs$ = editando
+      ? this.hcService.actualizarDiagnostico(editando.id, payload)
+      : this.hcService.crearDiagnostico(this.consultaId, payload);
+
+    obs$.subscribe({
+      next: () => {
+        this.msgService.add({ severity: 'success', summary: 'Diagnóstico', detail: editando ? 'Diagnóstico actualizado' : 'Diagnóstico registrado' });
+        this.showDiagnosticoModal.set(false);
+        this.loadDiagnosticos();
+      },
+      error: (err) => {
+        this.msgService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo guardar el diagnóstico' });
+      }
+    });
+  }
+
+  confirmarEliminarDiagnostico(diagnostico: DiagnosticoResponse) {
+    if (!this.canDeleteDiagnostico()) return;
+    this.diagnosticoEliminando.set(diagnostico);
+    this.showConfirmEliminarDiagnostico.set(true);
+  }
+
+  eliminarDiagnostico() {
+    if (!this.canDeleteDiagnostico()) return;
+    const diagnostico = this.diagnosticoEliminando();
+    if (!diagnostico) return;
+    this.hcService.eliminarDiagnostico(diagnostico.id).subscribe({
+      next: () => {
+        this.msgService.add({ severity: 'success', summary: 'Diagnóstico', detail: 'Diagnóstico eliminado' });
+        this.showConfirmEliminarDiagnostico.set(false);
+        this.diagnosticoEliminando.set(null);
+        this.loadDiagnosticos();
+      },
+      error: (err) => {
+        this.msgService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo eliminar el diagnóstico' });
+      }
+    });
+  }
+
+  loadTratamientos() {
+    this.hcService.listarTratamientos(this.consultaId).subscribe({
+      next: (res) => this.tratamientos.set(res.data ?? [])
+    });
+  }
+
+  abrirNuevoTratamiento() {
+    if (!this.canCreateTratamiento()) return;
+    this.tratamientoEditando.set(null);
+    this.tratamientoForm.reset({ nombre: '', descripcion: '', fechaInicio: new Date().toISOString().split('T')[0], fechaFin: '', estado: 'ACTIVO' });
+    this.showTratamientoModal.set(true);
+  }
+
+  abrirEditarTratamiento(tratamiento: TratamientoResponse) {
+    if (!this.canModifyTratamiento()) return;
+    this.tratamientoEditando.set(tratamiento);
+    this.tratamientoForm.patchValue({
+      nombre:      tratamiento.nombre,
+      descripcion: tratamiento.descripcion ?? '',
+      fechaInicio: tratamiento.fechaInicio,
+      fechaFin:    tratamiento.fechaFin ?? '',
+      estado:      tratamiento.estado,
+    });
+    this.showTratamientoModal.set(true);
+  }
+
+  guardarTratamiento() {
+    if (this.tratamientoEditando() ? !this.canModifyTratamiento() : !this.canCreateTratamiento()) return;
+    if (this.tratamientoForm.invalid) {
+      this.tratamientoForm.markAllAsTouched();
+      return;
+    }
+    const rawPayload = this.tratamientoForm.value;
+    const payload: TratamientoRequest = {
+      ...rawPayload,
+      nombre:      normalizeText(rawPayload.nombre),
+      descripcion: normalizeText(rawPayload.descripcion),
+    };
+    if (payload.fechaFin && payload.fechaInicio && payload.fechaFin < payload.fechaInicio) {
+      this.msgService.add({ severity: 'warn', summary: 'Fechas inválidas', detail: 'La fecha de fin no puede ser anterior a la fecha de inicio.' });
+      return;
+    }
+    if (!payload.fechaFin) delete payload.fechaFin;
+    if (!payload.descripcion) delete payload.descripcion;
+
+    const editando = this.tratamientoEditando();
+    const obs$ = editando
+      ? this.hcService.actualizarTratamiento(editando.id, payload)
+      : this.hcService.crearTratamiento(this.consultaId, payload);
+
+    obs$.subscribe({
+      next: () => {
+        this.msgService.add({ severity: 'success', summary: 'Tratamiento', detail: editando ? 'Tratamiento actualizado' : 'Tratamiento registrado' });
+        this.showTratamientoModal.set(false);
+        this.loadTratamientos();
+      },
+      error: (err) => {
+        this.msgService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo guardar el tratamiento' });
+      }
+    });
+  }
+
+  confirmarEliminarTratamiento(tratamiento: TratamientoResponse) {
+    if (!this.canDeleteTratamiento()) return;
+    this.tratamientoEliminando.set(tratamiento);
+    this.showConfirmEliminarTratamiento.set(true);
+  }
+
+  eliminarTratamiento() {
+    if (!this.canDeleteTratamiento()) return;
+    const tratamiento = this.tratamientoEliminando();
+    if (!tratamiento) return;
+    this.hcService.eliminarTratamiento(tratamiento.id).subscribe({
+      next: () => {
+        this.msgService.add({ severity: 'success', summary: 'Tratamiento', detail: 'Tratamiento eliminado' });
+        this.showConfirmEliminarTratamiento.set(false);
+        this.tratamientoEliminando.set(null);
+        this.loadTratamientos();
+      },
+      error: (err) => {
+        this.msgService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo eliminar el tratamiento' });
+      }
     });
   }
 

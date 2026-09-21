@@ -22,6 +22,10 @@ import { ArchivoClinicoResponse } from '../../../models/response/archivo-clinico
 import { CitaResponse } from '../../../models/response/cita-response';
 import { ArchivoModalsComponent } from '../form-hc/archivo-modals/archivo-modals.component';
 import { DiagnosticoIaComponent } from './diagnostico-ia/diagnostico-ia.component';
+import { DiagnosticoResponse } from '../../../models/response/diagnostico-response';
+import { EstadoDiagnostico } from '../../../models/request/diagnostico-request';
+import { TratamientoResponse } from '../../../models/response/tratamiento-response';
+import { EstadoTratamiento } from '../../../models/request/tratamiento-request';
 import { formatearFechaClinica } from '../../../shared/utils/fecha-clinica.util';
 
 @Component({
@@ -51,10 +55,15 @@ export class HistoriaClinicaMascotaComponent implements OnInit, OnDestroy {
   hc                  = signal<HistoriaClinicaDetalle | null>(null);
   consultaActiva      = signal<ConsultaResumen | null>(null);
   miniaturas          = signal<Map<number, string>>(new Map());
-  seccionActiva       = signal<'consultas' | 'servicios' | 'preventivos'>('consultas');
+  seccionActiva       = signal<'consultas' | 'servicios' | 'preventivos' | 'seguimiento'>('consultas');
   noTieneHc           = signal<boolean>(false);
   serviciosNoMedicos  = signal<CitaResponse[]>([]);
   loadingServicios    = signal(false);
+
+  diagnosticosSeguimiento = signal<DiagnosticoResponse[]>([]);
+  tratamientosSeguimiento = signal<TratamientoResponse[]>([]);
+  loadingSeguimiento      = signal(false);
+  cambiandoEstadoId       = signal<number | null>(null);
 
   editandoAntecedentes = signal(false);
   guardandoAntecedentes = signal(false);
@@ -360,11 +369,62 @@ export class HistoriaClinicaMascotaComponent implements OnInit, OnDestroy {
     }
   }
 
-  seleccionarSeccion(seccion: 'consultas' | 'servicios' | 'preventivos') {
+  seleccionarSeccion(seccion: 'consultas' | 'servicios' | 'preventivos' | 'seguimiento') {
     this.seccionActiva.set(seccion);
     if (seccion === 'servicios' && this.mascotaId && this.serviciosNoMedicos().length === 0) {
       this.cargarServicios();
     }
+    if (seccion === 'seguimiento' && this.mascotaId
+        && this.diagnosticosSeguimiento().length === 0 && this.tratamientosSeguimiento().length === 0) {
+      this.cargarSeguimiento();
+    }
+  }
+
+  cargarSeguimiento() {
+    this.loadingSeguimiento.set(true);
+    this.hcService.listarDiagnosticosPorMascota(this.mascotaId).subscribe({
+      next: (res) => this.diagnosticosSeguimiento.set(res.data ?? []),
+      error: () => {}
+    });
+    this.hcService.listarTratamientosPorMascota(this.mascotaId).subscribe({
+      next: (res) => {
+        this.tratamientosSeguimiento.set(res.data ?? []);
+        this.loadingSeguimiento.set(false);
+      },
+      error: () => this.loadingSeguimiento.set(false)
+    });
+  }
+
+  cambiarEstadoDiagnosticoSeguimiento(diagnostico: DiagnosticoResponse, estado: EstadoDiagnostico) {
+    if (!this.canModify() || estado === diagnostico.estado) return;
+    this.cambiandoEstadoId.set(diagnostico.id);
+    this.hcService.cambiarEstadoDiagnostico(diagnostico.id, estado).subscribe({
+      next: () => {
+        this.msgService.add({ severity: 'success', summary: 'Diagnóstico', detail: 'Estado actualizado' });
+        this.cambiandoEstadoId.set(null);
+        this.cargarSeguimiento();
+      },
+      error: (err) => {
+        this.msgService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo actualizar el estado' });
+        this.cambiandoEstadoId.set(null);
+      }
+    });
+  }
+
+  cambiarEstadoTratamientoSeguimiento(tratamiento: TratamientoResponse, estado: EstadoTratamiento) {
+    if (!this.canModify() || estado === tratamiento.estado) return;
+    this.cambiandoEstadoId.set(tratamiento.id);
+    this.hcService.cambiarEstadoTratamiento(tratamiento.id, estado).subscribe({
+      next: () => {
+        this.msgService.add({ severity: 'success', summary: 'Tratamiento', detail: 'Estado actualizado' });
+        this.cambiandoEstadoId.set(null);
+        this.cargarSeguimiento();
+      },
+      error: (err) => {
+        this.msgService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo actualizar el estado' });
+        this.cambiandoEstadoId.set(null);
+      }
+    });
   }
 
   cargarServicios() {

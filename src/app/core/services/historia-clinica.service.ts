@@ -6,6 +6,11 @@ import { ConsultaResponse } from '../../models/response/consulta-response';
 import { ConsultaRequest, CerrarConsultaRequest } from '../../models/request/consulta-request';
 import { PrescripcionRequest } from '../../models/request/prescripcion-request';
 import { PrescripcionResponse } from '../../models/response/prescripcion-response';
+import { DiagnosticoRequest, EstadoDiagnostico } from '../../models/request/diagnostico-request';
+import { DiagnosticoResponse } from '../../models/response/diagnostico-response';
+import { TratamientoRequest, EstadoTratamiento } from '../../models/request/tratamiento-request';
+import { TratamientoResponse } from '../../models/response/tratamiento-response';
+import { SugerenciaControlResponse } from '../../models/response/sugerencia-control-response';
 import { ArchivoClinicoResponse } from '../../models/response/archivo-clinico-response';
 import { Page } from '../../models/response/page';
 import { ApiResponse } from '../../models/response/api-response';
@@ -19,6 +24,9 @@ export class HistoriaClinicaService {
   private readonly hcUrl           = `${environment.apiUrl}/medical-records`;
   private readonly citasUrl        = `${environment.apiUrl}/consultations`;
   private readonly recetasUrl      = `${environment.apiUrl}/prescriptions`;
+  private readonly diagnosticosUrl = `${environment.apiUrl}/diagnoses`;
+  private readonly tratamientosUrl = `${environment.apiUrl}/treatments`;
+  private readonly seguimientoUrl  = `${environment.apiUrl}/clinical-follow-up`;
   private readonly baseUrl         = environment.apiUrl;
 
   buscar(query: { numeroHc?: string; nombrePaciente?: string; nombrePropietario?: string; fechaDesde?: string; fechaHasta?: string; companyId?: number; page?: number; size?: number }) {
@@ -84,6 +92,61 @@ export class HistoriaClinicaService {
 
   eliminarReceta(id: number) {
     return this.http.delete<ApiResponse<void>>(`${this.recetasUrl}/${id}`);
+  }
+
+  // ===== Diagnósticos =====
+  crearDiagnostico(consultaId: number, request: DiagnosticoRequest) {
+    return this.http.post<ApiResponse<DiagnosticoResponse>>(`${this.diagnosticosUrl}/consultation/${consultaId}`, request);
+  }
+
+  listarDiagnosticos(consultaId: number) {
+    return this.http.get<ApiResponse<DiagnosticoResponse[]>>(`${this.diagnosticosUrl}/consultation/${consultaId}`);
+  }
+
+  listarDiagnosticosPorMascota(mascotaId: number) {
+    return this.http.get<ApiResponse<DiagnosticoResponse[]>>(`${this.diagnosticosUrl}/pets/${mascotaId}`);
+  }
+
+  actualizarDiagnostico(id: number, request: DiagnosticoRequest) {
+    return this.http.put<ApiResponse<DiagnosticoResponse>>(`${this.diagnosticosUrl}/${id}`, request);
+  }
+
+  cambiarEstadoDiagnostico(id: number, estado: EstadoDiagnostico) {
+    return this.http.patch<ApiResponse<DiagnosticoResponse>>(`${this.diagnosticosUrl}/${id}/status?estado=${estado}`, {});
+  }
+
+  eliminarDiagnostico(id: number) {
+    return this.http.delete<ApiResponse<void>>(`${this.diagnosticosUrl}/${id}`);
+  }
+
+  // ===== Tratamientos =====
+  crearTratamiento(consultaId: number, request: TratamientoRequest) {
+    return this.http.post<ApiResponse<TratamientoResponse>>(`${this.tratamientosUrl}/consultation/${consultaId}`, request);
+  }
+
+  listarTratamientos(consultaId: number) {
+    return this.http.get<ApiResponse<TratamientoResponse[]>>(`${this.tratamientosUrl}/consultation/${consultaId}`);
+  }
+
+  listarTratamientosPorMascota(mascotaId: number) {
+    return this.http.get<ApiResponse<TratamientoResponse[]>>(`${this.tratamientosUrl}/pets/${mascotaId}`);
+  }
+
+  actualizarTratamiento(id: number, request: TratamientoRequest) {
+    return this.http.put<ApiResponse<TratamientoResponse>>(`${this.tratamientosUrl}/${id}`, request);
+  }
+
+  cambiarEstadoTratamiento(id: number, estado: EstadoTratamiento) {
+    return this.http.patch<ApiResponse<TratamientoResponse>>(`${this.tratamientosUrl}/${id}/status?estado=${estado}`, {});
+  }
+
+  eliminarTratamiento(id: number) {
+    return this.http.delete<ApiResponse<void>>(`${this.tratamientosUrl}/${id}`);
+  }
+
+  // ===== Sugerencias de control =====
+  listarSugerenciasControl(dias: number = 7) {
+    return this.http.get<ApiResponse<SugerenciaControlResponse[]>>(`${this.seguimientoUrl}/suggestions?dias=${dias}`);
   }
 
   buscarRecetas(filters: {
