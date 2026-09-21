@@ -41,7 +41,7 @@
     <ng-container *ngIf="cargando()">
       <!-- KPI Cards Skeleton -->
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4"
-           [ngClass]="isSuperAdmin ? 'lg:grid-cols-5' : 'lg:grid-cols-4'">
+           [ngClass]="isGlobalSuperAdminMode ? 'lg:grid-cols-5' : 'lg:grid-cols-4'">
         <div *ngFor="let i of [1,2,3,4,5]" class="bg-white rounded-2xl border border-slate-100 p-4 sm:p-5 flex items-center gap-4">
           <p-skeleton shape="circle" size="3rem" styleClass="shrink-0"></p-skeleton>
           <div class="flex-1 space-y-2">
@@ -167,7 +167,7 @@
 
     <!-- ── KPI CARDS ── -->
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4"
-         [ngClass]="isSuperAdmin ? 'lg:grid-cols-5' : 'lg:grid-cols-4'">
+         [ngClass]="isGlobalSuperAdminMode ? 'lg:grid-cols-5' : 'lg:grid-cols-4'">
 
       <!-- Pacientes -->
       <div *ngIf="canViewMascotas() || canViewClientes() || canViewCitas()" class="bg-white rounded-2xl border border-slate-100 p-4 sm:p-5 flex items-center gap-4 sm:gap-4">
@@ -233,15 +233,15 @@
         </div>
       </div>
 
-      <!-- Sedes (solo superAdmin) -->
-      <div *ngIf="isSuperAdmin"
+      <!-- Empresas (solo superAdmin sin empresa activa seleccionada) -->
+      <div *ngIf="isGlobalSuperAdminMode"
         class="bg-slate-900 rounded-2xl p-4 sm:p-5 flex items-center gap-4 sm:gap-4">
         <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
           <i class="pi pi-building text-sm sm:text-base text-white"></i>
         </div>
         <div class="min-w-0">
           <p class="text-[10px] sm:text-[10px] font-extrabold text-slate-500 uppercase tracking-widest leading-none mb-1 sm:mb-1">
-            Sedes
+            Empresas
           </p>
           <p class="text-2xl sm:text-2xl font-black text-white leading-none">
             {{ stats()?.totalEmpresas ?? '—' }}
@@ -257,8 +257,10 @@
 
       <!-- ─────────────────────────────
            COLUMNA IZQUIERDA (2/3 en lg, 1 en md)
+           order-2 en móvil: la columna derecha (con el calendario primero) se ve antes que
+           los KPI/gráficos, para que el calendario no quede al fondo de la página.
       ───────────────────────────── -->
-      <div class="md:col-span-1 lg:col-span-2 space-y-4 lg:space-y-6">
+      <div class="order-2 md:order-none md:col-span-1 lg:col-span-2 space-y-4 lg:space-y-6">
 
         <!-- 📊 GRÁFICO DE CITAS -->
         <div *ngIf="canViewCitas()" class="bg-white rounded-2xl border border-slate-100 p-0 overflow-hidden">
@@ -506,7 +508,7 @@
                 <span class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-blue-500"></span>
                 Mantenedor de Empresas
               </h2>
-              <p class="text-[8px] sm:text-[10px] text-slate-400 font-medium mt-0.5 truncate">Gestiona las empresas y sedes del sistema</p>
+              <p class="text-[8px] sm:text-[10px] text-slate-400 font-medium mt-0.5 truncate">Gestiona las empresas registradas en la plataforma</p>
             </div>
             <a routerLink="/admin/company" class="text-[8px] sm:text-[9px] font-black text-[#0066AA] hover:underline uppercase tracking-wider shrink-0 ml-2">
               Gestionar
@@ -621,7 +623,12 @@
       <!-- ─────────────────────────────
            COLUMNA DERECHA (1/3)
       ───────────────────────────── -->
-      <div class="space-y-6">
+      <div class="order-1 md:order-none space-y-6">
+
+        <!-- 📅 CALENDARIO DE CITAS -->
+        <div *ngIf="!isGlobalSuperAdminMode && canViewCitas()" class="bg-white rounded-2xl border border-slate-100 p-1.5 sm:p-2">
+          <app-dashboard-citas-calendar [companyId]="activeCompanyId" />
+        </div>
 
         <!-- Perfil del usuario -->
         <div class="bg-white rounded-2xl border border-slate-100 p-3 sm:p-6">
@@ -653,47 +660,6 @@
                 <span class="w-2 h-2 rounded-full bg-emerald-400 block"></span>
               </div>
               <span class="text-xs text-slate-600 font-medium">Sesión activa</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- 📅 CITAS DEL DÍA -->
-        <div *ngIf="!isGlobalSuperAdminMode && canViewCitas()" class="bg-white rounded-2xl border border-slate-100 p-0 overflow-hidden">
-          <div class="px-3 sm:px-6 py-2.5 sm:py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-            <div class="min-w-0">
-              <h2 class="text-[9px] sm:text-xs font-black text-slate-800 uppercase tracking-widest flex items-center gap-1.5 sm:gap-2">
-                <span class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-violet-500"></span>
-                Citas de Hoy
-              </h2>
-              <p class="text-[8px] sm:text-[10px] text-slate-400 font-medium mt-0.5 truncate">
-                Atenciones programadas para hoy
-              </p>
-            </div>
-            <a routerLink="/citas/agenda" class="text-[8px] sm:text-[9px] font-black text-[#0066AA] hover:underline uppercase tracking-wider shrink-0 ml-2">
-              Agenda
-            </a>
-          </div>
-
-          <div class="p-3 sm:p-6">
-            <div class="space-y-2 sm:space-y-3">
-              <div *ngFor="let cita of todayAppointmentsList()" class="p-2.5 sm:p-3 rounded-xl border border-slate-100 bg-slate-50/30 hover:bg-slate-50 transition-all flex items-center justify-between gap-2">
-                <div class="min-w-0 flex-1">
-                  <p class="text-[11px] sm:text-xs font-black text-slate-800 truncate leading-snug">{{ cita.mascotaNombre }}</p>
-                  <p class="text-[8px] sm:text-[9px] text-slate-400 truncate mt-0.5">Prop: {{ cita.apoderadoNombre }}</p>
-                  <p class="text-[8px] sm:text-[9px] text-[#0066AA] font-bold mt-0.5 sm:mt-1 flex items-center gap-1">
-                    <i class="pi pi-user text-[7px] sm:text-[8px]"></i> {{ cita.veterinarioNombre }}
-                  </p>
-                </div>
-                <div class="text-right shrink-0">
-                  <p class="text-[11px] sm:text-xs font-black text-slate-700 leading-none mb-1 sm:mb-1.5">{{ formatTime(cita.fechaHoraInicio) }}</p>
-                  <span [class]="'px-1.5 sm:px-2 py-0.5 rounded text-[7px] sm:text-[8px] font-black uppercase tracking-widest border ' + (cita.estado === 'PENDIENTE' || cita.estado === 'PROGRAMADA' ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100')">
-                    {{ cita.estado }}
-                  </span>
-                </div>
-              </div>
-              <div *ngIf="todayAppointmentsList().length === 0" class="text-center py-6 text-slate-400 text-xs italic font-medium">
-                No hay citas programadas para hoy.
-              </div>
             </div>
           </div>
         </div>

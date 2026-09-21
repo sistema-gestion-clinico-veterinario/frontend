@@ -159,6 +159,14 @@ export class LoginComponent implements OnInit {
       next: () => {},
       error: (error) => {
         this.authError = this.resolveLoginError(error);
+        // Contraseña incorrecta, cuenta que debe restablecerla, etc.: nunca dejar la contraseña
+        // fallida escrita en el campo. Se excluye el error de red/timeout porque ahí la
+        // contraseña no era el problema y reintentar con el mismo valor es razonable.
+        if (!(error?.name === 'TimeoutError' || error?.status === 0)) {
+          this.loginForm.get('password')?.setValue('', { emitEvent: false });
+          const passwordInput = document.getElementById('password') as HTMLInputElement | null;
+          if (passwordInput) passwordInput.value = '';
+        }
       },
     });
   }
