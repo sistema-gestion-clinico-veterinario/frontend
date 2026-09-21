@@ -725,5 +725,14 @@
   </div>
 </div>
 
+<app-conflicting-appointments-dialog
+  mode="empleado"
+  [visible]="conflictDialogVisible()"
+  (visibleChange)="conflictDialogVisible.set($event)"
+  [entityId]="conflictEmployee()?.id ?? null"
+  [entityLabel]="conflictEmployee() ? (conflictEmployee()!.nombre + ' ' + conflictEmployee()!.apellido) : ''"
+  (resolved)="onConflictsResolved()"
+></app-conflicting-appointments-dialog>
+
 
 

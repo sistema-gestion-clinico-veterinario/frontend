@@ -159,7 +159,11 @@
                 <i class="pi pi-mobile text-[9px]"></i>
                 Pagar
               </button>
-              <span *ngIf="!canUpdateDetails(cita) && !canReschedule(cita) && !canPagar(cita)" class="text-[11px] text-slate-300 font-medium italic">—</span>
+              <button *ngIf="canCancel(cita)" (click)="cancelCita(cita)" title="Cancelar cita"
+                class="w-7 h-7 flex items-center justify-center rounded-lg text-rose-600 hover:bg-rose-50 hover:text-rose-700 transition-all cursor-pointer">
+                <i class="pi pi-times-circle text-[11px]"></i>
+              </button>
+              <span *ngIf="!canUpdateDetails(cita) && !canReschedule(cita) && !canPagar(cita) && !canCancel(cita)" class="text-[11px] text-slate-300 font-medium italic">—</span>
             </div>
           </td>
         </tr>
@@ -255,6 +259,11 @@
           class="flex-1 h-8 flex items-center justify-center gap-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-[11px] font-bold transition-all cursor-pointer">
           <i class="pi pi-mobile text-[10px]"></i>
           Pagar
+        </button>
+        <button *ngIf="canCancel(cita)" (click)="cancelCita(cita)"
+          class="flex-1 h-8 flex items-center justify-center gap-1.5 bg-white hover:bg-rose-50 text-rose-600 border border-slate-200 rounded-lg text-[11px] font-semibold transition-all cursor-pointer">
+          <i class="pi pi-times-circle text-[10px]"></i>
+          Cancelar
         </button>
       </div>
     </div>

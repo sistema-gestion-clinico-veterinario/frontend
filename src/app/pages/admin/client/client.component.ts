@@ -23,6 +23,7 @@ import { MascotaResponse } from '../../../models/response/mascota-response';
 import { LoadingStore } from '../../../store/loading.store';
 import { AuthStore } from '../../../store/auth.store';
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
+import { ConflictingAppointmentsDialogComponent } from '../../../shared/components/conflicting-appointments-dialog/conflicting-appointments-dialog.component';
 import { InputFilterDirective } from '../../../core/directives/input-filter.directive';
 import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
 import { lowercaseEmailValidator } from '../../../core/validators/lowercase-email.validator';
@@ -46,7 +47,8 @@ import { Role } from '../../../models/response/permission';
     MenuModule,
     SkeletonModule,
     HasPermissionDirective,
-    InputFilterDirective
+    InputFilterDirective,
+    ConflictingAppointmentsDialogComponent
   ],
   providers: [MessageService],
   templateUrl: './client.component.html',
@@ -489,6 +491,24 @@ export class ClientComponent implements OnInit {
     });
   }
 
+  conflictDialogVisible = signal(false);
+  conflictClient = signal<ApoderadoListResponse | null>(null);
+
+  onConflictsResolved() {
+    const client = this.conflictClient();
+    if (!client) return;
+    this.apoderadoService.cambiarEstado(client.id, !client.activo).subscribe({
+      next: () => {
+        this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Estado actualizado' });
+        this.conflictClient.set(null);
+        this.loadClients();
+      },
+      error: (err) => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo cambiar el estado' });
+      }
+    });
+  }
+
   toggleStatus(client: ApoderadoListResponse) {
     const action = client.activo ? 'desactivar' : 'activar';
     this.openConfirm(
@@ -501,7 +521,12 @@ export class ClientComponent implements OnInit {
             this.loadClients();
           },
           error: (err) => {
-            this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo cambiar el estado' });
+            const message = err.error?.message || 'No se pudo cambiar el estado';
+            if (message.includes('citas programadas vigentes')) {
+              this.conflictClient.set(client);
+              this.conflictDialogVisible.set(true);
+            }
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: message });
           }
         });
       }

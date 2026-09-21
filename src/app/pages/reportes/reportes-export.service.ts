@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import type jsPDF from 'jspdf';
 import type { UserOptions } from 'jspdf-autotable';
 import type ExcelJS from 'exceljs';
-import { HeatmapItem, ItemCount, ItemMonto, ProximaAplicacion, ReportesClinicos } from '../../models/response/reportes-clinicos-response';
+import { HeatmapItem, ItemCount, ItemMonto, PacienteInactivo, ProximaAplicacion, ReportesClinicos } from '../../models/response/reportes-clinicos-response';
 import { CompanyDTO } from '../../models/request/company-dto';
 import { AuditLogService } from '../../core/services/audit-log.service';
 
@@ -62,6 +62,9 @@ export class ReportesExportService {
       { titulo: 'Servicios más solicitados', items: reporte.serviciosMasSolicitados, chart: 'servicios' },
       { titulo: 'Cumplimiento de vacunación', items: reporte.cumplimientoVacunacion, chart: 'cumplimientoVacunacion' },
       { titulo: 'Cumplimiento de desparasitación', items: reporte.cumplimientoDesparasitacion, chart: 'cumplimientoDesparasitacion' },
+      { titulo: 'Pacientes que más visitan', items: reporte.pacientesFrecuentes, chart: 'pacientesFrecuentes' },
+      { titulo: 'Vacunas más aplicadas', items: reporte.vacunasMasAplicadas, chart: 'vacunasMasAplicadas' },
+      { titulo: 'Desparasitantes más aplicados', items: reporte.desparasitantesMasAplicados, chart: 'desparasitantesMasAplicados' },
     ];
     const montoSecciones: { titulo: string; items: ItemMonto[] | null; chart?: string }[] = [
       { titulo: 'Ingresos por método de pago', items: reporte.ingresosPorMetodoPago, chart: 'ingresosMetodo' },
@@ -213,6 +216,7 @@ export class ReportesExportService {
       { label: 'Nuevos pacientes', value: `${resumen.nuevosPacientes}`, variacion: variacionTexto(resumen.nuevosPacientes, anterior.nuevosPacientes), negativa: (variacion(resumen.nuevosPacientes, anterior.nuevosPacientes) ?? 0) < 0 },
       { label: 'Tiempo promedio de atención', value: `${resumen.tiempoPromedioAtencionMinutos} min` },
       { label: 'Citas completadas', value: `${resumen.porcentajeCitasCompletadas.toFixed(1)}%`, variacion: variacionTexto(resumen.porcentajeCitasCompletadas, anterior.porcentajeCitasCompletadas), negativa: (variacion(resumen.porcentajeCitasCompletadas, anterior.porcentajeCitasCompletadas) ?? 0) < 0 },
+      { label: 'No asistieron', value: `${resumen.noAsistieron}`, variacion: variacionTexto(resumen.noAsistieron, anterior.noAsistieron), negativa: (variacion(resumen.noAsistieron, anterior.noAsistieron) ?? 0) > 0 },
     ];
     y = this.drawKpiCards(doc, kpis, marginX, y, contentWidth);
     y += 6;
@@ -267,6 +271,18 @@ export class ReportesExportService {
         startY: y,
         head: [['Mascota', 'Producto', 'Tipo', 'Fecha próxima']],
         body: seccion.items.map(item => [item.mascota, item.producto, this.humanizar(item.tipoControl), item.fechaProxima])
+      }));
+      y = finalY() + 8;
+    }
+
+    if (reporte.pacientesInactivos?.length) {
+      y = asegurarEspacio(y, 20);
+      y = this.drawSectionTitle(doc, 'Pacientes sin visitar hace 3+ meses', marginX, y);
+      autoTable(doc, tableOptions({
+        startY: y,
+        head: [['Mascota', 'Propietario', 'Última visita', 'Días sin visitar']],
+        body: reporte.pacientesInactivos.map(p => [p.mascota, p.apoderado, p.ultimaVisita, `${p.diasSinVisitar}`]),
+        columnStyles: { 3: { halign: 'right', cellWidth: 30 } }
       }));
       y = finalY() + 8;
     }
@@ -473,6 +489,7 @@ export class ReportesExportService {
       ['Nuevos pacientes', reporte.resumen.nuevosPacientes],
       ['Tiempo promedio de atención (min)', reporte.resumen.tiempoPromedioAtencionMinutos],
       ['Citas completadas (%)', reporte.resumen.porcentajeCitasCompletadas],
+      ['No asistieron', reporte.resumen.noAsistieron],
     ] as (ExportCell[] | null)[]).filter((fila): fila is ExportCell[] => fila != null)
       .forEach(fila => resumenSheet.addRow(fila));
     estiloFilas(resumenSheet, filaIndicadorInicio);
@@ -499,6 +516,15 @@ export class ReportesExportService {
       sheet.columns = [{ width: 24 }, { width: 24 }, { width: 20 }, { width: 16 }];
       estiloEncabezado(sheet.addRow(['Mascota', 'Producto', 'Tipo de control', 'Fecha próxima']));
       seccion.items.forEach(item => sheet.addRow([item.mascota, item.producto, this.humanizar(item.tipoControl), item.fechaProxima]));
+      estiloFilas(sheet, 2);
+    }
+
+    if (reporte.pacientesInactivos?.length) {
+      const sheet = workbook.addWorksheet(this.nombreHoja('Pacientes inactivos'));
+      sheet.columns = [{ width: 24 }, { width: 28 }, { width: 18 }, { width: 16 }];
+      estiloEncabezado(sheet.addRow(['Mascota', 'Propietario', 'Última visita', 'Días sin visitar']));
+      reporte.pacientesInactivos.forEach((p: PacienteInactivo) =>
+        sheet.addRow([p.mascota, p.apoderado, p.ultimaVisita, p.diasSinVisitar]));
       estiloFilas(sheet, 2);
     }
 

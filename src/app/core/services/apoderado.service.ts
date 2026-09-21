@@ -6,6 +6,7 @@ import { ApoderadoListResponse } from '../../models/response/apoderado-list-resp
 import { environment } from '../../../environments/environment';
 import { ApoderadoRequest } from '../../models/request/apoderado-request';
 import { UserProfileDTO } from '../../models/response/user-profile-dto';
+import { CitaResponse } from '../../models/response/cita-response';
 import { SKIP_GLOBAL_LOADING } from '../interceptors/api.interceptor';
 
 @Injectable({
@@ -41,6 +42,10 @@ export class ApoderadoService {
 
   cambiarEstado(id: number, active: boolean) {
     return this.http.patch<ApiResponse<void>>(`${this.apiUrl}/${id}/status?active=${active}`, {});
+  }
+
+  citasConflictivas(id: number) {
+    return this.http.get<ApiResponse<CitaResponse[]>>(`${this.apiUrl}/${id}/conflicting-appointments`);
   }
 
   eliminar(id: number) {

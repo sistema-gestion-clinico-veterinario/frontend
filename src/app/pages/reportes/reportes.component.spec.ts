@@ -13,11 +13,11 @@ function reporteFixture(overrides: Partial<ReportesClinicos> = {}): ReportesClin
     fechaHasta: '2026-07-31',
     resumen: {
       consultas: 10, pacientesAtendidos: 6, ingresos: 500,
-      nuevosPacientes: 2, tiempoPromedioAtencionMinutos: 12, porcentajeCitasCompletadas: 80
+      nuevosPacientes: 2, tiempoPromedioAtencionMinutos: 12, porcentajeCitasCompletadas: 80, noAsistieron: 1
     },
     resumenAnterior: {
       consultas: 5, pacientesAtendidos: 3, ingresos: 200,
-      nuevosPacientes: 1, tiempoPromedioAtencionMinutos: 10, porcentajeCitasCompletadas: 60
+      nuevosPacientes: 1, tiempoPromedioAtencionMinutos: 10, porcentajeCitasCompletadas: 60, noAsistieron: 2
     },
     consultasPorTipo: [], consultasPorEstado: [], pacientesPorEspecie: [], pacientesPorRangoEdad: [],
     proximasVacunas: [], proximasDesparasitaciones: [], consultasPorMes: [], consultasPorVeterinario: [],
@@ -25,6 +25,7 @@ function reporteFixture(overrides: Partial<ReportesClinicos> = {}): ReportesClin
     demandaPorHorario: [],
     ingresosPorMetodoPago: [], ingresosPorServicio: [],
     cumplimientoVacunacion: [], cumplimientoDesparasitacion: [],
+    pacientesFrecuentes: [], vacunasMasAplicadas: [], desparasitantesMasAplicados: [], pacientesInactivos: [],
     ...overrides
   };
 }

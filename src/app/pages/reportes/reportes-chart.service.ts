@@ -5,7 +5,8 @@ import { ItemCount, ItemMonto, ReportesClinicos } from '../../models/response/re
 Chart.register(...registerables);
 
 export type ReportChartName = 'evolucion' | 'estados' | 'especies' | 'servicios' | 'edades' | 'veterinarios' | 'frecuencia'
-  | 'ingresosMetodo' | 'ingresosServicio' | 'cumplimientoVacunacion' | 'cumplimientoDesparasitacion';
+  | 'ingresosMetodo' | 'ingresosServicio' | 'cumplimientoVacunacion' | 'cumplimientoDesparasitacion'
+  | 'pacientesFrecuentes' | 'vacunasMasAplicadas' | 'desparasitantesMasAplicados';
 
 const FONT: Partial<FontSpec> = {
   family: "'Barlow', sans-serif",
@@ -31,7 +32,7 @@ const ESTADO_CONSULTA_COLORS: Record<string, string> = {
   'Pendiente': '#f59e0b',
   'Reprogramada': '#8b5cf6',
   'Cancelada': '#ef5b5b',
-  'No asistio': '#ef5b5b',
+  'No asistió': '#ef5b5b',
   'Eliminada': '#64748b',
   'Otro': '#64748b'
 };
@@ -145,6 +146,18 @@ export class ReportesChartService implements OnDestroy {
       canvasByName.get('cumplimientoDesparasitacion'),
       reporte.cumplimientoDesparasitacion,
       CUMPLIMIENTO_COLORS
+    );
+    this.createHorizontalBar(
+      canvasByName.get('pacientesFrecuentes'),
+      reporte.pacientesFrecuentes
+    );
+    this.createHorizontalBar(
+      canvasByName.get('vacunasMasAplicadas'),
+      reporte.vacunasMasAplicadas
+    );
+    this.createHorizontalBar(
+      canvasByName.get('desparasitantesMasAplicados'),
+      reporte.desparasitantesMasAplicados
     );
   }
 

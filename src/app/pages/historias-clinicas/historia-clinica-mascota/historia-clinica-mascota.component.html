@@ -156,6 +156,13 @@
         <strong class="text-base font-bold">Preventivos</strong>
         <span class="grid min-w-6 place-items-center rounded-full bg-slate-100 px-1.5 py-0.5 text-xs font-bold text-slate-600">{{ hc()!.controlesPreventivos?.length || 0 }}</span>
       </button>
+      <button type="button" (click)="seleccionarSeccion('seguimiento')"
+        [class]="seccionActiva() === 'seguimiento'
+          ? 'flex items-center gap-2 border-b-2 border-[#0066AA] px-1 py-3.5 text-[#0066AA]'
+          : 'flex items-center gap-2 border-b-2 border-transparent px-1 py-3.5 text-slate-500 hover:text-slate-800'">
+        <i class="pi pi-heart-fill text-sm"></i>
+        <strong class="text-base font-bold">Seguimiento</strong>
+      </button>
     </nav>
     </div>
 
@@ -872,6 +879,100 @@
       </div>
       </div>
 
+    </section>
+
+    <section *ngIf="seccionActiva() === 'seguimiento'" class="flex flex-col gap-5">
+      <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+        <div class="flex items-center gap-3 border-b border-slate-200 px-5 py-3">
+          <i class="pi pi-heart-fill text-base text-[#0066AA]"></i>
+          <div class="min-w-0">
+            <h2 class="text-sm font-extrabold text-slate-900">Diagnósticos</h2>
+            <p class="mt-0.5 text-[11px] text-slate-500">Historial completo, sin importar en qué consulta se originaron</p>
+          </div>
+        </div>
+        <div class="p-4">
+          <div *ngIf="diagnosticosSeguimiento().length > 0; else sinDiagnosticosSeguimiento" class="flex flex-col gap-3">
+            <div *ngFor="let d of diagnosticosSeguimiento()"
+              class="border border-slate-100 rounded-xl p-4 bg-white">
+              <div class="flex items-start justify-between gap-3 mb-2">
+                <div class="flex-1">
+                  <p class="text-sm font-bold text-slate-900">{{ d.nombre }}</p>
+                  <p class="text-[11px] text-slate-400 mt-0.5">
+                    <span *ngIf="d.fechaConsulta">{{ d.fechaConsulta }}</span>
+                    <span *ngIf="d.veterinarioNombre"> · {{ d.veterinarioNombre }}</span>
+                    <span *ngIf="d.codigoCIE"> · CIE {{ d.codigoCIE }}</span>
+                  </p>
+                  <p *ngIf="d.fechaProximoControl" class="text-[11px] text-amber-600 font-semibold mt-1">
+                    <i class="pi pi-calendar-plus text-[10px]"></i> Próximo control: {{ d.fechaProximoControl }}
+                  </p>
+                </div>
+                <span class="px-2 py-0.5 rounded-md bg-blue-50 text-[#0066AA] text-[10px] font-bold border border-blue-100 uppercase whitespace-nowrap">{{ d.tipo }}</span>
+              </div>
+              <p *ngIf="d.descripcion" class="text-xs text-slate-600 mb-3">{{ d.descripcion }}</p>
+              <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                <label class="text-[10px] font-bold text-slate-500">Estado:</label>
+                <select
+                  [disabled]="!canModify() || cambiandoEstadoId() === d.id"
+                  [ngModel]="d.estado"
+                  (ngModelChange)="cambiarEstadoDiagnosticoSeguimiento(d, $event)"
+                  class="rounded-lg border border-slate-200 px-2 py-1 text-[11px] font-bold text-slate-700 outline-none focus:border-[#0066AA] disabled:opacity-60">
+                  <option value="ACTIVO">Activo</option>
+                  <option value="RESUELTO">Resuelto</option>
+                  <option value="CRONICO">Crónico</option>
+                  <option value="EN_SEGUIMIENTO">En seguimiento</option>
+                  <option value="OTRO">Otro</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <ng-template #sinDiagnosticosSeguimiento>
+            <p class="py-10 text-center text-xs text-slate-400">Sin diagnósticos registrados</p>
+          </ng-template>
+        </div>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+        <div class="flex items-center gap-3 border-b border-slate-200 px-5 py-3">
+          <i class="pi pi-shield text-base text-[#0066AA]"></i>
+          <div class="min-w-0">
+            <h2 class="text-sm font-extrabold text-slate-900">Tratamientos</h2>
+            <p class="mt-0.5 text-[11px] text-slate-500">Protocolos y tratamientos, con o sin fecha de fin definida</p>
+          </div>
+        </div>
+        <div class="p-4">
+          <div *ngIf="tratamientosSeguimiento().length > 0; else sinTratamientosSeguimiento" class="flex flex-col gap-3">
+            <div *ngFor="let t of tratamientosSeguimiento()"
+              class="border border-slate-100 rounded-xl p-4 bg-white">
+              <div class="flex items-start justify-between gap-3 mb-2">
+                <p class="text-sm font-bold text-slate-900 flex-1">{{ t.nombre }}</p>
+              </div>
+              <p class="text-[11px] text-slate-400 mb-2">
+                {{ t.fechaInicio }}<ng-container *ngIf="t.fechaFin"> → {{ t.fechaFin }}</ng-container>
+                <span *ngIf="t.veterinarioNombre"> · {{ t.veterinarioNombre }}</span>
+              </p>
+              <p *ngIf="t.descripcion" class="text-xs text-slate-600 mb-3">{{ t.descripcion }}</p>
+              <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                <label class="text-[10px] font-bold text-slate-500">Estado:</label>
+                <select
+                  [disabled]="!canModify() || cambiandoEstadoId() === t.id"
+                  [ngModel]="t.estado"
+                  (ngModelChange)="cambiarEstadoTratamientoSeguimiento(t, $event)"
+                  class="rounded-lg border border-slate-200 px-2 py-1 text-[11px] font-bold text-slate-700 outline-none focus:border-[#0066AA] disabled:opacity-60">
+                  <option value="PENDIENTE">Pendiente</option>
+                  <option value="ACTIVO">Activo</option>
+                  <option value="EN_CURSO">En curso</option>
+                  <option value="COMPLETADO">Completado</option>
+                  <option value="SUSPENDIDO">Suspendido</option>
+                  <option value="OTRO">Otro</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <ng-template #sinTratamientosSeguimiento>
+            <p class="py-10 text-center text-xs text-slate-400">Sin tratamientos registrados</p>
+          </ng-template>
+        </div>
+      </div>
     </section>
 
   </ng-container>

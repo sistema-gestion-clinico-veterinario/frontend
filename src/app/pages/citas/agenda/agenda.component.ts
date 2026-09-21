@@ -54,6 +54,8 @@ import { hasMeaningfulText, isLowercaseEmail } from '../../../core/utils/input-v
 import { ControlPreventivoService } from '../../../core/services/control-preventivo.service';
 import { ControlPreventivoResponse } from '../../../models/response/control-preventivo-response';
 import { RealtimeStompConnection, RealtimeStompService } from '../../../core/services/realtime-stomp.service';
+import { SugerenciasControlComponent } from './sugerencias-control/sugerencias-control.component';
+import { SugerenciaControlResponse } from '../../../models/response/sugerencia-control-response';
 export type Vista = 'lista' | 'dia' | 'semana' | 'mes';
 export type PeriodoAgenda = '' | 'hoy' | '7dias' | '30dias' | 'personalizado';
 
@@ -94,7 +96,8 @@ interface HorarioResumen {
     SkeletonModule,
     FullCalendarModule,
     HasPermissionDirective,
-    InputFilterDirective
+    InputFilterDirective,
+    SugerenciasControlComponent
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './agenda.component.html',
@@ -976,6 +979,16 @@ export class AgendaComponent implements OnInit, OnDestroy {
     this.displayModal.set(true);
   }
 
+  onAgendarControl(sugerencia: SugerenciaControlResponse) {
+    this.openNew();
+    if (sugerencia.apoderadoId && sugerencia.apoderadoNombre) {
+      this.onClienteChange({ label: sugerencia.apoderadoNombre, value: sugerencia.apoderadoId });
+    }
+    this.selectMascota({ label: sugerencia.mascotaNombre, value: sugerencia.mascotaId });
+    const motivo = (sugerencia.origen === 'TRATAMIENTO' ? 'Control de tratamiento: ' : 'Control de diagnóstico: ') + sugerencia.nombre;
+    this.citaForm.patchValue({ motivoCita: motivo });
+  }
+
   canReprogram(cita: CitaResponse): boolean {
     if (cita.estado !== EstadoCita.PROGRAMADA && 
         cita.estado !== EstadoCita.CANCELADA && 
@@ -1323,8 +1336,19 @@ export class AgendaComponent implements OnInit, OnDestroy {
     const ahora = new Date();
     const diferenciaMs = fechaInicio.getTime() - ahora.getTime();
     const diferenciaHoras = diferenciaMs / (1000 * 60 * 60);
-    
+
     return diferenciaHoras >= 1;
+  }
+
+  canMarkNoShow(cita: CitaResponse): boolean {
+    const estadosValidos = [EstadoCita.PROGRAMADA, EstadoCita.PENDIENTE, EstadoCita.CONFIRMADA, EstadoCita.REPROGRAMADA];
+    if (!estadosValidos.includes(cita.estado)) return false;
+    return new Date(cita.fechaHoraInicio).getTime() <= new Date().getTime();
+  }
+
+  canCheckIn(cita: CitaResponse): boolean {
+    const estadosValidos = [EstadoCita.PROGRAMADA, EstadoCita.PENDIENTE, EstadoCita.CONFIRMADA, EstadoCita.REPROGRAMADA];
+    return estadosValidos.includes(cita.estado);
   }
 
   canEdit(cita: CitaResponse): boolean {
@@ -1386,6 +1410,14 @@ export class AgendaComponent implements OnInit, OnDestroy {
 
     if (this.canCancel(cita) && canModifyCita) {
       items.push({ label: 'Cancelar', icon: 'pi pi-times', command: () => this.cancelarCita(cita) });
+    }
+
+    if (this.canCheckIn(cita) && canModifyCita) {
+      items.push({ label: 'Marcar llegada', icon: 'pi pi-map-marker', command: () => this.marcarLlegada(cita) });
+    }
+
+    if (this.canMarkNoShow(cita) && canModifyCita) {
+      items.push({ label: 'No asistió', icon: 'pi pi-user-minus', command: () => this.marcarNoAsistio(cita) });
     }
 
     if (cita.estado === 'CANCELADA' && canDeleteCita) {
@@ -1493,6 +1525,45 @@ export class AgendaComponent implements OnInit, OnDestroy {
           },
           error: (err) => {
             this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo cancelar la cita' });
+          }
+        });
+      }
+    });
+  }
+
+  marcarLlegada(cita: CitaResponse) {
+    this.displayDetalleCita.set(false);
+    this.citaService.marcarLlegada(cita.id).subscribe({
+      next: () => {
+        this.suppressSseToast = true;
+        this.messageService.add({ severity: 'success', summary: 'Listo', detail: 'Se registró la llegada del paciente.' });
+        this.loadCitas();
+        if (this.vistaActual() !== 'lista') this.loadCitasCalendario();
+      },
+      error: (err) => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo registrar la llegada' });
+      }
+    });
+  }
+
+  marcarNoAsistio(cita: CitaResponse) {
+    this.displayDetalleCita.set(false);
+    this.confirmationService.confirm({
+      message: `¿Confirmas que ${cita.apoderadoNombre} no se presentó a la cita de «${cita.mascotaNombre}»?`,
+      header: 'Marcar inasistencia',
+      icon: 'pi pi-user-minus',
+      acceptLabel: 'Sí, marcar inasistencia',
+      rejectLabel: 'Volver',
+      accept: () => {
+        this.citaService.marcarNoAsistio(cita.id).subscribe({
+          next: () => {
+            this.suppressSseToast = true;
+            this.messageService.add({ severity: 'success', summary: 'Listo', detail: 'La cita quedó marcada como inasistencia.' });
+            this.loadCitas();
+            if (this.vistaActual() !== 'lista') this.loadCitasCalendario();
+          },
+          error: (err) => {
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo marcar la inasistencia' });
           }
         });
       }
