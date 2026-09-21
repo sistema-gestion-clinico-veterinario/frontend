@@ -9,11 +9,12 @@ import { LoadingStore } from '../../../store/loading.store';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { catchError, finalize, forkJoin, of } from 'rxjs';
+import { DashboardCitasCalendarComponent } from '../../dashboard/citas-calendar/citas-calendar.component';
 
 @Component({
   selector: 'app-employee-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, ToastModule],
+  imports: [CommonModule, RouterModule, ToastModule, DashboardCitasCalendarComponent],
   providers: [MessageService],
   templateUrl: './employee-dashboard.component.html',
   styleUrls: ['./employee-dashboard.component.scss']
@@ -30,6 +31,14 @@ export class EmployeeDashboardComponent implements OnInit {
   userName = this.authStore.nombreCompleto() ?? '';
   companyName = this.authStore.companyName() ?? '';
   empleadoId = this.authStore.empleadoId();
+
+  get activeCompanyId(): number | undefined {
+    return this.authStore.companyId() ?? undefined;
+  }
+
+  canViewCitas(): boolean {
+    return this.authStore.hasAccess('VISTA_CITAS_AGENDA', 'leer');
+  }
 
   readonly today = new Date();
 
