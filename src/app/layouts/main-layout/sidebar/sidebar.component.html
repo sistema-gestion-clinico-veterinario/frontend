@@ -17,7 +17,10 @@
     </div>
   </div>
 
-  <nav class="flex-1 overflow-y-auto py-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" [class.px-3]="!collapsed()" [class.px-0]="collapsed()">
+  <nav
+    class="flex-1 overflow-y-auto py-4 [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.25)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/25 hover:[&::-webkit-scrollbar-thumb]:bg-white/40"
+    [class.px-3]="!collapsed()" [class.px-0]="collapsed()"
+  >
     <div class="space-y-1">
       <ng-container *ngIf="menuStructure().length === 0 && !collapsed()">
         <div class="space-y-2 px-2">
