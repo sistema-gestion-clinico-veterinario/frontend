@@ -1,0 +1,55 @@
+<div class="dashboard-calendar-shell">
+  <div class="flex items-center justify-between gap-2 mb-2">
+    <button type="button" (click)="irHoy()" title="Ir al mes de hoy"
+      class="h-6 rounded-md border border-slate-200 px-2 text-[10px] font-bold text-slate-600 hover:bg-slate-50 hover:text-[#0066AA] transition-colors">
+      Hoy
+    </button>
+
+    <!-- Mes anterior/siguiente: las flechas flanquean el nombre del mes para que quede claro
+         que paginan de mes en mes (no de día en día), separadas del botón "Hoy". -->
+    <div class="flex items-center gap-1.5">
+      <button type="button" (click)="irAnterior()" title="Mes anterior" aria-label="Mes anterior"
+        class="grid size-6 place-items-center rounded-md border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition-colors">
+        <i class="pi pi-chevron-left text-[9px]"></i>
+      </button>
+      <span class="min-w-[6.5rem] text-center text-[11px] font-black uppercase tracking-wide text-slate-700">{{ titulo() }}</span>
+      <button type="button" (click)="irSiguiente()" title="Mes siguiente" aria-label="Mes siguiente"
+        class="grid size-6 place-items-center rounded-md border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition-colors">
+        <i class="pi pi-chevron-right text-[9px]"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="relative">
+    <full-calendar #calendar [options]="calendarOptions" />
+    <div *ngIf="cargando()" class="absolute inset-0 grid place-items-center rounded-xl bg-white/60 text-xs font-semibold text-slate-500">
+      Cargando citas…
+    </div>
+  </div>
+</div>
+
+<!-- Visualizador de citas del día: hover/click sobre un día con citas -->
+<div
+  *ngIf="popover() as pop"
+  class="fixed z-[60] w-60 rounded-xl border border-slate-200 bg-white p-3 shadow-lg"
+  [style.top.px]="pop.top"
+  [style.left.px]="pop.left"
+  (mouseenter)="cancelarCierre()"
+  (mouseleave)="cerrarPopoverConRetraso()"
+>
+  <div class="flex items-center justify-between gap-2 mb-2">
+    <span class="text-[11px] font-black text-slate-700 capitalize">{{ pop.fechaLabel }}</span>
+    <span class="rounded-full bg-slate-100 px-1.5 py-0.5 text-[9px] font-bold text-slate-500">{{ pop.citas.length }}</span>
+  </div>
+  <div class="space-y-1.5 max-h-52 overflow-y-auto">
+    <div *ngFor="let cita of pop.citas" class="flex items-center gap-2 rounded-lg px-1.5 py-1 hover:bg-slate-50">
+      <span class="size-2.5 shrink-0 rounded-full ring-2 ring-white shadow-sm" [style.background]="colorEstado(cita.estado)"></span>
+      <span class="text-[10px] font-bold text-slate-500 shrink-0 w-10">{{ cita.fechaHoraInicio.slice(11, 16) }}</span>
+      <span class="text-[11px] font-semibold text-slate-700 truncate min-w-0 flex-1">{{ cita.mascotaNombre }}</span>
+    </div>
+  </div>
+  <button type="button" (click)="irAAgenda()"
+    class="mt-2.5 w-full rounded-lg border border-slate-200 py-1 text-[10px] font-black uppercase tracking-wider text-[#0066AA] hover:bg-slate-50 transition-colors">
+    Ver en agenda
+  </button>
+</div>

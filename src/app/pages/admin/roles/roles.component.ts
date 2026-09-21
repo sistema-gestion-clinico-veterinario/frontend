@@ -62,6 +62,7 @@ export class RolesComponent implements OnInit {
   isEditingName       = signal<boolean>(false);
   editingNameValue    = signal<string>('');
   editingDescValue    = signal<string>('');
+  editingScopeValue   = signal<'PLATFORM' | 'STAFF' | 'CLIENT'>('STAFF');
 
   ngOnInit() {
     const activeId = this.authStore.selectedEnterprise()?.establishmentId
@@ -280,6 +281,7 @@ export class RolesComponent implements OnInit {
     const cleanName = role.name.startsWith('ROLE_') ? role.name.substring(5) : role.name;
     this.editingNameValue.set(cleanName);
     this.editingDescValue.set(role.descripcion ?? '');
+    this.editingScopeValue.set(role.scope);
     this.isEditingName.set(true);
   }
 
@@ -322,7 +324,7 @@ export class RolesComponent implements OnInit {
           name: formattedName,
           descripcion,
           companyId: role.companyId ?? undefined,
-          scope: role.scope
+          scope: role.ambitoEditable ? this.editingScopeValue() : role.scope
         }).subscribe({
           next: (res) => {
             if (this.activeSection() === 'empresa') {
@@ -358,7 +360,8 @@ export class RolesComponent implements OnInit {
     formattedName = formattedName.replace(/\s+/g, '_');
     const nameChanged = formattedName !== role.name;
     const descChanged = this.editingDescValue().trim() !== (role.descripcion ?? '');
-    return nameChanged || descChanged;
+    const scopeChanged = role.ambitoEditable && this.editingScopeValue() !== role.scope;
+    return nameChanged || descChanged || scopeChanged;
   }
 
   roleLabel(name: string): string {

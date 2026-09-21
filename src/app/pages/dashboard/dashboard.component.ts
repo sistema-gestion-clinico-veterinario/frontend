@@ -12,11 +12,12 @@ import { FormsModule } from '@angular/forms';
 import { LoadingStore } from '../../store/loading.store';
 import { ChangePasswordModalComponent } from '../../layouts/main-layout/change-password-modal/change-password-modal.component';
 import { PagoListResponse } from '../../models/response/pago-response';
+import { DashboardCitasCalendarComponent } from './citas-calendar/citas-calendar.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, DropdownModule, SkeletonModule, FormsModule, RouterModule, ChangePasswordModalComponent],
+  imports: [CommonModule, DropdownModule, SkeletonModule, FormsModule, RouterModule, ChangePasswordModalComponent, DashboardCitasCalendarComponent],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })
@@ -47,6 +48,10 @@ export class DashboardComponent implements OnInit {
 
   get isGlobalSuperAdminMode(): boolean {
     return this.isSuperAdmin && !this.authStore.selectedEnterprise()?.establishmentId;
+  }
+
+  get activeCompanyId(): number | undefined {
+    return this.authStore.selectedEnterprise()?.establishmentId ?? this.authStore.companyId() ?? undefined;
   }
 
   stats              = signal<DashboardStats | null>(null);
