@@ -1,4 +1,4 @@
-export type Periodo = 'todos' | 'hoy' | 'semana' | 'mes' | 'personalizado';
+export type Periodo = 'hoy' | 'semana' | 'mes' | '3meses' | '6meses' | '12meses' | 'personalizado';
 
 export interface RangoPeriodo {
   fechaDesde: string;
@@ -29,8 +29,17 @@ function obtenerFechaActualLima(): Date {
   return new Date(valor('year'), valor('month') - 1, valor('day'));
 }
 
-/** Tope máximo del periodo "Todos", alineado con el límite de 36 meses que ya aplica el backend a rangos personalizados. */
-export const TODOS_MESES_MAXIMO = 36;
+/** Tope máximo de un rango personalizado, según el límite que ya aplica el backend. */
+export const RANGO_MESES_MAXIMO = 36;
+
+function rangoUltimosMeses(hoy: Date, meses: number): RangoPeriodo {
+  const desde = new Date(hoy);
+  desde.setMonth(hoy.getMonth() - meses);
+  return {
+    fechaDesde: toDateInput(desde),
+    fechaHasta: toDateInput(hoy)
+  };
+}
 
 export function calcularRangoPeriodo(
   periodo: Periodo,
@@ -39,14 +48,12 @@ export function calcularRangoPeriodo(
   const hoy = new Date(fechaReferencia);
 
   switch (periodo) {
-    case 'todos': {
-      const desde = new Date(hoy);
-      desde.setMonth(hoy.getMonth() - TODOS_MESES_MAXIMO);
-      return {
-        fechaDesde: toDateInput(desde),
-        fechaHasta: toDateInput(hoy)
-      };
-    }
+    case '3meses':
+      return rangoUltimosMeses(hoy, 3);
+    case '6meses':
+      return rangoUltimosMeses(hoy, 6);
+    case '12meses':
+      return rangoUltimosMeses(hoy, 12);
     case 'hoy':
       return {
         fechaDesde: toDateInput(hoy),
