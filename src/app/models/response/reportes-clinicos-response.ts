@@ -18,6 +18,7 @@ export interface ResumenReporte {
   nuevosPacientes: number;
   tiempoPromedioAtencionMinutos: number;
   porcentajeCitasCompletadas: number;
+  noAsistieron: number;
 }
 
 export interface HeatmapItem {
@@ -29,6 +30,13 @@ export interface HeatmapItem {
 export interface ItemMonto {
   label: string;
   monto: number;
+}
+
+export interface PacienteInactivo {
+  mascota: string;
+  apoderado: string;
+  ultimaVisita: string;
+  diasSinVisitar: number;
 }
 
 /**
@@ -58,6 +66,10 @@ export interface ReportesClinicos {
   ingresosPorServicio: ItemMonto[] | null;
   cumplimientoVacunacion: ItemCount[] | null;
   cumplimientoDesparasitacion: ItemCount[] | null;
+  pacientesFrecuentes: ItemCount[] | null;
+  vacunasMasAplicadas: ItemCount[] | null;
+  desparasitantesMasAplicados: ItemCount[] | null;
+  pacientesInactivos: PacienteInactivo[] | null;
 }
 
 export interface ReportesClinicosFiltros {

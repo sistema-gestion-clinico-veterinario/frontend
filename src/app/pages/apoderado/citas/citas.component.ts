@@ -109,6 +109,7 @@ export class CitasComponent implements OnInit {
   confirmMsg = signal<string>('');
   confirmHeader = signal<string>('');
   private pendingRequest: any = null;
+  private pendingCancelCitaId: number | null = null;
 
   // ── PAGO YAPE ──────────────────────────────────────────────────
   displayPagoModal = signal<boolean>(false);
@@ -413,11 +414,23 @@ export class CitasComponent implements OnInit {
   }
 
   canCancel(cita: any): boolean {
-    return false;
+    if (!cita) return false;
+    if (!this.authStore.hasAccess('VISTA_MIS_CITAS', 'eliminar')) return false;
+    const cancelableStates = ['PENDIENTE', 'CONFIRMADA', 'PROGRAMADA', 'REPROGRAMADA'];
+    if (!cancelableStates.includes(cita.estado)) return false;
+    const diffMs = this.toUtc5Ms(cita.fechaHoraInicio) - this.nowUtc5Ms();
+    return diffMs >= 2 * 60 * 60 * 1000;
   }
 
   cancelCita(cita: any) {
-    this.messageService.add({ severity: 'warn', summary: 'Restricción', detail: 'No se puede cancelar la cita con menos de 2 horas de anticipación.' });
+    if (!this.canCancel(cita)) {
+      this.messageService.add({ severity: 'warn', summary: 'Restricción', detail: 'No se puede cancelar la cita con menos de 2 horas de anticipación.' });
+      return;
+    }
+    this.pendingCancelCitaId = cita.id;
+    this.confirmHeader.set('Cancelar cita');
+    this.confirmMsg.set('Se cancelará esta cita. Esta acción no se puede deshacer.');
+    this.displayConfirmModal.set(true);
   }
 
   editCitaDetails(cita: any) {
@@ -524,6 +537,12 @@ export class CitasComponent implements OnInit {
 
   onConfirmAccept() {
     this.displayConfirmModal.set(false);
+    if (this.pendingCancelCitaId != null) {
+      const citaId = this.pendingCancelCitaId;
+      this.pendingCancelCitaId = null;
+      this.executeCancelCita(citaId);
+      return;
+    }
     const req = this.pendingRequest;
     this.pendingRequest = null;
     if (req) this.executeSaveCita(req);
@@ -532,6 +551,26 @@ export class CitasComponent implements OnInit {
   onConfirmReject() {
     this.displayConfirmModal.set(false);
     this.pendingRequest = null;
+    this.pendingCancelCitaId = null;
+  }
+
+  private executeCancelCita(citaId: number) {
+    this.loadingStore.show();
+    this.apoderadoService.cancelarPortalCita(citaId, 'Cancelada por el cliente desde el portal').subscribe({
+      next: () => {
+        this.messageService.add({ severity: 'success', summary: 'Cita cancelada', detail: 'La cita fue cancelada con éxito.' });
+        this.loadingStore.hide();
+        this.loadCitas();
+      },
+      error: (err: any) => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'No se pudo cancelar',
+          detail: err.error?.message || 'Ocurrió un error al cancelar la cita.'
+        });
+        this.loadingStore.hide();
+      }
+    });
   }
 
   private executeSaveCita(request: any) {

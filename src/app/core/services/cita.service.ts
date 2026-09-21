@@ -86,6 +86,18 @@ export class CitaService {
     return this.http.patch<ApiResponse<CitaResponse>>(`${this.apiUrl}/${id}/reschedule`, data);
   }
 
+  reasignarVeterinario(id: number, veterinarioId: number, motivo?: string) {
+    return this.http.patch<ApiResponse<CitaResponse>>(`${this.apiUrl}/${id}/reassign-veterinarian`, { veterinarioId, motivo });
+  }
+
+  marcarNoAsistio(id: number) {
+    return this.http.patch<ApiResponse<CitaResponse>>(`${this.apiUrl}/${id}/no-show`, {});
+  }
+
+  marcarLlegada(id: number) {
+    return this.http.patch<ApiResponse<CitaResponse>>(`${this.apiUrl}/${id}/check-in`, {});
+  }
+
   getAdminDisponibilidad(empleadoId: number, fecha: string, servicioId: number, esEmergencia?: boolean, excludeCitaId?: number) {
     let url = `${this.apiUrl}/availability?empleadoId=${empleadoId}&fecha=${fecha}&servicioId=${servicioId}`;
     if (esEmergencia) url += `&esEmergencia=true`;

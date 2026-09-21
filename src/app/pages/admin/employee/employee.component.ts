@@ -22,6 +22,7 @@ import { EmpleadoListResponse } from '../../../models/response/empleado-list-res
 import { EmpleadoRequest, HorarioEmpleadoRequest } from '../../../models/request/empleado-request';
 import { AuthStore } from '../../../store/auth.store';
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
+import { ConflictingAppointmentsDialogComponent } from '../../../shared/components/conflicting-appointments-dialog/conflicting-appointments-dialog.component';
 import { InputFilterDirective } from '../../../core/directives/input-filter.directive';
 import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
 import { lowercaseEmailValidator } from '../../../core/validators/lowercase-email.validator';
@@ -46,7 +47,8 @@ import { normalizeText } from '../../../core/utils/normalize-text.util';
     MenuModule,
     SkeletonModule,
     HasPermissionDirective,
-    InputFilterDirective
+    InputFilterDirective,
+    ConflictingAppointmentsDialogComponent
   ],
   providers: [MessageService],
   templateUrl: './employee.component.html'
@@ -85,6 +87,9 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   searchFilter = signal<string>('');
   displayDetailModal = signal<boolean>(false);
   selectedEmployeeDetail = signal<EmpleadoRequest | null>(null);
+
+  conflictDialogVisible = signal(false);
+  conflictEmployee = signal<EmpleadoListResponse | null>(null);
 
   public toggleDropdown(name: string, event?: Event) {
     if (event) event.stopPropagation();
@@ -581,11 +586,31 @@ export class EmployeeComponent implements OnInit, OnDestroy {
             this.loadEmployees();
           },
           error: (err) => {
-            this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo cambiar el estado' });
+            const message = err.error?.message || 'No se pudo cambiar el estado';
+            if (message.includes('citas programadas vigentes')) {
+              this.conflictEmployee.set(employee);
+              this.conflictDialogVisible.set(true);
+            }
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: message });
           }
         });
       }
     );
+  }
+
+  onConflictsResolved() {
+    const employee = this.conflictEmployee();
+    if (!employee) return;
+    this.empleadoService.cambiarEstado(employee.id, !employee.activo).subscribe({
+      next: () => {
+        this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Estado actualizado' });
+        this.conflictEmployee.set(null);
+        this.loadEmployees();
+      },
+      error: (err) => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo cambiar el estado' });
+      }
+    });
   }
 
   deleteEmployee(employee: EmpleadoListResponse) {

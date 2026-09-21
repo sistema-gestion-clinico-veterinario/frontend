@@ -9,6 +9,7 @@ import { HorarioEmpleadoResponse } from '../../models/response/horario-empleado-
 import { UserProfileDTO } from '../../models/response/user-profile-dto';
 import { environment } from '../../../environments/environment';
 import { Page } from '../../models/response/page';
+import { CitaResponse } from '../../models/response/cita-response';
 
 @Injectable({
   providedIn: 'root'
@@ -40,6 +41,10 @@ export class EmpleadoService {
 
   cambiarEstado(id: number, activo: boolean) {
     return this.http.patch<ApiResponse<void>>(`${this.apiUrl}/${id}/status?active=${activo}`, {});
+  }
+
+  citasConflictivas(id: number) {
+    return this.http.get<ApiResponse<CitaResponse[]>>(`${this.apiUrl}/${id}/conflicting-appointments`);
   }
 
   eliminar(id: number) {

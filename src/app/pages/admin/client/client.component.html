@@ -654,3 +654,12 @@
     </div>
   </div>
 </div>
+
+<app-conflicting-appointments-dialog
+  mode="apoderado"
+  [visible]="conflictDialogVisible()"
+  (visibleChange)="conflictDialogVisible.set($event)"
+  [entityId]="conflictClient()?.id ?? null"
+  [entityLabel]="conflictClient() ? (conflictClient()!.nombre + ' ' + conflictClient()!.apellido) : ''"
+  (resolved)="onConflictsResolved()"
+></app-conflicting-appointments-dialog>
