@@ -653,8 +653,8 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
           this.uploadingPhoto.set(false);
           doSave(path);
         },
-        error: () => {
-          this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo subir la imagen' });
+        error: (err) => {
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo subir la imagen' });
           this.uploadingPhoto.set(false);
         }
       });

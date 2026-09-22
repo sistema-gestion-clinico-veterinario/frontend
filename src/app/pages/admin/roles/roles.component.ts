@@ -469,8 +469,8 @@ export class RolesComponent implements OnInit {
               detail: `El rol "${this.roleLabel(updated.name)}" fue ${updated.activo ? 'activado' : 'desactivado'}`
             });
           },
-          error: () => {
-            this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cambiar el estado del rol' });
+          error: (err) => {
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo cambiar el estado del rol' });
           }
         });
       }

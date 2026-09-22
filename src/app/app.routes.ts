@@ -28,6 +28,10 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/auth/confirm-email-change/confirm-email-change.component').then((m) => m.ConfirmEmailChangeComponent)
   },
   {
+    path: 'auth/google/callback',
+    loadComponent: () => import('./pages/auth/google-callback/google-callback.component').then((m) => m.GoogleCallbackComponent)
+  },
+  {
     path: 'auth/verify',
     loadComponent: () => import('./pages/auth/verify-email/verify-email.component').then((m) => m.VerifyEmailComponent)
   },

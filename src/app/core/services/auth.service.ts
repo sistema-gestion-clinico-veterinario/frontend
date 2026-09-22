@@ -22,6 +22,12 @@ export class AuthService {
     return this.http.post<AuthLoginResponse>(`${this.baseUrl}/admin-login`, credentials);
   }
 
+  /** Canjea el código de un solo uso que /auth/google/callback dejó en la URL de retorno
+   * tras el consentimiento de Google - equivale a la respuesta de login normal. */
+  exchangeGoogleCode(code: string): Observable<AuthLoginResponse> {
+    return this.http.post<AuthLoginResponse>(`${this.baseUrl}/google/exchange`, { code });
+  }
+
   setupAccount(token: string, password: string): Observable<ApiResponse<void>> {
     return this.http.post<ApiResponse<void>>(`${this.baseUrl}/setup-account`, { token, password });
   }
