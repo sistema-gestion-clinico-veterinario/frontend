@@ -2,8 +2,9 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { finalize, from, switchMap, timeout } from 'rxjs';
+import { environment } from '../../../../environments/environment';
 import { AuthService } from '../../../core/services/auth.service';
 import { CompanyService } from '../../../core/services/company.service';
 import { CompanySlugContext } from '../../../core/services/company-slug-context.service';
@@ -26,6 +27,7 @@ const DEFAULT_COMPANY_NAME = 'SystemVet';
 export class LoginComponent implements OnInit {
   private authStore = inject(AuthStore);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private authService = inject(AuthService);
   private companyService = inject(CompanyService);
   private slugContext = inject(CompanySlugContext);
@@ -49,9 +51,21 @@ export class LoginComponent implements OnInit {
   logoUrl: string | null = null;
   colorPrimario = DEFAULT_BRAND_COLOR;
 
+  private static readonly GOOGLE_ERROR_MESSAGES: Record<string, string> = {
+    google_cancelado: 'Inicio de sesión con Google cancelado.',
+    google_email_no_verificado: 'Tu cuenta de Google no tiene el correo verificado.',
+    google_fallo: 'No se pudo iniciar sesión con Google. Intenta nuevamente.',
+  };
+
   ngOnInit() {
     this.isAdminRoute = this.router.url.startsWith('/admin/login');
     this.slug = this.isAdminRoute ? null : this.slugContext.slug();
+
+    const authErrorCode = this.route.snapshot.queryParamMap.get('authError');
+    if (authErrorCode) {
+      this.authError = LoginComponent.GOOGLE_ERROR_MESSAGES[authErrorCode]
+        ?? 'No se pudo iniciar sesión con Google. Intenta nuevamente.';
+    }
 
     if (this.slug) {
       this.loadBranding(this.slug);
@@ -169,6 +183,22 @@ export class LoginComponent implements OnInit {
         }
       },
     });
+  }
+
+  /** El slug (si hay) viaja como "state" para que /auth/google/callback sepa contra qué
+   * empresa resolver la cuenta al volver - Google lo devuelve intacto en la redirección. */
+  continueWithGoogle(): void {
+    const params = new URLSearchParams({
+      client_id: environment.googleClientId,
+      redirect_uri: environment.googleRedirectUri,
+      response_type: 'code',
+      scope: 'openid email profile',
+      prompt: 'select_account',
+    });
+    if (this.slug) {
+      params.set('state', this.slug);
+    }
+    window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
   }
 
   private resolveLoginError(error: any): string {

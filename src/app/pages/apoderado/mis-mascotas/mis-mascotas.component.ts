@@ -210,9 +210,9 @@ export class MisMascotasComponent implements OnInit {
 
     this.mediaService.upload(this.editFotoFile).subscribe({
       next: (path) => doUpdate(path),
-      error: () => {
+      error: (err) => {
         this.guardandoEdicion.set(false);
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo subir la foto' });
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo subir la foto' });
       }
     });
   }

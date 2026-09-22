@@ -356,10 +356,10 @@ export class CompanyComponent implements OnInit {
         logoUrl = await new Promise<string>((resolve, reject) => {
           this.mediaService.upload(logo.file).subscribe({ next: resolve, error: reject });
         });
-      } catch {
+      } catch (err: any) {
         this.loading = false;
         this.confirmDialog.set(null);
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo subir el logo' });
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: err?.error?.message || 'No se pudo subir el logo' });
         return;
       }
     }
@@ -510,9 +510,9 @@ export class CompanyComponent implements OnInit {
           detail: `${company.name} fue ${company.activo ? 'activada' : 'desactivada'}. Los usuarios de esta empresa ${company.activo ? 'ya pueden' : 'no pueden'} iniciar sesión.`
         });
       },
-      error: () => {
+      error: (err) => {
         this.companyPendingStatus = null;
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cambiar el estado de la empresa' });
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo cambiar el estado de la empresa' });
       }
     });
   }

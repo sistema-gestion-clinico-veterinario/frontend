@@ -328,9 +328,9 @@ export class HistoriaClinicaMascotaComponent implements OnInit, OnDestroy {
         this.editandoAntecedentes.set(false);
         this.msgService.add({ severity: 'success', summary: 'Guardado', detail: 'Antecedentes actualizados' });
       },
-      error: () => {
+      error: (err) => {
         this.guardandoAntecedentes.set(false);
-        this.msgService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron guardar los antecedentes' });
+        this.msgService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudieron guardar los antecedentes' });
       }
     });
   }

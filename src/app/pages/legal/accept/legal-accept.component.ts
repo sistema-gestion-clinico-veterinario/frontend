@@ -128,7 +128,7 @@ export class LegalAcceptComponent implements OnInit {
       finalize(() => this.submitting.set(false))
     ).subscribe({
       next: () => this.router.navigateByUrl(resolveDashboardRoute(this.authStore.activeRolePurpose())),
-      error: () => this.errorMsg.set('No se pudo registrar la aceptación. Intenta nuevamente.')
+      error: (err) => this.errorMsg.set(err.error?.message || 'No se pudo registrar la aceptación. Intenta nuevamente.')
     });
   }
 
