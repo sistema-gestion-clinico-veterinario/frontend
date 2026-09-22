@@ -224,9 +224,9 @@ addVistaToGroup(groupKey: string) {
 
     this.menuService.reordenarVistas(payload).subscribe({
       next: () => this.saving.set(false),
-      error: () => {
+      error: (err) => {
         this.saving.set(false);
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo guardar el orden' });
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo guardar el orden' });
         this.cargarVistas();
       }
     });
