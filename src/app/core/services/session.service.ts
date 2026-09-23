@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable, catchError, finalize, map, of, shareReplay, tap } from 'rxjs';
+import { Observable, catchError, finalize, map, of, shareReplay } from 'rxjs';
 import { AuthLoginData } from '../../models/response/auth-login-response.model';
 import { AuthStore } from '../../store/auth.store';
 import { AuthService } from './auth.service';
@@ -18,16 +18,34 @@ export class SessionService {
   private readonly slugContext = inject(CompanySlugContext);
   private initializationInFlight$: Observable<boolean> | null = null;
 
-  initialize(): Observable<boolean> {
+  /**
+   * expectedSlug: el slug de empresa que la URL actual espera (la pantalla de login de
+   * esa empresa). Las cookies de sesion son del NAVEGADOR entero, no de esta pestaña -
+   * si ya hay una sesion valida pero es de OTRA empresa, nunca se establece en silencio
+   * (eso llevaba a la persona al dashboard de la empresa equivocada sin darse cuenta,
+   * con solo abrir /<otro-slug>/login en una pestaña nueva mientras seguia logueada en
+   * otra empresa en otra pestaña). Sin expectedSlug (login "global", sin marca de
+   * empresa) se preserva el comportamiento de siempre: cualquier sesion valida sirve.
+   */
+  initialize(expectedSlug?: string | null): Observable<boolean> {
     const status = this.authStore.sessionStatus();
-    if (status === 'authenticated') return of(true);
+    if (status === 'authenticated') {
+      if (expectedSlug && this.authStore.companySlug() !== expectedSlug) return of(false);
+      return of(true);
+    }
     if (status === 'anonymous') return of(false);
     if (this.initializationInFlight$) return this.initializationInFlight$;
 
     this.authStore.beginSessionInitialization();
     this.initializationInFlight$ = this.authService.refreshToken().pipe(
-      tap(({ data }) => this.establish(data, true)),
-      map(() => true),
+      map(({ data }) => {
+        if (expectedSlug && (data.companySlug ?? null) !== expectedSlug) {
+          this.authStore.logout();
+          return false;
+        }
+        this.establish(data, true);
+        return true;
+      }),
       catchError(() => {
         this.authStore.logout();
         return of(false);

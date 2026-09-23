@@ -536,12 +536,23 @@ export class EmployeeComponent implements OnInit, OnDestroy {
         : this.empleadoService.registrar(data);
 
       request.subscribe({
-        next: () => {
+        next: (response) => {
           this.messageService.add({
             severity: 'success',
             summary: 'Éxito',
             detail: this.isEdit() ? 'Empleado actualizado' : 'Empleado registrado'
           });
+          // La persona ya existía (por DNI o correo) y se reutilizó su identidad - el
+          // correo escrito en este formulario se descartó, avisar cuál quedó guardado.
+          const data = (response as any)?.data;
+          if (data?.identidadExistente) {
+            this.messageService.add({
+              severity: 'warn',
+              summary: 'Persona ya registrada',
+              detail: `Esta persona ya existe en el sistema con el correo ${data.correoExistente}. Se usó ese correo en vez del que escribiste.`,
+              life: 10000
+            });
+          }
           this.displayModal.set(false);
           this.loadEmployees();
         },
