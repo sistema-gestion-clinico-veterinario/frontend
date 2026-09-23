@@ -11,4 +11,9 @@ export interface UserProfileDTO {
   activo: boolean;
   companyName?: string;
   roleIds?: number[];
+  /** true si el registro encontró (por DNI o correo) una identidad ya existente y la
+   * reutilizó - el correo escrito en este formulario se descartó; correoExistente es
+   * el que de verdad quedó guardado. */
+  identidadExistente?: boolean;
+  correoExistente?: string;
 }

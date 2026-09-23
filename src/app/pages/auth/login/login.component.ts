@@ -76,7 +76,11 @@ export class LoginComponent implements OnInit {
       this.brandLoaded = true;
     }
 
-    this.sessionService.initialize().subscribe((authenticated) => {
+    // Con slug, solo se reusa una sesion existente si es DE ESTA empresa - las cookies
+    // son del navegador entero (compartidas entre pestañas), asi que sin este chequeo
+    // abrir /<otro-slug>/login mientras se sigue logueado en otra empresa en otra
+    // pestaña autenticaba en silencio contra la empresa equivocada.
+    this.sessionService.initialize(this.slug).subscribe((authenticated) => {
       if (!authenticated) return;
       this.navigateToInitialRoute();
     });
@@ -112,7 +116,16 @@ export class LoginComponent implements OnInit {
     return 'Buenas noches';
   }
 
+  /** Sin slug (y sin ser la ruta de SuperAdmin) no hay forma de saber contra que
+   * empresa autenticar - aislamiento total entre empresas, ya no existe un login
+   * "global". El backend rechaza cualquier intento sin slug de todos modos; esto solo
+   * evita mostrarle a la persona un formulario que nunca va a funcionar. */
+  get missingSlug(): boolean {
+    return !this.isAdminRoute && !this.slug;
+  }
+
   submit() {
+    if (this.missingSlug) return;
     const rawUsername = (document.getElementById('username') as HTMLInputElement)?.value ?? '';
     const rawPassword = (document.getElementById('password') as HTMLInputElement)?.value ?? '';
     this.loginForm.get('username')?.setValue(rawUsername, { emitEvent: false });
@@ -141,13 +154,11 @@ export class LoginComponent implements OnInit {
     this.isSubmitting = true;
     this.loadingStore.show();
 
-    // Con slug, la empresa la resuelve la URL. Sin slug (login "global", sin
-    // marca de ninguna empresa en particular), el backend solo lo permite si
-    // el username tiene exactamente una empresa activa - con cero o varias
-    // rechaza con el mismo mensaje generico, nunca una pantalla para elegir.
+    // La empresa siempre la resuelve la URL (slug) - ya no existe login "global" sin
+    // marca de empresa (aislamiento total entre empresas).
     const request$ = this.isAdminRoute
       ? this.authService.adminLogin({ username: rawUsername, password: rawPassword })
-      : this.authService.login({ slug: this.slug ?? undefined, username: rawUsername, password: rawPassword });
+      : this.authService.login({ slug: this.slug!, username: rawUsername, password: rawPassword });
 
     request$.pipe(
       timeout(15000),

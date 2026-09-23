@@ -64,6 +64,30 @@ describe('SessionService', () => {
       done();
     });
   });
+
+  it('no autentica en silencio contra la empresa equivocada cuando el slug de la URL no coincide con la sesion existente (cookies compartidas entre pestañas)', (done) => {
+    const response = authResponse(['ROLE_ADMIN']);
+    response.data.companySlug = 'clinicaveterinariavargasvet';
+    authService.refreshToken.and.returnValue(of(response));
+
+    service.initialize('otra-empresa').subscribe((authenticated) => {
+      expect(authenticated).toBeFalse();
+      expect(authStore.sessionStatus()).toBe('anonymous');
+      done();
+    });
+  });
+
+  it('sigue autenticando cuando el slug de la URL coincide con la empresa de la sesion', (done) => {
+    const response = authResponse(['ROLE_ADMIN']);
+    response.data.companySlug = 'clinicaveterinariavargasvet';
+    authService.refreshToken.and.returnValue(of(response));
+
+    service.initialize('clinicaveterinariavargasvet').subscribe((authenticated) => {
+      expect(authenticated).toBeTrue();
+      expect(authStore.companySlug()).toBe('clinicaveterinariavargasvet');
+      done();
+    });
+  });
 });
 
 function authResponse(roles: string[]): any {
