@@ -9,7 +9,7 @@ import { CompanyService } from '../../../../core/services/company.service';
 import { CompanyDTO } from '../../../../models/request/company-dto';
 import { AuditLogService } from '../../../../core/services/audit-log.service';
 
-import { DropdownModule } from 'primeng/dropdown';
+import { SelectModule } from 'primeng/select';
 import { ButtonModule } from 'primeng/button';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmationService, MessageService } from 'primeng/api';
@@ -20,7 +20,7 @@ import { ScheduleFormComponent } from './components/schedule-form/schedule-form.
 @Component({
   selector: 'app-roster',
   standalone: true,
-  imports: [CommonModule, RouterModule, DropdownModule, ButtonModule, ToastModule, ConfirmDialogModule, FormsModule, ScheduleFormComponent],
+  imports: [CommonModule, RouterModule, SelectModule, ButtonModule, ToastModule, ConfirmDialogModule, FormsModule, ScheduleFormComponent],
   providers: [MessageService, ConfirmationService],
   templateUrl: './roster.component.html',
   styleUrl: './roster.component.scss'

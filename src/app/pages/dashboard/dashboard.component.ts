@@ -6,7 +6,6 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { distinctUntilChanged, skip } from 'rxjs/operators';
 import { AuthStore } from '../../store/auth.store';
 import { DashboardService, DashboardStats } from '../../core/services/dashboard.service';
-import { DropdownModule } from 'primeng/dropdown';
 import { SkeletonModule } from 'primeng/skeleton';
 import { FormsModule } from '@angular/forms';
 import { LoadingStore } from '../../store/loading.store';
@@ -17,7 +16,7 @@ import { DashboardCitasCalendarComponent } from './citas-calendar/citas-calendar
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, DropdownModule, SkeletonModule, FormsModule, RouterModule, ChangePasswordModalComponent, DashboardCitasCalendarComponent],
+  imports: [CommonModule, SkeletonModule, FormsModule, RouterModule, ChangePasswordModalComponent, DashboardCitasCalendarComponent],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })

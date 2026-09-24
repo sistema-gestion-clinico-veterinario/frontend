@@ -1,12 +1,12 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { SafeResourceUrl } from '@angular/platform-browser';
 import { ArchivoClinicoResponse } from '../../../../models/response/archivo-clinico-response';
 
 @Component({
   selector: 'app-archivo-modals',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './archivo-modals.component.html',
   styleUrl: './archivo-modals.component.scss'
 })

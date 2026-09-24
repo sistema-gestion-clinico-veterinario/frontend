@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
@@ -11,7 +11,7 @@ import { resolveInitialRoute, resolveDashboardRoute } from '../../../layouts/mai
 @Component({
   selector: 'app-google-callback',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   template: `
     <div class="flex min-h-screen items-center justify-center bg-white">
       <p class="text-sm font-medium text-slate-500">Completando el inicio de sesión con Google...</p>

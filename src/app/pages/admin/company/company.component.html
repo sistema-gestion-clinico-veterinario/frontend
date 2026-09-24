@@ -3,8 +3,8 @@
   <!-- ======================== -->
   <!-- SUPERADMIN: COMPANY LIST -->
   <!-- ======================== -->
-  <ng-container *ngIf="isSuperAdmin()">
-    <ng-container *ngIf="!cargando()">
+  @if (isSuperAdmin()) {
+    @if (!cargando()) {
       <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-6 sm:mb-8">
         <div>
           <h1 class="text-xl sm:text-2xl font-semibold text-slate-800">Administración de empresas</h1>
@@ -16,58 +16,61 @@
           Registrar empresa
         </button>
       </div>
-
       <!-- Mobile: card list -->
-      <div *ngIf="companies.length > 0" class="lg:hidden space-y-3 mb-4">
-        <div *ngFor="let company of companies" class="bg-white border border-slate-200 rounded-xl p-4">
-          <div class="flex items-start justify-between gap-2">
-            <div class="flex items-center gap-3 min-w-0">
-              <div
-                class="w-9 h-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-sm font-semibold flex-shrink-0">
-                {{ company.name.charAt(0) }}
+      @if (companies.length > 0) {
+        <div class="lg:hidden space-y-3 mb-4">
+          @for (company of companies; track company) {
+            <div class="bg-white border border-slate-200 rounded-xl p-4">
+              <div class="flex items-start justify-between gap-2">
+                <div class="flex items-center gap-3 min-w-0">
+                  <div
+                    class="w-9 h-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-sm font-semibold flex-shrink-0">
+                    {{ company.name.charAt(0) }}
+                  </div>
+                  <div class="min-w-0">
+                    <p class="text-sm font-medium text-slate-800 truncate">{{ company.name }}</p>
+                    <p class="text-xs text-slate-400 truncate max-w-[200px]">{{ company.address }}</p>
+                  </div>
+                </div>
+                <span [ngClass]="company.activo ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-500'"
+                  class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium shrink-0">
+                  <span [ngClass]="company.activo ? 'bg-green-500' : 'bg-red-400'" class="w-1.5 h-1.5 rounded-full"></span>
+                  {{ company.activo ? 'Activo' : 'Inactivo' }}
+                </span>
               </div>
-              <div class="min-w-0">
-                <p class="text-sm font-medium text-slate-800 truncate">{{ company.name }}</p>
-                <p class="text-xs text-slate-400 truncate max-w-[200px]">{{ company.address }}</p>
+              <div class="grid grid-cols-2 gap-2 mt-3 text-xs">
+                <div class="rounded-lg bg-slate-50 px-3 py-2">
+                  <span class="block text-[10px] font-bold text-slate-400 uppercase">RUC</span>
+                  <span class="font-bold text-slate-700">{{ company.ruc }}</span>
+                </div>
+                <div class="rounded-lg bg-slate-50 px-3 py-2">
+                  <span class="block text-[10px] font-bold text-slate-400 uppercase">Teléfono</span>
+                  <span class="font-bold text-slate-700">{{ company.phone || '—' }}</span>
+                </div>
+                <div class="rounded-lg bg-slate-50 px-3 py-2 col-span-2">
+                  <span class="block text-[10px] font-bold text-slate-400 uppercase">Correo</span>
+                  <span class="font-bold text-slate-700 truncate block">{{ company.email }}</span>
+                </div>
+              </div>
+              <div class="flex items-center justify-end mt-3 pt-3 border-t border-slate-100">
+                <p-menu #companyMobileMenu [model]="companyActionItems(company)" [popup]="true" appendTo="body"></p-menu>
+                <button type="button" (click)="companyMobileMenu.toggle($event)"
+                  aria-label="Abrir acciones"
+                  class="w-9 h-9 flex items-center justify-center rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50">
+                  <i class="pi pi-ellipsis-h text-xs"></i>
+                </button>
               </div>
             </div>
-            <span [ngClass]="company.activo ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-500'"
-              class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium shrink-0">
-              <span [ngClass]="company.activo ? 'bg-green-500' : 'bg-red-400'" class="w-1.5 h-1.5 rounded-full"></span>
-              {{ company.activo ? 'Activo' : 'Inactivo' }}
-            </span>
-          </div>
-          <div class="grid grid-cols-2 gap-2 mt-3 text-xs">
-            <div class="rounded-lg bg-slate-50 px-3 py-2">
-              <span class="block text-[10px] font-bold text-slate-400 uppercase">RUC</span>
-              <span class="font-bold text-slate-700">{{ company.ruc }}</span>
-            </div>
-            <div class="rounded-lg bg-slate-50 px-3 py-2">
-              <span class="block text-[10px] font-bold text-slate-400 uppercase">Teléfono</span>
-              <span class="font-bold text-slate-700">{{ company.phone || '—' }}</span>
-            </div>
-            <div class="rounded-lg bg-slate-50 px-3 py-2 col-span-2">
-              <span class="block text-[10px] font-bold text-slate-400 uppercase">Correo</span>
-              <span class="font-bold text-slate-700 truncate block">{{ company.email }}</span>
-            </div>
-          </div>
-          <div class="flex items-center justify-end mt-3 pt-3 border-t border-slate-100">
-            <p-menu #companyMobileMenu [model]="companyActionItems(company)" [popup]="true" appendTo="body"></p-menu>
-            <button type="button" (click)="companyMobileMenu.toggle($event)"
-              aria-label="Abrir acciones"
-              class="w-9 h-9 flex items-center justify-center rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50">
-              <i class="pi pi-ellipsis-h text-xs"></i>
-            </button>
-          </div>
+          }
         </div>
-      </div>
-      <div *ngIf="companies.length === 0" class="lg:hidden bg-white border border-slate-200 rounded-xl py-16 text-center mb-4">
-        <i class="pi pi-building text-3xl text-slate-200 block mb-3"></i>
-        <p class="text-sm text-slate-400">No hay empresas registradas</p>
-      </div>
-
+      }
+      @if (companies.length === 0) {
+        <div class="lg:hidden bg-white border border-slate-200 rounded-xl py-16 text-center mb-4">
+          <i class="pi pi-building text-3xl text-slate-200 block mb-3"></i>
+          <p class="text-sm text-slate-400">No hay empresas registradas</p>
+        </div>
+      }
       <div class="hidden lg:block bg-white border border-slate-200 rounded-xl overflow-hidden">
-
         <div class="overflow-x-auto">
           <table class="w-full min-w-[600px]">
             <thead>
@@ -80,56 +83,58 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let company of companies"
-                class="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors">
-                <td class="px-4 sm:px-6 py-4">
-                  <div class="flex items-center gap-3">
-                    <div
-                      class="w-9 h-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-sm font-semibold flex-shrink-0">
-                      {{ company.name.charAt(0) }}
+              @for (company of companies; track company) {
+                <tr
+                  class="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors">
+                  <td class="px-4 sm:px-6 py-4">
+                    <div class="flex items-center gap-3">
+                      <div
+                        class="w-9 h-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-sm font-semibold flex-shrink-0">
+                        {{ company.name.charAt(0) }}
+                      </div>
+                      <div>
+                        <p class="text-sm font-medium text-slate-800">{{ company.name }}</p>
+                        <p class="text-xs text-slate-400 truncate max-w-[140px] sm:max-w-[220px]">{{ company.address }}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p class="text-sm font-medium text-slate-800">{{ company.name }}</p>
-                      <p class="text-xs text-slate-400 truncate max-w-[140px] sm:max-w-[220px]">{{ company.address }}</p>
+                  </td>
+                  <td class="px-4 sm:px-6 py-4 text-sm font-medium text-slate-600 tracking-wide">
+                    {{ company.ruc }}
+                  </td>
+                  <td class="px-4 sm:px-6 py-4">
+                    <p class="text-sm text-slate-700 truncate max-w-[160px]">{{ company.email }}</p>
+                    <p class="text-xs text-slate-400 mt-0.5">{{ company.phone }}</p>
+                  </td>
+                  <td class="px-4 sm:px-6 py-4">
+                    <span [ngClass]="company.activo ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-500'"
+                      class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium">
+                      <span [ngClass]="company.activo ? 'bg-green-500' : 'bg-red-400'" class="w-1.5 h-1.5 rounded-full"></span>
+                      {{ company.activo ? 'Activo' : 'Inactivo' }}
+                    </span>
+                  </td>
+                  <td class="px-4 sm:px-6 py-4 text-right">
+                    <div class="flex items-center justify-end">
+                      <p-menu #companyMenu [model]="companyActionItems(company)" [popup]="true" appendTo="body"></p-menu>
+                      <button type="button" (click)="companyMenu.toggle($event)"
+                        aria-label="Abrir acciones"
+                        class="w-9 h-9 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-95">
+                        <i class="pi pi-ellipsis-h text-sm"></i>
+                      </button>
                     </div>
-                  </div>
-                </td>
-                <td class="px-4 sm:px-6 py-4 text-sm font-medium text-slate-600 tracking-wide">
-                  {{ company.ruc }}
-                </td>
-                <td class="px-4 sm:px-6 py-4">
-                  <p class="text-sm text-slate-700 truncate max-w-[160px]">{{ company.email }}</p>
-                  <p class="text-xs text-slate-400 mt-0.5">{{ company.phone }}</p>
-                </td>
-                <td class="px-4 sm:px-6 py-4">
-                  <span [ngClass]="company.activo ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-500'"
-                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium">
-                    <span [ngClass]="company.activo ? 'bg-green-500' : 'bg-red-400'" class="w-1.5 h-1.5 rounded-full"></span>
-                    {{ company.activo ? 'Activo' : 'Inactivo' }}
-                  </span>
-                </td>
-                <td class="px-4 sm:px-6 py-4 text-right">
-                  <div class="flex items-center justify-end">
-                    <p-menu #companyMenu [model]="companyActionItems(company)" [popup]="true" appendTo="body"></p-menu>
-                    <button type="button" (click)="companyMenu.toggle($event)"
-                      aria-label="Abrir acciones"
-                      class="w-9 h-9 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-95">
-                      <i class="pi pi-ellipsis-h text-sm"></i>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-
-              <tr *ngIf="companies.length === 0">
-                <td colspan="5" class="py-20 text-center">
-                  <i class="pi pi-building text-3xl text-slate-200 block mb-3"></i>
-                  <p class="text-sm text-slate-400">No hay empresas registradas</p>
-                </td>
-              </tr>
+                  </td>
+                </tr>
+              }
+              @if (companies.length === 0) {
+                <tr>
+                  <td colspan="5" class="py-20 text-center">
+                    <i class="pi pi-building text-3xl text-slate-200 block mb-3"></i>
+                    <p class="text-sm text-slate-400">No hay empresas registradas</p>
+                  </td>
+                </tr>
+              }
             </tbody>
           </table>
         </div>
-
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-4 sm:px-6 py-3 border-t border-slate-100">
           <p class="text-xs text-slate-400">Mostrando {{ companies.length }} de {{ totalRecords }} empresas</p>
           <div class="flex items-center gap-1">
@@ -142,7 +147,7 @@
               <i class="pi pi-angle-left"></i>
             </button>
             <button
-              class="w-8 h-8 flex items-center justify-center rounded-lg bg-[#0066AA] text-white text-xs font-medium">1</button>
+            class="w-8 h-8 flex items-center justify-center rounded-lg bg-[#0066AA] text-white text-xs font-medium">1</button>
             <button
               class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 text-xs transition-colors">
               <i class="pi pi-angle-right"></i>
@@ -153,12 +158,10 @@
             </button>
           </div>
         </div>
-
       </div>
-    </ng-container>
-
+    }
     <!-- Skeleton: SuperAdmin company list -->
-    <ng-container *ngIf="cargando()">
+    @if (cargando()) {
       <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-6 sm:mb-8">
         <div>
           <p-skeleton width="16rem" height="1.5rem" borderRadius="0.5rem" />
@@ -166,28 +169,28 @@
         </div>
         <p-skeleton width="10rem" height="2.5rem" borderRadius="0.5rem" />
       </div>
-
       <!-- Mobile skeleton cards -->
       <div class="lg:hidden space-y-3 mb-4">
-        <div *ngFor="let i of [1,2,3,4,5]" class="bg-white border border-slate-200 rounded-xl p-4">
-          <div class="flex items-start justify-between gap-2">
-            <div class="flex items-center gap-3 min-w-0">
-              <p-skeleton shape="circle" size="2.25rem" />
-              <div class="space-y-1.5">
-                <p-skeleton width="9rem" height="0.9rem" borderRadius="0.375rem" />
-                <p-skeleton width="7rem" height="0.7rem" borderRadius="0.25rem" />
+        @for (i of [1,2,3,4,5]; track i) {
+          <div class="bg-white border border-slate-200 rounded-xl p-4">
+            <div class="flex items-start justify-between gap-2">
+              <div class="flex items-center gap-3 min-w-0">
+                <p-skeleton shape="circle" size="2.25rem" />
+                <div class="space-y-1.5">
+                  <p-skeleton width="9rem" height="0.9rem" borderRadius="0.375rem" />
+                  <p-skeleton width="7rem" height="0.7rem" borderRadius="0.25rem" />
+                </div>
               </div>
+              <p-skeleton width="4rem" height="1.5rem" borderRadius="9999px" />
             </div>
-            <p-skeleton width="4rem" height="1.5rem" borderRadius="9999px" />
+            <div class="grid grid-cols-2 gap-2 mt-3">
+              <p-skeleton height="2.5rem" borderRadius="0.5rem" />
+              <p-skeleton height="2.5rem" borderRadius="0.5rem" />
+              <p-skeleton height="2.5rem" borderRadius="0.5rem" styleClass="col-span-2" />
+            </div>
           </div>
-          <div class="grid grid-cols-2 gap-2 mt-3">
-            <p-skeleton height="2.5rem" borderRadius="0.5rem" />
-            <p-skeleton height="2.5rem" borderRadius="0.5rem" />
-            <p-skeleton height="2.5rem" borderRadius="0.5rem" styleClass="col-span-2" />
-          </div>
-        </div>
+        }
       </div>
-
       <div class="hidden lg:block bg-white border border-slate-200 rounded-xl overflow-hidden">
         <div class="overflow-x-auto">
           <table class="w-full min-w-[600px]">
@@ -201,30 +204,31 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let i of [1,2,3,4,5]" class="border-b border-slate-100 last:border-0">
-                <td class="px-4 sm:px-6 py-4">
-                  <div class="flex items-center gap-3">
-                    <p-skeleton shape="circle" size="2.25rem" />
-                    <div class="space-y-1.5">
-                      <p-skeleton width="10rem" height="0.9rem" borderRadius="0.375rem" />
-                      <p-skeleton width="8rem" height="0.7rem" borderRadius="0.25rem" />
+              @for (i of [1,2,3,4,5]; track i) {
+                <tr class="border-b border-slate-100 last:border-0">
+                  <td class="px-4 sm:px-6 py-4">
+                    <div class="flex items-center gap-3">
+                      <p-skeleton shape="circle" size="2.25rem" />
+                      <div class="space-y-1.5">
+                        <p-skeleton width="10rem" height="0.9rem" borderRadius="0.375rem" />
+                        <p-skeleton width="8rem" height="0.7rem" borderRadius="0.25rem" />
+                      </div>
                     </div>
-                  </div>
-                </td>
-                <td class="px-4 sm:px-6 py-4"><p-skeleton width="7rem" height="0.9rem" borderRadius="0.375rem" /></td>
-                <td class="px-4 sm:px-6 py-4">
-                  <div class="space-y-1.5">
-                    <p-skeleton width="9rem" height="0.9rem" borderRadius="0.375rem" />
-                    <p-skeleton width="6rem" height="0.7rem" borderRadius="0.25rem" />
-                  </div>
-                </td>
-                <td class="px-4 sm:px-6 py-4"><p-skeleton width="4rem" height="1.5rem" borderRadius="9999px" /></td>
-                <td class="px-4 sm:px-6 py-4 text-right"><p-skeleton width="2rem" height="2rem" borderRadius="0.5rem" /></td>
-              </tr>
+                  </td>
+                  <td class="px-4 sm:px-6 py-4"><p-skeleton width="7rem" height="0.9rem" borderRadius="0.375rem" /></td>
+                  <td class="px-4 sm:px-6 py-4">
+                    <div class="space-y-1.5">
+                      <p-skeleton width="9rem" height="0.9rem" borderRadius="0.375rem" />
+                      <p-skeleton width="6rem" height="0.7rem" borderRadius="0.25rem" />
+                    </div>
+                  </td>
+                  <td class="px-4 sm:px-6 py-4"><p-skeleton width="4rem" height="1.5rem" borderRadius="9999px" /></td>
+                  <td class="px-4 sm:px-6 py-4 text-right"><p-skeleton width="2rem" height="2rem" borderRadius="0.5rem" /></td>
+                </tr>
+              }
             </tbody>
           </table>
         </div>
-
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-4 sm:px-6 py-3 border-t border-slate-100">
           <p-skeleton width="14rem" height="0.7rem" borderRadius="0.25rem" />
           <div class="flex items-center gap-1">
@@ -236,20 +240,19 @@
           </div>
         </div>
       </div>
-    </ng-container>
-  </ng-container>
+    }
+  }
 
   <!-- ======================== -->
   <!-- NON-SUPERADMIN: COMPANY PROFILE -->
   <!-- ======================== -->
-  <ng-container *ngIf="!isSuperAdmin()">
-    <ng-container *ngIf="!cargando()">
+  @if (!isSuperAdmin()) {
+    @if (!cargando()) {
       <div class="max-w-full mx-auto space-y-6 sm:space-y-8">
         <div>
           <h1 class="text-xl sm:text-2xl font-semibold text-slate-800">Mi Empresa</h1>
           <p class="text-xs sm:text-sm text-slate-400 mt-1">Gestión de tu sede o establecimiento</p>
         </div>
-
         <!-- ========================= -->
         <!-- PERFIL -->
         <!-- ========================= -->
@@ -258,146 +261,162 @@
             <i class="pi pi-building text-slate-500"></i>
             <h2 class="text-sm sm:text-base font-bold text-slate-700">Información de la Empresa</h2>
           </div>
-
-          <ng-container *ngIf="ownCompany() as company">
-          <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-
-            <!-- Header with logo & edit -->
-            <div class="px-4 sm:px-6 py-4 sm:py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100 bg-slate-50/50">
-              <div class="flex items-center gap-3 sm:gap-4">
-                <div class="relative shrink-0">
-                  <img *ngIf="resolveLogoUrl(company.logoUrl)" [src]="resolveLogoUrl(company.logoUrl)" alt="Logo"
-                     class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl object-cover border border-slate-200" />
-                  <div *ngIf="!resolveLogoUrl(company.logoUrl)" class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 text-white flex items-center justify-center text-lg sm:text-xl font-bold">
-                    {{ (company.name || 'E').charAt(0) }}
+          @if (ownCompany(); as company) {
+            <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+              <!-- Header with logo & edit -->
+              <div class="px-4 sm:px-6 py-4 sm:py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100 bg-slate-50/50">
+                <div class="flex items-center gap-3 sm:gap-4">
+                  <div class="relative shrink-0">
+                    @if (resolveLogoUrl(company.logoUrl)) {
+                      <img [src]="resolveLogoUrl(company.logoUrl)" alt="Logo"
+                        class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl object-cover border border-slate-200" />
+                    }
+                    @if (!resolveLogoUrl(company.logoUrl)) {
+                      <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 text-white flex items-center justify-center text-lg sm:text-xl font-bold">
+                        {{ (company.name || 'E').charAt(0) }}
+                      </div>
+                    }
+                  </div>
+                  <div class="min-w-0">
+                    <h2 class="text-base sm:text-lg font-semibold text-slate-800 truncate">{{ company.name }}</h2>
+                    <p class="text-xs text-slate-400">RUC: {{ company.ruc }}</p>
+                    @if (company.slug) {
+                      <div class="flex items-center gap-1.5 mt-1">
+                        <p class="text-xs text-blue-600 truncate max-w-[220px] sm:max-w-[320px]">{{ loginUrlFor(company.slug) }}</p>
+                        <button type="button" (click)="copyLoginUrl(company.slug)"
+                          class="text-[11px] font-semibold text-blue-600 hover:text-blue-800 shrink-0">
+                          <i class="pi pi-copy"></i>
+                        </button>
+                      </div>
+                    }
                   </div>
                 </div>
-                <div class="min-w-0">
-                  <h2 class="text-base sm:text-lg font-semibold text-slate-800 truncate">{{ company.name }}</h2>
-                  <p class="text-xs text-slate-400">RUC: {{ company.ruc }}</p>
-                  <div *ngIf="company.slug" class="flex items-center gap-1.5 mt-1">
-                    <p class="text-xs text-blue-600 truncate max-w-[220px] sm:max-w-[320px]">{{ loginUrlFor(company.slug) }}</p>
-                    <button type="button" (click)="copyLoginUrl(company.slug)"
-                      class="text-[11px] font-semibold text-blue-600 hover:text-blue-800 shrink-0">
-                      <i class="pi pi-copy"></i>
-                    </button>
-                  </div>
-                </div>
+                <button *appHasPermission="'VISTA_COMPANY:modificar'" (click)="openEditOwnCompany()"
+                  class="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors shrink-0 w-full sm:w-auto active:scale-95">
+                  <i class="pi pi-pencil text-xs"></i>
+                  Editar
+                </button>
               </div>
-              <button *appHasPermission="'VISTA_COMPANY:modificar'" (click)="openEditOwnCompany()"
-                class="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors shrink-0 w-full sm:w-auto active:scale-95">
-                <i class="pi pi-pencil text-xs"></i>
-                Editar
-              </button>
-            </div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-3 divide-y lg:divide-y-0 lg:divide-x divide-slate-100">
-
-              <!-- Left: Contact + Location + Web/Description + Hours -->
-              <div class="lg:col-span-2 px-4 sm:px-6 py-4 sm:py-5 flex flex-col">
-                <div>
-                  <div class="flex items-center gap-2 mb-3 sm:mb-4">
-                    <div class="w-5 h-5 rounded bg-blue-50 text-blue-600 flex items-center justify-center">
-                      <i class="pi pi-address-book text-[10px]"></i>
+              <div class="grid grid-cols-1 lg:grid-cols-3 divide-y lg:divide-y-0 lg:divide-x divide-slate-100">
+                <!-- Left: Contact + Location + Web/Description + Hours -->
+                <div class="lg:col-span-2 px-4 sm:px-6 py-4 sm:py-5 flex flex-col">
+                  <div>
+                    <div class="flex items-center gap-2 mb-3 sm:mb-4">
+                      <div class="w-5 h-5 rounded bg-blue-50 text-blue-600 flex items-center justify-center">
+                        <i class="pi pi-address-book text-[10px]"></i>
+                      </div>
+                      <span class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Contacto</span>
                     </div>
-                    <span class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Contacto</span>
-                  </div>
-                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
-                    <div class="flex items-center gap-3">
-                      <i class="pi pi-envelope text-slate-400 text-sm w-4 shrink-0"></i>
-                      <div class="min-w-0">
-                        <p class="text-[10px] sm:text-xs text-slate-400">Correo Electrónico</p>
-                        <p class="text-sm font-medium text-slate-800 truncate">{{ company.email || '—' }}</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
+                      <div class="flex items-center gap-3">
+                        <i class="pi pi-envelope text-slate-400 text-sm w-4 shrink-0"></i>
+                        <div class="min-w-0">
+                          <p class="text-[10px] sm:text-xs text-slate-400">Correo Electrónico</p>
+                          <p class="text-sm font-medium text-slate-800 truncate">{{ company.email || '—' }}</p>
+                        </div>
+                      </div>
+                      <div class="flex items-center gap-3">
+                        <i class="pi pi-phone text-slate-400 text-sm w-4 shrink-0"></i>
+                        <div>
+                          <p class="text-[10px] sm:text-xs text-slate-400">Teléfono</p>
+                          <p class="text-sm font-medium text-slate-800">{{ company.phone || '—' }}</p>
+                        </div>
                       </div>
                     </div>
-                    <div class="flex items-center gap-3">
-                      <i class="pi pi-phone text-slate-400 text-sm w-4 shrink-0"></i>
-                      <div>
-                        <p class="text-[10px] sm:text-xs text-slate-400">Teléfono</p>
-                        <p class="text-sm font-medium text-slate-800">{{ company.phone || '—' }}</p>
+                  </div>
+                  <div class="mt-5 pt-5 border-t border-slate-100">
+                    <div class="flex items-center gap-2 mb-2">
+                      <div class="w-5 h-5 rounded bg-amber-50 text-amber-600 flex items-center justify-center">
+                        <i class="pi pi-map-marker text-[10px]"></i>
+                      </div>
+                      <span class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Dirección</span>
+                    </div>
+                    <p class="text-sm text-slate-700 py-1.5">{{ company.address || '—' }}</p>
+                  </div>
+                  @if (company.website || company.description) {
+                    <div class="mt-5 pt-5 border-t border-slate-100">
+                      @if (company.website) {
+                        <div class="flex items-center gap-3 py-1.5">
+                          <i class="pi pi-globe text-slate-400 text-sm w-4 shrink-0"></i>
+                          <div>
+                            <p class="text-[10px] text-slate-400">Sitio Web</p>
+                            <p class="text-sm font-medium text-blue-600 truncate">{{ company.website }}</p>
+                          </div>
+                        </div>
+                      }
+                      @if (company.description) {
+                        <div class="flex items-start gap-3 py-1.5">
+                          <i class="pi pi-info-circle text-slate-400 text-sm w-4 shrink-0 mt-0.5"></i>
+                          <div>
+                            <p class="text-[10px] text-slate-400">Descripción</p>
+                            <p class="text-sm text-slate-700">{{ company.description }}</p>
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  }
+                  @if (company.operatingHours?.length) {
+                    <div class="mt-auto pt-5 border-t border-slate-100">
+                      <div class="flex items-center gap-2 mb-3">
+                        <div class="w-5 h-5 rounded bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                          <i class="pi pi-clock text-[10px]"></i>
+                        </div>
+                        <span class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Horarios</span>
+                      </div>
+                      <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-1">
+                        @for (h of sortOperatingHours(company.operatingHours!); track h) {
+                          <div
+                            class="flex items-center gap-2 py-1">
+                            <span class="text-xs font-semibold text-slate-700 w-20 shrink-0">{{ h.diaSemana }}</span>
+                            @if (h.isOpen) {
+                              <span class="text-xs text-slate-600">
+                                {{ h.openingTime | slice:0:5 }} — {{ h.closingTime | slice:0:5 }}
+                              </span>
+                            }
+                            @if (!h.isOpen) {
+                              <span class="text-xs text-slate-400">—</span>
+                            }
+                            @if (h.isOpen) {
+                              <span
+                                class="ml-auto inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-50 text-emerald-600">
+                                <span class="w-1 h-1 rounded-full bg-emerald-500"></span>
+                                Abierto
+                              </span>
+                            }
+                            @if (!h.isOpen) {
+                              <span
+                                class="ml-auto inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-400">
+                                <span class="w-1 h-1 rounded-full bg-slate-300"></span>
+                                Cerrado
+                              </span>
+                            }
+                          </div>
+                        }
                       </div>
                     </div>
-                  </div>
+                  }
                 </div>
-                <div class="mt-5 pt-5 border-t border-slate-100">
-                  <div class="flex items-center gap-2 mb-2">
-                    <div class="w-5 h-5 rounded bg-amber-50 text-amber-600 flex items-center justify-center">
-                      <i class="pi pi-map-marker text-[10px]"></i>
-                    </div>
-                    <span class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Dirección</span>
-                  </div>
-                  <p class="text-sm text-slate-700 py-1.5">{{ company.address || '—' }}</p>
-                </div>
-                <div *ngIf="company.website || company.description" class="mt-5 pt-5 border-t border-slate-100">
-                  <div *ngIf="company.website" class="flex items-center gap-3 py-1.5">
-                    <i class="pi pi-globe text-slate-400 text-sm w-4 shrink-0"></i>
-                    <div>
-                      <p class="text-[10px] text-slate-400">Sitio Web</p>
-                      <p class="text-sm font-medium text-blue-600 truncate">{{ company.website }}</p>
-                    </div>
-                  </div>
-                  <div *ngIf="company.description" class="flex items-start gap-3 py-1.5">
-                    <i class="pi pi-info-circle text-slate-400 text-sm w-4 shrink-0 mt-0.5"></i>
-                    <div>
-                      <p class="text-[10px] text-slate-400">Descripción</p>
-                      <p class="text-sm text-slate-700">{{ company.description }}</p>
-                    </div>
-                  </div>
-                </div>
-                <div *ngIf="company.operatingHours?.length" class="mt-auto pt-5 border-t border-slate-100">
-                  <div class="flex items-center gap-2 mb-3">
-                    <div class="w-5 h-5 rounded bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                      <i class="pi pi-clock text-[10px]"></i>
-                    </div>
-                    <span class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Horarios</span>
-                  </div>
-                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-1">
-                    <div *ngFor="let h of sortOperatingHours(company.operatingHours!)"
-                      class="flex items-center gap-2 py-1">
-                      <span class="text-xs font-semibold text-slate-700 w-20 shrink-0">{{ h.diaSemana }}</span>
-                      <span *ngIf="h.isOpen" class="text-xs text-slate-600">
-                        {{ h.openingTime | slice:0:5 }} — {{ h.closingTime | slice:0:5 }}
-                      </span>
-                      <span *ngIf="!h.isOpen" class="text-xs text-slate-400">—</span>
-                      <span *ngIf="h.isOpen"
-                        class="ml-auto inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-50 text-emerald-600">
-                        <span class="w-1 h-1 rounded-full bg-emerald-500"></span>
-                        Abierto
-                      </span>
-                      <span *ngIf="!h.isOpen"
-                        class="ml-auto inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-400">
-                        <span class="w-1 h-1 rounded-full bg-slate-300"></span>
-                        Cerrado
-                      </span>
-                    </div>
+                <!-- Right: Map (full column) -->
+                <div class="px-4 sm:px-6 py-4 sm:py-5">
+                  <div class="h-full min-h-[350px]">
+                    <iframe
+                      [src]="mapUrl()"
+                      width="100%" height="100%" style="border:0;"
+                      allowfullscreen="" loading="lazy"
+                      referrerpolicy="no-referrer-when-downgrade">
+                    </iframe>
                   </div>
                 </div>
               </div>
-
-              <!-- Right: Map (full column) -->
-              <div class="px-4 sm:px-6 py-4 sm:py-5">
-                <div class="h-full min-h-[350px]">
-                  <iframe
-                    [src]="mapUrl()"
-                    width="100%" height="100%" style="border:0;"
-                    allowfullscreen="" loading="lazy"
-                    referrerpolicy="no-referrer-when-downgrade">
-                  </iframe>
-                </div>
-              </div>
-
             </div>
-
-
-          </div>
-  </ng-container>
-
-          <div *ngIf="!loadingOwnCompany() && !ownCompany()" class="bg-white border border-slate-200 rounded-xl py-16 text-center">
-            <i class="pi pi-building text-3xl text-slate-200 block mb-3"></i>
-            <p class="text-sm text-slate-400">No se encontró información de tu empresa</p>
-          </div>
+          }
+          @if (!loadingOwnCompany() && !ownCompany()) {
+            <div class="bg-white border border-slate-200 rounded-xl py-16 text-center">
+              <i class="pi pi-building text-3xl text-slate-200 block mb-3"></i>
+              <p class="text-sm text-slate-400">No se encontró información de tu empresa</p>
+            </div>
+          }
         </section>
-
         <!-- ========================= -->
         <!-- ROLES -->
         <!-- ========================= -->
@@ -406,45 +425,47 @@
             <i class="pi pi-shield text-slate-500"></i>
             <h2 class="text-sm sm:text-base font-bold text-slate-700">Roles de la Empresa</h2>
           </div>
-
-          <div *ngIf="!loadingRoles() && companyRoles.length === 0" class="bg-white border border-slate-200 rounded-xl py-16 text-center">
-            <i class="pi pi-shield text-3xl text-slate-200 block mb-3"></i>
-            <p class="text-sm text-slate-400">No hay roles configurados para esta empresa</p>
-          </div>
-
-          <div *ngIf="!loadingRoles() && companyRoles.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-            <div *ngFor="let role of companyRoles"
-              class="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 hover:border-blue-200 transition-all">
-              <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-sm font-bold shrink-0">
-                  {{ role.name.replace('ROLE_', '').charAt(0) }}
-                </div>
-                <div class="min-w-0">
-                  <p class="text-sm font-semibold text-slate-800 truncate">{{ role.name.replace('ROLE_', '') }}</p>
-                  <p *ngIf="role.descripcion" class="text-xs text-slate-400 mt-0.5 truncate">{{ role.descripcion }}</p>
-                </div>
-              </div>
+          @if (!loadingRoles() && companyRoles.length === 0) {
+            <div class="bg-white border border-slate-200 rounded-xl py-16 text-center">
+              <i class="pi pi-shield text-3xl text-slate-200 block mb-3"></i>
+              <p class="text-sm text-slate-400">No hay roles configurados para esta empresa</p>
             </div>
-          </div>
+          }
+          @if (!loadingRoles() && companyRoles.length > 0) {
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+              @for (role of companyRoles; track role) {
+                <div
+                  class="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 hover:border-blue-200 transition-all">
+                  <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-sm font-bold shrink-0">
+                      {{ role.name.replace('ROLE_', '').charAt(0) }}
+                    </div>
+                    <div class="min-w-0">
+                      <p class="text-sm font-semibold text-slate-800 truncate">{{ role.name.replace('ROLE_', '') }}</p>
+                      @if (role.descripcion) {
+                        <p class="text-xs text-slate-400 mt-0.5 truncate">{{ role.descripcion }}</p>
+                      }
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          }
         </section>
-
       </div>
-    </ng-container>
-
+    }
     <!-- Skeleton: Admin company profile -->
-    <ng-container *ngIf="cargando()">
+    @if (cargando()) {
       <div class="max-w-full mx-auto space-y-6 sm:space-y-8">
         <div>
           <p-skeleton width="10rem" height="1.5rem" borderRadius="0.5rem" />
           <p-skeleton width="16rem" height="0.8rem" borderRadius="0.375rem" styleClass="mt-2" />
         </div>
-
         <section>
           <div class="flex items-center gap-2 mb-3 sm:mb-4">
             <p-skeleton shape="circle" size="1.25rem" />
             <p-skeleton width="12rem" height="1rem" borderRadius="0.375rem" />
           </div>
-
           <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
             <div class="px-4 sm:px-6 py-4 sm:py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100 bg-slate-50/50">
               <div class="flex items-center gap-3 sm:gap-4">
@@ -456,7 +477,6 @@
               </div>
               <p-skeleton width="6rem" height="2.25rem" borderRadius="0.5rem" />
             </div>
-
             <div class="grid grid-cols-1 lg:grid-cols-3 divide-y lg:divide-y-0 lg:divide-x divide-slate-100">
               <div class="lg:col-span-2 px-4 sm:px-6 py-4 sm:py-5 space-y-6">
                 <div>
@@ -489,456 +509,547 @@
             </div>
           </div>
         </section>
-
         <section>
           <div class="flex items-center gap-2 mb-3 sm:mb-4">
             <p-skeleton shape="circle" size="1.25rem" />
             <p-skeleton width="12rem" height="1rem" borderRadius="0.375rem" />
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-            <div *ngFor="let i of [1,2,3]"
-              class="bg-white border border-slate-200 rounded-xl p-4 sm:p-5">
-              <div class="flex items-center gap-3">
-                <p-skeleton shape="circle" size="2.25rem" />
-                <div class="space-y-1.5">
-                  <p-skeleton width="8rem" height="0.9rem" borderRadius="0.375rem" />
-                  <p-skeleton width="6rem" height="0.6rem" borderRadius="0.25rem" />
+            @for (i of [1,2,3]; track i) {
+              <div
+                class="bg-white border border-slate-200 rounded-xl p-4 sm:p-5">
+                <div class="flex items-center gap-3">
+                  <p-skeleton shape="circle" size="2.25rem" />
+                  <div class="space-y-1.5">
+                    <p-skeleton width="8rem" height="0.9rem" borderRadius="0.375rem" />
+                    <p-skeleton width="6rem" height="0.6rem" borderRadius="0.25rem" />
+                  </div>
                 </div>
               </div>
-            </div>
+            }
           </div>
         </section>
       </div>
-    </ng-container>
-  </ng-container>
+    }
+  }
 
 </div>
 
 <!-- ======================== -->
 <!-- CREATE/EDIT MODAL (shared) -->
 <!-- ======================== -->
-<div *ngIf="displayModal" class="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/50 backdrop-blur-sm">
-  <div class="bg-white w-full sm:max-w-2xl rounded-t-xl sm:rounded-lg flex flex-col max-h-[90vh] sm:max-h-[95vh]">
-  
-    <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50 rounded-t-xl sm:rounded-t-lg">
-      <h2 class="text-sm sm:text-lg font-bold text-slate-800">
-        {{ isEdit ? (isSuperAdmin() ? 'Modificar Registro de Empresa' : 'Editar Mi Empresa') : 'Registro de Nueva Entidad' }}
-      </h2>
-      <button (click)="displayModal = false" class="text-slate-400 hover:text-slate-600 transition-colors p-2">
-        <i class="pi pi-times"></i>
-      </button>
-    </div>
-
-
-    <div class="flex-1 overflow-y-auto p-4 sm:p-6 scrollbar-thin scrollbar-thumb-slate-200">
-      <form [formGroup]="companyForm" (ngSubmit)="saveCompany()" class="space-y-6">
-        
-
-        <div class="space-y-4">
-          <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
-            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">1. Información Corporativa</h3>
-          </div>
-          
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div class="flex flex-col gap-1 sm:col-span-2">
-              <label class="text-xs font-semibold text-slate-700 ml-0.5">Nombre o Razón Social <span class="text-rose-500">*</span></label>
-              <input type="text" formControlName="name" placeholder="Ej: Corporación Veterinaria S.A.C." maxlength="100"
-                [class.border-rose-400]="companyForm.get('name')?.invalid && companyForm.get('name')?.touched"
-                [class.border-slate-300]="!(companyForm.get('name')?.invalid && companyForm.get('name')?.touched)"
-                class="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
-              <p *ngIf="companyForm.get('name')?.invalid && companyForm.get('name')?.touched" class="text-[11px] text-rose-500 ml-0.5">
-                <ng-container *ngIf="companyForm.get('name')?.errors?.['required']">El nombre es requerido</ng-container>
-                <ng-container *ngIf="companyForm.get('name')?.errors?.['minlength']">Mínimo 3 caracteres</ng-container>
-                <ng-container *ngIf="companyForm.get('name')?.errors?.['maxlength']">Máximo 100 caracteres</ng-container>
-                <ng-container *ngIf="companyForm.get('name')?.errors?.['pattern']">Debe contener letras y solo caracteres permitidos</ng-container>
-                <ng-container *ngIf="companyForm.get('name')?.errors?.['leadingTrailingSpace']">No debe tener espacios al inicio o al final</ng-container>
-              </p>
+@if (displayModal) {
+  <div class="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/50 backdrop-blur-sm">
+    <div class="bg-white w-full sm:max-w-2xl rounded-t-xl sm:rounded-lg flex flex-col max-h-[90vh] sm:max-h-[95vh]">
+      <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50 rounded-t-xl sm:rounded-t-lg">
+        <h2 class="text-sm sm:text-lg font-bold text-slate-800">
+          {{ isEdit ? (isSuperAdmin() ? 'Modificar Registro de Empresa' : 'Editar Mi Empresa') : 'Registro de Nueva Entidad' }}
+        </h2>
+        <button (click)="displayModal = false" class="text-slate-400 hover:text-slate-600 transition-colors p-2">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+      <div class="flex-1 overflow-y-auto p-4 sm:p-6 scrollbar-thin scrollbar-thumb-slate-200">
+        <form [formGroup]="companyForm" (ngSubmit)="saveCompany()" class="space-y-6">
+          <div class="space-y-4">
+            <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
+              <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
+              <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">1. Información Corporativa</h3>
             </div>
-
-            <div class="flex flex-col gap-1">
-              <label class="text-xs font-semibold text-slate-700 ml-0.5">RUC (Registro Único) <span class="text-rose-500">*</span></label>
-              <input type="text" formControlName="ruc" appInputFilter="digits" [appInputFilterMaxLength]="11" inputmode="numeric" placeholder="11 dígitos" maxlength="11"
-                [class.border-rose-400]="companyForm.get('ruc')?.invalid && companyForm.get('ruc')?.touched"
-                [class.border-slate-300]="!(companyForm.get('ruc')?.invalid && companyForm.get('ruc')?.touched)"
-                class="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
-              <p *ngIf="companyForm.get('ruc')?.invalid && companyForm.get('ruc')?.touched" class="text-[11px] text-rose-500 ml-0.5">
-                <ng-container *ngIf="companyForm.get('ruc')?.errors?.['required']">El RUC es requerido</ng-container>
-                <ng-container *ngIf="companyForm.get('ruc')?.errors?.['pattern']">El RUC debe tener 11 dígitos y empezar con 10 o 20</ng-container>
-              </p>
-            </div>
-
-            <div class="flex flex-col gap-1">
-              <label class="text-xs font-semibold text-slate-700 ml-0.5">Teléfono de Contacto <span class="text-rose-500">*</span></label>
-              <input type="text" formControlName="phone" appInputFilter="digits" [appInputFilterMaxLength]="9" inputmode="numeric" placeholder="Ej: 999888777" maxlength="9"
-                [class.border-rose-400]="companyForm.get('phone')?.invalid && companyForm.get('phone')?.touched"
-                [class.border-slate-300]="!(companyForm.get('phone')?.invalid && companyForm.get('phone')?.touched)"
-                class="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
-              <p *ngIf="companyForm.get('phone')?.invalid && companyForm.get('phone')?.touched" class="text-[11px] text-rose-500 ml-0.5">
-                <ng-container *ngIf="companyForm.get('phone')?.errors?.['required']">El teléfono es requerido</ng-container>
-                <ng-container *ngIf="companyForm.get('phone')?.errors?.['pattern']">Debe tener exactamente 9 dígitos</ng-container>
-              </p>
-            </div>
-
-            <!-- Logo -->
-            <div class="sm:col-span-2">
-              <label class="text-xs font-semibold text-slate-700 ml-0.5 block mb-2">Logo de la empresa</label>
-              <div
-                (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)" (drop)="onDrop($event)"
-                [ngClass]="isDragOver() ? 'border-blue-500 bg-blue-50' : 'border-slate-300 bg-slate-50'"
-                class="relative flex flex-col items-center justify-center gap-3 p-6 rounded-xl border-2 border-dashed transition-colors cursor-pointer"
-                (click)="logoInput.click()">
-                <ng-container *ngIf="logoFile()?.preview; else noLogo">
-                  <img [src]="logoFile()!.preview" class="h-24 object-contain rounded-lg" />
-                </ng-container>
-                <ng-template #noLogo>
-                  <img *ngIf="!logoFile() && resolveLogoUrl(companyForm.get('logoUrl')?.value)"
-                    [src]="resolveLogoUrl(companyForm.get('logoUrl')?.value)" class="h-24 object-contain rounded-lg" />
-                  <i *ngIf="!logoFile() && !resolveLogoUrl(companyForm.get('logoUrl')?.value)"
-                    class="pi pi-cloud-upload text-3xl text-slate-300"></i>
-                  <p class="text-sm text-slate-400 text-center">
-                    <span class="font-semibold text-blue-600">Haz clic</span> o arrastra una imagen aquí
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="flex flex-col gap-1 sm:col-span-2">
+                <label class="text-xs font-semibold text-slate-700 ml-0.5">Nombre o Razón Social <span class="text-rose-500">*</span></label>
+                <input type="text" formControlName="name" placeholder="Ej: Corporación Veterinaria S.A.C." maxlength="100"
+                  [class.border-rose-400]="companyForm.get('name')?.invalid && companyForm.get('name')?.touched"
+                  [class.border-slate-300]="!(companyForm.get('name')?.invalid && companyForm.get('name')?.touched)"
+                  class="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+                @if (companyForm.get('name')?.invalid && companyForm.get('name')?.touched) {
+                  <p class="text-[11px] text-rose-500 ml-0.5">
+                    @if (companyForm.get('name')?.errors?.['required']) {
+                      El nombre es requerido
+                    }
+                    @if (companyForm.get('name')?.errors?.['minlength']) {
+                      Mínimo 3 caracteres
+                    }
+                    @if (companyForm.get('name')?.errors?.['maxlength']) {
+                      Máximo 100 caracteres
+                    }
+                    @if (companyForm.get('name')?.errors?.['pattern']) {
+                      Debe contener letras y solo caracteres permitidos
+                    }
+                    @if (companyForm.get('name')?.errors?.['leadingTrailingSpace']) {
+                      No debe tener espacios al inicio o al final
+                    }
                   </p>
-                  <p class="text-[11px] text-slate-400">PNG, JPG, WEBP o GIF. Máximo 5 MB.</p>
-                </ng-template>
-                <button *ngIf="logoFile() || companyForm.get('logoUrl')?.value" type="button" (click)="removeLogo(); $event.stopPropagation()"
-                  class="text-xs text-rose-500 hover:text-rose-700 font-medium">
-                  Eliminar logo
-                </button>
-                <input #logoInput type="file" accept="image/png,image/jpeg,image/webp,image/gif" (change)="onLogoSelected($event)" class="hidden" />
+                }
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="text-xs font-semibold text-slate-700 ml-0.5">RUC (Registro Único) <span class="text-rose-500">*</span></label>
+                <input type="text" formControlName="ruc" appInputFilter="digits" [appInputFilterMaxLength]="11" inputmode="numeric" placeholder="11 dígitos" maxlength="11"
+                  [class.border-rose-400]="companyForm.get('ruc')?.invalid && companyForm.get('ruc')?.touched"
+                  [class.border-slate-300]="!(companyForm.get('ruc')?.invalid && companyForm.get('ruc')?.touched)"
+                  class="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+                @if (companyForm.get('ruc')?.invalid && companyForm.get('ruc')?.touched) {
+                  <p class="text-[11px] text-rose-500 ml-0.5">
+                    @if (companyForm.get('ruc')?.errors?.['required']) {
+                      El RUC es requerido
+                    }
+                    @if (companyForm.get('ruc')?.errors?.['pattern']) {
+                      El RUC debe tener 11 dígitos y empezar con 10 o 20
+                    }
+                  </p>
+                }
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="text-xs font-semibold text-slate-700 ml-0.5">Teléfono de Contacto <span class="text-rose-500">*</span></label>
+                <input type="text" formControlName="phone" appInputFilter="digits" [appInputFilterMaxLength]="9" inputmode="numeric" placeholder="Ej: 999888777" maxlength="9"
+                  [class.border-rose-400]="companyForm.get('phone')?.invalid && companyForm.get('phone')?.touched"
+                  [class.border-slate-300]="!(companyForm.get('phone')?.invalid && companyForm.get('phone')?.touched)"
+                  class="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+                @if (companyForm.get('phone')?.invalid && companyForm.get('phone')?.touched) {
+                  <p class="text-[11px] text-rose-500 ml-0.5">
+                    @if (companyForm.get('phone')?.errors?.['required']) {
+                      El teléfono es requerido
+                    }
+                    @if (companyForm.get('phone')?.errors?.['pattern']) {
+                      Debe tener exactamente 9 dígitos
+                    }
+                  </p>
+                }
+              </div>
+              <!-- Logo -->
+              <div class="sm:col-span-2">
+                <label class="text-xs font-semibold text-slate-700 ml-0.5 block mb-2">Logo de la empresa</label>
+                <div
+                  (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)" (drop)="onDrop($event)"
+                  [ngClass]="isDragOver() ? 'border-blue-500 bg-blue-50' : 'border-slate-300 bg-slate-50'"
+                  class="relative flex flex-col items-center justify-center gap-3 p-6 rounded-xl border-2 border-dashed transition-colors cursor-pointer"
+                  (click)="logoInput.click()">
+                  @if (logoFile()?.preview) {
+                    <img [src]="logoFile()!.preview" class="h-24 object-contain rounded-lg" />
+                  } @else {
+                    @if (!logoFile() && resolveLogoUrl(companyForm.get('logoUrl')?.value)) {
+                      <img
+                        [src]="resolveLogoUrl(companyForm.get('logoUrl')?.value)" class="h-24 object-contain rounded-lg" />
+                    }
+                    @if (!logoFile() && !resolveLogoUrl(companyForm.get('logoUrl')?.value)) {
+                      <i
+                      class="pi pi-cloud-upload text-3xl text-slate-300"></i>
+                    }
+                    <p class="text-sm text-slate-400 text-center">
+                      <span class="font-semibold text-blue-600">Haz clic</span> o arrastra una imagen aquí
+                    </p>
+                    <p class="text-[11px] text-slate-400">PNG, JPG, WEBP o GIF. Máximo 5 MB.</p>
+                  }
+                  @if (logoFile() || companyForm.get('logoUrl')?.value) {
+                    <button type="button" (click)="removeLogo(); $event.stopPropagation()"
+                      class="text-xs text-rose-500 hover:text-rose-700 font-medium">
+                      Eliminar logo
+                    </button>
+                  }
+                  <input #logoInput type="file" accept="image/png,image/jpeg,image/webp,image/gif" (change)="onLogoSelected($event)" class="hidden" />
+                </div>
               </div>
             </div>
           </div>
-        </div>
-        <div class="space-y-4">
-          <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
-            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">2. Acceso y Marca</h3>
+          <div class="space-y-4">
+            <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
+              <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
+              <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">2. Acceso y Marca</h3>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-[1fr_140px] gap-4">
+              <div class="flex flex-col gap-1">
+                <label class="text-xs font-semibold text-slate-700 ml-0.5">Slug (URL de acceso) <span class="text-rose-500">*</span></label>
+                <div class="flex items-stretch rounded border overflow-hidden h-10"
+                  [class.border-rose-400]="companyForm.get('slug')?.invalid && companyForm.get('slug')?.touched"
+                  [class.border-slate-300]="!(companyForm.get('slug')?.invalid && companyForm.get('slug')?.touched)">
+                  <span class="px-3 flex items-center bg-slate-50 text-slate-400 text-xs truncate max-w-[45%]">{{ currentOrigin }}/</span>
+                  <input type="text" formControlName="slug" (input)="onSlugInput()" placeholder="mi-veterinaria" maxlength="100"
+                    class="flex-1 min-w-0 px-2 text-sm outline-none" />
+                  <span class="px-3 flex items-center bg-slate-50 text-slate-400 text-xs">/login</span>
+                </div>
+                @if (companyForm.get('slug')?.invalid && companyForm.get('slug')?.touched) {
+                  <p class="text-[11px] text-rose-500 ml-0.5">
+                    @if (companyForm.get('slug')?.errors?.['required']) {
+                      El slug es requerido
+                    }
+                    @if (companyForm.get('slug')?.errors?.['pattern']) {
+                      Solo minúsculas, números y guiones (ej: mi-veterinaria)
+                    }
+                    @if (companyForm.get('slug')?.errors?.['maxlength']) {
+                      Máximo 100 caracteres
+                    }
+                  </p>
+                }
+                @if (isEdit && companyForm.get('slug')?.value !== originalSlug) {
+                  <p class="text-[11px] text-rose-600 ml-0.5 font-semibold">
+                    <i class="pi pi-exclamation-triangle"></i> Cambiarlo invalida los enlaces de acceso ya compartidos con esta empresa.
+                  </p>
+                }
+                @if (companyForm.get('slug')?.value) {
+                  <div class="flex items-center gap-2 mt-1">
+                    <p class="text-[11px] text-slate-500 truncate">{{ loginUrlFor(companyForm.get('slug')?.value) }}</p>
+                    <button type="button" (click)="copyLoginUrl(companyForm.get('slug')?.value)"
+                      class="text-[11px] font-semibold text-blue-600 hover:text-blue-800 shrink-0">
+                      <i class="pi pi-copy"></i> Copiar
+                    </button>
+                  </div>
+                }
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="text-xs font-semibold text-slate-700 ml-0.5">Color de marca</label>
+                <div class="flex items-center gap-2 h-10">
+                  <input type="color" formControlName="colorPrimario"
+                    class="w-10 h-10 p-0.5 border border-slate-300 rounded cursor-pointer" />
+                  <input type="text" formControlName="colorPrimario" maxlength="7"
+                    class="flex-1 min-w-0 px-2 h-10 border border-slate-300 rounded text-sm outline-none uppercase" />
+                </div>
+                @if (companyForm.get('colorPrimario')?.invalid && companyForm.get('colorPrimario')?.touched) {
+                  <p class="text-[11px] text-rose-500 ml-0.5">
+                    Debe ser un color hexadecimal, ej. #006BA8
+                  </p>
+                }
+              </div>
+            </div>
           </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-[1fr_140px] gap-4">
-            <div class="flex flex-col gap-1">
-              <label class="text-xs font-semibold text-slate-700 ml-0.5">Slug (URL de acceso) <span class="text-rose-500">*</span></label>
-              <div class="flex items-stretch rounded border overflow-hidden h-10"
-                [class.border-rose-400]="companyForm.get('slug')?.invalid && companyForm.get('slug')?.touched"
-                [class.border-slate-300]="!(companyForm.get('slug')?.invalid && companyForm.get('slug')?.touched)">
-                <span class="px-3 flex items-center bg-slate-50 text-slate-400 text-xs truncate max-w-[45%]">{{ currentOrigin }}/</span>
-                <input type="text" formControlName="slug" (input)="onSlugInput()" placeholder="mi-veterinaria" maxlength="100"
-                  class="flex-1 min-w-0 px-2 text-sm outline-none" />
-                <span class="px-3 flex items-center bg-slate-50 text-slate-400 text-xs">/login</span>
+          <div class="space-y-4">
+            <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
+              <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
+              <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">3. Ubicación y Presencia Digital</h3>
+            </div>
+            <div class="grid grid-cols-1 gap-4">
+              <div class="flex flex-col gap-1">
+                <label class="text-xs font-semibold text-slate-700 ml-0.5">Correo Electrónico Institucional <span class="text-rose-500">*</span></label>
+                <input type="email" formControlName="email" placeholder="administracion@empresa.com" maxlength="100"
+                  [class.border-rose-400]="companyForm.get('email')?.invalid && companyForm.get('email')?.touched"
+                  [class.border-slate-300]="!(companyForm.get('email')?.invalid && companyForm.get('email')?.touched)"
+                  class="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+                @if (companyForm.get('email')?.invalid && companyForm.get('email')?.touched) {
+                  <p class="text-[11px] text-rose-500 ml-0.5">
+                    @if (companyForm.get('email')?.errors?.['required']) {
+                      El correo es requerido
+                    }
+                    @if (companyForm.get('email')?.errors?.['email'] || companyForm.get('email')?.errors?.['lowercaseEmail']) {
+                      Ingresa un correo válido en minúsculas, sin espacios
+                    }
+                  </p>
+                }
               </div>
-              <p *ngIf="companyForm.get('slug')?.invalid && companyForm.get('slug')?.touched" class="text-[11px] text-rose-500 ml-0.5">
-                <ng-container *ngIf="companyForm.get('slug')?.errors?.['required']">El slug es requerido</ng-container>
-                <ng-container *ngIf="companyForm.get('slug')?.errors?.['pattern']">Solo minúsculas, números y guiones (ej: mi-veterinaria)</ng-container>
-                <ng-container *ngIf="companyForm.get('slug')?.errors?.['maxlength']">Máximo 100 caracteres</ng-container>
-              </p>
-              <p *ngIf="isEdit && companyForm.get('slug')?.value !== originalSlug" class="text-[11px] text-rose-600 ml-0.5 font-semibold">
-                <i class="pi pi-exclamation-triangle"></i> Cambiarlo invalida los enlaces de acceso ya compartidos con esta empresa.
-              </p>
-              <div *ngIf="companyForm.get('slug')?.value" class="flex items-center gap-2 mt-1">
-                <p class="text-[11px] text-slate-500 truncate">{{ loginUrlFor(companyForm.get('slug')?.value) }}</p>
-                <button type="button" (click)="copyLoginUrl(companyForm.get('slug')?.value)"
-                  class="text-[11px] font-semibold text-blue-600 hover:text-blue-800 shrink-0">
-                  <i class="pi pi-copy"></i> Copiar
-                </button>
+              <div class="flex flex-col gap-1">
+                <label class="text-xs font-semibold text-slate-700 ml-0.5">Dirección Fiscal / Sede Principal <span class="text-rose-500">*</span></label>
+                <input type="text" formControlName="address" placeholder="Av. Principal 123, Distrito, Provincia" maxlength="200"
+                  [class.border-rose-400]="companyForm.get('address')?.invalid && companyForm.get('address')?.touched"
+                  [class.border-slate-300]="!(companyForm.get('address')?.invalid && companyForm.get('address')?.touched)"
+                  class="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+                @if (companyForm.get('address')?.invalid && companyForm.get('address')?.touched) {
+                  <p class="text-[11px] text-rose-500 ml-0.5">
+                    @if (companyForm.get('address')?.errors?.['required']) {
+                      La dirección es requerida
+                    }
+                    @if (companyForm.get('address')?.errors?.['minlength']) {
+                      Mínimo 5 caracteres
+                    }
+                    @if (companyForm.get('address')?.errors?.['maxlength']) {
+                      Máximo 200 caracteres
+                    }
+                    @if (companyForm.get('address')?.errors?.['leadingTrailingSpace']) {
+                      No debe tener espacios al inicio o al final
+                    }
+                  </p>
+                }
               </div>
-            </div>
-
-            <div class="flex flex-col gap-1">
-              <label class="text-xs font-semibold text-slate-700 ml-0.5">Color de marca</label>
-              <div class="flex items-center gap-2 h-10">
-                <input type="color" formControlName="colorPrimario"
-                  class="w-10 h-10 p-0.5 border border-slate-300 rounded cursor-pointer" />
-                <input type="text" formControlName="colorPrimario" maxlength="7"
-                  class="flex-1 min-w-0 px-2 h-10 border border-slate-300 rounded text-sm outline-none uppercase" />
+              <div class="flex items-start gap-3 p-3 bg-slate-50 border border-slate-200 rounded">
+                <input type="checkbox" formControlName="hasWebsite" id="chkWebsite" class="w-4 h-4 text-blue-600 border-slate-300 rounded mt-0.5 focus:ring-blue-500">
+                <div class="flex flex-col">
+                  <label for="chkWebsite" class="text-sm font-bold text-slate-700 leading-none">Presencia en Web</label>
+                  <p class="text-[11px] text-slate-500 mt-1">Habilite si la empresa cuenta con un portal informativo o transaccional.</p>
+                </div>
               </div>
-              <p *ngIf="companyForm.get('colorPrimario')?.invalid && companyForm.get('colorPrimario')?.touched" class="text-[11px] text-rose-500 ml-0.5">
-                Debe ser un color hexadecimal, ej. #006BA8
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div class="space-y-4">
-          <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
-            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">3. Ubicación y Presencia Digital</h3>
-          </div>
-          
-          <div class="grid grid-cols-1 gap-4">
-            <div class="flex flex-col gap-1">
-              <label class="text-xs font-semibold text-slate-700 ml-0.5">Correo Electrónico Institucional <span class="text-rose-500">*</span></label>
-              <input type="email" formControlName="email" placeholder="administracion@empresa.com" maxlength="100"
-                [class.border-rose-400]="companyForm.get('email')?.invalid && companyForm.get('email')?.touched"
-                [class.border-slate-300]="!(companyForm.get('email')?.invalid && companyForm.get('email')?.touched)"
-                class="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
-              <p *ngIf="companyForm.get('email')?.invalid && companyForm.get('email')?.touched" class="text-[11px] text-rose-500 ml-0.5">
-                <ng-container *ngIf="companyForm.get('email')?.errors?.['required']">El correo es requerido</ng-container>
-                <ng-container *ngIf="companyForm.get('email')?.errors?.['email'] || companyForm.get('email')?.errors?.['lowercaseEmail']">Ingresa un correo válido en minúsculas, sin espacios</ng-container>
-              </p>
-            </div>
-
-            <div class="flex flex-col gap-1">
-              <label class="text-xs font-semibold text-slate-700 ml-0.5">Dirección Fiscal / Sede Principal <span class="text-rose-500">*</span></label>
-              <input type="text" formControlName="address" placeholder="Av. Principal 123, Distrito, Provincia" maxlength="200"
-                [class.border-rose-400]="companyForm.get('address')?.invalid && companyForm.get('address')?.touched"
-                [class.border-slate-300]="!(companyForm.get('address')?.invalid && companyForm.get('address')?.touched)"
-                class="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
-              <p *ngIf="companyForm.get('address')?.invalid && companyForm.get('address')?.touched" class="text-[11px] text-rose-500 ml-0.5">
-                <ng-container *ngIf="companyForm.get('address')?.errors?.['required']">La dirección es requerida</ng-container>
-                <ng-container *ngIf="companyForm.get('address')?.errors?.['minlength']">Mínimo 5 caracteres</ng-container>
-                <ng-container *ngIf="companyForm.get('address')?.errors?.['maxlength']">Máximo 200 caracteres</ng-container>
-                <ng-container *ngIf="companyForm.get('address')?.errors?.['leadingTrailingSpace']">No debe tener espacios al inicio o al final</ng-container>
-              </p>
-            </div>
-
-            <div class="flex items-start gap-3 p-3 bg-slate-50 border border-slate-200 rounded">
-              <input type="checkbox" formControlName="hasWebsite" id="chkWebsite" class="w-4 h-4 text-blue-600 border-slate-300 rounded mt-0.5 focus:ring-blue-500">
-              <div class="flex flex-col">
-                <label for="chkWebsite" class="text-sm font-bold text-slate-700 leading-none">Presencia en Web</label>
-                <p class="text-[11px] text-slate-500 mt-1">Habilite si la empresa cuenta con un portal informativo o transaccional.</p>
-              </div>
-            </div>
-
-            <div *ngIf="companyForm.get('hasWebsite')?.value" class="flex flex-col gap-1 animate-in slide-in-from-top-2 duration-200">
-              <label class="text-xs font-semibold text-slate-700 ml-0.5">URL del Sitio Web</label>
-              <input type="text" formControlName="website" placeholder="https://www.ejemplo.com" maxlength="200"
-                [class.border-rose-400]="companyForm.get('website')?.invalid && companyForm.get('website')?.touched"
-                [class.border-slate-300]="!(companyForm.get('website')?.invalid && companyForm.get('website')?.touched)"
-                class="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
-              <p *ngIf="companyForm.get('website')?.invalid && companyForm.get('website')?.touched" class="text-[11px] text-rose-500 ml-0.5">
-                <ng-container *ngIf="companyForm.get('website')?.errors?.['maxlength']">Máximo 200 caracteres</ng-container>
-                <ng-container *ngIf="companyForm.get('website')?.errors?.['pattern']">No debe contener espacios</ng-container>
-                <ng-container *ngIf="companyForm.get('website')?.errors?.['leadingTrailingSpace']">No debe tener espacios al inicio o al final</ng-container>
-              </p>
-            </div>
-
-            <div class="flex flex-col gap-1">
-              <label class="text-xs font-semibold text-slate-700 ml-0.5">Descripción <span class="text-slate-400 font-normal">(opcional)</span></label>
-              <textarea formControlName="description" placeholder="Breve descripción de la empresa..." maxlength="500" rows="3"
-                [class.border-rose-400]="companyForm.get('description')?.invalid && companyForm.get('description')?.touched"
-                [class.border-slate-300]="!(companyForm.get('description')?.invalid && companyForm.get('description')?.touched)"
+              @if (companyForm.get('hasWebsite')?.value) {
+                <div class="flex flex-col gap-1 animate-in slide-in-from-top-2 duration-200">
+                  <label class="text-xs font-semibold text-slate-700 ml-0.5">URL del Sitio Web</label>
+                  <input type="text" formControlName="website" placeholder="https://www.ejemplo.com" maxlength="200"
+                    [class.border-rose-400]="companyForm.get('website')?.invalid && companyForm.get('website')?.touched"
+                    [class.border-slate-300]="!(companyForm.get('website')?.invalid && companyForm.get('website')?.touched)"
+                    class="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+                  @if (companyForm.get('website')?.invalid && companyForm.get('website')?.touched) {
+                    <p class="text-[11px] text-rose-500 ml-0.5">
+                      @if (companyForm.get('website')?.errors?.['maxlength']) {
+                        Máximo 200 caracteres
+                      }
+                      @if (companyForm.get('website')?.errors?.['pattern']) {
+                        No debe contener espacios
+                      }
+                      @if (companyForm.get('website')?.errors?.['leadingTrailingSpace']) {
+                        No debe tener espacios al inicio o al final
+                      }
+                    </p>
+                  }
+                </div>
+              }
+              <div class="flex flex-col gap-1">
+                <label class="text-xs font-semibold text-slate-700 ml-0.5">Descripción <span class="text-slate-400 font-normal">(opcional)</span></label>
+                <textarea formControlName="description" placeholder="Breve descripción de la empresa..." maxlength="500" rows="3"
+                  [class.border-rose-400]="companyForm.get('description')?.invalid && companyForm.get('description')?.touched"
+                  [class.border-slate-300]="!(companyForm.get('description')?.invalid && companyForm.get('description')?.touched)"
                 class="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none resize-none transition-all"></textarea>
-              <p *ngIf="companyForm.get('description')?.invalid && companyForm.get('description')?.touched" class="text-[11px] text-rose-500 ml-0.5">
-                <ng-container *ngIf="companyForm.get('description')?.errors?.['maxlength']">Máximo 500 caracteres</ng-container>
-                <ng-container *ngIf="companyForm.get('description')?.errors?.['textContent']">Debe contener al menos una letra o número</ng-container>
-                <ng-container *ngIf="companyForm.get('description')?.errors?.['leadingTrailingSpace']">No debe tener espacios al inicio o al final</ng-container>
-              </p>
+                @if (companyForm.get('description')?.invalid && companyForm.get('description')?.touched) {
+                  <p class="text-[11px] text-rose-500 ml-0.5">
+                    @if (companyForm.get('description')?.errors?.['maxlength']) {
+                      Máximo 500 caracteres
+                    }
+                    @if (companyForm.get('description')?.errors?.['textContent']) {
+                      Debe contener al menos una letra o número
+                    }
+                    @if (companyForm.get('description')?.errors?.['leadingTrailingSpace']) {
+                      No debe tener espacios al inicio o al final
+                    }
+                  </p>
+                }
+              </div>
             </div>
           </div>
-        </div>
-
           <div class="space-y-4">
             <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
               <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
               <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">4. Horarios de Atención del Sistema</h3>
             </div>
-
             <div class="grid grid-cols-1 gap-3">
               <div formArrayName="operatingHours" class="grid grid-cols-1 gap-2">
-                <div *ngFor="let hour of operatingHours.controls; let i=index" [formGroupName]="i" 
-                  class="grid grid-cols-1 sm:grid-cols-[190px_1fr] gap-3 items-center p-3 bg-slate-50 border border-slate-200 rounded-lg hover:border-blue-200 transition-all">
-                  
-                  <div class="flex items-center justify-between gap-3">
-                    <button type="button" (click)="hour.get('isOpen')?.setValue(!hour.get('isOpen')?.value)"
-                      [ngClass]="hour.get('isOpen')?.value ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200' : 'bg-slate-100 text-slate-500 border-slate-200 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200'"
-                      class="inline-flex items-center gap-1.5 px-3 py-2 rounded border text-xs font-bold transition-all">
-                      <i [ngClass]="hour.get('isOpen')?.value ? 'pi pi-check-circle' : 'pi pi-minus-circle'" class="text-[11px]"></i>
-                      {{ hour.get('isOpen')?.value ? 'Abierto' : 'Cerrado' }}
-                    </button>
-                    <span class="text-sm font-bold text-slate-700 w-24 uppercase tracking-tighter">{{ hour.get('diaSemana')?.value }}</span>
-                  </div>
-
-                  <div class="grid grid-cols-2 gap-3" *ngIf="hour.get('isOpen')?.value">
-                    <div class="flex flex-col gap-1">
-                      <label class="text-[10px] font-bold text-slate-400 uppercase">Apertura</label>
-                      <input type="time" formControlName="openingTime"
-                        class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 outline-none h-10" />
+                @for (hour of operatingHours.controls; track hour; let i = $index) {
+                  <div [formGroupName]="i"
+                    class="grid grid-cols-1 sm:grid-cols-[190px_1fr] gap-3 items-center p-3 bg-slate-50 border border-slate-200 rounded-lg hover:border-blue-200 transition-all">
+                    <div class="flex items-center justify-between gap-3">
+                      <button type="button" (click)="hour.get('isOpen')?.setValue(!hour.get('isOpen')?.value)"
+                        [ngClass]="hour.get('isOpen')?.value ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200' : 'bg-slate-100 text-slate-500 border-slate-200 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200'"
+                        class="inline-flex items-center gap-1.5 px-3 py-2 rounded border text-xs font-bold transition-all">
+                        <i [ngClass]="hour.get('isOpen')?.value ? 'pi pi-check-circle' : 'pi pi-minus-circle'" class="text-[11px]"></i>
+                        {{ hour.get('isOpen')?.value ? 'Abierto' : 'Cerrado' }}
+                      </button>
+                      <span class="text-sm font-bold text-slate-700 w-24 uppercase tracking-tighter">{{ hour.get('diaSemana')?.value }}</span>
                     </div>
-                    <div class="flex flex-col gap-1">
-                      <label class="text-[10px] font-bold text-slate-400 uppercase">Cierre</label>
-                      <input type="time" formControlName="closingTime"
-                        class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 outline-none h-10" />
-                    </div>
+                    @if (hour.get('isOpen')?.value) {
+                      <div class="grid grid-cols-2 gap-3">
+                        <div class="flex flex-col gap-1">
+                          <label class="text-[10px] font-bold text-slate-400 uppercase">Apertura</label>
+                          <input type="time" formControlName="openingTime"
+                            class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 outline-none h-10" />
+                        </div>
+                        <div class="flex flex-col gap-1">
+                          <label class="text-[10px] font-bold text-slate-400 uppercase">Cierre</label>
+                          <input type="time" formControlName="closingTime"
+                            class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 outline-none h-10" />
+                        </div>
+                      </div>
+                    }
+                    @if (!hour.get('isOpen')?.value) {
+                      <div class="text-xs font-medium text-slate-400 bg-white border border-slate-200 rounded px-3 py-2">
+                        Cerrado (El sistema no permitirá citas este día)
+                      </div>
+                    }
                   </div>
-
-                  <div *ngIf="!hour.get('isOpen')?.value" class="text-xs font-medium text-slate-400 bg-white border border-slate-200 rounded px-3 py-2">
-                    Cerrado (El sistema no permitirá citas este día)
-                  </div>
-                </div>
+                }
               </div>
             </div>
           </div>
-
-
-        <div class="flex justify-end gap-3 pt-6 border-t border-slate-200">
-          <button type="button" (click)="displayModal = false"
-            class="px-5 py-2.5 text-sm font-semibold text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded transition-all">
-            Descartar cambios
-          </button>
-          <button type="submit" [disabled]="loading"
-            class="px-8 py-2.5 text-sm font-bold text-white bg-[#0066AA] hover:bg-[#004488] rounded  disabled:opacity-50 transition-all flex items-center justify-center gap-2 min-w-[160px]">
-            <i *ngIf="loading" class="pi pi-spin pi-spinner text-xs"></i>
-            {{ loading ? 'Procesando...' : (isEdit ? 'Actualizar Sede' : 'Confirmar Registro') }}
-          </button>
-        </div>
-      </form>
+          <div class="flex justify-end gap-3 pt-6 border-t border-slate-200">
+            <button type="button" (click)="displayModal = false"
+              class="px-5 py-2.5 text-sm font-semibold text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded transition-all">
+              Descartar cambios
+            </button>
+            <button type="submit" [disabled]="loading"
+              class="px-8 py-2.5 text-sm font-bold text-white bg-[#0066AA] hover:bg-[#004488] rounded  disabled:opacity-50 transition-all flex items-center justify-center gap-2 min-w-[160px]">
+              @if (loading) {
+                <i class="pi pi-spin pi-spinner text-xs"></i>
+              }
+              {{ loading ? 'Procesando...' : (isEdit ? 'Actualizar Sede' : 'Confirmar Registro') }}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
-</div>
+}
 
 <!-- ======================== -->
 <!-- COMPANY DETAIL MODAL (superadmin/admin) -->
 <!-- ======================== -->
-<div *ngIf="displayDetailPanel()" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm font-['Barlow']" (click)="displayDetailPanel.set(false)">
-  <div class="bg-white w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-100 flex flex-col" (click)="$event.stopPropagation()">
-    <!-- Header -->
-    <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between shrink-0">
-      <div class="flex items-center gap-3">
-        <div class="w-9 h-9 bg-blue-50 text-[#0066AA] rounded-lg flex items-center justify-center">
-          <i class="pi pi-building text-base"></i>
-        </div>
-        <h2 class="text-sm font-bold text-slate-800">Detalles de la Empresa</h2>
-      </div>
-      <button (click)="displayDetailPanel.set(false)"
-        class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
-        title="Cerrar">
-        <i class="pi pi-times text-xs"></i>
-      </button>
-    </div>
-
-    <!-- Body -->
-    <div class="p-6 space-y-6" *ngIf="selectedCompanyDetail() as comp">
-      <!-- Logo + Name -->
-      <div class="flex items-center gap-4">
-        <div class="w-16 h-16 rounded-xl bg-blue-50 flex items-center justify-center text-[#0066AA] font-bold text-2xl overflow-hidden shrink-0 border border-slate-200">
-          <img *ngIf="comp.logoUrl" [src]="resolveLogoUrl(comp.logoUrl)" class="w-full h-full object-cover">
-          <span *ngIf="!comp.logoUrl">{{ comp.name.charAt(0) }}</span>
-        </div>
-        <div>
-          <p class="text-lg font-bold text-slate-800">{{ comp.name }}</p>
-          <p class="text-xs text-slate-400 font-medium">RUC: {{ comp.ruc }}</p>
-        </div>
-      </div>
-
-      <!-- Grid -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
-        <!-- Enlace de acceso -->
-        <div class="sm:col-span-2" *ngIf="comp.slug">
-          <label class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Enlace de acceso</label>
-          <div class="flex items-center gap-2 mt-0.5">
-            <div *ngIf="comp.colorPrimario" class="w-4 h-4 rounded-full border border-slate-200 shrink-0" [style.background]="comp.colorPrimario"></div>
-            <p class="text-sm font-semibold text-slate-800 truncate">{{ loginUrlFor(comp.slug) }}</p>
-            <button type="button" (click)="copyLoginUrl(comp.slug)"
-              class="text-xs font-semibold text-blue-600 hover:text-blue-800 shrink-0">
-              <i class="pi pi-copy"></i> Copiar
-            </button>
+@if (displayDetailPanel()) {
+  <div class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm font-['Barlow']" (click)="displayDetailPanel.set(false)">
+    <div class="bg-white w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-100 flex flex-col" (click)="$event.stopPropagation()">
+      <!-- Header -->
+      <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between shrink-0">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 bg-blue-50 text-[#0066AA] rounded-lg flex items-center justify-center">
+            <i class="pi pi-building text-base"></i>
           </div>
+          <h2 class="text-sm font-bold text-slate-800">Detalles de la Empresa</h2>
         </div>
-        <!-- Correo Electrónico -->
-        <div>
-          <label class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Correo Electrónico</label>
-          <p class="text-sm font-semibold text-slate-800 mt-0.5">{{ comp.email || '—' }}</p>
-        </div>
-        <!-- Teléfono -->
-        <div>
-          <label class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Teléfono</label>
-          <p class="text-sm font-semibold text-slate-800 mt-0.5">{{ comp.phone || '—' }}</p>
-        </div>
-        <!-- Dirección -->
-        <div class="sm:col-span-2">
-          <label class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Dirección</label>
-          <p class="text-sm font-semibold text-slate-800 mt-0.5">{{ comp.address || '—' }}</p>
-        </div>
-        <!-- Sitio Web -->
-        <div class="sm:col-span-2" *ngIf="comp.website">
-          <label class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Sitio Web</label>
-          <p class="text-sm font-semibold text-blue-600 mt-0.5 hover:underline">
-            <a [href]="comp.website" target="_blank" rel="noopener noreferrer">{{ comp.website }}</a>
-          </p>
-        </div>
-        <!-- Descripción -->
-        <div class="sm:col-span-2" *ngIf="comp.description">
-          <label class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Descripción / Notas</label>
-          <p class="text-sm text-slate-700 mt-0.5 bg-slate-50 rounded-lg p-3 border border-slate-100">{{ comp.description }}</p>
-        </div>
-
-        <!-- Horarios de Operación -->
-        <div class="sm:col-span-2" *ngIf="comp.operatingHours?.length">
-          <label class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block mb-2">Horarios de Operación</label>
-          <div class="border border-slate-150 rounded-xl overflow-hidden bg-white divide-y divide-slate-100">
-            <div *ngFor="let h of sortOperatingHours(comp.operatingHours)" class="flex justify-between items-center px-4 py-2.5 text-xs">
-              <span class="font-bold text-slate-600 uppercase tracking-wider">{{ h.diaSemana }}</span>
-              <div class="flex items-center gap-2">
-                <span *ngIf="h.isOpen" class="px-2 py-0.5 rounded text-[10px] bg-emerald-50 text-emerald-700 font-bold uppercase">Abierto</span>
-                <span *ngIf="!h.isOpen" class="px-2 py-0.5 rounded text-[10px] bg-rose-50 text-rose-600 font-bold uppercase">Cerrado</span>
-                <span *ngIf="h.isOpen" class="text-slate-500 font-medium">{{ h.openingTime }} - {{ h.closingTime }}</span>
-              </div>
+        <button (click)="displayDetailPanel.set(false)"
+          class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+          title="Cerrar">
+          <i class="pi pi-times text-xs"></i>
+        </button>
+      </div>
+      <!-- Body -->
+      @if (selectedCompanyDetail(); as comp) {
+        <div class="p-6 space-y-6">
+          <!-- Logo + Name -->
+          <div class="flex items-center gap-4">
+            <div class="w-16 h-16 rounded-xl bg-blue-50 flex items-center justify-center text-[#0066AA] font-bold text-2xl overflow-hidden shrink-0 border border-slate-200">
+              @if (comp.logoUrl) {
+                <img [src]="resolveLogoUrl(comp.logoUrl)" class="w-full h-full object-cover">
+              }
+              @if (!comp.logoUrl) {
+                <span>{{ comp.name.charAt(0) }}</span>
+              }
+            </div>
+            <div>
+              <p class="text-lg font-bold text-slate-800">{{ comp.name }}</p>
+              <p class="text-xs text-slate-400 font-medium">RUC: {{ comp.ruc }}</p>
             </div>
           </div>
+          <!-- Grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
+            <!-- Enlace de acceso -->
+            @if (comp.slug) {
+              <div class="sm:col-span-2">
+                <label class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Enlace de acceso</label>
+                <div class="flex items-center gap-2 mt-0.5">
+                  @if (comp.colorPrimario) {
+                    <div class="w-4 h-4 rounded-full border border-slate-200 shrink-0" [style.background]="comp.colorPrimario"></div>
+                  }
+                  <p class="text-sm font-semibold text-slate-800 truncate">{{ loginUrlFor(comp.slug) }}</p>
+                  <button type="button" (click)="copyLoginUrl(comp.slug)"
+                    class="text-xs font-semibold text-blue-600 hover:text-blue-800 shrink-0">
+                    <i class="pi pi-copy"></i> Copiar
+                  </button>
+                </div>
+              </div>
+            }
+            <!-- Correo Electrónico -->
+            <div>
+              <label class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Correo Electrónico</label>
+              <p class="text-sm font-semibold text-slate-800 mt-0.5">{{ comp.email || '—' }}</p>
+            </div>
+            <!-- Teléfono -->
+            <div>
+              <label class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Teléfono</label>
+              <p class="text-sm font-semibold text-slate-800 mt-0.5">{{ comp.phone || '—' }}</p>
+            </div>
+            <!-- Dirección -->
+            <div class="sm:col-span-2">
+              <label class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Dirección</label>
+              <p class="text-sm font-semibold text-slate-800 mt-0.5">{{ comp.address || '—' }}</p>
+            </div>
+            <!-- Sitio Web -->
+            @if (comp.website) {
+              <div class="sm:col-span-2">
+                <label class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Sitio Web</label>
+                <p class="text-sm font-semibold text-blue-600 mt-0.5 hover:underline">
+                  <a [href]="comp.website" target="_blank" rel="noopener noreferrer">{{ comp.website }}</a>
+                </p>
+              </div>
+            }
+            <!-- Descripción -->
+            @if (comp.description) {
+              <div class="sm:col-span-2">
+                <label class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Descripción / Notas</label>
+                <p class="text-sm text-slate-700 mt-0.5 bg-slate-50 rounded-lg p-3 border border-slate-100">{{ comp.description }}</p>
+              </div>
+            }
+            <!-- Horarios de Operación -->
+            @if (comp.operatingHours?.length) {
+              <div class="sm:col-span-2">
+                <label class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block mb-2">Horarios de Operación</label>
+                <div class="border border-slate-150 rounded-xl overflow-hidden bg-white divide-y divide-slate-100">
+                  @for (h of sortOperatingHours(comp.operatingHours); track h) {
+                    <div class="flex justify-between items-center px-4 py-2.5 text-xs">
+                      <span class="font-bold text-slate-600 uppercase tracking-wider">{{ h.diaSemana }}</span>
+                      <div class="flex items-center gap-2">
+                        @if (h.isOpen) {
+                          <span class="px-2 py-0.5 rounded text-[10px] bg-emerald-50 text-emerald-700 font-bold uppercase">Abierto</span>
+                        }
+                        @if (!h.isOpen) {
+                          <span class="px-2 py-0.5 rounded text-[10px] bg-rose-50 text-rose-600 font-bold uppercase">Cerrado</span>
+                        }
+                        @if (h.isOpen) {
+                          <span class="text-slate-500 font-medium">{{ h.openingTime }} - {{ h.closingTime }}</span>
+                        }
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
         </div>
-      </div>
+      }
     </div>
   </div>
-</div>
+}
 
 <!-- ======================== -->
 <!-- TOGGLE-ACTIVE CONFIRM (superadmin only) -->
 <!-- ======================== -->
-<div *ngIf="companyPendingStatus" class="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-  <div class="bg-white w-full max-w-md rounded-lg  overflow-hidden">
-    <div class="px-6 py-4 border-b border-slate-100">
-      <h3 class="text-base font-bold text-slate-800">
-        {{ companyPendingStatus.activo ? 'Desactivar empresa' : 'Activar empresa' }}
-      </h3>
-    </div>
-    <div class="p-6">
-      <p class="text-sm text-slate-600 leading-relaxed">
-        {{ companyPendingStatus.activo
+@if (companyPendingStatus) {
+  <div class="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+    <div class="bg-white w-full max-w-md rounded-lg  overflow-hidden">
+      <div class="px-6 py-4 border-b border-slate-100">
+        <h3 class="text-base font-bold text-slate-800">
+          {{ companyPendingStatus.activo ? 'Desactivar empresa' : 'Activar empresa' }}
+        </h3>
+      </div>
+      <div class="p-6">
+        <p class="text-sm text-slate-600 leading-relaxed">
+          {{ companyPendingStatus.activo
           ? 'Al desactivar la empresa, sus usuarios no podran iniciar sesion.'
           : 'Al activar la empresa, sus usuarios podran iniciar sesion nuevamente.' }}
-      </p>
-      <p class="text-sm font-bold text-slate-800 mt-3">{{ companyPendingStatus.name }}</p>
-    </div>
-    <div class="px-6 py-4 bg-slate-50 flex justify-end gap-3">
-      <button type="button" (click)="cancelToggleActivo()"
-        class="px-4 py-2 text-sm font-semibold text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded transition-all">
-        Cancelar
-      </button>
-      <button type="button" (click)="toggleActivo()"
-        [ngClass]="companyPendingStatus.activo ? 'bg-rose-600 hover:bg-rose-700' : 'bg-[#0066AA] hover:bg-[#004488]'"
-        class="px-5 py-2 text-sm font-bold text-white rounded transition-all">
-        {{ companyPendingStatus.activo ? 'Desactivar' : 'Activar' }}
-      </button>
+        </p>
+        <p class="text-sm font-bold text-slate-800 mt-3">{{ companyPendingStatus.name }}</p>
+      </div>
+      <div class="px-6 py-4 bg-slate-50 flex justify-end gap-3">
+        <button type="button" (click)="cancelToggleActivo()"
+          class="px-4 py-2 text-sm font-semibold text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded transition-all">
+          Cancelar
+        </button>
+        <button type="button" (click)="toggleActivo()"
+          [ngClass]="companyPendingStatus.activo ? 'bg-rose-600 hover:bg-rose-700' : 'bg-[#0066AA] hover:bg-[#004488]'"
+          class="px-5 py-2 text-sm font-bold text-white rounded transition-all">
+          {{ companyPendingStatus.activo ? 'Desactivar' : 'Activar' }}
+        </button>
+      </div>
     </div>
   </div>
-</div>
+}
 
 <!-- ======================== -->
 <!-- SAVE CONFIRM DIALOG -->
 <!-- ======================== -->
-<div *ngIf="confirmDialog()" class="fixed inset-0 z-[130] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/50 backdrop-blur-sm">
-  <div class="bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-xl overflow-hidden">
-    <div class="px-5 sm:px-6 pt-8 sm:pt-6 pb-2 flex flex-col items-center text-center">
-      <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-blue-50 text-[#0066AA] flex items-center justify-center mb-3 sm:mb-4">
-        <i class="pi pi-info-circle text-xl sm:text-2xl"></i>
+@if (confirmDialog()) {
+  <div class="fixed inset-0 z-[130] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/50 backdrop-blur-sm">
+    <div class="bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-xl overflow-hidden">
+      <div class="px-5 sm:px-6 pt-8 sm:pt-6 pb-2 flex flex-col items-center text-center">
+        <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-blue-50 text-[#0066AA] flex items-center justify-center mb-3 sm:mb-4">
+          <i class="pi pi-info-circle text-xl sm:text-2xl"></i>
+        </div>
+        <h3 class="text-base sm:text-lg font-bold text-slate-800">{{ confirmDialog()!.title }}</h3>
       </div>
-      <h3 class="text-base sm:text-lg font-bold text-slate-800">{{ confirmDialog()!.title }}</h3>
-    </div>
-    <div class="px-5 sm:px-6 py-4 sm:py-5">
-      <p class="text-sm sm:text-base text-slate-500 text-center leading-relaxed">{{ confirmDialog()!.message }}</p>
-    </div>
-    <div class="px-5 sm:px-6 py-4 bg-slate-50 flex flex-col-reverse sm:flex-row sm:justify-end gap-2 sm:gap-3 rounded-b-2xl sm:rounded-b-xl">
-      <button type="button" (click)="cancelConfirm()"
-        class="w-full sm:w-auto px-4 py-3 sm:py-2.5 text-sm font-semibold text-slate-600 hover:text-slate-800 hover:bg-slate-200 rounded-xl sm:rounded-lg transition-all">
-        Cancelar
-      </button>
-      <button type="button" (click)="confirmDialog()!.onConfirm()"
-        class="w-full sm:w-auto px-6 py-3 sm:py-2.5 text-sm font-bold text-white bg-[#0066AA] hover:bg-[#004488] rounded-xl sm:rounded-lg transition-all">
-        {{ isEdit ? 'Actualizar' : 'Confirmar' }}
-      </button>
+      <div class="px-5 sm:px-6 py-4 sm:py-5">
+        <p class="text-sm sm:text-base text-slate-500 text-center leading-relaxed">{{ confirmDialog()!.message }}</p>
+      </div>
+      <div class="px-5 sm:px-6 py-4 bg-slate-50 flex flex-col-reverse sm:flex-row sm:justify-end gap-2 sm:gap-3 rounded-b-2xl sm:rounded-b-xl">
+        <button type="button" (click)="cancelConfirm()"
+          class="w-full sm:w-auto px-4 py-3 sm:py-2.5 text-sm font-semibold text-slate-600 hover:text-slate-800 hover:bg-slate-200 rounded-xl sm:rounded-lg transition-all">
+          Cancelar
+        </button>
+        <button type="button" (click)="confirmDialog()!.onConfirm()"
+          class="w-full sm:w-auto px-6 py-3 sm:py-2.5 text-sm font-bold text-white bg-[#0066AA] hover:bg-[#004488] rounded-xl sm:rounded-lg transition-all">
+          {{ isEdit ? 'Actualizar' : 'Confirmar' }}
+        </button>
+      </div>
     </div>
   </div>
-</div>
+}
 
 <p-toast position="bottom-right"></p-toast>

@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, ElementRef, OnInit, inject, signal, computed } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -16,7 +16,7 @@ const LABELS: Record<LegalDocumentDTO['tipo'], string> = {
 @Component({
   selector: 'app-legal-accept',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
   templateUrl: './legal-accept.component.html',
   styleUrl: './legal-accept.component.scss'
 })

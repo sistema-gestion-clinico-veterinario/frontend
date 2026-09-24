@@ -16,13 +16,15 @@ import { AuthService } from '../../../core/services/auth.service';
         </div>
         <h1 class="text-xl font-bold text-slate-900">Confirmación de correo</h1>
         <p class="mt-3 text-sm leading-6 text-slate-600">{{ message() }}</p>
-        <a *ngIf="!loading()" routerLink="/login"
-          class="mt-6 inline-flex h-10 items-center justify-center rounded-lg bg-[#0066AA] px-5 text-sm font-semibold text-white">
-          Ir al inicio de sesión
-        </a>
+        @if (!loading()) {
+          <a routerLink="/login"
+            class="mt-6 inline-flex h-10 items-center justify-center rounded-lg bg-[#0066AA] px-5 text-sm font-semibold text-white">
+            Ir al inicio de sesión
+          </a>
+        }
       </section>
     </main>
-  `
+    `
 })
 export class ConfirmEmailChangeComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);

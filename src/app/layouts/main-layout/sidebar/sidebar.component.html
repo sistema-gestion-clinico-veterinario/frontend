@@ -2,100 +2,122 @@
   class="flex h-full flex-col overflow-hidden bg-[#00517F] transition-[width] duration-200 ease-out"
   [class.w-64]="!collapsed()"
   [class.w-[4.5rem]]="collapsed()"
->
+  >
   <div class="flex min-h-[72px] shrink-0 items-center border-b border-white/10 px-4 py-3 max-lg:pr-12" [class.justify-center]="collapsed()">
     <div class="flex min-w-0 items-center gap-3">
-      <img *ngIf="companyLogoUrl()" [src]="companyLogoUrl()" alt="Logo"
-        class="h-9 w-9 shrink-0 rounded-md bg-white object-cover" />
-      <div *ngIf="!companyLogoUrl()" class="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-white/10 text-white">
-        <i class="pi pi-heart-fill text-base"></i>
-      </div>
-      <div *ngIf="!collapsed()" class="min-w-0 flex-1">
-        <span *ngIf="loadingEnterprise()" class="block h-4 w-28 animate-pulse rounded-sm bg-white/15"></span>
-        <span *ngIf="!loadingEnterprise()" class="block max-w-[172px] text-[15px] font-semibold leading-[1.2] text-white">{{ companyName() || '' }}</span>
-      </div>
+      @if (companyLogoUrl()) {
+        <img [src]="companyLogoUrl()" alt="Logo"
+          class="h-9 w-9 shrink-0 rounded-md bg-white object-cover" />
+      }
+      @if (!companyLogoUrl()) {
+        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-white/10 text-white">
+          <i class="pi pi-heart-fill text-base"></i>
+        </div>
+      }
+      @if (!collapsed()) {
+        <div class="min-w-0 flex-1">
+          @if (loadingEnterprise()) {
+            <span class="block h-4 w-28 animate-pulse rounded-sm bg-white/15"></span>
+          }
+          @if (!loadingEnterprise()) {
+            <span class="block max-w-[172px] text-[15px] font-semibold leading-[1.2] text-white">{{ companyName() || '' }}</span>
+          }
+        </div>
+      }
     </div>
   </div>
 
   <nav
     class="flex-1 overflow-y-auto py-4 [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.25)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/25 hover:[&::-webkit-scrollbar-thumb]:bg-white/40"
     [class.px-3]="!collapsed()" [class.px-0]="collapsed()"
-  >
+    >
     <div class="space-y-1">
-      <ng-container *ngIf="menuStructure().length === 0 && !collapsed()">
+      @if (menuStructure().length === 0 && !collapsed()) {
         <div class="space-y-2 px-2">
-          <div *ngFor="let i of [1,2,3,4,5]" class="flex h-10 items-center gap-3">
-            <p-skeleton shape="circle" size="1.25rem" [style]="{ background: 'rgba(255,255,255,0.12)' }" />
-            <p-skeleton height="0.65rem" width="65%" [style]="{ background: 'rgba(255,255,255,0.12)' }" />
-          </div>
+          @for (i of [1,2,3,4,5]; track i) {
+            <div class="flex h-10 items-center gap-3">
+              <p-skeleton shape="circle" size="1.25rem" [style]="{ background: 'rgba(255,255,255,0.12)' }" />
+              <p-skeleton height="0.65rem" width="65%" [style]="{ background: 'rgba(255,255,255,0.12)' }" />
+            </div>
+          }
         </div>
-      </ng-container>
-      <ng-container *ngFor="let structure of menuStructure()">
-        <div *ngIf="isGrouped(structure)" class="space-y-0.5">
-          <button
-            *ngIf="!collapsed() && structure.ventanaNombre"
-            (click)="toggleSection(structure)"
-            type="button"
-            class="group flex min-h-10 w-full items-center gap-3 rounded-md px-3 text-slate-100 transition-colors duration-150 hover:bg-white/10 hover:text-white"
-          >
-            <span class="flex h-5 w-5 shrink-0 items-center justify-center"><i [class]="sectionIcon(structure) + ' text-[13px]'"></i></span>
-            <span class="flex-1 text-left text-[11px] font-semibold uppercase tracking-[0.07em]">{{ structure.ventanaNombre }}</span>
-            <i
-              class="pi flex-shrink-0 text-[10px] text-white/60 transition-transform duration-150"
-              [class.pi-chevron-down]="isSectionExpanded(structure)"
-              [class.pi-chevron-right]="!isSectionExpanded(structure)"
-            ></i>
-          </button>
-
-          <div *ngIf="collapsed() && structure.ventanaNombre" class="flex h-10 items-center justify-center text-slate-300" [title]="structure.ventanaNombre">
-            <i [class]="sectionIcon(structure) + ' text-sm'"></i>
-          </div>
-
-          <div *ngIf="isSectionExpanded(structure)" class="space-y-0.5" [class.pl-3]="!collapsed()">
-            <a
-              *ngFor="let vista of structure.vistas"
-              [routerLink]="vista.ruta"
-              routerLinkActive="active-link"
-              #rla="routerLinkActive"
-              [routerLinkActiveOptions]="{ exact: true }"
-              (click)="navigate.emit()"
-              [class]="navItemClass(rla.isActive)"
-              class="block"
-              [title]="collapsed() ? vista.nombre : ''"
-            >
-              <div class="flex w-full items-center" [class.gap-2.5]="!collapsed()" [class.justify-center]="collapsed()">
-                <span class="flex h-5 w-5 flex-shrink-0 items-center justify-center">
-                  <i [class]="getIcon(vista) + ' text-[13px]'"></i>
-                </span>
-                <span *ngIf="!collapsed()" class="flex-1 truncate text-left text-[13px] font-medium">
-                  {{ vista.nombre }}
-                </span>
+      }
+      @for (structure of menuStructure(); track structure) {
+        @if (isGrouped(structure)) {
+          <div class="space-y-0.5">
+            @if (!collapsed() && structure.ventanaNombre) {
+              <button
+                (click)="toggleSection(structure)"
+                type="button"
+                class="group flex min-h-10 w-full items-center gap-3 rounded-md px-3 text-slate-100 transition-colors duration-150 hover:bg-white/10 hover:text-white"
+                >
+                <span class="flex h-5 w-5 shrink-0 items-center justify-center"><i [class]="sectionIcon(structure) + ' text-[13px]'"></i></span>
+                <span class="flex-1 text-left text-[11px] font-semibold uppercase tracking-[0.07em]">{{ structure.ventanaNombre }}</span>
+                <i
+                  class="pi flex-shrink-0 text-[10px] text-white/60 transition-transform duration-150"
+                  [class.pi-chevron-down]="isSectionExpanded(structure)"
+                  [class.pi-chevron-right]="!isSectionExpanded(structure)"
+                ></i>
+              </button>
+            }
+            @if (collapsed() && structure.ventanaNombre) {
+              <div class="flex h-10 items-center justify-center text-slate-300" [title]="structure.ventanaNombre">
+                <i [class]="sectionIcon(structure) + ' text-sm'"></i>
               </div>
-            </a>
+            }
+            @if (isSectionExpanded(structure)) {
+              <div class="space-y-0.5" [class.pl-3]="!collapsed()">
+                @for (vista of structure.vistas; track vista) {
+                  <a
+                    [routerLink]="vista.ruta"
+                    routerLinkActive="active-link"
+                    #rla="routerLinkActive"
+                    [routerLinkActiveOptions]="{ exact: true }"
+                    (click)="navigate.emit()"
+                    [class]="navItemClass(rla.isActive)"
+                    class="block"
+                    [title]="collapsed() ? vista.nombre : ''"
+                    >
+                    <div class="flex w-full items-center" [class.gap-2.5]="!collapsed()" [class.justify-center]="collapsed()">
+                      <span class="flex h-5 w-5 flex-shrink-0 items-center justify-center">
+                        <i [class]="getIcon(vista) + ' text-[13px]'"></i>
+                      </span>
+                      @if (!collapsed()) {
+                        <span class="flex-1 truncate text-left text-[13px] font-medium">
+                          {{ vista.nombre }}
+                        </span>
+                      }
+                    </div>
+                  </a>
+                }
+              </div>
+            }
           </div>
-        </div>
-
-        <a
-          *ngIf="!isGrouped(structure) && structure.vistas.length === 1"
-          [routerLink]="structure.vistas[0].ruta"
-          routerLinkActive="active-link"
-          #rlaItem="routerLinkActive"
-          [routerLinkActiveOptions]="{ exact: true }"
-          (click)="navigate.emit()"
-          [class]="navItemClass(rlaItem.isActive)"
-          class="block"
-          [title]="collapsed() ? structure.vistas[0].nombre : ''"
-        >
-          <div class="flex w-full items-center" [class.gap-2.5]="!collapsed()" [class.justify-center]="collapsed()">
-            <span class="flex h-5 w-5 flex-shrink-0 items-center justify-center">
-              <i [class]="getIcon(structure.vistas[0]) + ' text-[13px]'"></i>
-            </span>
-            <span *ngIf="!collapsed()" class="flex-1 truncate text-left text-[13px] font-medium">
-              {{ structure.vistas[0].nombre }}
-            </span>
-          </div>
-        </a>
-      </ng-container>
+        }
+        @if (!isGrouped(structure) && structure.vistas.length === 1) {
+          <a
+            [routerLink]="structure.vistas[0].ruta"
+            routerLinkActive="active-link"
+            #rlaItem="routerLinkActive"
+            [routerLinkActiveOptions]="{ exact: true }"
+            (click)="navigate.emit()"
+            [class]="navItemClass(rlaItem.isActive)"
+            class="block"
+            [title]="collapsed() ? structure.vistas[0].nombre : ''"
+            >
+            <div class="flex w-full items-center" [class.gap-2.5]="!collapsed()" [class.justify-center]="collapsed()">
+              <span class="flex h-5 w-5 flex-shrink-0 items-center justify-center">
+                <i [class]="getIcon(structure.vistas[0]) + ' text-[13px]'"></i>
+              </span>
+              @if (!collapsed()) {
+                <span class="flex-1 truncate text-left text-[13px] font-medium">
+                  {{ structure.vistas[0].nombre }}
+                </span>
+              }
+            </div>
+          </a>
+        }
+      }
     </div>
   </nav>
 
@@ -107,9 +129,11 @@
       [class.w-full]="!collapsed()"
       [class.w-10]="collapsed()"
       [title]="collapsed() ? 'Cerrar sesión' : ''"
-    >
+      >
       <i class="pi pi-sign-out text-[13px]"></i>
-      <span *ngIf="!collapsed()" class="whitespace-nowrap text-[13px] font-medium">Cerrar sesión</span>
+      @if (!collapsed()) {
+        <span class="whitespace-nowrap text-[13px] font-medium">Cerrar sesión</span>
+      }
     </button>
   </div>
 </aside>

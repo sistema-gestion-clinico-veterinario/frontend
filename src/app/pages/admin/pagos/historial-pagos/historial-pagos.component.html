@@ -3,290 +3,296 @@
 <div class="flex min-w-0 flex-col gap-6 overflow-x-hidden p-2 sm:p-4 animate-fade-in">
 
   <!-- Skeleton Loading -->
-  <div *ngIf="cargando()" class="animate-fade-in">
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-      <div class="flex items-center gap-3">
-        <p-skeleton shape="circle" size="3rem"></p-skeleton>
-        <div class="space-y-2">
-          <p-skeleton width="6rem" height="0.6rem" borderRadius="0.3rem"></p-skeleton>
-          <p-skeleton width="14rem" height="1.4rem" borderRadius="0.4rem"></p-skeleton>
-          <p-skeleton width="100%" height="0.8rem" borderRadius="0.3rem" styleClass="max-w-md"></p-skeleton>
+  @if (cargando()) {
+    <div class="animate-fade-in">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <p-skeleton shape="circle" size="3rem"></p-skeleton>
+          <div class="space-y-2">
+            <p-skeleton width="6rem" height="0.6rem" borderRadius="0.3rem"></p-skeleton>
+            <p-skeleton width="14rem" height="1.4rem" borderRadius="0.4rem"></p-skeleton>
+            <p-skeleton width="100%" height="0.8rem" borderRadius="0.3rem" styleClass="max-w-md"></p-skeleton>
+          </div>
         </div>
       </div>
+      <div class="bg-white rounded-2xl border border-slate-200 p-4 flex flex-wrap gap-3 items-center">
+        <p-skeleton width="10rem" height="2.25rem" borderRadius="0.5rem"></p-skeleton>
+        <p-skeleton width="10rem" height="2.25rem" borderRadius="0.5rem"></p-skeleton>
+        <p-skeleton width="8rem" height="1rem" borderRadius="0.3rem" styleClass="ml-auto"></p-skeleton>
+      </div>
+      <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="bg-slate-50 border-b border-slate-200">
+              <th class="text-left px-4 py-3"><p-skeleton width="2rem" height="0.5rem" borderRadius="0.3rem"></p-skeleton></th>
+              <th class="text-left px-4 py-3"><p-skeleton width="8rem" height="0.5rem" borderRadius="0.3rem"></p-skeleton></th>
+              <th class="text-left px-4 py-3"><p-skeleton width="6rem" height="0.5rem" borderRadius="0.3rem"></p-skeleton></th>
+              <th class="text-left px-4 py-3"><p-skeleton width="5rem" height="0.5rem" borderRadius="0.3rem"></p-skeleton></th>
+              <th class="text-right px-4 py-3"><p-skeleton width="4rem" height="0.5rem" borderRadius="0.3rem"></p-skeleton></th>
+              <th class="text-left px-4 py-3"><p-skeleton width="4rem" height="0.5rem" borderRadius="0.3rem"></p-skeleton></th>
+              <th class="text-left px-4 py-3"><p-skeleton width="8rem" height="0.5rem" borderRadius="0.3rem"></p-skeleton></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (i of [1,2,3,4,5]; track i) {
+              <tr class="border-b border-slate-100">
+                <td class="px-4 py-3"><p-skeleton width="3rem" height="0.8rem" borderRadius="0.3rem"></p-skeleton></td>
+                <td class="px-4 py-3">
+                  <div class="space-y-1.5">
+                    <p-skeleton width="8rem" height="0.8rem" borderRadius="0.3rem"></p-skeleton>
+                    <p-skeleton width="10rem" height="0.6rem" borderRadius="0.3rem"></p-skeleton>
+                  </div>
+                </td>
+                <td class="px-4 py-3"><p-skeleton width="7rem" height="0.8rem" borderRadius="0.3rem"></p-skeleton></td>
+                <td class="px-4 py-3"><p-skeleton width="5rem" height="0.8rem" borderRadius="0.3rem"></p-skeleton></td>
+                <td class="px-4 py-3 text-right"><p-skeleton width="4rem" height="0.8rem" borderRadius="0.3rem"></p-skeleton></td>
+                <td class="px-4 py-3"><p-skeleton width="5rem" height="1.2rem" borderRadius="999px"></p-skeleton></td>
+                <td class="px-4 py-3"><p-skeleton width="8rem" height="0.8rem" borderRadius="0.3rem"></p-skeleton></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
     </div>
-
-    <div class="bg-white rounded-2xl border border-slate-200 p-4 flex flex-wrap gap-3 items-center">
-      <p-skeleton width="10rem" height="2.25rem" borderRadius="0.5rem"></p-skeleton>
-      <p-skeleton width="10rem" height="2.25rem" borderRadius="0.5rem"></p-skeleton>
-      <p-skeleton width="8rem" height="1rem" borderRadius="0.3rem" styleClass="ml-auto"></p-skeleton>
-    </div>
-
-    <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-      <table class="w-full text-sm">
-        <thead>
-          <tr class="bg-slate-50 border-b border-slate-200">
-            <th class="text-left px-4 py-3"><p-skeleton width="2rem" height="0.5rem" borderRadius="0.3rem"></p-skeleton></th>
-            <th class="text-left px-4 py-3"><p-skeleton width="8rem" height="0.5rem" borderRadius="0.3rem"></p-skeleton></th>
-            <th class="text-left px-4 py-3"><p-skeleton width="6rem" height="0.5rem" borderRadius="0.3rem"></p-skeleton></th>
-            <th class="text-left px-4 py-3"><p-skeleton width="5rem" height="0.5rem" borderRadius="0.3rem"></p-skeleton></th>
-            <th class="text-right px-4 py-3"><p-skeleton width="4rem" height="0.5rem" borderRadius="0.3rem"></p-skeleton></th>
-            <th class="text-left px-4 py-3"><p-skeleton width="4rem" height="0.5rem" borderRadius="0.3rem"></p-skeleton></th>
-            <th class="text-left px-4 py-3"><p-skeleton width="8rem" height="0.5rem" borderRadius="0.3rem"></p-skeleton></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let i of [1,2,3,4,5]" class="border-b border-slate-100">
-            <td class="px-4 py-3"><p-skeleton width="3rem" height="0.8rem" borderRadius="0.3rem"></p-skeleton></td>
-            <td class="px-4 py-3">
-              <div class="space-y-1.5">
-                <p-skeleton width="8rem" height="0.8rem" borderRadius="0.3rem"></p-skeleton>
-                <p-skeleton width="10rem" height="0.6rem" borderRadius="0.3rem"></p-skeleton>
-              </div>
-            </td>
-            <td class="px-4 py-3"><p-skeleton width="7rem" height="0.8rem" borderRadius="0.3rem"></p-skeleton></td>
-            <td class="px-4 py-3"><p-skeleton width="5rem" height="0.8rem" borderRadius="0.3rem"></p-skeleton></td>
-            <td class="px-4 py-3 text-right"><p-skeleton width="4rem" height="0.8rem" borderRadius="0.3rem"></p-skeleton></td>
-            <td class="px-4 py-3"><p-skeleton width="5rem" height="1.2rem" borderRadius="999px"></p-skeleton></td>
-            <td class="px-4 py-3"><p-skeleton width="8rem" height="0.8rem" borderRadius="0.3rem"></p-skeleton></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
+  }
 
   <!-- Main Content -->
-  <div *ngIf="!cargando()" class="flex flex-col gap-6">
-
-  <!-- ─── HEADER ─── -->
-  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-    <div class="flex items-center gap-3">
-      <i class="pi pi-wallet text-[#0066AA] text-3xl shrink-0"></i>
-      <div>
-        <p class="text-[11px] font-bold uppercase tracking-[.14em] text-[#0066AA]">Finanzas</p>
-        <h1 class="text-xl font-extrabold leading-tight tracking-tight text-slate-900">Historial de Pagos</h1>
-        <p class="mt-1 text-sm text-slate-400 font-medium hidden sm:block">Registro completo de transacciones por servicios veterinarios</p>
-      </div>
-    </div>
-    <!-- ─── MODAL: detalle de pago ─── -->
-    <div *ngIf="showPanel() && selectedPago()"
-      class="fixed inset-0 z-[130] flex items-end sm:items-center justify-center bg-slate-900/40 p-0 sm:p-4"
-      (click)="cerrarPanel()">
-      <div class="w-full max-h-[92dvh] sm:max-w-lg bg-white border border-slate-200 rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-200"
-        (click)="$event.stopPropagation()"><!-- Header -->
-      <div class="bg-slate-50 border-b border-slate-200 px-5 py-4 flex items-center justify-between">
+  @if (!cargando()) {
+    <div class="flex flex-col gap-6">
+      <!-- ─── HEADER ─── -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-base"
-            [ngClass]="avatarBadgeClass(selectedPago()!.estado, true)">
-            {{ (selectedPago()!.mascotaNombre || '?').charAt(0).toUpperCase() }}
-          </div>
+          <i class="pi pi-wallet text-[#0066AA] text-3xl shrink-0"></i>
           <div>
-            <p class="text-sm font-bold text-slate-800 leading-tight">{{ selectedPago()!.mascotaNombre || '—' }}</p>
-            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold mt-0.5"
-              [ngClass]="estadoBadge(selectedPago()!.estado)">
-              {{ estadoLabel(selectedPago()!.estado) }}
-            </span>
+            <p class="text-[11px] font-bold uppercase tracking-[.14em] text-[#0066AA]">Finanzas</p>
+            <h1 class="text-xl font-extrabold leading-tight tracking-tight text-slate-900">Historial de Pagos</h1>
+            <p class="mt-1 text-sm text-slate-400 font-medium hidden sm:block">Registro completo de transacciones por servicios veterinarios</p>
           </div>
         </div>
-        <button (click)="cerrarPanel()"
-          class="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-200 transition-all text-sm cursor-pointer">
-          ×
-        </button>
+        <!-- ─── MODAL: detalle de pago ─── -->
+        @if (showPanel() && selectedPago()) {
+          <div
+            class="fixed inset-0 z-[130] flex items-end sm:items-center justify-center bg-slate-900/40 p-0 sm:p-4"
+            (click)="cerrarPanel()">
+            <div class="w-full max-h-[92dvh] sm:max-w-lg bg-white border border-slate-200 rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-200"
+              (click)="$event.stopPropagation()"><!-- Header -->
+              <div class="bg-slate-50 border-b border-slate-200 px-5 py-4 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-base"
+                    [ngClass]="avatarBadgeClass(selectedPago()!.estado, true)">
+                    {{ (selectedPago()!.mascotaNombre || '?').charAt(0).toUpperCase() }}
+                  </div>
+                  <div>
+                    <p class="text-sm font-bold text-slate-800 leading-tight">{{ selectedPago()!.mascotaNombre || '—' }}</p>
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold mt-0.5"
+                      [ngClass]="estadoBadge(selectedPago()!.estado)">
+                      {{ estadoLabel(selectedPago()!.estado) }}
+                    </span>
+                  </div>
+                </div>
+                <button (click)="cerrarPanel()"
+                  class="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-200 transition-all text-sm cursor-pointer">
+                  ×
+                </button>
+              </div>
+              <div class="p-5 space-y-5">
+                <!-- 1. Pago -->
+                <div>
+                  <div class="flex items-center gap-2 mb-3">
+                    <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
+                    <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">1. Información del Pago</h3>
+                  </div>
+                  <div class="grid grid-cols-2 gap-y-3">
+                    <div>
+                      <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">N° Pago</p>
+                      <p class="text-xs font-semibold text-slate-700">#{{ selectedPago()!.id }}</p>
+                    </div>
+                    <div>
+                      <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Método</p>
+                      <p class="text-xs font-semibold text-slate-700">{{ metodoPagoLabel(selectedPago()!.metodoPago) }}</p>
+                    </div>
+                    <div>
+                      <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Monto Total</p>
+                      <p class="text-sm font-bold text-slate-800">{{ formatMonto(selectedPago()!.monto) }}</p>
+                    </div>
+                    @if (selectedPago()!.montoRecibido) {
+                      <div>
+                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Recibido</p>
+                        <p class="text-xs font-semibold text-slate-700">{{ formatMonto(selectedPago()!.montoRecibido) }}</p>
+                      </div>
+                    }
+                    @if (selectedPago()!.cambio != null) {
+                      <div>
+                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Cambio</p>
+                        <p class="text-xs font-semibold text-slate-700">{{ formatMonto(selectedPago()!.cambio) }}</p>
+                      </div>
+                    }
+                    <div class="col-span-2">
+                      <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Fecha de Pago</p>
+                      <p class="text-xs font-semibold text-slate-700">{{ formatFecha(selectedPago()!.fechaPago) }}</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="border-t border-slate-100"></div>
+                <!-- 2. Cita -->
+                <div>
+                  <div class="flex items-center gap-2 mb-3">
+                    <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
+                    <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">2. Datos de la Cita</h3>
+                  </div>
+                  <div class="grid grid-cols-2 gap-y-3">
+                    <div>
+                      <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Cita N°</p>
+                      <p class="text-xs font-semibold text-slate-700">{{ selectedPago()!.numeroCita || 'Sin número' }}</p>
+                    </div>
+                    <div>
+                      <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Estado Cita</p>
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold"
+                        [ngClass]="estadoCitaBadge(selectedPago()!.estadoCita)">
+                        {{ selectedPago()!.estadoCita || '—' }}
+                      </span>
+                    </div>
+                    <div class="col-span-2">
+                      <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Servicio</p>
+                      <p class="text-xs font-semibold text-slate-700">{{ selectedPago()!.servicioNombre || '—' }}</p>
+                    </div>
+                    <div class="col-span-2">
+                      <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Profesional</p>
+                      <p class="text-xs font-semibold text-slate-700">{{ selectedPago()!.veterinarioNombre || '—' }}</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="border-t border-slate-100"></div>
+                <!-- 3. Cliente -->
+                <div>
+                  <div class="flex items-center gap-2 mb-3">
+                    <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
+                    <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">3. Cliente</h3>
+                  </div>
+                  <div class="grid grid-cols-1 gap-y-3">
+                    <div>
+                      <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Apoderado</p>
+                      <p class="text-xs font-semibold text-slate-700">{{ selectedPago()!.clienteNombre || '—' }}</p>
+                    </div>
+                    <div>
+                      <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Mascota</p>
+                      <p class="text-xs font-semibold text-slate-700">{{ selectedPago()!.mascotaNombre || '—' }}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- Footer -->
+              <div class="border-t border-slate-100 px-5 py-3 flex justify-end">
+                <button (click)="cerrarPanel()"
+                  class="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-all cursor-pointer">
+                  Cerrar
+                </button>
+              </div>
+            </div>
+          </div>
+        }
       </div>
-
-      <div class="p-5 space-y-5">
-
-        <!-- 1. Pago -->
-        <div>
-          <div class="flex items-center gap-2 mb-3">
-            <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
-            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">1. Información del Pago</h3>
+      <!-- ─── FILTROS ─── -->
+      <div class="flex flex-col items-stretch gap-3 rounded-2xl border border-slate-200 bg-white p-4 sm:flex-row sm:flex-wrap sm:items-center">
+        <select
+          [value]="filtroEstado()"
+          (change)="filtroEstado.set($any($event.target).value)"
+          class="w-full cursor-pointer rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0066AA]/20 sm:w-auto">
+          <option value="">Todos los estados</option>
+          <option value="PAID">Pagado</option>
+          <option value="PENDING">Pendiente</option>
+          <option value="PENDING_TRANSFER">Transf. Pendiente</option>
+          <option value="REJECTED">Rechazado</option>
+          <option value="REFUNDED">Reembolsado</option>
+        </select>
+        <select
+          [value]="filtroMetodo()"
+          (change)="filtroMetodo.set($any($event.target).value)"
+          class="w-full cursor-pointer rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0066AA]/20 sm:w-auto">
+          <option value="">Todos los métodos</option>
+          <option value="EFECTIVO">Efectivo</option>
+          <option value="YAPE">Yape</option>
+        </select>
+        <span class="text-xs font-medium text-slate-400 sm:ml-auto">
+          {{ pagosFiltrados().length }} registro(s)
+        </span>
+      </div>
+      <!-- ─── TABLA ─── -->
+      <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+        @if (pagosFiltrados().length === 0) {
+          <div
+            class="flex flex-col items-center justify-center py-16 gap-3">
+            <div class="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center text-xl text-slate-400">—</div>
+            <p class="text-sm font-semibold text-slate-500">Sin registros de pago</p>
           </div>
-          <div class="grid grid-cols-2 gap-y-3">
-            <div>
-              <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">N° Pago</p>
-              <p class="text-xs font-semibold text-slate-700">#{{ selectedPago()!.id }}</p>
-            </div>
-            <div>
-              <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Método</p>
-              <p class="text-xs font-semibold text-slate-700">{{ metodoPagoLabel(selectedPago()!.metodoPago) }}</p>
-            </div>
-            <div>
-              <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Monto Total</p>
-              <p class="text-sm font-bold text-slate-800">{{ formatMonto(selectedPago()!.monto) }}</p>
-            </div>
-            <div *ngIf="selectedPago()!.montoRecibido">
-              <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Recibido</p>
-              <p class="text-xs font-semibold text-slate-700">{{ formatMonto(selectedPago()!.montoRecibido) }}</p>
-            </div>
-            <div *ngIf="selectedPago()!.cambio != null">
-              <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Cambio</p>
-              <p class="text-xs font-semibold text-slate-700">{{ formatMonto(selectedPago()!.cambio) }}</p>
-            </div>
-            <div class="col-span-2">
-              <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Fecha de Pago</p>
-              <p class="text-xs font-semibold text-slate-700">{{ formatFecha(selectedPago()!.fechaPago) }}</p>
-            </div>
+        }
+        @if (pagosFiltrados().length > 0) {
+          <div class="divide-y divide-slate-100 lg:hidden">
+            @for (pago of pagosFiltrados(); track pago) {
+              <button type="button" (click)="verDetalle(pago)" class="block w-full space-y-3 p-4 text-left transition-colors hover:bg-slate-50">
+                <div class="flex items-start justify-between gap-3"><div class="min-w-0"><h3 class="truncate text-sm font-bold text-slate-900">{{ pago.mascotaNombre || '—' }}</h3><p class="mt-0.5 truncate text-xs text-slate-500">{{ pago.clienteNombre || '—' }}</p></div><strong class="shrink-0 text-sm text-slate-900">{{ formatMonto(pago.monto) }}</strong></div>
+                <div class="flex items-center justify-between gap-3"><span class="inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold" [ngClass]="estadoBadge(pago.estado)">{{ estadoLabel(pago.estado) }}</span><span class="text-[11px] text-slate-500">{{ metodoPagoLabel(pago.metodoPago) }}</span></div>
+                <div class="flex items-center justify-between gap-3 border-t border-slate-100 pt-3 text-[11px] text-slate-500"><span class="min-w-0 truncate">{{ pago.servicioNombre || 'Sin servicio' }}</span><span class="shrink-0">{{ formatFecha(pago.fechaPago) }}</span></div>
+              </button>
+            }
           </div>
+        }
+        @if (pagosFiltrados().length > 0) {
+          <div class="hidden overflow-x-auto md:block">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="bg-slate-50 border-b border-slate-200">
+                  <th class="text-left px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">#</th>
+                  <th class="text-left px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Mascota / Cliente</th>
+                  <th class="text-left px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Servicio</th>
+                  <th class="text-left px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Método</th>
+                  <th class="text-right px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Monto</th>
+                  <th class="text-left px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Estado</th>
+                  <th class="text-left px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Fecha</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (pago of pagosFiltrados(); track pago) {
+                  <tr
+                    (click)="verDetalle(pago)"
+                    class="border-b border-slate-100 last:border-0 hover:bg-slate-50 cursor-pointer transition-colors">
+                    <td class="px-4 py-3 text-xs text-slate-500 font-medium">{{ pago.numeroCita || 'Sin número' }}</td>
+                    <td class="px-4 py-3">
+                      <p class="text-xs font-semibold text-slate-800 leading-tight">{{ pago.mascotaNombre || '—' }}</p>
+                      <p class="text-[11px] text-slate-400 mt-0.5">{{ pago.clienteNombre || '—' }}</p>
+                    </td>
+                    <td class="px-4 py-3 text-xs text-slate-600 max-w-[160px] truncate">{{ pago.servicioNombre || '—' }}</td>
+                    <td class="px-4 py-3 text-xs text-slate-600">{{ metodoPagoLabel(pago.metodoPago) }}</td>
+                    <td class="px-4 py-3 text-xs font-bold text-slate-800 text-right">{{ formatMonto(pago.monto) }}</td>
+                    <td class="px-4 py-3">
+                      <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold"
+                        [ngClass]="estadoBadge(pago.estado)">
+                        {{ estadoLabel(pago.estado) }}
+                      </span>
+                    </td>
+                    <td class="px-4 py-3 text-xs text-slate-500 whitespace-nowrap">{{ formatFecha(pago.fechaPago) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+      <!-- ─── PAGINADOR ─── -->
+      @if (totalRecords() > pageSize()) {
+        <div class="flex justify-center pb-2">
+          <p-paginator
+            [rows]="pageSize()"
+            [totalRecords]="totalRecords()"
+            [first]="currentPage() * pageSize()"
+            (onPageChange)="cargar($event)"
+            [showCurrentPageReport]="false"
+            styleClass="!border-none !bg-transparent !py-3">
+          </p-paginator>
         </div>
-
-        <div class="border-t border-slate-100"></div>
-
-        <!-- 2. Cita -->
-        <div>
-          <div class="flex items-center gap-2 mb-3">
-            <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
-            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">2. Datos de la Cita</h3>
-          </div>
-          <div class="grid grid-cols-2 gap-y-3">
-            <div>
-              <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Cita N°</p>
-              <p class="text-xs font-semibold text-slate-700">{{ selectedPago()!.numeroCita || 'Sin número' }}</p>
-            </div>
-            <div>
-              <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Estado Cita</p>
-              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold"
-                [ngClass]="estadoCitaBadge(selectedPago()!.estadoCita)">
-                {{ selectedPago()!.estadoCita || '—' }}
-              </span>
-            </div>
-            <div class="col-span-2">
-              <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Servicio</p>
-              <p class="text-xs font-semibold text-slate-700">{{ selectedPago()!.servicioNombre || '—' }}</p>
-            </div>
-            <div class="col-span-2">
-              <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Profesional</p>
-              <p class="text-xs font-semibold text-slate-700">{{ selectedPago()!.veterinarioNombre || '—' }}</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="border-t border-slate-100"></div>
-
-        <!-- 3. Cliente -->
-        <div>
-          <div class="flex items-center gap-2 mb-3">
-            <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
-            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">3. Cliente</h3>
-          </div>
-          <div class="grid grid-cols-1 gap-y-3">
-            <div>
-              <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Apoderado</p>
-              <p class="text-xs font-semibold text-slate-700">{{ selectedPago()!.clienteNombre || '—' }}</p>
-            </div>
-            <div>
-              <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Mascota</p>
-              <p class="text-xs font-semibold text-slate-700">{{ selectedPago()!.mascotaNombre || '—' }}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Footer -->
-      <div class="border-t border-slate-100 px-5 py-3 flex justify-end">
-        <button (click)="cerrarPanel()"
-          class="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-all cursor-pointer">
-          Cerrar
-        </button>
-      </div>
-
-      </div>
+      }
     </div>
-
-  </div>
-
-  <!-- ─── FILTROS ─── -->
-  <div class="flex flex-col items-stretch gap-3 rounded-2xl border border-slate-200 bg-white p-4 sm:flex-row sm:flex-wrap sm:items-center">
-    <select
-      [value]="filtroEstado()"
-      (change)="filtroEstado.set($any($event.target).value)"
-      class="w-full cursor-pointer rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0066AA]/20 sm:w-auto">
-      <option value="">Todos los estados</option>
-      <option value="PAID">Pagado</option>
-      <option value="PENDING">Pendiente</option>
-      <option value="PENDING_TRANSFER">Transf. Pendiente</option>
-      <option value="REJECTED">Rechazado</option>
-      <option value="REFUNDED">Reembolsado</option>
-    </select>
-    <select
-      [value]="filtroMetodo()"
-      (change)="filtroMetodo.set($any($event.target).value)"
-      class="w-full cursor-pointer rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0066AA]/20 sm:w-auto">
-      <option value="">Todos los métodos</option>
-      <option value="EFECTIVO">Efectivo</option>
-      <option value="YAPE">Yape</option>
-    </select>
-    <span class="text-xs font-medium text-slate-400 sm:ml-auto">
-      {{ pagosFiltrados().length }} registro(s)
-    </span>
-  </div>
-
-  <!-- ─── TABLA ─── -->
-  <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-
-    <div *ngIf="pagosFiltrados().length === 0"
-      class="flex flex-col items-center justify-center py-16 gap-3">
-      <div class="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center text-xl text-slate-400">—</div>
-      <p class="text-sm font-semibold text-slate-500">Sin registros de pago</p>
-    </div>
-
-    <div *ngIf="pagosFiltrados().length > 0" class="divide-y divide-slate-100 lg:hidden">
-      <button *ngFor="let pago of pagosFiltrados()" type="button" (click)="verDetalle(pago)" class="block w-full space-y-3 p-4 text-left transition-colors hover:bg-slate-50">
-        <div class="flex items-start justify-between gap-3"><div class="min-w-0"><h3 class="truncate text-sm font-bold text-slate-900">{{ pago.mascotaNombre || '—' }}</h3><p class="mt-0.5 truncate text-xs text-slate-500">{{ pago.clienteNombre || '—' }}</p></div><strong class="shrink-0 text-sm text-slate-900">{{ formatMonto(pago.monto) }}</strong></div>
-        <div class="flex items-center justify-between gap-3"><span class="inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold" [ngClass]="estadoBadge(pago.estado)">{{ estadoLabel(pago.estado) }}</span><span class="text-[11px] text-slate-500">{{ metodoPagoLabel(pago.metodoPago) }}</span></div>
-        <div class="flex items-center justify-between gap-3 border-t border-slate-100 pt-3 text-[11px] text-slate-500"><span class="min-w-0 truncate">{{ pago.servicioNombre || 'Sin servicio' }}</span><span class="shrink-0">{{ formatFecha(pago.fechaPago) }}</span></div>
-      </button>
-    </div>
-    <div *ngIf="pagosFiltrados().length > 0" class="hidden overflow-x-auto md:block">
-      <table class="w-full text-sm">
-        <thead>
-          <tr class="bg-slate-50 border-b border-slate-200">
-            <th class="text-left px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">#</th>
-            <th class="text-left px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Mascota / Cliente</th>
-            <th class="text-left px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Servicio</th>
-            <th class="text-left px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Método</th>
-            <th class="text-right px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Monto</th>
-            <th class="text-left px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Estado</th>
-            <th class="text-left px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Fecha</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let pago of pagosFiltrados()"
-            (click)="verDetalle(pago)"
-            class="border-b border-slate-100 last:border-0 hover:bg-slate-50 cursor-pointer transition-colors">
-            <td class="px-4 py-3 text-xs text-slate-500 font-medium">{{ pago.numeroCita || 'Sin número' }}</td>
-            <td class="px-4 py-3">
-              <p class="text-xs font-semibold text-slate-800 leading-tight">{{ pago.mascotaNombre || '—' }}</p>
-              <p class="text-[11px] text-slate-400 mt-0.5">{{ pago.clienteNombre || '—' }}</p>
-            </td>
-            <td class="px-4 py-3 text-xs text-slate-600 max-w-[160px] truncate">{{ pago.servicioNombre || '—' }}</td>
-            <td class="px-4 py-3 text-xs text-slate-600">{{ metodoPagoLabel(pago.metodoPago) }}</td>
-            <td class="px-4 py-3 text-xs font-bold text-slate-800 text-right">{{ formatMonto(pago.monto) }}</td>
-            <td class="px-4 py-3">
-              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold"
-                [ngClass]="estadoBadge(pago.estado)">
-                {{ estadoLabel(pago.estado) }}
-              </span>
-            </td>
-            <td class="px-4 py-3 text-xs text-slate-500 whitespace-nowrap">{{ formatFecha(pago.fechaPago) }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- ─── PAGINADOR ─── -->
-  <div *ngIf="totalRecords() > pageSize()" class="flex justify-center pb-2">
-    <p-paginator
-      [rows]="pageSize()"
-      [totalRecords]="totalRecords()"
-      [first]="currentPage() * pageSize()"
-      (onPageChange)="cargar($event)"
-      [showCurrentPageReport]="false"
-      styleClass="!border-none !bg-transparent !py-3">
-    </p-paginator>
-  </div>
-
-  </div>
+  }
 
 </div>
 

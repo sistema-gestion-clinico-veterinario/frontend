@@ -1,5 +1,5 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterModule } from '@angular/router';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
@@ -12,7 +12,7 @@ import { PagoListResponse } from '../../../models/response/pago-response';
 @Component({
   selector: 'app-apoderado-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, ToastModule],
+  imports: [RouterModule, ToastModule],
   providers: [MessageService],
   templateUrl: './apoderado-dashboard.component.html'
 })

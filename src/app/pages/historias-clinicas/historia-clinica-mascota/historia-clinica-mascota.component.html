@@ -8,24 +8,30 @@
       </button>
       <div class="min-w-0">
         <h1 class="text-2xl font-extrabold text-slate-900 leading-tight truncate">Historia Clínica</h1>
-        <p *ngIf="hc()" class="text-sm text-slate-400 font-medium mt-0.5 truncate">
-          {{ hc()!.mascotaNombre }} · {{ hc()!.numeroHc }}
-        </p>
+        @if (hc()) {
+          <p class="text-sm text-slate-400 font-medium mt-0.5 truncate">
+            {{ hc()!.mascotaNombre }} · {{ hc()!.numeroHc }}
+          </p>
+        }
       </div>
     </div>
-    <app-diagnostico-ia *ngIf="hc()" [hc]="hc()!"></app-diagnostico-ia>
+    @if (hc()) {
+      <app-diagnostico-ia [hc]="hc()!"></app-diagnostico-ia>
+    }
   </div>
 
-  <div *ngIf="noTieneHc()"
-    class="bg-white border border-slate-200 rounded-xl py-20 text-center px-6">
-    <div class="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
-      <i class="pi pi-file text-2xl text-slate-300"></i>
+  @if (noTieneHc()) {
+    <div
+      class="bg-white border border-slate-200 rounded-xl py-20 text-center px-6">
+      <div class="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
+        <i class="pi pi-file text-2xl text-slate-300"></i>
+      </div>
+      <p class="text-sm font-bold text-slate-500 mb-1">Esta mascota no tiene historia clínica</p>
+      <p class="text-xs text-slate-400">Debe crearse desde el módulo de consultas.</p>
     </div>
-    <p class="text-sm font-bold text-slate-500 mb-1">Esta mascota no tiene historia clínica</p>
-    <p class="text-xs text-slate-400">Debe crearse desde el módulo de consultas.</p>
-  </div>
+  }
 
-  <ng-container *ngIf="hc()">
+  @if (hc()) {
     <div class="bg-white border border-slate-200 rounded-xl p-5 mb-5 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4">
       <div>
         <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-0.5">Especie</p>
@@ -52,930 +58,1063 @@
         <p class="text-sm font-bold text-slate-700">{{ hc()!.propietarioTelefono || '—' }}</p>
       </div>
     </div>
-
     <div class="bg-white border border-slate-200 rounded-xl p-5 mb-5">
       <div class="flex items-center justify-between gap-3 mb-3">
         <div class="flex items-center gap-2">
           <i class="pi pi-heart-fill text-sm text-slate-400"></i>
           <p class="text-xs font-extrabold text-slate-500 uppercase tracking-widest">Antecedentes y ficha médica</p>
         </div>
-        <button *ngIf="canModify() && !editandoAntecedentes()" type="button" (click)="editarAntecedentes()"
-          class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600 text-[10px] font-bold hover:bg-slate-200 transition-all">
-          <i class="pi pi-pencil text-[9px]"></i> Editar
-        </button>
-      </div>
-
-      <div *ngIf="!editandoAntecedentes()" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div>
-          <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Enfermedades previas</p>
-          <p class="text-sm text-slate-700">{{ hc()!.enfermedades || '—' }}</p>
-        </div>
-        <div>
-          <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Procedimientos previos</p>
-          <p class="text-sm text-slate-700">{{ hc()!.procedimientos || '—' }}</p>
-        </div>
-        <div>
-          <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Antecedentes personales</p>
-          <p class="text-sm text-slate-700">{{ hc()!.antecedentesPersonales || '—' }}</p>
-        </div>
-        <div>
-          <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Antecedentes familiares</p>
-          <p class="text-sm text-slate-700">{{ hc()!.antecedentesFamiliares || '—' }}</p>
-        </div>
-        <div>
-          <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Grupo sanguíneo</p>
-          <p class="text-sm text-slate-700">{{ hc()!.grupoSanguineo || '—' }}</p>
-        </div>
-      </div>
-
-      <div *ngIf="editandoAntecedentes()" class="flex flex-col gap-3">
-        <div class="grid sm:grid-cols-2 gap-3">
-          <div class="flex flex-col gap-1">
-            <label class="text-xs font-bold text-slate-600">Enfermedades previas</label>
-            <textarea [(ngModel)]="antecedentesForm.enfermedades" rows="2" maxlength="500"
-              class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"></textarea>
-          </div>
-          <div class="flex flex-col gap-1">
-            <label class="text-xs font-bold text-slate-600">Procedimientos previos</label>
-            <textarea [(ngModel)]="antecedentesForm.procedimientos" rows="2" maxlength="500"
-              class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"></textarea>
-          </div>
-          <div class="flex flex-col gap-1">
-            <label class="text-xs font-bold text-slate-600">Antecedentes personales</label>
-            <textarea [(ngModel)]="antecedentesForm.antecedentesPersonales" rows="2" maxlength="500"
-              class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"></textarea>
-          </div>
-          <div class="flex flex-col gap-1">
-            <label class="text-xs font-bold text-slate-600">Antecedentes familiares</label>
-            <textarea [(ngModel)]="antecedentesForm.antecedentesFamiliares" rows="2" maxlength="500"
-              class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"></textarea>
-          </div>
-          <div class="flex flex-col gap-1">
-            <label class="text-xs font-bold text-slate-600">Grupo sanguíneo</label>
-            <input [(ngModel)]="antecedentesForm.grupoSanguineo" type="text" maxlength="20"
-              class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 bg-white outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20" />
-          </div>
-        </div>
-        <div class="flex items-center justify-end gap-2">
-          <button type="button" (click)="cancelarEdicionAntecedentes()" [disabled]="guardandoAntecedentes()"
-            class="px-3 py-1.5 rounded-lg text-slate-500 text-xs font-bold hover:bg-slate-100 transition-all disabled:opacity-50">
-            Cancelar
+        @if (canModify() && !editandoAntecedentes()) {
+          <button type="button" (click)="editarAntecedentes()"
+            class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600 text-[10px] font-bold hover:bg-slate-200 transition-all">
+            <i class="pi pi-pencil text-[9px]"></i> Editar
           </button>
-          <button type="button" (click)="guardarAntecedentes()" [disabled]="guardandoAntecedentes()"
-            class="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-[#0066AA] text-white text-xs font-bold hover:bg-[#0055aa] transition-all disabled:opacity-60">
-            <i *ngIf="guardandoAntecedentes()" class="pi pi-spin pi-spinner text-[10px]"></i>
-            Guardar
-          </button>
-        </div>
+        }
       </div>
+      @if (!editandoAntecedentes()) {
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div>
+            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Enfermedades previas</p>
+            <p class="text-sm text-slate-700">{{ hc()!.enfermedades || '—' }}</p>
+          </div>
+          <div>
+            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Procedimientos previos</p>
+            <p class="text-sm text-slate-700">{{ hc()!.procedimientos || '—' }}</p>
+          </div>
+          <div>
+            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Antecedentes personales</p>
+            <p class="text-sm text-slate-700">{{ hc()!.antecedentesPersonales || '—' }}</p>
+          </div>
+          <div>
+            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Antecedentes familiares</p>
+            <p class="text-sm text-slate-700">{{ hc()!.antecedentesFamiliares || '—' }}</p>
+          </div>
+          <div>
+            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Grupo sanguíneo</p>
+            <p class="text-sm text-slate-700">{{ hc()!.grupoSanguineo || '—' }}</p>
+          </div>
+        </div>
+      }
+      @if (editandoAntecedentes()) {
+        <div class="flex flex-col gap-3">
+          <div class="grid sm:grid-cols-2 gap-3">
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-bold text-slate-600">Enfermedades previas</label>
+              <textarea [(ngModel)]="antecedentesForm.enfermedades" rows="2" maxlength="500"
+              class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"></textarea>
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-bold text-slate-600">Procedimientos previos</label>
+              <textarea [(ngModel)]="antecedentesForm.procedimientos" rows="2" maxlength="500"
+              class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"></textarea>
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-bold text-slate-600">Antecedentes personales</label>
+              <textarea [(ngModel)]="antecedentesForm.antecedentesPersonales" rows="2" maxlength="500"
+              class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"></textarea>
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-bold text-slate-600">Antecedentes familiares</label>
+              <textarea [(ngModel)]="antecedentesForm.antecedentesFamiliares" rows="2" maxlength="500"
+              class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"></textarea>
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-bold text-slate-600">Grupo sanguíneo</label>
+              <input [(ngModel)]="antecedentesForm.grupoSanguineo" type="text" maxlength="20"
+                class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 bg-white outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20" />
+            </div>
+          </div>
+          <div class="flex items-center justify-end gap-2">
+            <button type="button" (click)="cancelarEdicionAntecedentes()" [disabled]="guardandoAntecedentes()"
+              class="px-3 py-1.5 rounded-lg text-slate-500 text-xs font-bold hover:bg-slate-100 transition-all disabled:opacity-50">
+              Cancelar
+            </button>
+            <button type="button" (click)="guardarAntecedentes()" [disabled]="guardandoAntecedentes()"
+              class="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-[#0066AA] text-white text-xs font-bold hover:bg-[#0055aa] transition-all disabled:opacity-60">
+              @if (guardandoAntecedentes()) {
+                <i class="pi pi-spin pi-spinner text-[10px]"></i>
+              }
+              Guardar
+            </button>
+          </div>
+        </div>
+      }
     </div>
-
     <div class="mb-6 overflow-x-auto border-b border-slate-200 flex justify-end">
-    <nav class="flex min-w-max items-center gap-7 px-1 font-['Barlow']" aria-label="Secciones de la historia de la mascota">
-      <button type="button" (click)="seleccionarSeccion('consultas')"
+      <nav class="flex min-w-max items-center gap-7 px-1 font-['Barlow']" aria-label="Secciones de la historia de la mascota">
+        <button type="button" (click)="seleccionarSeccion('consultas')"
         [class]="seccionActiva() === 'consultas'
           ? 'flex items-center gap-2 border-b-2 border-[#0066AA] px-1 py-3.5 text-[#0066AA]'
           : 'flex items-center gap-2 border-b-2 border-transparent px-1 py-3.5 text-slate-500 hover:text-slate-800'">
-        <i class="pi pi-file-edit text-sm"></i>
-        <strong class="text-base font-bold">Consultas</strong>
-        <span class="grid min-w-6 place-items-center rounded-full bg-slate-100 px-1.5 py-0.5 text-xs font-bold text-slate-600">{{ hc()!.consultas.length }}</span>
-      </button>
-      <button type="button" (click)="seleccionarSeccion('servicios')"
+          <i class="pi pi-file-edit text-sm"></i>
+          <strong class="text-base font-bold">Consultas</strong>
+          <span class="grid min-w-6 place-items-center rounded-full bg-slate-100 px-1.5 py-0.5 text-xs font-bold text-slate-600">{{ hc()!.consultas.length }}</span>
+        </button>
+        <button type="button" (click)="seleccionarSeccion('servicios')"
         [class]="seccionActiva() === 'servicios'
           ? 'flex items-center gap-2 border-b-2 border-[#0066AA] px-1 py-3.5 text-[#0066AA]'
           : 'flex items-center gap-2 border-b-2 border-transparent px-1 py-3.5 text-slate-500 hover:text-slate-800'">
-        <i class="pi pi-scissors text-sm"></i>
-        <strong class="text-base font-bold">Servicios</strong>
-        <span class="grid min-w-6 place-items-center rounded-full bg-slate-100 px-1.5 py-0.5 text-xs font-bold text-slate-600">{{ serviciosNoMedicos().length }}</span>
-      </button>
-      <button type="button" (click)="seleccionarSeccion('preventivos')"
+          <i class="pi pi-scissors text-sm"></i>
+          <strong class="text-base font-bold">Servicios</strong>
+          <span class="grid min-w-6 place-items-center rounded-full bg-slate-100 px-1.5 py-0.5 text-xs font-bold text-slate-600">{{ serviciosNoMedicos().length }}</span>
+        </button>
+        <button type="button" (click)="seleccionarSeccion('preventivos')"
         [class]="seccionActiva() === 'preventivos'
           ? 'flex items-center gap-2 border-b-2 border-[#0066AA] px-1 py-3.5 text-[#0066AA]'
           : 'flex items-center gap-2 border-b-2 border-transparent px-1 py-3.5 text-slate-500 hover:text-slate-800'">
-        <i class="pi pi-shield text-sm"></i>
-        <strong class="text-base font-bold">Preventivos</strong>
-        <span class="grid min-w-6 place-items-center rounded-full bg-slate-100 px-1.5 py-0.5 text-xs font-bold text-slate-600">{{ hc()!.controlesPreventivos?.length || 0 }}</span>
-      </button>
-      <button type="button" (click)="seleccionarSeccion('seguimiento')"
+          <i class="pi pi-shield text-sm"></i>
+          <strong class="text-base font-bold">Preventivos</strong>
+          <span class="grid min-w-6 place-items-center rounded-full bg-slate-100 px-1.5 py-0.5 text-xs font-bold text-slate-600">{{ hc()!.controlesPreventivos?.length || 0 }}</span>
+        </button>
+        <button type="button" (click)="seleccionarSeccion('seguimiento')"
         [class]="seccionActiva() === 'seguimiento'
           ? 'flex items-center gap-2 border-b-2 border-[#0066AA] px-1 py-3.5 text-[#0066AA]'
           : 'flex items-center gap-2 border-b-2 border-transparent px-1 py-3.5 text-slate-500 hover:text-slate-800'">
-        <i class="pi pi-heart-fill text-sm"></i>
-        <strong class="text-base font-bold">Seguimiento</strong>
-      </button>
-    </nav>
+          <i class="pi pi-heart-fill text-sm"></i>
+          <strong class="text-base font-bold">Seguimiento</strong>
+        </button>
+      </nav>
     </div>
-
-    <div *ngIf="seccionActiva() === 'consultas'" class="flex flex-col lg:flex-row gap-5">
-      <div class="w-full lg:w-80 xl:w-96 shrink-0">
-        <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-          <div class="px-4 py-3 border-b border-slate-100">
-            <p class="text-xs font-extrabold text-slate-500 uppercase tracking-widest">
-              Consultas
-              <span class="ml-1 bg-slate-100 text-slate-500 rounded-full px-2 py-0.5 text-[10px]">
-                {{ hc()!.consultas.length }}
-              </span>
-            </p>
-          </div>
-
-          <div *ngIf="hc()!.consultas.length === 0" class="py-12 text-center px-4">
-            <i class="pi pi-calendar text-2xl text-slate-200 block mb-2"></i>
-            <p class="text-xs text-slate-400 font-medium">Sin consultas registradas</p>
-          </div>
-
-          <div class="divide-y divide-slate-100 max-h-[600px] overflow-y-auto">
-            <button
-              *ngFor="let consulta of hc()!.consultas"
-              (click)="seleccionarConsulta(consulta)"
+    @if (seccionActiva() === 'consultas') {
+      <div class="flex flex-col lg:flex-row gap-5">
+        <div class="w-full lg:w-80 xl:w-96 shrink-0">
+          <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+            <div class="px-4 py-3 border-b border-slate-100">
+              <p class="text-xs font-extrabold text-slate-500 uppercase tracking-widest">
+                Consultas
+                <span class="ml-1 bg-slate-100 text-slate-500 rounded-full px-2 py-0.5 text-[10px]">
+                  {{ hc()!.consultas.length }}
+                </span>
+              </p>
+            </div>
+            @if (hc()!.consultas.length === 0) {
+              <div class="py-12 text-center px-4">
+                <i class="pi pi-calendar text-2xl text-slate-200 block mb-2"></i>
+                <p class="text-xs text-slate-400 font-medium">Sin consultas registradas</p>
+              </div>
+            }
+            <div class="divide-y divide-slate-100 max-h-[600px] overflow-y-auto">
+              @for (consulta of hc()!.consultas; track consulta) {
+                <button
+                  (click)="seleccionarConsulta(consulta)"
               [class]="consultaActiva()?.id === consulta.id
                 ? 'w-full text-left px-4 py-3.5 bg-blue-50 border-l-2 border-[#0066AA]'
                 : 'w-full text-left px-4 py-3.5 hover:bg-slate-50 border-l-2 border-transparent'">
-              <p class="text-xs font-extrabold text-slate-800 leading-snug line-clamp-2">
-                {{ consulta.motivoConsulta }}
-              </p>
-              <div class="flex items-center gap-2 mt-1.5 flex-wrap">
-                <span class="text-[10px] font-bold text-slate-400">
-                  {{ formatFecha(consulta.fechaConsulta) }}
-                </span>
-                <span class="text-[10px] font-extrabold px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500 uppercase tracking-wide">
-                  {{ tipoConsultaLabel(consulta.tipoConsulta) }}
-                </span>
-              </div>
-              <p *ngIf="consulta.veterinarioNombre" class="text-[10px] text-slate-400 mt-1 truncate">
-                <i class="pi pi-user mr-1"></i>{{ consulta.veterinarioNombre }}
-              </p>
-              <div class="flex items-center gap-2.5 mt-1.5 flex-wrap">
-                <span *ngIf="consulta.pesoEnConsulta" class="text-[10px] font-bold text-slate-400 flex items-center gap-1">
-                  <i class="pi pi-chart-line text-[9px]"></i>{{ consulta.pesoEnConsulta }} kg
-                </span>
-                <span *ngIf="consulta.diagnosticos.length > 0" class="text-[10px] font-bold text-slate-400 flex items-center gap-1">
-                  <i class="pi pi-heart-fill text-[9px]"></i>{{ consulta.diagnosticos.length }}
-                </span>
-                <span *ngIf="consulta.prescripciones.length > 0" class="text-[10px] font-bold text-slate-400 flex items-center gap-1">
-                  <i class="pi pi-file-edit text-[9px]"></i>{{ consulta.prescripciones.length }}
-                </span>
-                <span *ngIf="consulta.archivos.length > 0" class="text-[10px] font-bold text-slate-400 flex items-center gap-1">
-                  <i class="pi pi-paperclip text-[9px]"></i>{{ consulta.archivos.length }}
-                </span>
-              </div>
-            </button>
+                  <p class="text-xs font-extrabold text-slate-800 leading-snug line-clamp-2">
+                    {{ consulta.motivoConsulta }}
+                  </p>
+                  <div class="flex items-center gap-2 mt-1.5 flex-wrap">
+                    <span class="text-[10px] font-bold text-slate-400">
+                      {{ formatFecha(consulta.fechaConsulta) }}
+                    </span>
+                    <span class="text-[10px] font-extrabold px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500 uppercase tracking-wide">
+                      {{ tipoConsultaLabel(consulta.tipoConsulta) }}
+                    </span>
+                  </div>
+                  @if (consulta.veterinarioNombre) {
+                    <p class="text-[10px] text-slate-400 mt-1 truncate">
+                      <i class="pi pi-user mr-1"></i>{{ consulta.veterinarioNombre }}
+                    </p>
+                  }
+                  <div class="flex items-center gap-2.5 mt-1.5 flex-wrap">
+                    @if (consulta.pesoEnConsulta) {
+                      <span class="text-[10px] font-bold text-slate-400 flex items-center gap-1">
+                        <i class="pi pi-chart-line text-[9px]"></i>{{ consulta.pesoEnConsulta }} kg
+                      </span>
+                    }
+                    @if (consulta.diagnosticos.length > 0) {
+                      <span class="text-[10px] font-bold text-slate-400 flex items-center gap-1">
+                        <i class="pi pi-heart-fill text-[9px]"></i>{{ consulta.diagnosticos.length }}
+                      </span>
+                    }
+                    @if (consulta.prescripciones.length > 0) {
+                      <span class="text-[10px] font-bold text-slate-400 flex items-center gap-1">
+                        <i class="pi pi-file-edit text-[9px]"></i>{{ consulta.prescripciones.length }}
+                      </span>
+                    }
+                    @if (consulta.archivos.length > 0) {
+                      <span class="text-[10px] font-bold text-slate-400 flex items-center gap-1">
+                        <i class="pi pi-paperclip text-[9px]"></i>{{ consulta.archivos.length }}
+                      </span>
+                    }
+                  </div>
+                </button>
+              }
+            </div>
           </div>
         </div>
-      </div>
-      <div class="flex-1 min-w-0">
-        <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-
-          <div *ngIf="consultaActiva()" class="px-5 py-4 border-b border-slate-100">
-            <div class="flex items-start justify-between gap-3">
-              <div>
-                <p class="text-base font-extrabold text-slate-900 leading-snug">
-                  {{ consultaActiva()!.motivoConsulta }}
-                </p>
-                <p class="text-xs text-slate-400 mt-1">
-                  {{ formatFechaHora(consultaActiva()!.fechaConsulta) }}
-                  <span *ngIf="consultaActiva()!.veterinarioNombre"> · {{ consultaActiva()!.veterinarioNombre }}</span>
-                </p>
-              </div>
-              <div class="flex items-center gap-2 shrink-0">
-                <span class="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-slate-100 text-slate-500 uppercase tracking-wide">
-                  {{ tipoConsultaLabel(consultaActiva()!.tipoConsulta) }}
-                </span>
-                <button *ngIf="canModify()" type="button"
-                  (click)="editarConsulta(consultaActiva()!.id)"
-                  class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0066AA] text-white text-[10px] font-bold hover:bg-[#0055aa] transition-all">
-                  <i class="pi pi-pencil text-[9px]"></i> Editar
-                </button>
-              </div>
-            </div>
-          </div>
-          <div *ngIf="!consultaActiva()"
-            class="py-20 text-center px-6">
-            <i class="pi pi-arrow-left text-2xl text-slate-200 block mb-3"></i>
-            <p class="text-xs text-slate-400 font-medium">Selecciona una consulta para ver su detalle</p>
-          </div>
-
-          <!-- Todo el detalle de la consulta en un solo scroll: sin tabs ni clics extra -->
-          <div *ngIf="consultaActiva()" class="max-h-[75vh] overflow-y-auto divide-y divide-slate-100">
-
-          <div class="p-5 flex flex-col gap-5">
-            <div>
-              <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-3">Signos vitales</p>
-              <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div class="bg-slate-50 rounded-xl px-4 py-3 text-center">
-                  <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Peso</p>
-                  <p class="text-sm font-extrabold text-slate-700">
-                    {{ consultaActiva()!.pesoEnConsulta ? consultaActiva()!.pesoEnConsulta + ' kg' : '—' }}
-                  </p>
-                </div>
-                <div class="bg-slate-50 rounded-xl px-4 py-3 text-center">
-                  <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Temperatura</p>
-                  <p class="text-sm font-extrabold text-slate-700">
-                    {{ consultaActiva()!.temperatura ? consultaActiva()!.temperatura + ' °C' : '—' }}
-                  </p>
-                </div>
-                <div class="bg-slate-50 rounded-xl px-4 py-3 text-center">
-                  <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">F. Cardíaca</p>
-                  <p class="text-sm font-extrabold text-slate-700">
-                    {{ consultaActiva()!.frecuenciaCardiaca ? consultaActiva()!.frecuenciaCardiaca + ' lpm' : '—' }}
-                  </p>
-                </div>
-                <div class="bg-slate-50 rounded-xl px-4 py-3 text-center">
-                  <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">F. Respiratoria</p>
-                  <p class="text-sm font-extrabold text-slate-700">
-                    {{ consultaActiva()!.frecuenciaRespiratoria ? consultaActiva()!.frecuenciaRespiratoria + ' rpm' : '—' }}
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div *ngIf="consultaActiva()!.anamnesis || consultaActiva()!.examenFisico" class="grid sm:grid-cols-2 gap-4">
-              <div *ngIf="consultaActiva()!.anamnesis">
-                <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-2">Anamnesis</p>
-                <p class="text-sm text-slate-600 leading-relaxed bg-slate-50 rounded-xl px-4 py-3">
-                  {{ consultaActiva()!.anamnesis }}
-                </p>
-              </div>
-              <div *ngIf="consultaActiva()!.examenFisico">
-                <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-2">Examen físico</p>
-                <p class="text-sm text-slate-600 leading-relaxed bg-slate-50 rounded-xl px-4 py-3">
-                  {{ consultaActiva()!.examenFisico }}
-                </p>
-              </div>
-            </div>
-            <div *ngIf="consultaActiva()!.observaciones">
-              <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-2">Observaciones</p>
-              <p class="text-sm text-slate-600 leading-relaxed bg-slate-50 rounded-xl px-4 py-3">
-                {{ consultaActiva()!.observaciones }}
-              </p>
-            </div>
-            <div *ngIf="consultaActiva()!.diagnosticos.length > 0">
-              <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-3">Diagnósticos</p>
-              <div class="flex flex-col gap-2">
-                <div *ngFor="let d of consultaActiva()!.diagnosticos"
-                  class="flex items-start gap-3 bg-slate-50 rounded-xl px-4 py-3">
-                  <div class="flex-1 min-w-0">
-                    <p class="text-sm font-bold text-slate-800">{{ d.nombre }}</p>
-                    <p *ngIf="d.descripcion" class="text-xs text-slate-500 mt-0.5">{{ d.descripcion }}</p>
-                  </div>
-                  <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 uppercase shrink-0">
-                    {{ d.tipo }}
-                  </span>
-                </div>
-              </div>
-            </div>
-            <div *ngIf="consultaActiva()!.tratamientos.length > 0">
-              <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-3">Tratamientos</p>
-              <div class="flex flex-col gap-2">
-                <div *ngFor="let t of consultaActiva()!.tratamientos"
-                  class="bg-slate-50 rounded-xl px-4 py-3">
-                  <p class="text-sm font-bold text-slate-800">{{ t.nombre }}</p>
-                  <p *ngIf="t.descripcion" class="text-xs text-slate-500 mt-0.5">{{ t.descripcion }}</p>
-                  <p *ngIf="t.fechaInicio" class="text-xs text-slate-400 mt-1">
-                    {{ formatFecha(t.fechaInicio!) }}
-                    <span *ngIf="t.fechaFin"> → {{ formatFecha(t.fechaFin!) }}</span>
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div *ngIf="!consultaActiva()!.anamnesis && !consultaActiva()!.examenFisico && !consultaActiva()!.observaciones && consultaActiva()!.diagnosticos.length === 0 && consultaActiva()!.tratamientos.length === 0"
-              class="py-8 text-center text-slate-300">
-              <i class="pi pi-info-circle text-2xl block mb-2"></i>
-              <p class="text-xs font-medium">Sin información clínica registrada</p>
-            </div>
-          </div>
-          <div class="p-5 grid grid-cols-1 lg:grid-cols-2 gap-5">
-          <div>
-            <div class="flex items-center gap-2 mb-3">
-              <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Recetas</p>
-              <span *ngIf="consultaActiva()!.prescripciones.length > 0"
-                class="bg-blue-100 text-[#0066AA] rounded-full px-1.5 py-0.5 text-[10px]">
-                {{ consultaActiva()!.prescripciones.length }}
-              </span>
-            </div>
-
-            <div *ngIf="consultaActiva()!.prescripciones.length === 0"
-              class="py-8 text-center text-slate-300">
-              <i class="pi pi-file-edit text-xl block mb-2"></i>
-              <p class="text-xs font-medium">Sin recetas en esta consulta</p>
-            </div>
-
-            <div class="flex flex-col gap-3">
-              <div *ngFor="let p of consultaActiva()!.prescripciones"
-                class="border border-slate-200 rounded-xl p-4">
-                <div class="flex items-start justify-between gap-3 mb-3">
+        <div class="flex-1 min-w-0">
+          <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+            @if (consultaActiva()) {
+              <div class="px-5 py-4 border-b border-slate-100">
+                <div class="flex items-start justify-between gap-3">
                   <div>
-                    <p class="text-sm font-extrabold text-slate-800">{{ p.medicamento }}</p>
-                    <p *ngIf="p.principioActivo" class="text-xs text-slate-400 mt-0.5">{{ p.principioActivo }}</p>
-                  </div>
-                  <span *ngIf="p.viaAdministracion"
-                    class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-[#0066AA] shrink-0 uppercase">
-                    {{ p.viaAdministracion }}
-                  </span>
-                </div>
-                <div class="grid grid-cols-3 gap-3 mb-3">
-                  <div>
-                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Dosis</p>
-                    <p class="text-xs font-bold text-slate-700">{{ p.dosis }}</p>
-                  </div>
-                  <div>
-                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Frecuencia</p>
-                    <p class="text-xs font-bold text-slate-700">{{ p.frecuencia }}</p>
-                  </div>
-                  <div>
-                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Duración</p>
-                    <p class="text-xs font-bold text-slate-700">
-                      {{ p.duracionDias ? p.duracionDias + ' días' : '—' }}
+                    <p class="text-base font-extrabold text-slate-900 leading-snug">
+                      {{ consultaActiva()!.motivoConsulta }}
+                    </p>
+                    <p class="text-xs text-slate-400 mt-1">
+                      {{ formatFechaHora(consultaActiva()!.fechaConsulta) }}
+                      @if (consultaActiva()!.veterinarioNombre) {
+                        <span> · {{ consultaActiva()!.veterinarioNombre }}</span>
+                      }
                     </p>
                   </div>
+                  <div class="flex items-center gap-2 shrink-0">
+                    <span class="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-slate-100 text-slate-500 uppercase tracking-wide">
+                      {{ tipoConsultaLabel(consultaActiva()!.tipoConsulta) }}
+                    </span>
+                    @if (canModify()) {
+                      <button type="button"
+                        (click)="editarConsulta(consultaActiva()!.id)"
+                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0066AA] text-white text-[10px] font-bold hover:bg-[#0055aa] transition-all">
+                        <i class="pi pi-pencil text-[9px]"></i> Editar
+                      </button>
+                    }
+                  </div>
                 </div>
-                <p *ngIf="p.instrucciones"
-                  class="text-xs text-slate-500 bg-slate-50 rounded-lg px-3 py-2 leading-relaxed">
-                  {{ p.instrucciones }}
-                </p>
-                <p class="text-[10px] text-slate-400 mt-2">
-                  Inicio: {{ formatFecha(p.fechaInicio) }}
-                  <span *ngIf="p.fechaFin"> · Fin: {{ formatFecha(p.fechaFin!) }}</span>
-                </p>
               </div>
-            </div>
-          </div>
-          <div>
-            <div class="flex items-center gap-2 mb-3">
-              <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Archivos</p>
-              <span *ngIf="consultaActiva()!.archivos.length > 0"
-                class="bg-blue-100 text-[#0066AA] rounded-full px-1.5 py-0.5 text-[10px]">
-                {{ consultaActiva()!.archivos.length }}
-              </span>
-            </div>
-
-            <div *ngIf="consultaActiva()!.archivos.length === 0"
-              class="py-8 text-center text-slate-300">
-              <i class="pi pi-paperclip text-xl block mb-2"></i>
-              <p class="text-xs font-medium">Sin archivos adjuntos en esta consulta</p>
-            </div>
-
-            <div class="divide-y divide-slate-100 -mx-5">
-              <button *ngFor="let a of consultaActiva()!.archivos"
-                type="button"
-                (click)="visualizarArchivo(a)"
-                [disabled]="previewCargando()"
+            }
+            @if (!consultaActiva()) {
+              <div
+                class="py-20 text-center px-6">
+                <i class="pi pi-arrow-left text-2xl text-slate-200 block mb-3"></i>
+                <p class="text-xs text-slate-400 font-medium">Selecciona una consulta para ver su detalle</p>
+              </div>
+            }
+            <!-- Todo el detalle de la consulta en un solo scroll: sin tabs ni clics extra -->
+            @if (consultaActiva()) {
+              <div class="max-h-[75vh] overflow-y-auto divide-y divide-slate-100">
+                <div class="p-5 flex flex-col gap-5">
+                  <div>
+                    <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-3">Signos vitales</p>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      <div class="bg-slate-50 rounded-xl px-4 py-3 text-center">
+                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Peso</p>
+                        <p class="text-sm font-extrabold text-slate-700">
+                          {{ consultaActiva()!.pesoEnConsulta ? consultaActiva()!.pesoEnConsulta + ' kg' : '—' }}
+                        </p>
+                      </div>
+                      <div class="bg-slate-50 rounded-xl px-4 py-3 text-center">
+                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Temperatura</p>
+                        <p class="text-sm font-extrabold text-slate-700">
+                          {{ consultaActiva()!.temperatura ? consultaActiva()!.temperatura + ' °C' : '—' }}
+                        </p>
+                      </div>
+                      <div class="bg-slate-50 rounded-xl px-4 py-3 text-center">
+                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">F. Cardíaca</p>
+                        <p class="text-sm font-extrabold text-slate-700">
+                          {{ consultaActiva()!.frecuenciaCardiaca ? consultaActiva()!.frecuenciaCardiaca + ' lpm' : '—' }}
+                        </p>
+                      </div>
+                      <div class="bg-slate-50 rounded-xl px-4 py-3 text-center">
+                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">F. Respiratoria</p>
+                        <p class="text-sm font-extrabold text-slate-700">
+                          {{ consultaActiva()!.frecuenciaRespiratoria ? consultaActiva()!.frecuenciaRespiratoria + ' rpm' : '—' }}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  @if (consultaActiva()!.anamnesis || consultaActiva()!.examenFisico) {
+                    <div class="grid sm:grid-cols-2 gap-4">
+                      @if (consultaActiva()!.anamnesis) {
+                        <div>
+                          <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-2">Anamnesis</p>
+                          <p class="text-sm text-slate-600 leading-relaxed bg-slate-50 rounded-xl px-4 py-3">
+                            {{ consultaActiva()!.anamnesis }}
+                          </p>
+                        </div>
+                      }
+                      @if (consultaActiva()!.examenFisico) {
+                        <div>
+                          <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-2">Examen físico</p>
+                          <p class="text-sm text-slate-600 leading-relaxed bg-slate-50 rounded-xl px-4 py-3">
+                            {{ consultaActiva()!.examenFisico }}
+                          </p>
+                        </div>
+                      }
+                    </div>
+                  }
+                  @if (consultaActiva()!.observaciones) {
+                    <div>
+                      <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-2">Observaciones</p>
+                      <p class="text-sm text-slate-600 leading-relaxed bg-slate-50 rounded-xl px-4 py-3">
+                        {{ consultaActiva()!.observaciones }}
+                      </p>
+                    </div>
+                  }
+                  @if (consultaActiva()!.diagnosticos.length > 0) {
+                    <div>
+                      <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-3">Diagnósticos</p>
+                      <div class="flex flex-col gap-2">
+                        @for (d of consultaActiva()!.diagnosticos; track d) {
+                          <div
+                            class="flex items-start gap-3 bg-slate-50 rounded-xl px-4 py-3">
+                            <div class="flex-1 min-w-0">
+                              <p class="text-sm font-bold text-slate-800">{{ d.nombre }}</p>
+                              @if (d.descripcion) {
+                                <p class="text-xs text-slate-500 mt-0.5">{{ d.descripcion }}</p>
+                              }
+                            </div>
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 uppercase shrink-0">
+                              {{ d.tipo }}
+                            </span>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  }
+                  @if (consultaActiva()!.tratamientos.length > 0) {
+                    <div>
+                      <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-3">Tratamientos</p>
+                      <div class="flex flex-col gap-2">
+                        @for (t of consultaActiva()!.tratamientos; track t) {
+                          <div
+                            class="bg-slate-50 rounded-xl px-4 py-3">
+                            <p class="text-sm font-bold text-slate-800">{{ t.nombre }}</p>
+                            @if (t.descripcion) {
+                              <p class="text-xs text-slate-500 mt-0.5">{{ t.descripcion }}</p>
+                            }
+                            @if (t.fechaInicio) {
+                              <p class="text-xs text-slate-400 mt-1">
+                                {{ formatFecha(t.fechaInicio!) }}
+                                @if (t.fechaFin) {
+                                  <span> → {{ formatFecha(t.fechaFin!) }}</span>
+                                }
+                              </p>
+                            }
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  }
+                  @if (!consultaActiva()!.anamnesis && !consultaActiva()!.examenFisico && !consultaActiva()!.observaciones && consultaActiva()!.diagnosticos.length === 0 && consultaActiva()!.tratamientos.length === 0) {
+                    <div
+                      class="py-8 text-center text-slate-300">
+                      <i class="pi pi-info-circle text-2xl block mb-2"></i>
+                      <p class="text-xs font-medium">Sin información clínica registrada</p>
+                    </div>
+                  }
+                </div>
+                <div class="p-5 grid grid-cols-1 lg:grid-cols-2 gap-5">
+                  <div>
+                    <div class="flex items-center gap-2 mb-3">
+                      <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Recetas</p>
+                      @if (consultaActiva()!.prescripciones.length > 0) {
+                        <span
+                          class="bg-blue-100 text-[#0066AA] rounded-full px-1.5 py-0.5 text-[10px]">
+                          {{ consultaActiva()!.prescripciones.length }}
+                        </span>
+                      }
+                    </div>
+                    @if (consultaActiva()!.prescripciones.length === 0) {
+                      <div
+                        class="py-8 text-center text-slate-300">
+                        <i class="pi pi-file-edit text-xl block mb-2"></i>
+                        <p class="text-xs font-medium">Sin recetas en esta consulta</p>
+                      </div>
+                    }
+                    <div class="flex flex-col gap-3">
+                      @for (p of consultaActiva()!.prescripciones; track p) {
+                        <div
+                          class="border border-slate-200 rounded-xl p-4">
+                          <div class="flex items-start justify-between gap-3 mb-3">
+                            <div>
+                              <p class="text-sm font-extrabold text-slate-800">{{ p.medicamento }}</p>
+                              @if (p.principioActivo) {
+                                <p class="text-xs text-slate-400 mt-0.5">{{ p.principioActivo }}</p>
+                              }
+                            </div>
+                            @if (p.viaAdministracion) {
+                              <span
+                                class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-[#0066AA] shrink-0 uppercase">
+                                {{ p.viaAdministracion }}
+                              </span>
+                            }
+                          </div>
+                          <div class="grid grid-cols-3 gap-3 mb-3">
+                            <div>
+                              <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Dosis</p>
+                              <p class="text-xs font-bold text-slate-700">{{ p.dosis }}</p>
+                            </div>
+                            <div>
+                              <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Frecuencia</p>
+                              <p class="text-xs font-bold text-slate-700">{{ p.frecuencia }}</p>
+                            </div>
+                            <div>
+                              <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Duración</p>
+                              <p class="text-xs font-bold text-slate-700">
+                                {{ p.duracionDias ? p.duracionDias + ' días' : '—' }}
+                              </p>
+                            </div>
+                          </div>
+                          @if (p.instrucciones) {
+                            <p
+                              class="text-xs text-slate-500 bg-slate-50 rounded-lg px-3 py-2 leading-relaxed">
+                              {{ p.instrucciones }}
+                            </p>
+                          }
+                          <p class="text-[10px] text-slate-400 mt-2">
+                            Inicio: {{ formatFecha(p.fechaInicio) }}
+                            @if (p.fechaFin) {
+                              <span> · Fin: {{ formatFecha(p.fechaFin!) }}</span>
+                            }
+                          </p>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                  <div>
+                    <div class="flex items-center gap-2 mb-3">
+                      <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Archivos</p>
+                      @if (consultaActiva()!.archivos.length > 0) {
+                        <span
+                          class="bg-blue-100 text-[#0066AA] rounded-full px-1.5 py-0.5 text-[10px]">
+                          {{ consultaActiva()!.archivos.length }}
+                        </span>
+                      }
+                    </div>
+                    @if (consultaActiva()!.archivos.length === 0) {
+                      <div
+                        class="py-8 text-center text-slate-300">
+                        <i class="pi pi-paperclip text-xl block mb-2"></i>
+                        <p class="text-xs font-medium">Sin archivos adjuntos en esta consulta</p>
+                      </div>
+                    }
+                    <div class="divide-y divide-slate-100 -mx-5">
+                      @for (a of consultaActiva()!.archivos; track a) {
+                        <button
+                          type="button"
+                          (click)="visualizarArchivo(a)"
+                          [disabled]="previewCargando()"
                 class="w-full flex items-center gap-3 px-5 py-3 text-left
                        hover:bg-slate-50 group
                        disabled:opacity-60 disabled:cursor-wait transition-colors">
-                <div class="w-10 h-10 rounded-lg bg-slate-100 overflow-hidden flex items-center justify-center shrink-0">
-                  <img *ngIf="esImagen(a) && miniaturas().get(a.id) as miniatura" [src]="miniatura"
-                    class="w-full h-full object-cover" alt="" />
-                  <i *ngIf="!(esImagen(a) && miniaturas().get(a.id)) && !previewCargando()" class="pi pi-file text-slate-400 group-hover:text-[#0066AA]"></i>
-                  <i *ngIf="previewCargando()" class="pi pi-spin pi-spinner text-[#0066AA]"></i>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <p class="text-xs font-bold text-slate-800 truncate">{{ a.nombre }}</p>
-                  <div class="flex items-center gap-1.5 mt-0.5">
-                    <span [class]="'text-[10px] font-bold px-1.5 py-0.5 rounded-full uppercase ' + tipoArchivoBadge(a.tipo)">
-                      {{ tipoArchivoLabel(a.tipo) }}
-                    </span>
-                    <span *ngIf="a.tamanioBytes" class="text-[10px] text-slate-400">
-                      {{ formatBytes(a.tamanioBytes) }}
-                    </span>
+                          <div class="w-10 h-10 rounded-lg bg-slate-100 overflow-hidden flex items-center justify-center shrink-0">
+                            @if (esImagen(a) && miniaturas().get(a.id); as miniatura) {
+                              <img [src]="miniatura"
+                                class="w-full h-full object-cover" alt="" />
+                            }
+                            @if (!(esImagen(a) && miniaturas().get(a.id)) && !previewCargando()) {
+                              <i class="pi pi-file text-slate-400 group-hover:text-[#0066AA]"></i>
+                            }
+                            @if (previewCargando()) {
+                              <i class="pi pi-spin pi-spinner text-[#0066AA]"></i>
+                            }
+                          </div>
+                          <div class="flex-1 min-w-0">
+                            <p class="text-xs font-bold text-slate-800 truncate">{{ a.nombre }}</p>
+                            <div class="flex items-center gap-1.5 mt-0.5">
+                              <span [class]="'text-[10px] font-bold px-1.5 py-0.5 rounded-full uppercase ' + tipoArchivoBadge(a.tipo)">
+                                {{ tipoArchivoLabel(a.tipo) }}
+                              </span>
+                              @if (a.tamanioBytes) {
+                                <span class="text-[10px] text-slate-400">
+                                  {{ formatBytes(a.tamanioBytes) }}
+                                </span>
+                              }
+                            </div>
+                            @if (a.descripcion) {
+                              <p class="text-[10px] text-slate-400 mt-0.5 truncate">{{ a.descripcion }}</p>
+                            }
+                          </div>
+                          <i class="pi pi-eye text-xs text-slate-300 group-hover:text-[#0066AA] shrink-0"></i>
+                        </button>
+                      }
+                    </div>
                   </div>
-                  <p *ngIf="a.descripcion" class="text-[10px] text-slate-400 mt-0.5 truncate">{{ a.descripcion }}</p>
                 </div>
-                <i class="pi pi-eye text-xs text-slate-300 group-hover:text-[#0066AA] shrink-0"></i>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    }
+    @if (seccionActiva() === 'servicios') {
+      <section class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+        <header class="px-5 py-4 border-b border-slate-100 flex items-center justify-between gap-4">
+          <div>
+            <h2 class="text-sm font-extrabold text-slate-800">Historial de servicios</h2>
+            <p class="text-xs text-slate-400 mt-0.5">Servicios no clínicos de la mascota</p>
+          </div>
+          <span class="text-[10px] font-bold text-slate-500 bg-slate-100 rounded-full px-2.5 py-1 whitespace-nowrap">
+            {{ serviciosNoMedicos().length }} {{ serviciosNoMedicos().length === 1 ? 'registro' : 'registros' }}
+          </span>
+        </header>
+        @if (loadingServicios()) {
+          <div class="py-16 text-center text-slate-300">
+            <i class="pi pi-spin pi-spinner text-2xl block mb-2"></i>
+            <p class="text-xs font-medium">Cargando servicios...</p>
+          </div>
+        }
+        @if (!loadingServicios() && serviciosNoMedicos().length === 0) {
+          <div class="py-16 text-center">
+            <i class="pi pi-briefcase text-xl text-slate-300 block mb-2"></i>
+            <p class="text-xs font-bold text-slate-500">Sin servicios registrados</p>
+          </div>
+        }
+        @if (!loadingServicios() && serviciosNoMedicos().length > 0) {
+          <div>
+            <div class="hidden lg:grid lg:grid-cols-[minmax(240px,1fr)_minmax(190px,.7fr)_minmax(240px,1fr)_150px] gap-6 px-5 py-2.5 bg-slate-50 border-b border-slate-100 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+              <span>Servicio</span>
+              <span>Atendido por</span>
+              <span>Observaciones</span>
+              <span class="text-right">Estado y monto</span>
+            </div>
+            <div class="divide-y divide-slate-100">
+              @for (s of serviciosNoMedicos(); track s) {
+                <article
+                  class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[minmax(240px,1fr)_minmax(190px,.7fr)_minmax(240px,1fr)_150px] gap-4 lg:gap-6 px-5 py-4 hover:bg-slate-50/60 transition-colors">
+                  <div class="min-w-0">
+                    <h3 class="text-sm font-extrabold text-slate-800 truncate">{{ s.servicioNombre || s.motivoCita || 'Servicio' }}</h3>
+                    <p class="text-xs text-slate-400 mt-1">{{ formatFechaHora(s.fechaHoraInicio) }}</p>
+                  </div>
+                  <div>
+                    <p class="lg:hidden text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">Atendido por</p>
+                    <p class="text-xs font-semibold text-slate-600">{{ s.veterinarioNombre || 'No asignado' }}</p>
+                  </div>
+                  <div>
+                    <p class="lg:hidden text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">Observaciones</p>
+                    <p [class]="s.notas ? 'text-xs text-slate-600 line-clamp-2' : 'text-xs text-slate-400 italic'">
+                      {{ s.notas || 'Sin observaciones registradas' }}
+                    </p>
+                  </div>
+                  <div class="flex items-center sm:justify-end gap-3 lg:flex-col lg:items-end lg:gap-2">
+                    <span [class]="'text-[10px] font-bold px-2.5 py-1 rounded-full uppercase whitespace-nowrap ' + estadoCitaBadge(s.estado)">
+                      {{ estadoCitaLabel(s.estado) }}
+                    </span>
+                    <p class="text-sm font-extrabold text-slate-800 whitespace-nowrap">
+                      {{ s.totalServicio != null ? ('S/ ' + (s.totalServicio | number:'1.2-2')) : '—' }}
+                    </p>
+                  </div>
+                </article>
+              }
+            </div>
+          </div>
+        }
+      </section>
+    }
+    @if (seccionActiva() === 'preventivos') {
+      <section class="flex flex-col gap-4">
+        <div class="grid grid-cols-1 items-start gap-5 lg:grid-cols-[380px_1fr]">
+          <!-- Calendario preventivo interactivo -->
+          <div class="bg-white border border-slate-200 rounded-xl overflow-hidden h-fit">
+            <div class="flex items-center gap-3 border-b border-slate-200 px-5 py-3">
+              <i class="pi pi-calendar text-base text-[#0066AA]"></i>
+              <div class="min-w-0">
+                <h2 class="text-sm font-extrabold text-slate-900">Calendario preventivo</h2>
+                <p class="mt-0.5 text-[11px] text-slate-500">Selecciona un día para consultar sus controles</p>
+              </div>
+            </div>
+            <div class="flex items-center justify-between gap-2 border-b border-slate-200 px-4 py-2">
+              <button (click)="calendarioMesAnterior()"
+                class="grid size-7 shrink-0 place-items-center rounded-lg border border-slate-200 text-slate-500 hover:border-[#0066AA] hover:text-[#0066AA]">
+                <i class="pi pi-chevron-left text-[10px]"></i>
+              </button>
+              <div class="flex items-center gap-2">
+                <input type="month" [value]="calendarioMesInput()" (change)="onCalendarioMesInputChange($any($event.target).value)"
+                  class="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs font-extrabold text-slate-700 outline-none focus:border-[#0066AA]" />
+                <button type="button" (click)="irAHoy()" class="text-[10px] font-bold text-[#0066AA] hover:underline">Ir a hoy</button>
+              </div>
+              <button (click)="calendarioMesSiguiente()"
+                class="grid size-7 shrink-0 place-items-center rounded-lg border border-slate-200 text-slate-500 hover:border-[#0066AA] hover:text-[#0066AA]">
+                <i class="pi pi-chevron-right text-[10px]"></i>
               </button>
             </div>
+            <div class="p-4">
+              <div class="grid grid-cols-7 gap-0">
+                @for (d of ['D','L','M','X','J','V','S']; track d) {
+                  <div
+                  class="py-1 text-center text-[10px] font-extrabold text-slate-500">{{ d }}</div>
+                }
+                @for (_ of [].constructor(diasCalendario().primerDia); track _) {
+                  <div></div>
+                }
+                @for (item of diasCalendario().dias; track item) {
+                  <button type="button"
+                    (click)="seleccionarDiaCalendario(item.dia)"
+                    [attr.aria-label]="'Ver controles del día ' + item.dia"
+                    [title]="item.vacias.concat(item.desparas).join(', ') || 'Sin controles programados'"
+                    class="relative flex h-8 flex-col items-center justify-center rounded-lg border border-transparent transition-colors hover:border-slate-300"
+                    [class.!border-[#0066AA]]="calendarioDiaSeleccionado() === item.dia || (item.dia === hoy().getDate() && calendarioEsMesActual())"
+                    [class.bg-[#0066AA]]="calendarioDiaSeleccionado() === item.dia">
+                    <span class="text-xs leading-none text-slate-600"
+                      [class.font-extrabold]="item.vacias.length || item.desparas.length"
+                      [class.!text-white]="calendarioDiaSeleccionado() === item.dia"
+                      [class.text-[#0066AA]]="item.dia === hoy().getDate() && calendarioEsMesActual() && calendarioDiaSeleccionado() !== item.dia"
+                      [class.text-slate-500]="!item.vacias.length && !item.desparas.length && !(item.dia === hoy().getDate() && calendarioEsMesActual())">
+                      {{ item.dia }}
+                    </span>
+                    @if (item.vacias.length || item.desparas.length) {
+                      <div class="mt-0.5 flex gap-1">
+                        @if (item.vacias.length) {
+                          <span class="h-1 w-3 rounded-full bg-blue-600"></span>
+                        }
+                        @if (item.desparas.length) {
+                          <span class="h-1 w-3 rounded-full bg-emerald-600"></span>
+                        }
+                      </div>
+                    }
+                  </button>
+                }
+              </div>
+              <div class="mt-3 grid grid-cols-2 gap-2 border-t border-slate-200 pt-3">
+                <div class="flex items-center gap-1">
+                  <span class="h-1.5 w-4 rounded-full bg-blue-600"></span>
+                  <span class="text-[10px] font-bold text-slate-600">Vacunación</span>
+                </div>
+                <div class="flex items-center gap-1">
+                  <span class="h-1.5 w-4 rounded-full bg-emerald-600"></span>
+                  <span class="text-[10px] font-bold text-slate-600">Desparasitación</span>
+                </div>
+              </div>
+              <p class="mt-2 text-[10px] text-slate-500">{{ controlesMesCalendario().length }} control{{ controlesMesCalendario().length === 1 ? '' : 'es' }} en este mes</p>
+            </div>
           </div>
-          </div>
-
+          <!-- Controles Pendientes -->
+          <div class="bg-white border border-slate-200 rounded-xl overflow-hidden h-fit">
+            <header class="px-5 py-4 border-b border-slate-100 flex items-center justify-between gap-3 flex-wrap">
+              <div class="flex items-center gap-3">
+                <i class="pi pi-clock text-base text-[#0066AA]"></i>
+                <div>
+                  <h2 class="text-sm font-extrabold text-slate-800">Agenda preventiva</h2>
+                  <p class="text-[11px] text-slate-400 mt-0.5">Detalle del día seleccionado</p>
+                </div>
+              </div>
+              @if (canModify()) {
+                <div class="flex items-center gap-2">
+                  <button type="button" (click)="irARegistrarControl('VACUNACION')"
+                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0066AA] text-white text-[10px] font-bold hover:bg-[#0055aa] transition-all">
+                    <i class="pi pi-plus text-[9px]"></i> Registrar vacuna
+                  </button>
+                  <button type="button" (click)="irARegistrarControl('DESPARASITACION')"
+                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-[10px] font-bold hover:bg-emerald-700 transition-all">
+                    <i class="pi pi-plus text-[9px]"></i> Registrar desparasitación
+                  </button>
+                </div>
+              }
+            </header>
+            <div class="grid grid-cols-3 border-b border-slate-200 bg-slate-50">
+              <div class="border-r border-slate-200 px-4 py-3">
+                <p class="text-[9px] font-extrabold uppercase tracking-wide text-slate-400">Vacunas pendientes</p>
+                <p class="mt-1 text-lg font-extrabold text-blue-700">{{ controlesVacunacion().length }}</p>
+              </div>
+              <div class="border-r border-slate-200 px-4 py-3">
+                <p class="text-[9px] font-extrabold uppercase tracking-wide text-slate-400">Desparasitaciones</p>
+                <p class="mt-1 text-lg font-extrabold text-emerald-700">{{ controlesDesparasitacion().length }}</p>
+              </div>
+              <div class="px-4 py-3">
+                <p class="text-[9px] font-extrabold uppercase tracking-wide text-slate-400">Controles vencidos</p>
+                <p class="mt-1 text-lg font-extrabold text-red-600">{{ controlesAtrasados() }}</p>
+              </div>
+            </div>
+            <ng-template #controlPreventivoItem let-control>
+              <div class="flex items-center gap-3 py-2.5 px-2 border-b border-slate-100 last:border-0"
+                [class]="control.estado === 'ATRASADO' || control.estado === 'PENDIENTE' ? 'rounded-lg bg-red-50' : ''">
+                <i [class]="(control.tipo === 'VACUNACION' ? 'pi pi-shield ' : 'pi pi-refresh ') + (control.tipo === 'VACUNACION' ? 'text-blue-600' : 'text-emerald-600') + ' text-sm shrink-0'"></i>
+                <div class="min-w-0 flex-1">
+                  <p class="truncate text-xs font-bold text-slate-800">{{ control.nombreControl }}</p>
+                  <p class="text-[10px] text-slate-400">{{ control.fechaRecomendada | date:'dd/MM/yyyy' }}</p>
+                </div>
+                <span class="shrink-0 rounded-full px-2 py-0.5 text-[9px] font-extrabold uppercase"
+                  [ngClass]="control.estado === 'ATRASADO' || control.estado === 'PENDIENTE' ? 'bg-red-600 text-white' : 'bg-slate-100 text-slate-600'">
+                  {{ control.estado }}
+                </span>
+              </div>
+            </ng-template>
+            <div class="border-b border-slate-200 p-4">
+              <div class="flex items-start gap-3">
+                <i class="pi pi-calendar text-sm text-[#0066AA] mt-0.5"></i>
+                <div>
+                  <p class="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Día seleccionado</p>
+                  <p class="mt-1 text-sm font-extrabold capitalize text-slate-800">{{ fechaCalendarioSeleccionadaTexto() }}</p>
+                </div>
+              </div>
+              @if (controlesDiaSeleccionado().length) {
+                <div class="mt-4 grid gap-5 sm:grid-cols-2">
+                  <div>
+                    <div class="mb-1 flex items-center justify-between border-b border-blue-100 pb-1.5">
+                      <h3 class="text-[11px] font-extrabold uppercase tracking-wide text-blue-700">Vacunación</h3>
+                      <span class="text-[10px] font-bold text-slate-500">{{ vacunasDiaSeleccionado().length }}</span>
+                    </div>
+                    @if (vacunasDiaSeleccionado().length) {
+                      <div>
+                        @for (control of vacunasDiaSeleccionado(); track control) {
+                          <ng-container [ngTemplateOutlet]="controlPreventivoItem" [ngTemplateOutletContext]="{ $implicit: control }"></ng-container>
+                        }
+                      </div>
+                    } @else {
+                      <p class="py-3 text-xs text-slate-500">Sin vacunas este día.</p>
+                    }
+                  </div>
+                  <div>
+                    <div class="mb-1 flex items-center justify-between border-b border-emerald-100 pb-1.5">
+                      <h3 class="text-[11px] font-extrabold uppercase tracking-wide text-emerald-700">Desparasitación</h3>
+                      <span class="text-[10px] font-bold text-slate-500">{{ desparasitacionesDiaSeleccionado().length }}</span>
+                    </div>
+                    @if (desparasitacionesDiaSeleccionado().length) {
+                      <div>
+                        @for (control of desparasitacionesDiaSeleccionado(); track control) {
+                          <ng-container [ngTemplateOutlet]="controlPreventivoItem" [ngTemplateOutletContext]="{ $implicit: control }"></ng-container>
+                        }
+                      </div>
+                    } @else {
+                      <p class="py-3 text-xs text-slate-500">Sin desparasitación este día.</p>
+                    }
+                  </div>
+                </div>
+              } @else {
+                <p class="mt-3 border-t border-slate-100 pt-3 text-xs text-slate-500">No hay controles programados para esta fecha.</p>
+              }
+            </div>
           </div>
         </div>
-      </div>
-    </div>
-
-    <section *ngIf="seccionActiva() === 'servicios'" class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-      <header class="px-5 py-4 border-b border-slate-100 flex items-center justify-between gap-4">
-        <div>
-          <h2 class="text-sm font-extrabold text-slate-800">Historial de servicios</h2>
-          <p class="text-xs text-slate-400 mt-0.5">Servicios no clínicos de la mascota</p>
+        <!-- Historial completo de controles: todo junto, sin navegar mes a mes -->
+        <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+          <header class="px-5 py-4 border-b border-slate-100 flex items-center gap-3">
+            <i class="pi pi-list text-base text-violet-600"></i>
+            <div>
+              <h2 class="text-sm font-extrabold text-slate-800">Historial completo de controles</h2>
+              <p class="text-[11px] text-slate-400 mt-0.5">Todos los controles preventivos, de cualquier fecha</p>
+            </div>
+          </header>
+          @if (todosLosControles().length) {
+            <div class="flex flex-col gap-3 px-5 py-3 border-b border-slate-100 sm:flex-row sm:items-center">
+              <div class="relative flex-1">
+                <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-[11px] text-slate-400"></i>
+                <input type="text" [ngModel]="historialBusqueda()" (ngModelChange)="historialBusqueda.set($event)"
+                  placeholder="Buscar por nombre..."
+                  class="w-full rounded-lg border border-slate-200 bg-slate-50 pl-8 pr-3 py-1.5 text-xs text-slate-700 outline-none focus:border-[#0066AA] focus:bg-white" />
+              </div>
+              <div class="flex items-center gap-1.5 shrink-0">
+                <button type="button" (click)="historialFiltroTipo.set('TODOS')"
+                  [class]="historialFiltroTipo() === 'TODOS' ? 'bg-[#0066AA] text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'"
+                class="rounded-full px-3 py-1 text-[10px] font-extrabold uppercase transition-colors">Todos</button>
+                <button type="button" (click)="historialFiltroTipo.set('VACUNACION')"
+                  [class]="historialFiltroTipo() === 'VACUNACION' ? 'bg-[#0066AA] text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'"
+                class="rounded-full px-3 py-1 text-[10px] font-extrabold uppercase transition-colors">Vacunación</button>
+                <button type="button" (click)="historialFiltroTipo.set('DESPARASITACION')"
+                  [class]="historialFiltroTipo() === 'DESPARASITACION' ? 'bg-[#0066AA] text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'"
+                class="rounded-full px-3 py-1 text-[10px] font-extrabold uppercase transition-colors">Desparasitación</button>
+              </div>
+            </div>
+          }
+          @if (todosLosControles().length) {
+            <div class="overflow-x-auto">
+              <table class="w-full min-w-[520px] text-left text-xs">
+                <thead>
+                  <tr class="text-[10px] font-extrabold uppercase tracking-wider text-white bg-[#0066AA]">
+                    <th class="px-3 py-2.5 w-10">N°</th>
+                    <th class="px-2 py-2.5">Control</th>
+                    <th class="px-4 py-2.5">Tipo</th>
+                    <th class="px-4 py-2.5">Fecha</th>
+                    <th class="px-5 py-2.5">Estado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (c of historialFiltrado(); track c; let i = $index) {
+                    <tr [class]="i % 2 === 1 ? 'bg-slate-50/60' : ''">
+                      <td class="px-3 py-3 text-slate-400 font-semibold">{{ i + 1 }}</td>
+                      <td class="px-2 py-3 font-semibold text-slate-700">{{ c.nombreControl }}</td>
+                      <td class="px-4 py-3 text-slate-500">{{ tipoConsultaLabel(c.tipo) }}</td>
+                      <td class="px-4 py-3 text-slate-500">{{ formatFecha(c.fechaRecomendada) }}</td>
+                      <td class="px-5 py-3">
+                        <span [class]="'rounded-full px-2 py-0.5 text-[9px] font-extrabold uppercase ' + estadoControlBadge(c.estado)">
+                          {{ estadoControlLabel(c.estado) }}
+                        </span>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+              @if (!historialFiltrado().length) {
+                <p class="py-8 text-center text-xs text-slate-400">
+                  Sin resultados para "{{ historialBusqueda() }}".
+                </p>
+              }
+            </div>
+          } @else {
+            <p class="py-10 text-center text-xs text-slate-400">Sin controles preventivos registrados.</p>
+          }
         </div>
-        <span class="text-[10px] font-bold text-slate-500 bg-slate-100 rounded-full px-2.5 py-1 whitespace-nowrap">
-          {{ serviciosNoMedicos().length }} {{ serviciosNoMedicos().length === 1 ? 'registro' : 'registros' }}
-        </span>
-      </header>
-
-      <div *ngIf="loadingServicios()" class="py-16 text-center text-slate-300">
-        <i class="pi pi-spin pi-spinner text-2xl block mb-2"></i>
-        <p class="text-xs font-medium">Cargando servicios...</p>
-      </div>
-
-      <div *ngIf="!loadingServicios() && serviciosNoMedicos().length === 0" class="py-16 text-center">
-        <i class="pi pi-briefcase text-xl text-slate-300 block mb-2"></i>
-        <p class="text-xs font-bold text-slate-500">Sin servicios registrados</p>
-      </div>
-
-      <div *ngIf="!loadingServicios() && serviciosNoMedicos().length > 0">
-        <div class="hidden lg:grid lg:grid-cols-[minmax(240px,1fr)_minmax(190px,.7fr)_minmax(240px,1fr)_150px] gap-6 px-5 py-2.5 bg-slate-50 border-b border-slate-100 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
-          <span>Servicio</span>
-          <span>Atendido por</span>
-          <span>Observaciones</span>
-          <span class="text-right">Estado y monto</span>
+        <div class="grid grid-cols-1 gap-5 xl:grid-cols-2">
+          <!-- Cartilla de Vacunación -->
+          <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+            <header class="px-5 py-4 border-b border-slate-100 flex items-center justify-between gap-3">
+              <div class="flex items-center gap-3 min-w-0">
+                <i class="pi pi-shield text-base text-blue-600"></i>
+                <div class="min-w-0">
+                  <h2 class="text-sm font-extrabold text-slate-800">Cartilla de Vacunación</h2>
+                  <p class="text-[11px] text-slate-400 mt-0.5">Historial de vacunas aplicadas</p>
+                </div>
+              </div>
+              <button type="button" (click)="descargarCartilla('vacunacion')" [disabled]="!vacunas().length"
+                [title]="vacunas().length ? '' : 'Aún no hay vacunas registradas para esta mascota'"
+                class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0066AA] text-white text-[10px] font-bold hover:bg-[#0055aa] transition-all disabled:opacity-40 disabled:cursor-not-allowed shrink-0">
+                <i class="pi pi-download text-[9px]"></i> Descargar
+              </button>
+            </header>
+            <div class="px-5 py-3 bg-slate-50/70 border-b border-slate-100 grid grid-cols-2 gap-x-4 gap-y-2">
+              <div>
+                <p class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest">Mascota</p>
+                <p class="text-xs font-bold text-slate-700 truncate">{{ hc()!.mascotaNombre }}</p>
+              </div>
+              <div>
+                <p class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest">Especie / Raza</p>
+                <p class="text-xs font-bold text-slate-700 truncate">{{ hc()!.especie || '—' }} / {{ hc()!.raza || '—' }}</p>
+              </div>
+              <div>
+                <p class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest">Propietario</p>
+                <p class="text-xs font-bold text-slate-700 truncate">{{ hc()!.propietarioNombre || '—' }}</p>
+              </div>
+              <div>
+                <p class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest">N° HC</p>
+                <p class="text-xs font-bold text-slate-700 truncate">{{ hc()!.numeroHc }}</p>
+              </div>
+            </div>
+            @if (vacunas().length) {
+              <div class="overflow-x-auto">
+                <table class="w-full min-w-[560px] text-left text-xs">
+                  <thead>
+                    <tr class="text-[10px] font-extrabold uppercase tracking-wider text-white bg-[#0066AA]">
+                      <th class="px-3 py-2.5 w-10">N°</th>
+                      <th class="px-2 py-2.5">Vacuna</th>
+                      <th class="px-4 py-2.5">Aplicada</th>
+                      <th class="px-4 py-2.5">Próxima</th>
+                      <th class="px-4 py-2.5">Cada</th>
+                      <th class="px-5 py-2.5">Veterinario</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (v of vacunas(); track v; let i = $index) {
+                      <tr [class]="i % 2 === 1 ? 'bg-slate-50/60' : ''">
+                        <td class="px-3 py-3 text-slate-400 font-semibold">{{ i + 1 }}</td>
+                        <td class="px-2 py-3 font-semibold text-slate-700">{{ v.nombreControl }}</td>
+                        <td class="px-4 py-3 text-slate-500">{{ formatFecha(v.fechaAplicacion) }}</td>
+                        <td class="px-4 py-3">
+                          @if (v.fechaProximaAplicacion) {
+                            <span class="text-slate-500">{{ formatFecha(v.fechaProximaAplicacion) }}</span>
+                          }
+                          @if (!v.fechaProximaAplicacion) {
+                            <span class="text-slate-300">—</span>
+                          }
+                        </td>
+                        <td class="px-4 py-3">
+                          @if (v.periodicidadMeses) {
+                            <span class="text-slate-500">{{ v.periodicidadMeses }} meses</span>
+                          }
+                          @if (!v.periodicidadMeses) {
+                            <span class="text-slate-300">—</span>
+                          }
+                        </td>
+                        <td class="px-5 py-3 text-slate-500">{{ v.veterinarioNombre || '—' }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            } @else {
+              <p class="py-10 text-center text-xs text-slate-400">Sin vacunas registradas</p>
+            }
+          </div>
+          <!-- Cartilla de Desparasitación -->
+          <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+            <header class="px-5 py-4 border-b border-slate-100 flex items-center justify-between gap-3">
+              <div class="flex items-center gap-3 min-w-0">
+                <i class="pi pi-briefcase text-base text-emerald-600"></i>
+                <div class="min-w-0">
+                  <h2 class="text-sm font-extrabold text-slate-800">Cartilla de Desparasitación</h2>
+                  <p class="text-[11px] text-slate-400 mt-0.5">Historial de desparasitaciones aplicadas</p>
+                </div>
+              </div>
+              <button type="button" (click)="descargarCartilla('desparasitacion')" [disabled]="!desparasitaciones().length"
+                [title]="desparasitaciones().length ? '' : 'Aún no hay desparasitaciones registradas para esta mascota'"
+                class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0066AA] text-white text-[10px] font-bold hover:bg-[#0055aa] transition-all disabled:opacity-40 disabled:cursor-not-allowed shrink-0">
+                <i class="pi pi-download text-[9px]"></i> Descargar
+              </button>
+            </header>
+            <div class="px-5 py-3 bg-slate-50/70 border-b border-slate-100 grid grid-cols-2 gap-x-4 gap-y-2">
+              <div>
+                <p class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest">Mascota</p>
+                <p class="text-xs font-bold text-slate-700 truncate">{{ hc()!.mascotaNombre }}</p>
+              </div>
+              <div>
+                <p class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest">Especie / Raza</p>
+                <p class="text-xs font-bold text-slate-700 truncate">{{ hc()!.especie || '—' }} / {{ hc()!.raza || '—' }}</p>
+              </div>
+              <div>
+                <p class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest">Propietario</p>
+                <p class="text-xs font-bold text-slate-700 truncate">{{ hc()!.propietarioNombre || '—' }}</p>
+              </div>
+              <div>
+                <p class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest">N° HC</p>
+                <p class="text-xs font-bold text-slate-700 truncate">{{ hc()!.numeroHc }}</p>
+              </div>
+            </div>
+            @if (desparasitaciones().length) {
+              <div class="overflow-x-auto">
+                <table class="w-full min-w-[560px] text-left text-xs">
+                  <thead>
+                    <tr class="text-[10px] font-extrabold uppercase tracking-wider text-white bg-[#0066AA]">
+                      <th class="px-3 py-2.5 w-10">N°</th>
+                      <th class="px-2 py-2.5">Producto</th>
+                      <th class="px-4 py-2.5">Aplicada</th>
+                      <th class="px-4 py-2.5">Próxima</th>
+                      <th class="px-4 py-2.5">Cada</th>
+                      <th class="px-5 py-2.5">Veterinario</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (d of desparasitaciones(); track d; let i = $index) {
+                      <tr [class]="i % 2 === 1 ? 'bg-slate-50/60' : ''">
+                        <td class="px-3 py-3 text-slate-400 font-semibold">{{ i + 1 }}</td>
+                        <td class="px-2 py-3 font-semibold text-slate-700">{{ d.nombreControl }}</td>
+                        <td class="px-4 py-3 text-slate-500">{{ formatFecha(d.fechaAplicacion) }}</td>
+                        <td class="px-4 py-3">
+                          @if (d.fechaProximaAplicacion) {
+                            <span class="text-slate-500">{{ formatFecha(d.fechaProximaAplicacion) }}</span>
+                          }
+                          @if (!d.fechaProximaAplicacion) {
+                            <span class="text-slate-300">—</span>
+                          }
+                        </td>
+                        <td class="px-4 py-3">
+                          @if (d.periodicidadMeses) {
+                            <span class="text-slate-500">{{ d.periodicidadMeses }} meses</span>
+                          }
+                          @if (!d.periodicidadMeses) {
+                            <span class="text-slate-300">—</span>
+                          }
+                        </td>
+                        <td class="px-5 py-3 text-slate-500">{{ d.veterinarioNombre || '—' }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            } @else {
+              <p class="py-10 text-center text-xs text-slate-400">Sin desparasitaciones registradas</p>
+            }
+          </div>
         </div>
-        <div class="divide-y divide-slate-100">
-        <article *ngFor="let s of serviciosNoMedicos()"
-          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[minmax(240px,1fr)_minmax(190px,.7fr)_minmax(240px,1fr)_150px] gap-4 lg:gap-6 px-5 py-4 hover:bg-slate-50/60 transition-colors">
-          <div class="min-w-0">
-            <h3 class="text-sm font-extrabold text-slate-800 truncate">{{ s.servicioNombre || s.motivoCita || 'Servicio' }}</h3>
-            <p class="text-xs text-slate-400 mt-1">{{ formatFechaHora(s.fechaHoraInicio) }}</p>
-          </div>
-
-          <div>
-            <p class="lg:hidden text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">Atendido por</p>
-            <p class="text-xs font-semibold text-slate-600">{{ s.veterinarioNombre || 'No asignado' }}</p>
-          </div>
-
-          <div>
-            <p class="lg:hidden text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">Observaciones</p>
-            <p [class]="s.notas ? 'text-xs text-slate-600 line-clamp-2' : 'text-xs text-slate-400 italic'">
-              {{ s.notas || 'Sin observaciones registradas' }}
-            </p>
-          </div>
-
-          <div class="flex items-center sm:justify-end gap-3 lg:flex-col lg:items-end lg:gap-2">
-            <span [class]="'text-[10px] font-bold px-2.5 py-1 rounded-full uppercase whitespace-nowrap ' + estadoCitaBadge(s.estado)">
-              {{ estadoCitaLabel(s.estado) }}
-            </span>
-            <p class="text-sm font-extrabold text-slate-800 whitespace-nowrap">
-              {{ s.totalServicio != null ? ('S/ ' + (s.totalServicio | number:'1.2-2')) : '—' }}
-            </p>
-          </div>
-        </article>
-        </div>
-      </div>
-    </section>
-
-    <section *ngIf="seccionActiva() === 'preventivos'" class="flex flex-col gap-4">
-
-      <div class="grid grid-cols-1 items-start gap-5 lg:grid-cols-[380px_1fr]">
-
-        <!-- Calendario preventivo interactivo -->
-        <div class="bg-white border border-slate-200 rounded-xl overflow-hidden h-fit">
+      </section>
+    }
+    @if (seccionActiva() === 'seguimiento') {
+      <section class="flex flex-col gap-5">
+        <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
           <div class="flex items-center gap-3 border-b border-slate-200 px-5 py-3">
-            <i class="pi pi-calendar text-base text-[#0066AA]"></i>
+            <i class="pi pi-heart-fill text-base text-[#0066AA]"></i>
             <div class="min-w-0">
-              <h2 class="text-sm font-extrabold text-slate-900">Calendario preventivo</h2>
-              <p class="mt-0.5 text-[11px] text-slate-500">Selecciona un día para consultar sus controles</p>
+              <h2 class="text-sm font-extrabold text-slate-900">Diagnósticos</h2>
+              <p class="mt-0.5 text-[11px] text-slate-500">Historial completo, sin importar en qué consulta se originaron</p>
             </div>
-          </div>
-          <div class="flex items-center justify-between gap-2 border-b border-slate-200 px-4 py-2">
-            <button (click)="calendarioMesAnterior()"
-              class="grid size-7 shrink-0 place-items-center rounded-lg border border-slate-200 text-slate-500 hover:border-[#0066AA] hover:text-[#0066AA]">
-              <i class="pi pi-chevron-left text-[10px]"></i>
-            </button>
-            <div class="flex items-center gap-2">
-              <input type="month" [value]="calendarioMesInput()" (change)="onCalendarioMesInputChange($any($event.target).value)"
-                class="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs font-extrabold text-slate-700 outline-none focus:border-[#0066AA]" />
-              <button type="button" (click)="irAHoy()" class="text-[10px] font-bold text-[#0066AA] hover:underline">Ir a hoy</button>
-            </div>
-            <button (click)="calendarioMesSiguiente()"
-              class="grid size-7 shrink-0 place-items-center rounded-lg border border-slate-200 text-slate-500 hover:border-[#0066AA] hover:text-[#0066AA]">
-              <i class="pi pi-chevron-right text-[10px]"></i>
-            </button>
           </div>
           <div class="p-4">
-            <div class="grid grid-cols-7 gap-0">
-              <div *ngFor="let d of ['D','L','M','X','J','V','S']"
-                class="py-1 text-center text-[10px] font-extrabold text-slate-500">{{ d }}</div>
-              <ng-container *ngFor="let _ of [].constructor(diasCalendario().primerDia)">
-                <div></div>
-              </ng-container>
-              <button *ngFor="let item of diasCalendario().dias" type="button"
-                (click)="seleccionarDiaCalendario(item.dia)"
-                [attr.aria-label]="'Ver controles del día ' + item.dia"
-                [title]="item.vacias.concat(item.desparas).join(', ') || 'Sin controles programados'"
-                class="relative flex h-8 flex-col items-center justify-center rounded-lg border border-transparent transition-colors hover:border-slate-300"
-                [class.!border-[#0066AA]]="calendarioDiaSeleccionado() === item.dia || (item.dia === hoy().getDate() && calendarioEsMesActual())"
-                [class.bg-[#0066AA]]="calendarioDiaSeleccionado() === item.dia">
-                <span class="text-xs leading-none text-slate-600"
-                  [class.font-extrabold]="item.vacias.length || item.desparas.length"
-                  [class.!text-white]="calendarioDiaSeleccionado() === item.dia"
-                  [class.text-[#0066AA]]="item.dia === hoy().getDate() && calendarioEsMesActual() && calendarioDiaSeleccionado() !== item.dia"
-                  [class.text-slate-500]="!item.vacias.length && !item.desparas.length && !(item.dia === hoy().getDate() && calendarioEsMesActual())">
-                  {{ item.dia }}
-                </span>
-                <div *ngIf="item.vacias.length || item.desparas.length" class="mt-0.5 flex gap-1">
-                  <span *ngIf="item.vacias.length" class="h-1 w-3 rounded-full bg-blue-600"></span>
-                  <span *ngIf="item.desparas.length" class="h-1 w-3 rounded-full bg-emerald-600"></span>
-                </div>
-              </button>
-            </div>
-            <div class="mt-3 grid grid-cols-2 gap-2 border-t border-slate-200 pt-3">
-              <div class="flex items-center gap-1">
-                <span class="h-1.5 w-4 rounded-full bg-blue-600"></span>
-                <span class="text-[10px] font-bold text-slate-600">Vacunación</span>
+            @if (diagnosticosSeguimiento().length > 0) {
+              <div class="flex flex-col gap-3">
+                @for (d of diagnosticosSeguimiento(); track d) {
+                  <div
+                    class="border border-slate-100 rounded-xl p-4 bg-white">
+                    <div class="flex items-start justify-between gap-3 mb-2">
+                      <div class="flex-1">
+                        <p class="text-sm font-bold text-slate-900">{{ d.nombre }}</p>
+                        <p class="text-[11px] text-slate-400 mt-0.5">
+                          @if (d.fechaConsulta) {
+                            <span>{{ d.fechaConsulta }}</span>
+                          }
+                          @if (d.veterinarioNombre) {
+                            <span> · {{ d.veterinarioNombre }}</span>
+                          }
+                          @if (d.codigoCIE) {
+                            <span> · CIE {{ d.codigoCIE }}</span>
+                          }
+                        </p>
+                        @if (d.fechaProximoControl) {
+                          <p class="text-[11px] text-amber-600 font-semibold mt-1">
+                            <i class="pi pi-calendar-plus text-[10px]"></i> Próximo control: {{ d.fechaProximoControl }}
+                          </p>
+                        }
+                      </div>
+                      <span class="px-2 py-0.5 rounded-md bg-blue-50 text-[#0066AA] text-[10px] font-bold border border-blue-100 uppercase whitespace-nowrap">{{ d.tipo }}</span>
+                    </div>
+                    @if (d.descripcion) {
+                      <p class="text-xs text-slate-600 mb-3">{{ d.descripcion }}</p>
+                    }
+                    <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                      <label class="text-[10px] font-bold text-slate-500">Estado:</label>
+                      <select
+                        [disabled]="!canModify() || cambiandoEstadoId() === d.id"
+                        [ngModel]="d.estado"
+                        (ngModelChange)="cambiarEstadoDiagnosticoSeguimiento(d, $event)"
+                        class="rounded-lg border border-slate-200 px-2 py-1 text-[11px] font-bold text-slate-700 outline-none focus:border-[#0066AA] disabled:opacity-60">
+                        <option value="ACTIVO">Activo</option>
+                        <option value="RESUELTO">Resuelto</option>
+                        <option value="CRONICO">Crónico</option>
+                        <option value="EN_SEGUIMIENTO">En seguimiento</option>
+                        <option value="OTRO">Otro</option>
+                      </select>
+                    </div>
+                  </div>
+                }
               </div>
-              <div class="flex items-center gap-1">
-                <span class="h-1.5 w-4 rounded-full bg-emerald-600"></span>
-                <span class="text-[10px] font-bold text-slate-600">Desparasitación</span>
-              </div>
-            </div>
-            <p class="mt-2 text-[10px] text-slate-500">{{ controlesMesCalendario().length }} control{{ controlesMesCalendario().length === 1 ? '' : 'es' }} en este mes</p>
+            } @else {
+              <p class="py-10 text-center text-xs text-slate-400">Sin diagnósticos registrados</p>
+            }
           </div>
         </div>
-
-      <!-- Controles Pendientes -->
-      <div class="bg-white border border-slate-200 rounded-xl overflow-hidden h-fit">
-        <header class="px-5 py-4 border-b border-slate-100 flex items-center justify-between gap-3 flex-wrap">
-          <div class="flex items-center gap-3">
-            <i class="pi pi-clock text-base text-[#0066AA]"></i>
-            <div>
-              <h2 class="text-sm font-extrabold text-slate-800">Agenda preventiva</h2>
-              <p class="text-[11px] text-slate-400 mt-0.5">Detalle del día seleccionado</p>
-            </div>
-          </div>
-          <div *ngIf="canModify()" class="flex items-center gap-2">
-            <button type="button" (click)="irARegistrarControl('VACUNACION')"
-              class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0066AA] text-white text-[10px] font-bold hover:bg-[#0055aa] transition-all">
-              <i class="pi pi-plus text-[9px]"></i> Registrar vacuna
-            </button>
-            <button type="button" (click)="irARegistrarControl('DESPARASITACION')"
-              class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-[10px] font-bold hover:bg-emerald-700 transition-all">
-              <i class="pi pi-plus text-[9px]"></i> Registrar desparasitación
-            </button>
-          </div>
-        </header>
-
-        <div class="grid grid-cols-3 border-b border-slate-200 bg-slate-50">
-          <div class="border-r border-slate-200 px-4 py-3">
-            <p class="text-[9px] font-extrabold uppercase tracking-wide text-slate-400">Vacunas pendientes</p>
-            <p class="mt-1 text-lg font-extrabold text-blue-700">{{ controlesVacunacion().length }}</p>
-          </div>
-          <div class="border-r border-slate-200 px-4 py-3">
-            <p class="text-[9px] font-extrabold uppercase tracking-wide text-slate-400">Desparasitaciones</p>
-            <p class="mt-1 text-lg font-extrabold text-emerald-700">{{ controlesDesparasitacion().length }}</p>
-          </div>
-          <div class="px-4 py-3">
-            <p class="text-[9px] font-extrabold uppercase tracking-wide text-slate-400">Controles vencidos</p>
-            <p class="mt-1 text-lg font-extrabold text-red-600">{{ controlesAtrasados() }}</p>
-          </div>
-        </div>
-
-        <ng-template #controlPreventivoItem let-control>
-          <div class="flex items-center gap-3 py-2.5 px-2 border-b border-slate-100 last:border-0"
-            [class]="control.estado === 'ATRASADO' || control.estado === 'PENDIENTE' ? 'rounded-lg bg-red-50' : ''">
-            <i [class]="(control.tipo === 'VACUNACION' ? 'pi pi-shield ' : 'pi pi-refresh ') + (control.tipo === 'VACUNACION' ? 'text-blue-600' : 'text-emerald-600') + ' text-sm shrink-0'"></i>
-            <div class="min-w-0 flex-1">
-              <p class="truncate text-xs font-bold text-slate-800">{{ control.nombreControl }}</p>
-              <p class="text-[10px] text-slate-400">{{ control.fechaRecomendada | date:'dd/MM/yyyy' }}</p>
-            </div>
-            <span class="shrink-0 rounded-full px-2 py-0.5 text-[9px] font-extrabold uppercase"
-              [ngClass]="control.estado === 'ATRASADO' || control.estado === 'PENDIENTE' ? 'bg-red-600 text-white' : 'bg-slate-100 text-slate-600'">
-              {{ control.estado }}
-            </span>
-          </div>
-        </ng-template>
-
-        <div class="border-b border-slate-200 p-4">
-          <div class="flex items-start gap-3">
-            <i class="pi pi-calendar text-sm text-[#0066AA] mt-0.5"></i>
-            <div>
-              <p class="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Día seleccionado</p>
-              <p class="mt-1 text-sm font-extrabold capitalize text-slate-800">{{ fechaCalendarioSeleccionadaTexto() }}</p>
-            </div>
-          </div>
-          <div *ngIf="controlesDiaSeleccionado().length; else fechaSinControles" class="mt-4 grid gap-5 sm:grid-cols-2">
-            <div>
-              <div class="mb-1 flex items-center justify-between border-b border-blue-100 pb-1.5">
-                <h3 class="text-[11px] font-extrabold uppercase tracking-wide text-blue-700">Vacunación</h3>
-                <span class="text-[10px] font-bold text-slate-500">{{ vacunasDiaSeleccionado().length }}</span>
-              </div>
-              <div *ngIf="vacunasDiaSeleccionado().length; else sinVacunasFecha">
-                <ng-container *ngFor="let control of vacunasDiaSeleccionado()" [ngTemplateOutlet]="controlPreventivoItem" [ngTemplateOutletContext]="{ $implicit: control }"></ng-container>
-              </div>
-              <ng-template #sinVacunasFecha><p class="py-3 text-xs text-slate-500">Sin vacunas este día.</p></ng-template>
-            </div>
-
-            <div>
-              <div class="mb-1 flex items-center justify-between border-b border-emerald-100 pb-1.5">
-                <h3 class="text-[11px] font-extrabold uppercase tracking-wide text-emerald-700">Desparasitación</h3>
-                <span class="text-[10px] font-bold text-slate-500">{{ desparasitacionesDiaSeleccionado().length }}</span>
-              </div>
-              <div *ngIf="desparasitacionesDiaSeleccionado().length; else sinDesparasitacionesFecha">
-                <ng-container *ngFor="let control of desparasitacionesDiaSeleccionado()" [ngTemplateOutlet]="controlPreventivoItem" [ngTemplateOutletContext]="{ $implicit: control }"></ng-container>
-              </div>
-              <ng-template #sinDesparasitacionesFecha><p class="py-3 text-xs text-slate-500">Sin desparasitación este día.</p></ng-template>
-            </div>
-          </div>
-          <ng-template #fechaSinControles>
-            <p class="mt-3 border-t border-slate-100 pt-3 text-xs text-slate-500">No hay controles programados para esta fecha.</p>
-          </ng-template>
-        </div>
-
-      </div>
-      </div>
-
-      <!-- Historial completo de controles: todo junto, sin navegar mes a mes -->
-      <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-        <header class="px-5 py-4 border-b border-slate-100 flex items-center gap-3">
-          <i class="pi pi-list text-base text-violet-600"></i>
-          <div>
-            <h2 class="text-sm font-extrabold text-slate-800">Historial completo de controles</h2>
-            <p class="text-[11px] text-slate-400 mt-0.5">Todos los controles preventivos, de cualquier fecha</p>
-          </div>
-        </header>
-
-        <div *ngIf="todosLosControles().length" class="flex flex-col gap-3 px-5 py-3 border-b border-slate-100 sm:flex-row sm:items-center">
-          <div class="relative flex-1">
-            <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-[11px] text-slate-400"></i>
-            <input type="text" [ngModel]="historialBusqueda()" (ngModelChange)="historialBusqueda.set($event)"
-              placeholder="Buscar por nombre..."
-              class="w-full rounded-lg border border-slate-200 bg-slate-50 pl-8 pr-3 py-1.5 text-xs text-slate-700 outline-none focus:border-[#0066AA] focus:bg-white" />
-          </div>
-          <div class="flex items-center gap-1.5 shrink-0">
-            <button type="button" (click)="historialFiltroTipo.set('TODOS')"
-              [class]="historialFiltroTipo() === 'TODOS' ? 'bg-[#0066AA] text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'"
-              class="rounded-full px-3 py-1 text-[10px] font-extrabold uppercase transition-colors">Todos</button>
-            <button type="button" (click)="historialFiltroTipo.set('VACUNACION')"
-              [class]="historialFiltroTipo() === 'VACUNACION' ? 'bg-[#0066AA] text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'"
-              class="rounded-full px-3 py-1 text-[10px] font-extrabold uppercase transition-colors">Vacunación</button>
-            <button type="button" (click)="historialFiltroTipo.set('DESPARASITACION')"
-              [class]="historialFiltroTipo() === 'DESPARASITACION' ? 'bg-[#0066AA] text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'"
-              class="rounded-full px-3 py-1 text-[10px] font-extrabold uppercase transition-colors">Desparasitación</button>
-          </div>
-        </div>
-
-        <div *ngIf="todosLosControles().length; else sinHistorialControles" class="overflow-x-auto">
-          <table class="w-full min-w-[520px] text-left text-xs">
-            <thead>
-              <tr class="text-[10px] font-extrabold uppercase tracking-wider text-white bg-[#0066AA]">
-                <th class="px-3 py-2.5 w-10">N°</th>
-                <th class="px-2 py-2.5">Control</th>
-                <th class="px-4 py-2.5">Tipo</th>
-                <th class="px-4 py-2.5">Fecha</th>
-                <th class="px-5 py-2.5">Estado</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let c of historialFiltrado(); let i = index" [class]="i % 2 === 1 ? 'bg-slate-50/60' : ''">
-                <td class="px-3 py-3 text-slate-400 font-semibold">{{ i + 1 }}</td>
-                <td class="px-2 py-3 font-semibold text-slate-700">{{ c.nombreControl }}</td>
-                <td class="px-4 py-3 text-slate-500">{{ tipoConsultaLabel(c.tipo) }}</td>
-                <td class="px-4 py-3 text-slate-500">{{ formatFecha(c.fechaRecomendada) }}</td>
-                <td class="px-5 py-3">
-                  <span [class]="'rounded-full px-2 py-0.5 text-[9px] font-extrabold uppercase ' + estadoControlBadge(c.estado)">
-                    {{ estadoControlLabel(c.estado) }}
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <p *ngIf="!historialFiltrado().length" class="py-8 text-center text-xs text-slate-400">
-            Sin resultados para "{{ historialBusqueda() }}".
-          </p>
-        </div>
-        <ng-template #sinHistorialControles>
-          <p class="py-10 text-center text-xs text-slate-400">Sin controles preventivos registrados.</p>
-        </ng-template>
-      </div>
-
-      <div class="grid grid-cols-1 gap-5 xl:grid-cols-2">
-      <!-- Cartilla de Vacunación -->
-      <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-        <header class="px-5 py-4 border-b border-slate-100 flex items-center justify-between gap-3">
-          <div class="flex items-center gap-3 min-w-0">
-            <i class="pi pi-shield text-base text-blue-600"></i>
+        <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+          <div class="flex items-center gap-3 border-b border-slate-200 px-5 py-3">
+            <i class="pi pi-shield text-base text-[#0066AA]"></i>
             <div class="min-w-0">
-              <h2 class="text-sm font-extrabold text-slate-800">Cartilla de Vacunación</h2>
-              <p class="text-[11px] text-slate-400 mt-0.5">Historial de vacunas aplicadas</p>
+              <h2 class="text-sm font-extrabold text-slate-900">Tratamientos</h2>
+              <p class="mt-0.5 text-[11px] text-slate-500">Protocolos y tratamientos, con o sin fecha de fin definida</p>
             </div>
           </div>
-          <button type="button" (click)="descargarCartilla('vacunacion')" [disabled]="!vacunas().length"
-            [title]="vacunas().length ? '' : 'Aún no hay vacunas registradas para esta mascota'"
-            class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0066AA] text-white text-[10px] font-bold hover:bg-[#0055aa] transition-all disabled:opacity-40 disabled:cursor-not-allowed shrink-0">
-            <i class="pi pi-download text-[9px]"></i> Descargar
-          </button>
-        </header>
-
-        <div class="px-5 py-3 bg-slate-50/70 border-b border-slate-100 grid grid-cols-2 gap-x-4 gap-y-2">
-          <div>
-            <p class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest">Mascota</p>
-            <p class="text-xs font-bold text-slate-700 truncate">{{ hc()!.mascotaNombre }}</p>
-          </div>
-          <div>
-            <p class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest">Especie / Raza</p>
-            <p class="text-xs font-bold text-slate-700 truncate">{{ hc()!.especie || '—' }} / {{ hc()!.raza || '—' }}</p>
-          </div>
-          <div>
-            <p class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest">Propietario</p>
-            <p class="text-xs font-bold text-slate-700 truncate">{{ hc()!.propietarioNombre || '—' }}</p>
-          </div>
-          <div>
-            <p class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest">N° HC</p>
-            <p class="text-xs font-bold text-slate-700 truncate">{{ hc()!.numeroHc }}</p>
-          </div>
-        </div>
-
-        <div *ngIf="vacunas().length; else sinVacunas" class="overflow-x-auto">
-          <table class="w-full min-w-[560px] text-left text-xs">
-            <thead>
-              <tr class="text-[10px] font-extrabold uppercase tracking-wider text-white bg-[#0066AA]">
-                <th class="px-3 py-2.5 w-10">N°</th>
-                <th class="px-2 py-2.5">Vacuna</th>
-                <th class="px-4 py-2.5">Aplicada</th>
-                <th class="px-4 py-2.5">Próxima</th>
-                <th class="px-4 py-2.5">Cada</th>
-                <th class="px-5 py-2.5">Veterinario</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let v of vacunas(); let i = index" [class]="i % 2 === 1 ? 'bg-slate-50/60' : ''">
-                <td class="px-3 py-3 text-slate-400 font-semibold">{{ i + 1 }}</td>
-                <td class="px-2 py-3 font-semibold text-slate-700">{{ v.nombreControl }}</td>
-                <td class="px-4 py-3 text-slate-500">{{ formatFecha(v.fechaAplicacion) }}</td>
-                <td class="px-4 py-3">
-                  <span *ngIf="v.fechaProximaAplicacion" class="text-slate-500">{{ formatFecha(v.fechaProximaAplicacion) }}</span>
-                  <span *ngIf="!v.fechaProximaAplicacion" class="text-slate-300">—</span>
-                </td>
-                <td class="px-4 py-3">
-                  <span *ngIf="v.periodicidadMeses" class="text-slate-500">{{ v.periodicidadMeses }} meses</span>
-                  <span *ngIf="!v.periodicidadMeses" class="text-slate-300">—</span>
-                </td>
-                <td class="px-5 py-3 text-slate-500">{{ v.veterinarioNombre || '—' }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <ng-template #sinVacunas>
-          <p class="py-10 text-center text-xs text-slate-400">Sin vacunas registradas</p>
-        </ng-template>
-      </div>
-
-      <!-- Cartilla de Desparasitación -->
-      <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-        <header class="px-5 py-4 border-b border-slate-100 flex items-center justify-between gap-3">
-          <div class="flex items-center gap-3 min-w-0">
-            <i class="pi pi-briefcase text-base text-emerald-600"></i>
-            <div class="min-w-0">
-              <h2 class="text-sm font-extrabold text-slate-800">Cartilla de Desparasitación</h2>
-              <p class="text-[11px] text-slate-400 mt-0.5">Historial de desparasitaciones aplicadas</p>
-            </div>
-          </div>
-          <button type="button" (click)="descargarCartilla('desparasitacion')" [disabled]="!desparasitaciones().length"
-            [title]="desparasitaciones().length ? '' : 'Aún no hay desparasitaciones registradas para esta mascota'"
-            class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0066AA] text-white text-[10px] font-bold hover:bg-[#0055aa] transition-all disabled:opacity-40 disabled:cursor-not-allowed shrink-0">
-            <i class="pi pi-download text-[9px]"></i> Descargar
-          </button>
-        </header>
-
-        <div class="px-5 py-3 bg-slate-50/70 border-b border-slate-100 grid grid-cols-2 gap-x-4 gap-y-2">
-          <div>
-            <p class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest">Mascota</p>
-            <p class="text-xs font-bold text-slate-700 truncate">{{ hc()!.mascotaNombre }}</p>
-          </div>
-          <div>
-            <p class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest">Especie / Raza</p>
-            <p class="text-xs font-bold text-slate-700 truncate">{{ hc()!.especie || '—' }} / {{ hc()!.raza || '—' }}</p>
-          </div>
-          <div>
-            <p class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest">Propietario</p>
-            <p class="text-xs font-bold text-slate-700 truncate">{{ hc()!.propietarioNombre || '—' }}</p>
-          </div>
-          <div>
-            <p class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest">N° HC</p>
-            <p class="text-xs font-bold text-slate-700 truncate">{{ hc()!.numeroHc }}</p>
-          </div>
-        </div>
-
-        <div *ngIf="desparasitaciones().length; else sinDesparasitaciones" class="overflow-x-auto">
-          <table class="w-full min-w-[560px] text-left text-xs">
-            <thead>
-              <tr class="text-[10px] font-extrabold uppercase tracking-wider text-white bg-[#0066AA]">
-                <th class="px-3 py-2.5 w-10">N°</th>
-                <th class="px-2 py-2.5">Producto</th>
-                <th class="px-4 py-2.5">Aplicada</th>
-                <th class="px-4 py-2.5">Próxima</th>
-                <th class="px-4 py-2.5">Cada</th>
-                <th class="px-5 py-2.5">Veterinario</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let d of desparasitaciones(); let i = index" [class]="i % 2 === 1 ? 'bg-slate-50/60' : ''">
-                <td class="px-3 py-3 text-slate-400 font-semibold">{{ i + 1 }}</td>
-                <td class="px-2 py-3 font-semibold text-slate-700">{{ d.nombreControl }}</td>
-                <td class="px-4 py-3 text-slate-500">{{ formatFecha(d.fechaAplicacion) }}</td>
-                <td class="px-4 py-3">
-                  <span *ngIf="d.fechaProximaAplicacion" class="text-slate-500">{{ formatFecha(d.fechaProximaAplicacion) }}</span>
-                  <span *ngIf="!d.fechaProximaAplicacion" class="text-slate-300">—</span>
-                </td>
-                <td class="px-4 py-3">
-                  <span *ngIf="d.periodicidadMeses" class="text-slate-500">{{ d.periodicidadMeses }} meses</span>
-                  <span *ngIf="!d.periodicidadMeses" class="text-slate-300">—</span>
-                </td>
-                <td class="px-5 py-3 text-slate-500">{{ d.veterinarioNombre || '—' }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <ng-template #sinDesparasitaciones>
-          <p class="py-10 text-center text-xs text-slate-400">Sin desparasitaciones registradas</p>
-        </ng-template>
-      </div>
-      </div>
-
-    </section>
-
-    <section *ngIf="seccionActiva() === 'seguimiento'" class="flex flex-col gap-5">
-      <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-        <div class="flex items-center gap-3 border-b border-slate-200 px-5 py-3">
-          <i class="pi pi-heart-fill text-base text-[#0066AA]"></i>
-          <div class="min-w-0">
-            <h2 class="text-sm font-extrabold text-slate-900">Diagnósticos</h2>
-            <p class="mt-0.5 text-[11px] text-slate-500">Historial completo, sin importar en qué consulta se originaron</p>
-          </div>
-        </div>
-        <div class="p-4">
-          <div *ngIf="diagnosticosSeguimiento().length > 0; else sinDiagnosticosSeguimiento" class="flex flex-col gap-3">
-            <div *ngFor="let d of diagnosticosSeguimiento()"
-              class="border border-slate-100 rounded-xl p-4 bg-white">
-              <div class="flex items-start justify-between gap-3 mb-2">
-                <div class="flex-1">
-                  <p class="text-sm font-bold text-slate-900">{{ d.nombre }}</p>
-                  <p class="text-[11px] text-slate-400 mt-0.5">
-                    <span *ngIf="d.fechaConsulta">{{ d.fechaConsulta }}</span>
-                    <span *ngIf="d.veterinarioNombre"> · {{ d.veterinarioNombre }}</span>
-                    <span *ngIf="d.codigoCIE"> · CIE {{ d.codigoCIE }}</span>
+          <div class="p-4">
+            @if (tratamientosSeguimiento().length > 0) {
+              <div class="flex flex-col gap-3">
+                @for (t of tratamientosSeguimiento(); track t) {
+                  <div
+                    class="border border-slate-100 rounded-xl p-4 bg-white">
+                    <div class="flex items-start justify-between gap-3 mb-2">
+                      <p class="text-sm font-bold text-slate-900 flex-1">{{ t.nombre }}</p>
+                    </div>
+                    <p class="text-[11px] text-slate-400 mb-2">
+                      {{ t.fechaInicio }}@if (t.fechaFin) {
+                      → {{ t.fechaFin }}
+                    }
+                    @if (t.veterinarioNombre) {
+                      <span> · {{ t.veterinarioNombre }}</span>
+                    }
                   </p>
-                  <p *ngIf="d.fechaProximoControl" class="text-[11px] text-amber-600 font-semibold mt-1">
-                    <i class="pi pi-calendar-plus text-[10px]"></i> Próximo control: {{ d.fechaProximoControl }}
-                  </p>
+                  @if (t.descripcion) {
+                    <p class="text-xs text-slate-600 mb-3">{{ t.descripcion }}</p>
+                  }
+                  <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                    <label class="text-[10px] font-bold text-slate-500">Estado:</label>
+                    <select
+                      [disabled]="!canModify() || cambiandoEstadoId() === t.id"
+                      [ngModel]="t.estado"
+                      (ngModelChange)="cambiarEstadoTratamientoSeguimiento(t, $event)"
+                      class="rounded-lg border border-slate-200 px-2 py-1 text-[11px] font-bold text-slate-700 outline-none focus:border-[#0066AA] disabled:opacity-60">
+                      <option value="PENDIENTE">Pendiente</option>
+                      <option value="ACTIVO">Activo</option>
+                      <option value="EN_CURSO">En curso</option>
+                      <option value="COMPLETADO">Completado</option>
+                      <option value="SUSPENDIDO">Suspendido</option>
+                      <option value="OTRO">Otro</option>
+                    </select>
+                  </div>
                 </div>
-                <span class="px-2 py-0.5 rounded-md bg-blue-50 text-[#0066AA] text-[10px] font-bold border border-blue-100 uppercase whitespace-nowrap">{{ d.tipo }}</span>
-              </div>
-              <p *ngIf="d.descripcion" class="text-xs text-slate-600 mb-3">{{ d.descripcion }}</p>
-              <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
-                <label class="text-[10px] font-bold text-slate-500">Estado:</label>
-                <select
-                  [disabled]="!canModify() || cambiandoEstadoId() === d.id"
-                  [ngModel]="d.estado"
-                  (ngModelChange)="cambiarEstadoDiagnosticoSeguimiento(d, $event)"
-                  class="rounded-lg border border-slate-200 px-2 py-1 text-[11px] font-bold text-slate-700 outline-none focus:border-[#0066AA] disabled:opacity-60">
-                  <option value="ACTIVO">Activo</option>
-                  <option value="RESUELTO">Resuelto</option>
-                  <option value="CRONICO">Crónico</option>
-                  <option value="EN_SEGUIMIENTO">En seguimiento</option>
-                  <option value="OTRO">Otro</option>
-                </select>
-              </div>
+              }
             </div>
-          </div>
-          <ng-template #sinDiagnosticosSeguimiento>
-            <p class="py-10 text-center text-xs text-slate-400">Sin diagnósticos registrados</p>
-          </ng-template>
-        </div>
-      </div>
-
-      <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-        <div class="flex items-center gap-3 border-b border-slate-200 px-5 py-3">
-          <i class="pi pi-shield text-base text-[#0066AA]"></i>
-          <div class="min-w-0">
-            <h2 class="text-sm font-extrabold text-slate-900">Tratamientos</h2>
-            <p class="mt-0.5 text-[11px] text-slate-500">Protocolos y tratamientos, con o sin fecha de fin definida</p>
-          </div>
-        </div>
-        <div class="p-4">
-          <div *ngIf="tratamientosSeguimiento().length > 0; else sinTratamientosSeguimiento" class="flex flex-col gap-3">
-            <div *ngFor="let t of tratamientosSeguimiento()"
-              class="border border-slate-100 rounded-xl p-4 bg-white">
-              <div class="flex items-start justify-between gap-3 mb-2">
-                <p class="text-sm font-bold text-slate-900 flex-1">{{ t.nombre }}</p>
-              </div>
-              <p class="text-[11px] text-slate-400 mb-2">
-                {{ t.fechaInicio }}<ng-container *ngIf="t.fechaFin"> → {{ t.fechaFin }}</ng-container>
-                <span *ngIf="t.veterinarioNombre"> · {{ t.veterinarioNombre }}</span>
-              </p>
-              <p *ngIf="t.descripcion" class="text-xs text-slate-600 mb-3">{{ t.descripcion }}</p>
-              <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
-                <label class="text-[10px] font-bold text-slate-500">Estado:</label>
-                <select
-                  [disabled]="!canModify() || cambiandoEstadoId() === t.id"
-                  [ngModel]="t.estado"
-                  (ngModelChange)="cambiarEstadoTratamientoSeguimiento(t, $event)"
-                  class="rounded-lg border border-slate-200 px-2 py-1 text-[11px] font-bold text-slate-700 outline-none focus:border-[#0066AA] disabled:opacity-60">
-                  <option value="PENDIENTE">Pendiente</option>
-                  <option value="ACTIVO">Activo</option>
-                  <option value="EN_CURSO">En curso</option>
-                  <option value="COMPLETADO">Completado</option>
-                  <option value="SUSPENDIDO">Suspendido</option>
-                  <option value="OTRO">Otro</option>
-                </select>
-              </div>
-            </div>
-          </div>
-          <ng-template #sinTratamientosSeguimiento>
+          } @else {
             <p class="py-10 text-center text-xs text-slate-400">Sin tratamientos registrados</p>
-          </ng-template>
+          }
         </div>
       </div>
     </section>
-
-  </ng-container>
+  }
+}
 
 </div>
 

@@ -10,160 +10,152 @@
         <p class="mt-1 text-sm text-slate-400 font-medium hidden sm:block">Punto de venta y control de ingresos</p>
       </div>
     </div>
-    <div *ngIf="!requiresCompanySelection" class="flex w-full items-center gap-2 sm:w-auto">
-      @if (!sesionCaja()) { <button (click)="abrirModalSesion('ABRIR')" class="h-10 flex-1 rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 sm:flex-none sm:px-4">Abrir caja</button> }
-      <button (click)="nuevaOperacion()" class="flex h-10 flex-1 items-center justify-center gap-2 rounded-lg bg-[#0066AA] px-3 text-sm font-semibold text-white hover:bg-[#005a96] sm:flex-none sm:px-4"><i class="pi pi-plus text-xs"></i><span>Nueva operación</span></button>
-    </div>
+    @if (!requiresCompanySelection) {
+      <div class="flex w-full items-center gap-2 sm:w-auto">
+        @if (!sesionCaja()) { <button (click)="abrirModalSesion('ABRIR')" class="h-10 flex-1 rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 sm:flex-none sm:px-4">Abrir caja</button> }
+        <button (click)="nuevaOperacion()" class="flex h-10 flex-1 items-center justify-center gap-2 rounded-lg bg-[#0066AA] px-3 text-sm font-semibold text-white hover:bg-[#005a96] sm:flex-none sm:px-4"><i class="pi pi-plus text-xs"></i><span>Nueva operación</span></button>
+      </div>
+    }
   </header>
 
-  <section *ngIf="requiresCompanySelection" class="rounded-xl border border-slate-200 bg-white px-5 py-5 sm:px-6">
-    <div class="flex items-start gap-3">
-      <div class="grid size-10 shrink-0 place-items-center rounded-lg bg-blue-50 text-[#0066AA]"><i class="pi pi-building text-sm"></i></div>
-      <div><h2 class="text-base font-extrabold text-slate-900">Selecciona una empresa</h2><p class="mt-1 text-sm leading-6 text-slate-500">La caja, sus sesiones y movimientos pertenecen a una empresa específica. Elige una desde el selector superior.</p></div>
-    </div>
-  </section>
-
-  <ng-container *ngIf="!requiresCompanySelection">
-
-  @if (resumen()) {
-    <section class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-      <article class="bg-white border border-slate-200 rounded-xl p-4 flex items-center gap-3"><span class="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0"><i class="pi pi-arrow-up-right text-sm"></i></span><div class="min-w-0"><p class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Ingresos del periodo</p><p class="mt-1 text-lg font-semibold text-slate-900 truncate">{{ formatMonto(resumen()!.totalIngresos) }}</p></div></article>
-      <article class="bg-white border border-slate-200 rounded-xl p-4 flex items-center gap-3"><span class="w-10 h-10 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center shrink-0"><i class="pi pi-arrow-down-left text-sm"></i></span><div class="min-w-0"><p class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Egresos del periodo</p><p class="mt-1 text-lg font-semibold text-slate-900 truncate">{{ formatMonto(resumen()!.totalEgresos) }}</p></div></article>
-      <article class="bg-white border border-slate-200 rounded-xl p-4 flex items-center gap-3"><span class="w-10 h-10 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center shrink-0"><i class="pi pi-replay text-sm"></i></span><div class="min-w-0"><p class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Devoluciones</p><p class="mt-1 text-lg font-semibold text-slate-900 truncate">{{ formatMonto(resumen()!.totalDevoluciones) }}</p></div></article>
-      <article class="bg-white border border-slate-200 rounded-xl p-4 flex items-center gap-3"><span class="w-10 h-10 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center shrink-0"><i class="pi pi-wallet text-sm"></i></span><div class="min-w-0"><p class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Balance del periodo</p><p class="mt-1 text-lg font-semibold text-[#0066AA] truncate">{{ formatMonto(resumen()!.saldo) }}</p></div></article>
+  @if (requiresCompanySelection) {
+    <section class="rounded-xl border border-slate-200 bg-white px-5 py-5 sm:px-6">
+      <div class="flex items-start gap-3">
+        <div class="grid size-10 shrink-0 place-items-center rounded-lg bg-blue-50 text-[#0066AA]"><i class="pi pi-building text-sm"></i></div>
+        <div><h2 class="text-base font-extrabold text-slate-900">Selecciona una empresa</h2><p class="mt-1 text-sm leading-6 text-slate-500">La caja, sus sesiones y movimientos pertenecen a una empresa específica. Elige una desde el selector superior.</p></div>
+      </div>
     </section>
   }
 
-  <section class="grid grid-cols-1 xl:grid-cols-[minmax(0,1.65fr)_minmax(330px,.85fr)] gap-4">
-    <article class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-      <div class="px-4 sm:px-5 py-4 border-b border-slate-200 bg-[#f8fafc] flex items-start justify-between gap-3">
-        <div><h2 class="text-sm font-bold text-slate-900">Cuenta de atención</h2><p class="text-xs text-slate-500 mt-0.5">Selecciona una cita y agrega los conceptos cobrados</p></div>
-        @if (cuentaSeleccionada()) { <button (click)="limpiarCuenta()" class="h-8 px-3 rounded-lg border border-slate-300 text-xs font-semibold text-slate-600 hover:bg-slate-50">Cambiar cita</button> }
-      </div>
-
-      @if (!cuentaSeleccionada()) {
-        <div class="p-4 sm:p-5">
-          <div class="mb-4 border-l-2 border-slate-300 pl-3 py-1"><p class="text-sm font-semibold text-slate-800">Carrito vacío</p><p class="text-xs text-slate-500 mt-0.5">Selecciona una cita pendiente para cargar el servicio y agregar conceptos.</p></div>
-          <p class="mb-2 text-[10px] font-semibold uppercase tracking-wide text-slate-500">Citas por cobrar</p>
-          <label class="relative block">
-            <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400"></i>
-            <input [ngModel]="posSearch()" (ngModelChange)="posSearch.set($event)" placeholder="Buscar cliente, mascota, servicio o número de cita..." class="w-full h-11 pl-10 pr-4 rounded-lg border border-slate-300 text-sm focus:outline-none focus:border-[#0066AA]" />
-          </label>
-          <div class="mt-3 border-y border-slate-200 max-h-[390px] overflow-y-auto">
-            @if (pendingLoading()) {
-              <div class="py-12 text-center text-sm text-slate-400">Cargando cuentas...</div>
-            } @else if (cuentasPos().length === 0) {
-              <div class="py-12 px-4 text-center"><p class="text-sm font-semibold text-slate-800">No hay cuentas por cobrar</p><p class="text-xs text-slate-500 mt-1">Las citas con saldo pendiente aparecerán aquí.</p></div>
-            } @else {
-              @for (cuenta of cuentasPos(); track cuenta.citaId) {
-                <button (click)="abrirCuenta(cuenta)" class="w-full px-4 py-3 border-b last:border-b-0 border-slate-100 hover:bg-slate-50 text-left flex items-center gap-3">
-                  <span class="w-9 h-9 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center text-xs font-bold shrink-0">{{ cuenta.mascotaNombre.charAt(0) }}</span>
-                  <span class="min-w-0 flex-1"><span class="block text-sm font-semibold text-slate-800 truncate">{{ cuenta.mascotaNombre }} <span class="font-normal text-slate-400">· {{ cuenta.numeroCita }}</span></span><span class="block text-xs text-slate-500 truncate">{{ cuenta.apoderadoNombre }} · {{ cuenta.servicioNombre }}</span></span>
-                  <span class="text-right shrink-0"><span class="block text-sm font-bold text-amber-600">{{ formatMonto(cuenta.saldoPendiente) }}</span><span class="text-[10px] font-semibold text-slate-400">{{ cuenta.estadoPago === 'PAGO_PARCIAL' ? 'Parcial' : 'Pendiente' }}</span></span>
-                  <i class="pi pi-chevron-right text-[10px] text-slate-400"></i>
-                </button>
+  @if (!requiresCompanySelection) {
+    @if (resumen()) {
+      <section class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <article class="bg-white border border-slate-200 rounded-xl p-4 flex items-center gap-3"><span class="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0"><i class="pi pi-arrow-up-right text-sm"></i></span><div class="min-w-0"><p class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Ingresos del periodo</p><p class="mt-1 text-lg font-semibold text-slate-900 truncate">{{ formatMonto(resumen()!.totalIngresos) }}</p></div></article>
+        <article class="bg-white border border-slate-200 rounded-xl p-4 flex items-center gap-3"><span class="w-10 h-10 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center shrink-0"><i class="pi pi-arrow-down-left text-sm"></i></span><div class="min-w-0"><p class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Egresos del periodo</p><p class="mt-1 text-lg font-semibold text-slate-900 truncate">{{ formatMonto(resumen()!.totalEgresos) }}</p></div></article>
+        <article class="bg-white border border-slate-200 rounded-xl p-4 flex items-center gap-3"><span class="w-10 h-10 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center shrink-0"><i class="pi pi-replay text-sm"></i></span><div class="min-w-0"><p class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Devoluciones</p><p class="mt-1 text-lg font-semibold text-slate-900 truncate">{{ formatMonto(resumen()!.totalDevoluciones) }}</p></div></article>
+        <article class="bg-white border border-slate-200 rounded-xl p-4 flex items-center gap-3"><span class="w-10 h-10 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center shrink-0"><i class="pi pi-wallet text-sm"></i></span><div class="min-w-0"><p class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Balance del periodo</p><p class="mt-1 text-lg font-semibold text-[#0066AA] truncate">{{ formatMonto(resumen()!.saldo) }}</p></div></article>
+      </section>
+    }
+    <section class="grid grid-cols-1 xl:grid-cols-[minmax(0,1.65fr)_minmax(330px,.85fr)] gap-4">
+      <article class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+        <div class="px-4 sm:px-5 py-4 border-b border-slate-200 bg-[#f8fafc] flex items-start justify-between gap-3">
+          <div><h2 class="text-sm font-bold text-slate-900">Cuenta de atención</h2><p class="text-xs text-slate-500 mt-0.5">Selecciona una cita y agrega los conceptos cobrados</p></div>
+          @if (cuentaSeleccionada()) { <button (click)="limpiarCuenta()" class="h-8 px-3 rounded-lg border border-slate-300 text-xs font-semibold text-slate-600 hover:bg-slate-50">Cambiar cita</button> }
+        </div>
+        @if (!cuentaSeleccionada()) {
+          <div class="p-4 sm:p-5">
+            <div class="mb-4 border-l-2 border-slate-300 pl-3 py-1"><p class="text-sm font-semibold text-slate-800">Carrito vacío</p><p class="text-xs text-slate-500 mt-0.5">Selecciona una cita pendiente para cargar el servicio y agregar conceptos.</p></div>
+            <p class="mb-2 text-[10px] font-semibold uppercase tracking-wide text-slate-500">Citas por cobrar</p>
+            <label class="relative block">
+              <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400"></i>
+              <input [ngModel]="posSearch()" (ngModelChange)="posSearch.set($event)" placeholder="Buscar cliente, mascota, servicio o número de cita..." class="w-full h-11 pl-10 pr-4 rounded-lg border border-slate-300 text-sm focus:outline-none focus:border-[#0066AA]" />
+            </label>
+            <div class="mt-3 border-y border-slate-200 max-h-[390px] overflow-y-auto">
+              @if (pendingLoading()) {
+                <div class="py-12 text-center text-sm text-slate-400">Cargando cuentas...</div>
+              } @else if (cuentasPos().length === 0) {
+                <div class="py-12 px-4 text-center"><p class="text-sm font-semibold text-slate-800">No hay cuentas por cobrar</p><p class="text-xs text-slate-500 mt-1">Las citas con saldo pendiente aparecerán aquí.</p></div>
+              } @else {
+                @for (cuenta of cuentasPos(); track cuenta.citaId) {
+                  <button (click)="abrirCuenta(cuenta)" class="w-full px-4 py-3 border-b last:border-b-0 border-slate-100 hover:bg-slate-50 text-left flex items-center gap-3">
+                    <span class="w-9 h-9 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center text-xs font-bold shrink-0">{{ cuenta.mascotaNombre.charAt(0) }}</span>
+                    <span class="min-w-0 flex-1"><span class="block text-sm font-semibold text-slate-800 truncate">{{ cuenta.mascotaNombre }} <span class="font-normal text-slate-400">· {{ cuenta.numeroCita }}</span></span><span class="block text-xs text-slate-500 truncate">{{ cuenta.apoderadoNombre }} · {{ cuenta.servicioNombre }}</span></span>
+                    <span class="text-right shrink-0"><span class="block text-sm font-bold text-amber-600">{{ formatMonto(cuenta.saldoPendiente) }}</span><span class="text-[10px] font-semibold text-slate-400">{{ cuenta.estadoPago === 'PAGO_PARCIAL' ? 'Parcial' : 'Pendiente' }}</span></span>
+                    <i class="pi pi-chevron-right text-[10px] text-slate-400"></i>
+                  </button>
+                }
               }
-            }
+            </div>
           </div>
-        </div>
-      } @else {
-      @if (cuentaSeleccionada(); as cuenta) {
-        <div class="px-4 sm:px-5 py-3 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div><p class="text-sm font-bold text-slate-900">{{ cuenta.mascotaNombre }} <span class="font-normal text-slate-400">· {{ cuenta.numeroCita }}</span></p><p class="text-xs text-slate-500">{{ cuenta.apoderadoNombre }} · {{ formatFecha(cuenta.fechaAtencion) }}</p></div>
-          <span class="self-start sm:self-auto px-2.5 py-1 rounded-full bg-white border border-amber-200 text-[10px] font-bold uppercase text-amber-700">{{ cuenta.estadoPago === 'PAGO_PARCIAL' ? 'Pago parcial' : 'Por cobrar' }}</span>
-        </div>
-
-        <div class="divide-y divide-slate-100 lg:hidden">
-          @for (detalle of cuenta.detalles; track detalle.id) {
-            <article class="space-y-3 p-4">
-              <div class="flex items-start justify-between gap-3"><div class="min-w-0"><h3 class="break-words text-sm font-semibold text-slate-800">{{ detalle.descripcion }}</h3><p class="text-[11px] text-slate-500">{{ tipoDetalleLabel(detalle.tipo) }}</p></div>@if (!detalle.esServicioBase) { <button (click)="eliminarDetalle(detalle.id)" aria-label="Eliminar concepto" class="grid size-9 shrink-0 place-items-center rounded-lg border border-slate-200 text-rose-500"><i class="pi pi-trash text-xs"></i></button> }</div>
-              <div class="flex items-center justify-between gap-3"><div>@if (detalle.esServicioBase) { <span class="text-xs text-slate-500">Cantidad: <b class="text-slate-700">{{ detalle.cantidad }}</b></span> } @else { <div class="inline-flex items-center overflow-hidden rounded-lg border border-slate-200"><button (click)="cambiarCantidad(detalle, -1)" class="size-9 text-slate-500">−</button><span class="w-9 text-center text-xs font-semibold">{{ detalle.cantidad }}</span><button (click)="cambiarCantidad(detalle, 1)" class="size-9 text-slate-500">+</button></div> }</div><div class="text-right"><p class="text-[10px] text-slate-400">{{ formatMonto(detalle.precioUnitario) }} c/u</p><p class="text-sm font-bold" [class]="detalle.subtotal < 0 ? 'text-rose-600' : 'text-slate-900'">{{ formatMonto(detalle.subtotal) }}</p></div></div>
-            </article>
-          }
-        </div>
-        <div class="hidden overflow-x-auto md:block">
-          <table class="w-full min-w-[660px] text-sm">
-            <thead class="bg-slate-50 border-b border-slate-200"><tr><th class="px-5 py-3 text-left text-[11px] font-semibold text-slate-500">Detalle</th><th class="px-4 py-3 text-center text-[11px] font-semibold text-slate-500">Cantidad</th><th class="px-4 py-3 text-right text-[11px] font-semibold text-slate-500">Precio</th><th class="px-4 py-3 text-right text-[11px] font-semibold text-slate-500">Total</th><th class="w-12"></th></tr></thead>
-            <tbody class="divide-y divide-slate-100">
+        } @else {
+          @if (cuentaSeleccionada(); as cuenta) {
+            <div class="px-4 sm:px-5 py-3 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div><p class="text-sm font-bold text-slate-900">{{ cuenta.mascotaNombre }} <span class="font-normal text-slate-400">· {{ cuenta.numeroCita }}</span></p><p class="text-xs text-slate-500">{{ cuenta.apoderadoNombre }} · {{ formatFecha(cuenta.fechaAtencion) }}</p></div>
+              <span class="self-start sm:self-auto px-2.5 py-1 rounded-full bg-white border border-amber-200 text-[10px] font-bold uppercase text-amber-700">{{ cuenta.estadoPago === 'PAGO_PARCIAL' ? 'Pago parcial' : 'Por cobrar' }}</span>
+            </div>
+            <div class="divide-y divide-slate-100 lg:hidden">
               @for (detalle of cuenta.detalles; track detalle.id) {
-                <tr>
-                  <td class="px-5 py-3"><p class="font-semibold text-slate-800">{{ detalle.descripcion }}</p><p class="text-[11px] text-slate-500">{{ tipoDetalleLabel(detalle.tipo) }}</p></td>
-                  <td class="px-4 py-3 text-center text-slate-600">@if (detalle.esServicioBase) { {{ detalle.cantidad }} } @else { <div class="inline-flex items-center rounded-lg border border-slate-200 overflow-hidden"><button (click)="cambiarCantidad(detalle, -1)" class="w-8 h-8 hover:bg-slate-50 text-slate-500">−</button><span class="w-8 text-xs font-semibold">{{ detalle.cantidad }}</span><button (click)="cambiarCantidad(detalle, 1)" class="w-8 h-8 hover:bg-slate-50 text-slate-500">+</button></div> }</td><td class="px-4 py-3 text-right text-slate-600">{{ formatMonto(detalle.precioUnitario) }}</td><td class="px-4 py-3 text-right font-bold" [class]="detalle.subtotal < 0 ? 'text-rose-600' : 'text-slate-800'">{{ formatMonto(detalle.subtotal) }}</td>
-                  <td class="px-3 py-3 text-center">@if (!detalle.esServicioBase) { <button (click)="eliminarDetalle(detalle.id)" class="w-8 h-8 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50"><i class="pi pi-trash text-xs"></i></button> }</td>
-                </tr>
+                <article class="space-y-3 p-4">
+                  <div class="flex items-start justify-between gap-3"><div class="min-w-0"><h3 class="break-words text-sm font-semibold text-slate-800">{{ detalle.descripcion }}</h3><p class="text-[11px] text-slate-500">{{ tipoDetalleLabel(detalle.tipo) }}</p></div>@if (!detalle.esServicioBase) { <button (click)="eliminarDetalle(detalle.id)" aria-label="Eliminar concepto" class="grid size-9 shrink-0 place-items-center rounded-lg border border-slate-200 text-rose-500"><i class="pi pi-trash text-xs"></i></button> }</div>
+                  <div class="flex items-center justify-between gap-3"><div>@if (detalle.esServicioBase) { <span class="text-xs text-slate-500">Cantidad: <b class="text-slate-700">{{ detalle.cantidad }}</b></span> } @else { <div class="inline-flex items-center overflow-hidden rounded-lg border border-slate-200"><button (click)="cambiarCantidad(detalle, -1)" class="size-9 text-slate-500">−</button><span class="w-9 text-center text-xs font-semibold">{{ detalle.cantidad }}</span><button (click)="cambiarCantidad(detalle, 1)" class="size-9 text-slate-500">+</button></div> }</div><div class="text-right"><p class="text-[10px] text-slate-400">{{ formatMonto(detalle.precioUnitario) }} c/u</p><p class="text-sm font-bold" [class]="detalle.subtotal < 0 ? 'text-rose-600' : 'text-slate-900'">{{ formatMonto(detalle.subtotal) }}</p></div></div>
+                </article>
               }
-            </tbody>
-          </table>
-        </div>
-
-        <div class="p-4 sm:p-5 bg-slate-50/70 border-t border-slate-200">
-          <p class="text-[11px] font-bold uppercase tracking-wide text-slate-500 mb-2">Agregar concepto</p>
-          <div class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-[150px_1fr_70px_110px_auto]">
-            <select [(ngModel)]="nuevoDetalle.tipo" class="h-10 rounded-lg border border-slate-300 bg-white px-2 text-xs"><option value="VACUNA">Vacuna</option><option value="MEDICAMENTO">Medicamento</option><option value="INSUMO">Insumo</option><option value="PROCEDIMIENTO">Procedimiento</option><option value="SERVICIO_ADICIONAL">Servicio adicional</option><option value="DESCUENTO">Descuento</option><option value="OTRO">Otro</option></select>
-            <input [(ngModel)]="nuevoDetalle.descripcion" maxlength="180" placeholder="Descripción del concepto" class="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm sm:col-span-2 lg:col-span-1" />
-            <input [(ngModel)]="nuevoDetalle.cantidad" type="number" min="1" max="999" class="h-10 rounded-lg border border-slate-300 bg-white px-2 text-sm" />
-            <input [(ngModel)]="nuevoDetalle.precioUnitario" type="number" min="0.01" step="0.01" placeholder="0.00" class="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm" />
-            <button (click)="agregarDetalle()" [disabled]="savingDetalle()" class="h-10 rounded-lg border border-[#0066AA] px-4 text-xs font-bold text-[#0066AA] hover:bg-blue-50 disabled:opacity-50 sm:col-span-2 lg:col-span-1">Agregar</button>
-          </div>
-        </div>
-
-        <footer class="flex flex-col-reverse items-stretch gap-3 border-t border-slate-200 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5"><button (click)="limpiarCuenta()" class="h-10 rounded-lg border border-rose-200 text-xs font-semibold text-rose-600 hover:bg-rose-50 sm:h-auto sm:border-0"><i class="pi pi-times mr-1"></i>Cancelar operación</button><div class="flex items-end justify-between text-right sm:block"><span class="mr-3 text-xs text-slate-500">Total de cuenta</span><span class="text-2xl font-bold text-[#0066AA]">{{ formatMonto(cuenta.total) }}</span></div></footer>
-      }
-      }
-    </article>
-
-    <aside class="bg-white border border-slate-200 rounded-xl overflow-hidden h-fit">
-      <div class="px-4 sm:px-5 py-4 border-b border-slate-200 bg-[#f8fafc]"><h2 class="text-sm font-bold text-slate-900">Resumen de pago</h2></div>
-      @if (cuentaSeleccionada(); as cuenta) {
-        <div class="p-4 sm:p-5">
-          <div class="space-y-3 pb-4 border-b border-slate-200"><div class="flex justify-between text-sm"><span class="text-slate-600">Subtotal</span><span class="font-semibold text-slate-800">{{ formatMonto(cuenta.total) }}</span></div><div class="flex justify-between text-sm"><span class="text-slate-600">Pagado anteriormente</span><span class="font-semibold text-emerald-600">- {{ formatMonto(cuenta.montoPagado) }}</span></div></div>
-          <div class="py-4 flex items-end justify-between"><span class="text-sm font-bold text-slate-900">Total a cobrar</span><span class="text-2xl font-bold text-[#0066AA]">{{ formatMonto(cuenta.saldoPendiente) }}</span></div>
-          <label class="block"><span class="text-xs font-semibold text-slate-600">Importe de este pago</span><input [(ngModel)]="pagoForm.monto" type="number" min="0.01" [max]="cuenta.saldoPendiente" step="0.01" class="mt-1.5 w-full h-10 rounded-lg border border-slate-300 px-3 text-sm font-semibold" /></label>
-
-          <p class="text-xs font-bold text-slate-700 mt-5 mb-2">Método de pago</p>
-          <div class="flex flex-wrap gap-1.5">
-            @for (metodo of ['EFECTIVO','TARJETA','YAPE','PLIN','TRANSFERENCIA']; track metodo) {
-              <button (click)="pagoForm.metodoPago = $any(metodo); pagoForm.montoRecibido = metodo === 'EFECTIVO' ? pagoForm.monto : null" class="h-8 px-2.5 rounded-md border text-[10px] font-semibold" [class]="pagoForm.metodoPago === metodo ? 'border-[#0066AA] bg-blue-50 text-[#0066AA]' : 'border-slate-200 text-slate-600 hover:bg-slate-50'">{{ metodo === 'TRANSFERENCIA' ? 'Transfer.' : metodo === 'TARJETA' ? 'Tarjeta' : metodo === 'EFECTIVO' ? 'Efectivo' : metodo === 'YAPE' ? 'Yape' : 'Plin' }}</button>
-            }
-          </div>
-
-          @if (pagoForm.metodoPago === 'EFECTIVO') {
-            <label class="block mt-4"><span class="text-xs font-semibold text-slate-600">Monto recibido</span><div class="relative mt-1.5"><input [ngModel]="pagoForm.montoRecibido" (ngModelChange)="limitarMontoRecibido($event)" type="number" min="0.01" max="10000" step="0.01" class="w-full h-10 rounded-lg border border-slate-300 pl-3 pr-10 text-sm" /><span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">S/</span></div><span class="mt-1 block text-[10px] text-slate-400">Máximo S/ 10,000 · vuelto máximo S/ 1,000</span></label>
-            <div class="mt-3 flex justify-between text-sm"><span class="text-slate-600">Vuelto</span><span class="font-bold text-emerald-600">{{ formatMonto(cambioPago()) }}</span></div>
-          } @else {
-            <div class="mt-4 p-3 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-500">Registro manual: confirma que el pago por {{ metodoPagoLabel(pagoForm.metodoPago) }} fue recibido antes de finalizar.</div>
+            </div>
+            <div class="hidden overflow-x-auto md:block">
+              <table class="w-full min-w-[660px] text-sm">
+                <thead class="bg-slate-50 border-b border-slate-200"><tr><th class="px-5 py-3 text-left text-[11px] font-semibold text-slate-500">Detalle</th><th class="px-4 py-3 text-center text-[11px] font-semibold text-slate-500">Cantidad</th><th class="px-4 py-3 text-right text-[11px] font-semibold text-slate-500">Precio</th><th class="px-4 py-3 text-right text-[11px] font-semibold text-slate-500">Total</th><th class="w-12"></th></tr></thead>
+                <tbody class="divide-y divide-slate-100">
+                  @for (detalle of cuenta.detalles; track detalle.id) {
+                    <tr>
+                      <td class="px-5 py-3"><p class="font-semibold text-slate-800">{{ detalle.descripcion }}</p><p class="text-[11px] text-slate-500">{{ tipoDetalleLabel(detalle.tipo) }}</p></td>
+                      <td class="px-4 py-3 text-center text-slate-600">@if (detalle.esServicioBase) { {{ detalle.cantidad }} } @else { <div class="inline-flex items-center rounded-lg border border-slate-200 overflow-hidden"><button (click)="cambiarCantidad(detalle, -1)" class="w-8 h-8 hover:bg-slate-50 text-slate-500">−</button><span class="w-8 text-xs font-semibold">{{ detalle.cantidad }}</span><button (click)="cambiarCantidad(detalle, 1)" class="w-8 h-8 hover:bg-slate-50 text-slate-500">+</button></div> }</td><td class="px-4 py-3 text-right text-slate-600">{{ formatMonto(detalle.precioUnitario) }}</td><td class="px-4 py-3 text-right font-bold" [class]="detalle.subtotal < 0 ? 'text-rose-600' : 'text-slate-800'">{{ formatMonto(detalle.subtotal) }}</td>
+                      <td class="px-3 py-3 text-center">@if (!detalle.esServicioBase) { <button (click)="eliminarDetalle(detalle.id)" class="w-8 h-8 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50"><i class="pi pi-trash text-xs"></i></button> }</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            <div class="p-4 sm:p-5 bg-slate-50/70 border-t border-slate-200">
+              <p class="text-[11px] font-bold uppercase tracking-wide text-slate-500 mb-2">Agregar concepto</p>
+              <div class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-[150px_1fr_70px_110px_auto]">
+                <select [(ngModel)]="nuevoDetalle.tipo" class="h-10 rounded-lg border border-slate-300 bg-white px-2 text-xs"><option value="VACUNA">Vacuna</option><option value="MEDICAMENTO">Medicamento</option><option value="INSUMO">Insumo</option><option value="PROCEDIMIENTO">Procedimiento</option><option value="SERVICIO_ADICIONAL">Servicio adicional</option><option value="DESCUENTO">Descuento</option><option value="OTRO">Otro</option></select>
+                <input [(ngModel)]="nuevoDetalle.descripcion" maxlength="180" placeholder="Descripción del concepto" class="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm sm:col-span-2 lg:col-span-1" />
+                <input [(ngModel)]="nuevoDetalle.cantidad" type="number" min="1" max="999" class="h-10 rounded-lg border border-slate-300 bg-white px-2 text-sm" />
+                <input [(ngModel)]="nuevoDetalle.precioUnitario" type="number" min="0.01" step="0.01" placeholder="0.00" class="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm" />
+                <button (click)="agregarDetalle()" [disabled]="savingDetalle()" class="h-10 rounded-lg border border-[#0066AA] px-4 text-xs font-bold text-[#0066AA] hover:bg-blue-50 disabled:opacity-50 sm:col-span-2 lg:col-span-1">Agregar</button>
+              </div>
+            </div>
+            <footer class="flex flex-col-reverse items-stretch gap-3 border-t border-slate-200 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5"><button (click)="limpiarCuenta()" class="h-10 rounded-lg border border-rose-200 text-xs font-semibold text-rose-600 hover:bg-rose-50 sm:h-auto sm:border-0"><i class="pi pi-times mr-1"></i>Cancelar operación</button><div class="flex items-end justify-between text-right sm:block"><span class="mr-3 text-xs text-slate-500">Total de cuenta</span><span class="text-2xl font-bold text-[#0066AA]">{{ formatMonto(cuenta.total) }}</span></div></footer>
           }
-
-          <button (click)="registrarPago()" [disabled]="savingPago()" class="mt-5 w-full h-11 rounded-lg bg-[#0066AA] text-white text-sm font-bold hover:bg-[#005a96] disabled:opacity-50"><i class="pi pi-check text-xs mr-2"></i>{{ savingPago() ? 'Procesando...' : 'Cobrar y finalizar' }}</button>
-        </div>
-      } @else {
-        <div class="min-h-[285px] flex flex-col">
-          <div class="flex-1 px-6 py-9 flex flex-col items-center justify-center text-center">
-            <span class="w-14 h-14 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center"><i class="pi pi-receipt text-xl"></i></span>
-            <p class="text-sm font-semibold text-slate-800 mt-4">Selecciona una cita</p>
-            <p class="text-xs text-slate-500 mt-1 max-w-[220px]">Aquí aparecerán el detalle de la cuenta y el importe pendiente.</p>
+        }
+      </article>
+      <aside class="bg-white border border-slate-200 rounded-xl overflow-hidden h-fit">
+        <div class="px-4 sm:px-5 py-4 border-b border-slate-200 bg-[#f8fafc]"><h2 class="text-sm font-bold text-slate-900">Resumen de pago</h2></div>
+        @if (cuentaSeleccionada(); as cuenta) {
+          <div class="p-4 sm:p-5">
+            <div class="space-y-3 pb-4 border-b border-slate-200"><div class="flex justify-between text-sm"><span class="text-slate-600">Subtotal</span><span class="font-semibold text-slate-800">{{ formatMonto(cuenta.total) }}</span></div><div class="flex justify-between text-sm"><span class="text-slate-600">Pagado anteriormente</span><span class="font-semibold text-emerald-600">- {{ formatMonto(cuenta.montoPagado) }}</span></div></div>
+            <div class="py-4 flex items-end justify-between"><span class="text-sm font-bold text-slate-900">Total a cobrar</span><span class="text-2xl font-bold text-[#0066AA]">{{ formatMonto(cuenta.saldoPendiente) }}</span></div>
+            <label class="block"><span class="text-xs font-semibold text-slate-600">Importe de este pago</span><input [(ngModel)]="pagoForm.monto" type="number" min="0.01" [max]="cuenta.saldoPendiente" step="0.01" class="mt-1.5 w-full h-10 rounded-lg border border-slate-300 px-3 text-sm font-semibold" /></label>
+            <p class="text-xs font-bold text-slate-700 mt-5 mb-2">Método de pago</p>
+            <div class="flex flex-wrap gap-1.5">
+              @for (metodo of ['EFECTIVO','TARJETA','YAPE','PLIN','TRANSFERENCIA']; track metodo) {
+                <button (click)="pagoForm.metodoPago = $any(metodo); pagoForm.montoRecibido = metodo === 'EFECTIVO' ? pagoForm.monto : null" class="h-8 px-2.5 rounded-md border text-[10px] font-semibold" [class]="pagoForm.metodoPago === metodo ? 'border-[#0066AA] bg-blue-50 text-[#0066AA]' : 'border-slate-200 text-slate-600 hover:bg-slate-50'">{{ metodo === 'TRANSFERENCIA' ? 'Transfer.' : metodo === 'TARJETA' ? 'Tarjeta' : metodo === 'EFECTIVO' ? 'Efectivo' : metodo === 'YAPE' ? 'Yape' : 'Plin' }}</button>
+              }
+            </div>
+            @if (pagoForm.metodoPago === 'EFECTIVO') {
+              <label class="block mt-4"><span class="text-xs font-semibold text-slate-600">Monto recibido</span><div class="relative mt-1.5"><input [ngModel]="pagoForm.montoRecibido" (ngModelChange)="limitarMontoRecibido($event)" type="number" min="0.01" max="10000" step="0.01" class="w-full h-10 rounded-lg border border-slate-300 pl-3 pr-10 text-sm" /><span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">S/</span></div><span class="mt-1 block text-[10px] text-slate-400">Máximo S/ 10,000 · vuelto máximo S/ 1,000</span></label>
+              <div class="mt-3 flex justify-between text-sm"><span class="text-slate-600">Vuelto</span><span class="font-bold text-emerald-600">{{ formatMonto(cambioPago()) }}</span></div>
+            } @else {
+              <div class="mt-4 p-3 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-500">Registro manual: confirma que el pago por {{ metodoPagoLabel(pagoForm.metodoPago) }} fue recibido antes de finalizar.</div>
+            }
+            <button (click)="registrarPago()" [disabled]="savingPago()" class="mt-5 w-full h-11 rounded-lg bg-[#0066AA] text-white text-sm font-bold hover:bg-[#005a96] disabled:opacity-50"><i class="pi pi-check text-xs mr-2"></i>{{ savingPago() ? 'Procesando...' : 'Cobrar y finalizar' }}</button>
           </div>
-          <div class="p-3 border-t border-slate-200 bg-slate-50/70">
-            <button disabled class="w-full h-10 rounded-lg bg-slate-200 text-slate-400 text-xs font-semibold cursor-not-allowed">Continuar con el pago</button>
+        } @else {
+          <div class="min-h-[285px] flex flex-col">
+            <div class="flex-1 px-6 py-9 flex flex-col items-center justify-center text-center">
+              <span class="w-14 h-14 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center"><i class="pi pi-receipt text-xl"></i></span>
+              <p class="text-sm font-semibold text-slate-800 mt-4">Selecciona una cita</p>
+              <p class="text-xs text-slate-500 mt-1 max-w-[220px]">Aquí aparecerán el detalle de la cuenta y el importe pendiente.</p>
+            </div>
+            <div class="p-3 border-t border-slate-200 bg-slate-50/70">
+              <button disabled class="w-full h-10 rounded-lg bg-slate-200 text-slate-400 text-xs font-semibold cursor-not-allowed">Continuar con el pago</button>
+            </div>
           </div>
-        </div>
-      }
-    </aside>
-  </section>
-
-  <section class="grid grid-cols-1 xl:grid-cols-[minmax(0,1.65fr)_minmax(330px,.85fr)] gap-4">
-    <div class="flex flex-col gap-3 min-w-0">
-    <article class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-      <div class="px-4 sm:px-5 py-3.5 border-b border-slate-200 bg-[#f8fafc] flex items-center justify-between gap-3"><div class="flex items-center gap-2"><i class="pi pi-history text-[#0066AA]"></i><h2 class="text-sm font-bold text-slate-900">Últimos movimientos en caja</h2></div><span class="text-xs text-slate-500">{{ totalRecords() }} registros</span></div>
-      <div class="divide-y divide-slate-100 lg:hidden">@for (m of movimientos(); track m.id) { <article class="space-y-3 p-4"><div class="flex items-start justify-between gap-3"><div><span class="rounded-full px-2 py-1 text-[10px] font-semibold" [class]="tipoBadge(m.tipo)">{{ tipoLabel(m.tipo) }}</span><p class="mt-2 text-xs text-slate-500">{{ formatFecha(m.fecha) }}</p></div><strong class="text-sm" [class]="m.tipo === 'INGRESO' ? 'text-emerald-600' : 'text-rose-600'">{{ m.tipo === 'INGRESO' ? '+' : '-' }} {{ formatMonto(m.monto) }}</strong></div><p class="break-words text-xs text-slate-700">{{ m.descripcion || 'Sin descripción' }}</p><div class="flex items-center justify-between gap-3 border-t border-slate-100 pt-3 text-[11px] text-slate-500"><span>{{ m.metodoPago ? metodoPagoLabel($any(m.metodoPago)) : 'Sin método' }}</span><span class="truncate text-right">{{ m.registradoPor || '—' }}</span></div></article> } @empty { <p class="p-8 text-center text-sm text-slate-400">No hay movimientos registrados.</p> }</div>
-      <div class="hidden overflow-x-auto md:block"><table class="w-full min-w-[760px] text-sm"><thead class="bg-slate-50 border-b border-slate-200"><tr><th class="px-4 py-2.5 text-left text-[10px] font-semibold text-slate-500">Fecha</th><th class="px-4 py-2.5 text-left text-[10px] font-semibold text-slate-500">Tipo</th><th class="px-4 py-2.5 text-left text-[10px] font-semibold text-slate-500">Descripción</th><th class="px-4 py-2.5 text-left text-[10px] font-semibold text-slate-500">Método</th><th class="px-4 py-2.5 text-right text-[10px] font-semibold text-slate-500">Monto</th><th class="px-4 py-2.5 text-left text-[10px] font-semibold text-slate-500">Usuario</th></tr></thead><tbody class="divide-y divide-slate-100">
-        @for (m of movimientos(); track m.id) { <tr><td class="px-4 py-3 text-xs text-slate-500 whitespace-nowrap">{{ formatFecha(m.fecha) }}</td><td class="px-4 py-3"><span class="px-2 py-1 rounded-full text-[10px] font-semibold" [class]="tipoBadge(m.tipo)">{{ tipoLabel(m.tipo) }}</span></td><td class="px-4 py-3 text-xs text-slate-700">{{ m.descripcion || '—' }}</td><td class="px-4 py-3 text-xs text-slate-500">{{ m.metodoPago ? metodoPagoLabel($any(m.metodoPago)) : '—' }}</td><td class="px-4 py-3 text-right text-xs font-bold" [class]="m.tipo === 'INGRESO' ? 'text-emerald-600' : 'text-rose-600'">{{ m.tipo === 'INGRESO' ? '+' : '-' }} {{ formatMonto(m.monto) }}</td><td class="px-4 py-3 text-xs text-slate-500">{{ m.registradoPor || '—' }}</td></tr> }
-        @empty { <tr><td colspan="6" class="px-4 py-10 text-center text-sm text-slate-400">No hay movimientos registrados.</td></tr> }
-      </tbody></table></div>
-    </article>
-    @if (totalRecords() > pageSize()) { <div class="bg-white border border-slate-200 rounded-xl"><p-paginator [first]="currentPage() * pageSize()" [rows]="pageSize()" [totalRecords]="totalRecords()" [showCurrentPageReport]="false" styleClass="!border-none !bg-transparent !py-3" (onPageChange)="cargar($event)" /></div> }
+        }
+      </aside>
+    </section>
+    <section class="grid grid-cols-1 xl:grid-cols-[minmax(0,1.65fr)_minmax(330px,.85fr)] gap-4">
+      <div class="flex flex-col gap-3 min-w-0">
+        <article class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+          <div class="px-4 sm:px-5 py-3.5 border-b border-slate-200 bg-[#f8fafc] flex items-center justify-between gap-3"><div class="flex items-center gap-2"><i class="pi pi-history text-[#0066AA]"></i><h2 class="text-sm font-bold text-slate-900">Últimos movimientos en caja</h2></div><span class="text-xs text-slate-500">{{ totalRecords() }} registros</span></div>
+          <div class="divide-y divide-slate-100 lg:hidden">@for (m of movimientos(); track m.id) { <article class="space-y-3 p-4"><div class="flex items-start justify-between gap-3"><div><span class="rounded-full px-2 py-1 text-[10px] font-semibold" [class]="tipoBadge(m.tipo)">{{ tipoLabel(m.tipo) }}</span><p class="mt-2 text-xs text-slate-500">{{ formatFecha(m.fecha) }}</p></div><strong class="text-sm" [class]="m.tipo === 'INGRESO' ? 'text-emerald-600' : 'text-rose-600'">{{ m.tipo === 'INGRESO' ? '+' : '-' }} {{ formatMonto(m.monto) }}</strong></div><p class="break-words text-xs text-slate-700">{{ m.descripcion || 'Sin descripción' }}</p><div class="flex items-center justify-between gap-3 border-t border-slate-100 pt-3 text-[11px] text-slate-500"><span>{{ m.metodoPago ? metodoPagoLabel($any(m.metodoPago)) : 'Sin método' }}</span><span class="truncate text-right">{{ m.registradoPor || '—' }}</span></div></article> } @empty { <p class="p-8 text-center text-sm text-slate-400">No hay movimientos registrados.</p> }</div>
+          <div class="hidden overflow-x-auto md:block"><table class="w-full min-w-[760px] text-sm"><thead class="bg-slate-50 border-b border-slate-200"><tr><th class="px-4 py-2.5 text-left text-[10px] font-semibold text-slate-500">Fecha</th><th class="px-4 py-2.5 text-left text-[10px] font-semibold text-slate-500">Tipo</th><th class="px-4 py-2.5 text-left text-[10px] font-semibold text-slate-500">Descripción</th><th class="px-4 py-2.5 text-left text-[10px] font-semibold text-slate-500">Método</th><th class="px-4 py-2.5 text-right text-[10px] font-semibold text-slate-500">Monto</th><th class="px-4 py-2.5 text-left text-[10px] font-semibold text-slate-500">Usuario</th></tr></thead><tbody class="divide-y divide-slate-100">
+          @for (m of movimientos(); track m.id) { <tr><td class="px-4 py-3 text-xs text-slate-500 whitespace-nowrap">{{ formatFecha(m.fecha) }}</td><td class="px-4 py-3"><span class="px-2 py-1 rounded-full text-[10px] font-semibold" [class]="tipoBadge(m.tipo)">{{ tipoLabel(m.tipo) }}</span></td><td class="px-4 py-3 text-xs text-slate-700">{{ m.descripcion || '—' }}</td><td class="px-4 py-3 text-xs text-slate-500">{{ m.metodoPago ? metodoPagoLabel($any(m.metodoPago)) : '—' }}</td><td class="px-4 py-3 text-right text-xs font-bold" [class]="m.tipo === 'INGRESO' ? 'text-emerald-600' : 'text-rose-600'">{{ m.tipo === 'INGRESO' ? '+' : '-' }} {{ formatMonto(m.monto) }}</td><td class="px-4 py-3 text-xs text-slate-500">{{ m.registradoPor || '—' }}</td></tr> }
+          @empty { <tr><td colspan="6" class="px-4 py-10 text-center text-sm text-slate-400">No hay movimientos registrados.</td></tr> }
+        </tbody></table></div>
+      </article>
+      @if (totalRecords() > pageSize()) { <div class="bg-white border border-slate-200 rounded-xl"><p-paginator [first]="currentPage() * pageSize()" [rows]="pageSize()" [totalRecords]="totalRecords()" [showCurrentPageReport]="false" styleClass="!border-none !bg-transparent !py-3" (onPageChange)="cargar($event)" /></div> }
     </div>
-
     <aside class="bg-white border border-slate-200 rounded-xl p-4 h-fit">
       <h2 class="text-sm font-bold text-slate-900">Acciones rápidas</h2>
       <div class="grid grid-cols-2 gap-2 mt-3">
@@ -183,7 +175,7 @@
       </div>
     </aside>
   </section>
-  </ng-container>
+}
 </main>
 
 @if (showEgresoModal()) {

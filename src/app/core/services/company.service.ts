@@ -1,10 +1,11 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { CompanyDTO } from '../../models/request/company-dto';
 import { CompanyListResponse } from '../../models/response/company-list-response';
 import { Page } from '../../models/response/page';
 import { ApiResponse } from '../../models/response/api-response';
+import { SKIP_GLOBAL_LOADING } from '../interceptors/api.interceptor';
 
 @Injectable({
   providedIn: 'root'
@@ -43,10 +44,24 @@ export class CompanyService {
       `${environment.apiUrl}/company/branding/${slug}`
     );
   }
+
+  /** Publico, sin autenticacion - buscador de clinica para el login sin slug. */
+  searchByName(query: string) {
+    return this.http.get<ApiResponse<CompanySearchResult[]>>(
+      `${environment.apiUrl}/company/search`,
+      { params: { q: query }, context: new HttpContext().set(SKIP_GLOBAL_LOADING, true) }
+    );
+  }
 }
 
 export interface CompanyBrandingResponse {
   name: string;
   logoUrl: string | null;
   colorPrimario: string | null;
+}
+
+export interface CompanySearchResult {
+  name: string;
+  slug: string;
+  logoUrl: string | null;
 }

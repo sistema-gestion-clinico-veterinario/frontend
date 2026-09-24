@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { ItemCount } from '../../../models/response/reportes-clinicos-response';
 
@@ -10,7 +10,7 @@ import { ItemCount } from '../../../models/response/reportes-clinicos-response';
 @Component({
   selector: 'app-reportes-meter',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="flex flex-col items-center justify-center gap-3 py-4">

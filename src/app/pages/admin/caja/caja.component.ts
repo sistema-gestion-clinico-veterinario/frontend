@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { ToastModule } from 'primeng/toast';
 import { PaginatorModule } from 'primeng/paginator';
@@ -18,7 +18,7 @@ import { RealtimeStompConnection, RealtimeStompService } from '../../../core/ser
 @Component({
   selector: 'app-caja',
   standalone: true,
-  imports: [CommonModule, FormsModule, ToastModule, PaginatorModule],
+  imports: [FormsModule, ToastModule, PaginatorModule],
   providers: [MessageService],
   templateUrl: './caja.component.html',
   styleUrl: './caja.component.scss'
