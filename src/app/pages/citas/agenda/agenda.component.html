@@ -106,20 +106,20 @@
           <table class="w-full text-sm min-w-[800px]">
             <thead class="bg-white border-b border-slate-200">
               <tr>
-                <th class="text-left px-5 py-3"><p-skeleton width="80px" height="12px"></p-skeleton></th>
-                <th class="text-left px-5 py-3"><p-skeleton width="70px" height="12px"></p-skeleton></th>
-                <th class="text-left px-5 py-3 hidden md:table-cell"><p-skeleton width="70px" height="12px"></p-skeleton></th>
-                <th class="text-left px-5 py-3 hidden lg:table-cell"><p-skeleton width="80px" height="12px"></p-skeleton></th>
-                <th class="text-left px-5 py-3 hidden lg:table-cell"><p-skeleton width="60px" height="12px"></p-skeleton></th>
-                <th class="text-left px-5 py-3"><p-skeleton width="50px" height="12px"></p-skeleton></th>
-                <th class="text-center px-5 py-3 w-16"><p-skeleton width="60px" height="12px"></p-skeleton></th>
+                <th class="text-left px-5 py-2"><p-skeleton width="80px" height="12px"></p-skeleton></th>
+                <th class="text-left px-5 py-2"><p-skeleton width="70px" height="12px"></p-skeleton></th>
+                <th class="text-left px-5 py-2 hidden md:table-cell"><p-skeleton width="70px" height="12px"></p-skeleton></th>
+                <th class="text-left px-5 py-2 hidden lg:table-cell"><p-skeleton width="80px" height="12px"></p-skeleton></th>
+                <th class="text-left px-5 py-2 hidden lg:table-cell"><p-skeleton width="60px" height="12px"></p-skeleton></th>
+                <th class="text-left px-5 py-2"><p-skeleton width="50px" height="12px"></p-skeleton></th>
+                <th class="text-center px-5 py-2 w-16"><p-skeleton width="60px" height="12px"></p-skeleton></th>
               </tr>
             </thead>
             <tbody>
               @for (i of [1,2,3,4,5]; track i) {
                 <tr class="border-b border-slate-100">
-                  <td class="px-5 py-3"><p-skeleton width="50px" height="16px"></p-skeleton></td>
-                  <td class="px-5 py-3">
+                  <td class="px-5 py-2"><p-skeleton width="50px" height="16px"></p-skeleton></td>
+                  <td class="px-5 py-2">
                     <div class="flex items-center gap-3">
                       <p-skeleton shape="circle" size="32px"></p-skeleton>
                       <div class="flex flex-col gap-1.5">
@@ -128,11 +128,11 @@
                       </div>
                     </div>
                   </td>
-                  <td class="px-5 py-3 hidden md:table-cell"><p-skeleton width="90px" height="14px"></p-skeleton></td>
-                  <td class="px-5 py-3 hidden lg:table-cell"><p-skeleton width="100px" height="14px"></p-skeleton></td>
-                  <td class="px-5 py-3 hidden lg:table-cell"><p-skeleton width="120px" height="24px" borderRadius="9999px"></p-skeleton></td>
-                  <td class="px-5 py-3"><p-skeleton width="80px" height="24px" borderRadius="9999px"></p-skeleton></td>
-                  <td class="px-5 py-3 text-center"><p-skeleton width="36px" height="36px" borderRadius="8px"></p-skeleton></td>
+                  <td class="px-5 py-2 hidden md:table-cell"><p-skeleton width="90px" height="14px"></p-skeleton></td>
+                  <td class="px-5 py-2 hidden lg:table-cell"><p-skeleton width="100px" height="14px"></p-skeleton></td>
+                  <td class="px-5 py-2 hidden lg:table-cell"><p-skeleton width="120px" height="24px" borderRadius="9999px"></p-skeleton></td>
+                  <td class="px-5 py-2"><p-skeleton width="80px" height="24px" borderRadius="9999px"></p-skeleton></td>
+                  <td class="px-5 py-2 text-center"><p-skeleton width="36px" height="36px" borderRadius="8px"></p-skeleton></td>
                 </tr>
               }
             </tbody>
@@ -403,7 +403,7 @@
                   <!-- Citas del día (la fecha completa va en la columna "Fecha y hora" de cada fila) -->
                   @for (cita of grupo.items; track cita) {
                     <div (click)="verDetalleCita(cita)"
-                      class="cursor-pointer border-b border-slate-100 px-4 py-3 transition-colors last:border-0 hover:bg-slate-50 sm:px-5">
+                      class="cursor-pointer border-b border-slate-100 px-4 py-2 transition-colors last:border-0 hover:bg-slate-50 sm:px-5">
                       <!-- Tarjeta mobile: agrupa lo esencial (hora, paciente, estado) y una 2ª línea con apoderado/veterinario/motivo -->
                       <div class="flex flex-col gap-1.5 sm:hidden">
                         <div class="flex items-center gap-2.5">

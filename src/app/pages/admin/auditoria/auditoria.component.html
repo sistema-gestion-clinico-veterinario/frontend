@@ -156,16 +156,16 @@
       <table class="w-full text-sm">
         <thead class="bg-slate-50 border-b border-slate-200">
           <tr>
-            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider whitespace-nowrap">Fecha / Hora</th>
-            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Usuario</th>
-            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider whitespace-nowrap">Rol</th>
+            <th class="px-4 py-2 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider whitespace-nowrap">Fecha / Hora</th>
+            <th class="px-4 py-2 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Usuario</th>
+            <th class="px-4 py-2 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider whitespace-nowrap">Rol</th>
             @if (isSuperAdmin()) {
-              <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider whitespace-nowrap">Clínica</th>
+              <th class="px-4 py-2 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider whitespace-nowrap">Clínica</th>
             }
-            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Módulo</th>
-            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Acción</th>
-            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Detalle de Operación</th>
-            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider whitespace-nowrap">Origen IP</th>
+            <th class="px-4 py-2 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Módulo</th>
+            <th class="px-4 py-2 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Acción</th>
+            <th class="px-4 py-2 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Detalle de Operación</th>
+            <th class="px-4 py-2 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider whitespace-nowrap">Origen IP</th>
           </tr>
         </thead>
         <tbody>
@@ -183,36 +183,36 @@
           @for (log of logs(); track log) {
             <tr
               class="border-b border-slate-100 hover:bg-slate-50 transition-colors text-slate-600">
-              <td class="px-4 py-3 text-sm whitespace-nowrap">
+              <td class="px-4 py-2 text-sm whitespace-nowrap">
                 {{ log.timestamp | date: 'dd/MM/yyyy HH:mm:ss' }}
               </td>
-              <td class="px-4 py-3 text-sm font-medium text-slate-800 max-w-[200px] truncate" [title]="log.userEmail">
+              <td class="px-4 py-2 text-sm font-medium text-slate-800 max-w-[200px] truncate" [title]="log.userEmail">
                 {{ log.userEmail || 'Anónimo / Sistema' }}
               </td>
-              <td class="px-4 py-3 whitespace-nowrap">
+              <td class="px-4 py-2 whitespace-nowrap">
                 <span class="text-xs px-2 py-0.5 rounded-full bg-slate-100 border border-slate-200 text-slate-600">
                   {{ log.userRole || '-' }}
                 </span>
               </td>
               @if (isSuperAdmin()) {
-                <td class="px-4 py-3 whitespace-nowrap text-sm font-semibold text-slate-700">
+                <td class="px-4 py-2 whitespace-nowrap text-sm font-semibold text-slate-700">
                   {{ log.companyName || 'Multi-Sede' }}
                 </td>
               }
-              <td class="px-4 py-3 whitespace-nowrap">
+              <td class="px-4 py-2 whitespace-nowrap">
                 <span [ngClass]="getModuleBadgeClass(log.module)" class="text-xs px-2.5 py-1 font-semibold rounded-md border">
                   {{ log.module }}
                 </span>
               </td>
-              <td class="px-4 py-3 whitespace-nowrap">
+              <td class="px-4 py-2 whitespace-nowrap">
                 <span [ngClass]="getActionBadgeClass(log.action)" class="text-xs px-2.5 py-1 font-bold rounded-full border">
                   {{ log.action }}
                 </span>
               </td>
-              <td class="px-4 py-3 text-sm max-w-[260px]">
+              <td class="px-4 py-2 text-sm max-w-[260px]">
                 <span class="line-clamp-2" [title]="log.details">{{ log.details }}</span>
               </td>
-              <td class="px-4 py-3 font-mono text-xs text-slate-500 whitespace-nowrap">
+              <td class="px-4 py-2 font-mono text-xs text-slate-500 whitespace-nowrap">
                 {{ log.ipAddress || 'Interna' }}
               </td>
             </tr>
@@ -220,7 +220,7 @@
         </tbody>
       </table>
     </div>
-    <div class="audit-paginator border-t border-slate-200 px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 bg-white">
+    <div class="audit-paginator border-t border-slate-200 px-4 py-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 bg-white">
       <p class="text-xs text-slate-500">
         Total: <span class="font-semibold text-slate-700">{{ totalRecords() }}</span> registros
       </p>

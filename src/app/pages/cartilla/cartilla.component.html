@@ -162,23 +162,23 @@
               <table class="w-full text-left text-sm">
                 <thead class="bg-slate-50 border-b border-slate-200">
                   <tr>
-                    <th class="text-left px-5 py-3 text-xs font-medium text-slate-400 uppercase tracking-wider">Mascota</th>
-                    <th class="text-left px-5 py-3 text-xs font-medium text-slate-400 uppercase tracking-wider">Especie</th>
-                    <th class="text-left px-5 py-3 text-xs font-medium text-slate-400 uppercase tracking-wider">Raza</th>
-                    <th class="text-left px-5 py-3 text-xs font-medium text-slate-400 uppercase tracking-wider">Propietario</th>
-                    <th class="text-left px-5 py-3 text-xs font-medium text-slate-400 uppercase tracking-wider">Última aplicación</th>
-                    <th class="text-left px-5 py-3 text-xs font-medium text-slate-400 uppercase tracking-wider">Control pendiente</th>
-                    <th class="text-right px-5 py-3 text-xs font-medium text-slate-400 uppercase tracking-wider">Acciones</th>
+                    <th class="text-left px-5 py-2 text-xs font-medium text-slate-400 uppercase tracking-wider">Mascota</th>
+                    <th class="text-left px-5 py-2 text-xs font-medium text-slate-400 uppercase tracking-wider">Especie</th>
+                    <th class="text-left px-5 py-2 text-xs font-medium text-slate-400 uppercase tracking-wider">Raza</th>
+                    <th class="text-left px-5 py-2 text-xs font-medium text-slate-400 uppercase tracking-wider">Propietario</th>
+                    <th class="text-left px-5 py-2 text-xs font-medium text-slate-400 uppercase tracking-wider">Última aplicación</th>
+                    <th class="text-left px-5 py-2 text-xs font-medium text-slate-400 uppercase tracking-wider">Control pendiente</th>
+                    <th class="text-right px-5 py-2 text-xs font-medium text-slate-400 uppercase tracking-wider">Acciones</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
                   @for (m of mascotasLista(); track m) {
                     <tr class="transition-colors hover:bg-slate-50">
-                      <td class="px-5 py-3 font-semibold text-slate-800">{{ m.nombreCompleto }}</td>
-                      <td class="px-5 py-3 text-slate-600">{{ m.especie }}</td>
-                      <td class="px-5 py-3 text-slate-600">{{ m.razaNombre || 'Sin raza' }}</td>
-                      <td class="px-5 py-3 text-slate-600">{{ m.apoderadoNombreCompleto }}</td>
-                      <td class="px-5 py-3 text-sm text-slate-600">
+                      <td class="px-5 py-2 font-semibold text-slate-800">{{ m.nombreCompleto }}</td>
+                      <td class="px-5 py-2 text-slate-600">{{ m.especie }}</td>
+                      <td class="px-5 py-2 text-slate-600">{{ m.razaNombre || 'Sin raza' }}</td>
+                      <td class="px-5 py-2 text-slate-600">{{ m.apoderadoNombreCompleto }}</td>
+                      <td class="px-5 py-2 text-sm text-slate-600">
                         @if (m.fechaUltimaAplicacion) {
                           <span class="font-medium">{{ formatoFechaCorta(m.fechaUltimaAplicacion) }}</span>
                         }
@@ -186,7 +186,7 @@
                           <span class="text-slate-400">Sin aplicaciones</span>
                         }
                       </td>
-                      <td class="px-5 py-3">
+                      <td class="px-5 py-2">
                         @if (m.controlPendienteNombre) {
                           <div class="flex items-center gap-2">
                             <span class="size-2 shrink-0 rounded-full"
@@ -200,7 +200,7 @@
                           <span class="text-xs text-slate-400">Sin controles</span>
                         }
                       </td>
-                      <td class="px-5 py-3 text-right">
+                      <td class="px-5 py-2 text-right">
                         <div class="flex items-center justify-end gap-1.5">
                           @if (m.controlPendienteNombre && m.apoderadoTelefono) {
                             <button type="button"
@@ -318,17 +318,17 @@
             </div>
             <div class="hidden overflow-x-auto md:block">
               <table class="w-full min-w-[760px] text-left">
-                <thead class="border-b border-slate-200 bg-slate-50/70"><tr><th class="px-5 py-3 text-[10px] font-bold uppercase tracking-wide text-slate-500">Aplicación</th><th class="px-4 py-3 text-[10px] font-bold uppercase tracking-wide text-slate-500">Producto</th><th class="px-4 py-3 text-[10px] font-bold uppercase tracking-wide text-slate-500">Responsable</th><th class="px-4 py-3 text-[10px] font-bold uppercase tracking-wide text-slate-500">Lote / dosis</th><th class="px-5 py-3 text-[10px] font-bold uppercase tracking-wide text-slate-500">Próxima aplicación</th><th class="px-5 py-3 text-right text-[10px] font-bold uppercase tracking-wide text-slate-500">Acciones</th></tr></thead>
+                <thead class="border-b border-slate-200 bg-slate-50/70"><tr><th class="px-5 py-2 text-[10px] font-bold uppercase tracking-wide text-slate-500">Aplicación</th><th class="px-4 py-2 text-[10px] font-bold uppercase tracking-wide text-slate-500">Producto</th><th class="px-4 py-2 text-[10px] font-bold uppercase tracking-wide text-slate-500">Responsable</th><th class="px-4 py-2 text-[10px] font-bold uppercase tracking-wide text-slate-500">Lote / dosis</th><th class="px-5 py-2 text-[10px] font-bold uppercase tracking-wide text-slate-500">Próxima aplicación</th><th class="px-5 py-2 text-right text-[10px] font-bold uppercase tracking-wide text-slate-500">Acciones</th></tr></thead>
                 <tbody class="divide-y divide-slate-100">
                   @for (aplicacion of aplicacionesModo(); track aplicacion) {
                     <tr class="transition-colors hover:bg-slate-50/60" [class.opacity-50]="aplicacion.activo === false">
-                      <td class="px-5 py-4 text-sm font-bold text-slate-800">{{ formatoFechaCorta(aplicacion.fechaAplicacion) }}</td>
-                      <td class="px-4 py-4"><strong class="block text-sm text-slate-800">{{ aplicacion.nombreControl }}</strong><small class="text-[10px] text-slate-500">{{ tipoLabel(aplicacion.tipo) }}</small></td>
-                      <td class="px-4 py-4 text-xs text-slate-600">{{ aplicacion.veterinarioNombre || '—' }}</td>
-                      <td class="px-4 py-4 text-xs text-slate-600">{{ aplicacion.lote || '—' }}@if (aplicacion.dosis) {
+                      <td class="px-5 py-2 text-sm font-bold text-slate-800">{{ formatoFechaCorta(aplicacion.fechaAplicacion) }}</td>
+                      <td class="px-4 py-2"><strong class="block text-sm text-slate-800">{{ aplicacion.nombreControl }}</strong><small class="text-[10px] text-slate-500">{{ tipoLabel(aplicacion.tipo) }}</small></td>
+                      <td class="px-4 py-2 text-xs text-slate-600">{{ aplicacion.veterinarioNombre || '—' }}</td>
+                      <td class="px-4 py-2 text-xs text-slate-600">{{ aplicacion.lote || '—' }}@if (aplicacion.dosis) {
                         <span> · {{ aplicacion.dosis }} {{ aplicacion.unidadDosis }}</span>
                       }</td>
-                      <td class="px-5 py-4">
+                      <td class="px-5 py-2">
                         @if (aplicacion.fechaProximaAplicacion) {
                           <span class="text-xs font-bold text-[#0066AA]">{{ formatoFechaCorta(aplicacion.fechaProximaAplicacion) }}</span>
                         }
@@ -336,7 +336,7 @@
                           <span class="text-xs font-semibold text-slate-400">Última aplicación</span>
                         }
                       </td>
-                      <td class="px-5 py-4 text-right">
+                      <td class="px-5 py-2 text-right">
                         <div class="flex items-center justify-end gap-1">
                           <button type="button" (click)="editarAplicacion(aplicacion)" pTooltip="Editar"
                             class="grid size-8 place-items-center rounded-lg text-slate-400 transition-colors hover:bg-blue-50 hover:text-[#0066AA]">
@@ -443,24 +443,24 @@
         <table class="w-full text-left text-sm">
           <thead class="bg-slate-50 border-b border-slate-200">
             <tr>
-              <th class="text-left px-5 py-3"><p-skeleton width="80px" height="12px" borderRadius="6px"></p-skeleton></th>
-              <th class="text-left px-5 py-3"><p-skeleton width="60px" height="12px" borderRadius="6px"></p-skeleton></th>
-              <th class="text-left px-5 py-3"><p-skeleton width="50px" height="12px" borderRadius="6px"></p-skeleton></th>
-              <th class="text-left px-5 py-3"><p-skeleton width="70px" height="12px" borderRadius="6px"></p-skeleton></th>
-              <th class="text-left px-5 py-3"><p-skeleton width="90px" height="12px" borderRadius="6px"></p-skeleton></th>
-              <th class="text-left px-5 py-3"><p-skeleton width="100px" height="12px" borderRadius="6px"></p-skeleton></th>
-              <th class="text-right px-5 py-3"><p-skeleton width="60px" height="12px" borderRadius="6px"></p-skeleton></th>
+              <th class="text-left px-5 py-2"><p-skeleton width="80px" height="12px" borderRadius="6px"></p-skeleton></th>
+              <th class="text-left px-5 py-2"><p-skeleton width="60px" height="12px" borderRadius="6px"></p-skeleton></th>
+              <th class="text-left px-5 py-2"><p-skeleton width="50px" height="12px" borderRadius="6px"></p-skeleton></th>
+              <th class="text-left px-5 py-2"><p-skeleton width="70px" height="12px" borderRadius="6px"></p-skeleton></th>
+              <th class="text-left px-5 py-2"><p-skeleton width="90px" height="12px" borderRadius="6px"></p-skeleton></th>
+              <th class="text-left px-5 py-2"><p-skeleton width="100px" height="12px" borderRadius="6px"></p-skeleton></th>
+              <th class="text-right px-5 py-2"><p-skeleton width="60px" height="12px" borderRadius="6px"></p-skeleton></th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100">
             @for (i of [1,2,3,4,5]; track i) {
               <tr>
-                <td class="px-5 py-3"><p-skeleton width="140px" height="16px" borderRadius="6px"></p-skeleton></td>
-                <td class="px-5 py-3"><p-skeleton width="60px" height="16px" borderRadius="6px"></p-skeleton></td>
-                <td class="px-5 py-3"><p-skeleton width="80px" height="16px" borderRadius="6px"></p-skeleton></td>
-                <td class="px-5 py-3"><p-skeleton width="120px" height="16px" borderRadius="6px"></p-skeleton></td>
-                <td class="px-5 py-3"><p-skeleton width="90px" height="16px" borderRadius="6px"></p-skeleton></td>
-                <td class="px-5 py-3">
+                <td class="px-5 py-2"><p-skeleton width="140px" height="16px" borderRadius="6px"></p-skeleton></td>
+                <td class="px-5 py-2"><p-skeleton width="60px" height="16px" borderRadius="6px"></p-skeleton></td>
+                <td class="px-5 py-2"><p-skeleton width="80px" height="16px" borderRadius="6px"></p-skeleton></td>
+                <td class="px-5 py-2"><p-skeleton width="120px" height="16px" borderRadius="6px"></p-skeleton></td>
+                <td class="px-5 py-2"><p-skeleton width="90px" height="16px" borderRadius="6px"></p-skeleton></td>
+                <td class="px-5 py-2">
                   <div class="flex items-center gap-2">
                     <p-skeleton shape="circle" size="8px"></p-skeleton>
                     <div class="flex flex-col gap-1">
@@ -469,7 +469,7 @@
                     </div>
                   </div>
                 </td>
-                <td class="px-5 py-3 text-right">
+                <td class="px-5 py-2 text-right">
                   <p-skeleton width="100px" height="32px" borderRadius="8px" styleClass="ml-auto"></p-skeleton>
                 </td>
               </tr>
