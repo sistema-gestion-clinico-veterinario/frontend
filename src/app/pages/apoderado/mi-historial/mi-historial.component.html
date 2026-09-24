@@ -18,46 +18,54 @@
       <div class="bg-white border border-slate-200 rounded-xl overflow-hidden p-4">
         <h2 class="text-xs font-extrabold text-slate-400 uppercase tracking-widest mb-3">Tus Mascotas</h2>
 
-        <div *ngIf="loadingPets()" class="space-y-2" aria-label="Cargando mascotas">
-          <div *ngFor="let item of [1, 2, 3]" class="flex animate-pulse items-center gap-3 rounded-lg border border-slate-100 p-3">
-            <span class="size-10 rounded-lg bg-slate-200"></span>
-            <span class="flex-1 space-y-2">
-              <span class="block h-3 w-2/3 rounded bg-slate-200"></span>
-              <span class="block h-2.5 w-1/2 rounded bg-slate-100"></span>
-            </span>
+        @if (loadingPets()) {
+          <div class="space-y-2" aria-label="Cargando mascotas">
+            @for (item of [1, 2, 3]; track item) {
+              <div class="flex animate-pulse items-center gap-3 rounded-lg border border-slate-100 p-3">
+                <span class="size-10 rounded-lg bg-slate-200"></span>
+                <span class="flex-1 space-y-2">
+                  <span class="block h-3 w-2/3 rounded bg-slate-200"></span>
+                  <span class="block h-2.5 w-1/2 rounded bg-slate-100"></span>
+                </span>
+              </div>
+            }
           </div>
-        </div>
-        
+        }
+
         <!-- Si no hay mascotas -->
-        <div *ngIf="!loadingPets() && mascotas().length === 0" class="py-8 text-center text-slate-400">
-          <i class="pi pi-heart text-2xl block mb-2 text-slate-200"></i>
-          <p class="text-xs font-medium">No tienes mascotas registradas</p>
-        </div>
+        @if (!loadingPets() && mascotas().length === 0) {
+          <div class="py-8 text-center text-slate-400">
+            <i class="pi pi-heart text-2xl block mb-2 text-slate-200"></i>
+            <p class="text-xs font-medium">No tienes mascotas registradas</p>
+          </div>
+        }
 
         <!-- Lista de Mascotas -->
-        <div *ngIf="!loadingPets()" class="flex flex-col gap-2 max-h-[500px] overflow-y-auto">
-          <button *ngFor="let m of mascotas()"
-            (click)="seleccionarMascota(m)"
+        @if (!loadingPets()) {
+          <div class="flex flex-col gap-2 max-h-[500px] overflow-y-auto">
+            @for (m of mascotas(); track m) {
+              <button
+                (click)="seleccionarMascota(m)"
             [class]="mascotaActiva()?.id === m.id
               ? 'w-full flex items-center gap-3 p-3 bg-blue-50/70 border-l-4 border-[#0066AA] rounded-r-xl transition-all'
               : 'w-full flex items-center gap-3 p-3 hover:bg-slate-50 border-l-4 border-transparent rounded-xl transition-all'">
-            
-            <!-- Avatar Inicial -->
-            <div [class]="mascotaActiva()?.id === m.id ? 'bg-[#0066AA] text-white' : 'bg-slate-100 text-slate-600'"
-              class="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm shrink-0 transition-colors">
-              {{ m.nombreCompleto.charAt(0) }}
-            </div>
-
-            <!-- Datos rápidos -->
-            <div class="text-left min-w-0">
-              <p class="text-sm font-extrabold text-slate-800 truncate">{{ m.nombreCompleto }}</p>
-              <p class="text-xs text-slate-400 font-medium truncate flex items-center gap-1">
-                <i class="pi pi-heart-fill text-[9px] text-pink-400"></i>
-                {{ m.especie | titlecase }} · {{ m.raza || 'Sin Raza' }}
-              </p>
-            </div>
-          </button>
-        </div>
+                <!-- Avatar Inicial -->
+                <div [class]="mascotaActiva()?.id === m.id ? 'bg-[#0066AA] text-white' : 'bg-slate-100 text-slate-600'"
+                  class="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm shrink-0 transition-colors">
+                  {{ m.nombreCompleto.charAt(0) }}
+                </div>
+                <!-- Datos rápidos -->
+                <div class="text-left min-w-0">
+                  <p class="text-sm font-extrabold text-slate-800 truncate">{{ m.nombreCompleto }}</p>
+                  <p class="text-xs text-slate-400 font-medium truncate flex items-center gap-1">
+                    <i class="pi pi-heart-fill text-[9px] text-pink-400"></i>
+                    {{ m.especie | titlecase }} · {{ m.raza || 'Sin Raza' }}
+                  </p>
+                </div>
+              </button>
+            }
+          </div>
+        }
       </div>
     </div>
 
@@ -65,50 +73,59 @@
     <div class="lg:col-span-3">
 
       <!-- Estado: Ninguna Mascota Seleccionada -->
-      <div *ngIf="!mascotaActiva()"
-        class="bg-white border border-slate-200 rounded-xl py-24 text-center px-6">
-        <div class="w-16 h-16 rounded-2xl bg-blue-50 text-[#0066AA] flex items-center justify-center mx-auto mb-4">
-          <i class="pi pi-heart text-3xl"></i>
+      @if (!mascotaActiva()) {
+        <div
+          class="bg-white border border-slate-200 rounded-xl py-24 text-center px-6">
+          <div class="w-16 h-16 rounded-2xl bg-blue-50 text-[#0066AA] flex items-center justify-center mx-auto mb-4">
+            <i class="pi pi-heart text-3xl"></i>
+          </div>
+          <h3 class="text-lg font-bold text-slate-800 mb-1">Visualiza el historial médico</h3>
+          <p class="text-sm text-slate-400 max-w-sm mx-auto">
+            Selecciona una de tus mascotas de la columna de la izquierda para explorar sus consultas previas, recetas y archivos adjuntos.
+          </p>
         </div>
-        <h3 class="text-lg font-bold text-slate-800 mb-1">Visualiza el historial médico</h3>
-        <p class="text-sm text-slate-400 max-w-sm mx-auto">
-          Selecciona una de tus mascotas de la columna de la izquierda para explorar sus consultas previas, recetas y archivos adjuntos.
-        </p>
-      </div>
+      }
 
       <!-- Estado: Cargando Historia Clínica -->
-      <div *ngIf="mascotaActiva() && loadingHc()" class="animate-pulse space-y-5" aria-label="Cargando historial médico">
-        <div class="bg-white border border-slate-200 rounded-xl p-5 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4">
-          <div *ngFor="let i of [1,2,3,4,5,6]" class="space-y-2">
-            <div class="h-2.5 w-2/3 rounded bg-slate-100"></div>
-            <div class="h-3.5 w-full rounded bg-slate-200"></div>
+      @if (mascotaActiva() && loadingHc()) {
+        <div class="animate-pulse space-y-5" aria-label="Cargando historial médico">
+          <div class="bg-white border border-slate-200 rounded-xl p-5 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4">
+            @for (i of [1,2,3,4,5,6]; track i) {
+              <div class="space-y-2">
+                <div class="h-2.5 w-2/3 rounded bg-slate-100"></div>
+                <div class="h-3.5 w-full rounded bg-slate-200"></div>
+              </div>
+            }
+          </div>
+          <div class="flex flex-col lg:flex-row gap-5">
+            <div class="w-full lg:w-72 shrink-0 bg-white border border-slate-200 rounded-xl p-4 space-y-3">
+              @for (i of [1,2,3]; track i) {
+                <div class="h-16 rounded-lg bg-slate-100"></div>
+              }
+            </div>
+            <div class="flex-1 bg-white border border-slate-200 rounded-xl p-5 space-y-3">
+              <div class="h-4 w-1/3 rounded bg-slate-200"></div>
+              <div class="h-24 rounded-lg bg-slate-100"></div>
+              <div class="h-24 rounded-lg bg-slate-100"></div>
+            </div>
           </div>
         </div>
-        <div class="flex flex-col lg:flex-row gap-5">
-          <div class="w-full lg:w-72 shrink-0 bg-white border border-slate-200 rounded-xl p-4 space-y-3">
-            <div *ngFor="let i of [1,2,3]" class="h-16 rounded-lg bg-slate-100"></div>
-          </div>
-          <div class="flex-1 bg-white border border-slate-200 rounded-xl p-5 space-y-3">
-            <div class="h-4 w-1/3 rounded bg-slate-200"></div>
-            <div class="h-24 rounded-lg bg-slate-100"></div>
-            <div class="h-24 rounded-lg bg-slate-100"></div>
-          </div>
-        </div>
-      </div>
+      }
 
       <!-- Estado: Sin HC registrada -->
-      <div *ngIf="mascotaActiva() && !loadingHc() && noTieneHc()"
-        class="bg-white border border-slate-200 rounded-xl py-20 text-center px-6">
-        <div class="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
-          <i class="pi pi-file text-2xl text-slate-300"></i>
+      @if (mascotaActiva() && !loadingHc() && noTieneHc()) {
+        <div
+          class="bg-white border border-slate-200 rounded-xl py-20 text-center px-6">
+          <div class="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
+            <i class="pi pi-file text-2xl text-slate-300"></i>
+          </div>
+          <p class="text-sm font-bold text-slate-500 mb-1">Esta mascota aún no tiene historia clínica</p>
+          <p class="text-xs text-slate-400">Se generará automáticamente cuando realice su primera consulta en la veterinaria.</p>
         </div>
-        <p class="text-sm font-bold text-slate-500 mb-1">Esta mascota aún no tiene historia clínica</p>
-        <p class="text-xs text-slate-400">Se generará automáticamente cuando realice su primera consulta en la veterinaria.</p>
-      </div>
+      }
 
       <!-- Estado: Historia Clínica Cargada con Éxito -->
-      <ng-container *ngIf="mascotaActiva() && !loadingHc() && hc()">
-
+      @if (mascotaActiva() && !loadingHc() && hc()) {
         <!-- Tarjeta de Datos de la Mascota Seleccionada -->
         <div class="bg-white border border-slate-200 rounded-xl p-5 mb-5 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4">
           <div>
@@ -136,10 +153,8 @@
             <p class="text-sm font-bold text-slate-700">{{ hc()!.numeroHc }}</p>
           </div>
         </div>
-
         <!-- Split horizontal: consultas de la mascota + detalle de consulta -->
         <div class="flex flex-col lg:flex-row gap-5">
-
           <!-- Consultas médicas previas -->
           <div class="w-full lg:w-72 shrink-0">
             <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
@@ -151,264 +166,312 @@
                   </span>
                 </p>
               </div>
-
               <!-- Sin consultas previas -->
-              <div *ngIf="hc()!.consultas.length === 0" class="py-12 text-center px-4">
-                <i class="pi pi-calendar text-2xl text-slate-200 block mb-2"></i>
-                <p class="text-xs text-slate-400 font-medium">Sin consultas registradas</p>
-              </div>
-
+              @if (hc()!.consultas.length === 0) {
+                <div class="py-12 text-center px-4">
+                  <i class="pi pi-calendar text-2xl text-slate-200 block mb-2"></i>
+                  <p class="text-xs text-slate-400 font-medium">Sin consultas registradas</p>
+                </div>
+              }
               <!-- Lista de consultas de la mascota seleccionada -->
               <div class="divide-y divide-slate-100 max-h-[480px] overflow-y-auto">
-                <button *ngFor="let consulta of hc()!.consultas"
-                  (click)="seleccionarConsulta(consulta)"
+                @for (consulta of hc()!.consultas; track consulta) {
+                  <button
+                    (click)="seleccionarConsulta(consulta)"
                   [class]="consultaActiva()?.id === consulta.id
                     ? 'w-full text-left px-4 py-3.5 bg-blue-50 border-l-2 border-[#0066AA]'
                     : 'w-full text-left px-4 py-3.5 hover:bg-slate-50 border-l-2 border-transparent'">
-                  <p class="text-xs font-extrabold text-slate-800 leading-snug line-clamp-2">
-                    {{ consulta.motivoConsulta }}
-                  </p>
-                  <div class="flex items-center gap-2 mt-1.5 flex-wrap">
-                    <span class="text-[10px] font-bold text-slate-400">
-                      {{ formatFecha(consulta.fechaConsulta) }}
-                    </span>
-                    <span class="text-[10px] font-extrabold px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500 uppercase tracking-wide">
-                      {{ tipoConsultaLabel(consulta.tipoConsulta) }}
-                    </span>
-                  </div>
-                  <p *ngIf="consulta.veterinarioNombre" class="text-[10px] text-slate-400 mt-1 truncate">
-                    <i class="pi pi-user mr-1 text-[8px]"></i>{{ consulta.veterinarioNombre }}
-                  </p>
-                </button>
+                    <p class="text-xs font-extrabold text-slate-800 leading-snug line-clamp-2">
+                      {{ consulta.motivoConsulta }}
+                    </p>
+                    <div class="flex items-center gap-2 mt-1.5 flex-wrap">
+                      <span class="text-[10px] font-bold text-slate-400">
+                        {{ formatFecha(consulta.fechaConsulta) }}
+                      </span>
+                      <span class="text-[10px] font-extrabold px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500 uppercase tracking-wide">
+                        {{ tipoConsultaLabel(consulta.tipoConsulta) }}
+                      </span>
+                    </div>
+                    @if (consulta.veterinarioNombre) {
+                      <p class="text-[10px] text-slate-400 mt-1 truncate">
+                        <i class="pi pi-user mr-1 text-[8px]"></i>{{ consulta.veterinarioNombre }}
+                      </p>
+                    }
+                  </button>
+                }
               </div>
             </div>
           </div>
-
           <!-- Detalle de la consulta seleccionada -->
           <div class="flex-1 min-w-0">
-            
             <!-- Si no hay consulta activa -->
-            <div *ngIf="!consultaActiva()"
-              class="bg-white border border-slate-200 rounded-xl py-20 text-center px-6">
-              <i class="pi pi-arrow-left text-2xl text-slate-200 block mb-3"></i>
-              <p class="text-xs text-slate-400 font-medium">Selecciona una consulta para ver su detalle</p>
-            </div>
-
-            <!-- Ficha detallada de la consulta -->
-            <div *ngIf="consultaActiva()" class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-              
-              <!-- Cabecera de Ficha -->
-              <div class="px-5 py-4 border-b border-slate-100">
-                <div class="flex items-start justify-between gap-3">
-                  <div>
-                    <p class="text-base font-extrabold text-slate-900 leading-snug">
-                      {{ consultaActiva()!.motivoConsulta }}
-                    </p>
-                    <p class="text-xs text-slate-400 mt-1">
-                      {{ formatFechaHora(consultaActiva()!.fechaConsulta) }}
-                      <span *ngIf="consultaActiva()!.veterinarioNombre"> · {{ consultaActiva()!.veterinarioNombre }}</span>
-                    </p>
-                  </div>
-                  <span class="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-slate-100 text-slate-500 uppercase tracking-wide shrink-0">
-                    {{ tipoConsultaLabel(consultaActiva()!.tipoConsulta) }}
-                  </span>
-                </div>
+            @if (!consultaActiva()) {
+              <div
+                class="bg-white border border-slate-200 rounded-xl py-20 text-center px-6">
+                <i class="pi pi-arrow-left text-2xl text-slate-200 block mb-3"></i>
+                <p class="text-xs text-slate-400 font-medium">Selecciona una consulta para ver su detalle</p>
               </div>
-
-              <!-- Menú de pestañas internas -->
-              <div class="flex border-b border-slate-100 px-5 bg-slate-50/50">
-                <button (click)="tabActiva.set('clinico')"
+            }
+            <!-- Ficha detallada de la consulta -->
+            @if (consultaActiva()) {
+              <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+                <!-- Cabecera de Ficha -->
+                <div class="px-5 py-4 border-b border-slate-100">
+                  <div class="flex items-start justify-between gap-3">
+                    <div>
+                      <p class="text-base font-extrabold text-slate-900 leading-snug">
+                        {{ consultaActiva()!.motivoConsulta }}
+                      </p>
+                      <p class="text-xs text-slate-400 mt-1">
+                        {{ formatFechaHora(consultaActiva()!.fechaConsulta) }}
+                        @if (consultaActiva()!.veterinarioNombre) {
+                          <span> · {{ consultaActiva()!.veterinarioNombre }}</span>
+                        }
+                      </p>
+                    </div>
+                    <span class="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-slate-100 text-slate-500 uppercase tracking-wide shrink-0">
+                      {{ tipoConsultaLabel(consultaActiva()!.tipoConsulta) }}
+                    </span>
+                  </div>
+                </div>
+                <!-- Menú de pestañas internas -->
+                <div class="flex border-b border-slate-100 px-5 bg-slate-50/50">
+                  <button (click)="tabActiva.set('clinico')"
                   [class]="tabActiva() === 'clinico'
                     ? 'py-3 text-xs font-extrabold text-[#0066AA] border-b-2 border-[#0066AA] mr-6'
                     : 'py-3 text-xs font-bold text-slate-400 border-b-2 border-transparent mr-6 hover:text-slate-600'">
-                  Clínico
-                </button>
-                <button (click)="tabActiva.set('recetas')"
+                    Clínico
+                  </button>
+                  <button (click)="tabActiva.set('recetas')"
                   [class]="tabActiva() === 'recetas'
                     ? 'py-3 text-xs font-extrabold text-[#0066AA] border-b-2 border-[#0066AA] mr-6'
                     : 'py-3 text-xs font-bold text-slate-400 border-b-2 border-transparent mr-6 hover:text-slate-600'">
-                  Recetas
-                  <span *ngIf="consultaActiva()!.prescripciones?.length > 0"
-                    class="ml-1 bg-blue-100 text-[#0066AA] rounded-full px-1.5 py-0.5 text-[10px]">
-                    {{ consultaActiva()!.prescripciones.length }}
-                  </span>
-                </button>
-                <button (click)="tabActiva.set('archivos')"
+                    Recetas
+                    @if (consultaActiva()!.prescripciones?.length > 0) {
+                      <span
+                        class="ml-1 bg-blue-100 text-[#0066AA] rounded-full px-1.5 py-0.5 text-[10px]">
+                        {{ consultaActiva()!.prescripciones.length }}
+                      </span>
+                    }
+                  </button>
+                  <button (click)="tabActiva.set('archivos')"
                   [class]="tabActiva() === 'archivos'
                     ? 'py-3 text-xs font-extrabold text-[#0066AA] border-b-2 border-[#0066AA]'
                     : 'py-3 text-xs font-bold text-slate-400 border-b-2 border-transparent hover:text-slate-600'">
-                  Archivos
-                  <span *ngIf="consultaActiva()!.archivos?.length > 0"
-                    class="ml-1 bg-blue-100 text-[#0066AA] rounded-full px-1.5 py-0.5 text-[10px]">
-                    {{ consultaActiva()!.archivos.length }}
-                  </span>
-                </button>
-              </div>
-
-              <!-- Pestaña 1: Detalles Clínicos -->
-              <div *ngIf="tabActiva() === 'clinico'" class="p-5 flex flex-col gap-5">
-                <!-- Signos vitales -->
-                <div>
-                  <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-3">Signos vitales</p>
-                  <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    <div class="bg-slate-50 rounded-xl px-4 py-3 text-center border border-slate-100">
-                      <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Peso</p>
-                      <p class="text-sm font-extrabold text-slate-700">
-                        {{ consultaActiva()!.pesoEnConsulta ? consultaActiva()!.pesoEnConsulta + ' kg' : '—' }}
-                      </p>
-                    </div>
-                    <div class="bg-slate-50 rounded-xl px-4 py-3 text-center border border-slate-100">
-                      <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Temperatura</p>
-                      <p class="text-sm font-extrabold text-slate-700">
-                        {{ consultaActiva()!.temperatura ? consultaActiva()!.temperatura + ' °C' : '—' }}
-                      </p>
-                    </div>
-                    <div class="bg-slate-50 rounded-xl px-4 py-3 text-center border border-slate-100">
-                      <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">F. Cardíaca</p>
-                      <p class="text-sm font-extrabold text-slate-700">
-                        {{ consultaActiva()!.frecuenciaCardiaca ? consultaActiva()!.frecuenciaCardiaca + ' lpm' : '—' }}
-                      </p>
-                    </div>
-                    <div class="bg-slate-50 rounded-xl px-4 py-3 text-center border border-slate-100">
-                      <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">F. Respiratoria</p>
-                      <p class="text-sm font-extrabold text-slate-700">
-                        {{ consultaActiva()!.frecuenciaRespiratoria ? consultaActiva()!.frecuenciaRespiratoria + ' rpm' : '—' }}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Anamnesis & Examen Físico -->
-                <div *ngIf="consultaActiva()!.anamnesis || consultaActiva()!.examenFisico" class="grid sm:grid-cols-2 gap-4">
-                  <div *ngIf="consultaActiva()!.anamnesis">
-                    <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-2">Anamnesis</p>
-                    <p class="text-xs text-slate-600 leading-relaxed bg-slate-50 rounded-xl px-4 py-3 border border-slate-100">
-                      {{ consultaActiva()!.anamnesis }}
-                    </p>
-                  </div>
-                  <div *ngIf="consultaActiva()!.examenFisico">
-                    <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-2">Examen físico</p>
-                    <p class="text-xs text-slate-600 leading-relaxed bg-slate-50 rounded-xl px-4 py-3 border border-slate-100">
-                      {{ consultaActiva()!.examenFisico }}
-                    </p>
-                  </div>
-                </div>
-
-                <!-- Observaciones -->
-                <div *ngIf="consultaActiva()!.observaciones">
-                  <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-2">Observaciones generales</p>
-                  <p class="text-xs text-slate-600 leading-relaxed bg-slate-50 rounded-xl px-4 py-3 border border-slate-100">
-                    {{ consultaActiva()!.observaciones }}
-                  </p>
-                </div>
-
-                <!-- Diagnósticos -->
-                <div *ngIf="consultaActiva()!.diagnosticos?.length > 0">
-                  <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-3">Diagnósticos médicos</p>
-                  <div class="flex flex-col gap-2">
-                    <div *ngFor="let d of consultaActiva()!.diagnosticos"
-                      class="flex items-start gap-3 bg-slate-50 rounded-xl px-4 py-3 border border-slate-100">
-                      <div class="flex-1 min-w-0">
-                        <p class="text-sm font-bold text-slate-800">{{ d.nombre }}</p>
-                        <p *ngIf="d.descripcion" class="text-xs text-slate-500 mt-0.5 leading-relaxed">{{ d.descripcion }}</p>
-                      </div>
-                      <span class="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-600 uppercase tracking-wide shrink-0">
-                        {{ d.tipo }}
+                    Archivos
+                    @if (consultaActiva()!.archivos?.length > 0) {
+                      <span
+                        class="ml-1 bg-blue-100 text-[#0066AA] rounded-full px-1.5 py-0.5 text-[10px]">
+                        {{ consultaActiva()!.archivos.length }}
                       </span>
+                    }
+                  </button>
+                </div>
+                <!-- Pestaña 1: Detalles Clínicos -->
+                @if (tabActiva() === 'clinico') {
+                  <div class="p-5 flex flex-col gap-5">
+                    <!-- Signos vitales -->
+                    <div>
+                      <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-3">Signos vitales</p>
+                      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        <div class="bg-slate-50 rounded-xl px-4 py-3 text-center border border-slate-100">
+                          <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Peso</p>
+                          <p class="text-sm font-extrabold text-slate-700">
+                            {{ consultaActiva()!.pesoEnConsulta ? consultaActiva()!.pesoEnConsulta + ' kg' : '—' }}
+                          </p>
+                        </div>
+                        <div class="bg-slate-50 rounded-xl px-4 py-3 text-center border border-slate-100">
+                          <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Temperatura</p>
+                          <p class="text-sm font-extrabold text-slate-700">
+                            {{ consultaActiva()!.temperatura ? consultaActiva()!.temperatura + ' °C' : '—' }}
+                          </p>
+                        </div>
+                        <div class="bg-slate-50 rounded-xl px-4 py-3 text-center border border-slate-100">
+                          <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">F. Cardíaca</p>
+                          <p class="text-sm font-extrabold text-slate-700">
+                            {{ consultaActiva()!.frecuenciaCardiaca ? consultaActiva()!.frecuenciaCardiaca + ' lpm' : '—' }}
+                          </p>
+                        </div>
+                        <div class="bg-slate-50 rounded-xl px-4 py-3 text-center border border-slate-100">
+                          <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">F. Respiratoria</p>
+                          <p class="text-sm font-extrabold text-slate-700">
+                            {{ consultaActiva()!.frecuenciaRespiratoria ? consultaActiva()!.frecuenciaRespiratoria + ' rpm' : '—' }}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- Anamnesis & Examen Físico -->
+                    @if (consultaActiva()!.anamnesis || consultaActiva()!.examenFisico) {
+                      <div class="grid sm:grid-cols-2 gap-4">
+                        @if (consultaActiva()!.anamnesis) {
+                          <div>
+                            <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-2">Anamnesis</p>
+                            <p class="text-xs text-slate-600 leading-relaxed bg-slate-50 rounded-xl px-4 py-3 border border-slate-100">
+                              {{ consultaActiva()!.anamnesis }}
+                            </p>
+                          </div>
+                        }
+                        @if (consultaActiva()!.examenFisico) {
+                          <div>
+                            <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-2">Examen físico</p>
+                            <p class="text-xs text-slate-600 leading-relaxed bg-slate-50 rounded-xl px-4 py-3 border border-slate-100">
+                              {{ consultaActiva()!.examenFisico }}
+                            </p>
+                          </div>
+                        }
+                      </div>
+                    }
+                    <!-- Observaciones -->
+                    @if (consultaActiva()!.observaciones) {
+                      <div>
+                        <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-2">Observaciones generales</p>
+                        <p class="text-xs text-slate-600 leading-relaxed bg-slate-50 rounded-xl px-4 py-3 border border-slate-100">
+                          {{ consultaActiva()!.observaciones }}
+                        </p>
+                      </div>
+                    }
+                    <!-- Diagnósticos -->
+                    @if (consultaActiva()!.diagnosticos?.length > 0) {
+                      <div>
+                        <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-3">Diagnósticos médicos</p>
+                        <div class="flex flex-col gap-2">
+                          @for (d of consultaActiva()!.diagnosticos; track d) {
+                            <div
+                              class="flex items-start gap-3 bg-slate-50 rounded-xl px-4 py-3 border border-slate-100">
+                              <div class="flex-1 min-w-0">
+                                <p class="text-sm font-bold text-slate-800">{{ d.nombre }}</p>
+                                @if (d.descripcion) {
+                                  <p class="text-xs text-slate-500 mt-0.5 leading-relaxed">{{ d.descripcion }}</p>
+                                }
+                              </div>
+                              <span class="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-600 uppercase tracking-wide shrink-0">
+                                {{ d.tipo }}
+                              </span>
+                            </div>
+                          }
+                        </div>
+                      </div>
+                    }
+                    <!-- Tratamientos -->
+                    @if (consultaActiva()!.tratamientos?.length > 0) {
+                      <div>
+                        <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-3">Tratamientos asignados</p>
+                        <div class="flex flex-col gap-2">
+                          @for (t of consultaActiva()!.tratamientos; track t) {
+                            <div class="bg-slate-50 rounded-xl px-4 py-3 border border-slate-100">
+                              <p class="text-sm font-bold text-slate-800">{{ t.nombre }}</p>
+                              @if (t.descripcion) {
+                                <p class="text-xs text-slate-500 mt-0.5 leading-relaxed">{{ t.descripcion }}</p>
+                              }
+                              @if (t.fechaInicio) {
+                                <p class="text-[10px] text-slate-400 font-medium mt-1">
+                                  Vigencia: {{ formatFecha(t.fechaInicio) }}
+                                  @if (t.fechaFin) {
+                                    <span> → {{ formatFecha(t.fechaFin) }}</span>
+                                  }
+                                </p>
+                              }
+                            </div>
+                          }
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+                <!-- Pestaña 2: Recetas y Prescripciones -->
+                @if (tabActiva() === 'recetas') {
+                  <div class="p-5">
+                    @if (!consultaActiva()!.prescripciones?.length) {
+                      <div class="py-12 text-center text-slate-300">
+                        <i class="pi pi-file-edit text-2xl block mb-2"></i>
+                        <p class="text-xs font-medium">Sin recetas emitidas en esta consulta</p>
+                      </div>
+                    }
+                    <div class="flex flex-col gap-3">
+                      @for (p of consultaActiva()!.prescripciones; track p) {
+                        <div class="border border-slate-200 rounded-xl p-4">
+                          <div class="flex items-start justify-between gap-3 mb-3">
+                            <div>
+                              <p class="text-sm font-extrabold text-slate-800">{{ p.medicamento }}</p>
+                              @if (p.principioActivo) {
+                                <p class="text-xs text-slate-400 mt-0.5">{{ p.principioActivo }}</p>
+                              }
+                            </div>
+                            @if (p.viaAdministracion) {
+                              <span
+                                class="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-blue-50 text-[#0066AA] shrink-0 uppercase tracking-wide">
+                                {{ p.viaAdministracion }}
+                              </span>
+                            }
+                          </div>
+                          <div class="grid grid-cols-3 gap-3 mb-3 bg-slate-50/70 p-3 rounded-lg border border-slate-100">
+                            <div>
+                              <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Dosis</p>
+                              <p class="text-xs font-bold text-slate-700">{{ p.dosis }}</p>
+                            </div>
+                            <div>
+                              <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Frecuencia</p>
+                              <p class="text-xs font-bold text-slate-700">{{ p.frecuencia }}</p>
+                            </div>
+                            <div>
+                              <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Duración</p>
+                              <p class="text-xs font-bold text-slate-700">{{ p.duracionDias ? p.duracionDias + ' días' : '—' }}</p>
+                            </div>
+                          </div>
+                          @if (p.instrucciones) {
+                            <p class="text-xs text-slate-500 bg-slate-50 rounded-lg px-3 py-2 leading-relaxed border border-slate-100">
+                              {{ p.instrucciones }}
+                            </p>
+                          }
+                          <p class="text-[10px] text-slate-400 mt-2 font-medium">
+                            Inicio: {{ formatFecha(p.fechaInicio) }}
+                            @if (p.fechaFin) {
+                              <span> · Fin: {{ formatFecha(p.fechaFin) }}</span>
+                            }
+                          </p>
+                        </div>
+                      }
                     </div>
                   </div>
-                </div>
-
-                <!-- Tratamientos -->
-                <div *ngIf="consultaActiva()!.tratamientos?.length > 0">
-                  <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-3">Tratamientos asignados</p>
-                  <div class="flex flex-col gap-2">
-                    <div *ngFor="let t of consultaActiva()!.tratamientos" class="bg-slate-50 rounded-xl px-4 py-3 border border-slate-100">
-                      <p class="text-sm font-bold text-slate-800">{{ t.nombre }}</p>
-                      <p *ngIf="t.descripcion" class="text-xs text-slate-500 mt-0.5 leading-relaxed">{{ t.descripcion }}</p>
-                      <p *ngIf="t.fechaInicio" class="text-[10px] text-slate-400 font-medium mt-1">
-                        Vigencia: {{ formatFecha(t.fechaInicio) }}
-                        <span *ngIf="t.fechaFin"> → {{ formatFecha(t.fechaFin) }}</span>
-                      </p>
+                }
+                <!-- Pestaña 3: Archivos y Exámenes adjuntos -->
+                @if (tabActiva() === 'archivos') {
+                  <div class="p-5">
+                    @if (!consultaActiva()!.archivos?.length) {
+                      <div class="py-12 text-center text-slate-300">
+                        <i class="pi pi-paperclip text-2xl block mb-2"></i>
+                        <p class="text-xs font-medium">Sin archivos adjuntos en esta consulta</p>
+                      </div>
+                    }
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      @for (a of consultaActiva()!.archivos; track a) {
+                        <div
+                          class="flex items-center gap-3 border border-slate-200 rounded-xl p-3.5 bg-slate-50/30">
+                          <div class="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center shrink-0 border border-slate-200">
+                            <i class="pi pi-file text-slate-400"></i>
+                          </div>
+                          <div class="flex-1 min-w-0">
+                            <p class="text-xs font-bold text-slate-800 truncate">{{ a.nombre }}</p>
+                            <div class="flex items-center gap-1.5 mt-0.5">
+                              <span [class]="'text-[10px] font-bold px-1.5 py-0.5 rounded-full uppercase ' + tipoArchivoBadge(a.tipo)">
+                                {{ tipoArchivoLabel(a.tipo) }}
+                              </span>
+                              @if (a.tamanioBytes) {
+                                <span class="text-[10px] text-slate-400 font-medium">
+                                  {{ formatBytes(a.tamanioBytes) }}
+                                </span>
+                              }
+                            </div>
+                          </div>
+                        </div>
+                      }
                     </div>
                   </div>
-                </div>
+                }
               </div>
-
-              <!-- Pestaña 2: Recetas y Prescripciones -->
-              <div *ngIf="tabActiva() === 'recetas'" class="p-5">
-                <div *ngIf="!consultaActiva()!.prescripciones?.length" class="py-12 text-center text-slate-300">
-                  <i class="pi pi-file-edit text-2xl block mb-2"></i>
-                  <p class="text-xs font-medium">Sin recetas emitidas en esta consulta</p>
-                </div>
-                <div class="flex flex-col gap-3">
-                  <div *ngFor="let p of consultaActiva()!.prescripciones" class="border border-slate-200 rounded-xl p-4">
-                    <div class="flex items-start justify-between gap-3 mb-3">
-                      <div>
-                        <p class="text-sm font-extrabold text-slate-800">{{ p.medicamento }}</p>
-                        <p *ngIf="p.principioActivo" class="text-xs text-slate-400 mt-0.5">{{ p.principioActivo }}</p>
-                      </div>
-                      <span *ngIf="p.viaAdministracion"
-                        class="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-blue-50 text-[#0066AA] shrink-0 uppercase tracking-wide">
-                        {{ p.viaAdministracion }}
-                      </span>
-                    </div>
-                    <div class="grid grid-cols-3 gap-3 mb-3 bg-slate-50/70 p-3 rounded-lg border border-slate-100">
-                      <div>
-                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Dosis</p>
-                        <p class="text-xs font-bold text-slate-700">{{ p.dosis }}</p>
-                      </div>
-                      <div>
-                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Frecuencia</p>
-                        <p class="text-xs font-bold text-slate-700">{{ p.frecuencia }}</p>
-                      </div>
-                      <div>
-                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Duración</p>
-                        <p class="text-xs font-bold text-slate-700">{{ p.duracionDias ? p.duracionDias + ' días' : '—' }}</p>
-                      </div>
-                    </div>
-                    <p *ngIf="p.instrucciones" class="text-xs text-slate-500 bg-slate-50 rounded-lg px-3 py-2 leading-relaxed border border-slate-100">
-                      {{ p.instrucciones }}
-                    </p>
-                    <p class="text-[10px] text-slate-400 mt-2 font-medium">
-                      Inicio: {{ formatFecha(p.fechaInicio) }}
-                      <span *ngIf="p.fechaFin"> · Fin: {{ formatFecha(p.fechaFin) }}</span>
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Pestaña 3: Archivos y Exámenes adjuntos -->
-              <div *ngIf="tabActiva() === 'archivos'" class="p-5">
-                <div *ngIf="!consultaActiva()!.archivos?.length" class="py-12 text-center text-slate-300">
-                  <i class="pi pi-paperclip text-2xl block mb-2"></i>
-                  <p class="text-xs font-medium">Sin archivos adjuntos en esta consulta</p>
-                </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div *ngFor="let a of consultaActiva()!.archivos"
-                    class="flex items-center gap-3 border border-slate-200 rounded-xl p-3.5 bg-slate-50/30">
-                    <div class="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center shrink-0 border border-slate-200">
-                      <i class="pi pi-file text-slate-400"></i>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                      <p class="text-xs font-bold text-slate-800 truncate">{{ a.nombre }}</p>
-                      <div class="flex items-center gap-1.5 mt-0.5">
-                        <span [class]="'text-[10px] font-bold px-1.5 py-0.5 rounded-full uppercase ' + tipoArchivoBadge(a.tipo)">
-                          {{ tipoArchivoLabel(a.tipo) }}
-                        </span>
-                        <span *ngIf="a.tamanioBytes" class="text-[10px] text-slate-400 font-medium">
-                          {{ formatBytes(a.tamanioBytes) }}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-            </div>
+            }
           </div>
         </div>
-
         <!-- Cartillas preventivas: se muestran después del historial clínico. -->
         <section class="mt-6">
           <div class="mb-4 flex items-center gap-3">
@@ -418,7 +481,6 @@
               <p class="mt-0.5 text-xs text-slate-500">Historial y próximos controles de {{ hc()!.mascotaNombre }}</p>
             </div>
           </div>
-
           <div class="grid grid-cols-1 gap-6 xl:grid-cols-2">
             <!-- Cartilla de vacunación -->
             <article class="overflow-hidden rounded-xl border border-slate-200 bg-white">
@@ -426,80 +488,83 @@
                 <i class="pi pi-shield text-lg text-[#0066AA]"></i>
                 <div><h3 class="text-sm font-extrabold text-slate-900">Cartilla de vacunación</h3><p class="text-[11px] text-slate-500">Registro cronológico de vacunas</p></div>
               </header>
-
-              <div *ngIf="filasCartillaVacunacion().length; else sinVacunasPortal" class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                  <thead>
-                    <tr class="bg-slate-50 border-b border-slate-200">
-                      <th class="px-4 py-2.5 text-[9px] font-extrabold uppercase tracking-wider text-slate-400">Vacuna</th>
-                      <th class="px-4 py-2.5 text-[9px] font-extrabold uppercase tracking-wider text-slate-400">Fecha</th>
-                      <th class="px-4 py-2.5 text-[9px] font-extrabold uppercase tracking-wider text-slate-400">Próxima</th>
-                      <th class="px-4 py-2.5 text-[9px] font-extrabold uppercase tracking-wider text-slate-400 text-right">Estado</th>
-                    </tr>
-                  </thead>
-                  <tbody class="divide-y divide-slate-100">
-                    <tr *ngFor="let fila of filasCartillaVacunacion()">
-                      <td class="px-4 py-3"><p class="text-xs font-bold text-slate-800 truncate max-w-[140px]">{{ fila.producto }}</p></td>
-                      <td class="px-4 py-3"><p class="text-xs font-semibold text-slate-600">{{ formatFecha(fila.fecha) }}</p></td>
-                      <td class="px-4 py-3"><p class="text-xs font-semibold text-slate-500">{{ fila.proxima ? formatFecha(fila.proxima) : '—' }}</p></td>
-                      <td class="px-4 py-3 text-right">
-                        <span [class]="'inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide ' + estadoCartillaBadge(fila.estado)">
-                          {{ estadoCartillaLabel(fila.estado) }}
-                        </span>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              <ng-template #sinVacunasPortal>
+              @if (filasCartillaVacunacion().length) {
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left border-collapse">
+                    <thead>
+                      <tr class="bg-slate-50 border-b border-slate-200">
+                        <th class="px-4 py-2.5 text-[9px] font-extrabold uppercase tracking-wider text-slate-400">Vacuna</th>
+                        <th class="px-4 py-2.5 text-[9px] font-extrabold uppercase tracking-wider text-slate-400">Fecha</th>
+                        <th class="px-4 py-2.5 text-[9px] font-extrabold uppercase tracking-wider text-slate-400">Próxima</th>
+                        <th class="px-4 py-2.5 text-[9px] font-extrabold uppercase tracking-wider text-slate-400 text-right">Estado</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                      @for (fila of filasCartillaVacunacion(); track fila) {
+                        <tr>
+                          <td class="px-4 py-3"><p class="text-xs font-bold text-slate-800 truncate max-w-[140px]">{{ fila.producto }}</p></td>
+                          <td class="px-4 py-3"><p class="text-xs font-semibold text-slate-600">{{ formatFecha(fila.fecha) }}</p></td>
+                          <td class="px-4 py-3"><p class="text-xs font-semibold text-slate-500">{{ fila.proxima ? formatFecha(fila.proxima) : '—' }}</p></td>
+                          <td class="px-4 py-3 text-right">
+                            <span [class]="'inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide ' + estadoCartillaBadge(fila.estado)">
+                              {{ estadoCartillaLabel(fila.estado) }}
+                            </span>
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              } @else {
                 <div class="py-10 text-center px-5">
                   <i class="pi pi-shield text-2xl text-slate-200 block mb-2"></i>
                   <p class="text-xs text-slate-500 font-medium">Aún no hay vacunas registradas.</p>
                 </div>
-              </ng-template>
+              }
             </article>
-
             <!-- Cartilla de desparasitación -->
             <article class="overflow-hidden rounded-xl border border-slate-200 bg-white">
               <header class="flex items-center gap-3 border-b border-slate-200 px-5 py-4 bg-slate-50">
                 <i class="pi pi-refresh text-lg text-emerald-700"></i>
                 <div><h3 class="text-sm font-extrabold text-slate-900">Cartilla de desparasitación</h3><p class="text-[11px] text-slate-500">Registro cronológico de productos</p></div>
               </header>
-
-              <div *ngIf="filasCartillaDesparasitacion().length; else sinDesparasitacionesPortal" class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                  <thead>
-                    <tr class="bg-slate-50 border-b border-slate-200">
-                      <th class="px-4 py-2.5 text-[9px] font-extrabold uppercase tracking-wider text-slate-400">Producto</th>
-                      <th class="px-4 py-2.5 text-[9px] font-extrabold uppercase tracking-wider text-slate-400">Fecha</th>
-                      <th class="px-4 py-2.5 text-[9px] font-extrabold uppercase tracking-wider text-slate-400">Próxima</th>
-                      <th class="px-4 py-2.5 text-[9px] font-extrabold uppercase tracking-wider text-slate-400 text-right">Estado</th>
-                    </tr>
-                  </thead>
-                  <tbody class="divide-y divide-slate-100">
-                    <tr *ngFor="let fila of filasCartillaDesparasitacion()">
-                      <td class="px-4 py-3"><p class="text-xs font-bold text-slate-800 truncate max-w-[140px]">{{ fila.producto }}</p></td>
-                      <td class="px-4 py-3"><p class="text-xs font-semibold text-slate-600">{{ formatFecha(fila.fecha) }}</p></td>
-                      <td class="px-4 py-3"><p class="text-xs font-semibold text-slate-500">{{ fila.proxima ? formatFecha(fila.proxima) : '—' }}</p></td>
-                      <td class="px-4 py-3 text-right">
-                        <span [class]="'inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide ' + estadoCartillaBadge(fila.estado)">
-                          {{ estadoCartillaLabel(fila.estado) }}
-                        </span>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              <ng-template #sinDesparasitacionesPortal>
+              @if (filasCartillaDesparasitacion().length) {
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left border-collapse">
+                    <thead>
+                      <tr class="bg-slate-50 border-b border-slate-200">
+                        <th class="px-4 py-2.5 text-[9px] font-extrabold uppercase tracking-wider text-slate-400">Producto</th>
+                        <th class="px-4 py-2.5 text-[9px] font-extrabold uppercase tracking-wider text-slate-400">Fecha</th>
+                        <th class="px-4 py-2.5 text-[9px] font-extrabold uppercase tracking-wider text-slate-400">Próxima</th>
+                        <th class="px-4 py-2.5 text-[9px] font-extrabold uppercase tracking-wider text-slate-400 text-right">Estado</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                      @for (fila of filasCartillaDesparasitacion(); track fila) {
+                        <tr>
+                          <td class="px-4 py-3"><p class="text-xs font-bold text-slate-800 truncate max-w-[140px]">{{ fila.producto }}</p></td>
+                          <td class="px-4 py-3"><p class="text-xs font-semibold text-slate-600">{{ formatFecha(fila.fecha) }}</p></td>
+                          <td class="px-4 py-3"><p class="text-xs font-semibold text-slate-500">{{ fila.proxima ? formatFecha(fila.proxima) : '—' }}</p></td>
+                          <td class="px-4 py-3 text-right">
+                            <span [class]="'inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide ' + estadoCartillaBadge(fila.estado)">
+                              {{ estadoCartillaLabel(fila.estado) }}
+                            </span>
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              } @else {
                 <div class="py-10 text-center px-5">
                   <i class="pi pi-refresh text-2xl text-slate-200 block mb-2"></i>
                   <p class="text-xs text-slate-500 font-medium">Aún no hay desparasitaciones registradas.</p>
                 </div>
-              </ng-template>
+              }
             </article>
           </div>
         </section>
-      </ng-container>
+      }
 
     </div>
   </div>

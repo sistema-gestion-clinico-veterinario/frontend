@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -45,7 +45,7 @@ interface ActiveMeasurementDraft {
 @Component({
   selector: 'app-instrumento-5',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [FormsModule, RouterModule],
   templateUrl: './instrumento-5.component.html'
 })
 export class Instrumento5Component {

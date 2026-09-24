@@ -4,7 +4,7 @@
   <div class="max-w-full mx-auto space-y-6">
 
     <!-- Skeleton loading -->
-    <ng-container *ngIf="cargando()">
+    @if (cargando()) {
       <div class="bg-white rounded-2xl border border-slate-100 p-6">
         <div class="flex flex-col sm:flex-row items-center sm:items-start gap-5">
           <p-skeleton shape="circle" size="6rem" styleClass="rounded-xl" />
@@ -18,7 +18,6 @@
           </div>
         </div>
       </div>
-
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-100 p-6 space-y-4">
           <p-skeleton width="10rem" height="1.1rem" borderRadius="rounded-xl" />
@@ -57,7 +56,6 @@
             </div>
           </div>
         </div>
-
         <div class="space-y-4">
           <div class="bg-white rounded-2xl border border-slate-100 p-5 space-y-3">
             <p-skeleton width="8rem" height="1rem" borderRadius="rounded-xl" />
@@ -92,379 +90,433 @@
           </div>
         </div>
       </div>
-    </ng-container>
+    }
 
     <!-- Profile content -->
-    <ng-container *ngIf="!cargando()">
-    <div class="bg-white rounded-2xl border border-slate-100 p-6">
-      <div class="flex flex-col sm:flex-row items-center sm:items-start gap-5">
-        <div class="relative shrink-0 group">
-          <input #fileInput type="file" accept="image/*" class="hidden" (change)="onFileSelected($event)" />
-          <div *ngIf="!previewUrl()"
-            class="w-24 h-24 rounded-full bg-[#0066AA] flex items-center justify-center text-white text-3xl font-bold"
-            [class.cursor-pointer]="editMode()"
-            (click)="editMode() && triggerFileInput()">
-            {{ userInitials }}
+    @if (!cargando()) {
+      <div class="bg-white rounded-2xl border border-slate-100 p-6">
+        <div class="flex flex-col sm:flex-row items-center sm:items-start gap-5">
+          <div class="relative shrink-0 group">
+            <input #fileInput type="file" accept="image/*" class="hidden" (change)="onFileSelected($event)" />
+            @if (!previewUrl()) {
+              <div
+                class="w-24 h-24 rounded-full bg-[#0066AA] flex items-center justify-center text-white text-3xl font-bold"
+                [class.cursor-pointer]="editMode()"
+                (click)="editMode() && triggerFileInput()">
+                {{ userInitials }}
+              </div>
+            }
+            @if (previewUrl()) {
+              <img [src]="safePreviewUrl()" (error)="previewUrl.set(null)"
+                class="w-24 h-24 rounded-full object-cover border border-slate-200"
+                alt="Foto de perfil" />
+            }
+            @if (editMode() && !uploadingPhoto()) {
+              <div
+                (click)="triggerFileInput()"
+                class="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                <i class="pi pi-camera text-white text-xl"></i>
+              </div>
+            }
+            @if (uploadingPhoto()) {
+              <div
+                class="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center">
+                <i class="pi pi-spin pi-spinner text-white text-xl"></i>
+              </div>
+            }
+            @if (!editMode() && profile()?.activo) {
+              <span
+                class="absolute bottom-1 right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"
+              title="Activo"></span>
+            }
+            @if (editMode()) {
+              <p class="absolute -bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] font-medium text-slate-400 text-center">
+                Cambiar foto
+              </p>
+            }
           </div>
-          <img *ngIf="previewUrl()" [src]="safePreviewUrl()" (error)="previewUrl.set(null)"
-            class="w-24 h-24 rounded-full object-cover border border-slate-200"
-            alt="Foto de perfil" />
-          <div *ngIf="editMode() && !uploadingPhoto()"
-            (click)="triggerFileInput()"
-            class="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-            <i class="pi pi-camera text-white text-xl"></i>
+          <div class="flex-1 text-center sm:text-left">
+            <h1 class="text-2xl font-bold text-slate-800">
+              {{ profile()?.nombre }} {{ profile()?.apellido }}
+            </h1>
+            <p class="text-slate-500 text-sm mt-0.5">{{ profile()?.email }}</p>
+            <div class="flex flex-wrap justify-center sm:justify-start gap-2 mt-3">
+              <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
+                {{ roleLabel }}
+              </span>
+              @if (profile()?.companyName) {
+                <span
+                  class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600">
+                  <i class="pi pi-building mr-1.5 text-[10px]"></i>{{ profile()?.companyName }}
+                </span>
+              }
+              @if (profile()?.numeroColegiatura) {
+                <span
+                  class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-teal-100 text-teal-700">
+                  <i class="pi pi-id-card mr-1.5 text-[10px]"></i>Colegiatura: {{ profile()?.numeroColegiatura }}
+                </span>
+              }
+            </div>
           </div>
-
-          <div *ngIf="uploadingPhoto()"
-            class="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center">
-            <i class="pi pi-spin pi-spinner text-white text-xl"></i>
-          </div>
-          <span *ngIf="!editMode() && profile()?.activo"
-            class="absolute bottom-1 right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"
-            title="Activo"></span>
-          <p *ngIf="editMode()" class="absolute -bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] font-medium text-slate-400 text-center">
-            Cambiar foto
-          </p>
-        </div>
-        <div class="flex-1 text-center sm:text-left">
-          <h1 class="text-2xl font-bold text-slate-800">
-            {{ profile()?.nombre }} {{ profile()?.apellido }}
-          </h1>
-          <p class="text-slate-500 text-sm mt-0.5">{{ profile()?.email }}</p>
-          <div class="flex flex-wrap justify-center sm:justify-start gap-2 mt-3">
-            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
-              {{ roleLabel }}
-            </span>
-            <span *ngIf="profile()?.companyName"
-              class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600">
-              <i class="pi pi-building mr-1.5 text-[10px]"></i>{{ profile()?.companyName }}
-            </span>
-            <span *ngIf="profile()?.numeroColegiatura"
-              class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-teal-100 text-teal-700">
-              <i class="pi pi-id-card mr-1.5 text-[10px]"></i>Colegiatura: {{ profile()?.numeroColegiatura }}
-            </span>
-          </div>
-        </div>
-        <div *ngIf="canModifyProfile" class="shrink-0">
-          <button (click)="toggleEdit()"
-            [class]="editMode() ? 'bg-slate-100 text-slate-600 hover:bg-slate-200' : 'bg-[#0066AA] text-white hover:bg-[#0055AA]'"
-            class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors duration-150">
-            <i [class]="editMode() ? 'pi pi-times' : 'pi pi-pencil'"></i>
-            {{ editMode() ? 'Cancelar' : 'Editar perfil' }}
-          </button>
+          @if (canModifyProfile) {
+            <div class="shrink-0">
+              <button (click)="toggleEdit()"
+                [class]="editMode() ? 'bg-slate-100 text-slate-600 hover:bg-slate-200' : 'bg-[#0066AA] text-white hover:bg-[#0055AA]'"
+                class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors duration-150">
+                <i [class]="editMode() ? 'pi pi-times' : 'pi pi-pencil'"></i>
+                {{ editMode() ? 'Cancelar' : 'Editar perfil' }}
+              </button>
+            </div>
+          }
         </div>
       </div>
-    </div>
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-100 p-6">
-        <ng-container *ngIf="!editMode()">
-          <h2 class="text-base font-semibold text-slate-700 mb-4 flex items-center gap-2">
-            <i class="pi pi-user text-[#0066AA]"></i> Información personal
-          </h2>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Nombres</p>
-              <p class="text-sm text-slate-700 font-medium">{{ profile()?.nombre || '—' }}</p>
-            </div>
-            <div>
-              <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Apellidos</p>
-              <p class="text-sm text-slate-700 font-medium">{{ profile()?.apellido || '—' }}</p>
-            </div>
-            <div>
-              <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-0.5">DNI / Documento</p>
-              <p class="text-sm text-slate-700 font-medium">{{ profile()?.dni || '—' }}</p>
-            </div>
-            <div>
-              <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Tipo de documento</p>
-              <p class="text-sm text-slate-700 font-medium">{{ profile()?.tipoDocumento || '—' }}</p>
-            </div>
-            <div>
-              <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Teléfono</p>
-              <p class="text-sm text-slate-700 font-medium">{{ profile()?.telefono || '—' }}</p>
-            </div>
-            <div>
-              <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Género</p>
-              <p class="text-sm text-slate-700 font-medium">{{ profile()?.genero || '—' }}</p>
-            </div>
-            <div class="sm:col-span-2">
-              <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Dirección</p>
-              <p class="text-sm text-slate-700 font-medium">{{ profile()?.direccion || '—' }}</p>
-            </div>
-            <div class="sm:col-span-2" *ngIf="profile()?.empleado">
-              <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Observaciones</p>
-              <p class="text-sm text-slate-700 font-medium">{{ profile()?.observaciones || '—' }}</p>
-            </div>
-          </div>
-        </ng-container>
-        <ng-container *ngIf="editMode()">
-          <h2 class="text-base font-semibold text-slate-700 mb-4 flex items-center gap-2">
-            <i class="pi pi-pencil text-[#0066AA]"></i> Editar información
-          </h2>
-          <form [formGroup]="form" (ngSubmit)="save()" class="space-y-4">
-            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Datos obligatorios</p>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-100 p-6">
+          @if (!editMode()) {
+            <h2 class="text-base font-semibold text-slate-700 mb-4 flex items-center gap-2">
+              <i class="pi pi-user text-[#0066AA]"></i> Información personal
+            </h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label class="block text-sm font-medium text-slate-600 mb-1">Nombres <span class="text-red-500">*</span></label>
-                <input formControlName="nombre" appInputFilter="letters" [appInputFilterMaxLength]="80" maxlength="80" type="text" placeholder="Tu nombre"
-                  [ngClass]="{ 'border-red-400 ring-1 ring-red-400': isInvalid('nombre') }"
-                  class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#0066AA]/20 focus:border-[#0066AA] outline-none transition-all" />
-                <p *ngIf="isInvalid('nombre') && form.get('nombre')?.errors?.['required']" class="text-xs text-red-500 mt-1">El nombre es obligatorio</p>
-                <p *ngIf="isInvalid('nombre') && form.get('nombre')?.errors?.['leadingTrailingSpace']" class="text-xs text-red-500 mt-1">No debe tener espacios al inicio o al final</p>
+                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Nombres</p>
+                <p class="text-sm text-slate-700 font-medium">{{ profile()?.nombre || '—' }}</p>
               </div>
               <div>
-                <label class="block text-sm font-medium text-slate-600 mb-1">Apellidos <span class="text-red-500">*</span></label>
-                <input formControlName="apellido" appInputFilter="letters" [appInputFilterMaxLength]="80" maxlength="80" type="text" placeholder="Tu apellido"
-                  [ngClass]="{ 'border-red-400 ring-1 ring-red-400': isInvalid('apellido') }"
-                  class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#0066AA]/20 focus:border-[#0066AA] outline-none transition-all" />
-                <p *ngIf="isInvalid('apellido') && form.get('apellido')?.errors?.['required']" class="text-xs text-red-500 mt-1">El apellido es obligatorio</p>
-                <p *ngIf="isInvalid('apellido') && form.get('apellido')?.errors?.['leadingTrailingSpace']" class="text-xs text-red-500 mt-1">No debe tener espacios al inicio o al final</p>
+                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Apellidos</p>
+                <p class="text-sm text-slate-700 font-medium">{{ profile()?.apellido || '—' }}</p>
               </div>
-            </div>
-
-            <!-- Datos opcionales -->
-            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider pt-2">
-              Datos opcionales
-              <span class="ml-2 font-normal normal-case text-slate-400 text-xs">(la foto se cambia haciendo clic en el avatar)</span>
-            </p>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label class="block text-sm font-medium text-slate-600 mb-1">Teléfono</label>
-                <input formControlName="telefono" appInputFilter="digits" [appInputFilterMaxLength]="9" type="tel" inputmode="numeric" placeholder="Ej: 987654321" maxlength="9"
-                  [ngClass]="{ 'border-red-400 ring-1 ring-red-400': isInvalid('telefono') }"
-                  class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#0066AA]/20 focus:border-[#0066AA] outline-none transition-all" />
-                <p *ngIf="isInvalid('telefono')" class="text-xs text-red-500 mt-1">Solo dígitos (7-15)</p>
+                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-0.5">DNI / Documento</p>
+                <p class="text-sm text-slate-700 font-medium">{{ profile()?.dni || '—' }}</p>
+              </div>
+              <div>
+                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Tipo de documento</p>
+                <p class="text-sm text-slate-700 font-medium">{{ profile()?.tipoDocumento || '—' }}</p>
+              </div>
+              <div>
+                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Teléfono</p>
+                <p class="text-sm text-slate-700 font-medium">{{ profile()?.telefono || '—' }}</p>
+              </div>
+              <div>
+                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Género</p>
+                <p class="text-sm text-slate-700 font-medium">{{ profile()?.genero || '—' }}</p>
               </div>
               <div class="sm:col-span-2">
-                <label class="block text-sm font-medium text-slate-600 mb-1">Dirección</label>
-                <input formControlName="direccion" type="text" maxlength="200" placeholder="Tu dirección"
-                  class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#0066AA]/20 focus:border-[#0066AA] outline-none transition-all" />
-                <p *ngIf="isInvalid('direccion') && form.get('direccion')?.errors?.['leadingTrailingSpace']" class="text-xs text-red-500 mt-1">No debe tener espacios al inicio o al final</p>
-                <p *ngIf="isInvalid('direccion') && form.get('direccion')?.errors?.['textContent']" class="text-xs text-red-500 mt-1">Debe contener al menos una letra o número</p>
+                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Dirección</p>
+                <p class="text-sm text-slate-700 font-medium">{{ profile()?.direccion || '—' }}</p>
               </div>
-              <div class="sm:col-span-2" *ngIf="profile()?.empleado">
-                <label class="block text-sm font-medium text-slate-600 mb-1">Observaciones</label>
-                <textarea formControlName="observaciones" rows="3" maxlength="500" placeholder="Observaciones adicionales..."
-                  class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#0066AA]/20 focus:border-[#0066AA] outline-none transition-all resize-none"></textarea>
-                <p *ngIf="isInvalid('observaciones') && form.get('observaciones')?.errors?.['leadingTrailingSpace']" class="text-xs text-red-500 mt-1">No debe tener espacios al inicio o al final</p>
-                <p *ngIf="isInvalid('observaciones') && form.get('observaciones')?.errors?.['textContent']" class="text-xs text-red-500 mt-1">Debe contener al menos una letra o número</p>
-              </div>
+              @if (profile()?.empleado) {
+                <div class="sm:col-span-2">
+                  <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Observaciones</p>
+                  <p class="text-sm text-slate-700 font-medium">{{ profile()?.observaciones || '—' }}</p>
+                </div>
+              }
             </div>
-
-            <div class="flex justify-end gap-3 pt-2">
-              <button type="button" (click)="toggleEdit()"
-                class="px-4 py-2 rounded-xl border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
-                Cancelar
-              </button>
-              <button type="submit"
-                class="px-5 py-2 rounded-xl bg-[#0066AA] text-white text-sm font-medium hover:bg-[#0055AA] transition-colors">
-                Guardar cambios
-              </button>
-            </div>
-          </form>
-        </ng-container>
-      </div>
-
-      <!-- Right: Additional info -->
-      <div class="space-y-4">
-
-        <!-- Especialidades (empleados) -->
-        <div *ngIf="profile()?.empleado && profile()?.especialidades?.length"
-          class="bg-white rounded-2xl border border-slate-100 p-5">
-          <h3 class="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
-            <i class="pi pi-star text-amber-500"></i> Especialidades
-          </h3>
-          <div class="flex flex-wrap gap-2">
-            <span *ngFor="let esp of profile()!.especialidades"
-              class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
-              {{ esp }}
-            </span>
-          </div>
-        </div>
-
-        <!-- Tipos de empleado -->
-        <div *ngIf="profile()?.empleado && profile()?.tiposEmpleado?.length"
-          class="bg-white rounded-2xl border border-slate-100 p-5">
-          <h3 class="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
-            <i class="pi pi-briefcase text-indigo-500"></i> Tipo de empleado
-          </h3>
-          <div class="flex flex-wrap gap-2">
-            <span *ngFor="let tipo of profile()!.tiposEmpleado"
-              class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-200">
-              {{ tipo }}
-            </span>
-          </div>
-        </div>
-
-        <!-- Horario de trabajo — día actual -->
-        <div *ngIf="profile()?.empleado && horariosResumen.length"
-          class="bg-white rounded-2xl border border-slate-100 p-5">
-          <div class="mb-4 flex flex-col items-stretch justify-between gap-3 sm:flex-row sm:items-center">
-            <h3 class="text-sm font-semibold text-slate-700 flex items-center gap-2">
-              <i class="pi pi-clock text-[#0066AA]"></i> Horario de hoy
-            </h3>
-            <button (click)="mostrarHorario.set(true)"
-              class="inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#F0F7FF] border border-[#0066AA]/10 px-3 py-2 text-[11px] font-bold text-[#0066AA] hover:bg-[#0066AA] hover:text-white transition-colors">
-              <i class="pi pi-calendar text-[10px]"></i> Ver horario completo
-            </button>
-          </div>
-
-          <div class="flex items-center gap-2 mb-3">
-            <span class="w-8 h-8 rounded-lg bg-[#0066AA] text-white flex items-center justify-center text-xs font-bold">
-              {{ diaDeHoy.label | slice:0:2 }}
-            </span>
-            <span class="text-sm font-extrabold text-slate-800">{{ diaDeHoy.label }}</span>
-          </div>
-
-          <div *ngIf="diaDeHoy.bloques.length; else sinHorario" class="space-y-3">
-            <div *ngFor="let b of diaDeHoy.bloques" class="space-y-2">
-              <div class="flex items-start gap-3 rounded-xl border border-slate-100 bg-slate-50/70 p-3 sm:items-center">
-                <span class="w-9 h-9 rounded-lg bg-[#0066AA]/10 flex items-center justify-center shrink-0">
-                  <i class="pi pi-clock text-sm text-[#0066AA]"></i>
-                </span>
-                <div class="min-w-0 text-sm font-bold text-slate-800">{{ b.horaInicio }} – {{ b.horaFin }}
-                  <div class="mt-1 flex items-start gap-1.5 text-[11px] font-semibold text-slate-400">
-                    <i class="pi pi-calendar text-[10px] text-[#0066AA]/60"></i>
-                    {{ b.rangoFechas }}
+          }
+          @if (editMode()) {
+            <h2 class="text-base font-semibold text-slate-700 mb-4 flex items-center gap-2">
+              <i class="pi pi-pencil text-[#0066AA]"></i> Editar información
+            </h2>
+            <form [formGroup]="form" (ngSubmit)="save()" class="space-y-4">
+              <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Datos obligatorios</p>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-slate-600 mb-1">Nombres <span class="text-red-500">*</span></label>
+                  <input formControlName="nombre" appInputFilter="letters" [appInputFilterMaxLength]="80" maxlength="80" type="text" placeholder="Tu nombre"
+                    [ngClass]="{ 'border-red-400 ring-1 ring-red-400': isInvalid('nombre') }"
+                    class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#0066AA]/20 focus:border-[#0066AA] outline-none transition-all" />
+                    @if (isInvalid('nombre') && form.get('nombre')?.errors?.['required']) {
+                      <p class="text-xs text-red-500 mt-1">El nombre es obligatorio</p>
+                    }
+                    @if (isInvalid('nombre') && form.get('nombre')?.errors?.['leadingTrailingSpace']) {
+                      <p class="text-xs text-red-500 mt-1">No debe tener espacios al inicio o al final</p>
+                    }
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-slate-600 mb-1">Apellidos <span class="text-red-500">*</span></label>
+                    <input formControlName="apellido" appInputFilter="letters" [appInputFilterMaxLength]="80" maxlength="80" type="text" placeholder="Tu apellido"
+                      [ngClass]="{ 'border-red-400 ring-1 ring-red-400': isInvalid('apellido') }"
+                      class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#0066AA]/20 focus:border-[#0066AA] outline-none transition-all" />
+                      @if (isInvalid('apellido') && form.get('apellido')?.errors?.['required']) {
+                        <p class="text-xs text-red-500 mt-1">El apellido es obligatorio</p>
+                      }
+                      @if (isInvalid('apellido') && form.get('apellido')?.errors?.['leadingTrailingSpace']) {
+                        <p class="text-xs text-red-500 mt-1">No debe tener espacios al inicio o al final</p>
+                      }
+                    </div>
+                  </div>
+                  <!-- Datos opcionales -->
+                  <p class="text-xs font-bold text-slate-400 uppercase tracking-wider pt-2">
+                    Datos opcionales
+                    <span class="ml-2 font-normal normal-case text-slate-400 text-xs">(la foto se cambia haciendo clic en el avatar)</span>
+                  </p>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-sm font-medium text-slate-600 mb-1">Teléfono</label>
+                      <input formControlName="telefono" appInputFilter="digits" [appInputFilterMaxLength]="9" type="tel" inputmode="numeric" placeholder="Ej: 987654321" maxlength="9"
+                        [ngClass]="{ 'border-red-400 ring-1 ring-red-400': isInvalid('telefono') }"
+                        class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#0066AA]/20 focus:border-[#0066AA] outline-none transition-all" />
+                        @if (isInvalid('telefono')) {
+                          <p class="text-xs text-red-500 mt-1">Solo dígitos (7-15)</p>
+                        }
+                      </div>
+                      <div class="sm:col-span-2">
+                        <label class="block text-sm font-medium text-slate-600 mb-1">Dirección</label>
+                        <input formControlName="direccion" type="text" maxlength="200" placeholder="Tu dirección"
+                          class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#0066AA]/20 focus:border-[#0066AA] outline-none transition-all" />
+                          @if (isInvalid('direccion') && form.get('direccion')?.errors?.['leadingTrailingSpace']) {
+                            <p class="text-xs text-red-500 mt-1">No debe tener espacios al inicio o al final</p>
+                          }
+                          @if (isInvalid('direccion') && form.get('direccion')?.errors?.['textContent']) {
+                            <p class="text-xs text-red-500 mt-1">Debe contener al menos una letra o número</p>
+                          }
+                        </div>
+                        @if (profile()?.empleado) {
+                          <div class="sm:col-span-2">
+                            <label class="block text-sm font-medium text-slate-600 mb-1">Observaciones</label>
+                            <textarea formControlName="observaciones" rows="3" maxlength="500" placeholder="Observaciones adicionales..."
+                            class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#0066AA]/20 focus:border-[#0066AA] outline-none transition-all resize-none"></textarea>
+                            @if (isInvalid('observaciones') && form.get('observaciones')?.errors?.['leadingTrailingSpace']) {
+                              <p class="text-xs text-red-500 mt-1">No debe tener espacios al inicio o al final</p>
+                            }
+                            @if (isInvalid('observaciones') && form.get('observaciones')?.errors?.['textContent']) {
+                              <p class="text-xs text-red-500 mt-1">Debe contener al menos una letra o número</p>
+                            }
+                          </div>
+                        }
+                      </div>
+                      <div class="flex justify-end gap-3 pt-2">
+                        <button type="button" (click)="toggleEdit()"
+                          class="px-4 py-2 rounded-xl border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+                          Cancelar
+                        </button>
+                        <button type="submit"
+                          class="px-5 py-2 rounded-xl bg-[#0066AA] text-white text-sm font-medium hover:bg-[#0055AA] transition-colors">
+                          Guardar cambios
+                        </button>
+                      </div>
+                    </form>
+                  }
+                </div>
+                <!-- Right: Additional info -->
+                <div class="space-y-4">
+                  <!-- Especialidades (empleados) -->
+                  @if (profile()?.empleado && profile()?.especialidades?.length) {
+                    <div
+                      class="bg-white rounded-2xl border border-slate-100 p-5">
+                      <h3 class="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                        <i class="pi pi-star text-amber-500"></i> Especialidades
+                      </h3>
+                      <div class="flex flex-wrap gap-2">
+                        @for (esp of profile()!.especialidades; track esp) {
+                          <span
+                            class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
+                            {{ esp }}
+                          </span>
+                        }
+                      </div>
+                    </div>
+                  }
+                  <!-- Tipos de empleado -->
+                  @if (profile()?.empleado && profile()?.tiposEmpleado?.length) {
+                    <div
+                      class="bg-white rounded-2xl border border-slate-100 p-5">
+                      <h3 class="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                        <i class="pi pi-briefcase text-indigo-500"></i> Tipo de empleado
+                      </h3>
+                      <div class="flex flex-wrap gap-2">
+                        @for (tipo of profile()!.tiposEmpleado; track tipo) {
+                          <span
+                            class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-200">
+                            {{ tipo }}
+                          </span>
+                        }
+                      </div>
+                    </div>
+                  }
+                  <!-- Horario de trabajo — día actual -->
+                  @if (profile()?.empleado && horariosResumen.length) {
+                    <div
+                      class="bg-white rounded-2xl border border-slate-100 p-5">
+                      <div class="mb-4 flex flex-col items-stretch justify-between gap-3 sm:flex-row sm:items-center">
+                        <h3 class="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                          <i class="pi pi-clock text-[#0066AA]"></i> Horario de hoy
+                        </h3>
+                        <button (click)="mostrarHorario.set(true)"
+                          class="inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#F0F7FF] border border-[#0066AA]/10 px-3 py-2 text-[11px] font-bold text-[#0066AA] hover:bg-[#0066AA] hover:text-white transition-colors">
+                          <i class="pi pi-calendar text-[10px]"></i> Ver horario completo
+                        </button>
+                      </div>
+                      <div class="flex items-center gap-2 mb-3">
+                        <span class="w-8 h-8 rounded-lg bg-[#0066AA] text-white flex items-center justify-center text-xs font-bold">
+                          {{ diaDeHoy.label | slice:0:2 }}
+                        </span>
+                        <span class="text-sm font-extrabold text-slate-800">{{ diaDeHoy.label }}</span>
+                      </div>
+                      @if (diaDeHoy.bloques.length) {
+                        <div class="space-y-3">
+                          @for (b of diaDeHoy.bloques; track b) {
+                            <div class="space-y-2">
+                              <div class="flex items-start gap-3 rounded-xl border border-slate-100 bg-slate-50/70 p-3 sm:items-center">
+                                <span class="w-9 h-9 rounded-lg bg-[#0066AA]/10 flex items-center justify-center shrink-0">
+                                  <i class="pi pi-clock text-sm text-[#0066AA]"></i>
+                                </span>
+                                <div class="min-w-0 text-sm font-bold text-slate-800">{{ b.horaInicio }} – {{ b.horaFin }}
+                                  <div class="mt-1 flex items-start gap-1.5 text-[11px] font-semibold text-slate-400">
+                                    <i class="pi pi-calendar text-[10px] text-[#0066AA]/60"></i>
+                                    {{ b.rangoFechas }}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          }
+                        </div>
+                      } @else {
+                        <div class="flex items-center gap-2 text-xs text-slate-300 italic py-2">
+                          <i class="pi pi-minus-circle"></i> Sin horario programado hoy
+                        </div>
+                      }
+                    </div>
+                  }
+                  <!-- Modal: Horario completo -->
+                  <p-dialog [(visible)]="mostrarHorario" [modal]="true" [draggable]="false" [resizable]="false"
+                    [style]="{ width: '900px', maxWidth: 'calc(100vw - 16px)' }" header="Horario semanal">
+                    <div class="mb-4 flex items-center justify-start gap-2 text-xs font-medium text-slate-500 sm:justify-end">
+                      <i class="pi pi-calendar text-[#0066AA]"></i>
+                      {{ fechaInicioSemana() }} – {{ fechaFinSemana() }}
+                    </div>
+                    <div class="space-y-3 sm:hidden">
+                      @for (d of semanaCompleta; track d) {
+                        <article class="rounded-xl border border-slate-200 p-3">
+                          <div class="flex items-center justify-between gap-3"><h4 class="text-xs font-bold uppercase tracking-wide text-slate-700">{{ d.label }}</h4><span class="text-[10px] font-semibold" [ngClass]="d.bloques.length ? 'text-[#0066AA]' : 'text-slate-400'">{{ d.bloques.length ? d.bloques.length + ' bloque(s)' : 'Sin horario' }}</span></div>
+                          @if (d.bloques.length) {
+                            <div class="mt-3 space-y-2">@for (b of d.bloques; track b) {
+                              <div class="flex items-start gap-2 rounded-lg bg-slate-50 px-3 py-2"><i class="pi pi-clock mt-0.5 text-xs text-[#0066AA]"></i><div class="min-w-0"><p class="text-xs font-bold text-slate-800">{{ b.horaInicio }} – {{ b.horaFin }}</p><p class="mt-0.5 break-words text-[10px] text-slate-500">{{ b.rangoFechas }}</p></div></div>
+                            }</div>
+                          }
+                        </article>
+                      }
+                    </div>
+                    <div class="hidden overflow-x-auto sm:block">
+                      <table class="w-full border border-slate-200 rounded-xl overflow-hidden text-center text-xs border-collapse">
+                        <thead>
+                          <tr class="bg-slate-50">
+                            <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider border border-slate-200 whitespace-nowrap">Horas / Días</th>
+                            @for (d of semanaCompleta; track d) {
+                              <th
+                                class="px-3 py-2.5 text-[11px] font-bold uppercase tracking-wider border border-slate-200"
+                                [ngClass]="d.bloques.length ? 'text-[#0066AA] bg-[#F0F7FF]' : 'text-slate-300 bg-slate-50'">
+                                {{ d.label | slice:0:3 }}
+                              </th>
+                            }
+                          </tr>
+                        </thead>
+                        <tbody>
+                          @for (fila of gridHorario; track fila) {
+                            <tr class="hover:bg-slate-50/50 transition-colors">
+                              <td class="px-4 py-1.5 text-left whitespace-nowrap border border-slate-200">
+                                <span class="text-[11px] font-bold text-slate-500">{{ fila.hora }}</span>
+                              </td>
+                              @for (cubierto of fila.dias; track cubierto) {
+                                <td class="px-2 py-1.5 border border-slate-200">
+                                  <span class="block h-6 rounded"
+                                  [ngClass]="cubierto ? 'bg-[#0066AA]' : 'bg-slate-100'"></span>
+                                </td>
+                              }
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    </div>
+                    <ng-template pTemplate="footer">
+                      <button (click)="mostrarHorario.set(false)"
+                      class="h-10 w-full rounded-lg bg-[#0066AA] px-4 text-xs font-bold text-white transition-colors hover:bg-[#00558F] sm:w-auto">Cerrar</button>
+                    </ng-template>
+                  </p-dialog>
+                  <!-- Account info -->
+                  <div class="bg-white rounded-2xl border border-slate-100 p-5">
+                    <h3 class="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                      <i class="pi pi-shield text-slate-400"></i> Cuenta
+                    </h3>
+                    <div class="space-y-2.5">
+                      <div class="flex justify-between items-center">
+                        <span class="text-xs text-slate-400">Estado</span>
+                        <span [class]="profile()?.activo ? 'text-green-600 bg-green-50' : 'text-red-500 bg-red-50'"
+                          class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold">
+                          <span [class]="profile()?.activo ? 'bg-green-500' : 'bg-red-400'" class="w-1.5 h-1.5 rounded-full"></span>
+                          {{ profile()?.activo ? 'Activo' : 'Inactivo' }}
+                        </span>
+                      </div>
+                      <button type="button" (click)="openEmailChange()"
+                        class="mt-3 flex h-9 w-full items-center justify-center gap-2 rounded-lg border border-slate-200 text-xs font-semibold text-[#0066AA] transition-colors hover:bg-blue-50">
+                        <i class="pi pi-envelope"></i>
+                        Cambiar correo de acceso
+                      </button>
+                      <div class="flex justify-between items-center">
+                        <span class="text-xs text-slate-400">Email</span>
+                        <span class="text-xs text-slate-600 font-medium truncate max-w-[140px]" [title]="profile()?.email ?? ''">
+                          {{ profile()?.email }}
+                        </span>
+                      </div>
+                      @if (profile()?.dni) {
+                        <div class="flex justify-between items-center">
+                          <span class="text-xs text-slate-400">DNI</span>
+                          <span class="text-xs text-slate-600 font-medium">{{ profile()?.dni }}</span>
+                        </div>
+                      }
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-          <ng-template #sinHorario>
-            <div class="flex items-center gap-2 text-xs text-slate-300 italic py-2">
-              <i class="pi pi-minus-circle"></i> Sin horario programado hoy
-            </div>
-          </ng-template>
-        </div>
-
-        <!-- Modal: Horario completo -->
-        <p-dialog [(visible)]="mostrarHorario" [modal]="true" [draggable]="false" [resizable]="false"
-          [style]="{ width: '900px', maxWidth: 'calc(100vw - 16px)' }" header="Horario semanal">
-
-          <div class="mb-4 flex items-center justify-start gap-2 text-xs font-medium text-slate-500 sm:justify-end">
-            <i class="pi pi-calendar text-[#0066AA]"></i>
-            {{ fechaInicioSemana() }} – {{ fechaFinSemana() }}
-          </div>
-
-          <div class="space-y-3 sm:hidden">
-            <article *ngFor="let d of semanaCompleta" class="rounded-xl border border-slate-200 p-3">
-              <div class="flex items-center justify-between gap-3"><h4 class="text-xs font-bold uppercase tracking-wide text-slate-700">{{ d.label }}</h4><span class="text-[10px] font-semibold" [ngClass]="d.bloques.length ? 'text-[#0066AA]' : 'text-slate-400'">{{ d.bloques.length ? d.bloques.length + ' bloque(s)' : 'Sin horario' }}</span></div>
-              <div *ngIf="d.bloques.length" class="mt-3 space-y-2"><div *ngFor="let b of d.bloques" class="flex items-start gap-2 rounded-lg bg-slate-50 px-3 py-2"><i class="pi pi-clock mt-0.5 text-xs text-[#0066AA]"></i><div class="min-w-0"><p class="text-xs font-bold text-slate-800">{{ b.horaInicio }} – {{ b.horaFin }}</p><p class="mt-0.5 break-words text-[10px] text-slate-500">{{ b.rangoFechas }}</p></div></div></div>
-            </article>
-          </div>
-
-          <div class="hidden overflow-x-auto sm:block">
-            <table class="w-full border border-slate-200 rounded-xl overflow-hidden text-center text-xs border-collapse">
-              <thead>
-                <tr class="bg-slate-50">
-                  <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider border border-slate-200 whitespace-nowrap">Horas / Días</th>
-                  <th *ngFor="let d of semanaCompleta"
-                    class="px-3 py-2.5 text-[11px] font-bold uppercase tracking-wider border border-slate-200"
-                    [ngClass]="d.bloques.length ? 'text-[#0066AA] bg-[#F0F7FF]' : 'text-slate-300 bg-slate-50'">
-                    {{ d.label | slice:0:3 }}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let fila of gridHorario" class="hover:bg-slate-50/50 transition-colors">
-                  <td class="px-4 py-1.5 text-left whitespace-nowrap border border-slate-200">
-                    <span class="text-[11px] font-bold text-slate-500">{{ fila.hora }}</span>
-                  </td>
-                  <td *ngFor="let cubierto of fila.dias" class="px-2 py-1.5 border border-slate-200">
-                    <span class="block h-6 rounded"
-                      [ngClass]="cubierto ? 'bg-[#0066AA]' : 'bg-slate-100'"></span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <ng-template pTemplate="footer">
-            <button (click)="mostrarHorario.set(false)"
-              class="h-10 w-full rounded-lg bg-[#0066AA] px-4 text-xs font-bold text-white transition-colors hover:bg-[#00558F] sm:w-auto">Cerrar</button>
-          </ng-template>
-        </p-dialog>
-
-        <!-- Account info -->
-        <div class="bg-white rounded-2xl border border-slate-100 p-5">
-          <h3 class="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
-            <i class="pi pi-shield text-slate-400"></i> Cuenta
-          </h3>
-          <div class="space-y-2.5">
-            <div class="flex justify-between items-center">
-              <span class="text-xs text-slate-400">Estado</span>
-              <span [class]="profile()?.activo ? 'text-green-600 bg-green-50' : 'text-red-500 bg-red-50'"
-                class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold">
-                <span [class]="profile()?.activo ? 'bg-green-500' : 'bg-red-400'" class="w-1.5 h-1.5 rounded-full"></span>
-                {{ profile()?.activo ? 'Activo' : 'Inactivo' }}
-              </span>
-            </div>
-            <button type="button" (click)="openEmailChange()"
-              class="mt-3 flex h-9 w-full items-center justify-center gap-2 rounded-lg border border-slate-200 text-xs font-semibold text-[#0066AA] transition-colors hover:bg-blue-50">
-              <i class="pi pi-envelope"></i>
-              Cambiar correo de acceso
-            </button>
-            <div class="flex justify-between items-center">
-              <span class="text-xs text-slate-400">Email</span>
-              <span class="text-xs text-slate-600 font-medium truncate max-w-[140px]" [title]="profile()?.email ?? ''">
-                {{ profile()?.email }}
-              </span>
-            </div>
-            <div class="flex justify-between items-center" *ngIf="profile()?.dni">
-              <span class="text-xs text-slate-400">DNI</span>
-              <span class="text-xs text-slate-600 font-medium">{{ profile()?.dni }}</span>
-            </div>
+            }
           </div>
         </div>
 
-      </div>
-    </div>
-    </ng-container>
-  </div>
-</div>
-
-<div *ngIf="showEmailChangeModal()" class="fixed inset-0 z-[220] flex items-center justify-center bg-slate-900/50 p-4">
-  <div class="w-full max-w-md rounded-2xl bg-white shadow-2xl">
-    <div class="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-      <div>
-        <h2 class="text-base font-bold text-slate-800">Cambiar correo de acceso</h2>
-        <p class="mt-0.5 text-xs text-slate-500">Requiere confirmar el correo actual y el nuevo</p>
-      </div>
-      <button type="button" (click)="showEmailChangeModal.set(false)" [disabled]="requestingEmailChange()"
-        class="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100">
-        <i class="pi pi-times"></i>
-      </button>
-    </div>
-
-    <form [formGroup]="emailChangeForm" (ngSubmit)="requestEmailChange()" class="space-y-4 p-6">
-      <div class="rounded-xl border border-blue-100 bg-blue-50 p-3 text-xs leading-5 text-blue-900">
-        El correo actual seguirá activo hasta que confirmes ambos enlaces. Al completarse el cambio se cerrarán todas las sesiones.
-      </div>
-      <div>
-        <label class="mb-1 block text-xs font-semibold text-slate-700">Nuevo correo</label>
-        <input type="email" formControlName="newEmail" autocomplete="email"
-          class="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm outline-none focus:border-[#0066AA]" />
-      </div>
-      <div>
-        <label class="mb-1 block text-xs font-semibold text-slate-700">Confirmar nuevo correo</label>
-        <input type="email" formControlName="confirmEmail" autocomplete="off"
-          class="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm outline-none focus:border-[#0066AA]" />
-      </div>
-      <div>
-        <label class="mb-1 block text-xs font-semibold text-slate-700">Contraseña actual</label>
-        <input type="password" formControlName="currentPassword" autocomplete="current-password"
-          class="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm outline-none focus:border-[#0066AA]" />
-        <p class="mt-1 text-[11px] text-slate-500">Se solicita nuevamente para proteger una sesión dejada abierta.</p>
-      </div>
-      <div class="flex gap-3 pt-2">
-        <button type="button" (click)="showEmailChangeModal.set(false)" [disabled]="requestingEmailChange()"
-          class="h-10 flex-1 rounded-lg border border-slate-200 text-sm font-semibold text-slate-600">Cancelar</button>
-        <button type="submit" [disabled]="requestingEmailChange()"
-          class="flex h-10 flex-1 items-center justify-center gap-2 rounded-lg bg-[#0066AA] text-sm font-semibold text-white disabled:opacity-60">
-          <i *ngIf="requestingEmailChange()" class="pi pi-spin pi-spinner text-xs"></i>
-          {{ requestingEmailChange() ? 'Enviando...' : 'Solicitar cambio' }}
-        </button>
-      </div>
-    </form>
-  </div>
-</div>
+        @if (showEmailChangeModal()) {
+          <div class="fixed inset-0 z-[220] flex items-center justify-center bg-slate-900/50 p-4">
+            <div class="w-full max-w-md rounded-2xl bg-white shadow-2xl">
+              <div class="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+                <div>
+                  <h2 class="text-base font-bold text-slate-800">Cambiar correo de acceso</h2>
+                  <p class="mt-0.5 text-xs text-slate-500">Requiere confirmar el correo actual y el nuevo</p>
+                </div>
+                <button type="button" (click)="showEmailChangeModal.set(false)" [disabled]="requestingEmailChange()"
+                  class="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100">
+                  <i class="pi pi-times"></i>
+                </button>
+              </div>
+              <form [formGroup]="emailChangeForm" (ngSubmit)="requestEmailChange()" class="space-y-4 p-6">
+                <div class="rounded-xl border border-blue-100 bg-blue-50 p-3 text-xs leading-5 text-blue-900">
+                  El correo actual seguirá activo hasta que confirmes ambos enlaces. Al completarse el cambio se cerrarán todas las sesiones.
+                </div>
+                <div>
+                  <label class="mb-1 block text-xs font-semibold text-slate-700">Nuevo correo</label>
+                  <input type="email" formControlName="newEmail" autocomplete="email"
+                    class="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm outline-none focus:border-[#0066AA]" />
+                  </div>
+                  <div>
+                    <label class="mb-1 block text-xs font-semibold text-slate-700">Confirmar nuevo correo</label>
+                    <input type="email" formControlName="confirmEmail" autocomplete="off"
+                      class="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm outline-none focus:border-[#0066AA]" />
+                    </div>
+                    <div>
+                      <label class="mb-1 block text-xs font-semibold text-slate-700">Contraseña actual</label>
+                      <input type="password" formControlName="currentPassword" autocomplete="current-password"
+                        class="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm outline-none focus:border-[#0066AA]" />
+                        <p class="mt-1 text-[11px] text-slate-500">Se solicita nuevamente para proteger una sesión dejada abierta.</p>
+                      </div>
+                      <div class="flex gap-3 pt-2">
+                        <button type="button" (click)="showEmailChangeModal.set(false)" [disabled]="requestingEmailChange()"
+                        class="h-10 flex-1 rounded-lg border border-slate-200 text-sm font-semibold text-slate-600">Cancelar</button>
+                        <button type="submit" [disabled]="requestingEmailChange()"
+                          class="flex h-10 flex-1 items-center justify-center gap-2 rounded-lg bg-[#0066AA] text-sm font-semibold text-white disabled:opacity-60">
+                          @if (requestingEmailChange()) {
+                            <i class="pi pi-spin pi-spinner text-xs"></i>
+                          }
+                          {{ requestingEmailChange() ? 'Enviando...' : 'Solicitar cambio' }}
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              }

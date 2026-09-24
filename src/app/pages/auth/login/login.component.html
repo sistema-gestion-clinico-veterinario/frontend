@@ -3,13 +3,16 @@
   <main class="flex min-h-screen flex-col justify-center bg-white px-6 py-10 sm:px-10 md:w-[38%] md:px-12 lg:px-16 xl:w-[36%]">
     <div class="mx-auto w-full max-w-sm">
       <div class="-mt-6 mb-6 flex items-center justify-center gap-2.5">
-        <img
-          *ngIf="logoUrl"
-          [src]="logoUrl"
-          [alt]="companyName"
-          class="h-24 w-auto max-w-[18rem] object-contain"
-        />
-        <p *ngIf="!logoUrl" class="text-sm font-semibold text-slate-500">{{ companyName }}</p>
+        @if (logoUrl) {
+          <img
+            [src]="logoUrl"
+            [alt]="companyName"
+            class="h-24 w-auto max-w-[18rem] object-contain"
+            />
+        }
+        @if (!logoUrl) {
+          <p class="text-sm font-semibold text-slate-500">{{ companyName }}</p>
+        }
       </div>
 
       <header class="mb-8">
@@ -21,166 +24,191 @@
         </p>
       </header>
 
-      <div *ngIf="brandNotFound" class="mb-5 flex items-start gap-2.5 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm font-medium text-rose-700">
-        <svg class="mt-0.5 h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-        </svg>
-        No encontramos esta veterinaria. Pídele el enlace correcto a tu clínica, o
-        <a routerLink="/login" class="font-semibold underline hover:text-rose-800">búscala aquí</a>.
-      </div>
+      @if (brandNotFound) {
+        <div class="mb-5 flex items-start gap-2.5 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm font-medium text-rose-700">
+          <svg class="mt-0.5 h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          No encontramos esta veterinaria. Pídele el enlace correcto a tu clínica, o
+          <a routerLink="/login" class="font-semibold underline hover:text-rose-800">búscala aquí</a>.
+        </div>
+      }
 
-      <div *ngIf="missingSlug" class="space-y-5">
-        <div class="space-y-2">
-          <label for="clinicSearch" class="block text-sm font-semibold text-slate-700">
-            Busca tu clínica
-          </label>
-          <div class="relative">
-            <span class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
-              <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"/>
-              </svg>
-            </span>
-            <input
-              id="clinicSearch"
-              type="text"
-              [formControl]="clinicSearchControl"
-              placeholder="Nombre de tu veterinaria"
-              autocomplete="off"
-              class="h-12 w-full rounded-lg border border-slate-300 bg-white pl-11 pr-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15"
-            />
+      @if (missingSlug) {
+        <div class="space-y-5">
+          <div class="space-y-2">
+            <label for="clinicSearch" class="block text-sm font-semibold text-slate-700">
+              Busca tu clínica
+            </label>
+            <div class="relative">
+              <span class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"/>
+                </svg>
+              </span>
+              <input
+                id="clinicSearch"
+                type="text"
+                [formControl]="clinicSearchControl"
+                placeholder="Nombre de tu veterinaria"
+                autocomplete="off"
+                class="h-12 w-full rounded-lg border border-slate-300 bg-white pl-11 pr-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15"
+                />
+            </div>
+            @if (searchingClinics) {
+              <p class="text-sm text-slate-400">Buscando...</p>
+            }
+            @if (!searchingClinics && clinicResults.length) {
+              <ul class="divide-y divide-slate-100 overflow-hidden rounded-lg border border-slate-200">
+                @for (clinic of clinicResults; track clinic) {
+                  <li>
+                    <button
+                      type="button"
+                      (click)="goToClinic(clinic)"
+                      class="flex w-full items-center gap-3 p-3 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                      >
+                      @if (clinic.logoUrl) {
+                        <img [src]="clinic.logoUrl" [alt]="clinic.name" class="h-8 w-8 shrink-0 rounded-full object-cover" />
+                      }
+                      <span>{{ clinic.name }}</span>
+                    </button>
+                  </li>
+                }
+              </ul>
+            }
+            @if (!searchingClinics && clinicSearchControl.value && clinicSearchControl.value.trim().length >= 2 && !clinicResults.length) {
+              <p
+                class="text-sm text-slate-400">
+                No encontramos ninguna clínica con ese nombre.
+              </p>
+            }
           </div>
+          <button
+            type="button"
+            [disabled]="!clinicResults.length"
+            (click)="clinicResults.length && goToClinic(clinicResults[0])"
+            class="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-[#0066AA] text-sm font-bold text-white transition hover:bg-[#005599] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
+            >
+            Continuar
+          </button>
+        </div>
+      }
 
-          <p *ngIf="searchingClinics" class="text-sm text-slate-400">Buscando...</p>
-
-          <ul *ngIf="!searchingClinics && clinicResults.length" class="divide-y divide-slate-100 overflow-hidden rounded-lg border border-slate-200">
-            <li *ngFor="let clinic of clinicResults">
+      @if (!missingSlug) {
+        <form [formGroup]="loginForm" (ngSubmit)="submit()" class="space-y-5">
+          <div class="space-y-2">
+            <label for="username" class="block text-sm font-semibold text-slate-700">
+              Usuario o correo electrónico
+            </label>
+            <div class="relative">
+              <span class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M17.25 20.25v-1.5a3.75 3.75 0 00-3.75-3.75h-3a3.75 3.75 0 00-3.75 3.75v1.5"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 12a3.75 3.75 0 100-7.5 3.75 3.75 0 000 7.5z"/>
+                </svg>
+              </span>
+              <input
+                id="username"
+                type="text"
+                formControlName="username"
+                placeholder="tu.usuario o tu@correo.com"
+                autocomplete="username"
+                class="h-12 w-full rounded-lg border border-slate-300 bg-white pl-11 pr-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15"
+                />
+            </div>
+            @if (username?.touched && username?.invalid) {
+              <div class="text-sm font-medium text-rose-600">
+                @if (username?.errors?.['required']) {
+                  <span>El usuario es obligatorio.</span>
+                }
+                @if (username?.errors?.['leadingTrailingSpace']) {
+                  <span>El usuario no debe contener espacios.</span>
+                }
+              </div>
+            }
+          </div>
+          <div class="space-y-2">
+            <label for="password" class="block text-sm font-semibold text-slate-700">
+              Contraseña
+            </label>
+            <div class="relative">
+              <span class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M16.5 10.5V7.75a4.5 4.5 0 00-9 0v2.75"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M6.75 10.5h10.5A2.25 2.25 0 0119.5 12.75v5.25a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 18v-5.25a2.25 2.25 0 012.25-2.25z"/>
+                </svg>
+              </span>
+              <input
+                id="password"
+                [type]="showPassword ? 'text' : 'password'"
+                formControlName="password"
+                placeholder="••••••••"
+                autocomplete="current-password"
+                class="h-12 w-full rounded-lg border border-slate-300 bg-white pl-11 pr-12 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15"
+                />
               <button
                 type="button"
-                (click)="goToClinic(clinic)"
-                class="flex w-full items-center gap-3 p-3 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-50"
-              >
-                <img *ngIf="clinic.logoUrl" [src]="clinic.logoUrl" [alt]="clinic.name" class="h-8 w-8 shrink-0 rounded-full object-cover" />
-                <span>{{ clinic.name }}</span>
+                (click)="showPassword = !showPassword"
+                class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-[#0066AA]"
+                [title]="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+                >
+                @if (!showPassword) {
+                  <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                  </svg>
+                }
+                @if (showPassword) {
+                  <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
+                  </svg>
+                }
               </button>
-            </li>
-          </ul>
-
-          <p *ngIf="!searchingClinics && clinicSearchControl.value && clinicSearchControl.value.trim().length >= 2 && !clinicResults.length"
-            class="text-sm text-slate-400">
-            No encontramos ninguna clínica con ese nombre.
-          </p>
-        </div>
-
-        <button
-          type="button"
-          [disabled]="!clinicResults.length"
-          (click)="clinicResults.length && goToClinic(clinicResults[0])"
-          class="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-[#0066AA] text-sm font-bold text-white transition hover:bg-[#005599] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          Continuar
-        </button>
-      </div>
-
-      <form *ngIf="!missingSlug" [formGroup]="loginForm" (ngSubmit)="submit()" class="space-y-5">
-        <div class="space-y-2">
-          <label for="username" class="block text-sm font-semibold text-slate-700">
-            Usuario o correo electrónico
-          </label>
-          <div class="relative">
-            <span class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
-              <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M17.25 20.25v-1.5a3.75 3.75 0 00-3.75-3.75h-3a3.75 3.75 0 00-3.75 3.75v1.5"/>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 12a3.75 3.75 0 100-7.5 3.75 3.75 0 000 7.5z"/>
-              </svg>
-            </span>
-            <input
-              id="username"
-              type="text"
-              formControlName="username"
-              placeholder="tu.usuario o tu@correo.com"
-              autocomplete="username"
-              class="h-12 w-full rounded-lg border border-slate-300 bg-white pl-11 pr-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15"
-            />
+            </div>
+            @if (password?.touched && password?.invalid) {
+              <div class="text-sm font-medium text-rose-600">
+                @if (password?.errors?.['required']) {
+                  <span>La contraseña es obligatoria.</span>
+                }
+              </div>
+            }
+            <div class="flex justify-end">
+              <a routerLink="/forgot-password" class="text-sm font-semibold text-[#0066AA] hover:text-[#005599] hover:underline">
+                ¿Olvidaste tu contraseña?
+              </a>
+            </div>
           </div>
-          <div *ngIf="username?.touched && username?.invalid" class="text-sm font-medium text-rose-600">
-            <span *ngIf="username?.errors?.['required']">El usuario es obligatorio.</span>
-            <span *ngIf="username?.errors?.['leadingTrailingSpace']">El usuario no debe contener espacios.</span>
-          </div>
-        </div>
-
-        <div class="space-y-2">
-          <label for="password" class="block text-sm font-semibold text-slate-700">
-            Contraseña
-          </label>
-          <div class="relative">
-            <span class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
-              <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M16.5 10.5V7.75a4.5 4.5 0 00-9 0v2.75"/>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M6.75 10.5h10.5A2.25 2.25 0 0119.5 12.75v5.25a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 18v-5.25a2.25 2.25 0 012.25-2.25z"/>
-              </svg>
-            </span>
-            <input
-              id="password"
-              [type]="showPassword ? 'text' : 'password'"
-              formControlName="password"
-              placeholder="••••••••"
-              autocomplete="current-password"
-              class="h-12 w-full rounded-lg border border-slate-300 bg-white pl-11 pr-12 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15"
-            />
-            <button
-              type="button"
-              (click)="showPassword = !showPassword"
-              class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-[#0066AA]"
-              [title]="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+          <button
+            type="submit"
+            [disabled]="isSubmitting"
+            [style.background]="colorPrimario"
+            class="flex h-12 w-full items-center justify-center gap-2 rounded-lg text-sm font-bold text-white transition active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
             >
-              <svg *ngIf="!showPassword" class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-              </svg>
-              <svg *ngIf="showPassword" class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
-              </svg>
-            </button>
-          </div>
-          <div *ngIf="password?.touched && password?.invalid" class="text-sm font-medium text-rose-600">
-            <span *ngIf="password?.errors?.['required']">La contraseña es obligatoria.</span>
-          </div>
-          <div class="flex justify-end">
-            <a routerLink="/forgot-password" class="text-sm font-semibold text-[#0066AA] hover:text-[#005599] hover:underline">
-              ¿Olvidaste tu contraseña?
-            </a>
-          </div>
+            {{ isSubmitting ? 'Verificando...' : 'Ingresar' }}
+          </button>
+        </form>
+      }
+
+      @if (authError) {
+        <div class="mt-5 flex items-start gap-2.5 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm font-medium text-rose-700">
+          <svg class="mt-0.5 h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          {{ authError }}
         </div>
+      }
 
-        <button
-          type="submit"
-          [disabled]="isSubmitting"
-          [style.background]="colorPrimario"
-          class="flex h-12 w-full items-center justify-center gap-2 rounded-lg text-sm font-bold text-white transition active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {{ isSubmitting ? 'Verificando...' : 'Ingresar' }}
-        </button>
-      </form>
-
-      <div *ngIf="authError" class="mt-5 flex items-start gap-2.5 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm font-medium text-rose-700">
-        <svg class="mt-0.5 h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-        </svg>
-        {{ authError }}
-      </div>
-
-      <ng-container *ngIf="!isAdminRoute && !missingSlug">
+      @if (!isAdminRoute && !missingSlug) {
         <div class="my-6 flex items-center gap-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
           <span class="h-px flex-1 bg-slate-200"></span>
           o
           <span class="h-px flex-1 bg-slate-200"></span>
         </div>
-
         <button
           type="button"
           (click)="continueWithGoogle()"
           class="flex h-12 w-full items-center justify-center gap-3 rounded-lg border border-slate-300 bg-white text-sm font-semibold text-slate-700 transition hover:bg-slate-50 active:scale-[0.99]"
-        >
+          >
           <svg class="h-5 w-5" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M23.52 12.27c0-.85-.08-1.66-.22-2.44H12v4.62h6.47c-.28 1.5-1.13 2.78-2.4 3.63v3.02h3.88c2.27-2.09 3.57-5.17 3.57-8.83z"/>
             <path fill="#34A853" d="M12 24c3.24 0 5.96-1.07 7.95-2.9l-3.88-3.02c-1.08.72-2.45 1.15-4.07 1.15-3.13 0-5.78-2.11-6.73-4.96H1.26v3.11C3.24 21.3 7.28 24 12 24z"/>
@@ -189,7 +217,7 @@
           </svg>
           Continuar con Google
         </button>
-      </ng-container>
+      }
 
       <p class="mt-7 flex items-center justify-center gap-2 text-sm font-medium text-slate-400">
         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -201,11 +229,11 @@
   </main>
 
   <!-- Panel de marca: ahora a la izquierda, grande, con fondo celeste degradado,
-       tarjetas de funciones y foto de mascotas en layout de 2 columnas. -->
+  tarjetas de funciones y foto de mascotas en layout de 2 columnas. -->
   <section
     class="login-hero hidden md:order-first md:flex md:w-[62%] xl:w-[64%]"
     [style]="'background: linear-gradient(165deg, color-mix(in srgb, ' + colorPrimario + ' 8%, white) 0%, color-mix(in srgb, ' + colorPrimario + ' 20%, white) 100%);'"
-  >
+    >
     <div class="login-hero__inner">
       <div class="pointer-events-none absolute -right-40 -top-40 h-[36rem] w-[36rem] rounded-full" [style.background]="'color-mix(in srgb, ' + colorPrimario + ' 12%, white)'"></div>
       <div class="pointer-events-none absolute -bottom-56 left-1/4 h-[30rem] w-[30rem] rounded-full" [style.background]="'color-mix(in srgb, ' + colorPrimario + ' 10%, white)'"></div>
@@ -266,7 +294,7 @@
           src="https://toqqwxveqxhlottwetev.supabase.co/storage/v1/object/public/vargas_vet/image-Photoroom%20(3).png"
           alt="Perro y gato"
           class="login-hero__pet-image"
-        />
+          />
       </div>
     </div>
   </section>

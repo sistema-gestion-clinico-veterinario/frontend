@@ -1,41 +1,44 @@
 <div class="legal-accept-page">
 
-  <div *ngIf="loading()" class="state-msg">Cargando…</div>
-  <div *ngIf="errorMsg()" class="state-msg error">{{ errorMsg() }}</div>
+  @if (loading()) {
+    <div class="state-msg">Cargando…</div>
+  }
+  @if (errorMsg()) {
+    <div class="state-msg error">{{ errorMsg() }}</div>
+  }
 
-  <ng-container *ngIf="!loading() && currentDoc() as doc">
+  @if (!loading() && currentDoc(); as doc) {
     <div class="legal-accept-inner">
       <nav class="tabs">
-        <button
-          type="button"
-          class="tab"
-          *ngFor="let d of documents(); let i = index"
-          [class.is-current]="i === currentIndex()"
-          [disabled]="i > currentIndex() && !checked()[documents()[i - 1].id]"
-          (click)="goTo(i)"
-        >
-          {{ labelFor(d) }}
-        </button>
+        @for (d of documents(); track d; let i = $index) {
+          <button
+            type="button"
+            class="tab"
+            [class.is-current]="i === currentIndex()"
+            [disabled]="i > currentIndex() && !checked()[documents()[i - 1].id]"
+            (click)="goTo(i)"
+            >
+            {{ labelFor(d) }}
+          </button>
+        }
       </nav>
-
       <main class="document-reader">
         <header class="reader-header">
           <h1>{{ labelFor(doc) }}</h1>
           <span class="reader-version">Versión {{ doc.version }}</span>
         </header>
-
         <div class="reader-body">{{ doc.contenido }}</div>
-
         <footer class="reader-footer">
           <label class="agree-checkbox">
             <input type="checkbox" [ngModel]="currentChecked()" (ngModelChange)="toggleCurrent($event)" />
             <span>He leído y acepto {{ labelFor(doc) }}</span>
           </label>
-
           <div class="reader-actions">
             <button type="button" class="btn-link" (click)="logout()">Cerrar sesión</button>
             <div class="reader-actions-right">
-              <button type="button" class="btn-outline" *ngIf="!isFirstDoc()" (click)="back()">Atrás</button>
+              @if (!isFirstDoc()) {
+                <button type="button" class="btn-outline" (click)="back()">Atrás</button>
+              }
               <button type="button" class="btn-solid" [disabled]="!currentChecked() || submitting()" (click)="next()">
                 {{ submitting() ? 'Guardando…' : (isLastDoc() ? 'Aceptar y continuar' : 'Continuar') }}
               </button>
@@ -44,5 +47,5 @@
         </footer>
       </main>
     </div>
-  </ng-container>
+  }
 </div>

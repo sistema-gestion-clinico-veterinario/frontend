@@ -6,69 +6,81 @@
   [modal]="true"
   [style]="{ width: '640px' }"
   [dismissableMask]="false"
->
-  <p class="text-sm text-slate-600 mb-4" *ngIf="mode === 'empleado'">
-    No se puede suspender mientras existan citas programadas. Reasigna cada una a otro veterinario disponible en el mismo horario, o resuélvelas y vuelve a intentar.
-  </p>
-  <p class="text-sm text-slate-600 mb-4" *ngIf="mode === 'apoderado'">
-    No se puede suspender mientras existan citas programadas para este cliente. Cancela cada cita indicando el motivo, o resuélvelas y vuelve a intentar.
-  </p>
+  >
+  @if (mode === 'empleado') {
+    <p class="text-sm text-slate-600 mb-4">
+      No se puede suspender mientras existan citas programadas. Reasigna cada una a otro veterinario disponible en el mismo horario, o resuélvelas y vuelve a intentar.
+    </p>
+  }
+  @if (mode === 'apoderado') {
+    <p class="text-sm text-slate-600 mb-4">
+      No se puede suspender mientras existan citas programadas para este cliente. Cancela cada cita indicando el motivo, o resuélvelas y vuelve a intentar.
+    </p>
+  }
 
-  <div *ngIf="loading()" class="text-center text-sm text-slate-500 py-8">Cargando citas...</div>
+  @if (loading()) {
+    <div class="text-center text-sm text-slate-500 py-8">Cargando citas...</div>
+  }
 
-  <div *ngIf="!loading() && citas().length === 0" class="text-center text-sm text-emerald-600 py-8 font-medium">
-    No quedan citas conflictivas. Ya puedes reintentar la suspensión.
-  </div>
-
-  <div *ngFor="let cita of citas()" class="border border-slate-200 rounded-md p-4 mb-3">
-    <div class="flex justify-between items-start mb-2">
-      <div>
-        <p class="font-semibold text-slate-800">{{ cita.mascotaNombre }} — {{ cita.servicioNombre || 'Servicio' }}</p>
-        <p class="text-xs text-slate-500">{{ cita.fechaHoraInicio | date:'dd/MM/yyyy HH:mm' }} · Cliente: {{ cita.apoderadoNombre }}</p>
-        <p class="text-xs text-slate-500" *ngIf="mode === 'empleado'">Veterinario actual: {{ cita.veterinarioNombre }}</p>
-      </div>
+  @if (!loading() && citas().length === 0) {
+    <div class="text-center text-sm text-emerald-600 py-8 font-medium">
+      No quedan citas conflictivas. Ya puedes reintentar la suspensión.
     </div>
+  }
 
-    <ng-container *ngIf="mode === 'empleado'">
-      <div class="flex gap-2 items-center mb-2">
-        <p-select
-          [options]="empleadosActivos()"
-          optionLabel="nombre"
-          placeholder="Reasignar a..."
-          [style]="{ width: '260px' }"
-          (onChange)="seleccionarVeterinario(cita.id, $event.value.id)"
-        >
-          <ng-template pTemplate="selectedItem" let-emp>
-            <span *ngIf="emp">{{ emp.nombre }} {{ emp.apellido }}</span>
-          </ng-template>
-          <ng-template pTemplate="item" let-emp>
-            <span>{{ emp.nombre }} {{ emp.apellido }}</span>
-          </ng-template>
-        </p-select>
+  @for (cita of citas(); track cita) {
+    <div class="border border-slate-200 rounded-md p-4 mb-3">
+      <div class="flex justify-between items-start mb-2">
+        <div>
+          <p class="font-semibold text-slate-800">{{ cita.mascotaNombre }} — {{ cita.servicioNombre || 'Servicio' }}</p>
+          <p class="text-xs text-slate-500">{{ cita.fechaHoraInicio | date:'dd/MM/yyyy HH:mm' }} · Cliente: {{ cita.apoderadoNombre }}</p>
+          @if (mode === 'empleado') {
+            <p class="text-xs text-slate-500">Veterinario actual: {{ cita.veterinarioNombre }}</p>
+          }
+        </div>
       </div>
-      <textarea
-        pInputTextarea
-        rows="2"
-        class="w-full text-sm mb-2"
-        placeholder="Motivo del cambio (opcional)"
-        [ngModel]="motivo()[cita.id]"
-        (ngModelChange)="actualizarMotivo(cita.id, $event)"
-      ></textarea>
-      <button pButton type="button" label="Reasignar" [loading]="saving()" (click)="reasignar(cita)"></button>
-    </ng-container>
-
-    <ng-container *ngIf="mode === 'apoderado'">
-      <textarea
-        pInputTextarea
-        rows="2"
-        class="w-full text-sm mb-2"
-        placeholder="Motivo de la cancelación"
-        [ngModel]="motivo()[cita.id]"
-        (ngModelChange)="actualizarMotivo(cita.id, $event)"
-      ></textarea>
-      <button pButton type="button" label="Cancelar cita" severity="danger" [loading]="saving()" (click)="cancelar(cita)"></button>
-    </ng-container>
-  </div>
+      @if (mode === 'empleado') {
+        <div class="flex gap-2 items-center mb-2">
+          <p-select
+            [options]="empleadosActivos()"
+            optionLabel="nombre"
+            placeholder="Reasignar a..."
+            [style]="{ width: '260px' }"
+            (onChange)="seleccionarVeterinario(cita.id, $event.value.id)"
+            >
+            <ng-template pTemplate="selectedItem" let-emp>
+              @if (emp) {
+                <span>{{ emp.nombre }} {{ emp.apellido }}</span>
+              }
+            </ng-template>
+            <ng-template pTemplate="item" let-emp>
+              <span>{{ emp.nombre }} {{ emp.apellido }}</span>
+            </ng-template>
+          </p-select>
+        </div>
+        <textarea
+          pInputTextarea
+          rows="2"
+          class="w-full text-sm mb-2"
+          placeholder="Motivo del cambio (opcional)"
+          [ngModel]="motivo()[cita.id]"
+          (ngModelChange)="actualizarMotivo(cita.id, $event)"
+        ></textarea>
+        <button pButton type="button" label="Reasignar" [loading]="saving()" (click)="reasignar(cita)"></button>
+      }
+      @if (mode === 'apoderado') {
+        <textarea
+          pInputTextarea
+          rows="2"
+          class="w-full text-sm mb-2"
+          placeholder="Motivo de la cancelación"
+          [ngModel]="motivo()[cita.id]"
+          (ngModelChange)="actualizarMotivo(cita.id, $event)"
+        ></textarea>
+        <button pButton type="button" label="Cancelar cita" severity="danger" [loading]="saving()" (click)="cancelar(cita)"></button>
+      }
+    </div>
+  }
 
   <ng-template pTemplate="footer">
     <button pButton type="button" label="Cerrar" class="p-button-text" (click)="cerrar()"></button>

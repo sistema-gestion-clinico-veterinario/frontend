@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, inject } from '@angular/core';
 import { LoadingStore } from '../../../store/loading.store';
 import { AuthStore } from '../../../store/auth.store';
@@ -8,7 +8,7 @@ const DEFAULT_LOADING_IMAGE = 'https://toqqwxveqxhlottwetev.supabase.co/storage/
 @Component({
   selector: 'app-process-loading-panel',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './process-loading-panel.component.html'
 })
 export class ProcessLoadingPanelComponent {

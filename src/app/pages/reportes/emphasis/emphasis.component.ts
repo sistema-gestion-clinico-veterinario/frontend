@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { ItemCount } from '../../../models/response/reportes-clinicos-response';
 
@@ -10,25 +10,28 @@ import { ItemCount } from '../../../models/response/reportes-clinicos-response';
 @Component({
   selector: 'app-reportes-emphasis',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div *ngIf="primero() as top; else vacio" class="flex flex-col gap-3 sm:flex-row sm:items-center">
-      <div class="flex shrink-0 flex-col items-center justify-center rounded-xl px-5 py-4 text-center text-white sm:w-36" [style.background]="color()">
-        <span class="text-3xl font-extrabold leading-none">{{ top.count }}</span>
-        <span class="mt-1.5 text-[11px] font-semibold leading-tight opacity-90">{{ top.label }}</span>
+    @if (primero(); as top) {
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div class="flex shrink-0 flex-col items-center justify-center rounded-xl px-5 py-4 text-center text-white sm:w-36" [style.background]="color()">
+          <span class="text-3xl font-extrabold leading-none">{{ top.count }}</span>
+          <span class="mt-1.5 text-[11px] font-semibold leading-tight opacity-90">{{ top.label }}</span>
+        </div>
+        <ul class="min-w-0 flex-1 space-y-1.5">
+          @for (item of resto(); track item) {
+            <li class="flex items-center justify-between gap-2 text-xs text-slate-500">
+              <span class="truncate">{{ item.label }}</span>
+              <span class="shrink-0 font-semibold text-slate-600">{{ item.count }}</span>
+            </li>
+          }
+        </ul>
       </div>
-      <ul class="min-w-0 flex-1 space-y-1.5">
-        <li *ngFor="let item of resto()" class="flex items-center justify-between gap-2 text-xs text-slate-500">
-          <span class="truncate">{{ item.label }}</span>
-          <span class="shrink-0 font-semibold text-slate-600">{{ item.count }}</span>
-        </li>
-      </ul>
-    </div>
-    <ng-template #vacio>
+    } @else {
       <div class="grid h-40 place-items-center text-center text-xs text-slate-400">Sin datos para los filtros seleccionados</div>
-    </ng-template>
-  `
+    }
+    `
 })
 export class ReportesEmphasisComponent {
   readonly items = input<ItemCount[] | null>([]);

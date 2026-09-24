@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { ChangeDetectionStrategy, Component, DestroyRef, effect, inject, input, signal, ViewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FullCalendarComponent, FullCalendarModule } from '@fullcalendar/angular';
@@ -35,7 +35,7 @@ export interface CitaDelDiaPopover {
 @Component({
   selector: 'app-dashboard-citas-calendar',
   standalone: true,
-  imports: [CommonModule, FullCalendarModule],
+  imports: [FullCalendarModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './citas-calendar.component.html',
   styleUrl: './citas-calendar.component.scss'
