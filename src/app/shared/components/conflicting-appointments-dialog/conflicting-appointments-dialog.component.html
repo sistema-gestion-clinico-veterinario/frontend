@@ -31,7 +31,7 @@
 
     <ng-container *ngIf="mode === 'empleado'">
       <div class="flex gap-2 items-center mb-2">
-        <p-dropdown
+        <p-select
           [options]="empleadosActivos()"
           optionLabel="nombre"
           placeholder="Reasignar a..."
@@ -44,7 +44,7 @@
           <ng-template pTemplate="item" let-emp>
             <span>{{ emp.nombre }} {{ emp.apellido }}</span>
           </ng-template>
-        </p-dropdown>
+        </p-select>
       </div>
       <textarea
         pInputTextarea

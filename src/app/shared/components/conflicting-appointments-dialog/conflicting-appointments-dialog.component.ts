@@ -3,8 +3,8 @@ import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, injec
 import { FormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
-import { DropdownModule } from 'primeng/dropdown';
-import { InputTextarea } from 'primeng/inputtextarea';
+import { SelectModule } from 'primeng/select';
+import { Textarea } from 'primeng/textarea';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { finalize } from 'rxjs';
@@ -24,7 +24,7 @@ import { EmpleadoListResponse } from '../../../models/response/empleado-list-res
 @Component({
   selector: 'app-conflicting-appointments-dialog',
   standalone: true,
-  imports: [CommonModule, FormsModule, DialogModule, ButtonModule, DropdownModule, InputTextarea, ToastModule],
+  imports: [CommonModule, FormsModule, DialogModule, ButtonModule, SelectModule, Textarea, ToastModule],
   providers: [MessageService],
   templateUrl: './conflicting-appointments-dialog.component.html'
 })

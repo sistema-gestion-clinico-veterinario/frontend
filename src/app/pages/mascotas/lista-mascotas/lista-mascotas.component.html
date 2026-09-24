@@ -137,24 +137,24 @@
         />
       </div>
       <div class="sm:w-44">
-        <p-dropdown
+        <p-select
           [options]="especieOpciones"
           [(ngModel)]="filterEspecie"
           (onChange)="onFilterChange()"
           placeholder="Especie"
           [showClear]="true"
           styleClass="w-full h-11 bg-slate-50 !border-slate-200 !rounded-xl !px-3 !flex !items-center !text-sm !font-bold !text-slate-800"
-        ></p-dropdown>
+        ></p-select>
       </div>
       <div class="sm:w-44">
-        <p-dropdown
+        <p-select
           [options]="activoOpciones"
           [(ngModel)]="filterActivo"
           (onChange)="onFilterChange()"
           placeholder="Estado"
           [showClear]="true"
           styleClass="w-full h-11 bg-slate-50 !border-slate-200 !rounded-xl !px-3 !flex !items-center !text-sm !font-bold !text-slate-800"
-        ></p-dropdown>
+        ></p-select>
       </div>
 
       <button (click)="onFilterChange()"

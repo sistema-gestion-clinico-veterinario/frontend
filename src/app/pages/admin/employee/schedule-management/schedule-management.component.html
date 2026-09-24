@@ -129,13 +129,13 @@
         <div class="space-y-5">
           <div class="flex flex-col gap-2">
             <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">Periodo de Asignación</label>
-            <p-calendar formControlName="dateRange" 
+            <p-datepicker formControlName="dateRange" 
                       selectionMode="range" 
                       [readonlyInput]="true" 
                       placeholder="Seleccione el rango de fechas"
                       [showIcon]="true"
                       styleClass="w-full h-11"
-                      appendTo="body"></p-calendar>
+                      appendTo="body"></p-datepicker>
           </div>
 
           <div class="flex items-center gap-3 p-4 bg-slate-50 border border-slate-100 rounded-xl group transition-all hover:border-amber-200">

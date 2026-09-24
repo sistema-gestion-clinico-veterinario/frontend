@@ -38,8 +38,6 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 
-import { DropdownModule } from 'primeng/dropdown';
-import { CalendarModule } from 'primeng/calendar';
 import { TooltipModule } from 'primeng/tooltip';
 import { MenuModule } from 'primeng/menu';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
@@ -85,8 +83,7 @@ interface HorarioResumen {
     DialogModule,
     InputTextModule,
     DatePickerModule,
-    DropdownModule,
-    CalendarModule,
+    SelectModule,
     TooltipModule,
     MenuModule,
 

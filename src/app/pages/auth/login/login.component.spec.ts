@@ -259,29 +259,15 @@ describe('LoginComponent - submit validations', () => {
     expect(component.authError).toBe('Usuario o contrasena incorrectos.');
   });
 
-  it('envia login sin slug cuando no hay slug ni es la ruta de SuperAdmin (login global)', () => {
+  it('no llama a AuthService.login cuando no hay slug ni es la ruta de SuperAdmin (aislamiento total entre empresas)', () => {
     component.slug = null;
     component.isAdminRoute = false;
     createLoginInput('username', 'admin.test');
     createLoginInput('password', 'secret123');
-    authService.login.and.returnValue(of({
-      data: {
-        roles: ['ROLE_ADMIN'],
-        assignedRoles: ['ROLE_ADMIN'],
-        companyId: 1,
-        companyName: 'VargasVet',
-        nombreCompleto: 'Admin Test',
-        userType: 'EMPLEADO',
-        empleadoId: 1,
-        passwordChanged: true,
-        needsCompanySelection: false,
-        menu: [],
-      }
-    } as any));
 
     component.submit();
 
-    expect(authService.login).toHaveBeenCalledWith({ slug: undefined, username: 'admin.test', password: 'secret123' });
+    expect(authService.login).not.toHaveBeenCalled();
   });
 
   it('usa adminLogin sin slug cuando la ruta es la reservada de SuperAdmin', () => {

@@ -1,7 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
-import { Calendar } from 'primeng/calendar';
+import { DatePicker } from 'primeng/datepicker';
 import { Toast } from 'primeng/toast';
 import { ConfirmDialog } from 'primeng/confirmdialog';
 import { Checkbox } from 'primeng/checkbox';
@@ -18,7 +18,7 @@ import { toDateInputKey } from '../../../../core/utils/input-validation.util';
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    Calendar,
+    DatePicker,
     Toast,
     ConfirmDialog,
     Checkbox

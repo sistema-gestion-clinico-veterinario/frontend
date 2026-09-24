@@ -7,9 +7,9 @@ import { PaginatorModule } from 'primeng/paginator';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
-import { DropdownModule } from 'primeng/dropdown';
+import { SelectModule } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
-import { CalendarModule } from 'primeng/calendar';
+import { DatePickerModule } from 'primeng/datepicker';
 import { MessageService } from 'primeng/api';
 import { ApoderadoService } from '../../../core/services/apoderado.service';
 import { PagoService } from '../../../core/services/pago.service';
@@ -41,9 +41,9 @@ interface HorarioResumen {
     ButtonModule,
     DialogModule,
     InputTextModule,
-    DropdownModule,
+    SelectModule,
     ToastModule,
-    CalendarModule,
+    DatePickerModule,
     RouterModule,
     HasPermissionDirective
   ],

@@ -82,7 +82,7 @@
       <!-- Selector empleado -->
       <div class="flex flex-col roster-employee-selector">
         <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Empleado</label>
-        <p-dropdown 
+        <p-select 
           [options]="employees()" 
           [ngModel]="selectedEmployeeId()" 
           (onChange)="onEmployeeChange($event.value)"
@@ -92,7 +92,7 @@
           [showClear]="true"
           styleClass="w-full h-9 flex items-center bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 outline-none transition-none shadow-none"
           panelStyleClass="text-xs font-medium border-slate-200 shadow-none">
-        </p-dropdown>
+        </p-select>
       </div>
 
       <!-- Modos de vista -->

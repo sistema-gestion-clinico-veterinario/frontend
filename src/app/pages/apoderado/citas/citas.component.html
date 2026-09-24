@@ -69,7 +69,7 @@
   <div class="bg-white rounded-xl border border-slate-200/70 px-4 py-3 mb-6 flex flex-wrap items-center justify-between gap-3">
     <div class="flex items-center gap-2">
       <i class="pi pi-filter text-xs text-slate-400"></i>
-      <p-dropdown
+      <p-select
         [options]="petFilterOptions()"
         [(ngModel)]="selectedPetFilter"
         (onChange)="onPetFilterChange($event)"
@@ -91,7 +91,7 @@
             <span class="text-sm font-medium">{{ item.label }}</span>
           </div>
         </ng-template>
-      </p-dropdown>
+      </p-select>
     </div>
 
     <div class="flex items-center gap-2">
