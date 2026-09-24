@@ -69,7 +69,7 @@
             @if (passwordForm.get('password')?.invalid && passwordForm.get('password')?.touched) {
               <div class="text-xs text-rose-500 font-medium">
                 @if (passwordForm.get('password')?.errors?.['required']) { <span>La contraseña es obligatoria.</span> }
-                @if (passwordForm.get('password')?.errors?.['passwordPolicy']) { <span>Usa al menos 12 caracteres y evita datos personales, secuencias y contraseñas comunes.</span> }
+                @if (passwordForm.get('password')?.errors?.['passwordPolicy']) { <span>Usa al menos 12 caracteres con mayúsculas, minúsculas, números y un símbolo; evita datos personales, secuencias y contraseñas comunes.</span> }
               </div>
             }
           </div>

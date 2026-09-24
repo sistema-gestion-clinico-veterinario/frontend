@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, output, signal, HostListener } from '@angular/core';
+import { Component, OnInit, inject, output, signal, computed, HostListener } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
@@ -31,7 +31,8 @@ export class NavbarComponent implements OnInit {
   private messageService = inject(MessageService);
   private router = inject(Router);
 
-  companies = signal<{label: string, value: number}[]>([]);
+  companies = signal<{label: string, value: number, ruc: string, logoUrl: string | null}[]>([]);
+  companySearchTerm = signal('');
   companyRoles = signal<CompanyRole[]>([]);
   dropdownOpen = signal(false);
   companyDropdownOpen = signal(false);
@@ -51,6 +52,19 @@ export class NavbarComponent implements OnInit {
     const found = this.companies().find(c => c.value === activeId);
     return found ? found.label : 'Seleccionar Empresa';
   }
+
+  /** Filtro client-side: la lista ya viene completa (hasta 1000 empresas en una sola
+   * llamada), asi que no hace falta ida y vuelta al servidor para buscar mientras
+   * se escribe - solo con superar unas pocas decenas de empresas ya no cabe todo
+   * visible sin desplazarse, y dos empresas con nombres parecidos (ej. "Clinica
+   * Veterinaria Vargas Vet" vs "Veterinaria Vargas Vet") son dificiles de distinguir
+   * sin mas datos, por eso se muestra tambien el RUC. */
+  filteredCompanies = computed(() => {
+    const term = this.companySearchTerm().trim().toLowerCase();
+    if (!term) return this.companies();
+    return this.companies().filter(c =>
+      c.label.toLowerCase().includes(term) || c.ruc.toLowerCase().includes(term));
+  });
 
   get activeRoleLabelText(): string {
     return this.getRoleLabel(this.authStore.activeRoleName() ?? '');
@@ -87,7 +101,7 @@ export class NavbarComponent implements OnInit {
           const companies = res.data?.content ?? [];
           const list = companies
             .filter(c => c.activo)
-            .map(c => ({ label: c.name, value: c.id }));
+            .map(c => ({ label: c.name, value: c.id, ruc: c.ruc ?? '', logoUrl: c.logoUrl ?? null }));
           this.companies.set(list);
 
           const currentSelected = this.authStore.selectedEnterprise();
@@ -117,12 +131,14 @@ export class NavbarComponent implements OnInit {
       });
     }
     this.companyDropdownOpen.set(false);
+    this.companySearchTerm.set('');
   }
 
   selectAllCompanies() {
     this.authStore.setSelectedEnterprise(null);
     this.companyRoles.set([]);
     this.companyDropdownOpen.set(false);
+    this.companySearchTerm.set('');
 
     const currentUrl = this.router.url;
     this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {

@@ -43,10 +43,24 @@ export class CompanyService {
       `${environment.apiUrl}/company/branding/${slug}`
     );
   }
+
+  /** Publico, sin autenticacion - buscador de clinica para el login sin slug. */
+  searchByName(query: string) {
+    return this.http.get<ApiResponse<CompanySearchResult[]>>(
+      `${environment.apiUrl}/company/search`,
+      { params: { q: query } }
+    );
+  }
 }
 
 export interface CompanyBrandingResponse {
   name: string;
   logoUrl: string | null;
   colorPrimario: string | null;
+}
+
+export interface CompanySearchResult {
+  name: string;
+  slug: string;
+  logoUrl: string | null;
 }

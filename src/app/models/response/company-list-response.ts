@@ -6,4 +6,6 @@ export interface CompanyListResponse {
   phone: string;
   email: string;
   activo: boolean;
+  logoUrl?: string;
+  slug?: string;
 }

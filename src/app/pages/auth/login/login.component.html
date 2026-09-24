@@ -1,45 +1,22 @@
-<div class="min-h-screen bg-white md:flex">
-  <section class="relative hidden min-h-screen overflow-hidden text-white md:flex md:w-3/5 md:items-center md:justify-center md:px-8 lg:px-14 xl:w-[68%] xl:px-20" [style.background]="colorPrimario">
-    <div class="relative z-10 w-full max-w-sm text-center lg:max-w-md">
-      <img
-        *ngIf="logoUrl"
-        [src]="logoUrl"
-        [alt]="companyName"
-        class="mx-auto mb-7 h-auto w-52 max-w-full object-contain lg:mb-9 lg:w-72"
-      />
-      <!-- Mientras se resuelve la marca de la empresa del slug (ej. al
-           recargar la pagina con F5), un espacio neutro en vez de mostrar
-           por un instante el logo generico del sistema. -->
-      <div *ngIf="!logoUrl && !brandLoaded" class="mx-auto mb-7 h-[104px] w-40 animate-pulse rounded-2xl bg-white/20 lg:mb-9 lg:h-[136px] lg:w-56"></div>
-      <div class="mx-auto mb-7 h-px w-20 bg-white/35"></div>
-      <p class="text-xl font-bold leading-tight tracking-tight lg:text-2xl">
-        Gestión veterinaria simple y segura
-      </p>
-      <p class="mx-auto mt-4 max-w-xs text-sm leading-6 text-white/75">
-        Atención, citas e historias clínicas en un entorno seguro.
-      </p>
-    </div>
-  </section>
-
-  <main class="flex min-h-screen items-center justify-center bg-white px-6 py-8 sm:px-10 md:w-2/5 md:px-8 lg:px-12 xl:w-[32%] xl:px-14">
-    <div class="w-full max-w-sm">
-      <div class="mb-8 flex items-center gap-3 md:hidden">
-        <div class="flex h-11 w-11 items-center justify-center rounded-lg text-white" [style.background]="colorPrimario">
-          <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="M12 21s-7-4.35-7-10.2A4.8 4.8 0 019.8 6c1.35 0 2.55.62 3.2 1.58A3.86 3.86 0 0116.2 6 4.8 4.8 0 0121 10.8C21 16.65 12 21 12 21z"/>
-          </svg>
-        </div>
-        <div>
-          <p class="text-xs font-medium text-slate-500">{{ companyName }}</p>
-        </div>
+<div class="min-h-screen bg-white md:flex" style="font-family: 'Barlow', sans-serif;">
+  <!-- Panel del formulario: a la derecha, blanco, angosto. -->
+  <main class="flex min-h-screen flex-col justify-center bg-white px-6 py-10 sm:px-10 md:w-[38%] md:px-12 lg:px-16 xl:w-[36%]">
+    <div class="mx-auto w-full max-w-sm">
+      <div class="-mt-6 mb-6 flex items-center justify-center gap-2.5">
+        <img
+          *ngIf="logoUrl"
+          [src]="logoUrl"
+          [alt]="companyName"
+          class="h-24 w-auto max-w-[18rem] object-contain"
+        />
+        <p *ngIf="!logoUrl" class="text-sm font-semibold text-slate-500">{{ companyName }}</p>
       </div>
 
-      <header class="mb-8 md:mb-9">
-
-        <h1 class="text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl md:text-3xl lg:text-4xl">
+      <header class="mb-8">
+        <h1 class="text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl">
           ¡Hola de nuevo!
         </h1>
-        <p class="mt-3 text-base font-medium text-slate-500">
+        <p class="mt-2 text-base font-medium text-slate-500">
           Volvamos a cuidar juntos
         </p>
       </header>
@@ -48,14 +25,60 @@
         <svg class="mt-0.5 h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
         </svg>
-        No encontramos la veterinaria de este enlace. Verifica la URL con tu clínica.
+        No encontramos esta veterinaria. Pídele el enlace correcto a tu clínica, o
+        <a routerLink="/login" class="font-semibold underline hover:text-rose-800">búscala aquí</a>.
       </div>
 
-      <div *ngIf="missingSlug" class="flex items-start gap-2.5 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm font-medium text-amber-800">
-        <svg class="mt-0.5 h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-        </svg>
-        Ingresa desde el enlace de tu veterinaria (por ejemplo, systemvet.pe/tu-clinica/login) para iniciar sesión.
+      <div *ngIf="missingSlug" class="space-y-5">
+        <div class="space-y-2">
+          <label for="clinicSearch" class="block text-sm font-semibold text-slate-700">
+            Busca tu clínica
+          </label>
+          <div class="relative">
+            <span class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+              <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"/>
+              </svg>
+            </span>
+            <input
+              id="clinicSearch"
+              type="text"
+              [formControl]="clinicSearchControl"
+              placeholder="Nombre de tu veterinaria"
+              autocomplete="off"
+              class="h-12 w-full rounded-lg border border-slate-300 bg-white pl-11 pr-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15"
+            />
+          </div>
+
+          <p *ngIf="searchingClinics" class="text-sm text-slate-400">Buscando...</p>
+
+          <ul *ngIf="!searchingClinics && clinicResults.length" class="divide-y divide-slate-100 overflow-hidden rounded-lg border border-slate-200">
+            <li *ngFor="let clinic of clinicResults">
+              <button
+                type="button"
+                (click)="goToClinic(clinic)"
+                class="flex w-full items-center gap-3 p-3 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+              >
+                <img *ngIf="clinic.logoUrl" [src]="clinic.logoUrl" [alt]="clinic.name" class="h-8 w-8 shrink-0 rounded-full object-cover" />
+                <span>{{ clinic.name }}</span>
+              </button>
+            </li>
+          </ul>
+
+          <p *ngIf="!searchingClinics && clinicSearchControl.value && clinicSearchControl.value.trim().length >= 2 && !clinicResults.length"
+            class="text-sm text-slate-400">
+            No encontramos ninguna clínica con ese nombre.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          [disabled]="!clinicResults.length"
+          (click)="clinicResults.length && goToClinic(clinicResults[0])"
+          class="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-[#0066AA] text-sm font-bold text-white transition hover:bg-[#005599] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Continuar
+        </button>
       </div>
 
       <form *ngIf="!missingSlug" [formGroup]="loginForm" (ngSubmit)="submit()" class="space-y-5">
@@ -133,7 +156,7 @@
           type="submit"
           [disabled]="isSubmitting"
           [style.background]="colorPrimario"
-          class="flex h-12 w-full items-center justify-center rounded-lg text-sm font-bold text-white transition active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
+          class="flex h-12 w-full items-center justify-center gap-2 rounded-lg text-sm font-bold text-white transition active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
         >
           {{ isSubmitting ? 'Verificando...' : 'Ingresar' }}
         </button>
@@ -176,4 +199,75 @@
       </p>
     </div>
   </main>
+
+  <!-- Panel de marca: ahora a la izquierda, grande, con fondo celeste degradado,
+       tarjetas de funciones y foto de mascotas en layout de 2 columnas. -->
+  <section
+    class="login-hero hidden md:order-first md:flex md:w-[62%] xl:w-[64%]"
+    [style]="'background: linear-gradient(165deg, color-mix(in srgb, ' + colorPrimario + ' 8%, white) 0%, color-mix(in srgb, ' + colorPrimario + ' 20%, white) 100%);'"
+  >
+    <div class="login-hero__inner">
+      <div class="pointer-events-none absolute -right-40 -top-40 h-[36rem] w-[36rem] rounded-full" [style.background]="'color-mix(in srgb, ' + colorPrimario + ' 12%, white)'"></div>
+      <div class="pointer-events-none absolute -bottom-56 left-1/4 h-[30rem] w-[30rem] rounded-full" [style.background]="'color-mix(in srgb, ' + colorPrimario + ' 10%, white)'"></div>
+
+      <div class="login-hero__content">
+        <p class="text-xs font-bold uppercase tracking-[0.2em] md:text-sm xl:text-[0.90rem]" [style.color]="colorPrimario">
+          Todo en un mismo lugar
+        </p>
+        <h2 class="mt-2 text-3xl font-extrabold leading-[1.08] tracking-tight text-slate-900 md:text-[2.25rem] xl:text-[3.2rem]">
+          Gestión veterinaria<br />
+          <span [style.color]="colorPrimario">simple y segura</span>
+        </h2>
+        <p class="mt-5 max-w-xl text-base leading-6 text-slate-600 md:text-lg md:leading-7 xl:text-[1.1rem] xl:leading-8">
+          Citas, pacientes e historias clínicas en un entorno confiable.
+        </p>
+
+        <div class="login-hero__cards mt-8 space-y-3 md:space-y-4">
+          <div class="flex items-center gap-3 rounded-xl bg-white p-3.5 shadow-sm shadow-slate-900/5 md:gap-4 md:p-5">
+            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg md:h-12 md:w-12" [style.background]="'color-mix(in srgb, ' + colorPrimario + ' 14%, white)'">
+              <svg class="h-5 w-5 md:h-6 md:w-6" fill="none" [style.color]="colorPrimario" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+            </div>
+            <div>
+              <p class="text-sm font-bold text-slate-900 md:text-base">Citas</p>
+              <p class="text-xs text-slate-500 md:text-sm">Organiza tu agenda fácilmente</p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3 rounded-xl bg-white p-3.5 shadow-sm shadow-slate-900/5 md:gap-4 md:p-5">
+            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg md:h-12 md:w-12" [style.background]="'color-mix(in srgb, ' + colorPrimario + ' 14%, white)'">
+              <svg class="h-5 w-5 md:h-6 md:w-6" fill="none" [style.color]="colorPrimario" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12h6m-6 4h6m1 5H8a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+            </div>
+            <div>
+              <p class="text-sm font-bold text-slate-900 md:text-base">Historias clínicas</p>
+              <p class="text-xs text-slate-500 md:text-sm">Toda la información en un solo lugar</p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3 rounded-xl bg-white p-3.5 shadow-sm shadow-slate-900/5 md:gap-4 md:p-5">
+            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg md:h-12 md:w-12" [style.background]="'color-mix(in srgb, ' + colorPrimario + ' 14%, white)'">
+              <svg class="h-5 w-5 md:h-6 md:w-6" fill="none" [style.color]="colorPrimario" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-1.13a4 4 0 10-4-4 4 4 0 004 4zm6 0a4 4 0 10-2.5-7.13"/>
+              </svg>
+            </div>
+            <div>
+              <p class="text-sm font-bold text-slate-900 md:text-base">Pacientes</p>
+              <p class="text-xs text-slate-500 md:text-sm">Gestiona y conoce mejor a cada uno</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="login-hero__pet">
+        <img
+          src="https://toqqwxveqxhlottwetev.supabase.co/storage/v1/object/public/vargas_vet/image-Photoroom%20(3).png"
+          alt="Perro y gato"
+          class="login-hero__pet-image"
+        />
+      </div>
+    </div>
+  </section>
 </div>

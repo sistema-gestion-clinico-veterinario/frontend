@@ -1,12 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { finalize, from, switchMap, timeout } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, finalize, from, of, switchMap, timeout } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { AuthService } from '../../../core/services/auth.service';
-import { CompanyService } from '../../../core/services/company.service';
+import { CompanyService, CompanySearchResult } from '../../../core/services/company.service';
 import { CompanySlugContext } from '../../../core/services/company-slug-context.service';
 import { AuthStore } from '../../../store/auth.store';
 import { resolveInitialRoute, resolveDashboardRoute } from '../../../layouts/main-layout/navbar/navbar.component';
@@ -14,7 +14,7 @@ import { SessionService } from '../../../core/services/session.service';
 import { LoadingStore } from '../../../store/loading.store';
 
 const DEFAULT_BRAND_COLOR = '#006BA8';
-const DEFAULT_LOGO_URL = 'https://toqqwxveqxhlottwetev.supabase.co/storage/v1/object/public/vargas_vet/Fondo%20de%20Pantalla%20Computador%20Simple%20Beige%20(4).png';
+const DEFAULT_LOGO_URL = 'https://toqqwxveqxhlottwetev.supabase.co/storage/v1/object/public/vargas_vet/Fondo%20de%20Pantalla%20Computador%20Simple%20Beige%20(7).png';
 const DEFAULT_COMPANY_NAME = 'SystemVet';
 
 @Component({
@@ -74,6 +74,9 @@ export class LoginComponent implements OnInit {
       // el logo/color por defecto del sistema de una vez.
       this.logoUrl = DEFAULT_LOGO_URL;
       this.brandLoaded = true;
+      if (this.missingSlug) {
+        this.setupClinicSearch();
+      }
     }
 
     // Con slug, solo se reusa una sesion existente si es DE ESTA empresa - las cookies
@@ -122,6 +125,38 @@ export class LoginComponent implements OnInit {
    * evita mostrarle a la persona un formulario que nunca va a funcionar. */
   get missingSlug(): boolean {
     return !this.isAdminRoute && !this.slug;
+  }
+
+  /** Buscador de clinica que se muestra cuando falta el slug - reemplaza al
+   * formulario, que el backend rechazaria de todos modos sin empresa resuelta. */
+  clinicSearchControl = new FormControl('');
+  clinicResults: CompanySearchResult[] = [];
+  searchingClinics = false;
+
+  private setupClinicSearch(): void {
+    this.clinicSearchControl.valueChanges.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      switchMap((query) => {
+        const trimmed = (query ?? '').trim();
+        if (trimmed.length < 2) {
+          this.clinicResults = [];
+          this.searchingClinics = false;
+          return of(null);
+        }
+        this.searchingClinics = true;
+        return this.companyService.searchByName(trimmed).pipe(
+          catchError(() => of(null))
+        );
+      })
+    ).subscribe((response) => {
+      this.searchingClinics = false;
+      this.clinicResults = response?.data ?? [];
+    });
+  }
+
+  goToClinic(result: CompanySearchResult): void {
+    this.router.navigateByUrl(`/${result.slug}/login`);
   }
 
   submit() {

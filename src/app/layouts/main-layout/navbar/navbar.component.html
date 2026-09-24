@@ -28,7 +28,17 @@
            [class.rotate-180]="companyDropdownOpen()"></i>
       </button>
       <div *ngIf="companyDropdownOpen()"
-        class="fixed left-3 right-3 top-16 mt-1.5 w-auto bg-white rounded-xl border border-slate-100 py-1 z-[250] animate-in fade-in slide-in-from-top-1 duration-150 sm:absolute sm:left-0 sm:right-auto sm:top-full sm:w-52">
+        class="fixed left-3 right-3 top-16 mt-1.5 w-auto bg-white rounded-xl border border-slate-100 py-1 z-[250] animate-in fade-in slide-in-from-top-1 duration-150 sm:absolute sm:left-0 sm:right-auto sm:top-full sm:w-72">
+        <div class="px-3 pb-2 pt-1">
+          <input
+            type="text"
+            [ngModel]="companySearchTerm()"
+            (ngModelChange)="companySearchTerm.set($event)"
+            placeholder="Buscar por nombre o RUC..."
+            (click)="$event.stopPropagation()"
+            class="h-9 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-xs text-slate-700 outline-none focus:border-[#0066AA] focus:bg-white"
+          />
+        </div>
         <button
           type="button"
           (click)="selectAllCompanies()"
@@ -38,13 +48,21 @@
           <i *ngIf="!activeCompanyId" class="pi pi-check text-[#0066AA] text-[10px]"></i>
         </button>
         <div class="my-1 border-t border-slate-100"></div>
-        <button *ngFor="let c of companies()"
-          (click)="selectCompany(c.value)"
-          class="w-full flex items-center justify-between px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-[#0066AA] transition-colors text-left"
-        >
-          <span class="truncate">{{ c.label }}</span>
-          <i *ngIf="c.value === activeCompanyId" class="pi pi-check text-[#0066AA] text-[10px]"></i>
-        </button>
+        <div class="max-h-72 overflow-y-auto">
+          <button *ngFor="let c of filteredCompanies()"
+            (click)="selectCompany(c.value)"
+            class="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-[#0066AA] transition-colors text-left"
+          >
+            <img *ngIf="c.logoUrl" [src]="c.logoUrl" [alt]="c.label" class="h-6 w-6 shrink-0 rounded-full object-cover" />
+            <i *ngIf="!c.logoUrl" class="pi pi-building text-slate-300 text-sm shrink-0"></i>
+            <span class="flex min-w-0 flex-1 flex-col">
+              <span class="truncate">{{ c.label }}</span>
+              <span *ngIf="c.ruc" class="truncate text-[10px] font-normal text-slate-400">RUC {{ c.ruc }}</span>
+            </span>
+            <i *ngIf="c.value === activeCompanyId" class="pi pi-check text-[#0066AA] text-[10px] shrink-0"></i>
+          </button>
+          <p *ngIf="!filteredCompanies().length" class="px-4 py-3 text-xs text-slate-400">Sin resultados.</p>
+        </div>
       </div>
     </div>
     <div *ngIf="authStore.availableRoles().length > 1" id="active-role-dropdown-container" class="relative">
