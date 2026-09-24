@@ -21,39 +21,39 @@
           <table class="w-full text-sm">
             <thead>
               <tr class="border-b border-slate-100">
-                <th class="text-left px-6 py-4"><p-skeleton width="6rem" height="0.6rem" borderRadius="0.3rem"></p-skeleton></th>
-                <th class="text-left px-6 py-4"><p-skeleton width="6rem" height="0.6rem" borderRadius="0.3rem"></p-skeleton></th>
-                <th class="text-left px-6 py-4"><p-skeleton width="6rem" height="0.6rem" borderRadius="0.3rem"></p-skeleton></th>
-                <th class="text-left px-6 py-4"><p-skeleton width="6rem" height="0.6rem" borderRadius="0.3rem"></p-skeleton></th>
-                <th class="px-6 py-4 w-20"></th>
+                <th class="text-left px-6 py-2"><p-skeleton width="6rem" height="0.6rem" borderRadius="0.3rem"></p-skeleton></th>
+                <th class="text-left px-6 py-2"><p-skeleton width="6rem" height="0.6rem" borderRadius="0.3rem"></p-skeleton></th>
+                <th class="text-left px-6 py-2"><p-skeleton width="6rem" height="0.6rem" borderRadius="0.3rem"></p-skeleton></th>
+                <th class="text-left px-6 py-2"><p-skeleton width="6rem" height="0.6rem" borderRadius="0.3rem"></p-skeleton></th>
+                <th class="px-6 py-2 w-20"></th>
               </tr>
             </thead>
             <tbody>
               @for (i of [1,2,3,4,5]; track i) {
                 <tr class="border-b border-slate-100">
-                  <td class="px-6 py-4">
-                    <div class="flex items-center gap-3">
-                      <p-skeleton shape="circle" size="2.5rem"></p-skeleton>
+                  <td class="px-6 py-2">
+                    <div class="flex items-center gap-2.5">
+                      <p-skeleton shape="circle" size="2rem"></p-skeleton>
                       <div class="space-y-1.5">
                         <p-skeleton width="10rem" height="0.8rem" borderRadius="0.3rem"></p-skeleton>
                         <p-skeleton width="7rem" height="0.6rem" borderRadius="0.3rem"></p-skeleton>
                       </div>
                     </div>
                   </td>
-                  <td class="px-6 py-4">
+                  <td class="px-6 py-2">
                     <div class="space-y-1.5">
                       <p-skeleton width="12rem" height="0.8rem" borderRadius="0.3rem"></p-skeleton>
                       <p-skeleton width="8rem" height="0.6rem" borderRadius="0.3rem"></p-skeleton>
                     </div>
                   </td>
-                  <td class="px-6 py-4">
+                  <td class="px-6 py-2">
                     <div class="flex gap-1.5">
                       <p-skeleton width="5rem" height="1.2rem" borderRadius="0.3rem"></p-skeleton>
                       <p-skeleton width="5rem" height="1.2rem" borderRadius="0.3rem"></p-skeleton>
                     </div>
                   </td>
-                  <td class="px-6 py-4"><p-skeleton width="5rem" height="1.4rem" borderRadius="999px"></p-skeleton></td>
-                  <td class="px-6 py-4 text-right"><p-skeleton width="2rem" height="2rem" borderRadius="0.5rem"></p-skeleton></td>
+                  <td class="px-6 py-2"><p-skeleton width="5rem" height="1.25rem" borderRadius="999px"></p-skeleton></td>
+                  <td class="px-6 py-2 text-right"><p-skeleton width="1.75rem" height="1.75rem" borderRadius="0.5rem"></p-skeleton></td>
                 </tr>
               }
             </tbody>
@@ -117,7 +117,7 @@
 
     @if (!cargando() && employees().length === 0) {
       <div
-        class="bg-white border border-slate-200 rounded-xl py-16 text-center px-6">
+        class="lg:hidden bg-white border border-slate-200 rounded-xl py-16 text-center px-6">
         <i class="pi pi-users text-3xl text-slate-200 block mb-3"></i>
         <p class="text-sm text-slate-400 font-medium">No se encontraron empleados registrados</p>
       </div>
@@ -194,19 +194,19 @@
         styleClass="p-datatable-borderless">
         <ng-template pTemplate="header">
           <tr class="border-b border-slate-100">
-            <th class="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider">Empleado</th>
-            <th class="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider">Contacto</th>
-            <th class="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider">Roles / Cargo</th>
-            <th class="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider">Estado</th>
-            <th class="px-6 py-4 w-20"></th>
+            <th class="text-left px-6 py-2 text-xs font-medium text-slate-400 uppercase tracking-wider">Empleado</th>
+            <th class="text-left px-6 py-2 text-xs font-medium text-slate-400 uppercase tracking-wider">Contacto</th>
+            <th class="text-left px-6 py-2 text-xs font-medium text-slate-400 uppercase tracking-wider">Roles / Cargo</th>
+            <th class="text-left px-6 py-2 text-xs font-medium text-slate-400 uppercase tracking-wider">Estado</th>
+            <th class="px-6 py-2 w-20"></th>
           </tr>
         </ng-template>
 
         <ng-template pTemplate="body" let-employee>
           <tr class="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors">
-            <td class="px-6 py-4">
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-[#0066AA] font-bold text-base overflow-hidden flex-shrink-0">
+            <td class="px-6 py-2">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-[#0066AA] font-bold text-sm overflow-hidden flex-shrink-0">
                   @if (employee.fotoUrl) {
                     <img [src]="resolvePhotoUrl(employee.fotoUrl)" class="w-full h-full object-cover">
                   }
@@ -216,15 +216,15 @@
                 </div>
                 <div>
                   <p class="text-sm font-medium text-slate-800 leading-tight">{{ employee.nombre }} {{ employee.apellido }}</p>
-                  <p class="text-xs text-slate-400 mt-0.5">{{ employee.numeroColegiatura || 'Sin colegiatura' }}</p>
+                  <p class="text-xs text-slate-400 leading-tight">{{ employee.numeroColegiatura || 'Sin colegiatura' }}</p>
                 </div>
               </div>
             </td>
-            <td class="px-6 py-4">
+            <td class="px-6 py-2">
               <p class="text-sm text-slate-700 leading-tight">{{ employee.email }}</p>
-              <p class="text-xs text-slate-400 mt-0.5">{{ employee.telefono }}</p>
+              <p class="text-xs text-slate-400 leading-tight">{{ employee.telefono }}</p>
             </td>
-            <td class="px-6 py-4">
+            <td class="px-6 py-2">
               <div class="flex flex-col gap-1.5">
                 <div class="flex flex-wrap gap-1.5">
                   @for (role of employee.tiposEmpleado; track role) {
@@ -246,20 +246,20 @@
                 }
               </div>
             </td>
-            <td class="px-6 py-4">
+            <td class="px-6 py-2">
               <button *appHasPermission="'VISTA_EMPLEADOS:modificar'" (click)="toggleStatus(employee)"
                 [class]="employee.activo ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-500'"
-                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-all active:scale-95">
+                class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium transition-all active:scale-95">
                 <span [class]="employee.activo ? 'bg-green-500' : 'bg-red-400'" class="w-1.5 h-1.5 rounded-full"></span>
                 {{ employee.activo ? 'Activo' : 'Inactivo' }}
               </button>
             </td>
-            <td class="px-6 py-4 text-right">
+            <td class="px-6 py-2 text-right">
               <div class="flex items-center justify-end">
                 <p-menu #employeeMenu [model]="employeeActionItems(employee)" [popup]="true" appendTo="body"></p-menu>
                 <button type="button" (click)="employeeMenu.toggle($event)"
                   aria-label="Abrir acciones"
-                  class="w-9 h-9 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-95">
+                  class="w-8 h-8 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-95">
                   <i class="pi pi-ellipsis-h text-sm"></i>
                 </button>
               </div>
@@ -757,7 +757,7 @@
               <p class="text-sm font-semibold text-slate-800 mt-0.5">{{ emp.direccion || 'No registrada' }}</p>
             </div>
             <!-- Roles -->
-            @if (emp.roleIds?.length) {
+            @if (emp.roleIds.length) {
               <div class="sm:col-span-2">
                 <label class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Roles</label>
                 <div class="flex flex-wrap gap-1.5 mt-1.5">

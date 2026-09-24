@@ -33,22 +33,22 @@
             <table class="w-full text-sm">
               <thead>
                 <tr class="border-b border-slate-100">
-                  <th class="text-left px-6 py-4"><p-skeleton width="6rem" height="0.6rem" borderRadius="0.3rem"></p-skeleton></th>
-                  <th class="text-left px-6 py-4"><p-skeleton width="8rem" height="0.6rem" borderRadius="0.3rem"></p-skeleton></th>
-                  <th class="px-6 py-4 w-20"></th>
+                  <th class="text-left px-6 py-2"><p-skeleton width="6rem" height="0.6rem" borderRadius="0.3rem"></p-skeleton></th>
+                  <th class="text-left px-6 py-2"><p-skeleton width="8rem" height="0.6rem" borderRadius="0.3rem"></p-skeleton></th>
+                  <th class="px-6 py-2 w-20"></th>
                 </tr>
               </thead>
               <tbody>
                 @for (i of [1,2,3,4,5]; track i) {
                   <tr class="border-b border-slate-100">
-                    <td class="px-6 py-4">
+                    <td class="px-6 py-2">
                       <div class="flex items-center gap-3">
                         <p-skeleton size="2.5rem" borderRadius="0.5rem"></p-skeleton>
                         <p-skeleton width="10rem" height="0.8rem" borderRadius="0.3rem"></p-skeleton>
                       </div>
                     </td>
-                    <td class="px-6 py-4"><p-skeleton width="14rem" height="0.8rem" borderRadius="0.3rem"></p-skeleton></td>
-                    <td class="px-6 py-4 text-right">
+                    <td class="px-6 py-2"><p-skeleton width="14rem" height="0.8rem" borderRadius="0.3rem"></p-skeleton></td>
+                    <td class="px-6 py-2 text-right">
                       <div class="flex justify-end gap-1">
                         <p-skeleton size="2rem" borderRadius="0.5rem"></p-skeleton>
                         <p-skeleton size="2rem" borderRadius="0.5rem"></p-skeleton>
@@ -154,25 +154,25 @@
                 <p-table [value]="especialidades()" [rowHover]="true" styleClass="p-datatable-borderless">
                   <ng-template pTemplate="header">
                     <tr class="border-b border-slate-100">
-                      <th class="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider w-1/3">Nombre</th>
-                      <th class="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider">Descripción</th>
-                      <th class="px-6 py-4 w-20"></th>
+                      <th class="text-left px-6 py-2 text-xs font-medium text-slate-400 uppercase tracking-wider w-1/3">Nombre</th>
+                      <th class="text-left px-6 py-2 text-xs font-medium text-slate-400 uppercase tracking-wider">Descripción</th>
+                      <th class="px-6 py-2 w-20"></th>
                     </tr>
                   </ng-template>
                   <ng-template pTemplate="body" let-item>
                     <tr class="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors">
-                      <td class="px-6 py-4">
+                      <td class="px-6 py-2">
                         <div class="flex items-center gap-3">
-                          <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-[#0066AA] font-bold text-base flex-shrink-0">
+                          <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-[#0066AA] font-bold text-sm flex-shrink-0">
                             {{ item.nombre.substring(0,2).toUpperCase() }}
                           </div>
                           <span class="text-sm font-medium text-slate-800">{{ item.nombre }}</span>
                         </div>
                       </td>
-                      <td class="px-6 py-4">
+                      <td class="px-6 py-2">
                         <p class="text-sm text-slate-400">{{ item.descripcion || '—' }}</p>
                       </td>
-                      <td class="px-6 py-4 text-right">
+                      <td class="px-6 py-2 text-right">
                         <div class="flex items-center justify-end gap-1">
                           <button *appHasPermission="'VISTA_COMPLEMENTARIO:modificar'" (click)="openEspModal(item)"
                             class="p-2 rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-90">
@@ -202,7 +202,7 @@
                 @for (item of especialidades(); track item) {
                   <div class="bg-white border border-slate-200 rounded-xl p-4">
                     <div class="flex items-center gap-3">
-                      <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-[#0066AA] font-bold text-base flex-shrink-0">
+                      <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-[#0066AA] font-bold text-sm flex-shrink-0">
                         {{ item.nombre.substring(0,2).toUpperCase() }}
                       </div>
                       <span class="text-sm font-bold text-slate-800 truncate">{{ item.nombre }}</span>
@@ -266,27 +266,27 @@
                 <p-table [value]="tiposEmpleado()" [rowHover]="true" styleClass="p-datatable-borderless">
                   <ng-template pTemplate="header">
                     <tr class="border-b border-slate-100">
-                      <th class="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider w-1/3">Denominación</th>
-                      <th class="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider">Descripción</th>
-                      <th class="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider">Especialidades</th>
-                      <th class="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider">Estado</th>
-                      <th class="px-6 py-4 w-24"></th>
+                      <th class="text-left px-6 py-2 text-xs font-medium text-slate-400 uppercase tracking-wider w-1/3">Denominación</th>
+                      <th class="text-left px-6 py-2 text-xs font-medium text-slate-400 uppercase tracking-wider">Descripción</th>
+                      <th class="text-left px-6 py-2 text-xs font-medium text-slate-400 uppercase tracking-wider">Especialidades</th>
+                      <th class="text-left px-6 py-2 text-xs font-medium text-slate-400 uppercase tracking-wider">Estado</th>
+                      <th class="px-6 py-2 w-24"></th>
                     </tr>
                   </ng-template>
                   <ng-template pTemplate="body" let-item>
                     <tr class="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors">
-                      <td class="px-6 py-4">
+                      <td class="px-6 py-2">
                         <div class="flex items-center gap-3">
-                          <div class="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500 font-bold text-base flex-shrink-0">
+                          <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500 font-bold text-sm flex-shrink-0">
                             {{ item.nombre.substring(0,1).toUpperCase() }}
                           </div>
                           <span class="text-sm font-medium text-slate-800">{{ item.nombre }}</span>
                         </div>
                       </td>
-                      <td class="px-6 py-4">
+                      <td class="px-6 py-2">
                         <p class="text-sm text-slate-400">{{ item.descripcion || '—' }}</p>
                       </td>
-                      <td class="px-6 py-4">
+                      <td class="px-6 py-2">
                         <span
                           [class]="item.permiteEspecialidades ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-500'"
                           class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium">
@@ -294,7 +294,7 @@
                           {{ item.permiteEspecialidades ? 'Habilitado' : 'Desactivado' }}
                         </span>
                       </td>
-                      <td class="px-6 py-4">
+                      <td class="px-6 py-2">
                         <button *appHasPermission="'VISTA_COMPLEMENTARIO:modificar'" (click)="openConfirm(item.estado ? 'Desactivar tipo de empleado' : 'Activar tipo de empleado', '¿Está seguro de ' + (item.estado ? 'desactivar' : 'activar') + ' el tipo de empleado «' + item.nombre + '»?', 'cambiar-estado-tipo', item)"
                           [class]="item.estado ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-500'"
                           class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-all active:scale-95">
@@ -302,7 +302,7 @@
                           {{ item.estado ? 'Activo' : 'Inactivo' }}
                         </button>
                       </td>
-                      <td class="px-6 py-4 text-right">
+                      <td class="px-6 py-2 text-right">
                         <div class="flex items-center justify-end gap-1">
                           <button *appHasPermission="'VISTA_COMPLEMENTARIO:modificar'" (click)="openTipoModal(item)"
                             class="p-2 rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-90">
@@ -333,7 +333,7 @@
                   <div class="bg-white border border-slate-200 rounded-xl p-4">
                     <div class="flex items-start justify-between gap-2">
                       <div class="flex items-center gap-3 min-w-0">
-                        <div class="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500 font-bold text-base flex-shrink-0">
+                        <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500 font-bold text-sm flex-shrink-0">
                           {{ item.nombre.substring(0,1).toUpperCase() }}
                         </div>
                         <span class="text-sm font-bold text-slate-800 truncate">{{ item.nombre }}</span>
@@ -410,19 +410,19 @@
                 <p-table [value]="servicios()" [rowHover]="true" styleClass="p-datatable-borderless">
                   <ng-template pTemplate="header">
                     <tr class="border-b border-slate-100">
-                      <th class="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider w-2/5">Servicio</th>
-                      <th class="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider">Descripción</th>
-                      <th class="text-right px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider w-28">Precio</th>
-                      <th class="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider w-32">Disponible</th>
-                      <th class="px-6 py-4 w-20"></th>
+                      <th class="text-left px-6 py-2 text-xs font-medium text-slate-400 uppercase tracking-wider w-2/5">Servicio</th>
+                      <th class="text-left px-6 py-2 text-xs font-medium text-slate-400 uppercase tracking-wider">Descripción</th>
+                      <th class="text-right px-6 py-2 text-xs font-medium text-slate-400 uppercase tracking-wider w-28">Precio</th>
+                      <th class="text-left px-6 py-2 text-xs font-medium text-slate-400 uppercase tracking-wider w-32">Disponible</th>
+                      <th class="px-6 py-2 w-20"></th>
                     </tr>
                   </ng-template>
                   <ng-template pTemplate="body" let-item>
                     <tr class="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors"
                       [class.opacity-50]="!item.activo">
-                      <td class="px-6 py-4">
+                      <td class="px-6 py-2">
                         <div class="flex items-center gap-3">
-                          <div class="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600 font-bold text-base flex-shrink-0">
+                          <div class="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600 font-bold text-sm flex-shrink-0">
                             {{ item.nombre.substring(0,2).toUpperCase() }}
                           </div>
                           <div class="flex flex-col gap-0.5">
@@ -436,13 +436,13 @@
                           </div>
                         </div>
                       </td>
-                      <td class="px-6 py-4">
+                      <td class="px-6 py-2">
                         <p class="text-sm text-slate-400 truncate max-w-[200px]">{{ item.descripcion || '—' }}</p>
                       </td>
-                      <td class="px-6 py-4 text-right">
+                      <td class="px-6 py-2 text-right">
                         <span class="text-sm font-extrabold text-slate-800">S/ {{ item.precio | number:'1.2-2' }}</span>
                       </td>
-                      <td class="px-6 py-4">
+                      <td class="px-6 py-2">
                         <button *appHasPermission="'VISTA_COMPLEMENTARIO:modificar'" (click)="openConfirm(item.disponible ? 'Desactivar servicio' : 'Activar servicio', '¿Está seguro de ' + (item.disponible ? 'desactivar' : 'activar') + ' el servicio «' + item.nombre + '»?', 'toggle-servicio', item)"
                           [class]="item.disponible ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-500'"
                           class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-all active:scale-95">
@@ -450,7 +450,7 @@
                           {{ item.disponible ? 'Activo' : 'Inactivo' }}
                         </button>
                       </td>
-                      <td class="px-6 py-4 text-right">
+                      <td class="px-6 py-2 text-right">
                         <div class="flex items-center justify-end gap-1">
                           <button *appHasPermission="'VISTA_COMPLEMENTARIO:modificar'" (click)="openServicioModal(item)"
                             class="p-2 rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-90">
@@ -481,7 +481,7 @@
                   <div class="bg-white border border-slate-200 rounded-xl p-4" [class.opacity-50]="!item.activo">
                     <div class="flex items-start justify-between gap-2">
                       <div class="flex items-center gap-3 min-w-0">
-                        <div class="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600 font-bold text-base flex-shrink-0">
+                        <div class="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600 font-bold text-sm flex-shrink-0">
                           {{ item.nombre.substring(0,2).toUpperCase() }}
                         </div>
                         <div class="flex flex-col gap-0.5 min-w-0">
@@ -564,24 +564,24 @@
                 <p-table [value]="vacunas()" [rowHover]="true" styleClass="p-datatable-borderless">
                   <ng-template pTemplate="header">
                     <tr class="border-b border-slate-100">
-                      <th class="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider">Nombre</th>
-                      <th class="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider">Especie</th>
-                      <th class="text-right px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider w-28">Precio</th>
-                      <th class="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider w-32">Estado</th>
-                      <th class="px-6 py-4 w-20"></th>
+                      <th class="text-left px-6 py-2 text-xs font-medium text-slate-400 uppercase tracking-wider">Nombre</th>
+                      <th class="text-left px-6 py-2 text-xs font-medium text-slate-400 uppercase tracking-wider">Especie</th>
+                      <th class="text-right px-6 py-2 text-xs font-medium text-slate-400 uppercase tracking-wider w-28">Precio</th>
+                      <th class="text-left px-6 py-2 text-xs font-medium text-slate-400 uppercase tracking-wider w-32">Estado</th>
+                      <th class="px-6 py-2 w-20"></th>
                     </tr>
                   </ng-template>
                   <ng-template pTemplate="body" let-item>
                     <tr class="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors" [class.opacity-50]="!item.activo">
-                      <td class="px-6 py-4">
+                      <td class="px-6 py-2">
                         <div class="flex items-center gap-3">
-                          <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-[#0066AA] font-bold text-base flex-shrink-0">{{ item.nombre?.substring(0,2) }}</div>
+                          <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-[#0066AA] font-bold text-sm flex-shrink-0">{{ item.nombre?.substring(0,2) }}</div>
                           <span class="text-sm font-semibold text-slate-800">{{ item.nombre }}</span>
                         </div>
                       </td>
-                      <td class="px-6 py-4 text-sm text-slate-600">{{ item.especie }}</td>
-                      <td class="px-6 py-4 text-right text-sm font-semibold text-slate-800">S/ {{ item.precio }}</td>
-                      <td class="px-6 py-4">
+                      <td class="px-6 py-2 text-sm text-slate-600">{{ item.especie }}</td>
+                      <td class="px-6 py-2 text-right text-sm font-semibold text-slate-800">S/ {{ item.precio }}</td>
+                      <td class="px-6 py-2">
                         <button (click)="confirmarToggleEstadoVacuna(item)"
                           class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-all active:scale-95"
                           [ngClass]="item.activo ? 'bg-green-50 text-green-700' : 'bg-slate-100 text-slate-500'">
@@ -589,14 +589,14 @@
                           {{ item.activo ? 'Activo' : 'Inactivo' }}
                         </button>
                       </td>
-                      <td class="px-6 py-4">
+                      <td class="px-6 py-2">
                         <div class="flex items-center gap-1">
                           <button *appHasPermission="'VISTA_COMPLEMENTARIO:modificar'" (click)="openVacunaModal(item)"
-                            class="w-9 h-9 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-95">
+                            class="w-8 h-8 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-95">
                             <i class="pi pi-pencil text-sm"></i>
                           </button>
                           <button *appHasPermission="'VISTA_COMPLEMENTARIO:eliminar'" (click)="confirmarEliminarVacuna(item)"
-                            class="w-9 h-9 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all active:scale-95">
+                            class="w-8 h-8 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all active:scale-95">
                             <i class="pi pi-trash text-sm"></i>
                           </button>
                         </div>
@@ -618,7 +618,7 @@
                   <div class="bg-white border border-slate-200 rounded-xl p-4" [class.opacity-50]="!item.activo">
                     <div class="flex items-start justify-between gap-2">
                       <div class="flex items-center gap-3 min-w-0">
-                        <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-[#0066AA] font-bold text-base flex-shrink-0">{{ item.nombre?.substring(0,2) }}</div>
+                        <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-[#0066AA] font-bold text-sm flex-shrink-0">{{ item.nombre?.substring(0,2) }}</div>
                         <span class="text-sm font-bold text-slate-800 truncate">{{ item.nombre }}</span>
                       </div>
                       <button (click)="confirmarToggleEstadoVacuna(item)"
@@ -640,11 +640,11 @@
                     </div>
                     <div class="flex items-center justify-end gap-1 mt-3 pt-3 border-t border-slate-100">
                       <button *appHasPermission="'VISTA_COMPLEMENTARIO:modificar'" (click)="openVacunaModal(item)"
-                        class="w-9 h-9 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-95">
+                        class="w-8 h-8 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-95">
                         <i class="pi pi-pencil text-sm"></i>
                       </button>
                       <button *appHasPermission="'VISTA_COMPLEMENTARIO:eliminar'" (click)="confirmarEliminarVacuna(item)"
-                        class="w-9 h-9 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all active:scale-95">
+                        class="w-8 h-8 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all active:scale-95">
                         <i class="pi pi-trash text-sm"></i>
                       </button>
                     </div>
@@ -687,24 +687,24 @@
                 <p-table [value]="desparasitantes()" [rowHover]="true" styleClass="p-datatable-borderless">
                   <ng-template pTemplate="header">
                     <tr class="border-b border-slate-100">
-                      <th class="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider">Nombre</th>
-                      <th class="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider">Especie</th>
-                      <th class="text-right px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider w-28">Precio</th>
-                      <th class="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider w-32">Estado</th>
-                      <th class="px-6 py-4 w-20"></th>
+                      <th class="text-left px-6 py-2 text-xs font-medium text-slate-400 uppercase tracking-wider">Nombre</th>
+                      <th class="text-left px-6 py-2 text-xs font-medium text-slate-400 uppercase tracking-wider">Especie</th>
+                      <th class="text-right px-6 py-2 text-xs font-medium text-slate-400 uppercase tracking-wider w-28">Precio</th>
+                      <th class="text-left px-6 py-2 text-xs font-medium text-slate-400 uppercase tracking-wider w-32">Estado</th>
+                      <th class="px-6 py-2 w-20"></th>
                     </tr>
                   </ng-template>
                   <ng-template pTemplate="body" let-item>
                     <tr class="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors" [class.opacity-50]="!item.activo">
-                      <td class="px-6 py-4">
+                      <td class="px-6 py-2">
                         <div class="flex items-center gap-3">
-                          <div class="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center text-purple-600 font-bold text-base flex-shrink-0">{{ item.nombre?.substring(0,2) }}</div>
+                          <div class="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center text-purple-600 font-bold text-sm flex-shrink-0">{{ item.nombre?.substring(0,2) }}</div>
                           <span class="text-sm font-semibold text-slate-800">{{ item.nombre }}</span>
                         </div>
                       </td>
-                      <td class="px-6 py-4 text-sm text-slate-600">{{ item.especie }}</td>
-                      <td class="px-6 py-4 text-right text-sm font-semibold text-slate-800">S/ {{ item.precio }}</td>
-                      <td class="px-6 py-4">
+                      <td class="px-6 py-2 text-sm text-slate-600">{{ item.especie }}</td>
+                      <td class="px-6 py-2 text-right text-sm font-semibold text-slate-800">S/ {{ item.precio }}</td>
+                      <td class="px-6 py-2">
                         <button (click)="confirmarToggleEstadoDesparasitante(item)"
                           class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-all active:scale-95"
                           [ngClass]="item.activo ? 'bg-green-50 text-green-700' : 'bg-slate-100 text-slate-500'">
@@ -712,14 +712,14 @@
                           {{ item.activo ? 'Activo' : 'Inactivo' }}
                         </button>
                       </td>
-                      <td class="px-6 py-4">
+                      <td class="px-6 py-2">
                         <div class="flex items-center gap-1">
                           <button *appHasPermission="'VISTA_COMPLEMENTARIO:modificar'" (click)="openDesparasitanteModal(item)"
-                            class="w-9 h-9 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-95">
+                            class="w-8 h-8 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-95">
                             <i class="pi pi-pencil text-sm"></i>
                           </button>
                           <button *appHasPermission="'VISTA_COMPLEMENTARIO:eliminar'" (click)="confirmarEliminarDesparasitante(item)"
-                            class="w-9 h-9 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all active:scale-95">
+                            class="w-8 h-8 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all active:scale-95">
                             <i class="pi pi-trash text-sm"></i>
                           </button>
                         </div>
@@ -741,7 +741,7 @@
                   <div class="bg-white border border-slate-200 rounded-xl p-4" [class.opacity-50]="!item.activo">
                     <div class="flex items-start justify-between gap-2">
                       <div class="flex items-center gap-3 min-w-0">
-                        <div class="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center text-purple-600 font-bold text-base flex-shrink-0">{{ item.nombre?.substring(0,2) }}</div>
+                        <div class="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center text-purple-600 font-bold text-sm flex-shrink-0">{{ item.nombre?.substring(0,2) }}</div>
                         <span class="text-sm font-bold text-slate-800 truncate">{{ item.nombre }}</span>
                       </div>
                       <button (click)="confirmarToggleEstadoDesparasitante(item)"
@@ -763,11 +763,11 @@
                     </div>
                     <div class="flex items-center justify-end gap-1 mt-3 pt-3 border-t border-slate-100">
                       <button *appHasPermission="'VISTA_COMPLEMENTARIO:modificar'" (click)="openDesparasitanteModal(item)"
-                        class="w-9 h-9 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-95">
+                        class="w-8 h-8 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-95">
                         <i class="pi pi-pencil text-sm"></i>
                       </button>
                       <button *appHasPermission="'VISTA_COMPLEMENTARIO:eliminar'" (click)="confirmarEliminarDesparasitante(item)"
-                        class="w-9 h-9 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all active:scale-95">
+                        class="w-8 h-8 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all active:scale-95">
                         <i class="pi pi-trash text-sm"></i>
                       </button>
                     </div>

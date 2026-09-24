@@ -63,49 +63,49 @@
       >
         <ng-template pTemplate="header">
           <tr class="border-b border-slate-100">
-            <th class="px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Historia Clínica</th>
-            <th class="px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Paciente</th>
-            <th class="px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Prescripción</th>
-            <th class="px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Veterinario</th>
-            <th class="px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Fecha Emisión</th>
-            <th class="px-6 py-4 w-20"></th>
+            <th class="px-6 py-2 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Historia Clínica</th>
+            <th class="px-6 py-2 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Paciente</th>
+            <th class="px-6 py-2 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Prescripción</th>
+            <th class="px-6 py-2 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Veterinario</th>
+            <th class="px-6 py-2 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Fecha Emisión</th>
+            <th class="px-6 py-2 w-20"></th>
           </tr>
         </ng-template>
 
         <ng-template pTemplate="body" let-receta>
           <tr class="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors"
             [class.bg-blue-50]="selectedReceta()?.id === receta.id">
-            <td class="px-6 py-4">
+            <td class="px-6 py-2">
               <span class="text-sm font-bold text-[#0066AA]">{{ receta.numeroHc }}</span>
             </td>
-            <td class="px-6 py-4">
+            <td class="px-6 py-2">
               <span class="text-sm font-medium text-slate-800">{{ receta.pacienteNombre }}</span>
             </td>
-            <td class="px-6 py-4">
+            <td class="px-6 py-2">
               <div class="flex flex-col">
                 <span class="text-sm font-semibold text-slate-800">{{ receta.medicamento }}</span>
                 <span class="text-[11px] text-slate-400 font-bold uppercase tracking-tighter mt-0.5">{{ receta.principioActivo || '-' }}</span>
-                <div class="flex items-center gap-2 mt-1.5">
+                <div class="flex items-center gap-2 mt-1">
                   <span class="px-2 py-0.5 rounded text-[10px] bg-blue-50 text-blue-600 font-bold uppercase">{{ receta.dosis }}</span>
                   <span class="text-[10px] text-slate-400 font-medium italic">{{ receta.frecuencia }}</span>
                 </div>
               </div>
             </td>
-            <td class="px-6 py-4">
+            <td class="px-6 py-2">
               <span class="text-sm text-slate-600">{{ receta.veterinarioNombre }}</span>
             </td>
-            <td class="px-6 py-4">
+            <td class="px-6 py-2">
               <span class="text-sm text-slate-600 font-medium">{{ receta.fechaCreacion | date:'dd/MM/yyyy' }}</span>
             </td>
-            <td class="px-6 py-4">
+            <td class="px-6 py-2">
               <div class="flex items-center justify-end gap-1">
-                <button 
+                <button
                   (click)="verReceta(receta)"
                   class="p-2 rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-90"
                 >
                   <i class="pi pi-eye text-sm"></i>
                 </button>
-                <button 
+                <button
                   (click)="imprimirReceta(receta)"
                   class="p-2 rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-90"
                 >
