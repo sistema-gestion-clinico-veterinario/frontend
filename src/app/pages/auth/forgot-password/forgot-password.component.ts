@@ -3,6 +3,7 @@ import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { CompanySlugContext } from '../../../core/services/company-slug-context.service';
 import { lowercaseEmailValidator } from '../../../core/validators/lowercase-email.validator';
 import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
 
@@ -16,6 +17,12 @@ export class ForgotPasswordComponent {
   private readonly fb = inject(FormBuilder);
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly slugContext = inject(CompanySlugContext);
+
+  /** La empresa la resuelve la URL (slug), igual que en el login - sin ella el
+   * backend no puede saber a cual cuenta restablecer si el correo se repite entre
+   * empresas (apunta solo a la credencial sin empresa, SuperAdmin). */
+  slug: string | null = this.slugContext.slug();
 
   isSubmitting = false;
   successMessage = '';
@@ -45,7 +52,7 @@ export class ForgotPasswordComponent {
 
     const emailValue = this.forgotForm.value.email!;
 
-    this.authService.forgotPassword(emailValue).subscribe({
+    this.authService.forgotPassword(emailValue, this.slug).subscribe({
       next: (res) => {
         this.isSubmitting = false;
         this.successMessage = res.message || 'Se han enviado las instrucciones a tu correo.';

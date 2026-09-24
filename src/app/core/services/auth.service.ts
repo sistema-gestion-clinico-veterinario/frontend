@@ -60,8 +60,11 @@ export class AuthService {
     return this.http.post<AuthLoginResponse>(`${this.baseUrl}/switch-role`, { roleId });
   }
 
-  forgotPassword(email: string): Observable<ApiResponse<void>> {
-    return this.http.post<ApiResponse<void>>(`${this.baseUrl}/forgot-password`, { email });
+  /** slug: empresa desde la que se pide el reset (misma pantalla que el login) - sin
+   * el, el backend no puede desambiguar entre cuentas con el mismo correo en distintas
+   * empresas y apunta solo a la credencial sin empresa (SuperAdmin). */
+  forgotPassword(email: string, slug: string | null): Observable<ApiResponse<void>> {
+    return this.http.post<ApiResponse<void>>(`${this.baseUrl}/forgot-password`, { email, slug });
   }
 
   validateResetToken(token: string): Observable<ApiResponse<void>> {
