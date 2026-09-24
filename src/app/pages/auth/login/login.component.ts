@@ -155,8 +155,14 @@ export class LoginComponent implements OnInit {
     });
   }
 
+  /** Navegacion "dura" (no SPA) a proposito: el SlugUrlSerializer le quita el slug a
+   * la URL ANTES de que el Router la vea, asi que "/login" (donde ya estamos, sin slug)
+   * y "/<slug>/login" resuelven al mismo UrlTree interno - Angular trata la navegacion
+   * como "misma URL" y la ignora por defecto (onSameUrlNavigation: 'ignore'), dejando el
+   * boton sin efecto. Recargar la pagina evita ese caso especial y reinicia el componente
+   * ya con el slug correcto. */
   goToClinic(result: CompanySearchResult): void {
-    this.router.navigateByUrl(`/${result.slug}/login`);
+    window.location.href = `/${result.slug}/login`;
   }
 
   submit() {

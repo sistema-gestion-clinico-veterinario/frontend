@@ -757,7 +757,7 @@
               <p class="text-sm font-semibold text-slate-800 mt-0.5">{{ emp.direccion || 'No registrada' }}</p>
             </div>
             <!-- Roles -->
-            @if (emp.roleIds?.length) {
+            @if (emp.roleIds.length) {
               <div class="sm:col-span-2">
                 <label class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Roles</label>
                 <div class="flex flex-wrap gap-1.5 mt-1.5">
