@@ -24,7 +24,7 @@
             </div>
             <div class="divide-y divide-slate-50">
               @for (i of [1,2,3,4,5]; track i) {
-                <div class="px-4 py-3.5">
+                <div class="px-4 py-2.5">
                   <div class="flex items-center gap-2">
                     <p-skeleton shape="circle" size="1.5rem"></p-skeleton>
                     <p-skeleton width="10rem" height="0.8rem" borderRadius="0.3rem"></p-skeleton>
@@ -117,7 +117,7 @@
                     [class.bg-blue-50]="selectedRole()?.id === role.id"
                     [class.border-l-2]="selectedRole()?.id === role.id"
                     [class.border-l-[#0066AA]]="selectedRole()?.id === role.id"
-                    class="w-full text-left px-4 py-3.5 hover:bg-slate-50 transition-colors">
+                    class="w-full text-left px-4 py-2.5 hover:bg-slate-50 transition-colors">
                     <div class="flex items-center gap-2">
                       <div class="w-6 h-6 rounded bg-blue-100 flex items-center justify-center shrink-0">
                         <i class="pi pi-shield text-[10px] text-[#0066AA]"></i>
@@ -147,7 +147,7 @@
                     [class.bg-blue-50]="selectedRole()?.id === role.id"
                     [class.border-l-2]="selectedRole()?.id === role.id"
                     [class.border-l-[#0066AA]]="selectedRole()?.id === role.id"
-                    class="w-full text-left px-4 py-3.5 hover:bg-slate-50 transition-colors">
+                    class="w-full text-left px-4 py-2.5 hover:bg-slate-50 transition-colors">
                     <div class="flex items-center gap-2">
                       <div class="w-6 h-6 rounded bg-purple-100 flex items-center justify-center shrink-0">
                         <i class="pi pi-shield text-[10px] text-purple-600"></i>

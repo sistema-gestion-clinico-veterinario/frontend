@@ -1,133 +1,137 @@
-﻿<div class="min-h-screen w-full flex items-center justify-center relative overflow-hidden bg-[#0066AA]">
-  <div class="absolute top-[10%] left-[15%] w-[450px] h-[450px] rounded-full bg-white/10 blur-[100px] pointer-events-none"></div>
-  <div class="absolute bottom-[10%] right-[10%] w-[500px] h-[500px] rounded-full bg-white/10 blur-[120px] pointer-events-none"></div>
-  <div class="absolute top-[40%] right-[30%] w-[300px] h-[300px] rounded-full bg-white/5 blur-[80px] pointer-events-none"></div>
-
-  <div class="relative z-10 w-full max-w-[1020px] px-6 flex flex-col md:flex-row items-center justify-between gap-12 lg:gap-20 py-12">
-    <div class="flex-1 text-white text-center md:text-left">
-      <div class="flex flex-col md:flex-row items-center gap-4 mb-10">
-        <div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center">
-          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.27 2 8.5C2 5.41 4.41 3 7.5 3C9.24 3 10.91 3.81 12 5.08C13.09 3.81 14.76 3 16.5 3C19.59 3 22 5.41 22 8.5C22 12.27 18.6 15.36 13.45 20.03L12 21.35Z" fill="#0066AA"/>
-            <path d="M12 13C13.6569 13 15 11.6569 15 10C15 8.34315 13.6569 7 12 7C10.3431 7 9 8.34315 9 10C9 11.6569 10.3431 13 12 13Z" fill="white"/>
-          </svg>
-        </div>
-        <div>
-          <h1 class="text-2xl font-bold tracking-tight leading-none">Vargas Vet</h1>
-          <p class="text-sm text-white/70 mt-1">Clínica Veterinaria</p>
-        </div>
+<div class="min-h-screen bg-white md:flex" style="font-family: 'Barlow', sans-serif;">
+  <!-- Panel del formulario: a la derecha, blanco, angosto - mismo layout que login/forgot-password. -->
+  <main class="flex min-h-screen flex-col justify-center bg-white px-6 py-10 sm:px-10 md:w-[38%] md:px-12 lg:px-16 xl:w-[36%]">
+    <div class="mx-auto w-full max-w-sm">
+      <div class="-mt-6 mb-6 flex items-center justify-center gap-2.5">
+        @if (logoUrl) {
+          <img
+            [src]="logoUrl"
+            [alt]="companyName"
+            class="h-24 w-auto max-w-[18rem] object-contain"
+            />
+        }
+        @if (!logoUrl) {
+          <p class="text-sm font-semibold text-slate-500">{{ companyName }}</p>
+        }
       </div>
-
-      <h2 class="text-4xl lg:text-5xl font-extrabold leading-[1.1] tracking-tight mb-5">
-        Crea tu<br class="hidden md:block"> contraseña.
-      </h2>
-      <p class="text-white/80 text-base leading-relaxed max-w-sm mx-auto md:mx-0 mb-10">
-        Establece una contraseña segura para tu cuenta.
-      </p>
-
-      <ul class="space-y-3 text-sm text-white/90 max-w-xs mx-auto md:mx-0">
-        <li class="flex items-center gap-3">
-          <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white/15">
-            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-          </span>
-          Tu cuenta se activará al crear tu contraseña
-        </li>
-        <li class="flex items-center gap-3">
-          <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white/15">
-            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-            </svg>
-          </span>
-          Mínimo 12 caracteres; evita datos personales y contraseñas comunes
-        </li>
-        <li class="flex items-center gap-3">
-          <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white/15">
-            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-            </svg>
-          </span>
-          Después podrás iniciar sesión con tu correo y nueva contraseña
-        </li>
-      </ul>
-    </div>
-    <div class="w-full max-w-[420px] bg-white rounded-3xl p-4 lg:p-10">
 
       <!-- Form: create password -->
       @if (estado() === 'form') {
-        <div class="text-center mb-6">
-          <h3 class="text-2xl font-bold text-slate-800 mb-1">Crear contraseña</h3>
-          <p class="text-sm text-slate-400">Establece una contraseña para tu cuenta</p>
+        <header class="mb-6">
+          <h1 class="text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl">
+            Crear contraseña
+          </h1>
+          <p class="mt-2 text-base font-medium text-slate-500">
+            Establece una contraseña para tu cuenta.
+          </p>
+        </header>
+
+        @if (brandNotFound) {
+          <div class="mb-5 flex items-start gap-2.5 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm font-medium text-rose-700">
+            <svg class="mt-0.5 h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            No pudimos cargar los datos de tu clínica. Puedes seguir, pero si el enlace es de una invitación real, avísale al administrador.
+          </div>
+        }
+
+        @if (googleError()) {
+          <div class="mb-5 flex items-start gap-2.5 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm font-medium text-rose-700">
+            <svg class="mt-0.5 h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            {{ googleError() }}
+          </div>
+        }
+
+        <button type="button" (click)="continueWithGoogle()"
+          class="flex h-12 w-full items-center justify-center gap-3 rounded-lg border border-slate-300 bg-white text-sm font-semibold text-slate-700 transition hover:bg-slate-50 active:scale-[0.99] mb-5">
+          <svg class="h-5 w-5" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M23.52 12.27c0-.85-.08-1.66-.22-2.44H12v4.62h6.47c-.28 1.5-1.13 2.78-2.4 3.63v3.02h3.88c2.27-2.09 3.57-5.17 3.57-8.83z"/>
+            <path fill="#34A853" d="M12 24c3.24 0 5.96-1.07 7.95-2.9l-3.88-3.02c-1.08.72-2.45 1.15-4.07 1.15-3.13 0-5.78-2.11-6.73-4.96H1.26v3.11C3.24 21.3 7.28 24 12 24z"/>
+            <path fill="#FBBC05" d="M5.27 14.27a7.2 7.2 0 010-4.54v-3.1H1.26a12 12 0 000 10.74l4.01-3.1z"/>
+            <path fill="#EA4335" d="M12 4.75c1.76 0 3.34.6 4.58 1.79l3.44-3.44C17.95 1.19 15.24 0 12 0 7.28 0 3.24 2.7 1.26 6.63l4.01 3.1c.95-2.85 3.6-4.98 6.73-4.98z"/>
+          </svg>
+          Activar cuenta con Google
+        </button>
+
+        <div class="mb-5 flex items-center gap-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+          <span class="h-px flex-1 bg-slate-200"></span>
+          o crea tu contraseña
+          <span class="h-px flex-1 bg-slate-200"></span>
         </div>
 
-        <form [formGroup]="passwordForm" (ngSubmit)="submitPassword()" class="space-y-4">
-          <div class="space-y-1.5">
-            <label class="text-sm font-semibold text-slate-700">Nueva contraseña</label>
+        @if (errorMsg()) {
+          <div class="mb-5 flex items-start gap-2.5 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm font-medium text-rose-700">
+            <svg class="mt-0.5 h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            {{ errorMsg() }}
+          </div>
+        }
+
+        <form [formGroup]="passwordForm" (ngSubmit)="submitPassword()" class="space-y-5">
+          <div class="space-y-2">
+            <label class="block text-sm font-semibold text-slate-700">Nueva contraseña</label>
             <input formControlName="password" type="password" placeholder="Mínimo 12 caracteres"
-              class="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 text-slate-800 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0066AA]/30 focus:border-[#0066AA]" />
+              class="h-12 w-full rounded-lg border border-slate-300 bg-white px-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15" />
             @if (passwordForm.get('password')?.invalid && passwordForm.get('password')?.touched) {
-              <div class="text-xs text-rose-500 font-medium">
+              <div class="text-sm font-medium text-rose-600">
                 @if (passwordForm.get('password')?.errors?.['required']) { <span>La contraseña es obligatoria.</span> }
                 @if (passwordForm.get('password')?.errors?.['passwordPolicy']) { <span>Usa al menos 12 caracteres con mayúsculas, minúsculas, números y un símbolo; evita datos personales, secuencias y contraseñas comunes.</span> }
               </div>
             }
           </div>
 
-          <div class="space-y-1.5">
-            <label class="text-sm font-semibold text-slate-700">Confirmar contraseña</label>
+          <div class="space-y-2">
+            <label class="block text-sm font-semibold text-slate-700">Confirmar contraseña</label>
             <input formControlName="confirmPassword" type="password" placeholder="Repite la contraseña"
-              class="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 text-slate-800 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0066AA]/30 focus:border-[#0066AA]" />
+              class="h-12 w-full rounded-lg border border-slate-300 bg-white px-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15" />
             @if (passwordForm.errors?.['mismatch'] && passwordForm.get('confirmPassword')?.touched) {
-              <div class="text-xs text-rose-500 font-medium">Las contraseñas no coinciden.</div>
+              <div class="text-sm font-medium text-rose-600">Las contraseñas no coinciden.</div>
             }
             @if (passwordForm.get('confirmPassword')?.errors?.['passwordPolicy'] && passwordForm.get('confirmPassword')?.touched) {
-              <div class="text-xs text-rose-500 font-medium">Debe cumplir la misma política de al menos 12 caracteres.</div>
+              <div class="text-sm font-medium text-rose-600">Debe cumplir la misma política de al menos 12 caracteres.</div>
             }
           </div>
 
-          <button type="submit" [disabled]="estado() === 'enviando'"
-            class="w-full h-12 bg-[#0066AA] hover:bg-[#005599] disabled:opacity-60 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-xl">
+          <button type="submit" [disabled]="estado() === 'enviando'" [style.background]="colorPrimario"
+            class="flex h-12 w-full items-center justify-center gap-2 rounded-lg text-sm font-bold text-white transition active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60">
             Activar cuenta
           </button>
         </form>
 
-        <p class="text-center text-xs text-slate-400 mt-6">
-          <a routerLink="/login" class="text-[#0066AA] font-semibold hover:underline">Volver al inicio de sesión</a>
+        <p class="mt-7 text-center text-sm font-medium text-slate-500">
+          <a routerLink="/login" class="font-semibold hover:underline" [style.color]="colorPrimario">Volver al inicio de sesión</a>
         </p>
       }
 
       <!-- Sending -->
       @if (estado() === 'enviando') {
-        <div class="flex flex-col items-center py-6">
-          <div class="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mb-5">
-            <svg class="w-8 h-8 text-[#0066AA] animate-spin" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-            </svg>
-          </div>
-          <h3 class="text-xl font-bold text-slate-800 mb-2">Activando tu cuenta…</h3>
-          <p class="text-sm text-slate-400 text-center">Por favor espera un momento.</p>
+        <div class="flex flex-col items-center py-6 text-center">
+          <svg class="h-10 w-10 animate-spin" fill="none" viewBox="0 0 24 24" [style.color]="colorPrimario">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+          </svg>
+          <h1 class="mt-5 text-2xl font-extrabold tracking-tight text-slate-950">Activando tu cuenta…</h1>
+          <p class="mt-2 text-base font-medium text-slate-500">Por favor espera un momento.</p>
         </div>
       }
 
       <!-- Success -->
       @if (estado() === 'exito') {
-        <div class="flex flex-col items-center py-4">
-          <div class="w-16 h-16 rounded-2xl bg-emerald-50 flex items-center justify-center mb-5">
-            <svg class="w-9 h-9 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="flex flex-col items-center py-4 text-center">
+          <div class="flex h-14 w-14 items-center justify-center rounded-xl bg-emerald-50">
+            <svg class="h-7 w-7 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
           </div>
-          <h3 class="text-2xl font-bold text-slate-800 mb-2 text-center">¡Cuenta activada!</h3>
-          <p class="text-sm text-slate-400 text-center leading-relaxed mb-6">
-            Tu cuenta ha sido activada correctamente. Ahora puedes iniciar sesión con tu correo y la contraseña que creaste.
+          <h1 class="mt-5 text-3xl font-extrabold tracking-tight text-slate-950">¡Cuenta activada!</h1>
+          <p class="mt-2 text-base font-medium text-slate-500">
+            Ya puedes iniciar sesión con tu correo y la contraseña que creaste.
           </p>
-          <button (click)="irAlLogin()"
-            class="w-full h-12 bg-[#0066AA] hover:bg-[#005599] text-white text-sm font-semibold rounded-xl flex items-center justify-center gap-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
-            </svg>
+          <button (click)="irAlLogin()" [style.background]="colorPrimario"
+            class="mt-7 flex h-12 w-full items-center justify-center gap-2 rounded-lg text-sm font-bold text-white transition active:scale-[0.99]">
             Ir al inicio de sesión
           </button>
         </div>
@@ -136,67 +140,95 @@
       <!-- Error / Resend -->
       @if (estado() === 'error' || estado() === 'reenviando') {
         <div>
-          <div class="flex flex-col items-center py-4 mb-6">
-            <div class="w-16 h-16 rounded-2xl bg-rose-50 flex items-center justify-center mb-5">
-              <svg class="w-9 h-9 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div class="flex flex-col items-center py-4 mb-6 text-center">
+            <div class="flex h-14 w-14 items-center justify-center rounded-xl bg-rose-50">
+              <svg class="h-7 w-7 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
               </svg>
             </div>
-            <h3 class="text-xl font-bold text-slate-800 mb-2 text-center">Enlace no válido</h3>
-            <p class="text-sm text-slate-400 text-center leading-relaxed">{{ errorMsg() }}</p>
+            <h1 class="mt-5 text-2xl font-extrabold tracking-tight text-slate-950">Enlace no válido</h1>
+            <p class="mt-2 text-base font-medium text-slate-500">{{ errorMsg() }}</p>
           </div>
-          <div class="flex items-center gap-3 mb-6">
-            <div class="flex-1 h-px bg-slate-100"></div>
-            <span class="text-xs font-semibold text-slate-300 uppercase tracking-wider">Reenviar enlace</span>
-            <div class="flex-1 h-px bg-slate-100"></div>
+
+          <div class="mb-5 flex items-center gap-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+            <span class="h-px flex-1 bg-slate-200"></span>
+            Reenviar enlace
+            <span class="h-px flex-1 bg-slate-200"></span>
           </div>
-          <form [formGroup]="resendForm" (ngSubmit)="reenviar()" class="space-y-4">
-            <div class="space-y-1.5">
-              <label class="text-sm font-semibold text-slate-700">Correo electrónico</label>
+
+          <form [formGroup]="resendForm" (ngSubmit)="reenviar()" class="space-y-5">
+            <div class="space-y-2">
+              <label class="block text-sm font-semibold text-slate-700">Correo electrónico</label>
               <input type="email" formControlName="email" placeholder="tu@correo.com"
-                class="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 text-slate-800 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0066AA]/30 focus:border-[#0066AA]" />
+                class="h-12 w-full rounded-lg border border-slate-300 bg-white px-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15" />
               @if (resendForm.get('email')?.touched && resendForm.get('email')?.invalid) {
-                <div class="text-xs text-rose-500 font-medium">Ingresa un correo electrónico válido.</div>
+                <div class="text-sm font-medium text-rose-600">Ingresa un correo electrónico válido.</div>
               }
             </div>
-            <button type="submit" [disabled]="estado() === 'reenviando'"
-              class="w-full h-12 bg-[#0066AA] hover:bg-[#005599] disabled:opacity-60 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-xl flex items-center justify-center gap-2">
-              @if (estado() === 'reenviando') {
-                <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-                </svg>
-              }
+            <button type="submit" [disabled]="estado() === 'reenviando'" [style.background]="colorPrimario"
+              class="flex h-12 w-full items-center justify-center gap-2 rounded-lg text-sm font-bold text-white transition active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60">
               {{ estado() === 'reenviando' ? 'Enviando…' : 'Reenviar correo de verificación' }}
             </button>
           </form>
-          <p class="mt-5 text-center text-xs text-slate-400">
+
+          <p class="mt-7 text-center text-sm font-medium text-slate-500">
             ¿Ya tienes cuenta?
-            <a routerLink="/login" class="text-[#0066AA] font-semibold hover:underline">Inicia sesión aquí</a>
+            <a routerLink="/login" class="font-semibold hover:underline" [style.color]="colorPrimario">Inicia sesión aquí</a>
           </p>
         </div>
       }
 
       <!-- Resent -->
       @if (estado() === 'reenviado') {
-        <div class="flex flex-col items-center py-4">
-          <div class="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center mb-5">
-            <svg class="w-9 h-9 text-[#0066AA]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="flex flex-col items-center py-4 text-center">
+          <div class="flex h-14 w-14 items-center justify-center rounded-xl" [style.background]="'color-mix(in srgb, ' + colorPrimario + ' 12%, white)'">
+            <svg class="h-7 w-7" [style.color]="colorPrimario" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
             </svg>
           </div>
-          <h3 class="text-xl font-bold text-slate-800 mb-2 text-center">¡Correo enviado!</h3>
-          <p class="text-sm text-slate-400 text-center leading-relaxed mb-4">
+          <h1 class="mt-5 text-2xl font-extrabold tracking-tight text-slate-950">¡Correo enviado!</h1>
+          <p class="mt-2 text-base font-medium text-slate-500">
             Revisa tu bandeja de entrada. El enlace expira en 24 horas.
           </p>
           <button (click)="irAlLogin()"
-            class="w-full h-12 border border-slate-200 hover:bg-slate-50 text-slate-600 text-sm font-semibold rounded-xl">
+            class="mt-7 flex h-12 w-full items-center justify-center gap-2 rounded-lg border border-slate-300 text-sm font-bold text-slate-700 transition hover:bg-slate-50">
             Volver al inicio de sesión
           </button>
         </div>
       }
-
     </div>
-  </div>
-</div>
+  </main>
 
+  <!-- Panel de marca: a la izquierda, grande, con fondo degradado - mismo lenguaje visual que login/forgot-password. -->
+  <section
+    class="verify-hero hidden md:order-first md:flex md:w-[62%] xl:w-[64%]"
+    [style]="'background: linear-gradient(165deg, color-mix(in srgb, ' + colorPrimario + ' 8%, white) 0%, color-mix(in srgb, ' + colorPrimario + ' 20%, white) 100%);'"
+    >
+    <div class="verify-hero__inner">
+      <div class="pointer-events-none absolute -right-40 -top-40 h-[36rem] w-[36rem] rounded-full" [style.background]="'color-mix(in srgb, ' + colorPrimario + ' 12%, white)'"></div>
+      <div class="pointer-events-none absolute -bottom-56 left-1/4 h-[30rem] w-[30rem] rounded-full" [style.background]="'color-mix(in srgb, ' + colorPrimario + ' 10%, white)'"></div>
+
+      <div class="verify-hero__content">
+        <p class="text-xs font-bold uppercase tracking-[0.2em] md:text-sm xl:text-[0.90rem]" [style.color]="colorPrimario">
+          Activa tu cuenta
+        </p>
+        <h2 class="mt-2 text-3xl font-extrabold leading-[1.08] tracking-tight text-slate-900 md:text-[2.25rem] xl:text-[3.2rem]">
+          Bienvenido a<br />
+          <span [style.color]="colorPrimario">{{ companyName }}</span>
+        </h2>
+      </div>
+
+      <div class="verify-hero__pet">
+        <img
+          src="https://toqqwxveqxhlottwetev.supabase.co/storage/v1/object/public/vargas_vet/image-Photoroom%20(3).png"
+          alt="Perro y gato"
+          class="verify-hero__pet-image"
+          />
+      </div>
+
+      <p class="verify-hero__powered-by">
+        Powered by SoftVet
+      </p>
+    </div>
+  </section>
+</div>
