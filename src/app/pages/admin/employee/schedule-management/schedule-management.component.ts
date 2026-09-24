@@ -21,7 +21,8 @@ import { toDateInputKey } from '../../../../core/utils/input-validation.util';
     DatePicker,
     Toast,
     ConfirmDialog,
-    Checkbox
+    Checkbox,
+    HasPermissionDirective
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './schedule-management.component.html',
