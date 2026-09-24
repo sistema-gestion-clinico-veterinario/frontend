@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
-import { DropdownModule } from 'primeng/dropdown';
+import { SelectModule } from 'primeng/select';
 import { PaginatorModule } from 'primeng/paginator';
 import { ToastModule } from 'primeng/toast';
 import { MenuModule } from 'primeng/menu';
@@ -31,7 +31,7 @@ import { InputFilterDirective } from '../../../core/directives/input-filter.dire
     FormsModule,
     RouterModule,
     ButtonModule,
-    DropdownModule,
+    SelectModule,
     PaginatorModule,
     ToastModule,
     MenuModule,

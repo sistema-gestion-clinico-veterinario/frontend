@@ -6,7 +6,6 @@ import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
-import { DropdownModule } from 'primeng/dropdown';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { ToastModule } from 'primeng/toast';
 import { MenuModule } from 'primeng/menu';
@@ -41,7 +40,6 @@ import { normalizeText } from '../../../core/utils/normalize-text.util';
     ButtonModule,
     DialogModule,
     InputTextModule,
-    DropdownModule,
     MultiSelectModule,
     ToastModule,
     MenuModule,

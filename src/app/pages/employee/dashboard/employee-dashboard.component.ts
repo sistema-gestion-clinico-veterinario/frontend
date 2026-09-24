@@ -1,5 +1,5 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { Router, RouterModule } from '@angular/router';
 import { AuthStore } from '../../../store/auth.store';
 import { CitaService } from '../../../core/services/cita.service';
@@ -14,7 +14,7 @@ import { DashboardCitasCalendarComponent } from '../../dashboard/citas-calendar/
 @Component({
   selector: 'app-employee-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, ToastModule, DashboardCitasCalendarComponent],
+  imports: [RouterModule, ToastModule, DashboardCitasCalendarComponent],
   providers: [MessageService],
   templateUrl: './employee-dashboard.component.html',
   styleUrls: ['./employee-dashboard.component.scss']

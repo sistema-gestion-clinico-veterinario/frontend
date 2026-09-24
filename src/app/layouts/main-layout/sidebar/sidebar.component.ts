@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, inject, input, computed, signal, output } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthStore } from '../../../store/auth.store';
@@ -19,7 +19,7 @@ interface MenuSection extends MenuStructureDTO {
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive, SkeletonModule],
+  imports: [RouterLink, RouterLinkActive, SkeletonModule],
   templateUrl: './sidebar.component.html'
 })
 export class SidebarComponent {

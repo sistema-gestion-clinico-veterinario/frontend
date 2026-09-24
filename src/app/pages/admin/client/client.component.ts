@@ -7,7 +7,6 @@ import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
-import { DropdownModule } from 'primeng/dropdown';
 import { ToastModule } from 'primeng/toast';
 import { MenuModule } from 'primeng/menu';
 import { SkeletonModule } from 'primeng/skeleton';
@@ -42,7 +41,6 @@ import { Role } from '../../../models/response/permission';
     ButtonModule,
     DialogModule,
     InputTextModule,
-    DropdownModule,
     ToastModule,
     MenuModule,
     SkeletonModule,

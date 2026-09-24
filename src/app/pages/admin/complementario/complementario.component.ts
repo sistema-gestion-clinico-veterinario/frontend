@@ -7,14 +7,11 @@ import {
   FormGroup,
   Validators
 } from '@angular/forms';
-import { TabViewModule } from 'primeng/tabview';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
-import { InputTextarea } from 'primeng/inputtextarea';
-import { DropdownModule } from 'primeng/dropdown';
 import { ToastModule } from 'primeng/toast';
 import { CheckboxModule } from 'primeng/checkbox';
 import { MultiSelectModule } from 'primeng/multiselect';
@@ -42,13 +39,11 @@ import { textContentValidator } from '../../../core/validators/text-content.vali
     CommonModule,
     ReactiveFormsModule,
     FormsModule,
-    TabViewModule,
     TableModule,
     ButtonModule,
     DialogModule,
     InputTextModule,
     InputNumberModule,
-    DropdownModule,
     ToastModule,
     CheckboxModule,
     MultiSelectModule,

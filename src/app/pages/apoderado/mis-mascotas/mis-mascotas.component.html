@@ -23,310 +23,339 @@
           <input type="text" placeholder="Buscar por nombre..."
             [ngModel]="filtroNombre()" (ngModelChange)="filtroNombre.set($event); onFilterChange()"
             class="w-full h-11 pl-9 pr-3 text-sm border border-slate-200 rounded-xl bg-slate-50 text-slate-700 placeholder-slate-400 focus:outline-none focus:border-[#0066AA] transition-all" />
-        </div>
-        <!-- Dropdown Especie -->
-        <div class="relative w-full md:w-44">
-          <select [ngModel]="filtroEspecie()" (ngModelChange)="filtroEspecie.set($event); onFilterChange()"
-            class="w-full appearance-none h-11 pl-3 pr-8 text-sm border border-slate-200 rounded-xl bg-slate-50 text-slate-700 focus:outline-none focus:border-[#0066AA] transition-all cursor-pointer">
-            <option [ngValue]="null">Especie: Todas</option>
-            <option *ngFor="let esp of especies | slice:1" [ngValue]="esp.value">{{ esp.label }}</option>
-          </select>
-          <i class="pi pi-chevron-down text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 text-[10px] pointer-events-none"></i>
-        </div>
-        <!-- Dropdown Estado -->
-        <div class="relative w-full md:w-44">
-          <select [ngModel]="filtroEstado()" (ngModelChange)="filtroEstado.set($event); onFilterChange()"
-            class="w-full appearance-none h-11 pl-3 pr-8 text-sm border border-slate-200 rounded-xl bg-slate-50 text-slate-700 focus:outline-none focus:border-[#0066AA] transition-all cursor-pointer">
-            <option [ngValue]="null">Estado: Todos</option>
-            <option *ngFor="let est of estados | slice:1" [ngValue]="est.value">{{ est.label }}</option>
-          </select>
-          <i class="pi pi-chevron-down text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 text-[10px] pointer-events-none"></i>
-        </div>
-        <!-- Limpiar filtros -->
-        <button *ngIf="hayFiltrosActivos()" (click)="limpiarFiltros()"
-          class="inline-flex items-center gap-1.5 h-11 px-3.5 text-sm font-semibold text-slate-500 border border-slate-200 rounded-xl bg-white hover:bg-slate-50 hover:text-[#0066AA] hover:border-[#0066AA]/30 transition-all shrink-0">
-          <i class="pi pi-filter-slash text-[13px]"></i>
-          <span>Limpiar filtros</span>
-        </button>
-        <!-- Contador -->
-        <div *ngIf="totalRecords() > 0" class="ml-auto text-[12px] text-slate-400 font-medium whitespace-nowrap hidden lg:block">
-          {{ totalRecords() }} resultado{{ totalRecords() !== 1 ? 's' : '' }}
-        </div>
-      </div>
-    </div>
-
-    <!-- ─── LOADING ─── -->
-    <div *ngIf="isLoading()" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-5">
-      <div *ngFor="let i of [1,2,3,4,5,6]" class="bg-white border border-slate-200 rounded-xl overflow-hidden animate-pulse">
-        <div class="h-36 w-full bg-slate-100"></div>
-        <div class="p-4 space-y-3">
-          <div class="h-3.5 bg-slate-100 rounded w-3/4"></div>
-          <div class="h-3 bg-slate-50 rounded w-1/2"></div>
-          <div class="h-10 bg-slate-50 rounded-lg"></div>
+          </div>
+          <!-- Dropdown Especie -->
+          <div class="relative w-full md:w-44">
+            <select [ngModel]="filtroEspecie()" (ngModelChange)="filtroEspecie.set($event); onFilterChange()"
+              class="w-full appearance-none h-11 pl-3 pr-8 text-sm border border-slate-200 rounded-xl bg-slate-50 text-slate-700 focus:outline-none focus:border-[#0066AA] transition-all cursor-pointer">
+              <option [ngValue]="null">Especie: Todas</option>
+              @for (esp of especies | slice:1; track esp) {
+                <option [ngValue]="esp.value">{{ esp.label }}</option>
+              }
+            </select>
+            <i class="pi pi-chevron-down text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 text-[10px] pointer-events-none"></i>
+          </div>
+          <!-- Dropdown Estado -->
+          <div class="relative w-full md:w-44">
+            <select [ngModel]="filtroEstado()" (ngModelChange)="filtroEstado.set($event); onFilterChange()"
+              class="w-full appearance-none h-11 pl-3 pr-8 text-sm border border-slate-200 rounded-xl bg-slate-50 text-slate-700 focus:outline-none focus:border-[#0066AA] transition-all cursor-pointer">
+              <option [ngValue]="null">Estado: Todos</option>
+              @for (est of estados | slice:1; track est) {
+                <option [ngValue]="est.value">{{ est.label }}</option>
+              }
+            </select>
+            <i class="pi pi-chevron-down text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 text-[10px] pointer-events-none"></i>
+          </div>
+          <!-- Limpiar filtros -->
+          @if (hayFiltrosActivos()) {
+            <button (click)="limpiarFiltros()"
+              class="inline-flex items-center gap-1.5 h-11 px-3.5 text-sm font-semibold text-slate-500 border border-slate-200 rounded-xl bg-white hover:bg-slate-50 hover:text-[#0066AA] hover:border-[#0066AA]/30 transition-all shrink-0">
+              <i class="pi pi-filter-slash text-[13px]"></i>
+              <span>Limpiar filtros</span>
+            </button>
+          }
+          <!-- Contador -->
+          @if (totalRecords() > 0) {
+            <div class="ml-auto text-[12px] text-slate-400 font-medium whitespace-nowrap hidden lg:block">
+              {{ totalRecords() }} resultado{{ totalRecords() !== 1 ? 's' : '' }}
+            </div>
+          }
         </div>
       </div>
-    </div>
 
-    <!-- ─── EMPTY STATE ─── -->
-    <div *ngIf="!isLoading() && mascotas().length === 0"
-      class="bg-white border border-slate-200 rounded-xl p-8 sm:p-16 flex flex-col items-center justify-center text-center">
-      <div class="w-16 h-16 bg-[#f0f4f8] rounded-2xl flex items-center justify-center mb-5 border border-[#e2eaf2]">
-        <i class="pi pi-search text-2xl text-[#0066AA] opacity-40"></i>
-      </div>
-      <h3 class="text-base font-bold text-slate-700 mb-2">Sin resultados</h3>
-      <p class="text-[13px] text-slate-500 max-w-xs font-medium">
-        No encontramos mascotas que coincidan con los filtros aplicados.
-      </p>
-    </div>
+      <!-- ─── LOADING ─── -->
+      @if (isLoading()) {
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-5">
+          @for (i of [1,2,3,4,5,6]; track i) {
+            <div class="bg-white border border-slate-200 rounded-xl overflow-hidden animate-pulse">
+              <div class="h-36 w-full bg-slate-100"></div>
+              <div class="p-4 space-y-3">
+                <div class="h-3.5 bg-slate-100 rounded w-3/4"></div>
+                <div class="h-3 bg-slate-50 rounded w-1/2"></div>
+                <div class="h-10 bg-slate-50 rounded-lg"></div>
+              </div>
+            </div>
+          }
+        </div>
+      }
 
-    <!-- ═══════════════════════════════════════════ -->
-    <!-- ─── DETALLE ÚNICO (solo 1 mascota en total) ─── -->
-    <!-- ═══════════════════════════════════════════ -->
-    <div *ngIf="!isLoading() && esMascotaUnica() as mascota"
-      class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-      <div class="flex flex-col sm:flex-row">
-        <!-- Foto -->
-        <div class="relative sm:w-64 h-56 sm:h-auto shrink-0 overflow-hidden"
-          [ngClass]="mascota.activo ? 'bg-[#e8f1f8]' : 'bg-slate-100'">
-          <img *ngIf="mascota.fotoUrl" [src]="resolvePhotoUrl(mascota.fotoUrl)" [alt]="mascota.nombreCompleto"
-            class="h-full w-full object-cover" />
-          <span *ngIf="!mascota.fotoUrl"
-            class="absolute inset-0 flex items-center justify-center text-6xl font-black"
-            [ngClass]="mascota.activo ? 'text-[#0066AA]/30' : 'text-slate-300'">
-            {{ mascota.nombreCompleto.charAt(0) | uppercase }}
+      <!-- ─── EMPTY STATE ─── -->
+      @if (!isLoading() && mascotas().length === 0) {
+        <div
+          class="bg-white border border-slate-200 rounded-xl p-8 sm:p-16 flex flex-col items-center justify-center text-center">
+          <div class="w-16 h-16 bg-[#f0f4f8] rounded-2xl flex items-center justify-center mb-5 border border-[#e2eaf2]">
+            <i class="pi pi-search text-2xl text-[#0066AA] opacity-40"></i>
+          </div>
+          <h3 class="text-base font-bold text-slate-700 mb-2">Sin resultados</h3>
+          <p class="text-[13px] text-slate-500 max-w-xs font-medium">
+            No encontramos mascotas que coincidan con los filtros aplicados.
+          </p>
+        </div>
+      }
+
+      <!-- ═══════════════════════════════════════════ -->
+      <!-- ─── DETALLE ÚNICO (solo 1 mascota en total) ─── -->
+      <!-- ═══════════════════════════════════════════ -->
+      @if (!isLoading() && esMascotaUnica(); as mascota) {
+        <div
+          class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+          <div class="flex flex-col sm:flex-row">
+            <!-- Foto -->
+            <div class="relative sm:w-64 h-56 sm:h-auto shrink-0 overflow-hidden"
+              [ngClass]="mascota.activo ? 'bg-[#e8f1f8]' : 'bg-slate-100'">
+              @if (mascota.fotoUrl) {
+                <img [src]="resolvePhotoUrl(mascota.fotoUrl)" [alt]="mascota.nombreCompleto"
+                  class="h-full w-full object-cover" />
+              }
+              @if (!mascota.fotoUrl) {
+                <span
+                  class="absolute inset-0 flex items-center justify-center text-6xl font-black"
+                  [ngClass]="mascota.activo ? 'text-[#0066AA]/30' : 'text-slate-300'">
+                  {{ mascota.nombreCompleto.charAt(0) | uppercase }}
+                </span>
+              }
+              @if (canEdit()) {
+                <button (click)="abrirEdicion(mascota)" title="Editar mascota"
+                  class="absolute top-3 left-3 w-8 h-8 rounded-full bg-white/90 border border-slate-200 text-slate-500 hover:text-[#0066AA] hover:border-[#0066AA]/40 flex items-center justify-center transition-all">
+                  <i class="pi pi-pencil text-[12px]"></i>
+                </button>
+              }
+            </div>
+            <!-- Info -->
+            <div class="flex-1 p-6 flex flex-col">
+              <div class="flex items-start justify-between gap-3 mb-5">
+                <div>
+                  <h2 class="text-xl font-extrabold text-slate-900 leading-tight">{{ mascota.nombreCompleto }}</h2>
+                  <p class="text-[13px] text-slate-400 font-medium mt-1">
+                    {{ mascota.especie | titlecase }} &bull; {{ mascota.sexo | titlecase }}
+                  </p>
+                </div>
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold tracking-wide shrink-0"
+                  [ngClass]="mascota.activo ? 'bg-[#e8f8f1] text-[#0a7c4e] border border-[#a7e3c5]' : 'bg-slate-100 text-slate-500 border border-slate-200'">
+                  <span class="w-1.5 h-1.5 rounded-full" [ngClass]="mascota.activo ? 'bg-[#12b76a]' : 'bg-slate-400'"></span>
+                  {{ mascota.activo ? 'Activo' : 'Inactivo' }}
+                </span>
+              </div>
+              <dl class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+                <div>
+                  <dt class="text-[9px] text-slate-400 uppercase tracking-widest font-bold mb-1">Raza</dt>
+                  <dd class="text-sm font-semibold text-slate-700">{{ mascota.raza || 'No especificada' }}</dd>
+                </div>
+                <div>
+                  <dt class="text-[9px] text-slate-400 uppercase tracking-widest font-bold mb-1">Peso</dt>
+                  <dd class="text-sm font-semibold text-slate-700">{{ mascota.peso ? mascota.peso + ' kg' : 'No registrado' }}</dd>
+                </div>
+                <div>
+                  <dt class="text-[9px] text-slate-400 uppercase tracking-widest font-bold mb-1">Nacimiento</dt>
+                  <dd class="text-sm font-semibold text-slate-700">{{ formatFechaNacimiento(mascota.fechaNacimiento, 'long') }}</dd>
+                </div>
+                <div>
+                  <dt class="text-[9px] text-slate-400 uppercase tracking-widest font-bold mb-1">Color</dt>
+                  <dd class="text-sm font-semibold text-slate-700">{{ mascota.color || 'No especificado' }}</dd>
+                </div>
+              </dl>
+              <div class="flex-1"></div>
+              <div class="flex flex-col sm:flex-row gap-2.5 pt-5 border-t border-slate-100">
+                <button (click)="goToHistorial(mascota)"
+                  class="flex-1 py-2.5 rounded-lg bg-white border border-slate-200 text-slate-600 text-[12px] font-bold hover:bg-[#f0f4f8] hover:border-[#0066AA]/30 hover:text-[#0066AA] transition-all flex items-center justify-center gap-1.5">
+                  <i class="pi pi-folder-open text-[13px]"></i> Ver historial
+                </button>
+                <button (click)="goToCitas(mascota)"
+                  class="flex-1 py-2.5 rounded-lg bg-[#0066AA] border border-[#005593] text-white text-[12px] font-bold hover:bg-[#005593] transition-all flex items-center justify-center gap-1.5">
+                  <i class="pi pi-calendar-plus text-[13px]"></i> Agendar cita
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- ═══════════════════════════════════════════ -->
+      <!-- ─── CARDS (2 o más mascotas) ─── -->
+      <!-- ═══════════════════════════════════════════ -->
+      @if (!isLoading() && mascotas().length > 0 && !esMascotaUnica()) {
+        <div
+          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-5">
+          @for (mascota of mascotas(); track mascota) {
+            <div
+              class="bg-white border border-slate-200 rounded-xl overflow-hidden flex flex-col group hover:border-[#0066AA]/40 transition-colors">
+              <!-- Foto de perfil (portada) -->
+              <div class="relative h-36 w-full shrink-0 overflow-hidden"
+                [ngClass]="mascota.activo ? 'bg-[#e8f1f8]' : 'bg-slate-100'">
+                @if (mascota.fotoUrl) {
+                  <img [src]="resolvePhotoUrl(mascota.fotoUrl)" [alt]="mascota.nombreCompleto"
+                    class="h-full w-full object-cover" />
+                }
+                @if (!mascota.fotoUrl) {
+                  <span
+                    class="absolute inset-0 flex items-center justify-center text-4xl font-black"
+                    [ngClass]="mascota.activo ? 'text-[#0066AA]/30' : 'text-slate-300'">
+                    {{ mascota.nombreCompleto.charAt(0) | uppercase }}
+                  </span>
+                }
+                <span class="absolute top-2.5 right-2.5 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold tracking-wide"
+                  [ngClass]="mascota.activo ? 'bg-[#e8f8f1] text-[#0a7c4e] border border-[#a7e3c5]' : 'bg-white text-slate-500 border border-slate-200'">
+                  <span class="w-1.5 h-1.5 rounded-full" [ngClass]="mascota.activo ? 'bg-[#12b76a]' : 'bg-slate-400'"></span>
+                  {{ mascota.activo ? 'Activo' : 'Inactivo' }}
+                </span>
+                @if (canEdit()) {
+                  <button (click)="abrirEdicion(mascota)" title="Editar mascota"
+                    class="absolute top-2.5 left-2.5 w-7 h-7 rounded-full bg-white/90 border border-slate-200 text-slate-500 hover:text-[#0066AA] hover:border-[#0066AA]/40 flex items-center justify-center transition-all">
+                    <i class="pi pi-pencil text-[11px]"></i>
+                  </button>
+                }
+              </div>
+              <div class="p-4 flex-1 flex flex-col">
+                <!-- Name + Species -->
+                <div class="mb-3.5">
+                  <h3 class="text-[15px] font-bold text-slate-800 leading-tight truncate">{{ mascota.nombreCompleto }}</h3>
+                  <p class="text-[11.5px] text-slate-400 font-medium mt-0.5 truncate">
+                    {{ mascota.especie | titlecase }} &bull; {{ mascota.sexo | titlecase }}
+                  </p>
+                </div>
+                <!-- Data Row -->
+                <dl class="grid grid-cols-3 gap-2 mb-4 text-center border border-slate-100 rounded-lg bg-[#f8fafc] py-2.5 divide-x divide-slate-200">
+                  <div class="px-1 min-w-0">
+                    <dt class="text-[8.5px] text-slate-400 uppercase tracking-widest font-bold mb-0.5">Raza</dt>
+                    <dd class="text-[11.5px] font-semibold text-slate-700 truncate" [title]="mascota.raza || 'N/A'">
+                      {{ mascota.raza || '—' }}
+                    </dd>
+                  </div>
+                  <div class="px-1 min-w-0">
+                    <dt class="text-[8.5px] text-slate-400 uppercase tracking-widest font-bold mb-0.5">Peso</dt>
+                    <dd class="text-[11.5px] font-semibold text-slate-700">
+                      {{ mascota.peso ? mascota.peso + ' kg' : '—' }}
+                    </dd>
+                  </div>
+                  <div class="px-1 min-w-0">
+                    <dt class="text-[8.5px] text-slate-400 uppercase tracking-widest font-bold mb-0.5">Nació</dt>
+                    <dd class="text-[11.5px] font-semibold text-slate-700 truncate">
+                      {{ formatFechaNacimiento(mascota.fechaNacimiento) }}
+                    </dd>
+                  </div>
+                </dl>
+                <!-- Spacer -->
+                <div class="flex-1"></div>
+                <!-- Actions -->
+                <div class="grid grid-cols-2 gap-2">
+                  <button (click)="goToHistorial(mascota)"
+                    class="py-2 rounded-lg bg-white border border-slate-200 text-slate-600 text-[11px] font-bold hover:bg-[#f0f4f8] hover:border-[#0066AA]/30 hover:text-[#0066AA] transition-all flex items-center justify-center gap-1.5">
+                    <i class="pi pi-folder-open text-[12px]"></i> Historial
+                  </button>
+                  <button (click)="goToCitas(mascota)"
+                    class="py-2 rounded-lg bg-[#0066AA] border border-[#005593] text-white text-[11px] font-bold hover:bg-[#005593] transition-all flex items-center justify-center gap-1.5">
+                    <i class="pi pi-calendar-plus text-[12px]"></i> Cita
+                  </button>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- ─── PAGINADOR ─── -->
+      @if (!isLoading() && mascotas().length > 0 && !esMascotaUnica()) {
+        <div
+          class="mt-5 bg-white border border-slate-200 rounded-xl overflow-hidden flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-4 py-2 sm:py-1">
+          <span class="text-[12px] text-slate-400 font-medium hidden sm:block">
+            {{ totalRecords() }} mascota{{ totalRecords() !== 1 ? 's' : '' }} en total
           </span>
-          <button *ngIf="canEdit()" (click)="abrirEdicion(mascota)" title="Editar mascota"
-            class="absolute top-3 left-3 w-8 h-8 rounded-full bg-white/90 border border-slate-200 text-slate-500 hover:text-[#0066AA] hover:border-[#0066AA]/40 flex items-center justify-center transition-all">
-            <i class="pi pi-pencil text-[12px]"></i>
-          </button>
+          <p-paginator
+            [rows]="size()"
+            [totalRecords]="totalRecords()"
+            (onPageChange)="cargarMascotas($event)"
+            [showCurrentPageReport]="false"
+            styleClass="!border-none !bg-transparent !py-3">
+          </p-paginator>
         </div>
+      }
 
-        <!-- Info -->
-        <div class="flex-1 p-6 flex flex-col">
-          <div class="flex items-start justify-between gap-3 mb-5">
-            <div>
-              <h2 class="text-xl font-extrabold text-slate-900 leading-tight">{{ mascota.nombreCompleto }}</h2>
-              <p class="text-[13px] text-slate-400 font-medium mt-1">
-                {{ mascota.especie | titlecase }} &bull; {{ mascota.sexo | titlecase }}
-              </p>
-            </div>
-            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold tracking-wide shrink-0"
-              [ngClass]="mascota.activo ? 'bg-[#e8f8f1] text-[#0a7c4e] border border-[#a7e3c5]' : 'bg-slate-100 text-slate-500 border border-slate-200'">
-              <span class="w-1.5 h-1.5 rounded-full" [ngClass]="mascota.activo ? 'bg-[#12b76a]' : 'bg-slate-400'"></span>
-              {{ mascota.activo ? 'Activo' : 'Inactivo' }}
-            </span>
-          </div>
-
-          <dl class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-            <div>
-              <dt class="text-[9px] text-slate-400 uppercase tracking-widest font-bold mb-1">Raza</dt>
-              <dd class="text-sm font-semibold text-slate-700">{{ mascota.raza || 'No especificada' }}</dd>
-            </div>
-            <div>
-              <dt class="text-[9px] text-slate-400 uppercase tracking-widest font-bold mb-1">Peso</dt>
-              <dd class="text-sm font-semibold text-slate-700">{{ mascota.peso ? mascota.peso + ' kg' : 'No registrado' }}</dd>
-            </div>
-            <div>
-              <dt class="text-[9px] text-slate-400 uppercase tracking-widest font-bold mb-1">Nacimiento</dt>
-              <dd class="text-sm font-semibold text-slate-700">{{ formatFechaNacimiento(mascota.fechaNacimiento, 'long') }}</dd>
-            </div>
-            <div>
-              <dt class="text-[9px] text-slate-400 uppercase tracking-widest font-bold mb-1">Color</dt>
-              <dd class="text-sm font-semibold text-slate-700">{{ mascota.color || 'No especificado' }}</dd>
-            </div>
-          </dl>
-
-          <div class="flex-1"></div>
-
-          <div class="flex flex-col sm:flex-row gap-2.5 pt-5 border-t border-slate-100">
-            <button (click)="goToHistorial(mascota)"
-              class="flex-1 py-2.5 rounded-lg bg-white border border-slate-200 text-slate-600 text-[12px] font-bold hover:bg-[#f0f4f8] hover:border-[#0066AA]/30 hover:text-[#0066AA] transition-all flex items-center justify-center gap-1.5">
-              <i class="pi pi-folder-open text-[13px]"></i> Ver historial
-            </button>
-            <button (click)="goToCitas(mascota)"
-              class="flex-1 py-2.5 rounded-lg bg-[#0066AA] border border-[#005593] text-white text-[12px] font-bold hover:bg-[#005593] transition-all flex items-center justify-center gap-1.5">
-              <i class="pi pi-calendar-plus text-[13px]"></i> Agendar cita
-            </button>
-          </div>
-        </div>
-      </div>
     </div>
 
-    <!-- ═══════════════════════════════════════════ -->
-    <!-- ─── CARDS (2 o más mascotas) ─── -->
-    <!-- ═══════════════════════════════════════════ -->
-    <div *ngIf="!isLoading() && mascotas().length > 0 && !esMascotaUnica()"
-      class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-5">
-
-      <div *ngFor="let mascota of mascotas()"
-        class="bg-white border border-slate-200 rounded-xl overflow-hidden flex flex-col group hover:border-[#0066AA]/40 transition-colors">
-
-        <!-- Foto de perfil (portada) -->
-        <div class="relative h-36 w-full shrink-0 overflow-hidden"
-          [ngClass]="mascota.activo ? 'bg-[#e8f1f8]' : 'bg-slate-100'">
-          <img *ngIf="mascota.fotoUrl" [src]="resolvePhotoUrl(mascota.fotoUrl)" [alt]="mascota.nombreCompleto"
-            class="h-full w-full object-cover" />
-          <span *ngIf="!mascota.fotoUrl"
-            class="absolute inset-0 flex items-center justify-center text-4xl font-black"
-            [ngClass]="mascota.activo ? 'text-[#0066AA]/30' : 'text-slate-300'">
-            {{ mascota.nombreCompleto.charAt(0) | uppercase }}
-          </span>
-          <span class="absolute top-2.5 right-2.5 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold tracking-wide"
-            [ngClass]="mascota.activo ? 'bg-[#e8f8f1] text-[#0a7c4e] border border-[#a7e3c5]' : 'bg-white text-slate-500 border border-slate-200'">
-            <span class="w-1.5 h-1.5 rounded-full" [ngClass]="mascota.activo ? 'bg-[#12b76a]' : 'bg-slate-400'"></span>
-            {{ mascota.activo ? 'Activo' : 'Inactivo' }}
-          </span>
-          <button *ngIf="canEdit()" (click)="abrirEdicion(mascota)" title="Editar mascota"
-            class="absolute top-2.5 left-2.5 w-7 h-7 rounded-full bg-white/90 border border-slate-200 text-slate-500 hover:text-[#0066AA] hover:border-[#0066AA]/40 flex items-center justify-center transition-all">
-            <i class="pi pi-pencil text-[11px]"></i>
-          </button>
-        </div>
-
-        <div class="p-4 flex-1 flex flex-col">
-          <!-- Name + Species -->
-          <div class="mb-3.5">
-            <h3 class="text-[15px] font-bold text-slate-800 leading-tight truncate">{{ mascota.nombreCompleto }}</h3>
-            <p class="text-[11.5px] text-slate-400 font-medium mt-0.5 truncate">
-              {{ mascota.especie | titlecase }} &bull; {{ mascota.sexo | titlecase }}
-            </p>
-          </div>
-
-          <!-- Data Row -->
-          <dl class="grid grid-cols-3 gap-2 mb-4 text-center border border-slate-100 rounded-lg bg-[#f8fafc] py-2.5 divide-x divide-slate-200">
-            <div class="px-1 min-w-0">
-              <dt class="text-[8.5px] text-slate-400 uppercase tracking-widest font-bold mb-0.5">Raza</dt>
-              <dd class="text-[11.5px] font-semibold text-slate-700 truncate" [title]="mascota.raza || 'N/A'">
-                {{ mascota.raza || '—' }}
-              </dd>
+    <!-- ─── MODAL EDICIÓN (solo peso / foto editables) ─── -->
+    @if (editMascota(); as m) {
+      <div class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-md rounded-2xl shadow-xl overflow-hidden max-h-[90vh] flex flex-col">
+          <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between shrink-0">
+            <div>
+              <h3 class="text-sm font-bold text-slate-800">Editar {{ m.nombreCompleto }}</h3>
+              <p class="text-[11px] text-slate-400 font-medium mt-0.5">Solo puedes cambiar la foto de perfil. Los demás datos los gestiona la clínica.</p>
             </div>
-            <div class="px-1 min-w-0">
-              <dt class="text-[8.5px] text-slate-400 uppercase tracking-widest font-bold mb-0.5">Peso</dt>
-              <dd class="text-[11.5px] font-semibold text-slate-700">
-                {{ mascota.peso ? mascota.peso + ' kg' : '—' }}
-              </dd>
-            </div>
-            <div class="px-1 min-w-0">
-              <dt class="text-[8.5px] text-slate-400 uppercase tracking-widest font-bold mb-0.5">Nació</dt>
-              <dd class="text-[11.5px] font-semibold text-slate-700 truncate">
-                {{ formatFechaNacimiento(mascota.fechaNacimiento) }}
-              </dd>
-            </div>
-          </dl>
-
-          <!-- Spacer -->
-          <div class="flex-1"></div>
-
-          <!-- Actions -->
-          <div class="grid grid-cols-2 gap-2">
-            <button (click)="goToHistorial(mascota)"
-              class="py-2 rounded-lg bg-white border border-slate-200 text-slate-600 text-[11px] font-bold hover:bg-[#f0f4f8] hover:border-[#0066AA]/30 hover:text-[#0066AA] transition-all flex items-center justify-center gap-1.5">
-              <i class="pi pi-folder-open text-[12px]"></i> Historial
-            </button>
-            <button (click)="goToCitas(mascota)"
-              class="py-2 rounded-lg bg-[#0066AA] border border-[#005593] text-white text-[11px] font-bold hover:bg-[#005593] transition-all flex items-center justify-center gap-1.5">
-              <i class="pi pi-calendar-plus text-[12px]"></i> Cita
+            <button (click)="cerrarEdicion()" class="text-slate-400 hover:text-slate-600 shrink-0 ml-3">
+              <i class="pi pi-times"></i>
             </button>
           </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ─── PAGINADOR ─── -->
-    <div *ngIf="!isLoading() && mascotas().length > 0 && !esMascotaUnica()"
-      class="mt-5 bg-white border border-slate-200 rounded-xl overflow-hidden flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-4 py-2 sm:py-1">
-      <span class="text-[12px] text-slate-400 font-medium hidden sm:block">
-        {{ totalRecords() }} mascota{{ totalRecords() !== 1 ? 's' : '' }} en total
-      </span>
-      <p-paginator
-        [rows]="size()"
-        [totalRecords]="totalRecords()"
-        (onPageChange)="cargarMascotas($event)"
-        [showCurrentPageReport]="false"
-        styleClass="!border-none !bg-transparent !py-3">
-      </p-paginator>
-    </div>
-
-  </div>
-
-  <!-- ─── MODAL EDICIÓN (solo peso / foto editables) ─── -->
-  <div *ngIf="editMascota() as m" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
-    <div class="bg-white w-full max-w-md rounded-2xl shadow-xl overflow-hidden max-h-[90vh] flex flex-col">
-      <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between shrink-0">
-        <div>
-          <h3 class="text-sm font-bold text-slate-800">Editar {{ m.nombreCompleto }}</h3>
-          <p class="text-[11px] text-slate-400 font-medium mt-0.5">Solo puedes cambiar la foto de perfil. Los demás datos los gestiona la clínica.</p>
-        </div>
-        <button (click)="cerrarEdicion()" class="text-slate-400 hover:text-slate-600 shrink-0 ml-3">
-          <i class="pi pi-times"></i>
-        </button>
-      </div>
-
-      <div class="p-5 space-y-4 overflow-y-auto">
-        <!-- Foto (editable) -->
-        <div class="flex flex-col items-center gap-2">
-          <div class="h-20 w-20 rounded-xl overflow-hidden border border-slate-200 bg-[#e8f1f8] flex items-center justify-center">
-            <img *ngIf="editFotoPreview" [src]="editFotoPreview" class="h-full w-full object-cover" [alt]="m.nombreCompleto" />
-            <span *ngIf="!editFotoPreview" class="text-2xl font-black text-[#0066AA]/40">{{ m.nombreCompleto.charAt(0) | uppercase }}</span>
-          </div>
-          <label class="text-[11px] font-bold text-[#0066AA] cursor-pointer hover:underline">
-            Cambiar foto
-            <input type="file" accept="image/*" class="hidden" (change)="onEditFotoSeleccionada($event)" />
-          </label>
-        </div>
-
-        <div class="pt-2 border-t border-slate-100">
-          <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-3">Datos gestionados por la clínica</p>
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-1.5">Nombre</label>
-              <input type="text" [value]="m.nombreCompleto" disabled
-                class="w-full h-10 px-3 text-sm border border-slate-200 rounded-xl bg-slate-100 text-slate-500 cursor-not-allowed" />
+          <div class="p-5 space-y-4 overflow-y-auto">
+            <!-- Foto (editable) -->
+            <div class="flex flex-col items-center gap-2">
+              <div class="h-20 w-20 rounded-xl overflow-hidden border border-slate-200 bg-[#e8f1f8] flex items-center justify-center">
+                @if (editFotoPreview) {
+                  <img [src]="editFotoPreview" class="h-full w-full object-cover" [alt]="m.nombreCompleto" />
+                }
+                @if (!editFotoPreview) {
+                  <span class="text-2xl font-black text-[#0066AA]/40">{{ m.nombreCompleto.charAt(0) | uppercase }}</span>
+                }
+              </div>
+              <label class="text-[11px] font-bold text-[#0066AA] cursor-pointer hover:underline">
+                Cambiar foto
+                <input type="file" accept="image/*" class="hidden" (change)="onEditFotoSeleccionada($event)" />
+              </label>
             </div>
-            <div>
-              <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-1.5">Sexo</label>
-              <input type="text" [value]="m.sexo | titlecase" disabled
-                class="w-full h-10 px-3 text-sm border border-slate-200 rounded-xl bg-slate-100 text-slate-500 cursor-not-allowed" />
-            </div>
-            <div>
-              <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-1.5">Especie</label>
-              <input type="text" [value]="m.especie | titlecase" disabled
-                class="w-full h-10 px-3 text-sm border border-slate-200 rounded-xl bg-slate-100 text-slate-500 cursor-not-allowed" />
-            </div>
-            <div>
-              <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-1.5">Raza</label>
-              <input type="text" [value]="m.raza || 'No especificada'" disabled
-                class="w-full h-10 px-3 text-sm border border-slate-200 rounded-xl bg-slate-100 text-slate-500 cursor-not-allowed" />
-            </div>
-            <div>
-              <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-1.5">Nacimiento</label>
-              <input type="text" [value]="formatFechaNacimiento(m.fechaNacimiento)" disabled
-                class="w-full h-10 px-3 text-sm border border-slate-200 rounded-xl bg-slate-100 text-slate-500 cursor-not-allowed" />
-            </div>
-            <div>
-              <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-1.5">Color</label>
-              <input type="text" [value]="m.color || 'No especificado'" disabled
-                class="w-full h-10 px-3 text-sm border border-slate-200 rounded-xl bg-slate-100 text-slate-500 cursor-not-allowed" />
-            </div>
-            <div>
-              <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-1.5">Peso</label>
-              <input type="text" [value]="m.peso ? (m.peso + ' kg') : 'No registrado'" disabled
-                class="w-full h-10 px-3 text-sm border border-slate-200 rounded-xl bg-slate-100 text-slate-500 cursor-not-allowed" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="px-5 py-4 border-t border-slate-100 flex gap-2 justify-end shrink-0">
-        <button (click)="cerrarEdicion()" [disabled]="guardandoEdicion()"
-          class="px-4 py-2 rounded-lg bg-white border border-slate-200 text-slate-600 text-[12px] font-bold hover:bg-slate-50 transition-all disabled:opacity-50">
-          Cancelar
-        </button>
-        <button (click)="guardarEdicion()" [disabled]="guardandoEdicion()"
-          class="px-4 py-2 rounded-lg bg-[#0066AA] text-white text-[12px] font-bold hover:bg-[#005593] transition-all disabled:opacity-50 flex items-center gap-1.5">
-          <i class="pi pi-spin pi-spinner text-[11px]" *ngIf="guardandoEdicion()"></i>
-          Guardar cambios
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
+            <div class="pt-2 border-t border-slate-100">
+              <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-3">Datos gestionados por la clínica</p>
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-1.5">Nombre</label>
+                  <input type="text" [value]="m.nombreCompleto" disabled
+                    class="w-full h-10 px-3 text-sm border border-slate-200 rounded-xl bg-slate-100 text-slate-500 cursor-not-allowed" />
+                  </div>
+                  <div>
+                    <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-1.5">Sexo</label>
+                    <input type="text" [value]="m.sexo | titlecase" disabled
+                      class="w-full h-10 px-3 text-sm border border-slate-200 rounded-xl bg-slate-100 text-slate-500 cursor-not-allowed" />
+                    </div>
+                    <div>
+                      <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-1.5">Especie</label>
+                      <input type="text" [value]="m.especie | titlecase" disabled
+                        class="w-full h-10 px-3 text-sm border border-slate-200 rounded-xl bg-slate-100 text-slate-500 cursor-not-allowed" />
+                      </div>
+                      <div>
+                        <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-1.5">Raza</label>
+                        <input type="text" [value]="m.raza || 'No especificada'" disabled
+                          class="w-full h-10 px-3 text-sm border border-slate-200 rounded-xl bg-slate-100 text-slate-500 cursor-not-allowed" />
+                        </div>
+                        <div>
+                          <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-1.5">Nacimiento</label>
+                          <input type="text" [value]="formatFechaNacimiento(m.fechaNacimiento)" disabled
+                            class="w-full h-10 px-3 text-sm border border-slate-200 rounded-xl bg-slate-100 text-slate-500 cursor-not-allowed" />
+                          </div>
+                          <div>
+                            <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-1.5">Color</label>
+                            <input type="text" [value]="m.color || 'No especificado'" disabled
+                              class="w-full h-10 px-3 text-sm border border-slate-200 rounded-xl bg-slate-100 text-slate-500 cursor-not-allowed" />
+                            </div>
+                            <div>
+                              <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-1.5">Peso</label>
+                              <input type="text" [value]="m.peso ? (m.peso + ' kg') : 'No registrado'" disabled
+                                class="w-full h-10 px-3 text-sm border border-slate-200 rounded-xl bg-slate-100 text-slate-500 cursor-not-allowed" />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="px-5 py-4 border-t border-slate-100 flex gap-2 justify-end shrink-0">
+                          <button (click)="cerrarEdicion()" [disabled]="guardandoEdicion()"
+                            class="px-4 py-2 rounded-lg bg-white border border-slate-200 text-slate-600 text-[12px] font-bold hover:bg-slate-50 transition-all disabled:opacity-50">
+                            Cancelar
+                          </button>
+                          <button (click)="guardarEdicion()" [disabled]="guardandoEdicion()"
+                            class="px-4 py-2 rounded-lg bg-[#0066AA] text-white text-[12px] font-bold hover:bg-[#005593] transition-all disabled:opacity-50 flex items-center gap-1.5">
+                            @if (guardandoEdicion()) {
+                              <i class="pi pi-spin pi-spinner text-[11px]"></i>
+                            }
+                            Guardar cambios
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  }
+                </div>

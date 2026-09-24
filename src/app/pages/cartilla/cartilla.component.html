@@ -1,395 +1,460 @@
 <main class="mx-auto min-h-screen min-w-0 max-w-full overflow-x-hidden bg-slate-50 p-2 font-['Barlow'] text-slate-900 sm:p-5 lg:p-6">
-  <section *ngIf="requiresCompanySelection" class="mx-auto mt-4 max-w-3xl rounded-xl border border-slate-200 bg-white px-5 py-5 sm:mt-8 sm:px-6">
-    <div class="flex items-start gap-3">
-      <div class="grid size-10 shrink-0 place-items-center rounded-lg bg-blue-50 text-[#0066AA]">
-        <i class="pi pi-building text-sm"></i>
-      </div>
-      <div>
-        <h1 class="text-base font-extrabold text-slate-900">Selecciona una empresa</h1>
-        <p class="mt-1 text-sm leading-6 text-slate-500">
-          La cartilla preventiva pertenece a una clínica específica. Elige una empresa en el selector superior para consultar sus pacientes.
-        </p>
-      </div>
-    </div>
-  </section>
-
-  <ng-container *ngIf="!cargando() && !requiresCompanySelection">
-  <div class="space-y-5 sm:space-y-6">
-    <header class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-      <div class="flex items-center gap-3">
-        <button *ngIf="mascotaSel()" type="button" (click)="volver()"
-          class="w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-400 hover:text-[#0066AA] hover:border-[#0066AA] shrink-0">
-          <i class="pi pi-arrow-left text-sm"></i>
-        </button>
-        <i class="pi pi-plus-circle text-[#0066AA] text-3xl shrink-0"></i>
+  @if (requiresCompanySelection) {
+    <section class="mx-auto mt-4 max-w-3xl rounded-xl border border-slate-200 bg-white px-5 py-5 sm:mt-8 sm:px-6">
+      <div class="flex items-start gap-3">
+        <div class="grid size-10 shrink-0 place-items-center rounded-lg bg-blue-50 text-[#0066AA]">
+          <i class="pi pi-building text-sm"></i>
+        </div>
         <div>
-          <p class="text-[11px] font-bold uppercase tracking-[.14em] text-[#0066AA]">Salud preventiva</p>
-          <h1 class="text-xl font-extrabold leading-tight tracking-tight text-slate-900">{{ mascotaSel() ? (modo() === 'VACUNACION' ? 'Cartilla de vacunación' : 'Control de desparasitación') : 'Cartilla de vacunación' }}</h1>
-          <p class="mt-1 text-sm text-slate-400 font-medium hidden sm:block">Registro, seguimiento e historial preventivo del paciente</p>
+          <h1 class="text-base font-extrabold text-slate-900">Selecciona una empresa</h1>
+          <p class="mt-1 text-sm leading-6 text-slate-500">
+            La cartilla preventiva pertenece a una clínica específica. Elige una empresa en el selector superior para consultar sus pacientes.
+          </p>
         </div>
       </div>
+    </section>
+  }
 
-      <div *ngIf="mascotaSel()" class="flex w-full items-center gap-1 rounded-xl border border-slate-200 bg-slate-50 p-1 sm:w-auto">
-        <button type="button" (click)="cambiarModo('VACUNACION')"
-          class="flex min-w-0 flex-1 items-center justify-center gap-2 rounded-lg px-2.5 py-2.5 text-xs font-semibold transition-all duration-200 sm:flex-none sm:px-4 sm:text-sm"
+  @if (!cargando() && !requiresCompanySelection) {
+    <div class="space-y-5 sm:space-y-6">
+      <header class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+        <div class="flex items-center gap-3">
+          @if (mascotaSel()) {
+            <button type="button" (click)="volver()"
+              class="w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-400 hover:text-[#0066AA] hover:border-[#0066AA] shrink-0">
+              <i class="pi pi-arrow-left text-sm"></i>
+            </button>
+          }
+          <i class="pi pi-plus-circle text-[#0066AA] text-3xl shrink-0"></i>
+          <div>
+            <p class="text-[11px] font-bold uppercase tracking-[.14em] text-[#0066AA]">Salud preventiva</p>
+            <h1 class="text-xl font-extrabold leading-tight tracking-tight text-slate-900">{{ mascotaSel() ? (modo() === 'VACUNACION' ? 'Cartilla de vacunación' : 'Control de desparasitación') : 'Cartilla de vacunación' }}</h1>
+            <p class="mt-1 text-sm text-slate-400 font-medium hidden sm:block">Registro, seguimiento e historial preventivo del paciente</p>
+          </div>
+        </div>
+        @if (mascotaSel()) {
+          <div class="flex w-full items-center gap-1 rounded-xl border border-slate-200 bg-slate-50 p-1 sm:w-auto">
+            <button type="button" (click)="cambiarModo('VACUNACION')"
+              class="flex min-w-0 flex-1 items-center justify-center gap-2 rounded-lg px-2.5 py-2.5 text-xs font-semibold transition-all duration-200 sm:flex-none sm:px-4 sm:text-sm"
           [ngClass]="modo() === 'VACUNACION'
             ? 'bg-[#0066AA] text-white shadow-sm'
             : 'text-slate-500 hover:bg-white hover:text-slate-700'">
-          <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="2"><path d="m14.5 4.5 5 5M13 6l5 5M4 20l5.5-1.5L19 9l-4-4-9.5 9.5L4 20Z"/><path d="m7.5 16.5-2-2M15.5 12.5l-4-4"/></svg>
-          Vacunación
-        </button>
-        <button type="button" (click)="cambiarModo('DESPARASITACION')"
-          class="flex min-w-0 flex-1 items-center justify-center gap-2 rounded-lg px-2.5 py-2.5 text-xs font-semibold transition-all duration-200 sm:flex-none sm:px-4 sm:text-sm"
+              <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="2"><path d="m14.5 4.5 5 5M13 6l5 5M4 20l5.5-1.5L19 9l-4-4-9.5 9.5L4 20Z"/><path d="m7.5 16.5-2-2M15.5 12.5l-4-4"/></svg>
+              Vacunación
+            </button>
+            <button type="button" (click)="cambiarModo('DESPARASITACION')"
+              class="flex min-w-0 flex-1 items-center justify-center gap-2 rounded-lg px-2.5 py-2.5 text-xs font-semibold transition-all duration-200 sm:flex-none sm:px-4 sm:text-sm"
           [ngClass]="modo() === 'DESPARASITACION'
             ? 'bg-[#0066AA] text-white shadow-sm'
             : 'text-slate-500 hover:bg-white hover:text-slate-700'">
-          <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="2"><path d="M5.2 12.8 12.8 5.2a4.25 4.25 0 0 1 6 6l-7.6 7.6a4.25 4.25 0 0 1-6-6Z"/><path d="m8.5 9.5 6 6"/></svg>
-          Desparasitación
-        </button>
-      </div>
-    </header>
-
-    <section class="rounded-xl border border-slate-200 bg-white p-4 sm:p-5">
-      <div class="flex flex-col gap-3 lg:flex-row lg:items-end">
-        <label class="min-w-0 flex-1">
-          <span class="mb-1.5 block text-xs font-bold text-slate-700">Nombre de la mascota</span>
-          <div class="relative">
-            <i class="pi pi-search absolute left-4 top-1/2 z-10 -translate-y-1/2 text-sm text-slate-400"></i>
-            <input type="text"
-              [(ngModel)]="searchQuery"
-              (input)="onFilterMascota(searchQuery)"
-              (focus)="showDropdown.set(mascotaSugerencias().length > 0)"
-              (blur)="cerrarDropdown()"
-              placeholder="Escribe un nombre para buscar..."
-              class="h-11 w-full rounded-xl border border-slate-200 pl-11 pr-4 text-sm font-medium text-slate-700 placeholder:text-slate-400 outline-none transition-colors focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15" />
-            <div *ngIf="showDropdown() && mascotaSugerencias().length"
-              class="absolute left-0 top-full z-50 mt-1 w-full rounded-xl border border-slate-200 bg-white py-1 shadow-lg">
-              <button *ngFor="let m of mascotaSugerencias()" type="button"
-                (mousedown)="onAutocompleteSelect(m)"
-                class="flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-slate-50">
-                <img *ngIf="m.fotoUrl" [src]="m.fotoUrl" class="size-9 rounded-lg object-cover" />
-                <span *ngIf="!m.fotoUrl" class="grid size-9 shrink-0 place-items-center rounded-lg bg-[#EAF3FB] text-xs font-bold text-[#0066AA]">{{ m.nombreCompleto.charAt(0) }}</span>
-                <div class="min-w-0 flex-1">
-                  <strong class="block truncate text-sm font-bold text-slate-800">{{ m.nombreCompleto }}</strong>
-                  <span class="block truncate text-xs text-slate-500">{{ m.especie }} · {{ m.razaNombre || 'Sin raza' }} · {{ m.apoderadoNombreCompleto }}</span>
-                </div>
-              </button>
-            </div>
-            <div *ngIf="showDropdown() && mascotaSugerencias().length === 0 && !buscando()" class="absolute left-0 top-full z-50 mt-1 w-full rounded-xl border border-slate-200 bg-white px-4 py-6 text-center text-sm text-slate-400 shadow-lg">
-              Sin resultados
-            </div>
-          </div>
-        </label>
-        <button *ngIf="!mascotaSel()" type="button" (click)="registrarNuevaMascota()" class="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-600 transition-colors hover:border-slate-300 hover:bg-slate-50 hover:text-slate-800 sm:w-auto">
-          <i class="pi pi-heart text-xs"></i> Nueva mascota
-        </button>
-      </div>
-    </section>
-
-    <section *ngIf="!mascotaSel()" class="rounded-xl border border-slate-200 bg-white">
-      <div class="flex flex-col items-start justify-between gap-3 border-b border-slate-100 px-4 py-4 sm:flex-row sm:items-center sm:px-5">
-        <h2 class="text-sm font-bold text-slate-800">Mascotas registradas</h2>
-        <div class="flex w-full items-center justify-between gap-3 sm:w-auto sm:justify-start">
-          <label class="text-xs font-semibold text-slate-500">Especie:</label>
-          <select [(ngModel)]="filtroEspecie" (ngModelChange)="filtrarPorEspecie($event)"
-            class="h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 outline-none transition-colors focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15">
-            <option value="">Todas</option>
-            <option value="PERRO">Perros</option>
-            <option value="GATO">Gatos</option>
-            <option value="AVE">Aves</option>
-            <option value="REPTIL">Reptiles</option>
-            <option value="ROEDOR">Roedores</option>
-            <option value="EXOTICO">Exóticos</option>
-            <option value="OTRO">Otros</option>
-          </select>
-        </div>
-      </div>
-
-      <div *ngIf="mascotasLista().length === 0" class="py-16 text-center">
-        <i class="pi pi-inbox text-3xl text-slate-200 block mb-3"></i>
-        <p class="text-sm text-slate-400 font-medium">No se encontraron mascotas para esta especie.</p>
-        <p class="text-xs text-slate-300 mt-1">Intenta con otro filtro o registra una nueva mascota.</p>
-      </div>
-
-      <div *ngIf="mascotasLista().length > 0" class="divide-y divide-slate-100 lg:hidden">
-        <article *ngFor="let m of mascotasLista()" class="space-y-3 p-4">
-          <div class="flex items-start justify-between gap-3">
-            <div class="min-w-0">
-              <h3 class="truncate text-sm font-bold text-slate-900">{{ m.nombreCompleto }}</h3>
-              <p class="mt-1 text-xs text-slate-500">{{ m.especie }} · {{ m.razaNombre || 'Sin raza' }}</p>
-            </div>
-            <button *ngIf="m.controlPendienteNombre && m.apoderadoTelefono" type="button" (click)="abrirWhatsAppMascota(m)" aria-label="Enviar recordatorio por WhatsApp" class="grid size-9 shrink-0 place-items-center rounded-lg bg-green-50 text-green-700">
-              <i class="pi pi-whatsapp text-sm"></i>
+              <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="2"><path d="M5.2 12.8 12.8 5.2a4.25 4.25 0 0 1 6 6l-7.6 7.6a4.25 4.25 0 0 1-6-6Z"/><path d="m8.5 9.5 6 6"/></svg>
+              Desparasitación
             </button>
           </div>
-          <dl class="grid grid-cols-2 gap-3 text-xs">
-            <div class="min-w-0"><dt class="text-[10px] font-bold uppercase tracking-wide text-slate-400">Propietario</dt><dd class="mt-1 break-words font-medium text-slate-700">{{ m.apoderadoNombreCompleto }}</dd></div>
-            <div><dt class="text-[10px] font-bold uppercase tracking-wide text-slate-400">Última aplicación</dt><dd class="mt-1 font-medium text-slate-700">{{ m.fechaUltimaAplicacion ? formatoFechaCorta(m.fechaUltimaAplicacion) : 'Sin aplicaciones' }}</dd></div>
-          </dl>
-          <div *ngIf="m.controlPendienteNombre" class="flex items-start gap-2 rounded-lg bg-slate-50 px-3 py-2">
-            <span class="mt-1 size-2 shrink-0 rounded-full" [ngClass]="m.controlPendienteEstado === 'ATRASADO' ? 'bg-red-500' : m.controlPendienteEstado === 'PENDIENTE' ? 'bg-amber-500' : 'bg-[#0066AA]'"></span>
-            <div class="min-w-0"><p class="truncate text-xs font-bold text-slate-800">{{ m.controlPendienteNombre }}</p><p class="text-[10px] text-slate-500">{{ m.controlPendienteResumen }}</p></div>
-          </div>
-          <button type="button" (click)="seleccionarMascota(m)" class="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-[#0066AA] px-3 text-xs font-bold text-white"><i class="pi pi-eye"></i> Ver cartilla</button>
-        </article>
-      </div>
-
-      <div *ngIf="mascotasLista().length > 0" class="hidden overflow-x-auto md:block">
-        <table class="w-full text-left text-sm">
-          <thead class="bg-slate-50 border-b border-slate-200">
-            <tr>
-              <th class="text-left px-5 py-3 text-xs font-medium text-slate-400 uppercase tracking-wider">Mascota</th>
-              <th class="text-left px-5 py-3 text-xs font-medium text-slate-400 uppercase tracking-wider">Especie</th>
-              <th class="text-left px-5 py-3 text-xs font-medium text-slate-400 uppercase tracking-wider">Raza</th>
-              <th class="text-left px-5 py-3 text-xs font-medium text-slate-400 uppercase tracking-wider">Propietario</th>
-              <th class="text-left px-5 py-3 text-xs font-medium text-slate-400 uppercase tracking-wider">Última aplicación</th>
-              <th class="text-left px-5 py-3 text-xs font-medium text-slate-400 uppercase tracking-wider">Control pendiente</th>
-              <th class="text-right px-5 py-3 text-xs font-medium text-slate-400 uppercase tracking-wider">Acciones</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-100">
-            <tr *ngFor="let m of mascotasLista()" class="transition-colors hover:bg-slate-50">
-              <td class="px-5 py-3 font-semibold text-slate-800">{{ m.nombreCompleto }}</td>
-              <td class="px-5 py-3 text-slate-600">{{ m.especie }}</td>
-              <td class="px-5 py-3 text-slate-600">{{ m.razaNombre || 'Sin raza' }}</td>
-              <td class="px-5 py-3 text-slate-600">{{ m.apoderadoNombreCompleto }}</td>
-              <td class="px-5 py-3 text-sm text-slate-600">
-                <span *ngIf="m.fechaUltimaAplicacion" class="font-medium">{{ formatoFechaCorta(m.fechaUltimaAplicacion) }}</span>
-                <span *ngIf="!m.fechaUltimaAplicacion" class="text-slate-400">Sin aplicaciones</span>
-              </td>
-              <td class="px-5 py-3">
-                <ng-container *ngIf="m.controlPendienteNombre; else sinControl">
-                  <div class="flex items-center gap-2">
-                    <span class="size-2 shrink-0 rounded-full"
-                      [ngClass]="m.controlPendienteEstado === 'ATRASADO' ? 'bg-red-500' : m.controlPendienteEstado === 'PENDIENTE' ? 'bg-amber-500' : 'bg-[#0066AA]'"></span>
-                    <div class="min-w-0">
-                      <p class="text-xs font-bold text-slate-800 truncate">{{ m.controlPendienteNombre }}</p>
-                      <p class="text-[10px] text-slate-500">{{ m.controlPendienteResumen }}</p>
-                    </div>
-                  </div>
-                </ng-container>
-                <ng-template #sinControl>
-                  <span class="text-xs text-slate-400">Sin controles</span>
-                </ng-template>
-              </td>
-              <td class="px-5 py-3 text-right">
-                <div class="flex items-center justify-end gap-1.5">
-                  <button *ngIf="m.controlPendienteNombre && m.apoderadoTelefono" type="button"
-                    (click)="abrirWhatsAppMascota(m)"
-                    pTooltip="Enviar recordatorio WhatsApp"
-                    class="inline-flex items-center gap-1.5 rounded-lg bg-green-50 px-2.5 py-1.5 text-xs font-bold text-green-700 transition-colors hover:bg-green-100">
-                    <svg viewBox="0 0 24 24" fill="currentColor" class="size-3.5"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-                  </button>
-                  <button type="button" (click)="seleccionarMascota(m)"
-                    class="inline-flex items-center gap-1.5 rounded-lg bg-[#EAF3FB] px-3 py-1.5 text-xs font-bold text-[#0066AA] transition-colors hover:bg-[#d6e8f7]">
-                    <i class="pi pi-eye"></i> Ver cartilla
-                  </button>
+        }
+      </header>
+      <section class="rounded-xl border border-slate-200 bg-white p-4 sm:p-5">
+        <div class="flex flex-col gap-3 lg:flex-row lg:items-end">
+          <label class="min-w-0 flex-1">
+            <span class="mb-1.5 block text-xs font-bold text-slate-700">Nombre de la mascota</span>
+            <div class="relative">
+              <i class="pi pi-search absolute left-4 top-1/2 z-10 -translate-y-1/2 text-sm text-slate-400"></i>
+              <input type="text"
+                [(ngModel)]="searchQuery"
+                (input)="onFilterMascota(searchQuery)"
+                (focus)="showDropdown.set(mascotaSugerencias().length > 0)"
+                (blur)="cerrarDropdown()"
+                placeholder="Escribe un nombre para buscar..."
+                class="h-11 w-full rounded-xl border border-slate-200 pl-11 pr-4 text-sm font-medium text-slate-700 placeholder:text-slate-400 outline-none transition-colors focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15" />
+              @if (showDropdown() && mascotaSugerencias().length) {
+                <div
+                  class="absolute left-0 top-full z-50 mt-1 w-full rounded-xl border border-slate-200 bg-white py-1 shadow-lg">
+                  @for (m of mascotaSugerencias(); track m) {
+                    <button type="button"
+                      (mousedown)="onAutocompleteSelect(m)"
+                      class="flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-slate-50">
+                      @if (m.fotoUrl) {
+                        <img [src]="m.fotoUrl" class="size-9 rounded-lg object-cover" />
+                      }
+                      @if (!m.fotoUrl) {
+                        <span class="grid size-9 shrink-0 place-items-center rounded-lg bg-[#EAF3FB] text-xs font-bold text-[#0066AA]">{{ m.nombreCompleto.charAt(0) }}</span>
+                      }
+                      <div class="min-w-0 flex-1">
+                        <strong class="block truncate text-sm font-bold text-slate-800">{{ m.nombreCompleto }}</strong>
+                        <span class="block truncate text-xs text-slate-500">{{ m.especie }} · {{ m.razaNombre || 'Sin raza' }} · {{ m.apoderadoNombreCompleto }}</span>
+                      </div>
+                    </button>
+                  }
                 </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <p-paginator
-        *ngIf="totalRegistros > 0"
-        [rows]="tamanoPagina"
-        [totalRecords]="totalRegistros"
-        [first]="paginaActual * tamanoPagina"
-        [showCurrentPageReport]="false"
-        (onPageChange)="cambiarPagina($event)"
-        styleClass="!border-none !bg-transparent !py-3"
-      ></p-paginator>
-    </section>
-
-    <ng-container *ngIf="mascotaSel() as mascota">
-      <section class="grid items-center gap-5 rounded-xl border border-slate-200 bg-white p-4 sm:p-5 lg:grid-cols-[minmax(320px,1fr)_minmax(420px,1fr)]">
-        <div class="flex min-w-0 items-start gap-3 sm:items-center sm:gap-4">
-          <img *ngIf="mascota.fotoUrl" [src]="mascota.fotoUrl" [alt]="mascota.nombreCompleto" class="size-14 shrink-0 rounded-xl border-2 border-white object-cover ring-1 ring-slate-200 sm:size-16" />
-          <span *ngIf="!mascota.fotoUrl" class="grid size-14 shrink-0 place-items-center rounded-xl bg-[#EAF3FB] text-lg font-bold text-[#0066AA] ring-1 ring-[#0066AA]/10 sm:size-16">{{ mascota.nombreCompleto.charAt(0) }}</span>
-          <div class="min-w-0">
-            <div class="flex flex-wrap items-center gap-2"><h2 class="min-w-0 break-words text-lg font-extrabold text-slate-900 sm:text-xl">{{ mascota.nombreCompleto }}</h2><span class="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold text-slate-600">{{ mascota.especie }}</span></div>
-            <p class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500"><span>Raza <b class="text-slate-700">{{ mascota.razaNombre || '—' }}</b></span><span>Sexo <b class="text-slate-700">{{ mascota.sexo }}</b></span><span>Peso <b class="text-slate-700">{{ mascota.peso ? mascota.peso + ' kg' : '—' }}</b></span></p>
-            <p class="mt-3 break-words text-xs text-slate-500"><i class="pi pi-user mr-2 text-[#0066AA]"></i>Propietario: <b class="text-slate-700">{{ mascota.apoderadoNombreCompleto }}</b></p>
-          </div>
-        </div>
-        <div class="grid overflow-hidden rounded-xl border border-slate-200 sm:grid-cols-3">
-          <div class="bg-slate-50/60 px-4 py-3"><p class="text-[9px] font-bold uppercase tracking-wide text-slate-500">Aplicaciones</p><strong class="mt-1 block text-xl text-slate-900">{{ aplicacionesModo().length }}</strong></div>
-          <div class="border-t border-slate-200 px-4 py-3 sm:border-l sm:border-t-0" [class.bg-red-50]="controlesAtrasados() > 0"><p class="text-[9px] font-bold uppercase tracking-wide text-slate-500">Controles vencidos</p><strong class="mt-1 block text-xl text-slate-900" [class.text-red-700]="controlesAtrasados() > 0">{{ controlesAtrasados() }}</strong></div>
-          <div class="border-t border-slate-200 px-4 py-3 sm:border-l sm:border-t-0"><p class="text-[9px] font-bold uppercase tracking-wide text-slate-500">{{ etiquetaProximaAplicacion() }}</p><strong class="mt-1 block text-sm font-bold text-[#0066AA]">{{ formatoFechaCorta(proximaAplicacion()) }}</strong></div>
+              }
+              @if (showDropdown() && mascotaSugerencias().length === 0 && !buscando()) {
+                <div class="absolute left-0 top-full z-50 mt-1 w-full rounded-xl border border-slate-200 bg-white px-4 py-6 text-center text-sm text-slate-400 shadow-lg">
+                  Sin resultados
+                </div>
+              }
+            </div>
+          </label>
+          @if (!mascotaSel()) {
+            <button type="button" (click)="registrarNuevaMascota()" class="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-600 transition-colors hover:border-slate-300 hover:bg-slate-50 hover:text-slate-800 sm:w-auto">
+              <i class="pi pi-heart text-xs"></i> Nueva mascota
+            </button>
+          }
         </div>
       </section>
-
-      <div class="grid grid-cols-1 items-start gap-5 xl:grid-cols-[minmax(0,1.65fr)_minmax(330px,.85fr)]">
-        <div class="min-w-0 space-y-5">
-          <section class="overflow-hidden rounded-xl border border-slate-200 bg-white">
-            <header class="flex flex-col items-stretch justify-between gap-3 border-b border-slate-200 bg-[#f8fafc] px-4 py-3.5 sm:flex-row sm:items-center sm:px-5">
-              <div><h3 class="text-sm font-extrabold text-slate-900">Próximos controles</h3><p class="mt-0.5 text-xs text-slate-500">{{ controlesOrdenados().length }} registros</p></div>
-               <button type="button" (click)="abrirProgramar()" class="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-[#0066AA] px-4 text-xs font-bold text-[#0066AA] transition-colors hover:bg-[#EAF3FB]"><i class="pi pi-calendar-plus"></i> Programar control</button>
-            </header>
-
-            <div *ngIf="!cargandoCtrl() && !controlesOrdenados().length" class="flex flex-col items-center gap-2 px-5 py-8 text-center">
-              <i class="pi pi-check-circle text-2xl text-[#0066AA]"></i>
-              <p class="text-xs text-slate-500">No hay controles registrados.</p>
+      @if (!mascotaSel()) {
+        <section class="rounded-xl border border-slate-200 bg-white">
+          <div class="flex flex-col items-start justify-between gap-3 border-b border-slate-100 px-4 py-4 sm:flex-row sm:items-center sm:px-5">
+            <h2 class="text-sm font-bold text-slate-800">Mascotas registradas</h2>
+            <div class="flex w-full items-center justify-between gap-3 sm:w-auto sm:justify-start">
+              <label class="text-xs font-semibold text-slate-500">Especie:</label>
+              <select [(ngModel)]="filtroEspecie" (ngModelChange)="filtrarPorEspecie($event)"
+                class="h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 outline-none transition-colors focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15">
+                <option value="">Todas</option>
+                <option value="PERRO">Perros</option>
+                <option value="GATO">Gatos</option>
+                <option value="AVE">Aves</option>
+                <option value="REPTIL">Reptiles</option>
+                <option value="ROEDOR">Roedores</option>
+                <option value="EXOTICO">Exóticos</option>
+                <option value="OTRO">Otros</option>
+              </select>
             </div>
-
-            <div *ngIf="controlesOrdenados().length" class="px-4 sm:px-5">
-              <article *ngFor="let control of controlesOrdenados(); let last = last" class="relative flex gap-2 py-3 sm:gap-4" [class.opacity-50]="control.estado === 'CANCELADO'">
-                <div class="flex flex-col items-center">
-                  <span class="mt-1 size-2.5 shrink-0 rounded-full" [ngClass]="control.estado === 'CANCELADO' ? 'bg-slate-300' : 'bg-[#0066AA]'"></span>
-                  <span *ngIf="!last" class="mt-1 w-px flex-1 bg-slate-200"></span>
-                </div>
-                <div class="flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-xl border border-slate-200 bg-slate-50/60 sm:w-16">
-                  <strong class="text-lg leading-none text-slate-900">{{ parteFecha(control.fechaRecomendada, 'day') }}</strong>
-                  <span class="mt-1 text-[9px] font-bold uppercase text-slate-500">{{ parteFecha(control.fechaRecomendada, 'month') }} {{ parteFecha(control.fechaRecomendada, 'year') }}</span>
-                </div>
-                <div class="min-w-0 flex-1 pb-2 md:flex md:items-center md:justify-between md:gap-3">
-                  <div class="min-w-0">
-                    <div class="flex flex-wrap items-center gap-2"><h4 class="truncate text-sm font-bold text-slate-900">{{ control.nombreControl }}</h4><span class="rounded-full px-2 py-0.5 text-[10px] font-bold" [ngClass]="claseEstadoPreventivo(control.estado)">{{ etiquetaEstadoPreventivo(control.estado) }}</span></div>
-                    <p class="mt-1 text-xs text-slate-500">{{ tipoLabel(control.tipo) }} · {{ formatoFechaCorta(control.fechaRecomendada) }}</p>
-                  </div>
-                  <div *ngIf="control.estado !== 'CANCELADO'" class="mt-2 flex w-full gap-2 md:mt-0 md:w-auto">
-                    <button type="button" (click)="prepararAplicacion(control)" class="inline-flex h-10 min-w-0 flex-1 items-center justify-center gap-2 rounded-lg bg-[#0066AA] px-3 text-xs font-bold text-white transition-colors hover:bg-[#00558F] md:flex-none md:px-4"><i class="pi pi-check-circle"></i> Aplicar ahora</button>
-                    <button type="button" (click)="iniciarReprogramacion(control)" pTooltip="Reprogramar" class="grid size-10 place-items-center rounded-xl border border-slate-200 text-slate-500 transition-colors hover:border-slate-300 hover:bg-slate-50 hover:text-slate-700"><i class="pi pi-calendar"></i></button>
-                    <button type="button" (click)="solicitarCancelarControl(control)" pTooltip="Cancelar control" class="grid size-10 place-items-center rounded-xl border border-slate-200 text-slate-500 transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-600"><i class="pi pi-times"></i></button>
-                  </div>
-                </div>
-              </article>
+          </div>
+          @if (mascotasLista().length === 0) {
+            <div class="py-16 text-center">
+              <i class="pi pi-inbox text-3xl text-slate-200 block mb-3"></i>
+              <p class="text-sm text-slate-400 font-medium">No se encontraron mascotas para esta especie.</p>
+              <p class="text-xs text-slate-300 mt-1">Intenta con otro filtro o registra una nueva mascota.</p>
             </div>
-          </section>
-
-          <section class="overflow-hidden rounded-xl border border-slate-200 bg-white">
-            <header class="border-b border-slate-200 bg-[#f8fafc] px-4 py-3.5 sm:px-5"><h3 class="text-sm font-extrabold text-slate-900">Historial de aplicaciones</h3><p class="mt-0.5 text-xs text-slate-500">Cartilla cronológica de {{ modo() === 'VACUNACION' ? 'vacunación' : 'desparasitación' }}</p></header>
+          }
+          @if (mascotasLista().length > 0) {
             <div class="divide-y divide-slate-100 lg:hidden">
-              <article *ngFor="let aplicacion of aplicacionesModo()" class="space-y-3 p-4" [class.opacity-50]="aplicacion.activo === false">
-                <div class="flex items-start justify-between gap-3"><div><p class="text-xs font-bold text-[#0066AA]">{{ formatoFechaCorta(aplicacion.fechaAplicacion) }}</p><h4 class="mt-1 text-sm font-bold text-slate-900">{{ aplicacion.nombreControl }}</h4><p class="text-[10px] text-slate-500">{{ tipoLabel(aplicacion.tipo) }}</p></div><div class="flex gap-1"><button type="button" (click)="editarAplicacion(aplicacion)" aria-label="Editar aplicación" class="grid size-9 place-items-center rounded-lg border border-slate-200 text-slate-500"><i class="pi pi-pencil text-xs"></i></button><button type="button" (click)="confirmarToggleEstado(aplicacion)" [attr.aria-label]="aplicacion.activo === false ? 'Activar aplicación' : 'Desactivar aplicación'" class="grid size-9 place-items-center rounded-lg border border-slate-200 text-slate-500"><i class="text-xs" [ngClass]="aplicacion.activo === false ? 'pi pi-check-circle' : 'pi pi-times-circle'"></i></button></div></div>
-                <dl class="grid grid-cols-2 gap-3 text-xs"><div><dt class="text-[10px] font-bold uppercase text-slate-400">Responsable</dt><dd class="mt-1 break-words text-slate-700">{{ aplicacion.veterinarioNombre || '—' }}</dd></div><div><dt class="text-[10px] font-bold uppercase text-slate-400">Lote / dosis</dt><dd class="mt-1 text-slate-700">{{ aplicacion.lote || '—' }}<span *ngIf="aplicacion.dosis"> · {{ aplicacion.dosis }} {{ aplicacion.unidadDosis }}</span></dd></div></dl>
-                <div class="border-t border-slate-100 pt-3"><span class="text-[10px] font-bold uppercase text-slate-400">Próxima aplicación</span><p class="mt-1 text-xs font-bold text-[#0066AA]">{{ aplicacion.fechaProximaAplicacion ? formatoFechaCorta(aplicacion.fechaProximaAplicacion) : 'Última aplicación' }}</p></div>
-              </article>
-              <p *ngIf="!aplicacionesModo().length" class="px-4 py-10 text-center text-sm text-slate-500">Todavía no hay aplicaciones registradas.</p>
+              @for (m of mascotasLista(); track m) {
+                <article class="space-y-3 p-4">
+                  <div class="flex items-start justify-between gap-3">
+                    <div class="min-w-0">
+                      <h3 class="truncate text-sm font-bold text-slate-900">{{ m.nombreCompleto }}</h3>
+                      <p class="mt-1 text-xs text-slate-500">{{ m.especie }} · {{ m.razaNombre || 'Sin raza' }}</p>
+                    </div>
+                    @if (m.controlPendienteNombre && m.apoderadoTelefono) {
+                      <button type="button" (click)="abrirWhatsAppMascota(m)" aria-label="Enviar recordatorio por WhatsApp" class="grid size-9 shrink-0 place-items-center rounded-lg bg-green-50 text-green-700">
+                        <i class="pi pi-whatsapp text-sm"></i>
+                      </button>
+                    }
+                  </div>
+                  <dl class="grid grid-cols-2 gap-3 text-xs">
+                    <div class="min-w-0"><dt class="text-[10px] font-bold uppercase tracking-wide text-slate-400">Propietario</dt><dd class="mt-1 break-words font-medium text-slate-700">{{ m.apoderadoNombreCompleto }}</dd></div>
+                    <div><dt class="text-[10px] font-bold uppercase tracking-wide text-slate-400">Última aplicación</dt><dd class="mt-1 font-medium text-slate-700">{{ m.fechaUltimaAplicacion ? formatoFechaCorta(m.fechaUltimaAplicacion) : 'Sin aplicaciones' }}</dd></div>
+                  </dl>
+                  @if (m.controlPendienteNombre) {
+                    <div class="flex items-start gap-2 rounded-lg bg-slate-50 px-3 py-2">
+                      <span class="mt-1 size-2 shrink-0 rounded-full" [ngClass]="m.controlPendienteEstado === 'ATRASADO' ? 'bg-red-500' : m.controlPendienteEstado === 'PENDIENTE' ? 'bg-amber-500' : 'bg-[#0066AA]'"></span>
+                      <div class="min-w-0"><p class="truncate text-xs font-bold text-slate-800">{{ m.controlPendienteNombre }}</p><p class="text-[10px] text-slate-500">{{ m.controlPendienteResumen }}</p></div>
+                    </div>
+                  }
+                  <button type="button" (click)="seleccionarMascota(m)" class="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-[#0066AA] px-3 text-xs font-bold text-white"><i class="pi pi-eye"></i> Ver cartilla</button>
+                </article>
+              }
+            </div>
+          }
+          @if (mascotasLista().length > 0) {
+            <div class="hidden overflow-x-auto md:block">
+              <table class="w-full text-left text-sm">
+                <thead class="bg-slate-50 border-b border-slate-200">
+                  <tr>
+                    <th class="text-left px-5 py-3 text-xs font-medium text-slate-400 uppercase tracking-wider">Mascota</th>
+                    <th class="text-left px-5 py-3 text-xs font-medium text-slate-400 uppercase tracking-wider">Especie</th>
+                    <th class="text-left px-5 py-3 text-xs font-medium text-slate-400 uppercase tracking-wider">Raza</th>
+                    <th class="text-left px-5 py-3 text-xs font-medium text-slate-400 uppercase tracking-wider">Propietario</th>
+                    <th class="text-left px-5 py-3 text-xs font-medium text-slate-400 uppercase tracking-wider">Última aplicación</th>
+                    <th class="text-left px-5 py-3 text-xs font-medium text-slate-400 uppercase tracking-wider">Control pendiente</th>
+                    <th class="text-right px-5 py-3 text-xs font-medium text-slate-400 uppercase tracking-wider">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                  @for (m of mascotasLista(); track m) {
+                    <tr class="transition-colors hover:bg-slate-50">
+                      <td class="px-5 py-3 font-semibold text-slate-800">{{ m.nombreCompleto }}</td>
+                      <td class="px-5 py-3 text-slate-600">{{ m.especie }}</td>
+                      <td class="px-5 py-3 text-slate-600">{{ m.razaNombre || 'Sin raza' }}</td>
+                      <td class="px-5 py-3 text-slate-600">{{ m.apoderadoNombreCompleto }}</td>
+                      <td class="px-5 py-3 text-sm text-slate-600">
+                        @if (m.fechaUltimaAplicacion) {
+                          <span class="font-medium">{{ formatoFechaCorta(m.fechaUltimaAplicacion) }}</span>
+                        }
+                        @if (!m.fechaUltimaAplicacion) {
+                          <span class="text-slate-400">Sin aplicaciones</span>
+                        }
+                      </td>
+                      <td class="px-5 py-3">
+                        @if (m.controlPendienteNombre) {
+                          <div class="flex items-center gap-2">
+                            <span class="size-2 shrink-0 rounded-full"
+                            [ngClass]="m.controlPendienteEstado === 'ATRASADO' ? 'bg-red-500' : m.controlPendienteEstado === 'PENDIENTE' ? 'bg-amber-500' : 'bg-[#0066AA]'"></span>
+                            <div class="min-w-0">
+                              <p class="text-xs font-bold text-slate-800 truncate">{{ m.controlPendienteNombre }}</p>
+                              <p class="text-[10px] text-slate-500">{{ m.controlPendienteResumen }}</p>
+                            </div>
+                          </div>
+                        } @else {
+                          <span class="text-xs text-slate-400">Sin controles</span>
+                        }
+                      </td>
+                      <td class="px-5 py-3 text-right">
+                        <div class="flex items-center justify-end gap-1.5">
+                          @if (m.controlPendienteNombre && m.apoderadoTelefono) {
+                            <button type="button"
+                              (click)="abrirWhatsAppMascota(m)"
+                              pTooltip="Enviar recordatorio WhatsApp"
+                              class="inline-flex items-center gap-1.5 rounded-lg bg-green-50 px-2.5 py-1.5 text-xs font-bold text-green-700 transition-colors hover:bg-green-100">
+                              <svg viewBox="0 0 24 24" fill="currentColor" class="size-3.5"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                            </button>
+                          }
+                          <button type="button" (click)="seleccionarMascota(m)"
+                            class="inline-flex items-center gap-1.5 rounded-lg bg-[#EAF3FB] px-3 py-1.5 text-xs font-bold text-[#0066AA] transition-colors hover:bg-[#d6e8f7]">
+                            <i class="pi pi-eye"></i> Ver cartilla
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+          @if (totalRegistros > 0) {
+            <p-paginator
+              [rows]="tamanoPagina"
+              [totalRecords]="totalRegistros"
+              [first]="paginaActual * tamanoPagina"
+              [showCurrentPageReport]="false"
+              (onPageChange)="cambiarPagina($event)"
+              styleClass="!border-none !bg-transparent !py-3"
+            ></p-paginator>
+          }
+        </section>
+      }
+      @if (mascotaSel(); as mascota) {
+        <section class="grid items-center gap-5 rounded-xl border border-slate-200 bg-white p-4 sm:p-5 lg:grid-cols-[minmax(320px,1fr)_minmax(420px,1fr)]">
+          <div class="flex min-w-0 items-start gap-3 sm:items-center sm:gap-4">
+            @if (mascota.fotoUrl) {
+              <img [src]="mascota.fotoUrl" [alt]="mascota.nombreCompleto" class="size-14 shrink-0 rounded-xl border-2 border-white object-cover ring-1 ring-slate-200 sm:size-16" />
+            }
+            @if (!mascota.fotoUrl) {
+              <span class="grid size-14 shrink-0 place-items-center rounded-xl bg-[#EAF3FB] text-lg font-bold text-[#0066AA] ring-1 ring-[#0066AA]/10 sm:size-16">{{ mascota.nombreCompleto.charAt(0) }}</span>
+            }
+            <div class="min-w-0">
+              <div class="flex flex-wrap items-center gap-2"><h2 class="min-w-0 break-words text-lg font-extrabold text-slate-900 sm:text-xl">{{ mascota.nombreCompleto }}</h2><span class="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold text-slate-600">{{ mascota.especie }}</span></div>
+              <p class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500"><span>Raza <b class="text-slate-700">{{ mascota.razaNombre || '—' }}</b></span><span>Sexo <b class="text-slate-700">{{ mascota.sexo }}</b></span><span>Peso <b class="text-slate-700">{{ mascota.peso ? mascota.peso + ' kg' : '—' }}</b></span></p>
+              <p class="mt-3 break-words text-xs text-slate-500"><i class="pi pi-user mr-2 text-[#0066AA]"></i>Propietario: <b class="text-slate-700">{{ mascota.apoderadoNombreCompleto }}</b></p>
+            </div>
+          </div>
+          <div class="grid overflow-hidden rounded-xl border border-slate-200 sm:grid-cols-3">
+            <div class="bg-slate-50/60 px-4 py-3"><p class="text-[9px] font-bold uppercase tracking-wide text-slate-500">Aplicaciones</p><strong class="mt-1 block text-xl text-slate-900">{{ aplicacionesModo().length }}</strong></div>
+            <div class="border-t border-slate-200 px-4 py-3 sm:border-l sm:border-t-0" [class.bg-red-50]="controlesAtrasados() > 0"><p class="text-[9px] font-bold uppercase tracking-wide text-slate-500">Controles vencidos</p><strong class="mt-1 block text-xl text-slate-900" [class.text-red-700]="controlesAtrasados() > 0">{{ controlesAtrasados() }}</strong></div>
+            <div class="border-t border-slate-200 px-4 py-3 sm:border-l sm:border-t-0"><p class="text-[9px] font-bold uppercase tracking-wide text-slate-500">{{ etiquetaProximaAplicacion() }}</p><strong class="mt-1 block text-sm font-bold text-[#0066AA]">{{ formatoFechaCorta(proximaAplicacion()) }}</strong></div>
+          </div>
+        </section>
+        <div class="grid grid-cols-1 items-start gap-5 xl:grid-cols-[minmax(0,1.65fr)_minmax(330px,.85fr)]">
+          <div class="min-w-0 space-y-5">
+            <section class="overflow-hidden rounded-xl border border-slate-200 bg-white">
+              <header class="flex flex-col items-stretch justify-between gap-3 border-b border-slate-200 bg-[#f8fafc] px-4 py-3.5 sm:flex-row sm:items-center sm:px-5">
+                <div><h3 class="text-sm font-extrabold text-slate-900">Próximos controles</h3><p class="mt-0.5 text-xs text-slate-500">{{ controlesOrdenados().length }} registros</p></div>
+                <button type="button" (click)="abrirProgramar()" class="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-[#0066AA] px-4 text-xs font-bold text-[#0066AA] transition-colors hover:bg-[#EAF3FB]"><i class="pi pi-calendar-plus"></i> Programar control</button>
+              </header>
+              @if (!cargandoCtrl() && !controlesOrdenados().length) {
+                <div class="flex flex-col items-center gap-2 px-5 py-8 text-center">
+                  <i class="pi pi-check-circle text-2xl text-[#0066AA]"></i>
+                  <p class="text-xs text-slate-500">No hay controles registrados.</p>
+                </div>
+              }
+              @if (controlesOrdenados().length) {
+                <div class="px-4 sm:px-5">
+                  @for (control of controlesOrdenados(); track control; let last = $last) {
+                    <article class="relative flex gap-2 py-3 sm:gap-4" [class.opacity-50]="control.estado === 'CANCELADO'">
+                      <div class="flex flex-col items-center">
+                        <span class="mt-1 size-2.5 shrink-0 rounded-full" [ngClass]="control.estado === 'CANCELADO' ? 'bg-slate-300' : 'bg-[#0066AA]'"></span>
+                        @if (!last) {
+                          <span class="mt-1 w-px flex-1 bg-slate-200"></span>
+                        }
+                      </div>
+                      <div class="flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-xl border border-slate-200 bg-slate-50/60 sm:w-16">
+                        <strong class="text-lg leading-none text-slate-900">{{ parteFecha(control.fechaRecomendada, 'day') }}</strong>
+                        <span class="mt-1 text-[9px] font-bold uppercase text-slate-500">{{ parteFecha(control.fechaRecomendada, 'month') }} {{ parteFecha(control.fechaRecomendada, 'year') }}</span>
+                      </div>
+                      <div class="min-w-0 flex-1 pb-2 md:flex md:items-center md:justify-between md:gap-3">
+                        <div class="min-w-0">
+                          <div class="flex flex-wrap items-center gap-2"><h4 class="truncate text-sm font-bold text-slate-900">{{ control.nombreControl }}</h4><span class="rounded-full px-2 py-0.5 text-[10px] font-bold" [ngClass]="claseEstadoPreventivo(control.estado)">{{ etiquetaEstadoPreventivo(control.estado) }}</span></div>
+                          <p class="mt-1 text-xs text-slate-500">{{ tipoLabel(control.tipo) }} · {{ formatoFechaCorta(control.fechaRecomendada) }}</p>
+                        </div>
+                        @if (control.estado !== 'CANCELADO') {
+                          <div class="mt-2 flex w-full gap-2 md:mt-0 md:w-auto">
+                            <button type="button" (click)="prepararAplicacion(control)" class="inline-flex h-10 min-w-0 flex-1 items-center justify-center gap-2 rounded-lg bg-[#0066AA] px-3 text-xs font-bold text-white transition-colors hover:bg-[#00558F] md:flex-none md:px-4"><i class="pi pi-check-circle"></i> Aplicar ahora</button>
+                            <button type="button" (click)="iniciarReprogramacion(control)" pTooltip="Reprogramar" class="grid size-10 place-items-center rounded-xl border border-slate-200 text-slate-500 transition-colors hover:border-slate-300 hover:bg-slate-50 hover:text-slate-700"><i class="pi pi-calendar"></i></button>
+                            <button type="button" (click)="solicitarCancelarControl(control)" pTooltip="Cancelar control" class="grid size-10 place-items-center rounded-xl border border-slate-200 text-slate-500 transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-600"><i class="pi pi-times"></i></button>
+                          </div>
+                        }
+                      </div>
+                    </article>
+                  }
+                </div>
+              }
+            </section>
+            <section class="overflow-hidden rounded-xl border border-slate-200 bg-white">
+              <header class="border-b border-slate-200 bg-[#f8fafc] px-4 py-3.5 sm:px-5"><h3 class="text-sm font-extrabold text-slate-900">Historial de aplicaciones</h3><p class="mt-0.5 text-xs text-slate-500">Cartilla cronológica de {{ modo() === 'VACUNACION' ? 'vacunación' : 'desparasitación' }}</p></header>
+              <div class="divide-y divide-slate-100 lg:hidden">
+                @for (aplicacion of aplicacionesModo(); track aplicacion) {
+                  <article class="space-y-3 p-4" [class.opacity-50]="aplicacion.activo === false">
+                    <div class="flex items-start justify-between gap-3"><div><p class="text-xs font-bold text-[#0066AA]">{{ formatoFechaCorta(aplicacion.fechaAplicacion) }}</p><h4 class="mt-1 text-sm font-bold text-slate-900">{{ aplicacion.nombreControl }}</h4><p class="text-[10px] text-slate-500">{{ tipoLabel(aplicacion.tipo) }}</p></div><div class="flex gap-1"><button type="button" (click)="editarAplicacion(aplicacion)" aria-label="Editar aplicación" class="grid size-9 place-items-center rounded-lg border border-slate-200 text-slate-500"><i class="pi pi-pencil text-xs"></i></button><button type="button" (click)="confirmarToggleEstado(aplicacion)" [attr.aria-label]="aplicacion.activo === false ? 'Activar aplicación' : 'Desactivar aplicación'" class="grid size-9 place-items-center rounded-lg border border-slate-200 text-slate-500"><i class="text-xs" [ngClass]="aplicacion.activo === false ? 'pi pi-check-circle' : 'pi pi-times-circle'"></i></button></div></div>
+                    <dl class="grid grid-cols-2 gap-3 text-xs"><div><dt class="text-[10px] font-bold uppercase text-slate-400">Responsable</dt><dd class="mt-1 break-words text-slate-700">{{ aplicacion.veterinarioNombre || '—' }}</dd></div><div><dt class="text-[10px] font-bold uppercase text-slate-400">Lote / dosis</dt><dd class="mt-1 text-slate-700">{{ aplicacion.lote || '—' }}@if (aplicacion.dosis) {
+                    <span> · {{ aplicacion.dosis }} {{ aplicacion.unidadDosis }}</span>
+                  }</dd></div></dl>
+                  <div class="border-t border-slate-100 pt-3"><span class="text-[10px] font-bold uppercase text-slate-400">Próxima aplicación</span><p class="mt-1 text-xs font-bold text-[#0066AA]">{{ aplicacion.fechaProximaAplicacion ? formatoFechaCorta(aplicacion.fechaProximaAplicacion) : 'Última aplicación' }}</p></div>
+                </article>
+              }
+              @if (!aplicacionesModo().length) {
+                <p class="px-4 py-10 text-center text-sm text-slate-500">Todavía no hay aplicaciones registradas.</p>
+              }
             </div>
             <div class="hidden overflow-x-auto md:block">
               <table class="w-full min-w-[760px] text-left">
                 <thead class="border-b border-slate-200 bg-slate-50/70"><tr><th class="px-5 py-3 text-[10px] font-bold uppercase tracking-wide text-slate-500">Aplicación</th><th class="px-4 py-3 text-[10px] font-bold uppercase tracking-wide text-slate-500">Producto</th><th class="px-4 py-3 text-[10px] font-bold uppercase tracking-wide text-slate-500">Responsable</th><th class="px-4 py-3 text-[10px] font-bold uppercase tracking-wide text-slate-500">Lote / dosis</th><th class="px-5 py-3 text-[10px] font-bold uppercase tracking-wide text-slate-500">Próxima aplicación</th><th class="px-5 py-3 text-right text-[10px] font-bold uppercase tracking-wide text-slate-500">Acciones</th></tr></thead>
                 <tbody class="divide-y divide-slate-100">
-                  <tr *ngFor="let aplicacion of aplicacionesModo()" class="transition-colors hover:bg-slate-50/60" [class.opacity-50]="aplicacion.activo === false">
-                    <td class="px-5 py-4 text-sm font-bold text-slate-800">{{ formatoFechaCorta(aplicacion.fechaAplicacion) }}</td>
-                    <td class="px-4 py-4"><strong class="block text-sm text-slate-800">{{ aplicacion.nombreControl }}</strong><small class="text-[10px] text-slate-500">{{ tipoLabel(aplicacion.tipo) }}</small></td>
-                    <td class="px-4 py-4 text-xs text-slate-600">{{ aplicacion.veterinarioNombre || '—' }}</td>
-                    <td class="px-4 py-4 text-xs text-slate-600">{{ aplicacion.lote || '—' }}<span *ngIf="aplicacion.dosis"> · {{ aplicacion.dosis }} {{ aplicacion.unidadDosis }}</span></td>
-                    <td class="px-5 py-4">
-                      <span *ngIf="aplicacion.fechaProximaAplicacion" class="text-xs font-bold text-[#0066AA]">{{ formatoFechaCorta(aplicacion.fechaProximaAplicacion) }}</span>
-                      <span *ngIf="!aplicacion.fechaProximaAplicacion" class="text-xs font-semibold text-slate-400">Última aplicación</span>
-                    </td>
-                    <td class="px-5 py-4 text-right">
-                      <div class="flex items-center justify-end gap-1">
-                        <button type="button" (click)="editarAplicacion(aplicacion)" pTooltip="Editar"
-                          class="grid size-8 place-items-center rounded-lg text-slate-400 transition-colors hover:bg-blue-50 hover:text-[#0066AA]">
-                          <i class="pi pi-pencil text-xs"></i>
-                        </button>
-                        <button type="button" (click)="confirmarToggleEstado(aplicacion)" [pTooltip]="aplicacion.activo === false ? 'Activar' : 'Desactivar'"
-                          class="grid size-8 place-items-center rounded-lg transition-colors"
-                          [ngClass]="aplicacion.activo === false ? 'text-slate-400 hover:bg-green-50 hover:text-green-600' : 'text-slate-400 hover:bg-red-50 hover:text-red-600'">
-                          <i class="text-xs" [ngClass]="aplicacion.activo === false ? 'pi pi-check-circle' : 'pi pi-times-circle'"></i>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr *ngIf="!aplicacionesModo().length"><td colspan="6" class="px-5 py-12 text-center text-sm text-slate-500">Todavía no hay aplicaciones registradas.</td></tr>
+                  @for (aplicacion of aplicacionesModo(); track aplicacion) {
+                    <tr class="transition-colors hover:bg-slate-50/60" [class.opacity-50]="aplicacion.activo === false">
+                      <td class="px-5 py-4 text-sm font-bold text-slate-800">{{ formatoFechaCorta(aplicacion.fechaAplicacion) }}</td>
+                      <td class="px-4 py-4"><strong class="block text-sm text-slate-800">{{ aplicacion.nombreControl }}</strong><small class="text-[10px] text-slate-500">{{ tipoLabel(aplicacion.tipo) }}</small></td>
+                      <td class="px-4 py-4 text-xs text-slate-600">{{ aplicacion.veterinarioNombre || '—' }}</td>
+                      <td class="px-4 py-4 text-xs text-slate-600">{{ aplicacion.lote || '—' }}@if (aplicacion.dosis) {
+                        <span> · {{ aplicacion.dosis }} {{ aplicacion.unidadDosis }}</span>
+                      }</td>
+                      <td class="px-5 py-4">
+                        @if (aplicacion.fechaProximaAplicacion) {
+                          <span class="text-xs font-bold text-[#0066AA]">{{ formatoFechaCorta(aplicacion.fechaProximaAplicacion) }}</span>
+                        }
+                        @if (!aplicacion.fechaProximaAplicacion) {
+                          <span class="text-xs font-semibold text-slate-400">Última aplicación</span>
+                        }
+                      </td>
+                      <td class="px-5 py-4 text-right">
+                        <div class="flex items-center justify-end gap-1">
+                          <button type="button" (click)="editarAplicacion(aplicacion)" pTooltip="Editar"
+                            class="grid size-8 place-items-center rounded-lg text-slate-400 transition-colors hover:bg-blue-50 hover:text-[#0066AA]">
+                            <i class="pi pi-pencil text-xs"></i>
+                          </button>
+                          <button type="button" (click)="confirmarToggleEstado(aplicacion)" [pTooltip]="aplicacion.activo === false ? 'Activar' : 'Desactivar'"
+                            class="grid size-8 place-items-center rounded-lg transition-colors"
+                            [ngClass]="aplicacion.activo === false ? 'text-slate-400 hover:bg-green-50 hover:text-green-600' : 'text-slate-400 hover:bg-red-50 hover:text-red-600'">
+                            <i class="text-xs" [ngClass]="aplicacion.activo === false ? 'pi pi-check-circle' : 'pi pi-times-circle'"></i>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  }
+                  @if (!aplicacionesModo().length) {
+                    <tr><td colspan="6" class="px-5 py-12 text-center text-sm text-slate-500">Todavía no hay aplicaciones registradas.</td></tr>
+                  }
                 </tbody>
               </table>
             </div>
           </section>
         </div>
-
         <aside class="overflow-hidden rounded-xl border border-slate-200 bg-white xl:sticky xl:top-4">
           <header class="border-b border-slate-200 px-5 py-4">
             <p class="text-[10px] font-bold uppercase tracking-[.14em] text-[#0066AA]">Nueva aplicación</p>
             <h3 class="mt-1 text-sm font-extrabold text-slate-900">{{ modo() === 'VACUNACION' ? 'Registrar vacunación' : 'Registrar desparasitación' }}</h3>
           </header>
           <div class="space-y-4 p-4">
-            <div *ngIf="controlActivo()" class="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5"><div><small class="block text-[9px] font-bold uppercase text-slate-500">Control seleccionado</small><strong class="text-xs text-slate-800">{{ controlActivo()!.nombreControl }}</strong></div><button (click)="controlActivo.set(null)" class="text-slate-400 hover:text-slate-600"><i class="pi pi-times"></i></button></div>
-
+            @if (controlActivo()) {
+              <div class="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5"><div><small class="block text-[9px] font-bold uppercase text-slate-500">Control seleccionado</small><strong class="text-xs text-slate-800">{{ controlActivo()!.nombreControl }}</strong></div><button (click)="controlActivo.set(null)" class="text-slate-400 hover:text-slate-600"><i class="pi pi-times"></i></button></div>
+            }
             <label class="block"><span class="mb-1.5 block text-xs font-bold text-slate-700">{{ modo() === 'VACUNACION' ? 'Vacuna' : 'Desparasitante' }} *</span>
-              <p-select *ngIf="modo() === 'VACUNACION'" [(ngModel)]="tipoVacunaId" (ngModelChange)="actualizarIntervaloSugerido($event)" [options]="tiposVacuna()" optionLabel="nombre" optionValue="id" placeholder="Seleccionar del catálogo" styleClass="control-select" />
-              <p-select *ngIf="modo() === 'DESPARASITACION'" [(ngModel)]="tipoDesparasitanteId" (ngModelChange)="actualizarIntervaloSugerido($event)" [options]="tiposDesparasitante()" optionLabel="nombre" optionValue="id" placeholder="Seleccionar del catálogo" styleClass="control-select" />
-            </label>
-            <label class="block"><span class="mb-1.5 block text-xs font-bold text-slate-700">Fecha de aplicación *</span><input type="date" [(ngModel)]="fechaAplicacion" [max]="fechaHoyLima" class="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none transition-colors focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15" /></label>
-
-            <div *ngIf="modo() === 'VACUNACION' && tipoVacunaId" class="overflow-hidden rounded-xl border border-slate-200">
+            @if (modo() === 'VACUNACION') {
+              <p-select [(ngModel)]="tipoVacunaId" (ngModelChange)="actualizarIntervaloSugerido($event)" [options]="tiposVacuna()" optionLabel="nombre" optionValue="id" placeholder="Seleccionar del catálogo" styleClass="control-select" />
+            }
+            @if (modo() === 'DESPARASITACION') {
+              <p-select [(ngModel)]="tipoDesparasitanteId" (ngModelChange)="actualizarIntervaloSugerido($event)" [options]="tiposDesparasitante()" optionLabel="nombre" optionValue="id" placeholder="Seleccionar del catálogo" styleClass="control-select" />
+            }
+          </label>
+          <label class="block"><span class="mb-1.5 block text-xs font-bold text-slate-700">Fecha de aplicación *</span><input type="date" [(ngModel)]="fechaAplicacion" [max]="fechaHoyLima" class="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none transition-colors focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15" /></label>
+          @if (modo() === 'VACUNACION' && tipoVacunaId) {
+            <div class="overflow-hidden rounded-xl border border-slate-200">
               <div class="flex items-center gap-1.5 border-b border-slate-200 bg-slate-50/70 px-3 py-2 text-[10px] font-bold uppercase tracking-wide text-slate-500"><i class="pi pi-info-circle text-[#0066AA]"></i> Datos tomados de la vacuna</div>
               <dl class="grid grid-cols-2 gap-x-3 gap-y-2.5 p-3 text-xs"><div><dt class="text-slate-400">Lote</dt><dd class="font-semibold text-slate-700">{{ lote || 'No registrado' }}</dd></div><div><dt class="text-slate-400">Vencimiento</dt><dd class="font-semibold text-slate-700">{{ fechaVencimientoProducto || 'No registrado' }}</dd></div><div><dt class="text-slate-400">Dosis</dt><dd class="font-semibold text-slate-700">{{ dosis ? dosis + ' ' + unidadDosis : 'No registrada' }}</dd></div><div><dt class="text-slate-400">Vía</dt><dd class="font-semibold text-slate-700">{{ viaAdministracion || 'No registrada' }}</dd></div></dl>
             </div>
-
-            <div *ngIf="modo() === 'VACUNACION'" class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          }
+          @if (modo() === 'VACUNACION') {
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <label><span class="mb-1.5 block text-xs font-bold text-slate-700">Peso actual (kg)</span><input type="number" [(ngModel)]="pesoKg" min="0.01" step="0.01" class="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none transition-colors focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15" /></label>
               <label><span class="mb-1.5 block text-xs font-bold text-slate-700">Sitio de aplicación</span><input [(ngModel)]="sitioAplicacion" placeholder="Región anatómica" class="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none transition-colors focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15" /></label>
             </div>
-
-            <div class="rounded-xl border border-slate-200 p-3">
-              <label class="flex items-start gap-3"><input type="checkbox" [(ngModel)]="programarProximoControl" class="mt-0.5 size-4 accent-[#0066AA]" /><span><strong class="block text-xs text-slate-700">Programar próximo control</strong><small class="mt-0.5 block text-[10px] text-slate-500">Desmárcalo si esta es la última aplicación.</small></span></label>
-              <div *ngIf="programarProximoControl" class="mt-3 grid grid-cols-1 gap-3 border-t border-slate-100 pt-3 sm:grid-cols-[1fr_120px]">
+          }
+          <div class="rounded-xl border border-slate-200 p-3">
+            <label class="flex items-start gap-3"><input type="checkbox" [(ngModel)]="programarProximoControl" class="mt-0.5 size-4 accent-[#0066AA]" /><span><strong class="block text-xs text-slate-700">Programar próximo control</strong><small class="mt-0.5 block text-[10px] text-slate-500">Desmárcalo si esta es la última aplicación.</small></span></label>
+            @if (programarProximoControl) {
+              <div class="mt-3 grid grid-cols-1 gap-3 border-t border-slate-100 pt-3 sm:grid-cols-[1fr_120px]">
                 <label><span class="mb-1.5 block text-[10px] font-bold text-slate-600">Intervalo</span><input type="number" [(ngModel)]="intervaloCantidad" min="1" class="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15" /></label>
                 <label><span class="mb-1.5 block text-[10px] font-bold text-slate-600">Unidad</span><p-select [(ngModel)]="intervaloUnidad" [options]="unidadesIntervalo" optionLabel="label" optionValue="value" styleClass="control-select compact-select" /></label>
               </div>
-            </div>
-
-            <label *ngIf="modo() === 'VACUNACION'" class="block"><span class="mb-1.5 block text-xs font-bold text-slate-700">Observaciones</span><textarea [(ngModel)]="observaciones" rows="2" maxlength="500" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none transition-colors focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15"></textarea></label>
+            }
           </div>
-          <footer class="border-t border-slate-200 p-4">
-            <button type="button" (click)="guardar()" [disabled]="guardando()" class="flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-[#0066AA] text-sm font-bold text-white transition-colors hover:bg-[#00558F] disabled:opacity-50"><i [class]="guardando() ? 'pi pi-spin pi-spinner' : 'pi pi-check-circle'"></i>{{ guardando() ? 'Registrando...' : 'Confirmar aplicación' }}</button>
-            <p class="mt-2 text-center text-[10px] text-slate-500">Al confirmar, la cuenta aparecerá automáticamente en Caja.</p>
-          </footer>
-        </aside>
+          @if (modo() === 'VACUNACION') {
+            <label class="block"><span class="mb-1.5 block text-xs font-bold text-slate-700">Observaciones</span><textarea [(ngModel)]="observaciones" rows="2" maxlength="500" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none transition-colors focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15"></textarea></label>
+          }
+        </div>
+        <footer class="border-t border-slate-200 p-4">
+          <button type="button" (click)="guardar()" [disabled]="guardando()" class="flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-[#0066AA] text-sm font-bold text-white transition-colors hover:bg-[#00558F] disabled:opacity-50"><i [class]="guardando() ? 'pi pi-spin pi-spinner' : 'pi pi-check-circle'"></i>{{ guardando() ? 'Registrando...' : 'Confirmar aplicación' }}</button>
+          <p class="mt-2 text-center text-[10px] text-slate-500">Al confirmar, la cuenta aparecerá automáticamente en Caja.</p>
+        </footer>
+      </aside>
+    </div>
+  }
+</div>
+}
+
+@if (cargando() && !requiresCompanySelection) {
+  <div class="space-y-5 sm:space-y-6">
+    <header class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+      <div class="flex items-center gap-3">
+        <p-skeleton shape="circle" size="3rem" styleClass="bg-slate-200"></p-skeleton>
+        <div class="flex flex-col gap-2">
+          <p-skeleton width="120px" height="10px" borderRadius="8px"></p-skeleton>
+          <p-skeleton width="220px" height="22px" borderRadius="8px"></p-skeleton>
+          <p-skeleton width="300px" height="14px" borderRadius="8px" styleClass="hidden sm:block"></p-skeleton>
+        </div>
       </div>
-    </ng-container>
-  </div>
-  </ng-container>
-
-  <ng-container *ngIf="cargando() && !requiresCompanySelection">
-    <div class="space-y-5 sm:space-y-6">
-      <header class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-        <div class="flex items-center gap-3">
-          <p-skeleton shape="circle" size="3rem" styleClass="bg-slate-200"></p-skeleton>
-          <div class="flex flex-col gap-2">
-            <p-skeleton width="120px" height="10px" borderRadius="8px"></p-skeleton>
-            <p-skeleton width="220px" height="22px" borderRadius="8px"></p-skeleton>
-            <p-skeleton width="300px" height="14px" borderRadius="8px" styleClass="hidden sm:block"></p-skeleton>
-          </div>
-        </div>
-      </header>
-
-      <section class="rounded-xl border border-slate-200 bg-white p-4 sm:p-5">
-        <div class="flex flex-col gap-3 lg:flex-row lg:items-end">
-          <label class="min-w-0 flex-1">
-            <span class="mb-1.5 block text-xs font-bold text-slate-700">Nombre de la mascota</span>
-            <p-skeleton width="100%" height="44px" borderRadius="12px"></p-skeleton>
-          </label>
-          <p-skeleton width="140px" height="44px" borderRadius="12px"></p-skeleton>
-          <p-skeleton width="180px" height="44px" borderRadius="12px"></p-skeleton>
-        </div>
-      </section>
-
-      <section class="rounded-xl border border-slate-200 bg-white">
-        <div class="flex items-center justify-between gap-4 border-b border-slate-100 px-5 py-4">
-          <h2 class="text-sm font-bold text-slate-800">Mascotas registradas</h2>
-          <p-skeleton width="120px" height="32px" borderRadius="8px"></p-skeleton>
-        </div>
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-sm">
-            <thead class="bg-slate-50 border-b border-slate-200">
+    </header>
+    <section class="rounded-xl border border-slate-200 bg-white p-4 sm:p-5">
+      <div class="flex flex-col gap-3 lg:flex-row lg:items-end">
+        <label class="min-w-0 flex-1">
+          <span class="mb-1.5 block text-xs font-bold text-slate-700">Nombre de la mascota</span>
+          <p-skeleton width="100%" height="44px" borderRadius="12px"></p-skeleton>
+        </label>
+        <p-skeleton width="140px" height="44px" borderRadius="12px"></p-skeleton>
+        <p-skeleton width="180px" height="44px" borderRadius="12px"></p-skeleton>
+      </div>
+    </section>
+    <section class="rounded-xl border border-slate-200 bg-white">
+      <div class="flex items-center justify-between gap-4 border-b border-slate-100 px-5 py-4">
+        <h2 class="text-sm font-bold text-slate-800">Mascotas registradas</h2>
+        <p-skeleton width="120px" height="32px" borderRadius="8px"></p-skeleton>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead class="bg-slate-50 border-b border-slate-200">
+            <tr>
+              <th class="text-left px-5 py-3"><p-skeleton width="80px" height="12px" borderRadius="6px"></p-skeleton></th>
+              <th class="text-left px-5 py-3"><p-skeleton width="60px" height="12px" borderRadius="6px"></p-skeleton></th>
+              <th class="text-left px-5 py-3"><p-skeleton width="50px" height="12px" borderRadius="6px"></p-skeleton></th>
+              <th class="text-left px-5 py-3"><p-skeleton width="70px" height="12px" borderRadius="6px"></p-skeleton></th>
+              <th class="text-left px-5 py-3"><p-skeleton width="90px" height="12px" borderRadius="6px"></p-skeleton></th>
+              <th class="text-left px-5 py-3"><p-skeleton width="100px" height="12px" borderRadius="6px"></p-skeleton></th>
+              <th class="text-right px-5 py-3"><p-skeleton width="60px" height="12px" borderRadius="6px"></p-skeleton></th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            @for (i of [1,2,3,4,5]; track i) {
               <tr>
-                <th class="text-left px-5 py-3"><p-skeleton width="80px" height="12px" borderRadius="6px"></p-skeleton></th>
-                <th class="text-left px-5 py-3"><p-skeleton width="60px" height="12px" borderRadius="6px"></p-skeleton></th>
-                <th class="text-left px-5 py-3"><p-skeleton width="50px" height="12px" borderRadius="6px"></p-skeleton></th>
-                <th class="text-left px-5 py-3"><p-skeleton width="70px" height="12px" borderRadius="6px"></p-skeleton></th>
-                <th class="text-left px-5 py-3"><p-skeleton width="90px" height="12px" borderRadius="6px"></p-skeleton></th>
-                <th class="text-left px-5 py-3"><p-skeleton width="100px" height="12px" borderRadius="6px"></p-skeleton></th>
-                <th class="text-right px-5 py-3"><p-skeleton width="60px" height="12px" borderRadius="6px"></p-skeleton></th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100">
-              <tr *ngFor="let i of [1,2,3,4,5]">
                 <td class="px-5 py-3"><p-skeleton width="140px" height="16px" borderRadius="6px"></p-skeleton></td>
                 <td class="px-5 py-3"><p-skeleton width="60px" height="16px" borderRadius="6px"></p-skeleton></td>
                 <td class="px-5 py-3"><p-skeleton width="80px" height="16px" borderRadius="6px"></p-skeleton></td>
@@ -408,12 +473,13 @@
                   <p-skeleton width="100px" height="32px" borderRadius="8px" styleClass="ml-auto"></p-skeleton>
                 </td>
               </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-    </div>
-  </ng-container>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+}
 </main>
 
 <p-toast position="top-right"></p-toast>
@@ -423,8 +489,12 @@
     <div class="rounded-lg bg-slate-50 px-3 py-2.5 text-xs font-semibold text-slate-600">
       <i class="pi pi-tag mr-1.5 text-[#0066AA]"></i>{{ modo() === 'VACUNACION' ? 'Vacunación' : 'Desparasitación' }}
     </div>
-    <label *ngIf="progTipo === 'VACUNACION'" class="block"><span class="mb-1.5 block text-xs font-bold text-slate-700">Vacuna</span><p-select [(ngModel)]="progTipoVacunaId" [options]="tiposVacuna()" optionLabel="nombre" optionValue="id" placeholder="Seleccionar vacuna" styleClass="control-select" /></label>
-    <label *ngIf="progTipo === 'DESPARASITACION'" class="block"><span class="mb-1.5 block text-xs font-bold text-slate-700">Producto</span><input [(ngModel)]="progNombreControl" class="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15" /></label>
+    @if (progTipo === 'VACUNACION') {
+      <label class="block"><span class="mb-1.5 block text-xs font-bold text-slate-700">Vacuna</span><p-select [(ngModel)]="progTipoVacunaId" [options]="tiposVacuna()" optionLabel="nombre" optionValue="id" placeholder="Seleccionar vacuna" styleClass="control-select" /></label>
+    }
+    @if (progTipo === 'DESPARASITACION') {
+      <label class="block"><span class="mb-1.5 block text-xs font-bold text-slate-700">Producto</span><input [(ngModel)]="progNombreControl" class="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15" /></label>
+    }
     <div>
       <span class="mb-2 block text-xs font-bold text-slate-700">Fecha recomendada</span>
       <input type="date" [value]="progFecha" (change)="onprogFechaChange($event)"
