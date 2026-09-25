@@ -96,6 +96,8 @@ export class RouteMapperService {
 
     VISTA_CAJA: '/admin/caja',
     VISTA_CAJA_ADMIN: '/admin/caja',
+    VISTA_PRODUCTOS: '/admin/productos',
+    VISTA_CATEGORIAS_PRODUCTO: '/admin/categorias-producto',
     VISTA_LABORATORIO: '/laboratorio',
     VISTA_EMPLEADO_DASHBOARD: '/empleado/dashboard',
     VISTA_EMPRESA: '/company',
@@ -116,6 +118,8 @@ export class RouteMapperService {
     VISTA_COMPLEMENTARIO: 'pi pi-database',
     VISTA_PAGOS: 'pi pi-wallet',
     VISTA_CAJA: 'pi pi-money-bill',
+    VISTA_PRODUCTOS: 'pi pi-shopping-bag',
+    VISTA_CATEGORIAS_PRODUCTO: 'pi pi-tags',
     VISTA_EMPLEADOS: 'pi pi-users',
     VISTA_HORARIOS: 'pi pi-calendar-clock',
     VISTA_MI_HORARIO: 'pi pi-clock',

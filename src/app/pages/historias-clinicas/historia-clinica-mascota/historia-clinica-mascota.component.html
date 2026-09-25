@@ -16,7 +16,18 @@
       </div>
     </div>
     @if (hc()) {
-      <app-diagnostico-ia [hc]="hc()!"></app-diagnostico-ia>
+      <div class="flex items-center gap-2">
+        <button type="button" (click)="descargarHistoriaCompleta()" [disabled]="descargandoHistoriaCompleta()"
+          class="flex items-center gap-2 px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-600 text-xs font-bold hover:border-[#0066AA] hover:text-[#0066AA] transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+          @if (descargandoHistoriaCompleta()) {
+            <i class="pi pi-spin pi-spinner text-xs"></i>
+          } @else {
+            <i class="pi pi-file-pdf text-xs"></i>
+          }
+          Descargar historia clínica
+        </button>
+        <app-diagnostico-ia [hc]="hc()!"></app-diagnostico-ia>
+      </div>
     }
   </div>
 

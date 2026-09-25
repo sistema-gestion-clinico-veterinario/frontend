@@ -16,6 +16,7 @@ export interface DetalleCuentaResponse {
   precioUnitario: number;
   subtotal: number;
   esServicioBase: boolean;
+  productoId?: number;
 }
 
 export interface CuentaCitaResponse {
@@ -39,4 +40,5 @@ export interface DetalleCuentaRequest {
   descripcion: string;
   cantidad: number;
   precioUnitario: number;
+  productoId?: number;
 }

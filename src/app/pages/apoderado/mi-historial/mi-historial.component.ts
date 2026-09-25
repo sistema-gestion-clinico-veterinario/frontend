@@ -5,6 +5,9 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 
 import { ApoderadoService } from '../../../core/services/apoderado.service';
+import { CompanyService, CompanyBrandingResponse } from '../../../core/services/company.service';
+import { CompanySlugContext } from '../../../core/services/company-slug-context.service';
+import { HistoriaClinicaPdfService } from '../../../core/services/historia-clinica-pdf.service';
 import { HistoriaClinicaDetalle } from '../../../models/response/historia-clinica-response';
 
 @Component({
@@ -18,7 +21,12 @@ export class MiHistorialComponent implements OnInit {
   private readonly route      = inject(ActivatedRoute);
   private readonly apoderado  = inject(ApoderadoService);
   private readonly msgService = inject(MessageService);
+  private readonly companyService = inject(CompanyService);
+  private readonly slugContext = inject(CompanySlugContext);
+  private readonly historiaClinicaPdfService = inject(HistoriaClinicaPdfService);
   private historyRequestId = 0;
+
+  descargandoHistoriaCompleta = signal(false);
 
   // Mascotas del apoderado (panel izquierdo)
   mascotas        = signal<any[]>([]);
@@ -129,6 +137,43 @@ export class MiHistorialComponent implements OnInit {
   seleccionarConsulta(consulta: any) {
     this.consultaActiva.set(consulta);
     this.tabActiva.set('clinico');
+  }
+
+  async descargarHistoriaCompleta(): Promise<void> {
+    const hc = this.hc();
+    if (!hc || this.descargandoHistoriaCompleta()) return;
+    this.descargandoHistoriaCompleta.set(true);
+    try {
+      const slug = this.slugContext.slug();
+      const branding = slug
+        ? await new Promise<CompanyBrandingResponse | null>(resolve => {
+            this.companyService.getBrandingBySlug(slug).subscribe({
+              next: res => resolve(res.data ?? null),
+              error: () => resolve(null)
+            });
+          })
+        : null;
+      const logoDataUrl = branding?.logoUrl ? await this.descargarComoDataUrl(branding.logoUrl) : null;
+      await this.historiaClinicaPdfService.generarPdf(hc, branding ? { name: branding.name } : null, logoDataUrl);
+    } catch {
+      this.msgService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo generar el PDF de la historia clínica.' });
+    } finally {
+      this.descargandoHistoriaCompleta.set(false);
+    }
+  }
+
+  private async descargarComoDataUrl(url: string): Promise<string | null> {
+    try {
+      const blob = await fetch(url).then(r => r.blob());
+      return await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    } catch {
+      return null;
+    }
   }
 
   formatFecha(fecha: string): string {

@@ -1,21 +1,21 @@
 <div class="dashboard-calendar-shell">
-  <div class="flex items-center justify-between gap-2 mb-2">
+  <div class="flex items-center justify-between gap-2 mb-1.5">
     <button type="button" (click)="irHoy()" title="Ir al mes de hoy"
-      class="h-6 rounded-md border border-slate-200 px-2 text-[10px] font-bold text-slate-600 hover:bg-slate-50 hover:text-[#0066AA] transition-colors">
+      class="h-5 rounded-md border border-slate-200 px-1.5 text-[9px] font-bold text-slate-600 hover:bg-slate-50 hover:text-[#0066AA] transition-colors">
       Hoy
     </button>
 
     <!-- Mes anterior/siguiente: las flechas flanquean el nombre del mes para que quede claro
     que paginan de mes en mes (no de día en día), separadas del botón "Hoy". -->
-    <div class="flex items-center gap-1.5">
+    <div class="flex items-center gap-1">
       <button type="button" (click)="irAnterior()" title="Mes anterior" aria-label="Mes anterior"
-        class="grid size-6 place-items-center rounded-md border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition-colors">
-        <i class="pi pi-chevron-left text-[9px]"></i>
+        class="grid size-5 place-items-center rounded-md border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition-colors">
+        <i class="pi pi-chevron-left text-[8px]"></i>
       </button>
-      <span class="min-w-[6.5rem] text-center text-[11px] font-black uppercase tracking-wide text-slate-700">{{ titulo() }}</span>
+      <span class="min-w-[5.5rem] text-center text-[10px] font-black uppercase tracking-wide text-slate-700">{{ titulo() }}</span>
       <button type="button" (click)="irSiguiente()" title="Mes siguiente" aria-label="Mes siguiente"
-        class="grid size-6 place-items-center rounded-md border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition-colors">
-        <i class="pi pi-chevron-right text-[9px]"></i>
+        class="grid size-5 place-items-center rounded-md border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition-colors">
+        <i class="pi pi-chevron-right text-[8px]"></i>
       </button>
     </div>
   </div>
