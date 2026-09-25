@@ -395,6 +395,31 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/admin/caja/caja.component').then((m) => m.CajaComponent)
       },
       {
+        path: 'admin/productos',
+        data: { ventana: 'VISTA_PRODUCTOS' },
+        loadComponent: () => import('./pages/admin/productos/productos.component').then((m) => m.ProductosComponent)
+      },
+      {
+        path: 'productos',
+        data: { ventana: 'VISTA_PRODUCTOS' },
+        loadComponent: () => import('./pages/admin/productos/productos.component').then((m) => m.ProductosComponent)
+      },
+      {
+        path: 'admin/productos/nuevo',
+        data: { ventana: 'VISTA_PRODUCTOS' },
+        loadComponent: () => import('./pages/admin/productos/producto-form/producto-form.component').then((m) => m.ProductoFormComponent)
+      },
+      {
+        path: 'admin/productos/:id/editar',
+        data: { ventana: 'VISTA_PRODUCTOS' },
+        loadComponent: () => import('./pages/admin/productos/producto-form/producto-form.component').then((m) => m.ProductoFormComponent)
+      },
+      {
+        path: 'admin/categorias-producto',
+        data: { ventana: 'VISTA_CATEGORIAS_PRODUCTO' },
+        loadComponent: () => import('./pages/admin/categorias-producto/categorias-producto.component').then((m) => m.CategoriasProductoComponent)
+      },
+      {
         path: 'laboratorio',
         data: { ventana: 'VISTA_LABORATORIO' },
         loadComponent: () => import('./pages/laboratorio/laboratorio.component').then((m) => m.LaboratorioComponent)

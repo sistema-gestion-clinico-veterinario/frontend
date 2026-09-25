@@ -1,4 +1,5 @@
 import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
 
 import { FormsModule } from '@angular/forms';
 import { ToastModule } from 'primeng/toast';
@@ -13,7 +14,15 @@ import { PagoService } from '../../../core/services/pago.service';
 import { CuentaCitaResponse, DetalleCuentaRequest, DetalleCuentaResponse, TipoDetalleCuenta } from '../../../models/response/cuenta-cita-response';
 import { MetodoPago } from '../../../models/request/pago-request';
 import { NotaVentaPdfService } from '../../../core/services/nota-venta-pdf.service';
+import { CompanyService } from '../../../core/services/company.service';
+import { ProductoService } from '../../../core/services/producto.service';
+import { ProductoResponse } from '../../../models/response/producto-response';
+import { CompanyDTO } from '../../../models/request/company-dto';
 import { RealtimeStompConnection, RealtimeStompService } from '../../../core/services/realtime-stomp.service';
+import { ApoderadoService } from '../../../core/services/apoderado.service';
+import { ApoderadoListResponse } from '../../../models/response/apoderado-list-response';
+import { VentaLibreService } from '../../../core/services/venta-libre.service';
+import { VentaLibreItemRequest } from '../../../models/request/venta-libre-request';
 
 @Component({
   selector: 'app-caja',
@@ -28,7 +37,11 @@ export class CajaComponent implements OnInit, OnDestroy {
   private readonly messageService = inject(MessageService);
   private readonly pagoService    = inject(PagoService);
   private readonly notaVentaPdf   = inject(NotaVentaPdfService);
+  private readonly companyService = inject(CompanyService);
+  private readonly productoService = inject(ProductoService);
   private readonly realtimeStompService = inject(RealtimeStompService);
+  private readonly apoderadoService = inject(ApoderadoService);
+  private readonly ventaLibreService = inject(VentaLibreService);
   readonly authStore             = inject(AuthStore);
   private realtimeConnection: RealtimeStompConnection | null = null;
 
@@ -69,6 +82,25 @@ export class CajaComponent implements OnInit, OnDestroy {
   nuevoDetalle: DetalleCuentaRequest = {
     tipo: 'MEDICAMENTO', descripcion: '', cantidad: 1, precioUnitario: 0
   };
+  productos = signal<ProductoResponse[]>([]);
+  productoSeleccionadoId: number | null = null;
+
+  mostrarVentaRapida = signal(false);
+  guardandoVentaRapida = signal(false);
+  carritoVentaRapida = signal<{ producto: ProductoResponse; cantidad: number }[]>([]);
+  productoVentaRapidaId: number | null = null;
+  cantidadVentaRapida = 1;
+  clienteQuery = '';
+  clientesEncontrados = signal<ApoderadoListResponse[]>([]);
+  buscandoClientes = signal(false);
+  clienteSeleccionado: ApoderadoListResponse | null = null;
+  clienteNombreLibre = '';
+  pagoVentaRapida: { metodoPago: 'EFECTIVO' | 'YAPE'; montoRecibido: number | null } = {
+    metodoPago: 'EFECTIVO', montoRecibido: null
+  };
+
+  totalVentaRapida = computed(() =>
+    this.carritoVentaRapida().reduce((sum, linea) => sum + linea.producto.precio * linea.cantidad, 0));
   pagoForm: {
     metodoPago: MetodoPago;
     monto: number;
@@ -85,12 +117,163 @@ export class CajaComponent implements OnInit, OnDestroy {
     return this.authStore.isSuperAdmin() && !this.companyId;
   }
 
+  private async obtenerEncabezadoEmpresaPdf(): Promise<{ empresa: CompanyDTO | null; logoDataUrl: string | null }> {
+    const empresa = this.companyId
+      ? await firstValueFrom(this.companyService.getById(this.companyId)).then(r => r.data).catch(() => null)
+      : null;
+    const logoDataUrl = empresa?.logoUrl ? await this.descargarComoDataUrl(empresa.logoUrl) : null;
+    return { empresa, logoDataUrl };
+  }
+
+  private async descargarComoDataUrl(url: string): Promise<string | null> {
+    try {
+      const blob = await fetch(url).then(r => r.blob());
+      return await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    } catch {
+      return null;
+    }
+  }
+
   ngOnInit() {
     if (this.requiresCompanySelection) return;
     this.cargar();
     this.cargarPendientes();
     this.cargarSesion();
     this.conectarActualizacionCaja();
+    this.cargarProductos();
+  }
+
+  private cargarProductos() {
+    this.productoService.listarActivos(this.companyId || undefined).subscribe({
+      next: res => this.productos.set(res.data ?? []),
+      error: () => this.productos.set([])
+    });
+  }
+
+  seleccionarProducto(productoId: number | null) {
+    const producto = this.productos().find(p => p.id === productoId);
+    if (!producto) return;
+    this.nuevoDetalle.descripcion = producto.nombre;
+    this.nuevoDetalle.precioUnitario = producto.precio;
+    this.nuevoDetalle.tipo = producto.categoriaNombre?.toUpperCase().includes('MEDICAMENTO') ? 'MEDICAMENTO' : 'INSUMO';
+    this.nuevoDetalle.productoId = producto.id;
+  }
+
+  abrirVentaRapida() {
+    this.carritoVentaRapida.set([]);
+    this.productoVentaRapidaId = null;
+    this.cantidadVentaRapida = 1;
+    this.clienteQuery = '';
+    this.clientesEncontrados.set([]);
+    this.clienteSeleccionado = null;
+    this.clienteNombreLibre = '';
+    this.pagoVentaRapida = { metodoPago: 'EFECTIVO', montoRecibido: null };
+    this.mostrarVentaRapida.set(true);
+  }
+
+  cerrarVentaRapida() {
+    this.mostrarVentaRapida.set(false);
+  }
+
+  agregarAlCarritoVentaRapida() {
+    const producto = this.productos().find(p => p.id === this.productoVentaRapidaId);
+    if (!producto || this.cantidadVentaRapida < 1) return;
+
+    const carrito = [...this.carritoVentaRapida()];
+    const existente = carrito.find(l => l.producto.id === producto.id);
+    if (existente) {
+      existente.cantidad += this.cantidadVentaRapida;
+    } else {
+      carrito.push({ producto, cantidad: this.cantidadVentaRapida });
+    }
+    this.carritoVentaRapida.set(carrito);
+    this.productoVentaRapidaId = null;
+    this.cantidadVentaRapida = 1;
+  }
+
+  quitarDelCarritoVentaRapida(index: number) {
+    const carrito = [...this.carritoVentaRapida()];
+    carrito.splice(index, 1);
+    this.carritoVentaRapida.set(carrito);
+  }
+
+  buscarClientesVentaRapida() {
+    const query = this.clienteQuery.trim();
+    if (!query) { this.clientesEncontrados.set([]); return; }
+    this.buscandoClientes.set(true);
+    this.apoderadoService.listar(this.companyId || undefined, query, undefined, 0, 8, true).subscribe({
+      next: res => {
+        this.clientesEncontrados.set(res.data?.content ?? []);
+        this.buscandoClientes.set(false);
+      },
+      error: () => {
+        this.clientesEncontrados.set([]);
+        this.buscandoClientes.set(false);
+      }
+    });
+  }
+
+  seleccionarClienteVentaRapida(cliente: ApoderadoListResponse) {
+    this.clienteSeleccionado = cliente;
+    this.clienteNombreLibre = '';
+    this.clienteQuery = '';
+    this.clientesEncontrados.set([]);
+  }
+
+  quitarClienteVentaRapida() {
+    this.clienteSeleccionado = null;
+  }
+
+  cobrarVentaRapida() {
+    const carrito = this.carritoVentaRapida();
+    if (carrito.length === 0) {
+      this.messageService.add({ severity: 'warn', summary: 'Carrito vacío', detail: 'Agrega al menos un producto.' });
+      return;
+    }
+    const total = this.totalVentaRapida();
+    if (this.pagoVentaRapida.metodoPago === 'EFECTIVO') {
+      const recibido = Number(this.pagoVentaRapida.montoRecibido);
+      if (!recibido || recibido < total) {
+        this.messageService.add({ severity: 'warn', summary: 'Efectivo inválido', detail: 'El monto recibido debe cubrir el total.' });
+        return;
+      }
+    }
+
+    const items: VentaLibreItemRequest[] = carrito.map(l => ({ productoId: l.producto.id, cantidad: l.cantidad }));
+
+    this.guardandoVentaRapida.set(true);
+    this.ventaLibreService.registrar({
+      companyId: this.companyId || undefined,
+      apoderadoId: this.clienteSeleccionado?.id,
+      clienteNombre: this.clienteSeleccionado ? undefined : (this.clienteNombreLibre.trim() || undefined),
+      items,
+      metodoPago: this.pagoVentaRapida.metodoPago,
+      montoRecibido: this.pagoVentaRapida.metodoPago === 'EFECTIVO' ? Number(this.pagoVentaRapida.montoRecibido) : undefined
+    }).subscribe({
+      next: r => {
+        this.guardandoVentaRapida.set(false);
+        this.mostrarVentaRapida.set(false);
+        this.messageService.add({ severity: 'success', summary: 'Venta registrada', detail: `Total: S/ ${Number(r.data?.total ?? 0).toFixed(2)}` });
+        this.cargarProductos();
+        if (r.data) {
+          void this.obtenerEncabezadoEmpresaPdf()
+            .then(({ empresa, logoDataUrl }) => this.notaVentaPdf.mostrarVentaLibre(r.data!, empresa, logoDataUrl))
+            .catch(() => this.messageService.add({
+              severity: 'warn', summary: 'Venta registrada',
+              detail: 'La venta se guardó, pero no se pudo generar la nota de venta.'
+            }));
+        }
+      },
+      error: err => {
+        this.guardandoVentaRapida.set(false);
+        this.messageService.add({ severity: 'error', summary: 'No se registró la venta', detail: err?.error?.message ?? 'Revisa los datos de la venta.' });
+      }
+    });
   }
 
   ngOnDestroy() {
@@ -174,6 +357,7 @@ export class CajaComponent implements OnInit, OnDestroy {
         this.cuentaSeleccionada.set(r.data);
         this.prepararPago(r.data);
         this.nuevoDetalle = { tipo: 'MEDICAMENTO', descripcion: '', cantidad: 1, precioUnitario: 0 };
+        this.productoSeleccionadoId = null;
         this.savingDetalle.set(false);
         this.cargarPendientes();
       },
@@ -205,7 +389,8 @@ export class CajaComponent implements OnInit, OnDestroy {
       tipo: detalle.tipo,
       descripcion: detalle.descripcion,
       cantidad,
-      precioUnitario: Math.abs(Number(detalle.precioUnitario))
+      precioUnitario: Math.abs(Number(detalle.precioUnitario)),
+      productoId: detalle.productoId
     }).subscribe({
       next: r => {
         this.cuentaSeleccionada.set(r.data);
@@ -245,8 +430,8 @@ export class CajaComponent implements OnInit, OnDestroy {
       next: r => {
         this.savingPago.set(false);
         if (r.data) {
-          void this.notaVentaPdf
-            .mostrar(cuenta, r.data, this.authStore.selectedEnterprise()?.name ?? this.authStore.companyName() ?? 'Veterinaria')
+          void this.obtenerEncabezadoEmpresaPdf()
+            .then(({ empresa, logoDataUrl }) => this.notaVentaPdf.mostrar(cuenta, r.data!, empresa, logoDataUrl))
             .catch(() => this.messageService.add({
               severity: 'warn',
               summary: 'Pago registrado',
