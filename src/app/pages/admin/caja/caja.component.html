@@ -13,6 +13,7 @@
     @if (!requiresCompanySelection) {
       <div class="flex w-full items-center gap-2 sm:w-auto">
         @if (!sesionCaja()) { <button (click)="abrirModalSesion('ABRIR')" class="h-10 flex-1 rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 sm:flex-none sm:px-4">Abrir caja</button> }
+        <button (click)="abrirVentaRapida()" class="flex h-10 flex-1 items-center justify-center gap-2 rounded-lg border border-[#0066AA] px-3 text-sm font-semibold text-[#0066AA] hover:bg-blue-50 sm:flex-none sm:px-4"><i class="pi pi-shopping-cart text-xs"></i><span>Venta rápida</span></button>
         <button (click)="nuevaOperacion()" class="flex h-10 flex-1 items-center justify-center gap-2 rounded-lg bg-[#0066AA] px-3 text-sm font-semibold text-white hover:bg-[#005a96] sm:flex-none sm:px-4"><i class="pi pi-plus text-xs"></i><span>Nueva operación</span></button>
       </div>
     }
@@ -97,6 +98,15 @@
             </div>
             <div class="p-4 sm:p-5 bg-slate-50/70 border-t border-slate-200">
               <p class="text-[11px] font-bold uppercase tracking-wide text-slate-500 mb-2">Agregar concepto</p>
+              @if (productos().length > 0) {
+                <select [(ngModel)]="productoSeleccionadoId" (ngModelChange)="seleccionarProducto($event)"
+                  class="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm mb-2">
+                  <option [ngValue]="null">Elegir del catálogo de productos…</option>
+                  @for (producto of productos(); track producto.id) {
+                    <option [ngValue]="producto.id">{{ producto.nombre }} — {{ formatMonto(producto.precio) }}</option>
+                  }
+                </select>
+              }
               <div class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-[150px_1fr_70px_110px_auto]">
                 <select [(ngModel)]="nuevoDetalle.tipo" class="h-10 rounded-lg border border-slate-300 bg-white px-2 text-xs"><option value="VACUNA">Vacuna</option><option value="MEDICAMENTO">Medicamento</option><option value="INSUMO">Insumo</option><option value="PROCEDIMIENTO">Procedimiento</option><option value="SERVICIO_ADICIONAL">Servicio adicional</option><option value="DESCUENTO">Descuento</option><option value="OTRO">Otro</option></select>
                 <input [(ngModel)]="nuevoDetalle.descripcion" maxlength="180" placeholder="Descripción del concepto" class="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm sm:col-span-2 lg:col-span-1" />
@@ -194,6 +204,125 @@
       <div class="flex items-center justify-between px-5 py-4 border-b border-slate-200"><div><h2 class="font-bold text-slate-900">{{ tipoSesion === 'ABRIR' ? 'Abrir caja' : tipoSesion === 'ARQUEO' ? 'Arqueo de caja' : 'Cerrar caja' }}</h2><p class="text-xs text-slate-500 mt-0.5">{{ tipoSesion === 'ABRIR' ? 'Registra el fondo inicial de efectivo.' : 'Cuenta el efectivo físico disponible.' }}</p></div><button (click)="showSesionModal.set(null)" class="w-8 h-8 rounded-lg text-slate-400 hover:bg-slate-50"><i class="pi pi-times"></i></button></div>
       <div class="px-5 py-5 space-y-4">@if (tipoSesion !== 'ABRIR') { <div class="rounded-lg border border-slate-200 bg-slate-50 p-3 flex justify-between"><span class="text-xs text-slate-600">Efectivo esperado</span><span class="text-sm font-bold text-slate-900">{{ formatMonto(sesionCaja()?.efectivoEsperado ?? 0) }}</span></div> }<label class="block"><span class="text-xs font-semibold text-slate-700">{{ tipoSesion === 'ABRIR' ? 'Fondo de apertura' : 'Efectivo contado' }} (S/)</span><input type="number" step="0.01" min="0" [max]="tipoSesion === 'ABRIR' ? 10000 : 100000" [(ngModel)]="sesionForm.monto" class="mt-1.5 w-full h-10 border border-slate-300 rounded-lg px-3 text-sm" /></label>@if (tipoSesion !== 'ABRIR') { <label class="block"><span class="text-xs font-semibold text-slate-700">Observaciones</span><textarea [(ngModel)]="sesionForm.observaciones" maxlength="300" rows="3" placeholder="Diferencias, incidencias o detalle del conteo" class="mt-1.5 w-full border border-slate-300 rounded-lg px-3 py-2 text-sm resize-none"></textarea></label> }</div>
       <div class="flex justify-end gap-2 px-5 py-4 border-t border-slate-200 bg-slate-50"><button (click)="showSesionModal.set(null)" class="h-9 px-4 rounded-lg border border-slate-300 text-slate-600 text-sm font-semibold">Cancelar</button><button (click)="guardarSesion()" [disabled]="savingSesion()" class="h-9 px-4 rounded-lg bg-[#0066AA] text-white text-sm font-semibold disabled:opacity-50">{{ savingSesion() ? 'Guardando...' : tipoSesion === 'ABRIR' ? 'Abrir caja' : tipoSesion === 'ARQUEO' ? 'Registrar arqueo' : 'Cerrar caja' }}</button></div>
+    </div>
+  </div>
+}
+
+@if (mostrarVentaRapida()) {
+  <div class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-950/45 p-0 sm:p-4">
+    <div class="bg-white rounded-t-2xl sm:rounded-xl border border-slate-200 w-full max-w-lg overflow-hidden flex flex-col max-h-[95dvh]">
+      <div class="flex items-center justify-between px-5 py-4 border-b border-slate-200 shrink-0">
+        <div>
+          <h2 class="font-bold text-slate-900">Venta rápida</h2>
+          <p class="text-xs text-slate-500 mt-0.5">Vende productos del catálogo sin necesidad de una cita</p>
+        </div>
+        <button (click)="cerrarVentaRapida()" class="w-8 h-8 rounded-lg text-slate-400 hover:bg-slate-50"><i class="pi pi-times"></i></button>
+      </div>
+
+      <div class="px-5 py-4 space-y-4 overflow-y-auto">
+        <!-- Cliente -->
+        <div>
+          <span class="text-xs font-semibold text-slate-700">Cliente (opcional)</span>
+          @if (clienteSeleccionado) {
+            <div class="mt-1.5 flex items-center justify-between rounded-lg border border-blue-200 bg-blue-50 px-3 py-2">
+              <span class="text-sm font-semibold text-slate-800">{{ clienteSeleccionado.nombre }} {{ clienteSeleccionado.apellido }}</span>
+              <button (click)="quitarClienteVentaRapida()" class="text-slate-400 hover:text-rose-500"><i class="pi pi-times text-xs"></i></button>
+            </div>
+          } @else {
+            <div class="mt-1.5 flex gap-2">
+              <input type="text" [(ngModel)]="clienteQuery" (keyup.enter)="buscarClientesVentaRapida()"
+                placeholder="Buscar cliente registrado por nombre…"
+                class="h-10 flex-1 min-w-0 rounded-lg border border-slate-300 px-3 text-sm" />
+              <button (click)="buscarClientesVentaRapida()" [disabled]="buscandoClientes()"
+                class="h-10 shrink-0 rounded-lg border border-slate-300 px-3 text-sm font-semibold text-slate-600 hover:bg-slate-50 disabled:opacity-50">
+                Buscar
+              </button>
+            </div>
+            @if (clientesEncontrados().length > 0) {
+              <div class="mt-2 rounded-lg border border-slate-200 divide-y divide-slate-100 max-h-32 overflow-y-auto">
+                @for (cliente of clientesEncontrados(); track cliente.id) {
+                  <button type="button" (click)="seleccionarClienteVentaRapida(cliente)"
+                    class="block w-full text-left px-3 py-2 text-sm hover:bg-slate-50">
+                    {{ cliente.nombre }} {{ cliente.apellido }}
+                    <span class="text-xs text-slate-400">· {{ cliente.numeroDocumento }}</span>
+                  </button>
+                }
+              </div>
+            }
+            <input type="text" [(ngModel)]="clienteNombreLibre" maxlength="160"
+              placeholder="…o escribe el nombre de un cliente no registrado (opcional)"
+              class="mt-2 h-10 w-full rounded-lg border border-slate-300 px-3 text-sm" />
+          }
+        </div>
+
+        <!-- Agregar productos -->
+        <div>
+          <span class="text-xs font-semibold text-slate-700">Agregar producto</span>
+          <div class="mt-1.5 flex gap-2">
+            <select [(ngModel)]="productoVentaRapidaId" class="h-10 flex-1 min-w-0 rounded-lg border border-slate-300 px-2 text-sm">
+              <option [ngValue]="null">Selecciona un producto…</option>
+              @for (producto of productos(); track producto.id) {
+                <option [ngValue]="producto.id">{{ producto.nombre }} — {{ formatMonto(producto.precio) }} ({{ producto.stock }} disp.)</option>
+              }
+            </select>
+            <input type="number" min="1" max="999" [(ngModel)]="cantidadVentaRapida" class="h-10 w-16 shrink-0 rounded-lg border border-slate-300 px-2 text-sm" />
+            <button (click)="agregarAlCarritoVentaRapida()" [disabled]="!productoVentaRapidaId"
+              class="h-10 shrink-0 rounded-lg border border-[#0066AA] px-3 text-sm font-bold text-[#0066AA] hover:bg-blue-50 disabled:opacity-50">
+              Agregar
+            </button>
+          </div>
+        </div>
+
+        <!-- Carrito -->
+        <div class="rounded-lg border border-slate-200 overflow-hidden">
+          @if (carritoVentaRapida().length === 0) {
+            <p class="text-center text-sm text-slate-400 py-6">Aún no agregaste productos</p>
+          }
+          @for (linea of carritoVentaRapida(); track linea.producto.id; let i = $index) {
+            <div class="flex items-center justify-between gap-2 px-3 py-2 border-b border-slate-100 last:border-0">
+              <div class="min-w-0">
+                <p class="text-sm font-semibold text-slate-800 truncate">{{ linea.producto.nombre }}</p>
+                <p class="text-xs text-slate-400">{{ linea.cantidad }} × {{ formatMonto(linea.producto.precio) }}</p>
+              </div>
+              <div class="flex items-center gap-2 shrink-0">
+                <span class="text-sm font-bold text-slate-800">{{ formatMonto(linea.cantidad * linea.producto.precio) }}</span>
+                <button (click)="quitarDelCarritoVentaRapida(i)" class="text-slate-400 hover:text-rose-500"><i class="pi pi-trash text-xs"></i></button>
+              </div>
+            </div>
+          }
+        </div>
+
+        <div class="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2.5">
+          <span class="text-sm font-semibold text-slate-600">Total</span>
+          <span class="text-xl font-bold text-[#0066AA]">{{ formatMonto(totalVentaRapida()) }}</span>
+        </div>
+
+        <!-- Pago -->
+        <div class="grid grid-cols-2 gap-3">
+          <label class="block">
+            <span class="text-xs font-semibold text-slate-700">Forma de pago</span>
+            <select [(ngModel)]="pagoVentaRapida.metodoPago" class="mt-1.5 w-full h-10 border border-slate-300 rounded-lg px-3 text-sm">
+              <option value="EFECTIVO">Efectivo</option>
+              <option value="YAPE">Yape</option>
+            </select>
+          </label>
+          @if (pagoVentaRapida.metodoPago === 'EFECTIVO') {
+            <label class="block">
+              <span class="text-xs font-semibold text-slate-700">Monto recibido (S/)</span>
+              <input type="number" step="0.01" min="0" [(ngModel)]="pagoVentaRapida.montoRecibido"
+                class="mt-1.5 w-full h-10 border border-slate-300 rounded-lg px-3 text-sm" />
+            </label>
+          }
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 px-5 py-4 border-t border-slate-200 bg-slate-50 shrink-0">
+        <button (click)="cerrarVentaRapida()" class="h-9 px-4 rounded-lg border border-slate-300 text-slate-600 text-sm font-semibold">Cancelar</button>
+        <button (click)="cobrarVentaRapida()" [disabled]="guardandoVentaRapida() || carritoVentaRapida().length === 0"
+          class="h-9 px-4 rounded-lg bg-[#0066AA] text-white text-sm font-semibold disabled:opacity-50">
+          {{ guardandoVentaRapida() ? 'Cobrando...' : 'Cobrar' }}
+        </button>
+      </div>
     </div>
   </div>
 }

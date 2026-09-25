@@ -10,7 +10,7 @@ import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-lea
 
 const DEFAULT_BRAND_COLOR = '#006BA8';
 const DEFAULT_LOGO_URL = 'https://toqqwxveqxhlottwetev.supabase.co/storage/v1/object/public/vargas_vet/Fondo%20de%20Pantalla%20Computador%20Simple%20Beige%20(7).png';
-const DEFAULT_COMPANY_NAME = 'SystemVet';
+const DEFAULT_COMPANY_NAME = 'SoftVet';
 
 @Component({
   selector: 'app-forgot-password',

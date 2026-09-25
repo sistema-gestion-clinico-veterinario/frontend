@@ -11,6 +11,8 @@ import { HistoriaClinicaService } from '../../../core/services/historia-clinica.
 import { CitaService } from '../../../core/services/cita.service';
 import { CompanyService } from '../../../core/services/company.service';
 import { AuditLogService } from '../../../core/services/audit-log.service';
+import { HistoriaClinicaPdfService } from '../../../core/services/historia-clinica-pdf.service';
+import { CompanyDTO } from '../../../models/request/company-dto';
 import { LoadingStore } from '../../../store/loading.store';
 import { AuthStore } from '../../../store/auth.store';
 import {
@@ -42,6 +44,7 @@ export class HistoriaClinicaMascotaComponent implements OnInit, OnDestroy {
   private readonly citaService  = inject(CitaService);
   private readonly companyService = inject(CompanyService);
   private readonly auditLogService = inject(AuditLogService);
+  private readonly historiaClinicaPdfService = inject(HistoriaClinicaPdfService);
   private readonly msgService   = inject(MessageService);
   private readonly sanitizer    = inject(DomSanitizer);
   readonly loadingStore         = inject(LoadingStore);
@@ -59,6 +62,7 @@ export class HistoriaClinicaMascotaComponent implements OnInit, OnDestroy {
   noTieneHc           = signal<boolean>(false);
   serviciosNoMedicos  = signal<CitaResponse[]>([]);
   loadingServicios    = signal(false);
+  descargandoHistoriaCompleta = signal(false);
 
   diagnosticosSeguimiento = signal<DiagnosticoResponse[]>([]);
   tratamientosSeguimiento = signal<TratamientoResponse[]>([]);
@@ -479,6 +483,29 @@ export class HistoriaClinicaMascotaComponent implements OnInit, OnDestroy {
     }
   }
 
+  private async obtenerEncabezadoEmpresaPdf(): Promise<{ empresa: CompanyDTO | null; logoDataUrl: string | null }> {
+    const companyId = this.authStore.selectedEnterprise()?.establishmentId ?? this.authStore.companyId() ?? null;
+    const empresa = companyId != null
+      ? await firstValueFrom(this.companyService.getById(companyId)).then(r => r.data).catch(() => null)
+      : null;
+    const logoDataUrl = empresa?.logoUrl ? await this.descargarComoDataUrl(empresa.logoUrl) : null;
+    return { empresa, logoDataUrl };
+  }
+
+  async descargarHistoriaCompleta(): Promise<void> {
+    const hc = this.hc();
+    if (!hc || this.descargandoHistoriaCompleta()) return;
+    this.descargandoHistoriaCompleta.set(true);
+    try {
+      const { empresa, logoDataUrl } = await this.obtenerEncabezadoEmpresaPdf();
+      await this.historiaClinicaPdfService.generarPdf(hc, empresa, logoDataUrl);
+    } catch {
+      this.msgService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo generar el PDF de la historia clínica.' });
+    } finally {
+      this.descargandoHistoriaCompleta.set(false);
+    }
+  }
+
   async descargarCartilla(tipo: 'vacunacion' | 'desparasitacion'): Promise<void> {
     const hc = this.hc();
     if (!hc) return;
@@ -486,11 +513,7 @@ export class HistoriaClinicaMascotaComponent implements OnInit, OnDestroy {
     const titulo = tipo === 'vacunacion' ? 'Cartilla de vacunación' : 'Cartilla de desparasitación';
     const columnaProducto = tipo === 'vacunacion' ? 'Vacuna' : 'Producto';
 
-    const companyId = this.authStore.selectedEnterprise()?.establishmentId ?? this.authStore.companyId() ?? null;
-    const empresa = companyId != null
-      ? await firstValueFrom(this.companyService.getById(companyId)).then(r => r.data).catch(() => null)
-      : null;
-    const logoDataUrl = empresa?.logoUrl ? await this.descargarComoDataUrl(empresa.logoUrl) : null;
+    const { empresa, logoDataUrl } = await this.obtenerEncabezadoEmpresaPdf();
 
     const [{ default: JsPdf }, { default: autoTable }] = await Promise.all([
       import('jspdf'),
