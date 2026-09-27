@@ -395,6 +395,7 @@ export class CartillaComponent implements OnInit {
 
   private cargarDatosMascota(petId: number) {
     this.cargandoCtrl.set(true);
+    this.servicioId = null;
     this.cartillaService.obtenerDetalle(petId).subscribe({
       next: ({ data }) => {
         this.tiposVacuna.set(data.vacunas ?? []);
@@ -437,7 +438,7 @@ export class CartillaComponent implements OnInit {
   cambiarModo(modo: 'VACUNACION' | 'DESPARASITACION') {
     this.modo.set(modo);
     this.resultado.set(null);
-    this.controlActivo.set(null);
+    this.limpiarAplicacion();
     this.servicioId = null;
     this.intervaloCantidad = modo === 'VACUNACION' ? 12 : 3;
     this.intervaloUnidad = 'MESES';
@@ -450,18 +451,21 @@ export class CartillaComponent implements OnInit {
   }
 
   prepararAplicacion(control: ControlPreventivoResponse) {
+    this.limpiarAplicacion();
     this.controlActivo.set(control);
     this.modo.set(control.tipo);
     this.resultado.set(null);
     if (control.tipo === 'VACUNACION') {
       this.tipoVacunaId = control.tipoVacunaId ?? null;
       this.intervaloCantidad = control.tipoVacunaId
-        ? (this.tiposVacuna().find(v => v.id === control.tipoVacunaId)?.periodicidadMesesSugerida ?? this.intervaloCantidad)
-        : this.intervaloCantidad;
+        ? (this.tiposVacuna().find(v => v.id === control.tipoVacunaId)?.periodicidadMesesSugerida ?? 12)
+        : 12;
       this.intervaloUnidad = 'MESES';
     } else {
       this.tipoDesparasitanteId = null;
       this.tipoVacunaId = null;
+      this.intervaloCantidad = 3;
+      this.intervaloUnidad = 'MESES';
     }
     const servicios = this.serviciosPreventivos().filter(s => s.tipoControlPreventivo === control.tipo);
     this.servicioId = servicios.length === 1 ? servicios[0].id : null;
@@ -574,11 +578,17 @@ export class CartillaComponent implements OnInit {
     if (this.dosis != null && !this.unidadDosis.trim()) {
       this.msgService.add({ severity: 'warn', summary: 'Falta unidad', detail: 'Indique la unidad de la dosis' }); return;
     }
+    const servicios = this.serviciosModo();
+    let servicioIdFinal = this.servicioId;
+    if (!servicioIdFinal && servicios.length === 1) servicioIdFinal = servicios[0].id;
+    if (!servicioIdFinal && servicios.length > 1) {
+      this.msgService.add({ severity: 'warn', summary: 'Falta servicio', detail: 'Seleccione el servicio a cobrar' }); return;
+    }
 
     const req = {
       mascotaId: m.id,
       controlPreventivoId: this.controlActivo()?.id,
-      servicioId: this.serviciosModo()[0]?.id,
+      servicioId: servicioIdFinal!,
       fechaAplicacion: this.fechaAplicacion,
       programarProximoControl: this.programarProximoControl,
       intervaloCantidad: this.programarProximoControl && !this.fechaProxima ? this.intervaloCantidad : undefined,
@@ -624,6 +634,7 @@ export class CartillaComponent implements OnInit {
     this.sitioAplicacion = '';
     this.pesoKg = null;
     this.observaciones = '';
+    this.programarProximoControl = true;
   }
 
   private cargarMatriz(petId: number) {

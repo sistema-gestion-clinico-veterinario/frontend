@@ -223,7 +223,9 @@ class ManagedStompConnection<T> implements RealtimeStompConnection {
 
       if (frame.startsWith('ERROR')) {
         console.error(`[${this.label} WS] El servidor rechazó la conexión`, frame);
-        this.socket?.close(1008, 'STOMP error');
+        // El navegador solo permite el código 1000 o el rango 3000-4999 en socket.close();
+        // 1008 (Policy Violation) es un código de protocolo reservado y provoca InvalidAccessError.
+        this.socket?.close(4008, 'STOMP error');
       }
     }
   }
