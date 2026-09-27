@@ -4,6 +4,7 @@ export interface ProductoRequest {
   categoriaId: number;
   precio: number;
   stock?: number;
+  stockMinimo?: number;
   descripcion?: string;
   imagenUrl?: string;
 }

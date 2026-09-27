@@ -4,6 +4,8 @@ export interface VistaDTO {
   nombre: string;
   ruta?: string;
   grupo?: string;
+  ventanaId?: number | null;
+  ventanaNombre?: string;
   orden?: number;
   ordenGrupo?: number | null;
   activo: boolean;
