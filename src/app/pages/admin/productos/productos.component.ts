@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { PaginatorModule } from 'primeng/paginator';
 import { SkeletonModule } from 'primeng/skeleton';
 import { ToastModule } from 'primeng/toast';
+import { TooltipModule } from 'primeng/tooltip';
 import { MessageService } from 'primeng/api';
 import { ProductoService } from '../../../core/services/producto.service';
 import { ProductoResponse } from '../../../models/response/producto-response';
@@ -14,7 +15,7 @@ import { HasPermissionDirective } from '../../../core/directives/has-permission.
 @Component({
   selector: 'app-productos',
   standalone: true,
-  imports: [CommonModule, PaginatorModule, SkeletonModule, ToastModule, HasPermissionDirective],
+  imports: [CommonModule, PaginatorModule, SkeletonModule, ToastModule, TooltipModule, HasPermissionDirective],
   providers: [MessageService],
   templateUrl: './productos.component.html'
 })

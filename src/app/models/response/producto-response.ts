@@ -7,6 +7,7 @@ export interface ProductoResponse {
   categoriaNombre: string;
   precio: number;
   stock: number;
+  stockMinimo: number;
   descripcion?: string;
   imagenUrl?: string;
   activo: boolean;

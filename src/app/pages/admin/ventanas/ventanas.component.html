@@ -317,6 +317,21 @@
                   <p class="text-[11px] text-slate-400 mt-1">Usa <span class="font-mono bg-slate-100 px-1 rounded">GENERAL</span> para que aparezca sin grupo</p>
                 </div>
 
+                <!-- VENTANA -->
+                <div>
+                  <label class="block text-[11px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5">Ventana (menú lateral)</label>
+                  <select
+                    [ngModel]="vistaForm().ventanaId"
+                    (ngModelChange)="updateField('ventanaId', $event)"
+                    class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#0066AA]/20 focus:border-[#0066AA] bg-white">
+                    <option [ngValue]="null">Sin ventana (no aparecerá en el menú)</option>
+                    @for (v of ventanas(); track v.id) {
+                      <option [ngValue]="v.id">{{ v.nombre }}{{ !v.activo ? ' (inactiva)' : '' }}</option>
+                    }
+                  </select>
+                  <p class="text-[11px] text-slate-400 mt-1">Determina en qué sección del menú lateral aparece esta vista. Si queda vacío, no será visible en la navegación.</p>
+                </div>
+
                 <!-- ACTIVO toggle -->
                 <label class="flex items-center justify-between p-3 bg-slate-50 rounded-xl cursor-pointer hover:bg-blue-50 transition-colors border border-slate-100">
                   <div class="flex items-center gap-2.5">
