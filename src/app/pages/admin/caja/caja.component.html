@@ -1,328 +1,183 @@
 <p-toast position="top-right" />
 
-<main class="mx-auto min-h-screen min-w-0 max-w-[1600px] space-y-4 overflow-x-hidden p-2 sm:space-y-5 sm:p-5 lg:p-6">
-  <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+<main class="mx-auto min-h-screen max-w-full space-y-4 overflow-x-hidden bg-slate-50/40">
+  <header class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
     <div class="flex items-center gap-3">
-      <i class="pi pi-inbox text-[#0066AA] text-3xl shrink-0"></i>
-      <div>
-        <p class="text-[11px] font-bold uppercase tracking-[.14em] text-[#0066AA]">Finanzas</p>
-        <h1 class="text-xl font-extrabold leading-tight tracking-tight text-slate-900">Caja</h1>
-        <p class="mt-1 text-sm text-slate-400 font-medium hidden sm:block">Punto de venta y control de ingresos</p>
-      </div>
+      <span class="grid size-12 shrink-0 place-items-center rounded-xl bg-cyan-50 text-[#07859a]"><i class="pi pi-wallet text-2xl"></i></span>
+      <div><h1 class="text-2xl font-extrabold tracking-tight text-slate-900">Caja</h1><p class="mt-0.5 text-sm text-slate-500">Registra pagos de citas y ventas de productos de la clínica.</p></div>
     </div>
     @if (!requiresCompanySelection) {
-      <div class="flex w-full items-center gap-2 sm:w-auto">
-        @if (!sesionCaja()) { <button (click)="abrirModalSesion('ABRIR')" class="h-10 flex-1 rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 sm:flex-none sm:px-4">Abrir caja</button> }
-        <button (click)="abrirVentaRapida()" class="flex h-10 flex-1 items-center justify-center gap-2 rounded-lg border border-[#0066AA] px-3 text-sm font-semibold text-[#0066AA] hover:bg-blue-50 sm:flex-none sm:px-4"><i class="pi pi-shopping-cart text-xs"></i><span>Venta rápida</span></button>
-        <button (click)="nuevaOperacion()" class="flex h-10 flex-1 items-center justify-center gap-2 rounded-lg bg-[#0066AA] px-3 text-sm font-semibold text-white hover:bg-[#005a96] sm:flex-none sm:px-4"><i class="pi pi-plus text-xs"></i><span>Nueva operación</span></button>
+      <div class="flex flex-wrap items-center gap-2">
+        <div class="flex h-[50px] min-w-[158px] items-center gap-3 rounded-xl border border-slate-200 bg-white px-4"><i class="pi pi-calendar text-[#07859a]"></i><div><p class="text-[10px] font-semibold text-slate-400">Hoy</p><p class="text-xs font-bold text-slate-700">{{ formatFechaActual() }}</p></div></div>
+        @if (sesionCaja(); as sesion) {
+          <div class="flex h-[50px] min-w-[188px] items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4">
+            <span class="grid size-8 place-items-center rounded-lg bg-white text-emerald-600"><i class="pi pi-lock-open text-sm"></i></span>
+            <div><p class="text-[10px] font-bold uppercase tracking-wide text-emerald-600">Caja abierta</p><p class="text-xs font-bold text-slate-700">Efectivo esperado: {{ formatMonto(sesion.efectivoEsperado) }}</p></div>
+          </div>
+        } @else {
+          <button type="button" (click)="abrirModalSesion('ABRIR')" class="flex h-[50px] min-w-[188px] items-center gap-3 rounded-xl bg-[#078ba0] px-4 text-left text-white transition-colors hover:bg-[#06798b]">
+            <span class="grid size-8 place-items-center rounded-lg bg-white/15"><i class="pi pi-lock-open text-sm"></i></span>
+            <div><p class="text-[10px] font-bold uppercase tracking-wide text-cyan-100">Caja cerrada</p><p class="text-sm font-extrabold">Abrir caja</p></div>
+          </button>
+        }
       </div>
     }
   </header>
 
   @if (requiresCompanySelection) {
-    <section class="rounded-xl border border-slate-200 bg-white px-5 py-5 sm:px-6">
-      <div class="flex items-start gap-3">
-        <div class="grid size-10 shrink-0 place-items-center rounded-lg bg-blue-50 text-[#0066AA]"><i class="pi pi-building text-sm"></i></div>
-        <div><h2 class="text-base font-extrabold text-slate-900">Selecciona una empresa</h2><p class="mt-1 text-sm leading-6 text-slate-500">La caja, sus sesiones y movimientos pertenecen a una empresa específica. Elige una desde el selector superior.</p></div>
-      </div>
-    </section>
+    <section class="rounded-xl border border-slate-200 bg-white p-6"><div class="flex items-start gap-3"><span class="grid size-11 shrink-0 place-items-center rounded-xl bg-cyan-50 text-[#07859a]"><i class="pi pi-building"></i></span><div><h2 class="font-bold text-slate-900">Selecciona una empresa</h2><p class="mt-1 text-sm text-slate-500">La caja pertenece a una empresa específica. Elige una desde el selector superior.</p></div></div></section>
   }
 
   @if (!requiresCompanySelection) {
-    @if (resumen()) {
-      <section class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <article class="bg-white border border-slate-200 rounded-xl p-4 flex items-center gap-3"><span class="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0"><i class="pi pi-arrow-up-right text-sm"></i></span><div class="min-w-0"><p class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Ingresos del periodo</p><p class="mt-1 text-lg font-semibold text-slate-900 truncate">{{ formatMonto(resumen()!.totalIngresos) }}</p></div></article>
-        <article class="bg-white border border-slate-200 rounded-xl p-4 flex items-center gap-3"><span class="w-10 h-10 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center shrink-0"><i class="pi pi-arrow-down-left text-sm"></i></span><div class="min-w-0"><p class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Egresos del periodo</p><p class="mt-1 text-lg font-semibold text-slate-900 truncate">{{ formatMonto(resumen()!.totalEgresos) }}</p></div></article>
-        <article class="bg-white border border-slate-200 rounded-xl p-4 flex items-center gap-3"><span class="w-10 h-10 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center shrink-0"><i class="pi pi-replay text-sm"></i></span><div class="min-w-0"><p class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Devoluciones</p><p class="mt-1 text-lg font-semibold text-slate-900 truncate">{{ formatMonto(resumen()!.totalDevoluciones) }}</p></div></article>
-        <article class="bg-white border border-slate-200 rounded-xl p-4 flex items-center gap-3"><span class="w-10 h-10 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center shrink-0"><i class="pi pi-wallet text-sm"></i></span><div class="min-w-0"><p class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Balance del periodo</p><p class="mt-1 text-lg font-semibold text-[#0066AA] truncate">{{ formatMonto(resumen()!.saldo) }}</p></div></article>
+    @if (resumen(); as resumenCaja) {
+      <section class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <article class="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-4"><span class="grid size-11 shrink-0 place-items-center rounded-full bg-emerald-50 text-emerald-600"><i class="pi pi-calendar"></i></span><div class="min-w-0"><p class="text-xs font-semibold text-slate-500">Ingresos por citas</p><p class="mt-1 truncate text-xl font-extrabold text-slate-900">{{ formatMonto(resumenCaja.ingresosCitas) }}</p></div></article>
+        <article class="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-4"><span class="grid size-11 shrink-0 place-items-center rounded-full bg-teal-50 text-teal-600"><i class="pi pi-box"></i></span><div class="min-w-0"><p class="text-xs font-semibold text-slate-500">Ingresos por productos</p><p class="mt-1 truncate text-xl font-extrabold text-slate-900">{{ formatMonto(resumenCaja.ingresosProductos) }}</p></div></article>
+        <article class="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-4"><span class="grid size-11 shrink-0 place-items-center rounded-full bg-rose-50 text-rose-500"><i class="pi pi-replay"></i></span><div class="min-w-0"><p class="text-xs font-semibold text-slate-500">Devoluciones</p><p class="mt-1 truncate text-xl font-extrabold text-slate-900">{{ formatMonto(resumenCaja.totalDevoluciones) }}</p></div></article>
+        <article class="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-4"><span class="grid size-11 shrink-0 place-items-center rounded-full bg-cyan-50 text-[#07859a]"><i class="pi pi-chart-bar"></i></span><div class="min-w-0"><p class="text-xs font-semibold text-slate-500">Balance del periodo</p><p class="mt-1 truncate text-xl font-extrabold text-slate-900">{{ formatMonto(resumenCaja.saldo) }}</p></div></article>
       </section>
     }
-    <section class="grid grid-cols-1 xl:grid-cols-[minmax(0,1.65fr)_minmax(330px,.85fr)] gap-4">
-      <article class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-        <div class="px-4 sm:px-5 py-4 border-b border-slate-200 bg-[#f8fafc] flex items-start justify-between gap-3">
-          <div><h2 class="text-sm font-bold text-slate-900">Cuenta de atención</h2><p class="text-xs text-slate-500 mt-0.5">Selecciona una cita y agrega los conceptos cobrados</p></div>
-          @if (cuentaSeleccionada()) { <button (click)="limpiarCuenta()" class="h-8 px-3 rounded-lg border border-slate-300 text-xs font-semibold text-slate-600 hover:bg-slate-50">Cambiar cita</button> }
+
+    <section class="grid grid-cols-1 items-start gap-4 2xl:grid-cols-[minmax(300px,.92fr)_minmax(540px,1.45fr)_minmax(330px,.88fr)]">
+      <article class="h-fit min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white">
+        <div class="border-b border-slate-200 p-4">
+          <h2 class="text-sm font-extrabold text-slate-900">Buscar cliente o mascota</h2>
+          <label class="relative mt-3 block"><i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400"></i>
+            @if (panelActivo() === 'CITAS') {
+              <input [ngModel]="posSearch()" (ngModelChange)="posSearch.set($event)" placeholder="Cliente, mascota o número de cita..." class="h-11 w-full rounded-lg border border-slate-300 pl-10 pr-3 text-sm outline-none focus:border-[#078ba0]" />
+            } @else {
+              <input [ngModel]="productoSearch()" (ngModelChange)="productoSearch.set($event)" placeholder="Producto, categoría, marca o SKU..." class="h-11 w-full rounded-lg border border-slate-300 pl-10 pr-3 text-sm outline-none focus:border-[#078ba0]" />
+            }
+          </label>
         </div>
-        @if (!cuentaSeleccionada()) {
-          <div class="p-4 sm:p-5">
-            <div class="mb-4 border-l-2 border-slate-300 pl-3 py-1"><p class="text-sm font-semibold text-slate-800">Carrito vacío</p><p class="text-xs text-slate-500 mt-0.5">Selecciona una cita pendiente para cargar el servicio y agregar conceptos.</p></div>
-            <p class="mb-2 text-[10px] font-semibold uppercase tracking-wide text-slate-500">Citas por cobrar</p>
-            <label class="relative block">
-              <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400"></i>
-              <input [ngModel]="posSearch()" (ngModelChange)="posSearch.set($event)" placeholder="Buscar cliente, mascota, servicio o número de cita..." class="w-full h-11 pl-10 pr-4 rounded-lg border border-slate-300 text-sm focus:outline-none focus:border-[#0066AA]" />
-            </label>
-            <div class="mt-3 border-y border-slate-200 max-h-[390px] overflow-y-auto">
-              @if (pendingLoading()) {
-                <div class="py-12 text-center text-sm text-slate-400">Cargando cuentas...</div>
-              } @else if (cuentasPos().length === 0) {
-                <div class="py-12 px-4 text-center"><p class="text-sm font-semibold text-slate-800">No hay cuentas por cobrar</p><p class="text-xs text-slate-500 mt-1">Las citas con saldo pendiente aparecerán aquí.</p></div>
-              } @else {
-                @for (cuenta of cuentasPos(); track cuenta.citaId) {
-                  <button (click)="abrirCuenta(cuenta)" class="w-full px-4 py-3 border-b last:border-b-0 border-slate-100 hover:bg-slate-50 text-left flex items-center gap-3">
-                    <span class="w-9 h-9 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center text-xs font-bold shrink-0">{{ cuenta.mascotaNombre.charAt(0) }}</span>
-                    <span class="min-w-0 flex-1"><span class="block text-sm font-semibold text-slate-800 truncate">{{ cuenta.mascotaNombre }} <span class="font-normal text-slate-400">· {{ cuenta.numeroCita }}</span></span><span class="block text-xs text-slate-500 truncate">{{ cuenta.apoderadoNombre }} · {{ cuenta.servicioNombre }}</span></span>
-                    <span class="text-right shrink-0"><span class="block text-sm font-bold text-amber-600">{{ formatMonto(cuenta.saldoPendiente) }}</span><span class="text-[10px] font-semibold text-slate-400">{{ cuenta.estadoPago === 'PAGO_PARCIAL' ? 'Parcial' : 'Pendiente' }}</span></span>
-                    <i class="pi pi-chevron-right text-[10px] text-slate-400"></i>
-                  </button>
-                }
+        <div class="grid grid-cols-2 border-b border-slate-200 bg-slate-50/60">
+          <button (click)="seleccionarPanel('CITAS')" class="h-12 border-b-2 text-xs font-bold" [class]="panelActivo() === 'CITAS' ? 'border-[#078ba0] bg-cyan-50/60 text-[#087e91]' : 'border-transparent text-slate-500 hover:bg-slate-50'"><i class="pi pi-calendar mr-2"></i>Citas del día ({{ cuentasPos().length }})</button>
+          <button (click)="seleccionarPanel('PRODUCTOS')" class="h-12 border-b-2 text-xs font-bold" [class]="panelActivo() === 'PRODUCTOS' ? 'border-[#078ba0] bg-cyan-50/60 text-[#087e91]' : 'border-transparent text-slate-500 hover:bg-slate-50'"><i class="pi pi-box mr-2"></i>Productos ({{ productosPos().length }})</button>
+        </div>
+        <div class="max-h-[440px] overflow-y-auto">
+          @if (panelActivo() === 'CITAS') {
+            @if (pendingLoading()) {
+              <div class="grid place-items-center px-6 py-12 text-sm text-slate-400">Cargando citas...</div>
+            } @else {
+              @for (cuenta of cuentasPos(); track cuenta.citaId) {
+                <button (click)="abrirCuenta(cuenta)" class="flex w-full items-center gap-3 border-b border-slate-100 px-4 py-4 text-left hover:bg-cyan-50/40" [class.bg-cyan-50]="cuentaSeleccionada()?.citaId === cuenta.citaId">
+                  <span class="grid size-11 shrink-0 place-items-center rounded-full bg-slate-100 text-2xl" role="img" [attr.aria-label]="'Mascota: ' + cuenta.especie">{{ emojiMascota(cuenta.especie) }}</span>
+                  <span class="min-w-0 flex-1"><span class="block truncate text-sm font-extrabold text-slate-800">{{ cuenta.mascotaNombre }}</span><span class="block truncate text-xs text-slate-500">Prop. {{ cuenta.apoderadoNombre }}</span><span class="mt-0.5 block truncate text-[11px] text-slate-400">{{ cuenta.servicioNombre }} · {{ formatFecha(cuenta.fechaAtencion) }}</span></span>
+                  <span class="text-right"><b class="block text-xs text-slate-700">{{ formatMonto(cuenta.saldoPendiente) }}</b><span class="mt-2 grid size-7 place-items-center rounded-md bg-[#078ba0] text-white"><i class="pi pi-plus text-[10px]"></i></span></span>
+                </button>
+              } @empty {
+                <div class="grid place-items-center px-6 py-12 text-center"><div><i class="pi pi-check-circle text-3xl text-emerald-400"></i><p class="mt-3 text-sm font-bold text-slate-700">No hay citas pendientes</p><p class="mt-1 text-xs text-slate-400">Las cuentas con saldo aparecerán aquí.</p></div></div>
               }
-            </div>
-          </div>
-        } @else {
+            }
+          } @else {
+            @for (producto of productosPos(); track producto.id) {
+              <div class="flex items-center gap-3 border-b border-slate-100 px-4 py-3.5">
+                <span class="grid size-11 shrink-0 place-items-center overflow-hidden rounded-lg bg-slate-100 text-[#078ba0]">@if (producto.imagenUrl) { <img [src]="producto.imagenUrl" [alt]="producto.nombre" class="size-full object-cover" /> } @else { <i class="pi pi-box"></i> }</span>
+                <span class="min-w-0 flex-1"><span class="flex items-center gap-1.5"><b class="truncate text-sm text-slate-800">{{ producto.nombre }}</b>@if (producto.requiereReceta) { <span class="shrink-0 rounded-full bg-amber-50 px-1.5 py-0.5 text-[9px] font-bold text-amber-700">Receta</span> }</span><span class="block truncate text-xs text-slate-400">{{ producto.categoriaNombre }} · Stock {{ producto.stock }}</span></span>
+                <span class="text-right"><b class="block text-xs text-slate-700">{{ formatMonto(producto.precio) }}</b><button (click)="agregarProductoOperacion(producto)" [disabled]="producto.stock <= 0 || savingDetalle()" class="mt-2 grid size-7 place-items-center rounded-md bg-[#078ba0] text-white disabled:bg-slate-200 disabled:text-slate-400"><i class="pi pi-plus text-[10px]"></i></button></span>
+              </div>
+            } @empty {
+              <div class="grid place-items-center px-6 py-12 text-center"><div><i class="pi pi-box text-3xl text-slate-300"></i><p class="mt-3 text-sm font-bold text-slate-700">No hay productos disponibles</p><p class="mt-1 text-xs text-slate-400">Prueba con otro término de búsqueda.</p></div></div>
+            }
+          }
+        </div>
+      </article>
+
+      <article class="h-fit min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white">
+        <header class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-5 py-4">
+          <div><h2 class="flex items-center gap-2 text-sm font-extrabold text-slate-900"><i class="pi pi-shopping-cart text-[#078ba0]"></i>Detalle de la venta</h2>@if (cuentaSeleccionada(); as cuenta) { <p class="mt-1 text-xs text-slate-500">{{ cuenta.mascotaNombre }} · {{ cuenta.numeroCita }} · {{ cuenta.apoderadoNombre }}</p> } @else { <p class="mt-1 text-xs text-slate-500">Venta directa de productos</p> }</div>
+          <div class="flex gap-2"><button (click)="limpiarOperacion()" class="h-9 rounded-lg border border-cyan-200 px-3 text-xs font-bold text-[#078ba0] hover:bg-cyan-50"><i class="pi pi-trash mr-1.5"></i>Limpiar</button><button (click)="seleccionarPanel('PRODUCTOS')" class="h-9 rounded-lg bg-[#078ba0] px-3 text-xs font-bold text-white hover:bg-[#06798b]"><i class="pi pi-plus mr-1.5"></i>Agregar producto</button></div>
+        </header>
+        <div>
+          <div class="hidden grid-cols-[minmax(0,1fr)_110px_110px_110px_36px] gap-3 border-b border-slate-200 bg-slate-50 px-5 py-3 text-[10px] font-bold uppercase tracking-wide text-slate-500 md:grid"><span>Producto / Servicio</span><span class="text-center">Cant.</span><span class="text-right">Precio</span><span class="text-right">Subtotal</span><span></span></div>
           @if (cuentaSeleccionada(); as cuenta) {
-            <div class="px-4 sm:px-5 py-3 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <div><p class="text-sm font-bold text-slate-900">{{ cuenta.mascotaNombre }} <span class="font-normal text-slate-400">· {{ cuenta.numeroCita }}</span></p><p class="text-xs text-slate-500">{{ cuenta.apoderadoNombre }} · {{ formatFecha(cuenta.fechaAtencion) }}</p></div>
-              <span class="self-start sm:self-auto px-2.5 py-1 rounded-full bg-white border border-amber-200 text-[10px] font-bold uppercase text-amber-700">{{ cuenta.estadoPago === 'PAGO_PARCIAL' ? 'Pago parcial' : 'Por cobrar' }}</span>
-            </div>
-            <div class="divide-y divide-slate-100 lg:hidden">
-              @for (detalle of cuenta.detalles; track detalle.id) {
-                <article class="space-y-3 p-4">
-                  <div class="flex items-start justify-between gap-3"><div class="min-w-0"><h3 class="break-words text-sm font-semibold text-slate-800">{{ detalle.descripcion }}</h3><p class="text-[11px] text-slate-500">{{ tipoDetalleLabel(detalle.tipo) }}</p></div>@if (!detalle.esServicioBase) { <button (click)="eliminarDetalle(detalle.id)" aria-label="Eliminar concepto" class="grid size-9 shrink-0 place-items-center rounded-lg border border-slate-200 text-rose-500"><i class="pi pi-trash text-xs"></i></button> }</div>
-                  <div class="flex items-center justify-between gap-3"><div>@if (detalle.esServicioBase) { <span class="text-xs text-slate-500">Cantidad: <b class="text-slate-700">{{ detalle.cantidad }}</b></span> } @else { <div class="inline-flex items-center overflow-hidden rounded-lg border border-slate-200"><button (click)="cambiarCantidad(detalle, -1)" class="size-9 text-slate-500">−</button><span class="w-9 text-center text-xs font-semibold">{{ detalle.cantidad }}</span><button (click)="cambiarCantidad(detalle, 1)" class="size-9 text-slate-500">+</button></div> }</div><div class="text-right"><p class="text-[10px] text-slate-400">{{ formatMonto(detalle.precioUnitario) }} c/u</p><p class="text-sm font-bold" [class]="detalle.subtotal < 0 ? 'text-rose-600' : 'text-slate-900'">{{ formatMonto(detalle.subtotal) }}</p></div></div>
-                </article>
-              }
-            </div>
-            <div class="hidden overflow-x-auto md:block">
-              <table class="w-full min-w-[660px] text-sm">
-                <thead class="bg-slate-50 border-b border-slate-200"><tr><th class="px-5 py-3 text-left text-[11px] font-semibold text-slate-500">Detalle</th><th class="px-4 py-3 text-center text-[11px] font-semibold text-slate-500">Cantidad</th><th class="px-4 py-3 text-right text-[11px] font-semibold text-slate-500">Precio</th><th class="px-4 py-3 text-right text-[11px] font-semibold text-slate-500">Total</th><th class="w-12"></th></tr></thead>
-                <tbody class="divide-y divide-slate-100">
-                  @for (detalle of cuenta.detalles; track detalle.id) {
-                    <tr>
-                      <td class="px-5 py-3"><p class="font-semibold text-slate-800">{{ detalle.descripcion }}</p><p class="text-[11px] text-slate-500">{{ tipoDetalleLabel(detalle.tipo) }}</p></td>
-                      <td class="px-4 py-3 text-center text-slate-600">@if (detalle.esServicioBase) { {{ detalle.cantidad }} } @else { <div class="inline-flex items-center rounded-lg border border-slate-200 overflow-hidden"><button (click)="cambiarCantidad(detalle, -1)" class="w-8 h-8 hover:bg-slate-50 text-slate-500">−</button><span class="w-8 text-xs font-semibold">{{ detalle.cantidad }}</span><button (click)="cambiarCantidad(detalle, 1)" class="w-8 h-8 hover:bg-slate-50 text-slate-500">+</button></div> }</td><td class="px-4 py-3 text-right text-slate-600">{{ formatMonto(detalle.precioUnitario) }}</td><td class="px-4 py-3 text-right font-bold" [class]="detalle.subtotal < 0 ? 'text-rose-600' : 'text-slate-800'">{{ formatMonto(detalle.subtotal) }}</td>
-                      <td class="px-3 py-3 text-center">@if (!detalle.esServicioBase) { <button (click)="eliminarDetalle(detalle.id)" class="w-8 h-8 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50"><i class="pi pi-trash text-xs"></i></button> }</td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            </div>
-            <div class="p-4 sm:p-5 bg-slate-50/70 border-t border-slate-200">
-              <p class="text-[11px] font-bold uppercase tracking-wide text-slate-500 mb-2">Agregar concepto</p>
-              @if (productos().length > 0) {
-                <select [(ngModel)]="productoSeleccionadoId" (ngModelChange)="seleccionarProducto($event)"
-                  class="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm mb-2">
-                  <option [ngValue]="null">Elegir del catálogo de productos…</option>
-                  @for (producto of productos(); track producto.id) {
-                    <option [ngValue]="producto.id">{{ producto.nombre }} — {{ formatMonto(producto.precio) }}</option>
-                  }
-                </select>
-              }
-              <div class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-[150px_1fr_70px_110px_auto]">
-                <select [(ngModel)]="nuevoDetalle.tipo" class="h-10 rounded-lg border border-slate-300 bg-white px-2 text-xs"><option value="VACUNA">Vacuna</option><option value="MEDICAMENTO">Medicamento</option><option value="INSUMO">Insumo</option><option value="PROCEDIMIENTO">Procedimiento</option><option value="SERVICIO_ADICIONAL">Servicio adicional</option><option value="DESCUENTO">Descuento</option><option value="OTRO">Otro</option></select>
-                <input [(ngModel)]="nuevoDetalle.descripcion" maxlength="180" placeholder="Descripción del concepto" class="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm sm:col-span-2 lg:col-span-1" />
-                <input [(ngModel)]="nuevoDetalle.cantidad" type="number" min="1" max="999" class="h-10 rounded-lg border border-slate-300 bg-white px-2 text-sm" />
-                <input [(ngModel)]="nuevoDetalle.precioUnitario" type="number" min="0.01" step="0.01" placeholder="0.00" class="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm" />
-                <button (click)="agregarDetalle()" [disabled]="savingDetalle()" class="h-10 rounded-lg border border-[#0066AA] px-4 text-xs font-bold text-[#0066AA] hover:bg-blue-50 disabled:opacity-50 sm:col-span-2 lg:col-span-1">Agregar</button>
+            @for (detalle of cuenta.detalles; track detalle.id) {
+              <div class="grid gap-3 border-b border-slate-100 px-5 py-4 md:grid-cols-[minmax(0,1fr)_110px_110px_110px_36px] md:items-center">
+                <div class="min-w-0"><p class="truncate text-sm font-bold text-slate-800">{{ detalle.descripcion }}</p><p class="mt-0.5 text-xs text-slate-400">{{ tipoDetalleLabel(detalle.tipo) }}</p></div>
+                <div class="flex justify-between md:justify-center">@if (detalle.esServicioBase) { <span class="text-xs font-semibold text-slate-600">{{ detalle.cantidad }}</span> } @else { <div class="inline-flex items-center overflow-hidden rounded-lg border border-slate-200"><button (click)="cambiarCantidad(detalle, -1)" class="size-8 text-slate-500 hover:bg-slate-50">−</button><span class="w-8 text-center text-xs font-bold">{{ detalle.cantidad }}</span><button (click)="cambiarCantidad(detalle, 1)" class="size-8 text-slate-500 hover:bg-slate-50">+</button></div> }</div>
+                <p class="text-right text-xs font-semibold text-slate-600">{{ formatMonto(detalle.precioUnitario) }}</p><p class="text-right text-xs font-extrabold text-slate-800">{{ formatMonto(detalle.subtotal) }}</p>
+                <div class="text-right">@if (!detalle.esServicioBase) { <button (click)="eliminarDetalle(detalle.id)" class="grid size-8 place-items-center rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-500"><i class="pi pi-trash text-xs"></i></button> }</div>
+              </div>
+            }
+          } @else {
+            @for (linea of carritoVentaRapida(); track linea.producto.id; let i = $index) {
+              <div class="grid gap-3 border-b border-slate-100 px-5 py-4 md:grid-cols-[minmax(0,1fr)_110px_110px_110px_36px] md:items-center">
+                <div class="min-w-0"><p class="truncate text-sm font-bold text-slate-800">{{ linea.producto.nombre }}</p><p class="mt-0.5 text-xs text-slate-400">{{ linea.producto.categoriaNombre }}@if (linea.producto.requiereReceta) { · Requiere receta }</p></div>
+                <div class="flex justify-between md:justify-center"><div class="inline-flex items-center overflow-hidden rounded-lg border border-slate-200"><button (click)="cambiarCantidadProducto(i, -1)" class="size-8 text-slate-500 hover:bg-slate-50">−</button><span class="w-8 text-center text-xs font-bold">{{ linea.cantidad }}</span><button (click)="cambiarCantidadProducto(i, 1)" class="size-8 text-slate-500 hover:bg-slate-50">+</button></div></div>
+                <p class="text-right text-xs font-semibold text-slate-600">{{ formatMonto(linea.producto.precio) }}</p><p class="text-right text-xs font-extrabold text-slate-800">{{ formatMonto(linea.cantidad * linea.producto.precio) }}</p><button (click)="quitarProductoOperacion(i)" class="grid size-8 place-items-center rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-500"><i class="pi pi-trash text-xs"></i></button>
+              </div>
+            } @empty {
+              <div class="grid place-items-center px-6 py-12 text-center"><div><span class="mx-auto grid size-12 place-items-center rounded-full bg-cyan-50 text-[#078ba0]"><i class="pi pi-shopping-cart text-lg"></i></span><p class="mt-3 text-sm font-bold text-slate-700">El detalle está vacío</p><p class="mt-1 max-w-xs text-xs leading-5 text-slate-400">Selecciona una cita o agrega productos para iniciar una operación.</p></div></div>
+            }
+          }
+        </div>
+        @if (cuentaSeleccionada() || carritoVentaRapida().length > 0) {
+          <div class="mx-5 mb-4 flex items-start gap-2 rounded-lg border border-cyan-100 bg-cyan-50/60 px-3 py-2 text-[11px] text-cyan-800"><i class="pi pi-tag mt-0.5"></i><span>Puedes añadir productos a una cita o registrar una venta sin cita.</span></div>
+          @if (carritoRequiereReceta()) { <div class="mx-5 mb-4 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-800"><i class="pi pi-exclamation-triangle mt-0.5"></i><span>Verifica la receta antes de cobrar los productos marcados.</span></div> }
+          <footer class="border-t border-slate-200 bg-slate-50/60 px-5 py-4"><div class="ml-auto max-w-[290px] space-y-2 text-sm"><div class="flex justify-between"><span class="text-slate-500">Subtotal sin IGV</span><span class="font-semibold text-slate-700">{{ formatMonto(subtotalSinIgv()) }}</span></div><div class="flex justify-between"><span class="text-slate-500">IGV incluido (18%)</span><span class="font-semibold text-slate-700">{{ formatMonto(igvIncluido()) }}</span></div><div class="flex justify-between border-t border-slate-200 pt-3"><span class="text-base font-extrabold text-slate-900">Total</span><span class="text-xl font-extrabold text-[#078ba0]">{{ formatMonto(totalOperacion()) }}</span></div></div></footer>
+        }
+      </article>
+
+      <aside class="h-fit overflow-hidden rounded-xl border border-slate-200 bg-white">
+        <header class="border-b border-slate-200 px-5 py-4"><h2 class="flex items-center gap-2 text-sm font-extrabold text-slate-900"><i class="pi pi-credit-card text-[#078ba0]"></i>Método de pago</h2></header>
+        <div class="p-4">
+          <div class="grid grid-cols-3 gap-1.5">
+            @for (metodo of metodosPago; track metodo) {
+              <button (click)="seleccionarMetodoPago(metodo)" class="h-12 rounded-md border px-1 py-1 text-[9px] font-bold leading-tight" [class]="pagoForm.metodoPago === metodo ? 'border-[#078ba0] bg-[#078ba0] text-white' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'"><i class="pi mb-0.5 block text-xs" [class]="metodo === 'EFECTIVO' ? 'pi-wallet' : metodo === 'TARJETA' ? 'pi-credit-card' : metodo === 'TRANSFERENCIA' ? 'pi-arrow-right-arrow-left' : 'pi-mobile'"></i>{{ metodoPagoLabel(metodo) }}</button>
+            }
+          </div>
+          <div class="mt-5 space-y-4">
+            <label class="block"><span class="text-xs font-bold text-slate-600">Importe a cobrar</span><div class="mt-1.5 flex h-11 items-center rounded-lg border border-slate-200 bg-slate-50 px-3 text-base font-extrabold text-slate-800">{{ formatMonto(totalOperacion()) }}</div></label>
+            @if (pagoForm.metodoPago === 'EFECTIVO') {
+              <label class="block"><span class="text-xs font-bold text-slate-600">Monto recibido</span><div class="relative mt-1.5"><span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-500">S/</span><input [ngModel]="pagoForm.montoRecibido" (ngModelChange)="limitarMontoRecibido($event)" type="number" min="0" max="10000" step="0.01" class="h-11 w-full rounded-lg border border-slate-300 pl-10 pr-3 text-base font-bold outline-none focus:border-[#078ba0]" /></div></label>
+              <label class="block"><span class="text-xs font-bold text-slate-600">Vuelto</span><div class="mt-1.5 flex h-11 items-center rounded-lg border border-slate-200 bg-slate-50 px-3 text-base font-extrabold text-emerald-600">{{ formatMonto(cambioPago()) }}</div></label>
+            } @else {
+              <div class="rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs leading-5 text-slate-500">Confirma que el pago por {{ metodoPagoLabel(pagoForm.metodoPago) }} fue recibido antes de registrar la operación.</div>
+            }
+          </div>
+          <button (click)="registrarOperacion()" [disabled]="savingPago() || guardandoVentaRapida() || (!cuentaSeleccionada() && carritoVentaRapida().length === 0)" class="mt-5 h-12 w-full rounded-lg bg-[#078ba0] text-sm font-extrabold text-white hover:bg-[#06798b] disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400"><i class="pi pi-credit-card mr-2"></i>{{ savingPago() || guardandoVentaRapida() ? 'Procesando...' : 'Registrar pago' }}</button>
+          <div class="mt-4 flex items-start gap-2 rounded-lg bg-cyan-50 px-3 py-3 text-[11px] leading-5 text-cyan-800"><i class="pi pi-info-circle mt-0.5"></i><span>El pago quedará registrado en caja y actualizará automáticamente el resumen del periodo.</span></div>
+          @if (sesionCaja()) {
+            <div class="mt-4 border-t border-slate-200 pt-4">
+              <p class="mb-2 text-[10px] font-bold uppercase tracking-wide text-slate-400">Gestión de caja</p>
+              <div class="grid grid-cols-2 gap-2">
+                <button (click)="abrirEgreso()" class="h-9 rounded-lg border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50"><i class="pi pi-arrow-down mr-1.5 text-rose-500"></i>Egreso</button>
+                <button (click)="abrirModalSesion('ARQUEO')" class="h-9 rounded-lg border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50"><i class="pi pi-calculator mr-1.5 text-amber-500"></i>Arqueo</button>
+                <button (click)="abrirModalSesion('CERRAR')" class="col-span-2 h-9 rounded-lg border border-slate-200 text-xs font-bold text-slate-500 hover:bg-slate-50"><i class="pi pi-lock mr-2"></i>Cerrar caja</button>
               </div>
             </div>
-            <footer class="flex flex-col-reverse items-stretch gap-3 border-t border-slate-200 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5"><button (click)="limpiarCuenta()" class="h-10 rounded-lg border border-rose-200 text-xs font-semibold text-rose-600 hover:bg-rose-50 sm:h-auto sm:border-0"><i class="pi pi-times mr-1"></i>Cancelar operación</button><div class="flex items-end justify-between text-right sm:block"><span class="mr-3 text-xs text-slate-500">Total de cuenta</span><span class="text-2xl font-bold text-[#0066AA]">{{ formatMonto(cuenta.total) }}</span></div></footer>
           }
-        }
-      </article>
-      <aside class="bg-white border border-slate-200 rounded-xl overflow-hidden h-fit">
-        <div class="px-4 sm:px-5 py-4 border-b border-slate-200 bg-[#f8fafc]"><h2 class="text-sm font-bold text-slate-900">Resumen de pago</h2></div>
-        @if (cuentaSeleccionada(); as cuenta) {
-          <div class="p-4 sm:p-5">
-            <div class="space-y-3 pb-4 border-b border-slate-200"><div class="flex justify-between text-sm"><span class="text-slate-600">Subtotal</span><span class="font-semibold text-slate-800">{{ formatMonto(cuenta.total) }}</span></div><div class="flex justify-between text-sm"><span class="text-slate-600">Pagado anteriormente</span><span class="font-semibold text-emerald-600">- {{ formatMonto(cuenta.montoPagado) }}</span></div></div>
-            <div class="py-4 flex items-end justify-between"><span class="text-sm font-bold text-slate-900">Total a cobrar</span><span class="text-2xl font-bold text-[#0066AA]">{{ formatMonto(cuenta.saldoPendiente) }}</span></div>
-            <label class="block"><span class="text-xs font-semibold text-slate-600">Importe de este pago</span><input [(ngModel)]="pagoForm.monto" type="number" min="0.01" [max]="cuenta.saldoPendiente" step="0.01" class="mt-1.5 w-full h-10 rounded-lg border border-slate-300 px-3 text-sm font-semibold" /></label>
-            <p class="text-xs font-bold text-slate-700 mt-5 mb-2">Método de pago</p>
-            <div class="flex flex-wrap gap-1.5">
-              @for (metodo of ['EFECTIVO','TARJETA','YAPE','PLIN','TRANSFERENCIA']; track metodo) {
-                <button (click)="pagoForm.metodoPago = $any(metodo); pagoForm.montoRecibido = metodo === 'EFECTIVO' ? pagoForm.monto : null" class="h-8 px-2.5 rounded-md border text-[10px] font-semibold" [class]="pagoForm.metodoPago === metodo ? 'border-[#0066AA] bg-blue-50 text-[#0066AA]' : 'border-slate-200 text-slate-600 hover:bg-slate-50'">{{ metodo === 'TRANSFERENCIA' ? 'Transfer.' : metodo === 'TARJETA' ? 'Tarjeta' : metodo === 'EFECTIVO' ? 'Efectivo' : metodo === 'YAPE' ? 'Yape' : 'Plin' }}</button>
-              }
-            </div>
-            @if (pagoForm.metodoPago === 'EFECTIVO') {
-              <label class="block mt-4"><span class="text-xs font-semibold text-slate-600">Monto recibido</span><div class="relative mt-1.5"><input [ngModel]="pagoForm.montoRecibido" (ngModelChange)="limitarMontoRecibido($event)" type="number" min="0.01" max="10000" step="0.01" class="w-full h-10 rounded-lg border border-slate-300 pl-3 pr-10 text-sm" /><span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">S/</span></div><span class="mt-1 block text-[10px] text-slate-400">Máximo S/ 10,000 · vuelto máximo S/ 1,000</span></label>
-              <div class="mt-3 flex justify-between text-sm"><span class="text-slate-600">Vuelto</span><span class="font-bold text-emerald-600">{{ formatMonto(cambioPago()) }}</span></div>
-            } @else {
-              <div class="mt-4 p-3 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-500">Registro manual: confirma que el pago por {{ metodoPagoLabel(pagoForm.metodoPago) }} fue recibido antes de finalizar.</div>
-            }
-            <button (click)="registrarPago()" [disabled]="savingPago()" class="mt-5 w-full h-11 rounded-lg bg-[#0066AA] text-white text-sm font-bold hover:bg-[#005a96] disabled:opacity-50"><i class="pi pi-check text-xs mr-2"></i>{{ savingPago() ? 'Procesando...' : 'Cobrar y finalizar' }}</button>
-          </div>
-        } @else {
-          <div class="min-h-[285px] flex flex-col">
-            <div class="flex-1 px-6 py-9 flex flex-col items-center justify-center text-center">
-              <span class="w-14 h-14 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center"><i class="pi pi-receipt text-xl"></i></span>
-              <p class="text-sm font-semibold text-slate-800 mt-4">Selecciona una cita</p>
-              <p class="text-xs text-slate-500 mt-1 max-w-[220px]">Aquí aparecerán el detalle de la cuenta y el importe pendiente.</p>
-            </div>
-            <div class="p-3 border-t border-slate-200 bg-slate-50/70">
-              <button disabled class="w-full h-10 rounded-lg bg-slate-200 text-slate-400 text-xs font-semibold cursor-not-allowed">Continuar con el pago</button>
-            </div>
-          </div>
-        }
+        </div>
       </aside>
     </section>
-    <section class="grid grid-cols-1 xl:grid-cols-[minmax(0,1.65fr)_minmax(330px,.85fr)] gap-4">
-      <div class="flex flex-col gap-3 min-w-0">
-        <article class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-          <div class="px-4 sm:px-5 py-3.5 border-b border-slate-200 bg-[#f8fafc] flex items-center justify-between gap-3"><div class="flex items-center gap-2"><i class="pi pi-history text-[#0066AA]"></i><h2 class="text-sm font-bold text-slate-900">Últimos movimientos en caja</h2></div><span class="text-xs text-slate-500">{{ totalRecords() }} registros</span></div>
-          <div class="divide-y divide-slate-100 lg:hidden">@for (m of movimientos(); track m.id) { <article class="space-y-3 p-4"><div class="flex items-start justify-between gap-3"><div><span class="rounded-full px-2 py-1 text-[10px] font-semibold" [class]="tipoBadge(m.tipo)">{{ tipoLabel(m.tipo) }}</span><p class="mt-2 text-xs text-slate-500">{{ formatFecha(m.fecha) }}</p></div><strong class="text-sm" [class]="m.tipo === 'INGRESO' ? 'text-emerald-600' : 'text-rose-600'">{{ m.tipo === 'INGRESO' ? '+' : '-' }} {{ formatMonto(m.monto) }}</strong></div><p class="break-words text-xs text-slate-700">{{ m.descripcion || 'Sin descripción' }}</p><div class="flex items-center justify-between gap-3 border-t border-slate-100 pt-3 text-[11px] text-slate-500"><span>{{ m.metodoPago ? metodoPagoLabel($any(m.metodoPago)) : 'Sin método' }}</span><span class="truncate text-right">{{ m.registradoPor || '—' }}</span></div></article> } @empty { <p class="p-8 text-center text-sm text-slate-400">No hay movimientos registrados.</p> }</div>
-          <div class="hidden overflow-x-auto md:block"><table class="w-full min-w-[760px] text-sm"><thead class="bg-slate-50 border-b border-slate-200"><tr><th class="px-4 py-2.5 text-left text-[10px] font-semibold text-slate-500">Fecha</th><th class="px-4 py-2.5 text-left text-[10px] font-semibold text-slate-500">Tipo</th><th class="px-4 py-2.5 text-left text-[10px] font-semibold text-slate-500">Descripción</th><th class="px-4 py-2.5 text-left text-[10px] font-semibold text-slate-500">Método</th><th class="px-4 py-2.5 text-right text-[10px] font-semibold text-slate-500">Monto</th><th class="px-4 py-2.5 text-left text-[10px] font-semibold text-slate-500">Usuario</th></tr></thead><tbody class="divide-y divide-slate-100">
-          @for (m of movimientos(); track m.id) { <tr><td class="px-4 py-3 text-xs text-slate-500 whitespace-nowrap">{{ formatFecha(m.fecha) }}</td><td class="px-4 py-3"><span class="px-2 py-1 rounded-full text-[10px] font-semibold" [class]="tipoBadge(m.tipo)">{{ tipoLabel(m.tipo) }}</span></td><td class="px-4 py-3 text-xs text-slate-700">{{ m.descripcion || '—' }}</td><td class="px-4 py-3 text-xs text-slate-500">{{ m.metodoPago ? metodoPagoLabel($any(m.metodoPago)) : '—' }}</td><td class="px-4 py-3 text-right text-xs font-bold" [class]="m.tipo === 'INGRESO' ? 'text-emerald-600' : 'text-rose-600'">{{ m.tipo === 'INGRESO' ? '+' : '-' }} {{ formatMonto(m.monto) }}</td><td class="px-4 py-3 text-xs text-slate-500">{{ m.registradoPor || '—' }}</td></tr> }
-          @empty { <tr><td colspan="6" class="px-4 py-10 text-center text-sm text-slate-400">No hay movimientos registrados.</td></tr> }
-        </tbody></table></div>
-      </article>
-      @if (totalRecords() > pageSize()) { <div class="bg-white border border-slate-200 rounded-xl"><p-paginator [first]="currentPage() * pageSize()" [rows]="pageSize()" [totalRecords]="totalRecords()" [showCurrentPageReport]="false" styleClass="!border-none !bg-transparent !py-3" (onPageChange)="cargar($event)" /></div> }
-    </div>
-    <aside class="bg-white border border-slate-200 rounded-xl p-4 h-fit">
-      <h2 class="text-sm font-bold text-slate-900">Acciones rápidas</h2>
-      <div class="grid grid-cols-2 gap-2 mt-3">
-        <button (click)="abrirEgreso()" class="min-h-[82px] rounded-xl border border-slate-200 bg-white hover:bg-slate-50 flex flex-col items-center justify-center gap-2 text-xs font-semibold text-slate-700"><i class="pi pi-arrow-down text-lg text-rose-500"></i><span>Registrar egreso</span></button>
-        <button (click)="cargarPendientes(); cargar(); cargarSesion()" class="min-h-[82px] rounded-xl border border-slate-200 bg-white hover:bg-slate-50 flex flex-col items-center justify-center gap-2 text-xs font-semibold text-slate-700"><i class="pi pi-refresh text-lg text-blue-600"></i><span>Actualizar caja</span></button>
-        <button (click)="nuevaOperacion()" class="min-h-[82px] rounded-xl border border-slate-200 bg-white hover:bg-slate-50 flex flex-col items-center justify-center gap-2 text-xs font-semibold text-slate-700"><i class="pi pi-receipt text-lg text-violet-600"></i><span>Nueva operación</span></button>
-        @if (sesionCaja()) {
-          <button (click)="abrirModalSesion('ARQUEO')" class="min-h-[82px] rounded-xl border border-slate-200 bg-white hover:bg-slate-50 flex flex-col items-center justify-center gap-2 text-xs font-semibold text-slate-700"><i class="pi pi-calculator text-lg text-amber-500"></i><span>Arqueo de caja</span></button>
-          <button (click)="abrirModalSesion('CERRAR')" class="col-span-2 h-10 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-600"><i class="pi pi-lock mr-2 text-slate-500"></i>Cerrar caja</button>
-        } @else {
-          <button (click)="abrirModalSesion('ABRIR')" class="min-h-[82px] rounded-xl border border-slate-200 bg-white hover:bg-slate-50 flex flex-col items-center justify-center gap-2 text-xs font-semibold text-slate-700"><i class="pi pi-lock-open text-lg text-emerald-600"></i><span>Abrir caja</span></button>
-        }
-      </div>
-      <div class="mt-3 px-3.5 py-3 rounded-xl border flex items-start gap-3" [class]="sesionCaja() ? 'border-blue-200 bg-blue-50' : 'border-slate-200 bg-slate-50'">
-        <i class="pi mt-0.5 text-sm" [class]="sesionCaja() ? 'pi-info-circle text-blue-600' : 'pi-lock text-slate-500'"></i>
-        <div><p class="text-xs font-semibold text-slate-700">{{ sesionCaja() ? 'Caja operativa' : 'Caja cerrada' }}</p><p class="text-[10px] text-slate-500 mt-0.5">{{ sesionCaja() ? 'Los movimientos confirmados se registran automáticamente.' : 'Abre una sesión para registrar cobros y egresos.' }}</p></div>
-      </div>
-    </aside>
-  </section>
-}
+
+    <section class="overflow-hidden rounded-xl border border-slate-200 bg-white">
+      <header class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-5 py-4"><h2 class="flex items-center gap-2 text-sm font-extrabold text-slate-900"><i class="pi pi-history text-[#078ba0]"></i>Últimos movimientos en caja</h2><div class="flex items-center gap-2"><span class="text-xs text-slate-400">{{ totalRecords() }} registros</span><button (click)="cargar()" class="grid size-8 place-items-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50"><i class="pi pi-refresh text-xs"></i></button></div></header>
+      <div class="overflow-x-auto"><table class="w-full min-w-[900px] text-sm">
+        <thead class="bg-slate-50"><tr><th class="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-wide text-slate-500">Fecha / Hora</th><th class="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-wide text-slate-500">Concepto</th><th class="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-wide text-slate-500">Descripción</th><th class="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-wide text-slate-500">Método</th><th class="px-5 py-3 text-right text-[10px] font-bold uppercase tracking-wide text-slate-500">Monto</th><th class="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-wide text-slate-500">Usuario</th></tr></thead>
+        <tbody class="divide-y divide-slate-100">
+          @for (movimiento of movimientos(); track movimiento.id) {
+            <tr class="hover:bg-slate-50/70"><td class="whitespace-nowrap px-5 py-3 text-xs text-slate-500">{{ formatFecha(movimiento.fecha) }}</td><td class="px-5 py-3"><span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold" [class]="movimiento.concepto === 'PAGO_CITA' ? 'bg-emerald-50 text-emerald-700' : movimiento.concepto === 'VENTA_PRODUCTO' ? 'bg-cyan-50 text-cyan-700' : tipoBadge(movimiento.tipo)"><i class="pi" [class]="movimiento.concepto === 'PAGO_CITA' ? 'pi-calendar' : movimiento.concepto === 'VENTA_PRODUCTO' ? 'pi-box' : 'pi-receipt'"></i>{{ conceptoLabel(movimiento.concepto) }}</span></td><td class="max-w-[360px] px-5 py-3 text-xs text-slate-700">{{ movimiento.descripcion || 'Sin descripción' }}</td><td class="px-5 py-3 text-xs text-slate-500">{{ movimiento.metodoPago ? metodoPagoLabel($any(movimiento.metodoPago)) : '—' }}</td><td class="px-5 py-3 text-right text-xs font-extrabold" [class]="movimiento.tipo === 'INGRESO' ? 'text-emerald-600' : 'text-rose-600'">{{ movimiento.tipo === 'INGRESO' ? '+' : '-' }} {{ formatMonto(movimiento.monto) }}</td><td class="px-5 py-3 text-xs text-slate-500">{{ movimiento.registradoPor || '—' }}</td></tr>
+          } @empty { <tr><td colspan="6" class="px-5 py-12 text-center text-sm text-slate-400">No hay movimientos registrados.</td></tr> }
+        </tbody>
+      </table></div>
+      @if (totalRecords() > pageSize()) { <div class="border-t border-slate-200"><p-paginator [first]="currentPage() * pageSize()" [rows]="pageSize()" [totalRecords]="totalRecords()" [showCurrentPageReport]="false" styleClass="!border-none !bg-transparent !py-3" (onPageChange)="cargar($event)" /></div> }
+    </section>
+  }
 </main>
 
 @if (showEgresoModal()) {
-  <div class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-950/45 p-0 sm:p-4">
-    <div class="bg-white rounded-t-2xl sm:rounded-xl border border-slate-200 w-full max-w-md overflow-hidden">
-      <div class="flex items-center justify-between px-5 py-4 border-b border-slate-200"><div><h2 class="font-bold text-slate-900">Registrar egreso</h2><p class="text-xs text-slate-500 mt-0.5">Agrega un gasto operativo a la caja</p></div><button (click)="showEgresoModal.set(false)" class="w-8 h-8 rounded-lg text-slate-400 hover:bg-slate-50"><i class="pi pi-times"></i></button></div>
-      <div class="px-5 py-5 space-y-4"><label class="block"><span class="text-xs font-semibold text-slate-700">Monto (S/)</span><input type="number" step="0.01" min="0.01" [(ngModel)]="egresoForm.monto" placeholder="0.00" class="mt-1.5 w-full h-10 border border-slate-300 rounded-lg px-3 text-sm" /></label><label class="block"><span class="text-xs font-semibold text-slate-700">Categoría</span><select [(ngModel)]="egresoForm.concepto" class="mt-1.5 w-full h-10 border border-slate-300 rounded-lg px-3 text-sm"><option value="GASTO_OPERATIVO">Gasto operativo</option><option value="OTRO">Otro</option></select></label><label class="block"><span class="text-xs font-semibold text-slate-700">Descripción</span><textarea [(ngModel)]="egresoForm.descripcion" rows="3" maxlength="300" placeholder="Motivo del egreso" class="mt-1.5 w-full border border-slate-300 rounded-lg px-3 py-2 text-sm resize-none"></textarea></label></div>
-      <div class="flex justify-end gap-2 px-5 py-4 border-t border-slate-200 bg-slate-50"><button (click)="showEgresoModal.set(false)" class="h-9 px-4 rounded-lg border border-slate-300 text-slate-600 text-sm font-semibold">Cancelar</button><button (click)="guardarEgreso()" [disabled]="savingEgreso()" class="h-9 px-4 rounded-lg bg-rose-600 text-white text-sm font-semibold disabled:opacity-50">{{ savingEgreso() ? 'Guardando...' : 'Registrar egreso' }}</button></div>
-    </div>
-  </div>
+  <div class="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/45 sm:items-center sm:p-4"><div class="w-full max-w-md overflow-hidden rounded-t-2xl border border-slate-200 bg-white sm:rounded-xl">
+    <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4"><div><h2 class="font-bold text-slate-900">Registrar egreso</h2><p class="mt-0.5 text-xs text-slate-500">Agrega un gasto operativo a la caja</p></div><button (click)="showEgresoModal.set(false)" class="grid size-8 place-items-center rounded-lg text-slate-400 hover:bg-slate-50"><i class="pi pi-times"></i></button></div>
+    <div class="space-y-4 px-5 py-5"><label class="block"><span class="text-xs font-semibold text-slate-700">Monto (S/)</span><input type="number" step="0.01" min="0.01" [(ngModel)]="egresoForm.monto" placeholder="0.00" class="mt-1.5 h-10 w-full rounded-lg border border-slate-300 px-3 text-sm" /></label><label class="block"><span class="text-xs font-semibold text-slate-700">Categoría</span><select [(ngModel)]="egresoForm.concepto" class="mt-1.5 h-10 w-full rounded-lg border border-slate-300 px-3 text-sm"><option value="GASTO_OPERATIVO">Gasto operativo</option><option value="OTRO">Otro</option></select></label><label class="block"><span class="text-xs font-semibold text-slate-700">Descripción</span><textarea [(ngModel)]="egresoForm.descripcion" rows="3" maxlength="300" placeholder="Motivo del egreso" class="mt-1.5 w-full resize-none rounded-lg border border-slate-300 px-3 py-2 text-sm"></textarea></label></div>
+    <div class="flex justify-end gap-2 border-t border-slate-200 bg-slate-50 px-5 py-4"><button (click)="showEgresoModal.set(false)" class="h-9 rounded-lg border border-slate-300 px-4 text-sm font-semibold text-slate-600">Cancelar</button><button (click)="guardarEgreso()" [disabled]="savingEgreso()" class="h-9 rounded-lg bg-rose-600 px-4 text-sm font-semibold text-white disabled:opacity-50">{{ savingEgreso() ? 'Guardando...' : 'Registrar egreso' }}</button></div>
+  </div></div>
 }
 
 @if (showSesionModal(); as tipoSesion) {
-  <div class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-950/45 p-0 sm:p-4">
-    <div class="bg-white rounded-t-2xl sm:rounded-xl border border-slate-200 w-full max-w-md overflow-hidden">
-      <div class="flex items-center justify-between px-5 py-4 border-b border-slate-200"><div><h2 class="font-bold text-slate-900">{{ tipoSesion === 'ABRIR' ? 'Abrir caja' : tipoSesion === 'ARQUEO' ? 'Arqueo de caja' : 'Cerrar caja' }}</h2><p class="text-xs text-slate-500 mt-0.5">{{ tipoSesion === 'ABRIR' ? 'Registra el fondo inicial de efectivo.' : 'Cuenta el efectivo físico disponible.' }}</p></div><button (click)="showSesionModal.set(null)" class="w-8 h-8 rounded-lg text-slate-400 hover:bg-slate-50"><i class="pi pi-times"></i></button></div>
-      <div class="px-5 py-5 space-y-4">@if (tipoSesion !== 'ABRIR') { <div class="rounded-lg border border-slate-200 bg-slate-50 p-3 flex justify-between"><span class="text-xs text-slate-600">Efectivo esperado</span><span class="text-sm font-bold text-slate-900">{{ formatMonto(sesionCaja()?.efectivoEsperado ?? 0) }}</span></div> }<label class="block"><span class="text-xs font-semibold text-slate-700">{{ tipoSesion === 'ABRIR' ? 'Fondo de apertura' : 'Efectivo contado' }} (S/)</span><input type="number" step="0.01" min="0" [max]="tipoSesion === 'ABRIR' ? 10000 : 100000" [(ngModel)]="sesionForm.monto" class="mt-1.5 w-full h-10 border border-slate-300 rounded-lg px-3 text-sm" /></label>@if (tipoSesion !== 'ABRIR') { <label class="block"><span class="text-xs font-semibold text-slate-700">Observaciones</span><textarea [(ngModel)]="sesionForm.observaciones" maxlength="300" rows="3" placeholder="Diferencias, incidencias o detalle del conteo" class="mt-1.5 w-full border border-slate-300 rounded-lg px-3 py-2 text-sm resize-none"></textarea></label> }</div>
-      <div class="flex justify-end gap-2 px-5 py-4 border-t border-slate-200 bg-slate-50"><button (click)="showSesionModal.set(null)" class="h-9 px-4 rounded-lg border border-slate-300 text-slate-600 text-sm font-semibold">Cancelar</button><button (click)="guardarSesion()" [disabled]="savingSesion()" class="h-9 px-4 rounded-lg bg-[#0066AA] text-white text-sm font-semibold disabled:opacity-50">{{ savingSesion() ? 'Guardando...' : tipoSesion === 'ABRIR' ? 'Abrir caja' : tipoSesion === 'ARQUEO' ? 'Registrar arqueo' : 'Cerrar caja' }}</button></div>
-    </div>
-  </div>
-}
-
-@if (mostrarVentaRapida()) {
-  <div class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-950/45 p-0 sm:p-4">
-    <div class="bg-white rounded-t-2xl sm:rounded-xl border border-slate-200 w-full max-w-lg overflow-hidden flex flex-col max-h-[95dvh]">
-      <div class="flex items-center justify-between px-5 py-4 border-b border-slate-200 shrink-0">
-        <div>
-          <h2 class="font-bold text-slate-900">Venta rápida</h2>
-          <p class="text-xs text-slate-500 mt-0.5">Vende productos del catálogo sin necesidad de una cita</p>
-        </div>
-        <button (click)="cerrarVentaRapida()" class="w-8 h-8 rounded-lg text-slate-400 hover:bg-slate-50"><i class="pi pi-times"></i></button>
-      </div>
-
-      <div class="px-5 py-4 space-y-4 overflow-y-auto">
-        <!-- Cliente -->
-        <div>
-          <span class="text-xs font-semibold text-slate-700">Cliente (opcional)</span>
-          @if (clienteSeleccionado) {
-            <div class="mt-1.5 flex items-center justify-between rounded-lg border border-blue-200 bg-blue-50 px-3 py-2">
-              <span class="text-sm font-semibold text-slate-800">{{ clienteSeleccionado.nombre }} {{ clienteSeleccionado.apellido }}</span>
-              <button (click)="quitarClienteVentaRapida()" class="text-slate-400 hover:text-rose-500"><i class="pi pi-times text-xs"></i></button>
-            </div>
-          } @else {
-            <div class="mt-1.5 flex gap-2">
-              <input type="text" [(ngModel)]="clienteQuery" (keyup.enter)="buscarClientesVentaRapida()"
-                placeholder="Buscar cliente registrado por nombre…"
-                class="h-10 flex-1 min-w-0 rounded-lg border border-slate-300 px-3 text-sm" />
-              <button (click)="buscarClientesVentaRapida()" [disabled]="buscandoClientes()"
-                class="h-10 shrink-0 rounded-lg border border-slate-300 px-3 text-sm font-semibold text-slate-600 hover:bg-slate-50 disabled:opacity-50">
-                Buscar
-              </button>
-            </div>
-            @if (clientesEncontrados().length > 0) {
-              <div class="mt-2 rounded-lg border border-slate-200 divide-y divide-slate-100 max-h-32 overflow-y-auto">
-                @for (cliente of clientesEncontrados(); track cliente.id) {
-                  <button type="button" (click)="seleccionarClienteVentaRapida(cliente)"
-                    class="block w-full text-left px-3 py-2 text-sm hover:bg-slate-50">
-                    {{ cliente.nombre }} {{ cliente.apellido }}
-                    <span class="text-xs text-slate-400">· {{ cliente.numeroDocumento }}</span>
-                  </button>
-                }
-              </div>
-            }
-            <input type="text" [(ngModel)]="clienteNombreLibre" maxlength="160"
-              placeholder="…o escribe el nombre de un cliente no registrado (opcional)"
-              class="mt-2 h-10 w-full rounded-lg border border-slate-300 px-3 text-sm" />
-          }
-        </div>
-
-        <!-- Agregar productos -->
-        <div>
-          <span class="text-xs font-semibold text-slate-700">Agregar producto</span>
-          <div class="mt-1.5 flex gap-2">
-            <select [(ngModel)]="productoVentaRapidaId" class="h-10 flex-1 min-w-0 rounded-lg border border-slate-300 px-2 text-sm">
-              <option [ngValue]="null">Selecciona un producto…</option>
-              @for (producto of productos(); track producto.id) {
-                <option [ngValue]="producto.id">{{ producto.nombre }} — {{ formatMonto(producto.precio) }} ({{ producto.stock }} disp.)</option>
-              }
-            </select>
-            <input type="number" min="1" max="999" [(ngModel)]="cantidadVentaRapida" class="h-10 w-16 shrink-0 rounded-lg border border-slate-300 px-2 text-sm" />
-            <button (click)="agregarAlCarritoVentaRapida()" [disabled]="!productoVentaRapidaId"
-              class="h-10 shrink-0 rounded-lg border border-[#0066AA] px-3 text-sm font-bold text-[#0066AA] hover:bg-blue-50 disabled:opacity-50">
-              Agregar
-            </button>
-          </div>
-        </div>
-
-        <!-- Carrito -->
-        <div class="rounded-lg border border-slate-200 overflow-hidden">
-          @if (carritoVentaRapida().length === 0) {
-            <p class="text-center text-sm text-slate-400 py-6">Aún no agregaste productos</p>
-          }
-          @for (linea of carritoVentaRapida(); track linea.producto.id; let i = $index) {
-            <div class="flex items-center justify-between gap-2 px-3 py-2 border-b border-slate-100 last:border-0">
-              <div class="min-w-0">
-                <p class="text-sm font-semibold text-slate-800 truncate">{{ linea.producto.nombre }}</p>
-                <p class="text-xs text-slate-400">{{ linea.cantidad }} × {{ formatMonto(linea.producto.precio) }}</p>
-              </div>
-              <div class="flex items-center gap-2 shrink-0">
-                <span class="text-sm font-bold text-slate-800">{{ formatMonto(linea.cantidad * linea.producto.precio) }}</span>
-                <button (click)="quitarDelCarritoVentaRapida(i)" class="text-slate-400 hover:text-rose-500"><i class="pi pi-trash text-xs"></i></button>
-              </div>
-            </div>
-          }
-        </div>
-
-        <div class="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2.5">
-          <span class="text-sm font-semibold text-slate-600">Total</span>
-          <span class="text-xl font-bold text-[#0066AA]">{{ formatMonto(totalVentaRapida()) }}</span>
-        </div>
-
-        <!-- Pago -->
-        <div class="grid grid-cols-2 gap-3">
-          <label class="block">
-            <span class="text-xs font-semibold text-slate-700">Forma de pago</span>
-            <select [(ngModel)]="pagoVentaRapida.metodoPago" class="mt-1.5 w-full h-10 border border-slate-300 rounded-lg px-3 text-sm">
-              <option value="EFECTIVO">Efectivo</option>
-              <option value="YAPE">Yape</option>
-            </select>
-          </label>
-          @if (pagoVentaRapida.metodoPago === 'EFECTIVO') {
-            <label class="block">
-              <span class="text-xs font-semibold text-slate-700">Monto recibido (S/)</span>
-              <input type="number" step="0.01" min="0" [(ngModel)]="pagoVentaRapida.montoRecibido"
-                class="mt-1.5 w-full h-10 border border-slate-300 rounded-lg px-3 text-sm" />
-            </label>
-          }
-        </div>
-      </div>
-
-      <div class="flex justify-end gap-2 px-5 py-4 border-t border-slate-200 bg-slate-50 shrink-0">
-        <button (click)="cerrarVentaRapida()" class="h-9 px-4 rounded-lg border border-slate-300 text-slate-600 text-sm font-semibold">Cancelar</button>
-        <button (click)="cobrarVentaRapida()" [disabled]="guardandoVentaRapida() || carritoVentaRapida().length === 0"
-          class="h-9 px-4 rounded-lg bg-[#0066AA] text-white text-sm font-semibold disabled:opacity-50">
-          {{ guardandoVentaRapida() ? 'Cobrando...' : 'Cobrar' }}
-        </button>
-      </div>
-    </div>
-  </div>
+  <div class="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/45 sm:items-center sm:p-4"><div class="w-full max-w-md overflow-hidden rounded-t-2xl border border-slate-200 bg-white sm:rounded-xl">
+    <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4"><div><h2 class="font-bold text-slate-900">{{ tipoSesion === 'ABRIR' ? 'Abrir caja' : tipoSesion === 'ARQUEO' ? 'Arqueo de caja' : 'Cerrar caja' }}</h2><p class="mt-0.5 text-xs text-slate-500">{{ tipoSesion === 'ABRIR' ? 'Registra el fondo inicial de efectivo.' : 'Cuenta el efectivo físico disponible.' }}</p></div><button (click)="showSesionModal.set(null)" class="grid size-8 place-items-center rounded-lg text-slate-400 hover:bg-slate-50"><i class="pi pi-times"></i></button></div>
+    <div class="space-y-4 px-5 py-5">@if (tipoSesion !== 'ABRIR') { <div class="flex justify-between rounded-lg border border-slate-200 bg-slate-50 p-3"><span class="text-xs text-slate-600">Efectivo esperado</span><span class="text-sm font-bold text-slate-900">{{ formatMonto(sesionCaja()?.efectivoEsperado ?? 0) }}</span></div> }<label class="block"><span class="text-xs font-semibold text-slate-700">{{ tipoSesion === 'ABRIR' ? 'Fondo de apertura' : 'Efectivo contado' }} (S/)</span><input type="number" step="0.01" min="0" [max]="tipoSesion === 'ABRIR' ? 10000 : 100000" [(ngModel)]="sesionForm.monto" class="mt-1.5 h-10 w-full rounded-lg border border-slate-300 px-3 text-sm" /></label>@if (tipoSesion !== 'ABRIR') { <label class="block"><span class="text-xs font-semibold text-slate-700">Observaciones</span><textarea [(ngModel)]="sesionForm.observaciones" maxlength="300" rows="3" placeholder="Diferencias o incidencias" class="mt-1.5 w-full resize-none rounded-lg border border-slate-300 px-3 py-2 text-sm"></textarea></label> }</div>
+    <div class="flex justify-end gap-2 border-t border-slate-200 bg-slate-50 px-5 py-4"><button (click)="showSesionModal.set(null)" class="h-9 rounded-lg border border-slate-300 px-4 text-sm font-semibold text-slate-600">Cancelar</button><button (click)="guardarSesion()" [disabled]="savingSesion()" class="h-9 rounded-lg bg-[#078ba0] px-4 text-sm font-semibold text-white disabled:opacity-50">{{ savingSesion() ? 'Guardando...' : tipoSesion === 'ABRIR' ? 'Abrir caja' : tipoSesion === 'ARQUEO' ? 'Registrar arqueo' : 'Cerrar caja' }}</button></div>
+  </div></div>
 }

@@ -41,7 +41,8 @@ function validateAccess(route: ActivatedRouteSnapshot, authStore: any, router: R
   // Fallback checks (legacy or explicit data parameters)
   const requiredVentana = route.data?.['ventana'] as string | undefined;
   if (requiredVentana) {
-    if (!authStore.hasAccess(requiredVentana, 'leer')) {
+    const requiredPermission = (route.data?.['permiso'] ?? 'leer') as 'leer' | 'escribir' | 'modificar' | 'eliminar';
+    if (!authStore.hasAccess(requiredVentana, requiredPermission)) {
       return router.createUrlTree([resolveInitialRoute(authStore.menu() ?? [], authStore.activeRolePurpose())]);
     }
   }

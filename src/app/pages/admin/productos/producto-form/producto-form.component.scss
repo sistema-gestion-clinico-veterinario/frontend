@@ -1,0 +1,19 @@
+:host input:focus,
+:host select:focus,
+:host textarea:focus {
+  border-color: rgb(203 213 225) !important;
+  box-shadow: none !important;
+  outline: none !important;
+  --tw-ring-color: transparent !important;
+  --tw-ring-shadow: 0 0 #0000 !important;
+}
+
+:host .product-detail-mode input:disabled,
+:host .product-detail-mode select:disabled,
+:host .product-detail-mode textarea:disabled {
+  cursor: default;
+  border-color: rgb(226 232 240);
+  background-color: rgb(248 250 252);
+  color: rgb(51 65 85);
+  opacity: 1;
+}

@@ -68,6 +68,7 @@ export class CajaComponent implements OnInit, OnDestroy {
   pendingLoading = signal(false);
   pendingTotal = signal(0);
   pendingPage = signal(0);
+  panelActivo = signal<'CITAS' | 'PRODUCTOS'>('CITAS');
   posSearch = signal('');
   cuentasPos = computed(() => {
     const term = normalizeText(this.posSearch()).toLocaleLowerCase('es-PE');
@@ -83,6 +84,14 @@ export class CajaComponent implements OnInit, OnDestroy {
     tipo: 'MEDICAMENTO', descripcion: '', cantidad: 1, precioUnitario: 0
   };
   productos = signal<ProductoResponse[]>([]);
+  productoSearch = signal('');
+  productosPos = computed(() => {
+    const term = normalizeText(this.productoSearch()).toLocaleLowerCase('es-PE');
+    return this.productos().filter(producto => {
+      const text = `${producto.nombre} ${producto.categoriaNombre ?? ''} ${producto.marca ?? ''} ${producto.sku ?? ''}`.toLocaleLowerCase('es-PE');
+      return (!term || text.includes(term)) && producto.activo;
+    });
+  });
   productoSeleccionadoId: number | null = null;
 
   mostrarVentaRapida = signal(false);
@@ -95,12 +104,18 @@ export class CajaComponent implements OnInit, OnDestroy {
   buscandoClientes = signal(false);
   clienteSeleccionado: ApoderadoListResponse | null = null;
   clienteNombreLibre = '';
-  pagoVentaRapida: { metodoPago: 'EFECTIVO' | 'YAPE'; montoRecibido: number | null } = {
+  pagoVentaRapida: { metodoPago: MetodoPago; montoRecibido: number | null } = {
     metodoPago: 'EFECTIVO', montoRecibido: null
   };
 
   totalVentaRapida = computed(() =>
     this.carritoVentaRapida().reduce((sum, linea) => sum + linea.producto.precio * linea.cantidad, 0));
+  carritoRequiereReceta = computed(() =>
+    this.carritoVentaRapida().some(linea => linea.producto.requiereReceta));
+  totalOperacion = computed(() => Number(this.cuentaSeleccionada()?.saldoPendiente ?? this.totalVentaRapida()));
+  subtotalSinIgv = computed(() => this.totalOperacion() / 1.18);
+  igvIncluido = computed(() => this.totalOperacion() - this.subtotalSinIgv());
+  readonly metodosPago: MetodoPago[] = ['EFECTIVO', 'YAPE', 'TARJETA', 'TRANSFERENCIA', 'PLIN'];
   pagoForm: {
     metodoPago: MetodoPago;
     monto: number;
@@ -115,6 +130,19 @@ export class CajaComponent implements OnInit, OnDestroy {
 
   get requiresCompanySelection(): boolean {
     return this.authStore.isSuperAdmin() && !this.companyId;
+  }
+
+  emojiMascota(especie: CuentaCitaResponse['especie'] | null | undefined): string {
+    const emojis: Record<CuentaCitaResponse['especie'], string> = {
+      PERRO: '🐶',
+      GATO: '🐱',
+      AVE: '🐦',
+      REPTIL: '🦎',
+      ROEDOR: '🐹',
+      EXOTICO: '🦜',
+      OTRO: '🐾'
+    };
+    return especie ? emojis[especie] : '🐾';
   }
 
   private async obtenerEncabezadoEmpresaPdf(): Promise<{ empresa: CompanyDTO | null; logoDataUrl: string | null }> {
@@ -153,6 +181,107 @@ export class CajaComponent implements OnInit, OnDestroy {
       next: res => this.productos.set(res.data ?? []),
       error: () => this.productos.set([])
     });
+  }
+
+  seleccionarPanel(panel: 'CITAS' | 'PRODUCTOS') {
+    this.panelActivo.set(panel);
+  }
+
+  agregarProductoOperacion(producto: ProductoResponse) {
+    if (producto.stock <= 0) {
+      this.messageService.add({ severity: 'warn', summary: 'Sin stock', detail: `${producto.nombre} no tiene unidades disponibles.` });
+      return;
+    }
+
+    const cuenta = this.cuentaSeleccionada();
+    if (cuenta) {
+      if (this.savingDetalle()) return;
+      const tipo: TipoDetalleCuenta = producto.categoriaNombre?.toUpperCase().includes('MEDICAMENTO') ? 'MEDICAMENTO' : 'INSUMO';
+      this.savingDetalle.set(true);
+      this.cajaService.agregarDetalle(cuenta.citaId, {
+        tipo,
+        descripcion: producto.nombre,
+        cantidad: 1,
+        precioUnitario: Number(producto.precio),
+        productoId: producto.id
+      }).subscribe({
+        next: response => {
+          this.cuentaSeleccionada.set(response.data);
+          this.prepararPago(response.data);
+          this.savingDetalle.set(false);
+          this.cargarPendientes();
+        },
+        error: err => {
+          this.savingDetalle.set(false);
+          this.messageService.add({ severity: 'error', summary: 'No se agregó el producto', detail: err?.error?.message ?? 'Intenta nuevamente.' });
+        }
+      });
+      return;
+    }
+
+    const carrito = this.carritoVentaRapida().map(linea => ({ ...linea }));
+    const existente = carrito.find(linea => linea.producto.id === producto.id);
+    if (existente) {
+      if (existente.cantidad >= producto.stock) {
+        this.messageService.add({ severity: 'warn', summary: 'Stock insuficiente', detail: `Solo hay ${producto.stock} unidades disponibles.` });
+        return;
+      }
+      existente.cantidad += 1;
+    } else {
+      carrito.push({ producto, cantidad: 1 });
+    }
+    this.carritoVentaRapida.set(carrito);
+    this.prepararPagoVentaLibre();
+  }
+
+  cambiarCantidadProducto(index: number, cambio: number) {
+    const carrito = this.carritoVentaRapida().map(linea => ({ ...linea }));
+    const linea = carrito[index];
+    if (!linea) return;
+    const cantidad = linea.cantidad + cambio;
+    if (cantidad < 1) {
+      carrito.splice(index, 1);
+    } else if (cantidad <= linea.producto.stock) {
+      linea.cantidad = cantidad;
+    } else {
+      this.messageService.add({ severity: 'warn', summary: 'Stock insuficiente', detail: `Solo hay ${linea.producto.stock} unidades disponibles.` });
+      return;
+    }
+    this.carritoVentaRapida.set(carrito);
+    this.prepararPagoVentaLibre();
+  }
+
+  quitarProductoOperacion(index: number) {
+    this.quitarDelCarritoVentaRapida(index);
+    this.prepararPagoVentaLibre();
+  }
+
+  private prepararPagoVentaLibre() {
+    const total = this.totalVentaRapida();
+    this.pagoForm.monto = total;
+    if (this.pagoForm.metodoPago === 'EFECTIVO') this.pagoForm.montoRecibido = total;
+  }
+
+  seleccionarMetodoPago(metodo: MetodoPago) {
+    this.pagoForm.metodoPago = metodo;
+    this.pagoForm.montoRecibido = metodo === 'EFECTIVO' ? this.totalOperacion() : null;
+    this.pagoForm.monto = this.totalOperacion();
+  }
+
+  limpiarOperacion() {
+    this.cuentaSeleccionada.set(null);
+    this.carritoVentaRapida.set([]);
+    this.clienteSeleccionado = null;
+    this.clienteNombreLibre = '';
+    this.pagoForm = { metodoPago: 'EFECTIVO', monto: 0, montoRecibido: null };
+  }
+
+  registrarOperacion() {
+    if (this.cuentaSeleccionada()) {
+      this.registrarPago();
+      return;
+    }
+    this.cobrarVentaRapida();
   }
 
   seleccionarProducto(productoId: number | null) {
@@ -236,8 +365,12 @@ export class CajaComponent implements OnInit, OnDestroy {
       return;
     }
     const total = this.totalVentaRapida();
-    if (this.pagoVentaRapida.metodoPago === 'EFECTIVO') {
-      const recibido = Number(this.pagoVentaRapida.montoRecibido);
+    if (!this.sesionCaja()) {
+      this.messageService.add({ severity: 'warn', summary: 'Caja cerrada', detail: 'Abre la caja antes de registrar cobros.' });
+      return;
+    }
+    if (this.pagoForm.metodoPago === 'EFECTIVO') {
+      const recibido = Number(this.pagoForm.montoRecibido);
       if (!recibido || recibido < total) {
         this.messageService.add({ severity: 'warn', summary: 'Efectivo inválido', detail: 'El monto recibido debe cubrir el total.' });
         return;
@@ -252,14 +385,15 @@ export class CajaComponent implements OnInit, OnDestroy {
       apoderadoId: this.clienteSeleccionado?.id,
       clienteNombre: this.clienteSeleccionado ? undefined : (this.clienteNombreLibre.trim() || undefined),
       items,
-      metodoPago: this.pagoVentaRapida.metodoPago,
-      montoRecibido: this.pagoVentaRapida.metodoPago === 'EFECTIVO' ? Number(this.pagoVentaRapida.montoRecibido) : undefined
+      metodoPago: this.pagoForm.metodoPago,
+      montoRecibido: this.pagoForm.metodoPago === 'EFECTIVO' ? Number(this.pagoForm.montoRecibido) : undefined
     }).subscribe({
       next: r => {
         this.guardandoVentaRapida.set(false);
-        this.mostrarVentaRapida.set(false);
+        this.limpiarOperacion();
         this.messageService.add({ severity: 'success', summary: 'Venta registrada', detail: `Total: S/ ${Number(r.data?.total ?? 0).toFixed(2)}` });
         this.cargarProductos();
+        this.cargar();
         if (r.data) {
           void this.obtenerEncabezadoEmpresaPdf()
             .then(({ empresa, logoDataUrl }) => this.notaVentaPdf.mostrarVentaLibre(r.data!, empresa, logoDataUrl))
@@ -314,6 +448,7 @@ export class CajaComponent implements OnInit, OnDestroy {
   abrirCuenta(cuenta: CuentaCitaResponse) {
     this.cajaService.obtenerCuenta(cuenta.citaId).subscribe({
       next: r => {
+        if (this.carritoVentaRapida().length > 0) this.carritoVentaRapida.set([]);
         this.cuentaSeleccionada.set(r.data);
         this.prepararPago(r.data);
         this.nuevoDetalle = { tipo: 'MEDICAMENTO', descripcion: '', cantidad: 1, precioUnitario: 0 };
@@ -325,11 +460,6 @@ export class CajaComponent implements OnInit, OnDestroy {
   limpiarCuenta() {
     this.cuentaSeleccionada.set(null);
     this.posSearch.set('');
-  }
-
-  nuevaOperacion() {
-    this.limpiarCuenta();
-    this.messageService.add({ severity: 'info', summary: 'Nueva operación', detail: 'Selecciona una cita para cargar su cuenta al carrito.' });
   }
 
   prepararPago(cuenta: CuentaCitaResponse) {
@@ -633,6 +763,7 @@ export class CajaComponent implements OnInit, OnDestroy {
   conceptoLabel(c: string): string {
     const map: Record<string, string> = {
       PAGO_CITA: 'Pago de cita',
+      VENTA_PRODUCTO: 'Venta de producto',
       CANCELACION_DEVOLUCION: 'Dev. cancelación',
       GASTO_OPERATIVO: 'Gasto operativo',
       OTRO: 'Otro'
@@ -647,5 +778,9 @@ export class CajaComponent implements OnInit, OnDestroy {
 
   formatMonto(m: number | null): string {
     return m != null ? `S/ ${Number(m).toFixed(2)}` : '—';
+  }
+
+  formatFechaActual(): string {
+    return new Date().toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' });
   }
 }

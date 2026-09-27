@@ -1,4 +1,4 @@
-export interface CategoriaProductoRequest {
+export interface UnidadMedidaRequest {
   companyId?: number;
   nombre: string;
   descripcion?: string;

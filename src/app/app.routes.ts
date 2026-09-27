@@ -406,13 +406,23 @@ export const routes: Routes = [
       },
       {
         path: 'admin/productos/nuevo',
-        data: { ventana: 'VISTA_PRODUCTOS' },
+        data: { ventana: 'VISTA_PRODUCTOS', permiso: 'escribir' },
+        loadComponent: () => import('./pages/admin/productos/producto-form/producto-form.component').then((m) => m.ProductoFormComponent)
+      },
+      {
+        path: 'admin/productos/:id/detalle',
+        data: { ventana: 'VISTA_PRODUCTOS', permiso: 'leer', modo: 'detalle' },
         loadComponent: () => import('./pages/admin/productos/producto-form/producto-form.component').then((m) => m.ProductoFormComponent)
       },
       {
         path: 'admin/productos/:id/editar',
-        data: { ventana: 'VISTA_PRODUCTOS' },
+        data: { ventana: 'VISTA_PRODUCTOS', permiso: 'modificar' },
         loadComponent: () => import('./pages/admin/productos/producto-form/producto-form.component').then((m) => m.ProductoFormComponent)
+      },
+      {
+        path: 'admin/lotes',
+        data: { ventana: 'VISTA_LOTES' },
+        loadComponent: () => import('./pages/admin/lotes/lotes.component').then((m) => m.LotesComponent)
       },
       {
         path: 'admin/categorias-producto',
