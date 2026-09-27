@@ -5,7 +5,7 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { CdkDrag, CdkDropList, CdkDropListGroup, CdkDragHandle, CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 import { forkJoin } from 'rxjs';
-import { MenuManagementService } from '../../../core/services/menu-management.service';
+import { MenuManagementService, VentanaDTO } from '../../../core/services/menu-management.service';
 import { VistaDTO } from '../../../models/response/auth-login-response.model';
 import { LoadingStore } from '../../../store/loading.store';
 import { hasMeaningfulText } from '../../../core/utils/input-validation.util';
@@ -32,6 +32,7 @@ export class VentanasComponent implements OnInit {
 expandedGroups = signal<Set<string>>(new Set());
 
   vistas = signal<VistaDTO[]>([]);
+  ventanas = signal<VentanaDTO[]>([]);
   selectedVista = signal<VistaDTO | null>(null);
   isEditing = signal<boolean>(false);
   saving = signal(false);
@@ -64,6 +65,7 @@ expandedGroups = signal<Set<string>>(new Set());
     codigo: string;
     nombre: string;
     grupo: string;
+    ventanaId: number | null;
     orden: number;
     ordenGrupo: number | null;
     activo: boolean;
@@ -72,6 +74,7 @@ expandedGroups = signal<Set<string>>(new Set());
     codigo: '',
     nombre: '',
     grupo: 'GENERAL',
+    ventanaId: null,
     orden: 0,
     ordenGrupo: null,
     activo: true,
@@ -150,6 +153,14 @@ addVistaToGroup(groupKey: string) {
 
   ngOnInit() {
     this.cargarVistas();
+    this.cargarVentanas();
+  }
+
+  cargarVentanas() {
+    this.menuService.listarVentanas().subscribe({
+      next: (res) => this.ventanas.set(res.data),
+      error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cargar las ventanas' })
+    });
   }
 
   cargarVistas() {
@@ -241,6 +252,7 @@ addVistaToGroup(groupKey: string) {
       codigo: vista.codigo,
       nombre: vista.nombre,
       grupo: vista.grupo || 'GENERAL',
+      ventanaId: vista.ventanaId ?? null,
       orden: vista.orden ?? 0,
       ordenGrupo: vista.ordenGrupo ?? null,
       activo: vista.activo,
@@ -256,6 +268,7 @@ addVistaToGroup(groupKey: string) {
       codigo: '',
       nombre: '',
       grupo: 'GENERAL',
+      ventanaId: null,
       orden: 0,
       ordenGrupo: null,
       activo: true,
@@ -321,6 +334,7 @@ addVistaToGroup(groupKey: string) {
       codigo: codigo.toUpperCase().replace(/\s+/g, '_'),
       nombre,
       grupo: grupo.toUpperCase().replace(/\s+/g, '_'),
+      ventanaId: data.ventanaId,
       orden: data.orden,
       ordenGrupo: data.ordenGrupo,
       activo: data.activo,
@@ -405,7 +419,7 @@ addVistaToGroup(groupKey: string) {
     this.loadingStore.show();
     forkJoin(toUpdate.map(v =>
       this.menuService.actualizarVista(v.id, {
-        nombre: v.nombre, grupo: newKey,
+        nombre: v.nombre, grupo: newKey, ventanaId: v.ventanaId ?? null,
         orden: v.orden, ordenGrupo: v.ordenGrupo, activo: v.activo, icono: v.icono || null
       })
     )).subscribe({
