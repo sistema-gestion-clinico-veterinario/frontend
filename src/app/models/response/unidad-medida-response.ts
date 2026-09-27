@@ -1,4 +1,4 @@
-export interface CategoriaProductoResponse {
+export interface UnidadMedidaResponse {
   id: number;
   companyId: number;
   companyName: string;

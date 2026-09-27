@@ -23,6 +23,7 @@ export interface CuentaCitaResponse {
   citaId: number;
   numeroCita: string;
   mascotaNombre: string;
+  especie: 'PERRO' | 'GATO' | 'AVE' | 'REPTIL' | 'ROEDOR' | 'EXOTICO' | 'OTRO';
   apoderadoNombre: string;
   servicioNombre: string;
   fechaAtencion: string;
