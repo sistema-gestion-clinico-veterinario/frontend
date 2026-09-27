@@ -1,7 +1,7 @@
 export interface MovimientoCajaResponse {
   id: number;
   tipo: 'INGRESO' | 'EGRESO' | 'DEVOLUCION';
-  concepto: 'PAGO_CITA' | 'CANCELACION_DEVOLUCION' | 'GASTO_OPERATIVO' | 'OTRO';
+  concepto: 'PAGO_CITA' | 'VENTA_PRODUCTO' | 'CANCELACION_DEVOLUCION' | 'GASTO_OPERATIVO' | 'OTRO';
   monto: number;
   citaId: number | null;
   metodoPago: 'EFECTIVO' | 'YAPE' | 'PLIN' | 'TARJETA' | 'TRANSFERENCIA' | null;
@@ -30,5 +30,7 @@ export interface ResumenCajaResponse {
   totalIngresos: number;
   totalEgresos: number;
   totalDevoluciones: number;
+  ingresosCitas: number;
+  ingresosProductos: number;
   saldo: number;
 }

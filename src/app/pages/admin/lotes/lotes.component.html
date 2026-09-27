@@ -1,0 +1,316 @@
+<div class="p-3 sm:p-4 md:p-6 min-h-screen bg-slate-50">
+
+  @if (cargando() && !requiresCompanySelection) {
+    <div class="animate-fade-in">
+      <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-6">
+        <div class="flex items-center gap-3">
+          <p-skeleton shape="circle" size="3rem"></p-skeleton>
+          <div class="space-y-2">
+            <p-skeleton width="8rem" height="0.6rem" borderRadius="0.3rem"></p-skeleton>
+            <p-skeleton width="16rem" height="1.4rem" borderRadius="0.4rem"></p-skeleton>
+          </div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl border border-slate-200 p-4">
+        <p-skeleton width="100%" height="3rem" styleClass="mb-2"></p-skeleton>
+        <p-skeleton width="100%" height="3rem" styleClass="mb-2"></p-skeleton>
+        <p-skeleton width="100%" height="3rem"></p-skeleton>
+      </div>
+    </div>
+  }
+
+  @if (!cargando() || requiresCompanySelection) {
+    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-5">
+      <div>
+        <h1 class="text-lg sm:text-xl md:text-2xl font-bold text-slate-900">Lotes</h1>
+        <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Todos los lotes registrados en el catálogo de productos</p>
+      </div>
+      @if (!requiresCompanySelection) {
+        <button *appHasPermission="'VISTA_LOTES:escribir'" (click)="openModal()"
+          class="flex items-center justify-center gap-2 bg-[#0066AA] hover:bg-[#005a96] text-white text-sm font-semibold px-5 h-10 rounded-lg transition-colors shrink-0">
+          <i class="pi pi-plus text-xs"></i>
+          Nuevo lote
+        </button>
+      }
+    </div>
+
+    @if (requiresCompanySelection) {
+      <div class="bg-white border border-slate-200 rounded-lg px-5 py-4 flex items-start gap-3">
+        <i class="pi pi-building text-[#0066AA] mt-0.5"></i>
+        <div>
+          <p class="text-sm font-semibold text-slate-700">Selecciona una empresa</p>
+          <p class="text-xs text-slate-500 mt-0.5">Elige una empresa en la parte superior para ver y gestionar sus lotes.</p>
+        </div>
+      </div>
+    }
+
+    @if (!requiresCompanySelection) {
+      <div class="relative mb-4 max-w-md">
+        <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+        <input type="text" [ngModel]="searchQuery()" (ngModelChange)="onSearchChange($event)"
+          placeholder="Buscar por producto, SKU o número de lote..."
+          class="w-full h-10 pl-9 pr-3 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-colors" />
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+        <!-- Desktop table -->
+        <div class="hidden md:block overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="bg-slate-50 border-b border-slate-100">
+                <th class="text-left px-5 py-2.5 text-xs font-medium text-slate-400 uppercase tracking-wider">Producto</th>
+                <th class="text-left px-5 py-2.5 text-xs font-medium text-slate-400 uppercase tracking-wider">Lote</th>
+                <th class="text-left px-5 py-2.5 text-xs font-medium text-slate-400 uppercase tracking-wider">Vencimiento</th>
+                <th class="text-right px-5 py-2.5 text-xs font-medium text-slate-400 uppercase tracking-wider">Cantidad</th>
+                <th class="text-right px-5 py-2.5 text-xs font-medium text-slate-400 uppercase tracking-wider">Costo unit.</th>
+                <th class="text-left px-5 py-2.5 text-xs font-medium text-slate-400 uppercase tracking-wider">Estado</th>
+                <th class="px-5 py-2.5 w-20"></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (lote of lotes(); track lote.id) {
+                <tr class="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors" [class.opacity-60]="!lote.activo">
+                  <td class="px-5 py-2.5">
+                    <p class="font-medium text-slate-800">{{ lote.productoNombre }}</p>
+                    <p class="text-xs text-slate-400 font-mono">{{ lote.productoSku }}</p>
+                  </td>
+                  <td class="px-5 py-2.5 text-slate-700">{{ lote.numeroLote }}</td>
+                  <td class="px-5 py-2.5">
+                    <div class="flex items-center gap-1.5">
+                      <span class="text-slate-700">{{ lote.fechaVencimiento | date:'dd/MM/yyyy' }}</span>
+                      @if (loteVencido(lote.fechaVencimiento)) {
+                        <span class="inline-flex items-center rounded border border-rose-300 bg-rose-50 px-1.5 py-0.5 text-[10px] font-bold text-rose-700">Vencido</span>
+                      } @else if (loteProntoAVencer(lote.fechaVencimiento)) {
+                        <span class="inline-flex items-center rounded border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[10px] font-bold text-amber-700">Por vencer</span>
+                      }
+                    </div>
+                  </td>
+                  <td class="px-5 py-2.5 text-right text-slate-700">{{ lote.cantidad }}</td>
+                  <td class="px-5 py-2.5 text-right text-slate-700">{{ lote.costoUnitario ? ('S/ ' + (lote.costoUnitario | number:'1.2-2')) : '—' }}</td>
+                  <td class="px-5 py-2.5">
+                    <button *appHasPermission="'VISTA_LOTES:modificar'"
+                      (click)="openConfirm(lote.activo ? 'Desactivar lote' : 'Activar lote', '¿Está seguro de ' + (lote.activo ? 'desactivar' : 'activar') + ' el lote «' + lote.numeroLote + '»?', 'toggle', lote, 'warning', 'Confirmar')"
+                      [class]="lote.activo ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-600 border-rose-200'"
+                      class="inline-flex items-center px-2.5 py-1 rounded border text-xs font-medium transition-colors">
+                      {{ lote.activo ? 'Activo' : 'Inactivo' }}
+                    </button>
+                  </td>
+                  <td class="px-5 py-2.5 text-right">
+                    <div class="flex items-center justify-end gap-1">
+                      <button *appHasPermission="'VISTA_LOTES:modificar'" (click)="openModal(lote)" aria-label="Editar lote"
+                        class="p-2 rounded-lg text-slate-500 hover:text-[#0066AA] hover:bg-blue-50 transition-colors">
+                        <i class="pi pi-pencil text-sm"></i>
+                      </button>
+                      <button *appHasPermission="'VISTA_LOTES:eliminar'"
+                        (click)="openConfirm('Eliminar lote', '¿Está seguro de eliminar el lote «' + lote.numeroLote + '»?', 'eliminar', lote, 'danger', 'Eliminar')"
+                        aria-label="Eliminar lote"
+                        class="p-2 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition-colors">
+                        <i class="pi pi-trash text-sm"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+          @if (lotes().length === 0) {
+            <div class="py-16 text-center">
+              <p class="text-sm text-slate-500 font-medium">
+                {{ searchQuery() ? 'No se encontraron lotes con esa búsqueda' : 'No se han registrado lotes aún' }}
+              </p>
+            </div>
+          }
+        </div>
+
+        <!-- Mobile cards -->
+        @if (lotes().length > 0) {
+          <div class="md:hidden divide-y divide-slate-100">
+            @for (lote of lotes(); track lote.id) {
+              <div class="p-4" [class.opacity-60]="!lote.activo">
+                <div class="flex items-start justify-between gap-2">
+                  <div class="min-w-0">
+                    <p class="text-sm font-semibold text-slate-800 truncate">{{ lote.productoNombre }}</p>
+                    <p class="text-xs text-slate-400 font-mono">{{ lote.productoSku }} · {{ lote.numeroLote }}</p>
+                  </div>
+                  <button *appHasPermission="'VISTA_LOTES:modificar'"
+                    (click)="openConfirm(lote.activo ? 'Desactivar lote' : 'Activar lote', '¿Está seguro de ' + (lote.activo ? 'desactivar' : 'activar') + ' el lote «' + lote.numeroLote + '»?', 'toggle', lote, 'warning', 'Confirmar')"
+                    [class]="lote.activo ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-600 border-rose-200'"
+                    class="inline-flex items-center px-2.5 py-1 rounded border text-xs font-medium transition-colors shrink-0">
+                    {{ lote.activo ? 'Activo' : 'Inactivo' }}
+                  </button>
+                </div>
+                <div class="flex items-center gap-1.5 mt-2">
+                  <span class="text-xs text-slate-500">Vence {{ lote.fechaVencimiento | date:'dd/MM/yyyy' }} · Cant: {{ lote.cantidad }}</span>
+                  @if (loteVencido(lote.fechaVencimiento)) {
+                    <span class="inline-flex items-center rounded border border-rose-300 bg-rose-50 px-1.5 py-0.5 text-[10px] font-bold text-rose-700">Vencido</span>
+                  } @else if (loteProntoAVencer(lote.fechaVencimiento)) {
+                    <span class="inline-flex items-center rounded border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[10px] font-bold text-amber-700">Por vencer</span>
+                  }
+                </div>
+                <div class="flex items-center justify-end gap-1 mt-2 pt-2 border-t border-slate-100">
+                  <button *appHasPermission="'VISTA_LOTES:modificar'" (click)="openModal(lote)" aria-label="Editar lote"
+                    class="p-2 rounded-lg text-slate-500 hover:text-[#0066AA] hover:bg-blue-50 transition-colors">
+                    <i class="pi pi-pencil text-sm"></i>
+                  </button>
+                  <button *appHasPermission="'VISTA_LOTES:eliminar'"
+                    (click)="openConfirm('Eliminar lote', '¿Está seguro de eliminar el lote «' + lote.numeroLote + '»?', 'eliminar', lote, 'danger', 'Eliminar')"
+                    aria-label="Eliminar lote"
+                    class="p-2 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition-colors">
+                    <i class="pi pi-trash text-sm"></i>
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        }
+        @if (lotes().length === 0) {
+          <div class="md:hidden py-16 text-center">
+            <p class="text-sm text-slate-500 font-medium">
+              {{ searchQuery() ? 'No se encontraron lotes con esa búsqueda' : 'No se han registrado lotes aún' }}
+            </p>
+          </div>
+        }
+
+        @if (lotesTotal() > pageSize) {
+          <div class="border-t border-slate-100 px-4">
+            <p-paginator
+              [rows]="pageSize"
+              [totalRecords]="lotesTotal()"
+              [first]="lotesPage() * pageSize"
+              [showCurrentPageReport]="false"
+              (onPageChange)="onPageChange($event)"
+              styleClass="!border-none !bg-transparent !py-3"
+            ></p-paginator>
+          </div>
+        }
+      </div>
+    }
+  }
+</div>
+
+<!-- Modal: Lote -->
+@if (showModal()) {
+  <div class="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/50">
+    <div class="bg-white w-full max-w-sm rounded-t-xl sm:rounded-xl border border-slate-200 flex flex-col max-h-[95dvh]">
+      <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
+        <h2 class="text-base font-bold text-slate-900">{{ editingLote() ? 'Modificar lote' : 'Nuevo lote' }}</h2>
+        <button (click)="showModal.set(false)" aria-label="Cerrar" class="text-slate-400 hover:text-slate-600 transition-colors p-2">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+      <div class="flex-1 overflow-y-auto p-5">
+        <form [formGroup]="loteForm" (ngSubmit)="guardar()" class="space-y-4">
+          <div class="flex flex-col gap-1">
+            <label class="text-sm font-semibold text-slate-700">Producto <span class="text-rose-500">*</span></label>
+            @if (editingLote()) {
+              <div class="w-full px-3 py-2 border border-slate-200 bg-slate-50 rounded-lg text-sm h-11 flex items-center text-slate-600 font-semibold">
+                {{ editingLote()!.productoNombre }}
+              </div>
+            } @else {
+              <select formControlName="productoId"
+                [ngClass]="loteForm.get('productoId')?.invalid && loteForm.get('productoId')?.touched ? 'border-rose-400' : 'border-slate-300'"
+                class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-11 transition-colors bg-white">
+                <option [ngValue]="null" disabled>Selecciona un producto</option>
+                @for (p of productos(); track p.id) {
+                  <option [ngValue]="p.id">{{ p.nombre }} ({{ p.sku }})</option>
+                }
+              </select>
+              @if (loteForm.get('productoId')?.touched && loteForm.get('productoId')?.errors?.['required']) {
+                <p class="text-xs text-rose-600">El producto es requerido</p>
+              }
+            }
+          </div>
+
+          <div class="flex flex-col gap-1">
+            <label class="text-sm font-semibold text-slate-700">Número de lote <span class="text-rose-500">*</span></label>
+            <input type="text" formControlName="numeroLote" maxlength="60" placeholder="Ej: LOT-2026A045"
+              [ngClass]="loteForm.get('numeroLote')?.invalid && loteForm.get('numeroLote')?.touched ? 'border-rose-400' : 'border-slate-300'"
+              class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-11 transition-colors" />
+            @if (loteForm.get('numeroLote')?.touched && loteForm.get('numeroLote')?.errors?.['required']) {
+              <p class="text-xs text-rose-600">El número de lote es requerido</p>
+            }
+            @if (loteForm.get('numeroLote')?.touched && loteForm.get('numeroLote')?.errors?.['pattern']) {
+              <p class="text-xs text-rose-600">Solo letras, números, guiones y guiones bajos</p>
+            }
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div class="flex flex-col gap-1">
+              <label class="text-sm font-semibold text-slate-700">Vencimiento <span class="text-rose-500">*</span></label>
+              <input type="date" formControlName="fechaVencimiento"
+                [ngClass]="loteForm.get('fechaVencimiento')?.invalid && loteForm.get('fechaVencimiento')?.touched ? 'border-rose-400' : 'border-slate-300'"
+                class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-11 transition-colors" />
+              @if (loteForm.get('fechaVencimiento')?.touched && loteForm.get('fechaVencimiento')?.errors?.['required']) {
+                <p class="text-xs text-rose-600">Requerido</p>
+              }
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-sm font-semibold text-slate-700">Ingreso</label>
+              <input type="date" formControlName="fechaIngreso"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-11 transition-colors" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div class="flex flex-col gap-1">
+              <label class="text-sm font-semibold text-slate-700">Cantidad <span class="text-rose-500">*</span></label>
+              <input type="number" step="1" min="0" formControlName="cantidad"
+                [ngClass]="loteForm.get('cantidad')?.invalid && loteForm.get('cantidad')?.touched ? 'border-rose-400' : 'border-slate-300'"
+                class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-11 transition-colors" />
+              @if (loteForm.get('cantidad')?.touched && loteForm.get('cantidad')?.errors?.['min']) {
+                <p class="text-xs text-rose-600">No puede ser negativa</p>
+              }
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-sm font-semibold text-slate-700">Costo unitario</label>
+              <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400 font-medium">S/</span>
+                <input type="number" step="0.01" min="0" formControlName="costoUnitario" placeholder="0.00"
+                  class="w-full pl-8 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-11 transition-colors" />
+              </div>
+            </div>
+          </div>
+
+          <div class="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-2">
+            <button type="button" (click)="showModal.set(false)"
+              class="h-10 px-4 rounded-lg border border-slate-300 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors">
+              Cancelar
+            </button>
+            <button type="submit" [disabled]="guardando()"
+              class="h-10 px-5 rounded-lg bg-[#0066AA] hover:bg-[#005a96] text-white text-sm font-semibold transition-colors disabled:opacity-60">
+              {{ guardando() ? 'Guardando...' : (editingLote() ? 'Guardar cambios' : 'Crear lote') }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Confirm dialog -->
+@if (confirmDialog()) {
+  <div class="fixed inset-0 z-[200] flex items-end sm:items-center justify-center bg-black/40 p-0 sm:p-4">
+    <div class="bg-white rounded-t-xl sm:rounded-xl p-6 max-w-sm w-full mx-0 sm:mx-4 border border-slate-200">
+      <div class="flex items-start gap-3 mb-4">
+        <div class="w-9 h-9 rounded-full flex items-center justify-center shrink-0" [ngClass]="confirmIconClass()">
+          <i class="pi pi-exclamation-triangle"></i>
+        </div>
+        <div>
+          <h3 class="text-sm font-semibold text-slate-800">{{ confirmDialog()!.title }}</h3>
+          <p class="text-sm text-slate-500 mt-1">{{ confirmDialog()!.message }}</p>
+        </div>
+      </div>
+      <div class="flex justify-end gap-3">
+        <button (click)="cancelConfirm()"
+          class="px-4 py-2 rounded-lg border border-slate-300 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
+          Cancelar
+        </button>
+        <button (click)="confirmAction()" [ngClass]="confirmButtonClass()">
+          {{ confirmDialog()!.confirmLabel }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<p-toast position="bottom-right"></p-toast>

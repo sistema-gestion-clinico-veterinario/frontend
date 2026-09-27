@@ -1,3 +1,5 @@
+import { MetodoPago } from './pago-request';
+
 export interface VentaLibreItemRequest {
   productoId: number;
   cantidad: number;
@@ -8,6 +10,6 @@ export interface VentaLibreRequest {
   apoderadoId?: number;
   clienteNombre?: string;
   items: VentaLibreItemRequest[];
-  metodoPago: 'EFECTIVO' | 'YAPE';
+  metodoPago: MetodoPago;
   montoRecibido?: number;
 }

@@ -10,7 +10,6 @@ describe('CajaComponent', () => {
     await TestBed.configureTestingModule({
       imports: [CajaComponent, HttpClientTestingModule],
     })
-    .overrideComponent(CajaComponent, { set: { template: '' } })
     .compileComponents();
 
     fixture = TestBed.createComponent(CajaComponent);
