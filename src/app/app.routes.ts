@@ -410,12 +410,12 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/admin/productos/producto-form/producto-form.component').then((m) => m.ProductoFormComponent)
       },
       {
-        path: 'admin/productos/:id/detalle',
+        path: 'admin/productos/:sku/detalle',
         data: { ventana: 'VISTA_PRODUCTOS', permiso: 'leer', modo: 'detalle' },
         loadComponent: () => import('./pages/admin/productos/producto-form/producto-form.component').then((m) => m.ProductoFormComponent)
       },
       {
-        path: 'admin/productos/:id/editar',
+        path: 'admin/productos/:sku/editar',
         data: { ventana: 'VISTA_PRODUCTOS', permiso: 'modificar' },
         loadComponent: () => import('./pages/admin/productos/producto-form/producto-form.component').then((m) => m.ProductoFormComponent)
       },

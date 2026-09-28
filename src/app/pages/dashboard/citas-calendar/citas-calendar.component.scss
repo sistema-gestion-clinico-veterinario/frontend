@@ -1,36 +1,82 @@
+.dashboard-calendar-shell {
+  width: 100%;
+  background: #fff;
+}
+
+.calendar-month-nav {
+  display: grid;
+  grid-template-columns: 2.25rem minmax(0, 1fr) 2.25rem;
+  align-items: center;
+  min-height: 3rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.calendar-nav-button {
+  display: grid;
+  width: 2.25rem;
+  height: 3rem;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.calendar-nav-button:hover,
+.calendar-nav-button:focus-visible {
+  color: #0066aa;
+  background: #f8fafc;
+  outline: none;
+}
+
+.calendar-nav-button .pi {
+  font-size: 0.8rem;
+}
+
+.calendar-month-title {
+  height: 3rem;
+  border: 0;
+  background: transparent;
+  color: #475569;
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-align: center;
+  cursor: pointer;
+}
+
+.calendar-month-title:hover,
+.calendar-month-title:focus-visible {
+  color: #0066aa;
+  outline: none;
+}
+
 :host ::ng-deep .dashboard-calendar-shell {
   .fc {
+    padding: 0.35rem 0.5rem 0.5rem;
     font-family: inherit;
   }
 
+  .fc-scrollgrid,
   .fc-theme-standard td,
   .fc-theme-standard th,
-  .fc-theme-standard .fc-scrollgrid {
-    border-color: #eef2f7;
+  .fc-scrollgrid-section > td {
+    border: 0 !important;
   }
 
-  // Sin este borde propio redondeado, la tabla de FullCalendar se ve con esquinas rectas
-  // "flotando" dentro de la tarjeta redondeada del dashboard.
-  .fc-scrollgrid {
-    border-radius: 0.75rem;
-    overflow: hidden;
+  .fc-col-header,
+  .fc-scrollgrid-section-header {
+    display: none !important;
   }
 
-  .fc-col-header-cell {
-    padding: 0.2rem 0 !important;
-    background: #fff;
-    border-bottom-width: 1px !important;
-  }
-
-  .fc-col-header-cell-cushion {
-    color: #475569;
-    font-size: 0.5625rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
+  .fc-scrollgrid,
+  .fc-scrollgrid table,
+  .fc-daygrid-body,
+  .fc-daygrid-body table {
+    width: 100% !important;
   }
 
   .fc-daygrid-day-frame {
+    position: relative;
     min-height: 1.7rem !important;
     padding: 0 !important;
   }
@@ -41,55 +87,52 @@
   }
 
   .fc-daygrid-day-number {
-    margin: 0.125rem 0 0;
-    padding: 0.0625rem;
-    width: 1.1rem;
-    height: 1.1rem;
-    border-radius: 999px;
-    color: #334155;
-    font-size: 0.625rem;
-    font-weight: 800;
-    line-height: 1;
     display: flex;
+    width: 1.35rem;
+    height: 1.35rem;
+    margin: 0.1rem 0 0;
+    padding: 0;
     align-items: center;
     justify-content: center;
+    border-radius: 999px;
+    color: #4b5563;
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1;
   }
 
-  // El día de hoy usa el mismo azul de marca en el círculo y en un tinte del fondo de toda
-  // la celda, para que se distinga de un vistazo sin depender de un color sin relación (antes
-  // era un ámbar suelto que no combinaba con el círculo azul del número).
   .fc-day-today {
-    background: #eaf2fb !important;
-    box-shadow: inset 0 0 0 1px #bcd7f0;
+    background: transparent !important;
   }
 
   .fc-day-today .fc-daygrid-day-number {
-    background: #0066AA;
+    background: #2f80c8;
     color: #fff;
+    font-weight: 700;
   }
 
-  .fc-daygrid-day:not(.fc-day-today):hover {
-    background: #f8fafc;
+  .fc-daygrid-day:not(.fc-day-today) .fc-daygrid-day-number:hover {
+    background: #f1f5f9;
   }
 
-  .fc-daygrid-day.fc-day-past .fc-daygrid-day-number,
   .fc-daygrid-day.fc-day-other .fc-daygrid-day-number {
     color: #94a3b8;
   }
 
-  // Puntos de color bajo el número del día en vez de bloques con texto: en una columna angosta
-  // (calendario lateral) no cabe el nombre de la mascota de forma legible, así que solo se marca
-  // qué días tienen citas — el detalle se ve en la Agenda (clic en cualquier punto lleva ahí).
-  // Puntos más grandes y con un aro blanco para que resalten sobre el fondo, en vez de la
-  // versión anterior de 5px que se perdía visualmente.
   .fc-daygrid-day-events {
+    position: absolute;
+    bottom: 0.05rem;
+    left: 50%;
     display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
-    gap: 0.2rem;
     min-height: 0 !important;
-    margin: 0.15rem 0 0.1rem !important;
+    margin: 0 !important;
+    gap: 0.12rem;
+    transform: translateX(-50%);
+  }
+
+  .fc-daygrid-day-bottom,
+  .fc-daygrid-more-link {
+    display: none !important;
   }
 
   .fc-daygrid-event-harness {
@@ -102,22 +145,19 @@
     margin: 0 !important;
     border: 0 !important;
     background: transparent !important;
-    box-shadow: none !important;
   }
 
   .dashboard-day-dot {
     display: block;
-    width: 0.4rem;
-    height: 0.4rem;
+    width: 0.22rem;
+    height: 0.22rem;
     border-radius: 999px;
-    cursor: pointer;
-    box-shadow: 0 0 0 1.5px #fff, 0 1px 2px rgba(15, 23, 42, 0.25);
   }
 
   .fc-popover {
-    border: 1px solid #eef2f7;
-    border-radius: 0.75rem;
-    box-shadow: 0 10px 30px -10px rgb(15 23 42 / 15%);
+    border: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
+    box-shadow: none;
   }
 
   .fc-popover-header {
@@ -125,6 +165,6 @@
     background: #f8fafc;
     color: #334155;
     font-size: 0.6875rem;
-    font-weight: 800;
+    font-weight: 700;
   }
 }

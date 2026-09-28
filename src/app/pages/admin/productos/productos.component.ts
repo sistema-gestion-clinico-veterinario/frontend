@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, effect } from '@angular/core';
+import { Component, HostListener, OnInit, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -217,14 +217,42 @@ export class ProductosComponent implements OnInit {
     this.menuProductoId.set(this.menuProductoId() === id ? null : id);
   }
 
+  @HostListener('document:click')
+  cerrarMenuProducto() {
+    if (this.menuProductoId() !== null) {
+      this.menuProductoId.set(null);
+    }
+  }
+
+  @HostListener('document:keydown.escape')
+  cerrarMenuProductoConEscape() {
+    this.menuProductoId.set(null);
+  }
+
+  private skuPublico(item: ProductoResponse): string | null {
+    const sku = item.sku?.trim();
+    if (sku) return sku;
+
+    this.messageService.add({
+      severity: 'error',
+      summary: 'Producto no disponible',
+      detail: 'No se encontró el código del producto seleccionado. Recarga el catálogo e inténtalo nuevamente.'
+    });
+    return null;
+  }
+
   verProducto(item: ProductoResponse) {
     this.menuProductoId.set(null);
-    this.router.navigate(['/admin/productos', item.id, 'detalle']);
+    const sku = this.skuPublico(item);
+    if (!sku) return;
+    this.router.navigate(['/admin/productos', sku, 'detalle']);
   }
 
   editarProducto(item: ProductoResponse) {
     this.menuProductoId.set(null);
-    this.router.navigate(['/admin/productos', item.id, 'editar']);
+    const sku = this.skuPublico(item);
+    if (!sku) return;
+    this.router.navigate(['/admin/productos', sku, 'editar']);
   }
 
   openConfirm(title: string, message: string, action: string, item: ProductoResponse, variant: 'primary' | 'warning' | 'danger', confirmLabel: string) {
@@ -242,7 +270,7 @@ export class ProductosComponent implements OnInit {
     this.cancelConfirm();
     switch (ctx.action) {
       case 'toggle': this.toggleActivo(ctx.item); break;
-      case 'eliminar': this.eliminar(ctx.item.id); break;
+      case 'eliminar': this.eliminar(ctx.item); break;
     }
   }
 
@@ -262,8 +290,10 @@ export class ProductosComponent implements OnInit {
   }
 
   toggleActivo(item: ProductoResponse) {
+    const sku = this.skuPublico(item);
+    if (!sku) return;
     this.loadingStore.show();
-    this.productoService.toggleActivo(item.id).subscribe({
+    this.productoService.toggleActivo(sku, item.companyId).subscribe({
       next: () => {
         this.loadProductos(this.productosPage());
         this.loadConteoPorCategoria();
@@ -277,9 +307,11 @@ export class ProductosComponent implements OnInit {
     });
   }
 
-  eliminar(id: number) {
+  eliminar(item: ProductoResponse) {
+    const sku = this.skuPublico(item);
+    if (!sku) return;
     this.loadingStore.show();
-    this.productoService.eliminar(id).subscribe({
+    this.productoService.eliminar(sku, item.companyId).subscribe({
       next: () => {
         this.messageService.add({ severity: 'success', summary: 'Eliminado', detail: 'Producto eliminado correctamente' });
         this.loadProductos(this.productosPage());

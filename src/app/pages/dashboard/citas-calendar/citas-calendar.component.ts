@@ -68,7 +68,7 @@ export class DashboardCitasCalendarComponent {
     dayCellDidMount: info => this.attachDayVisualizer(info),
     datesSet: info => {
       this.rangoActual = { desde: info.start, hasta: info.end };
-      this.titulo.set(this.capitalizar(info.view.title));
+      this.titulo.set(this.formatearTituloMes(info.view.currentStart));
       this.popover.set(null);
       this.cargarCitas(info.start, info.end);
     }
@@ -216,6 +216,11 @@ export class DashboardCitasCalendarComponent {
 
   private capitalizar(texto: string): string {
     return texto.charAt(0).toUpperCase() + texto.slice(1);
+  }
+
+  private formatearTituloMes(fecha: Date): string {
+    const mes = fecha.toLocaleDateString('es-PE', { month: 'long' });
+    return `${this.capitalizar(mes)} ${fecha.getFullYear()}`;
   }
 
   private toDateInput(date: Date): string {

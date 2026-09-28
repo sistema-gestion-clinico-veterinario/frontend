@@ -5,6 +5,7 @@ export interface UnidadMedidaResponse {
   nombre: string;
   descripcion?: string;
   activo: boolean;
+  productosAsociados: number;
   createdAt?: string;
   createdBy?: string;
   updatedAt?: string;

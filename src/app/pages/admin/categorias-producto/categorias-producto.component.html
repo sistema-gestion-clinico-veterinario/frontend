@@ -39,14 +39,14 @@
     @if (!requiresCompanySelection) {
       <div class="mb-4 overflow-x-auto border-b border-slate-200">
         <nav class="flex min-w-max items-center gap-7 px-1" aria-label="Secciones de configuración">
-          <button type="button" (click)="activeTab.set('categorias')"
+          <button type="button" (click)="cambiarTab('categorias')"
             [class]="activeTab() === 'categorias'
               ? 'flex items-center gap-2 border-b-2 border-[#0066AA] px-1 py-3.5 text-[#0066AA]'
               : 'flex items-center gap-2 border-b-2 border-transparent px-1 py-3.5 text-slate-500 hover:text-slate-800'">
             <i class="pi pi-tags text-sm"></i>
             <strong class="text-base font-bold">Categorías</strong>
           </button>
-          <button type="button" (click)="activeTab.set('unidades')"
+          <button type="button" (click)="cambiarTab('unidades')"
             [class]="activeTab() === 'unidades'
               ? 'flex items-center gap-2 border-b-2 border-[#0066AA] px-1 py-3.5 text-[#0066AA]'
               : 'flex items-center gap-2 border-b-2 border-transparent px-1 py-3.5 text-slate-500 hover:text-slate-800'">
@@ -56,57 +56,89 @@
         </nav>
       </div>
 
+      <div class="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center">
+        <div class="relative min-w-0 flex-1 sm:max-w-md">
+          <i class="pi pi-search pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-xs text-slate-400"></i>
+          <input
+            type="search"
+            [value]="searchQuery()"
+            (input)="onSearchChange($any($event.target).value)"
+            [placeholder]="activeTab() === 'categorias' ? 'Buscar categoría...' : 'Buscar unidad de medida...'"
+            class="h-10 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 text-sm text-slate-700 outline-none focus:border-slate-400"
+          />
+        </div>
+        <select
+          [value]="estadoFiltro()"
+          (change)="onEstadoFiltroChange($any($event.target).value)"
+          aria-label="Filtrar por estado"
+          class="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-600 outline-none focus:border-slate-400 sm:w-44">
+          <option value="TODOS">Todos los estados</option>
+          <option value="ACTIVO">Activos</option>
+          <option value="INACTIVO">Inactivos</option>
+        </select>
+        @if (searchQuery() || estadoFiltro() !== 'TODOS') {
+          <button type="button" (click)="limpiarFiltros()" class="h-10 rounded-lg px-3 text-xs font-bold text-slate-500 hover:bg-slate-100 hover:text-slate-700">
+            Limpiar
+          </button>
+        }
+      </div>
+
       @if (activeTab() === 'categorias') {
-        <div class="flex justify-end mb-3">
+        <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 class="text-base font-extrabold text-slate-800">Categorías de productos</h2>
+            <p class="mt-0.5 text-xs text-slate-500">{{ categoriasTotal() }} {{ categoriasTotal() === 1 ? 'categoría registrada' : 'categorías registradas' }}</p>
+          </div>
           <button *appHasPermission="'VISTA_CATEGORIAS_PRODUCTO:escribir'" (click)="openCategoriaModal()"
-            class="flex items-center justify-center gap-2 bg-[#0066AA] hover:bg-[#005a96] text-white text-sm font-medium px-5 h-10 rounded-lg transition-colors shrink-0">
+            class="flex h-10 shrink-0 items-center justify-center gap-2 rounded-lg bg-[#078ba0] px-4 text-sm font-bold text-white hover:bg-[#067789]">
             <i class="pi pi-plus text-xs"></i>
             Nueva categoría
           </button>
         </div>
 
-        <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden">
-          <div class="divide-y divide-slate-100">
-            @for (item of categorias(); track item.id) {
-              <div class="flex items-center justify-between gap-3 px-5 py-3" [class.opacity-50]="!item.activo">
-                <div class="flex items-center gap-3 min-w-0">
-                  <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-[#0066AA] font-bold text-sm flex-shrink-0">
-                    <i class="pi pi-tag text-xs"></i>
-                  </div>
-                  <div class="min-w-0">
-                    <span class="text-sm font-medium text-slate-800 truncate block">{{ item.nombre }}</span>
-                    @if (item.descripcion) {
-                      <span class="text-xs text-slate-400 truncate block">{{ item.descripcion }}</span>
-                    }
-                  </div>
-                </div>
-                <div class="flex items-center gap-2 shrink-0">
-                  <button *appHasPermission="'VISTA_CATEGORIAS_PRODUCTO:modificar'"
-                    (click)="openConfirm(item.activo ? 'Desactivar categoría' : 'Activar categoría', '¿Está seguro de ' + (item.activo ? 'desactivar' : 'activar') + ' la categoría «' + item.nombre + '»?', 'toggle-categoria', item, 'warning', 'Confirmar')"
-                    [class]="item.activo ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-500'"
-                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-all active:scale-95">
-                    <span [class]="item.activo ? 'bg-green-500' : 'bg-red-400'" class="w-1.5 h-1.5 rounded-full"></span>
-                    {{ item.activo ? 'Activa' : 'Inactiva' }}
-                  </button>
-                  <button *appHasPermission="'VISTA_CATEGORIAS_PRODUCTO:modificar'" (click)="openCategoriaModal(item)"
-                    class="p-2 rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-90">
-                    <i class="pi pi-pencil text-sm"></i>
-                  </button>
-                  <button *appHasPermission="'VISTA_CATEGORIAS_PRODUCTO:eliminar'"
-                    (click)="openConfirm('Eliminar categoría', '¿Está seguro de eliminar la categoría «' + item.nombre + '»?', 'eliminar-categoria', item, 'danger', 'Eliminar')"
-                    class="p-2 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all active:scale-90">
-                    <i class="pi pi-trash text-sm"></i>
-                  </button>
-                </div>
-              </div>
-            }
+        <div class="overflow-hidden rounded-xl border border-slate-200 bg-white">
+          <div class="overflow-x-auto">
+            <table class="w-full min-w-[760px] table-fixed">
+              <thead class="border-b border-slate-200 bg-slate-50">
+                <tr>
+                  <th class="w-[24%] px-5 py-3 text-left text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Categoría</th>
+                  <th class="w-[31%] px-5 py-3 text-left text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Descripción</th>
+                  <th class="w-[12%] px-5 py-3 text-center text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Productos</th>
+                  <th class="w-[13%] px-5 py-3 text-left text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Estado</th>
+                  <th class="w-[20%] px-5 py-3 text-right text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Acciones</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                @for (item of categorias(); track item.id) {
+                  <tr [ngClass]="item.activo ? 'bg-white' : 'bg-slate-50/70'">
+                    <td class="px-5 py-3.5">
+                      <div class="flex min-w-0 items-center gap-3">
+                        <span class="grid size-9 shrink-0 place-items-center rounded-lg bg-cyan-50 text-[#078ba0]"><i class="pi pi-tag text-xs"></i></span>
+                        <span class="truncate text-sm font-bold text-slate-800">{{ item.nombre }}</span>
+                      </div>
+                    </td>
+                    <td class="px-5 py-3.5"><p class="truncate text-xs text-slate-500" [title]="item.descripcion || 'Sin descripción'">{{ item.descripcion || 'Sin descripción' }}</p></td>
+                    <td class="px-5 py-3.5 text-center"><span class="inline-flex min-w-7 justify-center rounded-full bg-slate-100 px-2 py-1 text-[11px] font-bold text-slate-600">{{ item.productosAsociados || 0 }}</span></td>
+                    <td class="px-5 py-3.5">
+                      <span [ngClass]="item.activo ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'" class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold">
+                        <span [ngClass]="item.activo ? 'bg-emerald-500' : 'bg-slate-400'" class="size-1.5 rounded-full"></span>{{ item.activo ? 'Activa' : 'Inactiva' }}
+                      </span>
+                    </td>
+                    <td class="px-5 py-3.5">
+                      <div class="flex items-center justify-end gap-1">
+                        <button *appHasPermission="'VISTA_CATEGORIAS_PRODUCTO:modificar'" (click)="openCategoriaModal(item)" class="inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-xs font-bold text-slate-600 hover:bg-slate-100 hover:text-[#078ba0]"><i class="pi pi-pencil text-[11px]"></i>Editar</button>
+                        <button *appHasPermission="'VISTA_CATEGORIAS_PRODUCTO:modificar'" (click)="openConfirm(item.activo ? 'Desactivar categoría' : 'Activar categoría', '¿Está seguro de ' + (item.activo ? 'desactivar' : 'activar') + ' la categoría «' + item.nombre + '»?', 'toggle-categoria', item, 'warning', 'Confirmar')" class="grid size-8 place-items-center rounded-lg text-slate-500 hover:bg-slate-100" [attr.aria-label]="item.activo ? 'Desactivar categoría' : 'Activar categoría'" [title]="item.activo ? 'Desactivar' : 'Activar'"><i [class]="item.activo ? 'pi pi-eye-slash text-xs' : 'pi pi-check-circle text-xs'"></i></button>
+                        <button *appHasPermission="'VISTA_CATEGORIAS_PRODUCTO:eliminar'" [disabled]="item.productosAsociados > 0" (click)="openConfirm('Eliminar categoría', 'Esta acción eliminará permanentemente la categoría «' + item.nombre + '». ¿Deseas continuar?', 'eliminar-categoria', item, 'danger', 'Eliminar')" [class]="item.productosAsociados > 0 ? 'grid size-8 cursor-not-allowed place-items-center rounded-lg text-slate-300' : 'grid size-8 place-items-center rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-600'" aria-label="Eliminar categoría" [title]="item.productosAsociados > 0 ? 'No se puede eliminar porque tiene productos asociados' : 'Eliminar'"><i class="pi pi-trash text-xs"></i></button>
+                      </div>
+                    </td>
+                  </tr>
+                }
+                @if (categorias().length === 0) {
+                  <tr><td colspan="5" class="px-5 py-14 text-center"><span class="mx-auto mb-3 grid size-11 place-items-center rounded-full bg-slate-100 text-slate-400"><i class="pi pi-tags"></i></span><p class="text-sm font-bold text-slate-600">No se encontraron categorías</p><p class="mt-1 text-xs text-slate-400">Prueba con otro término o cambia el filtro.</p></td></tr>
+                }
+              </tbody>
+            </table>
           </div>
-          @if (categorias().length === 0) {
-            <div class="py-16 text-center">
-              <i class="pi pi-tags text-3xl text-slate-200 block mb-3"></i>
-              <p class="text-sm text-slate-400 font-medium">No se han registrado categorías aún</p>
-            </div>
-          }
           @if (categoriasTotal() > pageSize) {
             <div class="border-t border-slate-100 px-4">
               <p-paginator
@@ -123,56 +155,61 @@
       }
 
       @if (activeTab() === 'unidades') {
-        <div class="flex justify-end mb-3">
+        <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 class="text-base font-extrabold text-slate-800">Unidades de medida</h2>
+            <p class="mt-0.5 text-xs text-slate-500">{{ unidadesTotal() }} {{ unidadesTotal() === 1 ? 'unidad registrada' : 'unidades registradas' }}</p>
+          </div>
           <button *appHasPermission="'VISTA_CATEGORIAS_PRODUCTO:escribir'" (click)="openUnidadModal()"
-            class="flex items-center justify-center gap-2 bg-[#0066AA] hover:bg-[#005a96] text-white text-sm font-medium px-5 h-10 rounded-lg transition-colors shrink-0">
+            class="flex h-10 shrink-0 items-center justify-center gap-2 rounded-lg bg-[#078ba0] px-4 text-sm font-bold text-white hover:bg-[#067789]">
             <i class="pi pi-plus text-xs"></i>
             Nueva unidad
           </button>
         </div>
 
-        <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden">
-          <div class="divide-y divide-slate-100">
-            @for (item of unidades(); track item.id) {
-              <div class="flex items-center justify-between gap-3 px-5 py-3" [class.opacity-50]="!item.activo">
-                <div class="flex items-center gap-3 min-w-0">
-                  <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-[#0066AA] font-bold text-sm flex-shrink-0">
-                    <i class="pi pi-box text-xs"></i>
-                  </div>
-                  <div class="min-w-0">
-                    <span class="text-sm font-medium text-slate-800 truncate block">{{ item.nombre }}</span>
-                    @if (item.descripcion) {
-                      <span class="text-xs text-slate-400 truncate block">{{ item.descripcion }}</span>
-                    }
-                  </div>
-                </div>
-                <div class="flex items-center gap-2 shrink-0">
-                  <button *appHasPermission="'VISTA_CATEGORIAS_PRODUCTO:modificar'"
-                    (click)="openConfirm(item.activo ? 'Desactivar unidad' : 'Activar unidad', '¿Está seguro de ' + (item.activo ? 'desactivar' : 'activar') + ' la unidad «' + item.nombre + '»?', 'toggle-unidad', item, 'warning', 'Confirmar')"
-                    [class]="item.activo ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-500'"
-                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-all active:scale-95">
-                    <span [class]="item.activo ? 'bg-green-500' : 'bg-red-400'" class="w-1.5 h-1.5 rounded-full"></span>
-                    {{ item.activo ? 'Activa' : 'Inactiva' }}
-                  </button>
-                  <button *appHasPermission="'VISTA_CATEGORIAS_PRODUCTO:modificar'" (click)="openUnidadModal(item)"
-                    class="p-2 rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-90">
-                    <i class="pi pi-pencil text-sm"></i>
-                  </button>
-                  <button *appHasPermission="'VISTA_CATEGORIAS_PRODUCTO:eliminar'"
-                    (click)="openConfirm('Eliminar unidad', '¿Está seguro de eliminar la unidad «' + item.nombre + '»?', 'eliminar-unidad', item, 'danger', 'Eliminar')"
-                    class="p-2 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all active:scale-90">
-                    <i class="pi pi-trash text-sm"></i>
-                  </button>
-                </div>
-              </div>
-            }
+        <div class="overflow-hidden rounded-xl border border-slate-200 bg-white">
+          <div class="overflow-x-auto">
+            <table class="w-full min-w-[760px] table-fixed">
+              <thead class="border-b border-slate-200 bg-slate-50">
+                <tr>
+                  <th class="w-[24%] px-5 py-3 text-left text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Unidad</th>
+                  <th class="w-[31%] px-5 py-3 text-left text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Descripción</th>
+                  <th class="w-[12%] px-5 py-3 text-center text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Productos</th>
+                  <th class="w-[13%] px-5 py-3 text-left text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Estado</th>
+                  <th class="w-[20%] px-5 py-3 text-right text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Acciones</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                @for (item of unidades(); track item.id) {
+                  <tr [ngClass]="item.activo ? 'bg-white' : 'bg-slate-50/70'">
+                    <td class="px-5 py-3.5">
+                      <div class="flex min-w-0 items-center gap-3">
+                        <span class="grid size-9 shrink-0 place-items-center rounded-lg bg-cyan-50 text-[#078ba0]"><i class="pi pi-box text-xs"></i></span>
+                        <span class="truncate text-sm font-bold text-slate-800">{{ item.nombre }}</span>
+                      </div>
+                    </td>
+                    <td class="px-5 py-3.5"><p class="truncate text-xs text-slate-500" [title]="item.descripcion || 'Sin descripción'">{{ item.descripcion || 'Sin descripción' }}</p></td>
+                    <td class="px-5 py-3.5 text-center"><span class="inline-flex min-w-7 justify-center rounded-full bg-slate-100 px-2 py-1 text-[11px] font-bold text-slate-600">{{ item.productosAsociados || 0 }}</span></td>
+                    <td class="px-5 py-3.5">
+                      <span [ngClass]="item.activo ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'" class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold">
+                        <span [ngClass]="item.activo ? 'bg-emerald-500' : 'bg-slate-400'" class="size-1.5 rounded-full"></span>{{ item.activo ? 'Activa' : 'Inactiva' }}
+                      </span>
+                    </td>
+                    <td class="px-5 py-3.5">
+                      <div class="flex items-center justify-end gap-1">
+                        <button *appHasPermission="'VISTA_CATEGORIAS_PRODUCTO:modificar'" (click)="openUnidadModal(item)" class="inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-xs font-bold text-slate-600 hover:bg-slate-100 hover:text-[#078ba0]"><i class="pi pi-pencil text-[11px]"></i>Editar</button>
+                        <button *appHasPermission="'VISTA_CATEGORIAS_PRODUCTO:modificar'" (click)="openConfirm(item.activo ? 'Desactivar unidad' : 'Activar unidad', '¿Está seguro de ' + (item.activo ? 'desactivar' : 'activar') + ' la unidad «' + item.nombre + '»?', 'toggle-unidad', item, 'warning', 'Confirmar')" class="grid size-8 place-items-center rounded-lg text-slate-500 hover:bg-slate-100" [attr.aria-label]="item.activo ? 'Desactivar unidad' : 'Activar unidad'" [title]="item.activo ? 'Desactivar' : 'Activar'"><i [class]="item.activo ? 'pi pi-eye-slash text-xs' : 'pi pi-check-circle text-xs'"></i></button>
+                        <button *appHasPermission="'VISTA_CATEGORIAS_PRODUCTO:eliminar'" [disabled]="item.productosAsociados > 0" (click)="openConfirm('Eliminar unidad', 'Esta acción eliminará permanentemente la unidad «' + item.nombre + '». ¿Deseas continuar?', 'eliminar-unidad', item, 'danger', 'Eliminar')" [class]="item.productosAsociados > 0 ? 'grid size-8 cursor-not-allowed place-items-center rounded-lg text-slate-300' : 'grid size-8 place-items-center rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-600'" aria-label="Eliminar unidad" [title]="item.productosAsociados > 0 ? 'No se puede eliminar porque tiene productos asociados' : 'Eliminar'"><i class="pi pi-trash text-xs"></i></button>
+                      </div>
+                    </td>
+                  </tr>
+                }
+                @if (unidades().length === 0) {
+                  <tr><td colspan="5" class="px-5 py-14 text-center"><span class="mx-auto mb-3 grid size-11 place-items-center rounded-full bg-slate-100 text-slate-400"><i class="pi pi-box"></i></span><p class="text-sm font-bold text-slate-600">No se encontraron unidades de medida</p><p class="mt-1 text-xs text-slate-400">Prueba con otro término o cambia el filtro.</p></td></tr>
+                }
+              </tbody>
+            </table>
           </div>
-          @if (unidades().length === 0) {
-            <div class="py-16 text-center">
-              <i class="pi pi-box text-3xl text-slate-200 block mb-3"></i>
-              <p class="text-sm text-slate-400 font-medium">No se han registrado unidades de medida aún</p>
-            </div>
-          }
           @if (unidadesTotal() > pageSize) {
             <div class="border-t border-slate-100 px-4">
               <p-paginator
