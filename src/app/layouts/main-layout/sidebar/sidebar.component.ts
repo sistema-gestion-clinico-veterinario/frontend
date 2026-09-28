@@ -7,6 +7,11 @@ import { RouteMapperService } from '../../../core/services/route-mapper.service'
 import { MediaService } from '../../../core/services/media.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { SkeletonModule } from 'primeng/skeleton';
+import {
+  SOFTVET_LOGO_URL,
+  SOFTVET_SIDEBAR_NAME,
+  SOFTVET_SIDEBAR_SUBTITLE
+} from '../../../core/constants/branding.constants';
 
 interface MenuItemWithRuta extends MenuItemDTO {
   ruta: string;
@@ -34,9 +39,15 @@ export class SidebarComponent {
   private authService = inject(AuthService);
 
   expandedSections = signal<Record<string, boolean>>({});
-  companyLogoUrl = computed(() => this.authStore.selectedEnterprise()?.logoUrl ? this.mediaService.resolveUrl(this.authStore.selectedEnterprise()?.logoUrl) : null);
+  companyLogoUrl = computed(() => this.authStore.selectedEnterprise()?.logoUrl
+    ? this.mediaService.resolveUrl(this.authStore.selectedEnterprise()?.logoUrl)
+    : SOFTVET_LOGO_URL);
 
   userName = computed(() => this.authStore.nombreCompleto() ?? 'Usuario');
+  hasCompany = computed(() => Boolean(
+    this.authStore.selectedEnterprise()?.name?.trim()
+      || this.authStore.companyName()?.trim()
+  ));
   companyName = computed(() => {
     const selectedEnterprise = this.authStore.selectedEnterprise();
     if (selectedEnterprise?.name) return selectedEnterprise.name;
@@ -44,8 +55,9 @@ export class SidebarComponent {
     const companyName = this.authStore.companyName();
     if (companyName) return companyName;
 
-    return this.authStore.isSuperAdmin() ? 'Vet Admin Pro' : '';
+    return SOFTVET_SIDEBAR_NAME;
   });
+  companySubtitle = computed(() => this.hasCompany() ? null : SOFTVET_SIDEBAR_SUBTITLE);
   loadingEnterprise = computed(() => this.authStore.loadingEnterprise());
 
   userInitials = computed(() => {
@@ -119,12 +131,12 @@ export class SidebarComponent {
   navItemClass(isActive: boolean): string {
     if (this.collapsed()) {
       return isActive
-        ? 'mx-auto flex h-10 w-10 items-center justify-center rounded-md bg-white text-[#00517F] transition-colors duration-150'
-        : 'mx-auto flex h-10 w-10 items-center justify-center rounded-md text-slate-200 hover:bg-white/10 hover:text-white transition-colors duration-150';
+        ? 'mx-auto flex h-10 w-10 items-center justify-center rounded-md bg-blue-100 text-blue-700 transition-colors duration-150'
+        : 'mx-auto flex h-10 w-10 items-center justify-center rounded-md text-slate-500 hover:bg-blue-100/70 hover:text-blue-600 transition-colors duration-150';
     }
     return isActive
-      ? 'flex min-h-10 items-center rounded-md bg-white px-3 text-[#00517F] transition-colors duration-150'
-      : 'flex min-h-10 items-center rounded-md px-3 text-slate-200 hover:bg-white/10 hover:text-white transition-colors duration-150';
+      ? 'flex min-h-10 items-center rounded-md bg-blue-100 px-3 text-blue-700 transition-colors duration-150'
+      : 'flex min-h-10 items-center rounded-md px-3 text-slate-600 hover:bg-blue-100/70 hover:text-blue-600 transition-colors duration-150';
   }
 
   isGrouped(structure: MenuSection): boolean {

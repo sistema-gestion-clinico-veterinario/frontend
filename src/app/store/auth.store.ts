@@ -5,6 +5,7 @@ interface Enterprise {
   establishmentId: number;
   name: string;
   logoUrl?: string;
+  colorPrimario?: string | null;
 }
 
 export type SessionStatus = 'uninitialized' | 'initializing' | 'authenticated' | 'anonymous';

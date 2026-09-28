@@ -44,6 +44,7 @@ export class CajaComponent implements OnInit, OnDestroy {
   private readonly ventaLibreService = inject(VentaLibreService);
   readonly authStore             = inject(AuthStore);
   private realtimeConnection: RealtimeStompConnection | null = null;
+  private pendingRefreshTimer: ReturnType<typeof setTimeout> | null = null;
 
   movimientos  = signal<MovimientoCajaResponse[]>([]);
   resumen      = signal<ResumenCajaResponse | null>(null);
@@ -115,7 +116,7 @@ export class CajaComponent implements OnInit, OnDestroy {
   totalOperacion = computed(() => Number(this.cuentaSeleccionada()?.saldoPendiente ?? this.totalVentaRapida()));
   subtotalSinIgv = computed(() => this.totalOperacion() / 1.18);
   igvIncluido = computed(() => this.totalOperacion() - this.subtotalSinIgv());
-  readonly metodosPago: MetodoPago[] = ['EFECTIVO', 'YAPE', 'TARJETA', 'TRANSFERENCIA', 'PLIN'];
+  readonly metodosPago: MetodoPago[] = ['EFECTIVO', 'YAPE', 'PLIN', 'TARJETA'];
   pagoForm: {
     metodoPago: MetodoPago;
     monto: number;
@@ -421,6 +422,7 @@ export class CajaComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.realtimeConnection?.disconnect();
+    if (this.pendingRefreshTimer !== null) clearTimeout(this.pendingRefreshTimer);
   }
 
   private conectarActualizacionCaja() {
@@ -429,7 +431,11 @@ export class CajaComponent implements OnInit, OnDestroy {
     this.realtimeConnection?.disconnect();
     this.realtimeConnection = this.realtimeStompService.connect<any>(destination, event => {
       if (event?.tipo !== 'CUENTA_PREVENTIVA_CREADA') return;
-      setTimeout(() => this.cargarPendientes(0), 200);
+      if (this.pendingRefreshTimer !== null) clearTimeout(this.pendingRefreshTimer);
+      this.pendingRefreshTimer = setTimeout(() => {
+        this.pendingRefreshTimer = null;
+        this.cargarPendientes(0);
+      }, 250);
       this.messageService.add({
         severity: 'info', summary: 'Nueva cuenta preventiva',
         detail: `${event.mascotaNombre} · ${event.control === 'VACUNACION' ? 'Vacunación' : 'Desparasitación'}`

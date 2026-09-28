@@ -49,7 +49,7 @@ textarea {
 
 // Drag & drop highlight
 .drop-highlight {
-  border-color: #0066AA !important;
+  border-color: rgb(var(--brand-500)) !important;
   background-color: rgba(0, 102, 170, 0.04) !important;
 }
 

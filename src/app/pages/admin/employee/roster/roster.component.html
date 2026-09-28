@@ -25,7 +25,7 @@
         Cancelar
       </button>
       <button type="button"
-        class="px-5 py-2 text-[11px] font-bold text-white bg-[#0066AA] hover:bg-[#005588] rounded-lg transition-all active:scale-95"
+        class="px-5 py-2 text-[11px] font-bold text-white bg-blue-500 hover:bg-blue-600 rounded-lg transition-all active:scale-95"
         (click)="cd.onAccept()">
         Confirmar
       </button>
@@ -42,7 +42,7 @@
     <div class="flex items-start justify-between gap-2">
       <div class="flex flex-col min-w-0">
         <h1 class="text-lg font-bold text-slate-800 flex items-center gap-2">
-          <i class="pi pi-calendar-plus text-[#0066AA] flex-shrink-0"></i>
+          <i class="pi pi-calendar-plus text-blue-500 flex-shrink-0"></i>
           <span class="truncate">Cuadrante de Turnos</span>
         </h1>
         <p class="text-xs text-slate-500 font-medium mt-0.5">Gestión de horarios y disponibilidad del personal</p>
@@ -76,7 +76,7 @@
           }
           @if (canCreate()) {
             <button (click)="openAddForm(viewMode() === 'day' ? currentDateIso() : undefined)"
-              class="flex items-center gap-1.5 bg-[#0066AA] text-white text-[10px] font-bold px-2.5 h-8 rounded-lg"
+              class="flex items-center gap-1.5 bg-blue-500 text-white text-[10px] font-bold px-2.5 h-8 rounded-lg"
               title="Asignar turno">
               <i class="pi pi-plus text-[10px]"></i>
               <span class="roster-action-text">TURNO</span>
@@ -113,7 +113,7 @@
             <button
               (click)="setViewMode($any(opt.value))"
               class="flex-1 text-[10px] font-bold uppercase tracking-tight rounded-md px-2"
-              [class.bg-[#0066AA]]="viewMode() === opt.value"
+              [class.bg-blue-500]="viewMode() === opt.value"
               [class.text-white]="viewMode() === opt.value"
               [class.text-slate-500]="viewMode() !== opt.value">
               {{ opt.label }}
@@ -126,13 +126,13 @@
       <div class="flex flex-col roster-period-nav">
         <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Período</label>
         <div class="flex items-center bg-slate-50 rounded-lg border border-slate-200 h-9 overflow-hidden">
-          <button (click)="prev()" class="px-2 h-full text-slate-500 hover:bg-white hover:text-[#0066AA] flex-shrink-0">
+          <button (click)="prev()" class="px-2 h-full text-slate-500 hover:bg-white hover:text-blue-500 flex-shrink-0">
             <i class="pi pi-chevron-left text-[10px]"></i>
           </button>
           <span class="flex-1 px-1 text-[10px] font-bold text-slate-700 uppercase tracking-wider text-center truncate">
             {{ currentLabel }}
           </span>
-          <button (click)="next()" class="px-2 h-full text-slate-500 hover:bg-white hover:text-[#0066AA] flex-shrink-0">
+          <button (click)="next()" class="px-2 h-full text-slate-500 hover:bg-white hover:text-blue-500 flex-shrink-0">
             <i class="pi pi-chevron-right text-[10px]"></i>
           </button>
         </div>
@@ -145,7 +145,7 @@
   @if (selectedEmployeeId()) {
     <div class="roster-stats-grid">
       <div class="bg-white border border-slate-200 p-3 rounded-2xl flex items-center gap-3">
-        <div class="w-9 h-9 bg-blue-50 rounded-xl flex items-center justify-center text-[#0066AA] flex-shrink-0">
+        <div class="w-9 h-9 bg-blue-50 rounded-xl flex items-center justify-center text-blue-500 flex-shrink-0">
           <i class="pi pi-clock text-base"></i>
         </div>
         <div class="min-w-0">
@@ -210,7 +210,7 @@
         <!-- Cabecera del día -->
         <div class="flex items-center gap-4 px-6 py-2 border-b border-slate-100 bg-white">
           <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-[#0066AA] rounded-xl flex flex-col items-center justify-center text-white">
+            <div class="w-10 h-10 bg-blue-500 rounded-xl flex flex-col items-center justify-center text-white">
               <span class="text-[10px] uppercase font-bold leading-none">{{ currentDate().getDate() }}</span>
               <span class="text-[8px] uppercase font-medium opacity-80 leading-none mt-0.5">{{ monthNames[currentDate().getMonth()].substring(0,3) }}</span>
             </div>
@@ -227,7 +227,7 @@
             <div class="ml-auto flex items-center gap-2">
               @for (h of dayViewHours(); track h) {
                 @if (h.isShiftStart && h.shift) {
-                  <span class="px-2.5 py-1 rounded-md text-[10px] font-bold text-[#0066AA] bg-slate-50 border border-slate-200">
+                  <span class="px-2.5 py-1 rounded-md text-[10px] font-bold text-blue-500 bg-slate-50 border border-slate-200">
                     {{ h.shift.horaInicio?.substring(0,5) }} – {{ h.shift.horaFin?.substring(0,5) }}
                   </span>
                 }
@@ -258,30 +258,30 @@
               <div class="w-14 flex-shrink-0 flex items-start justify-end pr-3 pt-3 pb-3 bg-slate-50/30">
                 <span class="text-[10px] font-bold tracking-tighter"
                   [class.text-slate-400]="!slot.isWorking"
-                  [class.text-[#0066AA]]="slot.isWorking">
+                  [class.text-blue-500]="slot.isWorking">
                   {{ slot.label }}
                 </span>
               </div>
               <!-- Bloque de hora -->
               <div class="flex-1 relative h-[44px] border-l border-slate-100"
-                [ngClass]="slot.isWorking ? 'bg-slate-50/50 border-l-2 border-l-[#0066AA]' : ''">
+                [ngClass]="slot.isWorking ? 'bg-slate-50/50 border-l-2 border-l-blue-500' : ''">
                 <!-- Etiqueta del turno -->
                 @if (slot.isShiftStart && slot.shift) {
                   <div class="px-4 py-2 flex items-center h-full">
                     <div (click)="verDetalle(slot.shift); $event.stopPropagation()"
-                      class="bg-white border border-slate-200 rounded-lg py-1 px-3 flex items-center justify-between w-full cursor-pointer hover:border-[#0066AA] transition-all"
+                      class="bg-white border border-slate-200 rounded-lg py-1 px-3 flex items-center justify-between w-full cursor-pointer hover:border-blue-500 transition-all"
                       [class.ring-2]="selectedShift()?.id === slot.shift.id"
-                      [class.ring-[#0066AA]]="selectedShift()?.id === slot.shift.id">
+                      [class.ring-blue-500]="selectedShift()?.id === slot.shift.id">
                       <div class="flex items-center gap-2">
-                        <span class="w-1.5 h-1.5 rounded-full bg-[#0066AA]"></span>
-                        <span class="text-[11px] font-bold text-[#0066AA]">
+                        <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                        <span class="text-[11px] font-bold text-blue-500">
                           Jornada: {{ slot.shift.horaInicio?.substring(0,5) }} – {{ slot.shift.horaFin?.substring(0,5) }}
                         </span>
                       </div>
                       <div class="flex items-center gap-1">
                         @if (canModify()) {
                           <button (click)="editShift(slot.shift); $event.stopPropagation()"
-                            class="p-1.5 rounded-md text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all"
+                            class="p-1.5 rounded-md text-slate-400 hover:text-blue-500 hover:bg-blue-50 transition-all"
                             title="Editar turno">
                             <i class="pi pi-pencil text-[10px]"></i>
                           </button>
@@ -353,7 +353,7 @@
                           [class.text-slate-300]="item.otherMonth"
                           [class.text-slate-600]="!item.otherMonth && !item.isToday"
                           [class.text-white]="item.isToday"
-                          [class.bg-[#0066AA]]="item.isToday"
+                          [class.bg-blue-500]="item.isToday"
                           [class.border-slate-200]="!item.isToday"
                           [class.border-transparent]="item.isToday">
                           {{ item.day }}
@@ -380,7 +380,7 @@
                       }
                       @if (viewMode() === 'month' && item.shifts?.length > 0) {
                         <span
-                          class="absolute bottom-1 right-1 hidden h-4 min-w-5 items-center justify-center gap-0.5 rounded px-0.5 text-[8px] font-extrabold leading-none text-white max-[760px]:inline-flex bg-[#0066AA]"
+                          class="absolute bottom-1 right-1 hidden h-4 min-w-5 items-center justify-center gap-0.5 rounded px-0.5 text-[8px] font-extrabold leading-none text-white max-[760px]:inline-flex bg-blue-500"
                           [attr.aria-label]="item.shifts.length + (item.shifts.length === 1 ? ' turno' : ' turnos')">
                           <i class="pi pi-clock text-[8px]" aria-hidden="true"></i>
                           {{ item.shifts.length }}
@@ -455,7 +455,7 @@
                 aria-labelledby="selected-day-title">
                 <div class="flex items-center justify-between gap-4 border-b border-slate-200 px-4 py-4 md:px-5">
                   <div class="min-w-0">
-                    <p class="mb-0.5 text-[9px] font-extrabold uppercase tracking-wider text-[#0066AA]">Horario seleccionado</p>
+                    <p class="mb-0.5 text-[9px] font-extrabold uppercase tracking-wider text-blue-500">Horario seleccionado</p>
                     <h3 id="selected-day-title" class="m-0 truncate text-base font-extrabold text-slate-900">{{ formatCalendarFullDate(selectedDay.date) | titlecase }}</h3>
                     <p class="mt-1 text-[11px] font-medium text-slate-500">{{ selectedDay.shifts.length }} turno{{ selectedDay.shifts.length === 1 ? '' : 's' }} programado{{ selectedDay.shifts.length === 1 ? '' : 's' }}</p>
                   </div>
@@ -471,7 +471,7 @@
                     <article
                       class="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 border-b border-slate-100 px-3 py-3 last:border-b-0 sm:grid-cols-[minmax(0,1fr)_auto_auto] md:px-4">
                       <div class="flex min-w-0 items-center gap-2 text-xs font-extrabold text-slate-800">
-                        <i class="pi pi-clock text-[11px] text-[#0066AA]" aria-hidden="true"></i>
+                        <i class="pi pi-clock text-[11px] text-blue-500" aria-hidden="true"></i>
                         <span>{{ shift.horaInicio?.substring(0,5) }} – {{ shift.horaFin?.substring(0,5) }}</span>
                       </div>
                       <div class="text-right text-[11px] font-bold text-slate-500">
@@ -479,7 +479,7 @@
                       </div>
                       <button type="button"
                         (click)="selectedCalendarDay.set(null); verDetalle(shift)"
-                        class="col-span-2 flex h-8 w-full items-center justify-center gap-2 rounded-lg border border-[#0066AA] bg-white px-3 text-[11px] font-extrabold text-[#0066AA] sm:col-span-1 sm:w-auto">
+                        class="col-span-2 flex h-8 w-full items-center justify-center gap-2 rounded-lg border border-blue-500 bg-white px-3 text-[11px] font-extrabold text-blue-500 sm:col-span-1 sm:w-auto">
                         Ver detalle
                         <i class="pi pi-chevron-right" aria-hidden="true"></i>
                       </button>
@@ -794,7 +794,7 @@ line-height: 1.6;
     <div class="flex items-center justify-between px-4 py-4 md:px-5 border-b border-slate-200 bg-slate-50">
       <div class="flex items-center gap-3">
         <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white font-extrabold text-base shrink-0"
-          [class]="shiftForDetail().fecha ? 'bg-[#0066AA]' : 'bg-amber-500'">
+          [class]="shiftForDetail().fecha ? 'bg-blue-500' : 'bg-amber-500'">
           {{ selectedEmployeeName().charAt(0).toUpperCase() }}
         </div>
         <div class="min-w-0">
@@ -817,7 +817,7 @@ line-height: 1.6;
       <!-- Sección 1: Fecha -->
       <div class="space-y-3">
         <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
-          <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
+          <span class="w-1.5 h-4 bg-blue-500 rounded-full"></span>
           <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">1. Fecha</h3>
         </div>
         <div class="grid grid-cols-2 gap-y-3">
@@ -837,7 +837,7 @@ line-height: 1.6;
       <!-- Sección 2: Horario -->
       <div class="space-y-3">
         <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
-          <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
+          <span class="w-1.5 h-4 bg-blue-500 rounded-full"></span>
           <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">2. Horario de Turno</h3>
         </div>
         <div class="grid grid-cols-2 gap-y-3">
@@ -864,7 +864,7 @@ line-height: 1.6;
       <!-- Sección 3: Empleado -->
       <div class="space-y-3">
         <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
-          <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
+          <span class="w-1.5 h-4 bg-blue-500 rounded-full"></span>
           <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">3. Empleado</h3>
         </div>
         <div class="grid grid-cols-2 gap-y-3">
@@ -884,7 +884,7 @@ line-height: 1.6;
       @if (canModify()) {
         <div class="flex gap-2">
           <button (click)="editShift(shiftForDetail()); displayShiftDetail.set(false)"
-            class="flex-1 flex items-center justify-center gap-2 py-2.5 bg-[#0066AA] hover:bg-[#005588] text-white text-xs font-bold rounded-lg transition-all">
+            class="flex-1 flex items-center justify-center gap-2 py-2.5 bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold rounded-lg transition-all">
             <i class="pi pi-pencil text-xs"></i> Editar turno
           </button>
         </div>
@@ -908,7 +908,7 @@ line-height: 1.6;
     <div class="relative bg-white w-full max-w-sm rounded-2xl border border-slate-200 shadow-2xl overflow-hidden animate-fade-in p-6">
       <!-- Cabecera -->
       <div class="flex items-center gap-3 mb-4">
-        <div class="w-10 h-10 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-[#0066AA] flex-shrink-0">
+        <div class="w-10 h-10 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-500 flex-shrink-0">
           <i class="pi pi-copy text-sm"></i>
         </div>
         <div>
@@ -931,7 +931,7 @@ line-height: 1.6;
           <input type="date"
             [ngModel]="cloneTargetDate()"
             (ngModelChange)="cloneTargetDate.set($event)"
-            class="w-full h-9 px-3 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 outline-none focus:border-[#0066AA] focus:ring-1 focus:ring-[#0066AA] transition-all" />
+            class="w-full h-9 px-3 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all" />
         </div>
       </div>
       <!-- Footer -->
@@ -942,7 +942,7 @@ line-height: 1.6;
           Cancelar
         </button>
         <button type="button"
-          class="px-5 py-2 text-[10px] font-bold text-white bg-[#0066AA] hover:bg-[#005588] rounded-lg transition-all active:scale-95 flex items-center gap-1.5"
+          class="px-5 py-2 text-[10px] font-bold text-white bg-blue-500 hover:bg-blue-600 rounded-lg transition-all active:scale-95 flex items-center gap-1.5"
           (click)="confirmCloneDay()">
           <span>Confirmar</span>
         </button>

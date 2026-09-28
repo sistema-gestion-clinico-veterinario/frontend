@@ -1,6 +1,6 @@
 <p-toast></p-toast>
 
-<div class="min-h-screen bg-[#F4F7FA] font-['Barlow']">
+<div class="min-h-screen bg-blue-50 font-['Barlow']">
 
   <!-- HEADER -->
   <div class="bg-white border-b border-slate-100">
@@ -13,7 +13,7 @@
           </p>
         </div>
         <h1 class="text-xl sm:text-[26px] font-black text-slate-900 leading-snug break-words">
-          {{ dayGreeting }},&nbsp;<span class="text-[#0066AA]">{{ userName }}</span>
+          {{ dayGreeting }},&nbsp;<span class="text-blue-500">{{ userName }}</span>
         </h1>
         <div class="flex items-center gap-2.5 mt-2 flex-wrap">
           <span class="text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider bg-indigo-50 text-indigo-700 border border-indigo-100">
@@ -79,7 +79,7 @@
         @if (canViewMisCitas()) {
           <div class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 flex items-center gap-4 hover:border-slate-300 transition-colors min-w-0">
             <div class="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
-              <i class="pi pi-calendar text-base text-[#0066AA]"></i>
+              <i class="pi pi-calendar text-base text-blue-500"></i>
             </div>
             <div class="min-w-0">
               <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest leading-none mb-1">Próximas Citas</p>
@@ -87,7 +87,7 @@
               <p class="text-[11px] text-slate-400 font-medium mt-1">pendientes de atención</p>
             </div>
           </div>
-          <div class="bg-[#0066AA] rounded-2xl border border-blue-700/50 p-4 sm:p-5 flex items-center gap-4 hover:bg-[#005a96] transition-colors min-w-0">
+          <div class="bg-blue-500 rounded-2xl border border-blue-700/50 p-4 sm:p-5 flex items-center gap-4 hover:bg-blue-600 transition-colors min-w-0">
             <div class="w-11 h-11 rounded-xl bg-white/15 flex items-center justify-center shrink-0">
               <i class="pi pi-calendar-clock text-base text-white"></i>
             </div>
@@ -112,7 +112,7 @@
               <div class="px-4 sm:px-6 py-4 sm:py-5 border-b border-slate-200 flex flex-col min-[440px]:flex-row min-[440px]:items-center justify-between gap-3 bg-slate-50/50">
                 <div>
                   <h2 class="text-xs font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
-                    <span class="w-2 h-2 rounded-full bg-[#0066AA]"></span>
+                    <span class="w-2 h-2 rounded-full bg-blue-500"></span>
                     Mis Próximas Citas
                   </h2>
                   <p class="text-[10px] text-slate-400 font-medium mt-0.5">Citas programadas y reprogramadas</p>
@@ -122,7 +122,7 @@
                     {{ citasProximas().length }} citas
                   </span>
                   <a routerLink="/apoderado/mis-citas"
-                    class="text-[10px] font-extrabold text-[#0066AA] hover:underline flex items-center gap-1">
+                    class="text-[10px] font-extrabold text-blue-500 hover:underline flex items-center gap-1">
                     Ver todas <i class="pi pi-arrow-right text-[8px]"></i>
                   </a>
                 </div>
@@ -147,7 +147,7 @@
                             <td class="py-3.5 text-xs font-bold text-slate-700">
                               {{ formatFecha(cita.fechaHoraInicio) }}
                             </td>
-                            <td class="py-3.5 text-xs font-black text-[#0066AA]">
+                            <td class="py-3.5 text-xs font-black text-blue-500">
                               {{ formatHora(cita.fechaHoraInicio) }}
                             </td>
                             <td class="py-3.5">
@@ -176,7 +176,7 @@
                     <i class="pi pi-calendar text-3xl text-slate-200 block mb-3"></i>
                     <p class="text-sm text-slate-400 font-medium">No tienes citas próximas</p>
                     <a routerLink="/apoderado/mis-citas"
-                      class="inline-flex items-center gap-1.5 mt-4 px-4 py-2 rounded-xl bg-[#0066AA] text-white text-xs font-bold hover:bg-[#0055aa] transition-all">
+                      class="inline-flex items-center gap-1.5 mt-4 px-4 py-2 rounded-xl bg-blue-500 text-white text-xs font-bold hover:bg-blue-600 transition-all">
                       <i class="pi pi-plus text-[10px]"></i> Agendar una cita
                     </a>
                   </div>
@@ -201,7 +201,7 @@
                           </div>
                           <div>
                             <dt class="text-[9px] font-extrabold uppercase tracking-wider text-slate-400">Hora</dt>
-                            <dd class="mt-1 text-xs font-black text-[#0066AA]">{{ formatHora(cita.fechaHoraInicio) }}</dd>
+                            <dd class="mt-1 text-xs font-black text-blue-500">{{ formatHora(cita.fechaHoraInicio) }}</dd>
                           </div>
                         </dl>
                       </article>
@@ -224,7 +224,7 @@
                   <p class="text-[10px] text-slate-400 font-medium mt-0.5">Pacientes registrados a tu nombre</p>
                 </div>
                 <a routerLink="/apoderado/mis-mascotas"
-                  class="text-[10px] font-extrabold text-[#0066AA] hover:underline flex items-center gap-1">
+                  class="text-[10px] font-extrabold text-blue-500 hover:underline flex items-center gap-1">
                   Ver todas <i class="pi pi-arrow-right text-[8px]"></i>
                 </a>
               </div>
@@ -268,7 +268,7 @@
           <!-- PERFIL -->
           <div class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-6">
             <div class="flex items-center gap-3.5 pb-5 mb-5 border-b border-slate-200">
-            <div class="w-12 h-12 rounded-2xl bg-[#0066AA] flex items-center justify-center
+            <div class="w-12 h-12 rounded-2xl bg-blue-500 flex items-center justify-center
                         text-white font-black text-base shrink-0 select-none">
                 {{ userInitials }}
               </div>
@@ -302,7 +302,7 @@
           <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
             <div class="px-4 sm:px-6 py-4 sm:py-5 border-b border-slate-200 bg-slate-50/50">
               <h2 class="text-xs font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
-                <i class="pi pi-th-large text-[#0066AA]"></i>
+                <i class="pi pi-th-large text-blue-500"></i>
                 Accesos Rápidos
               </h2>
             </div>
@@ -317,13 +317,13 @@
               @if (canViewMisCitas()) {
                 <a routerLink="/apoderado/mis-citas"
                   class="flex flex-col items-center gap-2 p-4 rounded-xl border border-slate-100 hover:border-blue-200 hover:bg-blue-50/50 transition-all cursor-pointer">
-                  <i class="pi pi-calendar text-xl text-[#0066AA]"></i>
+                  <i class="pi pi-calendar text-xl text-blue-500"></i>
                   <span class="text-[10px] font-extrabold text-slate-600 uppercase tracking-wider text-center leading-tight">Mis Citas</span>
                 </a>
               }
               @if (canViewMiHistorial()) {
                 <a routerLink="/apoderado/mi-historial"
-                  class="flex flex-col items-center gap-2 p-4 rounded-xl border border-slate-100 hover:border-indigo-200 hover:bg-indigo-50/50 transition-all cursor-pointer">
+                  class="flex flex-col items-center gap-2 p-4 rounded-xl border border-slate-100 hover:border-blue-200 hover:bg-blue-50/50 transition-all cursor-pointer">
                   <i class="pi pi-book text-xl text-indigo-600"></i>
                   <span class="text-[10px] font-extrabold text-slate-600 uppercase tracking-wider text-center leading-tight">Mi Historial</span>
                 </a>
@@ -353,7 +353,7 @@
               <p class="text-[10px] text-slate-400 font-medium mt-0.5">Historial de transacciones</p>
             </div>
             <a routerLink="/apoderado/mis-pagos"
-              class="text-[10px] font-extrabold text-[#0066AA] hover:underline flex items-center gap-1">
+              class="text-[10px] font-extrabold text-blue-500 hover:underline flex items-center gap-1">
               Ver todos <i class="pi pi-arrow-right text-[8px]"></i>
             </a>
           </div>

@@ -490,7 +490,7 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
       case 'CLONAR_HORARIOS_SEMANA':
       case 'CLONAR_HORARIOS_DIA':
       case 'REGISTRAR_PAGO':
-        return 'bg-cyan-50 border-cyan-200 text-cyan-700';
+        return 'bg-blue-50 border-blue-200 text-blue-700';
       case 'DESACTIVAR_MASCOTA':
       case 'DESACTIVAR_APODERADO':
       case 'DESACTIVAR_EMPLEADO':
@@ -510,7 +510,7 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
       case 'Seguridad':
         return 'bg-red-50 border-red-200 text-red-700';
       case 'Citas':
-        return 'bg-sky-50 border-sky-200 text-sky-700';
+        return 'bg-blue-50 border-blue-200 text-blue-700';
       case 'Mascotas':
         return 'bg-fuchsia-50 border-fuchsia-200 text-fuchsia-700';
       case 'Clientes':

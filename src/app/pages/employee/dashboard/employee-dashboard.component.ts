@@ -247,7 +247,7 @@ export class EmployeeDashboardComponent implements OnInit {
         label: 'Historias Clínicas',
         icon: 'pi pi-book text-xl',
         route: '/historias-clinicas',
-        colorClass: 'bg-indigo-50 text-indigo-700 border-indigo-100 hover:bg-indigo-100/50',
+        colorClass: 'bg-indigo-50 text-indigo-700 border-indigo-100 hover:bg-blue-100/50',
         permission: 'VISTA_HISTORIAS'
       },
       {
@@ -261,7 +261,7 @@ export class EmployeeDashboardComponent implements OnInit {
         label: 'Agenda de Citas',
         icon: 'pi pi-calendar text-xl',
         route: '/citas/agenda',
-        colorClass: 'bg-sky-50 text-sky-700 border-sky-100 hover:bg-sky-100/50',
+        colorClass: 'bg-blue-50 text-blue-700 border-blue-100 hover:bg-blue-100/50',
         permission: 'VISTA_CITAS_AGENDA'
       }
     ];

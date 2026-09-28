@@ -150,8 +150,8 @@ export class ListaRecetasComponent implements OnInit {
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: Arial, sans-serif; font-size: 12px; color: #1e293b; padding: 32px; }
-    .header { border-bottom: 2px solid #0066AA; padding-bottom: 16px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-end; }
-    .logo-area h1 { font-size: 20px; font-weight: bold; color: #0066AA; }
+    .header { border-bottom: 2px solid #018B99; padding-bottom: 16px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-end; }
+    .logo-area h1 { font-size: 20px; font-weight: bold; color: #018B99; }
     .logo-area p { font-size: 11px; color: #64748b; margin-top: 2px; }
     .fecha { font-size: 11px; color: #64748b; text-align: right; }
     .section { margin-bottom: 16px; }
@@ -160,7 +160,7 @@ export class ListaRecetasComponent implements OnInit {
     .field label { font-size: 10px; color: #94a3b8; font-weight: bold; }
     .field p { font-size: 12px; color: #1e293b; font-weight: bold; margin-top: 2px; }
     .rx-box { border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; }
-    .rx-med { font-size: 15px; font-weight: bold; color: #0066AA; margin-bottom: 8px; }
+    .rx-med { font-size: 15px; font-weight: bold; color: #018B99; margin-bottom: 8px; }
     .rx-detail { display: flex; gap: 24px; margin-bottom: 8px; }
     .rx-detail .item label { font-size: 10px; color: #94a3b8; font-weight: bold; }
     .rx-detail .item p { font-size: 12px; font-weight: bold; }

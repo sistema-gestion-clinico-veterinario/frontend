@@ -2,6 +2,25 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --brand-50: 245 250 251;
+  --brand-100: 225 241 243;
+  --brand-200: 179 220 224;
+  --brand-300: 128 197 204;
+  --brand-400: 65 168 178;
+  --brand-500: 1 139 153;
+  --brand-600: 1 120 132;
+  --brand-700: 1 101 112;
+  --brand-800: 1 85 93;
+  --brand-900: 1 70 77;
+  --brand-950: 0 46 50;
+  --brand-primary: rgb(var(--brand-500));
+  --brand-hover: rgb(var(--brand-600));
+  --brand-soft: rgb(var(--brand-50));
+  --brand-soft-strong: rgb(var(--brand-100));
+  --brand-border: rgb(var(--brand-200));
+}
+
 @font-face {
   font-family: 'Barlow';
   src: url('../node_modules/@fontsource/barlow/files/barlow-latin-400-normal.woff2') format('woff2');
@@ -50,7 +69,7 @@
 }
 .cdk-drag-placeholder {
   opacity: 0.3;
-  background: #EBF3FA;
+  background: rgb(var(--brand-50));
   border-radius: 0;
 }
 .cdk-drag-animating {
@@ -86,7 +105,7 @@
     --fc-neutral-bg-color: #f8fafc;
     --fc-page-bg-color: #ffffff;
     --fc-today-bg-color: transparent;
-    --fc-now-indicator-color: #0066AA;
+    --fc-now-indicator-color: rgb(var(--brand-500));
   }
 
   .agenda-calendar-shell .fc .fc-scrollgrid {
@@ -138,11 +157,11 @@
   }
 
   .agenda-calendar-shell .fc-timeGridWeek-view .fc-day-today {
-    background: #eff6ff;
+    background: rgb(var(--brand-50));
   }
 
   .agenda-calendar-shell .fc .fc-daygrid-day.fc-day-today {
-    background: #eff6ff;
+    background: rgb(var(--brand-50));
   }
 
   .agenda-calendar-shell .fc .fc-daygrid-day-frame {
@@ -185,13 +204,13 @@
   }
 
   .agenda-calendar-shell .fc .fc-timegrid-now-indicator-line {
-    border-color: #0066AA;
+    border-color: rgb(var(--brand-500));
     border-width: 2px 0 0;
   }
 
   .agenda-calendar-shell .fc .fc-timegrid-now-indicator-arrow {
-    border-left-color: #0066AA;
-    border-right-color: #0066AA;
+    border-left-color: rgb(var(--brand-500));
+    border-right-color: rgb(var(--brand-500));
   }
 
   .agenda-calendar-shell .agenda-event-card {
@@ -249,7 +268,7 @@
   }
 
   .agenda-calendar-shell .fc .fc-more-link {
-    color: #0066AA;
+    color: rgb(var(--brand-500));
     font-size: 0.7rem;
     font-weight: 800;
     text-decoration: none;

@@ -7,5 +7,6 @@ export interface CompanyListResponse {
   email: string;
   activo: boolean;
   logoUrl?: string;
+  colorPrimario?: string | null;
   slug?: string;
 }

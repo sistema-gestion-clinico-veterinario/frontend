@@ -1,10 +1,10 @@
-<div class="p-3 sm:p-4 lg:p-8 min-h-screen bg-slate-50 font-['Barlow']">
+<div class="p-3 sm:p-4 lg:p-8 min-h-screen bg-blue-50 font-['Barlow']">
 
   <!-- Header -->
   <div class="mb-8">
     <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Análisis de Laboratorio IA</h1>
     <p class="text-slate-500 font-medium mt-1 flex items-center gap-2">
-      <span class="w-2 h-2 rounded-full bg-[#0066AA]"></span>
+      <span class="w-2 h-2 rounded-full bg-blue-500"></span>
       Extracción automática de hemogramas desde PDF o imagen de voucher
     </p>
   </div>
@@ -22,11 +22,11 @@
           (dragover)="$event.preventDefault(); arrastrar.set(true)"
           (dragleave)="arrastrar.set(false)"
           (drop)="onDrop($event)"
-          [class]="arrastrar() ? 'border-[#0066AA] bg-blue-50' : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'"
+          [class]="arrastrar() ? 'border-blue-500 bg-blue-50' : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'"
           class="border-2 border-dashed rounded-xl p-5 sm:p-8 flex flex-col items-center gap-3 text-center cursor-pointer transition-all"
           (click)="fileInput.click()">
 
-          <div [class]="arrastrar() ? 'bg-blue-100 text-[#0066AA]' : 'bg-slate-100 text-slate-400'"
+          <div [class]="arrastrar() ? 'bg-blue-100 text-blue-500' : 'bg-slate-100 text-slate-400'"
             class="w-14 h-14 rounded-xl flex items-center justify-center transition-all">
             <i class="pi pi-upload text-2xl"></i>
           </div>
@@ -35,7 +35,7 @@
             <p class="text-sm font-semibold text-slate-600">Arrastra aquí o haz click</p>
             <p class="text-xs text-slate-400">PDF, JPG, PNG, BMP, TIFF</p>
           } @else {
-            <p class="text-sm font-bold text-[#0066AA] break-all px-2">{{ archivo()!.name }}</p>
+            <p class="text-sm font-bold text-blue-500 break-all px-2">{{ archivo()!.name }}</p>
             <p class="text-xs text-slate-400">{{ (archivo()!.size / 1024).toFixed(1) }} KB</p>
           }
 
@@ -59,7 +59,7 @@
             @for (e of ESPECIES; track e) {
               <button (click)="especie.set(e)"
             [class]="especie() === e
-              ? 'bg-[#0066AA] text-white border-[#0066AA]'
+              ? 'bg-blue-500 text-white border-blue-500'
               : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'"
                 class="flex-1 py-2 text-sm font-bold border rounded-lg transition-all">
                 {{ e }}
@@ -70,7 +70,7 @@
 
         <!-- Botón analizar -->
         <button (click)="analizar()" [disabled]="!archivo() || cargando()"
-          class="w-full h-12 bg-[#0066AA] hover:bg-[#005a96] disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-sm rounded-xl transition-all flex items-center justify-center gap-2">
+          class="w-full h-12 bg-blue-500 hover:bg-blue-600 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-sm rounded-xl transition-all flex items-center justify-center gap-2">
           @if (!cargando()) {
             <i class="pi pi-search-plus"></i>
           }
@@ -120,7 +120,7 @@
             <div class="flex flex-wrap gap-2">
               @for (sec of res.secciones_presentes; track sec) {
                 <span
-                  class="px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-[#0066AA] capitalize">
+                  class="px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-500 capitalize">
                   {{ sec }}
                 </span>
               }

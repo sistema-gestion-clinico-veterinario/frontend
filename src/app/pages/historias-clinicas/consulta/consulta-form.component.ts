@@ -670,7 +670,7 @@ this.paginaControles.set(0);
   claseEstadoPreventivo(estado: string) {
     if (estado === 'ATRASADO') return 'bg-rose-50 text-rose-700';
     if (estado === 'PENDIENTE' || estado === 'PROXIMO') return 'bg-amber-50 text-amber-700';
-    if (estado === 'SUSPENDIDO_POR_CITA') return 'bg-sky-50 text-sky-700';
+    if (estado === 'SUSPENDIDO_POR_CITA') return 'bg-blue-50 text-blue-700';
     return 'bg-emerald-50 text-emerald-700';
   }
 
@@ -1276,8 +1276,8 @@ version: res.data.version,
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: Arial, sans-serif; font-size: 12px; color: #1e293b; padding: 32px; }
-    .header { border-bottom: 2px solid #0066AA; padding-bottom: 16px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-end; }
-    .logo-area h1 { font-size: 20px; font-weight: bold; color: #0066AA; }
+    .header { border-bottom: 2px solid #018B99; padding-bottom: 16px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-end; }
+    .logo-area h1 { font-size: 20px; font-weight: bold; color: #018B99; }
     .logo-area p { font-size: 11px; color: #64748b; margin-top: 2px; }
     .fecha { font-size: 11px; color: #64748b; text-align: right; }
     .section { margin-bottom: 16px; }
@@ -1287,7 +1287,7 @@ version: res.data.version,
     .field p { font-size: 12px; color: #1e293b; font-weight: bold; margin-top: 2px; }
     .rx-box { border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin-bottom: 12px; position: relative; }
     .rx-num { font-size: 10px; color: #94a3b8; font-weight: bold; margin-bottom: 4px; }
-    .rx-med { font-size: 15px; font-weight: bold; color: #0066AA; margin-bottom: 8px; }
+    .rx-med { font-size: 15px; font-weight: bold; color: #018B99; margin-bottom: 8px; }
     .rx-detail { display: flex; gap: 24px; margin-bottom: 8px; }
     .rx-detail .item label { font-size: 10px; color: #94a3b8; font-weight: bold; }
     .rx-detail .item p { font-size: 12px; font-weight: bold; }
@@ -1354,7 +1354,7 @@ version: res.data.version,
       icon: 'pi pi-exclamation-triangle',
       acceptLabel: 'Sí, cerrar',
       rejectLabel: 'Cancelar',
-      acceptButtonProps: { style: 'background-color: #0066aa; color: white; border: none; font-weight: bold; padding: 0.5rem 1rem; border-radius: 0.375rem;' },
+      acceptButtonProps: { style: 'background-color: var(--brand-primary); color: white; border: none; font-weight: bold; padding: 0.5rem 1rem; border-radius: 0.375rem;' },
       rejectButtonStyleClass: 'bg-slate-300 hover:bg-slate-400 text-slate-700 font-bold',
       accept: () => this.cerrar()
     });
@@ -1402,7 +1402,7 @@ version: res.data.version,
       icon: 'pi pi-lock-open',
       acceptLabel: 'Sí, reabrir',
       rejectLabel: 'Cancelar',
-      acceptButtonProps: { style: 'background-color: #0066aa; color: white; border: none; font-weight: bold; padding: 0.5rem 1rem; border-radius: 0.375rem;' },
+      acceptButtonProps: { style: 'background-color: var(--brand-primary); color: white; border: none; font-weight: bold; padding: 0.5rem 1rem; border-radius: 0.375rem;' },
       rejectButtonStyleClass: 'bg-slate-300 hover:bg-slate-400 text-slate-700 font-bold',
       accept: () => this.reabrir()
     });

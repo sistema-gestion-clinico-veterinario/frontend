@@ -664,7 +664,7 @@ export class HistoriaClinicaMascotaComponent implements OnInit, OnDestroy {
       CONFIRMADA: 'bg-indigo-50 text-indigo-700',
       PENDIENTE: 'bg-amber-50 text-amber-700',
       REPROGRAMADA: 'bg-orange-50 text-orange-600',
-      SALA_DE_ESPERA: 'bg-cyan-50 text-cyan-700',
+      SALA_DE_ESPERA: 'bg-blue-50 text-blue-700',
       NO_ASISTIO: 'bg-slate-100 text-slate-500',
     };
     return map[estado] ?? 'bg-slate-100 text-slate-600';

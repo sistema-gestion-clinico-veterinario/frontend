@@ -12,10 +12,12 @@ import { AuthStore } from '../../../store/auth.store';
 import { resolveInitialRoute, resolveDashboardRoute } from '../../../layouts/main-layout/navbar/navbar.component';
 import { SessionService } from '../../../core/services/session.service';
 import { LoadingStore } from '../../../store/loading.store';
+import { SOFTVET_BRAND_COLOR, SOFTVET_LOGO_URL, SOFTVET_NAME } from '../../../core/constants/branding.constants';
+import { BrandThemeService } from '../../../core/services/brand-theme.service';
 
-const DEFAULT_BRAND_COLOR = '#006BA8';
-const DEFAULT_LOGO_URL = 'https://toqqwxveqxhlottwetev.supabase.co/storage/v1/object/public/vargas_vet/Fondo%20de%20Pantalla%20Computador%20Simple%20Beige%20(7).png';
-const DEFAULT_COMPANY_NAME = 'SoftVet';
+const DEFAULT_BRAND_COLOR = SOFTVET_BRAND_COLOR;
+const DEFAULT_LOGO_URL = SOFTVET_LOGO_URL;
+const DEFAULT_COMPANY_NAME = SOFTVET_NAME;
 
 @Component({
   selector: 'app-login',
@@ -33,6 +35,7 @@ export class LoginComponent implements OnInit {
   private slugContext = inject(CompanySlugContext);
   private sessionService = inject(SessionService);
   private loadingStore = inject(LoadingStore);
+  private brandTheme = inject(BrandThemeService);
 
   authError: string | null = null;
   isSubmitting = false;
@@ -58,6 +61,7 @@ export class LoginComponent implements OnInit {
   };
 
   ngOnInit() {
+    this.brandTheme.applyCompanyColor(DEFAULT_BRAND_COLOR);
     this.isAdminRoute = this.router.url.startsWith('/admin/login');
     this.slug = this.isAdminRoute ? null : this.slugContext.slug();
 
@@ -95,9 +99,13 @@ export class LoginComponent implements OnInit {
         this.companyName = data?.name || DEFAULT_COMPANY_NAME;
         this.logoUrl = data?.logoUrl || DEFAULT_LOGO_URL;
         this.colorPrimario = data?.colorPrimario || DEFAULT_BRAND_COLOR;
+        this.brandTheme.applyCompanyColor(data?.colorPrimario);
         this.brandLoaded = true;
       },
       error: () => {
+        this.brandTheme.applyCompanyColor(DEFAULT_BRAND_COLOR);
+        this.companyName = DEFAULT_COMPANY_NAME;
+        this.logoUrl = DEFAULT_LOGO_URL;
         this.brandNotFound = true;
         this.brandLoaded = true;
       }

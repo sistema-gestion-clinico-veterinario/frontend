@@ -1,4 +1,4 @@
-<div class="p-3 sm:p-4 lg:p-8 min-h-screen bg-slate-50 font-['Barlow']">
+<div class="p-3 sm:p-4 lg:p-8 min-h-screen bg-blue-50 font-['Barlow']">
 
   <!-- Skeleton Loading -->
   @if (cargando() && !requiresCompanySelection) {
@@ -79,9 +79,9 @@
 
   <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-10">
     <div class="flex items-center gap-3">
-      <i class="pi pi-cog text-[#0066AA] text-3xl shrink-0"></i>
+      <i class="pi pi-cog text-blue-500 text-3xl shrink-0"></i>
       <div>
-        <p class="text-[11px] font-bold uppercase tracking-[.14em] text-[#0066AA]">Configuración</p>
+        <p class="text-[11px] font-bold uppercase tracking-[.14em] text-blue-500">Configuración</p>
         <h1 class="text-xl font-extrabold leading-tight tracking-tight text-slate-900">Configuración Complementaria</h1>
         <p class="mt-1 text-sm text-slate-400 font-medium hidden sm:block">Define especialidades, tipos de contrato y servicios de la clínica</p>
       </div>
@@ -90,7 +90,7 @@
 
   @if (requiresCompanySelection) {
     <div class="bg-white border border-slate-200 rounded-xl px-5 py-4 flex items-start gap-3">
-      <div class="w-9 h-9 rounded-lg bg-blue-50 text-[#0066AA] flex items-center justify-center shrink-0">
+      <div class="w-9 h-9 rounded-lg bg-blue-50 text-blue-500 flex items-center justify-center shrink-0">
         <i class="pi pi-building text-sm"></i>
       </div>
       <div>
@@ -105,27 +105,27 @@
   @if (!requiresCompanySelection) {
     <div class="flex items-center gap-6 overflow-x-auto border-b border-slate-200 mb-6">
       <button (click)="activeTab.set(0)"
-        [class]="activeTab() === 0 ? 'text-[#0066AA] border-[#0066AA]' : 'text-slate-400 border-transparent hover:text-slate-600'"
+        [class]="activeTab() === 0 ? 'text-blue-500 border-blue-500' : 'text-slate-400 border-transparent hover:text-slate-600'"
         class="pb-4 px-1 text-sm font-bold border-b-2 outline-none shrink-0">
         Especialidades
       </button>
       <button (click)="activeTab.set(1)"
-        [class]="activeTab() === 1 ? 'text-[#0066AA] border-[#0066AA]' : 'text-slate-400 border-transparent hover:text-slate-600'"
+        [class]="activeTab() === 1 ? 'text-blue-500 border-blue-500' : 'text-slate-400 border-transparent hover:text-slate-600'"
         class="pb-4 px-1 text-sm font-bold border-b-2 outline-none shrink-0">
         Tipos de Empleado
       </button>
       <button (click)="activeTab.set(2)"
-        [class]="activeTab() === 2 ? 'text-[#0066AA] border-[#0066AA]' : 'text-slate-400 border-transparent hover:text-slate-600'"
+        [class]="activeTab() === 2 ? 'text-blue-500 border-blue-500' : 'text-slate-400 border-transparent hover:text-slate-600'"
         class="pb-4 px-1 text-sm font-bold border-b-2 outline-none shrink-0">
         Servicios
       </button>
       <button (click)="activeTab.set(3)"
-        [class]="activeTab() === 3 ? 'text-[#0066AA] border-[#0066AA]' : 'text-slate-400 border-transparent hover:text-slate-600'"
+        [class]="activeTab() === 3 ? 'text-blue-500 border-blue-500' : 'text-slate-400 border-transparent hover:text-slate-600'"
         class="pb-4 px-1 text-sm font-bold border-b-2 outline-none shrink-0">
         Vacunas
       </button>
       <button (click)="activeTab.set(4)"
-        [class]="activeTab() === 4 ? 'text-[#0066AA] border-[#0066AA]' : 'text-slate-400 border-transparent hover:text-slate-600'"
+        [class]="activeTab() === 4 ? 'text-blue-500 border-blue-500' : 'text-slate-400 border-transparent hover:text-slate-600'"
         class="pb-4 px-1 text-sm font-bold border-b-2 outline-none shrink-0">
         Desparasitantes
       </button>
@@ -144,7 +144,7 @@
                 <p class="text-sm text-slate-500 mt-0.5">Catálogo de especialidades disponibles</p>
               </div>
               <button *appHasPermission="'VISTA_COMPLEMENTARIO:escribir'" (click)="openEspModal()"
-                class="flex items-center justify-center gap-2 bg-[#0066AA] hover:bg-[#005a96] text-white text-sm font-medium px-5 h-10 rounded-lg transition-colors w-full sm:w-auto">
+                class="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium px-5 h-10 rounded-lg transition-colors w-full sm:w-auto">
                 <i class="pi pi-plus text-xs"></i>
                 Registrar Especialidad
               </button>
@@ -163,7 +163,7 @@
                     <tr class="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors">
                       <td class="px-6 py-2">
                         <div class="flex items-center gap-3">
-                          <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-[#0066AA] font-bold text-sm flex-shrink-0">
+                          <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-500 font-bold text-sm flex-shrink-0">
                             {{ item.nombre.substring(0,2).toUpperCase() }}
                           </div>
                           <span class="text-sm font-medium text-slate-800">{{ item.nombre }}</span>
@@ -175,7 +175,7 @@
                       <td class="px-6 py-2 text-right">
                         <div class="flex items-center justify-end gap-1">
                           <button *appHasPermission="'VISTA_COMPLEMENTARIO:modificar'" (click)="openEspModal(item)"
-                            class="p-2 rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-90">
+                            class="p-2 rounded-lg text-slate-400 hover:text-blue-500 hover:bg-blue-50 transition-all active:scale-90">
                             <i class="pi pi-pencil text-sm"></i>
                           </button>
                           <button *appHasPermission="'VISTA_COMPLEMENTARIO:eliminar'" (click)="openConfirm('Eliminar especialidad', '¿Está seguro de eliminar la especialidad «' + item.nombre + '»?', 'eliminar-especialidad', item)"
@@ -202,7 +202,7 @@
                 @for (item of especialidades(); track item) {
                   <div class="bg-white border border-slate-200 rounded-xl p-4">
                     <div class="flex items-center gap-3">
-                      <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-[#0066AA] font-bold text-sm flex-shrink-0">
+                      <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-500 font-bold text-sm flex-shrink-0">
                         {{ item.nombre.substring(0,2).toUpperCase() }}
                       </div>
                       <span class="text-sm font-bold text-slate-800 truncate">{{ item.nombre }}</span>
@@ -215,7 +215,7 @@
                     </div>
                     <div class="flex items-center justify-end gap-1 mt-3 pt-3 border-t border-slate-100">
                       <button *appHasPermission="'VISTA_COMPLEMENTARIO:modificar'" (click)="openEspModal(item)"
-                        class="p-2 rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-90">
+                        class="p-2 rounded-lg text-slate-400 hover:text-blue-500 hover:bg-blue-50 transition-all active:scale-90">
                         <i class="pi pi-pencil text-sm"></i>
                       </button>
                       <button *appHasPermission="'VISTA_COMPLEMENTARIO:eliminar'" (click)="openConfirm('Eliminar especialidad', '¿Está seguro de eliminar la especialidad «' + item.nombre + '»?', 'eliminar-especialidad', item)"
@@ -256,7 +256,7 @@
                 <p class="text-sm text-slate-500 mt-0.5">Estructura de cargos de la organización</p>
               </div>
               <button *appHasPermission="'VISTA_COMPLEMENTARIO:escribir'" (click)="openTipoModal()"
-                class="flex items-center justify-center gap-2 bg-[#0066AA] hover:bg-[#005a96] text-white text-sm font-medium px-5 h-10 rounded-lg transition-colors w-full sm:w-auto">
+                class="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium px-5 h-10 rounded-lg transition-colors w-full sm:w-auto">
                 <i class="pi pi-plus text-xs"></i>
                 Registrar Tipo
               </button>
@@ -305,7 +305,7 @@
                       <td class="px-6 py-2 text-right">
                         <div class="flex items-center justify-end gap-1">
                           <button *appHasPermission="'VISTA_COMPLEMENTARIO:modificar'" (click)="openTipoModal(item)"
-                            class="p-2 rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-90">
+                            class="p-2 rounded-lg text-slate-400 hover:text-blue-500 hover:bg-blue-50 transition-all active:scale-90">
                             <i class="pi pi-pencil text-sm"></i>
                           </button>
                           <button *appHasPermission="'VISTA_COMPLEMENTARIO:eliminar'" (click)="openConfirm('Eliminar tipo de empleado', '¿Está seguro de eliminar el tipo de empleado «' + item.nombre + '»?', 'eliminar-tipo-empleado', item)"
@@ -359,7 +359,7 @@
                     </div>
                     <div class="flex items-center justify-end gap-1 mt-3 pt-3 border-t border-slate-100">
                       <button *appHasPermission="'VISTA_COMPLEMENTARIO:modificar'" (click)="openTipoModal(item)"
-                        class="p-2 rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-90">
+                        class="p-2 rounded-lg text-slate-400 hover:text-blue-500 hover:bg-blue-50 transition-all active:scale-90">
                         <i class="pi pi-pencil text-sm"></i>
                       </button>
                       <button *appHasPermission="'VISTA_COMPLEMENTARIO:eliminar'" (click)="openConfirm('Eliminar tipo de empleado', '¿Está seguro de eliminar el tipo de empleado «' + item.nombre + '»?', 'eliminar-tipo-empleado', item)"
@@ -400,7 +400,7 @@
                 <p class="text-sm text-slate-500 mt-0.5">Servicios ofrecidos por la clínica</p>
               </div>
               <button *appHasPermission="'VISTA_COMPLEMENTARIO:escribir'" (click)="openServicioModal()"
-                class="flex items-center justify-center gap-2 bg-[#0066AA] hover:bg-[#005a96] text-white text-sm font-medium px-5 h-10 rounded-lg transition-colors w-full sm:w-auto">
+                class="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium px-5 h-10 rounded-lg transition-colors w-full sm:w-auto">
                 <i class="pi pi-plus text-xs"></i>
                 Nuevo Servicio
               </button>
@@ -453,7 +453,7 @@
                       <td class="px-6 py-2 text-right">
                         <div class="flex items-center justify-end gap-1">
                           <button *appHasPermission="'VISTA_COMPLEMENTARIO:modificar'" (click)="openServicioModal(item)"
-                            class="p-2 rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-90">
+                            class="p-2 rounded-lg text-slate-400 hover:text-blue-500 hover:bg-blue-50 transition-all active:scale-90">
                             <i class="pi pi-pencil text-sm"></i>
                           </button>
                           <button *appHasPermission="'VISTA_COMPLEMENTARIO:eliminar'" (click)="openConfirm('Eliminar servicio', '¿Está seguro de eliminar el servicio «' + item.nombre + '»?', 'eliminar-servicio', item)"
@@ -513,7 +513,7 @@
                     </div>
                     <div class="flex items-center justify-end gap-1 mt-3 pt-3 border-t border-slate-100">
                       <button *appHasPermission="'VISTA_COMPLEMENTARIO:modificar'" (click)="openServicioModal(item)"
-                        class="p-2 rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-90">
+                        class="p-2 rounded-lg text-slate-400 hover:text-blue-500 hover:bg-blue-50 transition-all active:scale-90">
                         <i class="pi pi-pencil text-sm"></i>
                       </button>
                       <button *appHasPermission="'VISTA_COMPLEMENTARIO:eliminar'" (click)="openConfirm('Eliminar servicio', '¿Está seguro de eliminar el servicio «' + item.nombre + '»?', 'eliminar-servicio', item)"
@@ -554,7 +554,7 @@
                 <p class="text-sm text-slate-500 mt-0.5">Vacunas disponibles por especie</p>
               </div>
               <button *appHasPermission="'VISTA_COMPLEMENTARIO:escribir'" (click)="openVacunaModal()"
-                class="flex items-center justify-center gap-2 bg-[#0066AA] hover:bg-[#005a96] text-white text-sm font-medium px-5 h-10 rounded-lg transition-colors w-full sm:w-auto">
+                class="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium px-5 h-10 rounded-lg transition-colors w-full sm:w-auto">
                 <i class="pi pi-plus text-xs"></i>
                 Nueva Vacuna
               </button>
@@ -575,7 +575,7 @@
                     <tr class="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors" [class.opacity-50]="!item.activo">
                       <td class="px-6 py-2">
                         <div class="flex items-center gap-3">
-                          <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-[#0066AA] font-bold text-sm flex-shrink-0">{{ item.nombre?.substring(0,2) }}</div>
+                          <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-500 font-bold text-sm flex-shrink-0">{{ item.nombre?.substring(0,2) }}</div>
                           <span class="text-sm font-semibold text-slate-800">{{ item.nombre }}</span>
                         </div>
                       </td>
@@ -592,7 +592,7 @@
                       <td class="px-6 py-2">
                         <div class="flex items-center gap-1">
                           <button *appHasPermission="'VISTA_COMPLEMENTARIO:modificar'" (click)="openVacunaModal(item)"
-                            class="w-8 h-8 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-95">
+                            class="w-8 h-8 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-blue-500 hover:bg-blue-50 transition-all active:scale-95">
                             <i class="pi pi-pencil text-sm"></i>
                           </button>
                           <button *appHasPermission="'VISTA_COMPLEMENTARIO:eliminar'" (click)="confirmarEliminarVacuna(item)"
@@ -618,7 +618,7 @@
                   <div class="bg-white border border-slate-200 rounded-xl p-4" [class.opacity-50]="!item.activo">
                     <div class="flex items-start justify-between gap-2">
                       <div class="flex items-center gap-3 min-w-0">
-                        <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-[#0066AA] font-bold text-sm flex-shrink-0">{{ item.nombre?.substring(0,2) }}</div>
+                        <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-500 font-bold text-sm flex-shrink-0">{{ item.nombre?.substring(0,2) }}</div>
                         <span class="text-sm font-bold text-slate-800 truncate">{{ item.nombre }}</span>
                       </div>
                       <button (click)="confirmarToggleEstadoVacuna(item)"
@@ -640,7 +640,7 @@
                     </div>
                     <div class="flex items-center justify-end gap-1 mt-3 pt-3 border-t border-slate-100">
                       <button *appHasPermission="'VISTA_COMPLEMENTARIO:modificar'" (click)="openVacunaModal(item)"
-                        class="w-8 h-8 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-95">
+                        class="w-8 h-8 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-blue-500 hover:bg-blue-50 transition-all active:scale-95">
                         <i class="pi pi-pencil text-sm"></i>
                       </button>
                       <button *appHasPermission="'VISTA_COMPLEMENTARIO:eliminar'" (click)="confirmarEliminarVacuna(item)"
@@ -677,7 +677,7 @@
                 <p class="text-sm text-slate-500 mt-0.5">Productos antiparasitarios disponibles</p>
               </div>
               <button *appHasPermission="'VISTA_COMPLEMENTARIO:escribir'" (click)="openDesparasitanteModal()"
-                class="flex items-center justify-center gap-2 bg-[#0066AA] hover:bg-[#005a96] text-white text-sm font-medium px-5 h-10 rounded-lg transition-colors w-full sm:w-auto">
+                class="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium px-5 h-10 rounded-lg transition-colors w-full sm:w-auto">
                 <i class="pi pi-plus text-xs"></i>
                 Nuevo Desparasitante
               </button>
@@ -715,7 +715,7 @@
                       <td class="px-6 py-2">
                         <div class="flex items-center gap-1">
                           <button *appHasPermission="'VISTA_COMPLEMENTARIO:modificar'" (click)="openDesparasitanteModal(item)"
-                            class="w-8 h-8 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-95">
+                            class="w-8 h-8 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-blue-500 hover:bg-blue-50 transition-all active:scale-95">
                             <i class="pi pi-pencil text-sm"></i>
                           </button>
                           <button *appHasPermission="'VISTA_COMPLEMENTARIO:eliminar'" (click)="confirmarEliminarDesparasitante(item)"
@@ -763,7 +763,7 @@
                     </div>
                     <div class="flex items-center justify-end gap-1 mt-3 pt-3 border-t border-slate-100">
                       <button *appHasPermission="'VISTA_COMPLEMENTARIO:modificar'" (click)="openDesparasitanteModal(item)"
-                        class="w-8 h-8 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-95">
+                        class="w-8 h-8 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-blue-500 hover:bg-blue-50 transition-all active:scale-95">
                         <i class="pi pi-pencil text-sm"></i>
                       </button>
                       <button *appHasPermission="'VISTA_COMPLEMENTARIO:eliminar'" (click)="confirmarEliminarDesparasitante(item)"
@@ -864,7 +864,7 @@
           </div>
           <div class="flex flex-col sm:flex-row sm:justify-end gap-3 pt-5 border-t border-slate-200">
             <button type="button" (click)="showVacunaModal.set(false)" class="px-5 py-2.5 text-sm font-semibold text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded transition-all">Descartar cambios</button>
-            <button type="submit" [disabled]="loadingStore.isLoading()" class="px-8 py-2.5 text-sm font-bold text-white bg-[#0066AA] hover:bg-[#004488] rounded disabled:opacity-50 transition-all">{{ editingVacuna() ? 'Guardar Cambios' : 'Confirmar Registro' }}</button>
+            <button type="submit" [disabled]="loadingStore.isLoading()" class="px-8 py-2.5 text-sm font-bold text-white bg-blue-500 hover:bg-blue-600 rounded disabled:opacity-50 transition-all">{{ editingVacuna() ? 'Guardar Cambios' : 'Confirmar Registro' }}</button>
           </div>
         </form>
       </div>
@@ -940,7 +940,7 @@
           </div>
           <div class="flex flex-col sm:flex-row sm:justify-end gap-3 pt-5 border-t border-slate-200">
             <button type="button" (click)="showDesparasitanteModal.set(false)" class="px-5 py-2.5 text-sm font-semibold text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded transition-all">Descartar cambios</button>
-            <button type="submit" [disabled]="loadingStore.isLoading()" class="px-8 py-2.5 text-sm font-bold text-white bg-[#0066AA] hover:bg-[#004488] rounded disabled:opacity-50 transition-all">{{ editingDesparasitante() ? 'Guardar Cambios' : 'Confirmar Registro' }}</button>
+            <button type="submit" [disabled]="loadingStore.isLoading()" class="px-8 py-2.5 text-sm font-bold text-white bg-blue-500 hover:bg-blue-600 rounded disabled:opacity-50 transition-all">{{ editingDesparasitante() ? 'Guardar Cambios' : 'Confirmar Registro' }}</button>
           </div>
         </form>
       </div>
@@ -985,7 +985,7 @@
               Descartar cambios
             </button>
             <button type="submit" [disabled]="loadingStore.isLoading()"
-              class="px-8 py-2.5 text-sm font-bold text-white bg-[#0066AA] hover:bg-[#004488] rounded shadow-sm disabled:opacity-50 transition-all">
+              class="px-8 py-2.5 text-sm font-bold text-white bg-blue-500 hover:bg-blue-600 rounded shadow-sm disabled:opacity-50 transition-all">
               {{ editingEsp() ? 'Actualizar' : 'Confirmar Registro' }}
             </button>
           </div>
@@ -1037,7 +1037,7 @@
               Descartar cambios
             </button>
             <button type="submit" [disabled]="loadingStore.isLoading()"
-              class="px-8 py-2.5 text-sm font-bold text-white bg-[#0066AA] hover:bg-[#004488] rounded shadow-sm disabled:opacity-50 transition-all">
+              class="px-8 py-2.5 text-sm font-bold text-white bg-blue-500 hover:bg-blue-600 rounded shadow-sm disabled:opacity-50 transition-all">
               {{ editingTipo() ? 'Actualizar' : 'Confirmar Registro' }}
             </button>
           </div>
@@ -1176,7 +1176,7 @@
               Descartar cambios
             </button>
             <button type="submit" [disabled]="loadingStore.isLoading()"
-              class="px-8 py-2.5 text-sm font-bold text-white bg-[#0066AA] hover:bg-[#004488] rounded shadow-sm disabled:opacity-50 transition-all">
+              class="px-8 py-2.5 text-sm font-bold text-white bg-blue-500 hover:bg-blue-600 rounded shadow-sm disabled:opacity-50 transition-all">
               {{ editingServicio() ? 'Guardar Cambios' : 'Confirmar Registro' }}
             </button>
           </div>

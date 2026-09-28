@@ -6,7 +6,7 @@
   <div class="mb-1 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
     <div>
       <h1 class="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-3">
-        <i class="pi pi-credit-card text-xl text-[#0066AA]"></i>
+        <i class="pi pi-credit-card text-xl text-blue-500"></i>
         Mis Pagos
       </h1>
       <p class="text-sm text-slate-500 mt-1">Historial de transacciones por los servicios veterinarios de tus mascotas</p>
@@ -50,7 +50,7 @@
     <div class="relative w-full sm:w-56">
       <i class="pi pi-filter text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 text-xs pointer-events-none"></i>
       <select [ngModel]="filtroEstado()" (ngModelChange)="filtroEstado.set($event)"
-        class="w-full appearance-none h-11 pl-9 pr-8 text-sm font-medium border border-slate-200 rounded-xl bg-slate-50 text-slate-700 focus:outline-none focus:border-[#0066AA] transition-all cursor-pointer">
+        class="w-full appearance-none h-11 pl-9 pr-8 text-sm font-medium border border-slate-200 rounded-xl bg-slate-50 text-slate-700 focus:outline-none focus:border-blue-500 transition-all cursor-pointer">
         <option value="">Todos los estados</option>
         <option value="PAID">Pagado</option>
         <option value="PENDING">Pendiente</option>
@@ -136,7 +136,7 @@
                 <td class="px-4 py-2.5 text-center">
                   <div class="flex items-center justify-center gap-1">
                     <button (click)="verDetalle(pago)" title="Ver detalle"
-                      class="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all cursor-pointer">
+                      class="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-blue-500 hover:bg-blue-50 transition-all cursor-pointer">
                       <i class="pi pi-eye text-[11px]"></i>
                     </button>
                     <!-- Futuras acciones con permisos:
@@ -214,7 +214,7 @@
           <!-- 1. Detalle -->
           <div>
             <div class="flex items-center gap-2 mb-3">
-              <span class="w-1 h-4 bg-[#0066AA] rounded-full"></span>
+              <span class="w-1 h-4 bg-blue-500 rounded-full"></span>
               <h3 class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">{{ selectedPago()!.tipoItem === 'CITA' ? 'Detalle de la Cita' : 'Detalle del Ítem' }}</h3>
             </div>
             <div class="grid grid-cols-2 gap-y-3 gap-x-4">
@@ -241,7 +241,7 @@
           @if (selectedPago()!.metodoPago) {
             <div>
               <div class="flex items-center gap-2 mb-3">
-                <span class="w-1 h-4 bg-[#0066AA] rounded-full"></span>
+                <span class="w-1 h-4 bg-blue-500 rounded-full"></span>
                 <h3 class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Detalle del Pago</h3>
               </div>
               <div class="grid grid-cols-2 gap-y-3 gap-x-4">
@@ -277,7 +277,7 @@
           <!-- 3. Servicio -->
           <div>
             <div class="flex items-center gap-2 mb-3">
-              <span class="w-1 h-4 bg-[#0066AA] rounded-full"></span>
+              <span class="w-1 h-4 bg-blue-500 rounded-full"></span>
               <h3 class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Servicio Atendido</h3>
             </div>
             <div class="grid grid-cols-1 gap-y-3">

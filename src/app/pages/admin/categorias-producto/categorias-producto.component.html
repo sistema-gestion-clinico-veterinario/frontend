@@ -1,4 +1,4 @@
-<div class="p-3 sm:p-4 min-h-screen bg-slate-50">
+<div class="p-3 sm:p-4 min-h-screen bg-blue-50">
 
   @if (cargando() && !requiresCompanySelection) {
     <div class="animate-fade-in">
@@ -26,7 +26,7 @@
 
     @if (requiresCompanySelection) {
       <div class="bg-white border border-slate-200 rounded-xl px-5 py-4 flex items-start gap-3">
-        <div class="w-9 h-9 rounded-lg bg-blue-50 text-[#0066AA] flex items-center justify-center shrink-0">
+        <div class="w-9 h-9 rounded-lg bg-blue-50 text-blue-500 flex items-center justify-center shrink-0">
           <i class="pi pi-building text-sm"></i>
         </div>
         <div>
@@ -41,21 +41,21 @@
         <nav class="flex min-w-max items-center gap-7 px-1" aria-label="Secciones de configuración">
           <button type="button" (click)="cambiarTab('categorias')"
             [class]="activeTab() === 'categorias'
-              ? 'flex items-center gap-2 border-b-2 border-[#0066AA] px-1 py-3.5 text-[#0066AA]'
+              ? 'flex items-center gap-2 border-b-2 border-blue-500 px-1 py-3.5 text-blue-500'
               : 'flex items-center gap-2 border-b-2 border-transparent px-1 py-3.5 text-slate-500 hover:text-slate-800'">
             <i class="pi pi-tags text-sm"></i>
             <strong class="text-base font-bold">Categorías</strong>
           </button>
           <button type="button" (click)="cambiarTab('unidades')"
             [class]="activeTab() === 'unidades'
-              ? 'flex items-center gap-2 border-b-2 border-[#0066AA] px-1 py-3.5 text-[#0066AA]'
+              ? 'flex items-center gap-2 border-b-2 border-blue-500 px-1 py-3.5 text-blue-500'
               : 'flex items-center gap-2 border-b-2 border-transparent px-1 py-3.5 text-slate-500 hover:text-slate-800'">
             <i class="pi pi-box text-sm"></i>
             <strong class="text-base font-bold">Unidades de medida</strong>
           </button>
           <button type="button" (click)="cambiarTab('marcas')"
             [class]="activeTab() === 'marcas'
-              ? 'flex items-center gap-2 border-b-2 border-[#0066AA] px-1 py-3.5 text-[#0066AA]'
+              ? 'flex items-center gap-2 border-b-2 border-blue-500 px-1 py-3.5 text-blue-500'
               : 'flex items-center gap-2 border-b-2 border-transparent px-1 py-3.5 text-slate-500 hover:text-slate-800'">
             <i class="pi pi-bookmark text-sm"></i>
             <strong class="text-base font-bold">Marcas</strong>
@@ -97,7 +97,7 @@
             <p class="mt-0.5 text-xs text-slate-500">{{ categoriasTotal() }} {{ categoriasTotal() === 1 ? 'categoría registrada' : 'categorías registradas' }}</p>
           </div>
           <button *appHasPermission="'VISTA_CATEGORIAS_PRODUCTO:escribir'" (click)="openCategoriaModal()"
-            class="flex h-10 shrink-0 items-center justify-center gap-2 rounded-lg bg-[#078ba0] px-4 text-sm font-bold text-white hover:bg-[#067789]">
+            class="flex h-10 shrink-0 items-center justify-center gap-2 rounded-lg bg-blue-500 px-4 text-sm font-bold text-white hover:bg-blue-600">
             <i class="pi pi-plus text-xs"></i>
             Nueva categoría
           </button>
@@ -120,7 +120,7 @@
                   <tr [ngClass]="item.activo ? 'bg-white' : 'bg-slate-50/70'">
                     <td class="px-5 py-3.5">
                       <div class="flex min-w-0 items-center gap-3">
-                        <span class="grid size-9 shrink-0 place-items-center rounded-lg bg-cyan-50 text-[#078ba0]"><i class="pi pi-tag text-xs"></i></span>
+                        <span class="grid size-9 shrink-0 place-items-center rounded-lg bg-blue-50 text-blue-500"><i class="pi pi-tag text-xs"></i></span>
                         <span class="truncate text-sm font-bold text-slate-800">{{ item.nombre }}</span>
                       </div>
                     </td>
@@ -133,7 +133,7 @@
                     </td>
                     <td class="px-5 py-3.5">
                       <div class="flex items-center justify-end gap-1">
-                        <button *appHasPermission="'VISTA_CATEGORIAS_PRODUCTO:modificar'" (click)="openCategoriaModal(item)" class="inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-xs font-bold text-slate-600 hover:bg-slate-100 hover:text-[#078ba0]"><i class="pi pi-pencil text-[11px]"></i>Editar</button>
+                        <button *appHasPermission="'VISTA_CATEGORIAS_PRODUCTO:modificar'" (click)="openCategoriaModal(item)" class="inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-xs font-bold text-slate-600 hover:bg-slate-100 hover:text-blue-500"><i class="pi pi-pencil text-[11px]"></i>Editar</button>
                         <button *appHasPermission="'VISTA_CATEGORIAS_PRODUCTO:modificar'" (click)="openConfirm(item.activo ? 'Desactivar categoría' : 'Activar categoría', '¿Está seguro de ' + (item.activo ? 'desactivar' : 'activar') + ' la categoría «' + item.nombre + '»?', 'toggle-categoria', item, 'warning', 'Confirmar')" class="grid size-8 place-items-center rounded-lg text-slate-500 hover:bg-slate-100" [attr.aria-label]="item.activo ? 'Desactivar categoría' : 'Activar categoría'" [title]="item.activo ? 'Desactivar' : 'Activar'"><i [class]="item.activo ? 'pi pi-eye-slash text-xs' : 'pi pi-check-circle text-xs'"></i></button>
                         <button *appHasPermission="'VISTA_CATEGORIAS_PRODUCTO:eliminar'" [disabled]="item.productosAsociados > 0" (click)="openConfirm('Eliminar categoría', 'Esta acción eliminará permanentemente la categoría «' + item.nombre + '». ¿Deseas continuar?', 'eliminar-categoria', item, 'danger', 'Eliminar')" [class]="item.productosAsociados > 0 ? 'grid size-8 cursor-not-allowed place-items-center rounded-lg text-slate-300' : 'grid size-8 place-items-center rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-600'" aria-label="Eliminar categoría" [title]="item.productosAsociados > 0 ? 'No se puede eliminar porque tiene productos asociados' : 'Eliminar'"><i class="pi pi-trash text-xs"></i></button>
                       </div>
@@ -168,7 +168,7 @@
             <p class="mt-0.5 text-xs text-slate-500">{{ unidadesTotal() }} {{ unidadesTotal() === 1 ? 'unidad registrada' : 'unidades registradas' }}</p>
           </div>
           <button *appHasPermission="'VISTA_CATEGORIAS_PRODUCTO:escribir'" (click)="openUnidadModal()"
-            class="flex h-10 shrink-0 items-center justify-center gap-2 rounded-lg bg-[#078ba0] px-4 text-sm font-bold text-white hover:bg-[#067789]">
+            class="flex h-10 shrink-0 items-center justify-center gap-2 rounded-lg bg-blue-500 px-4 text-sm font-bold text-white hover:bg-blue-600">
             <i class="pi pi-plus text-xs"></i>
             Nueva unidad
           </button>
@@ -191,7 +191,7 @@
                   <tr [ngClass]="item.activo ? 'bg-white' : 'bg-slate-50/70'">
                     <td class="px-5 py-3.5">
                       <div class="flex min-w-0 items-center gap-3">
-                        <span class="grid size-9 shrink-0 place-items-center rounded-lg bg-cyan-50 text-[#078ba0]"><i class="pi pi-box text-xs"></i></span>
+                        <span class="grid size-9 shrink-0 place-items-center rounded-lg bg-blue-50 text-blue-500"><i class="pi pi-box text-xs"></i></span>
                         <span class="truncate text-sm font-bold text-slate-800">{{ item.nombre }}</span>
                       </div>
                     </td>
@@ -204,7 +204,7 @@
                     </td>
                     <td class="px-5 py-3.5">
                       <div class="flex items-center justify-end gap-1">
-                        <button *appHasPermission="'VISTA_CATEGORIAS_PRODUCTO:modificar'" (click)="openUnidadModal(item)" class="inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-xs font-bold text-slate-600 hover:bg-slate-100 hover:text-[#078ba0]"><i class="pi pi-pencil text-[11px]"></i>Editar</button>
+                        <button *appHasPermission="'VISTA_CATEGORIAS_PRODUCTO:modificar'" (click)="openUnidadModal(item)" class="inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-xs font-bold text-slate-600 hover:bg-slate-100 hover:text-blue-500"><i class="pi pi-pencil text-[11px]"></i>Editar</button>
                         <button *appHasPermission="'VISTA_CATEGORIAS_PRODUCTO:modificar'" (click)="openConfirm(item.activo ? 'Desactivar unidad' : 'Activar unidad', '¿Está seguro de ' + (item.activo ? 'desactivar' : 'activar') + ' la unidad «' + item.nombre + '»?', 'toggle-unidad', item, 'warning', 'Confirmar')" class="grid size-8 place-items-center rounded-lg text-slate-500 hover:bg-slate-100" [attr.aria-label]="item.activo ? 'Desactivar unidad' : 'Activar unidad'" [title]="item.activo ? 'Desactivar' : 'Activar'"><i [class]="item.activo ? 'pi pi-eye-slash text-xs' : 'pi pi-check-circle text-xs'"></i></button>
                         <button *appHasPermission="'VISTA_CATEGORIAS_PRODUCTO:eliminar'" [disabled]="item.productosAsociados > 0" (click)="openConfirm('Eliminar unidad', 'Esta acción eliminará permanentemente la unidad «' + item.nombre + '». ¿Deseas continuar?', 'eliminar-unidad', item, 'danger', 'Eliminar')" [class]="item.productosAsociados > 0 ? 'grid size-8 cursor-not-allowed place-items-center rounded-lg text-slate-300' : 'grid size-8 place-items-center rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-600'" aria-label="Eliminar unidad" [title]="item.productosAsociados > 0 ? 'No se puede eliminar porque tiene productos asociados' : 'Eliminar'"><i class="pi pi-trash text-xs"></i></button>
                       </div>
@@ -239,7 +239,7 @@
             <p class="mt-0.5 text-xs text-slate-500">{{ marcasTotal() }} {{ marcasTotal() === 1 ? 'marca registrada' : 'marcas registradas' }}</p>
           </div>
           <button *appHasPermission="'VISTA_CATEGORIAS_PRODUCTO:escribir'" (click)="openMarcaModal()"
-            class="flex h-10 shrink-0 items-center justify-center gap-2 rounded-lg bg-[#078ba0] px-4 text-sm font-bold text-white hover:bg-[#067789]">
+            class="flex h-10 shrink-0 items-center justify-center gap-2 rounded-lg bg-blue-500 px-4 text-sm font-bold text-white hover:bg-blue-600">
             <i class="pi pi-plus text-xs"></i>Nueva marca
           </button>
         </div>
@@ -259,13 +259,13 @@
               <tbody class="divide-y divide-slate-100">
                 @for (item of marcas(); track item.id) {
                   <tr [ngClass]="item.activo ? 'bg-white' : 'bg-slate-50/70'">
-                    <td class="px-5 py-3.5"><div class="flex min-w-0 items-center gap-3"><span class="grid size-9 shrink-0 place-items-center rounded-lg bg-cyan-50 text-[#078ba0]"><i class="pi pi-bookmark text-xs"></i></span><span class="truncate text-sm font-bold text-slate-800">{{ item.nombre }}</span></div></td>
+                    <td class="px-5 py-3.5"><div class="flex min-w-0 items-center gap-3"><span class="grid size-9 shrink-0 place-items-center rounded-lg bg-blue-50 text-blue-500"><i class="pi pi-bookmark text-xs"></i></span><span class="truncate text-sm font-bold text-slate-800">{{ item.nombre }}</span></div></td>
                     <td class="px-5 py-3.5"><p class="truncate text-xs text-slate-500" [title]="item.descripcion || 'Sin descripción'">{{ item.descripcion || 'Sin descripción' }}</p></td>
                     <td class="px-5 py-3.5 text-center"><span class="inline-flex min-w-7 justify-center rounded-full bg-slate-100 px-2 py-1 text-[11px] font-bold text-slate-600">{{ item.productosAsociados || 0 }}</span></td>
                     <td class="px-5 py-3.5"><span [ngClass]="item.activo ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'" class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold"><span [ngClass]="item.activo ? 'bg-emerald-500' : 'bg-slate-400'" class="size-1.5 rounded-full"></span>{{ item.activo ? 'Activa' : 'Inactiva' }}</span></td>
                     <td class="px-5 py-3.5">
                       <div class="flex items-center justify-end gap-1">
-                        <button *appHasPermission="'VISTA_CATEGORIAS_PRODUCTO:modificar'" (click)="openMarcaModal(item)" class="inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-xs font-bold text-slate-600 hover:bg-slate-100 hover:text-[#078ba0]"><i class="pi pi-pencil text-[11px]"></i>Editar</button>
+                        <button *appHasPermission="'VISTA_CATEGORIAS_PRODUCTO:modificar'" (click)="openMarcaModal(item)" class="inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-xs font-bold text-slate-600 hover:bg-slate-100 hover:text-blue-500"><i class="pi pi-pencil text-[11px]"></i>Editar</button>
                         <button *appHasPermission="'VISTA_CATEGORIAS_PRODUCTO:modificar'" (click)="openConfirm(item.activo ? 'Desactivar marca' : 'Activar marca', '¿Está seguro de ' + (item.activo ? 'desactivar' : 'activar') + ' la marca «' + item.nombre + '»?', 'toggle-marca', item, 'warning', 'Confirmar')" class="grid size-8 place-items-center rounded-lg text-slate-500 hover:bg-slate-100" [attr.aria-label]="item.activo ? 'Desactivar marca' : 'Activar marca'" [title]="item.activo ? 'Desactivar' : 'Activar'"><i [class]="item.activo ? 'pi pi-eye-slash text-xs' : 'pi pi-check-circle text-xs'"></i></button>
                         <button *appHasPermission="'VISTA_CATEGORIAS_PRODUCTO:eliminar'" [disabled]="item.productosAsociados > 0" (click)="openConfirm('Eliminar marca', 'Esta acción eliminará permanentemente la marca «' + item.nombre + '». ¿Deseas continuar?', 'eliminar-marca', item, 'danger', 'Eliminar')" [class]="item.productosAsociados > 0 ? 'grid size-8 cursor-not-allowed place-items-center rounded-lg text-slate-300' : 'grid size-8 place-items-center rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-600'" aria-label="Eliminar marca" [title]="item.productosAsociados > 0 ? 'No se puede eliminar porque tiene productos asociados' : 'Eliminar'"><i class="pi pi-trash text-xs"></i></button>
                       </div>
@@ -333,7 +333,7 @@
               Cancelar
             </button>
             <button type="submit"
-              class="px-5 py-2 rounded-lg bg-[#0066AA] hover:bg-[#005a96] text-white text-sm font-medium transition-colors">
+              class="px-5 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium transition-colors">
               {{ editingCategoria() ? 'Guardar cambios' : 'Crear categoría' }}
             </button>
           </div>
@@ -386,7 +386,7 @@
               Cancelar
             </button>
             <button type="submit"
-              class="px-5 py-2 rounded-lg bg-[#0066AA] hover:bg-[#005a96] text-white text-sm font-medium transition-colors">
+              class="px-5 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium transition-colors">
               {{ editingUnidad() ? 'Guardar cambios' : 'Crear unidad' }}
             </button>
           </div>
@@ -424,7 +424,7 @@
           </div>
           <div class="flex justify-end gap-3 pt-2">
             <button type="button" (click)="showMarcaModal.set(false)" class="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">Cancelar</button>
-            <button type="submit" class="rounded-lg bg-[#0066AA] px-5 py-2 text-sm font-medium text-white hover:bg-[#005a96]">{{ editingMarca() ? 'Guardar cambios' : 'Crear marca' }}</button>
+            <button type="submit" class="rounded-lg bg-blue-500 px-5 py-2 text-sm font-medium text-white hover:bg-blue-600">{{ editingMarca() ? 'Guardar cambios' : 'Crear marca' }}</button>
           </div>
         </form>
       </div>

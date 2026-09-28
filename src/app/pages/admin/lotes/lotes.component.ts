@@ -210,7 +210,7 @@ export class LotesComponent implements OnInit {
     const variant = this.confirmDialog()?.variant;
     if (variant === 'danger') return 'bg-red-50 text-red-500';
     if (variant === 'warning') return 'bg-amber-50 text-amber-500';
-    return 'bg-blue-50 text-[#0066AA]';
+    return 'bg-blue-50 text-blue-500';
   }
 
   confirmButtonClass(): string {
@@ -218,7 +218,7 @@ export class LotesComponent implements OnInit {
     const base = 'px-4 py-2 rounded-lg text-white text-sm font-medium transition-colors';
     if (variant === 'danger') return `${base} bg-red-600 hover:bg-red-700`;
     if (variant === 'warning') return `${base} bg-amber-600 hover:bg-amber-700`;
-    return `${base} bg-[#0066AA] hover:bg-[#005a96]`;
+    return `${base} bg-blue-500 hover:bg-blue-600`;
   }
 
   toggleActivo(item: LoteResponse) {
