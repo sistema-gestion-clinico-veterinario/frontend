@@ -12,12 +12,6 @@
           <h1 class="text-xl font-extrabold leading-none tracking-tight text-slate-900 md:text-2xl">
             {{ modoDetalle ? 'Detalle del producto' : (productoId ? 'Editar producto' : 'Nuevo producto') }}
           </h1>
-
-          @if (productoSku()) {
-            <span class="inline-flex items-center rounded border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] font-mono font-semibold text-slate-600">
-              {{ productoSku() }}
-            </span>
-          }
         </div>
 
         <p class="mt-1 text-xs text-slate-500 sm:text-sm">
@@ -134,11 +128,25 @@
               </div>
 
               <div class="flex flex-col gap-1">
-                <label class="text-sm font-semibold text-slate-700">Marca</label>
-                <input type="text" formControlName="marca" maxlength="80" placeholder="Ej: Royal Canin"
-                  [ngClass]="productoForm.get('marca')?.invalid && productoForm.get('marca')?.touched ? 'border-rose-400 focus:ring-rose-500/20 focus:border-rose-500' : 'border-slate-300 focus:ring-cyan-100 focus:border-[#0792a7]'"
-                  class="h-11 w-full rounded-lg border px-3 py-2 text-sm outline-none transition-colors focus:ring-2" />
-                <p class="text-xs text-slate-500">Opcional, indica la marca del producto.</p>
+                <label class="text-sm font-semibold text-slate-700">Marca <span class="text-rose-500">*</span></label>
+                <select formControlName="marcaId"
+                  [ngClass]="productoForm.get('marcaId')?.invalid && productoForm.get('marcaId')?.touched ? 'border-rose-400' : 'border-slate-300'"
+                  class="h-11 w-full rounded-lg border bg-white px-3 py-2 text-sm outline-none focus:border-slate-400">
+                  <option [ngValue]="null" disabled>Selecciona una marca</option>
+                  @if (marcaActual() && !marcaActualEstaActiva()) {
+                    <option [ngValue]="marcaActual()!.id">{{ marcaActual()!.nombre }} (inactiva)</option>
+                  }
+                  @for (marca of marcas(); track marca.id) {
+                    <option [ngValue]="marca.id">{{ marca.nombre }}</option>
+                  }
+                </select>
+                @if (productoForm.get('marcaId')?.touched && productoForm.get('marcaId')?.errors?.['required']) {
+                  <p class="flex items-center gap-1 text-xs text-rose-600"><i class="pi pi-exclamation-circle text-[10px]"></i>La marca es requerida</p>
+                } @else if (marcas().length === 0) {
+                  <p class="text-xs text-slate-500">Aún no hay marcas. <a [routerLink]="['/admin/categorias-producto']" [queryParams]="{ tab: 'marcas' }" class="whitespace-nowrap font-semibold text-[#087f92] underline">Crear una</a></p>
+                } @else {
+                  <p class="text-xs text-slate-500">Selecciona una marca registrada para esta empresa.</p>
+                }
               </div>
 
               <div class="flex flex-col gap-1">
@@ -184,7 +192,14 @@
                 }
               </div>
 
-              <div class="flex flex-col gap-1 sm:col-span-2">
+              <div class="flex flex-col gap-1">
+                <label class="text-sm font-semibold text-slate-700">SKU</label>
+                <input type="text" [value]="productoSku() ?? ''" readonly placeholder="Se generará automáticamente al guardar"
+                  class="h-11 w-full cursor-default rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 font-mono text-sm text-slate-600 outline-none" />
+                <p class="text-xs text-slate-500">Identificador interno generado por el sistema.</p>
+              </div>
+
+              <div class="flex flex-col gap-1">
                 <label class="text-sm font-semibold text-slate-700">Código de barras</label>
                 <div class="relative">
                   <input type="text" formControlName="codigoBarras" maxlength="64" placeholder="Escanea o escribe el código" (keydown.enter)="$event.preventDefault()"
@@ -269,16 +284,16 @@
             </div>
 
             <div class="flex flex-col gap-1">
-              <textarea formControlName="descripcion" rows="3" maxlength="300" placeholder="Detalles adicionales del producto (opcional)"
+              <textarea formControlName="descripcion" rows="5" maxlength="1000" placeholder="Detalles adicionales del producto (opcional)"
                 [ngClass]="productoForm.get('descripcion')?.invalid && productoForm.get('descripcion')?.touched ? 'border-rose-400 focus:ring-rose-500/20 focus:border-rose-500' : 'border-slate-300 focus:ring-cyan-100 focus:border-[#0792a7]'"
                 class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 outline-none resize-none transition-colors"></textarea>
               <div class="flex items-center justify-between">
                 @if (productoForm.get('descripcion')?.touched && productoForm.get('descripcion')?.errors?.['maxlength']) {
-                  <p class="text-xs text-rose-600 flex items-center gap-1"><i class="pi pi-exclamation-circle text-[10px]"></i>Máximo 300 caracteres</p>
+                  <p class="text-xs text-rose-600 flex items-center gap-1"><i class="pi pi-exclamation-circle text-[10px]"></i>Máximo 1.000 caracteres</p>
                 } @else {
                   <span></span>
                 }
-                <p class="text-xs text-slate-400 shrink-0">{{ (productoForm.get('descripcion')?.value?.length ?? 0) }}/300</p>
+                <p class="text-xs text-slate-400 shrink-0">{{ (productoForm.get('descripcion')?.value?.length ?? 0) }}/1000</p>
               </div>
             </div>
           </section>
@@ -432,9 +447,9 @@
           }
 
           @if (ajustesStock().length > 0) {
-            <div class="divide-y divide-slate-100 border border-slate-200 rounded-lg overflow-hidden">
+            <div class="divide-y divide-slate-100">
               @for (a of ajustesStock(); track a.id) {
-                <div class="px-4 py-3">
+                <div class="py-3 first:pt-0 last:pb-0">
                   <div class="flex items-center gap-2 flex-wrap">
                     <span class="text-sm font-semibold text-slate-800">{{ a.stockAnterior }} → {{ a.stockNuevo }}</span>
                     <span class="inline-flex items-center rounded border px-2 py-0.5 text-[10px] font-bold"
