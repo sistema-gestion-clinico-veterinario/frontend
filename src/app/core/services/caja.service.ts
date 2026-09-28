@@ -60,6 +60,11 @@ export class CajaService {
     });
   }
 
+  listarSesiones(companyId: number, page = 0, size = 10) {
+    const params = new HttpParams().set('companyId', companyId).set('page', page).set('size', size);
+    return this.http.get<ApiResponse<Page<SesionCajaResponse>>>(`${this.apiUrl}/sesion/historial`, { params });
+  }
+
   obtenerCuenta(citaId: number) {
     return this.http.get<ApiResponse<CuentaCitaResponse>>(`${this.apiUrl}/cuentas/${citaId}`);
   }

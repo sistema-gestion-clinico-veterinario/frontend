@@ -57,6 +57,7 @@ export class LoginComponent implements OnInit {
   private static readonly GOOGLE_ERROR_MESSAGES: Record<string, string> = {
     google_cancelado: 'Inicio de sesión con Google cancelado.',
     google_email_no_verificado: 'Tu cuenta de Google no tiene el correo verificado.',
+    google_sin_acceso_clinica: 'Tu cuenta de Google no está registrada en esta veterinaria. Solicita acceso al administrador de la clínica o continúa con otra cuenta de Google.',
     google_fallo: 'No se pudo iniciar sesión con Google. Intenta nuevamente.',
   };
 

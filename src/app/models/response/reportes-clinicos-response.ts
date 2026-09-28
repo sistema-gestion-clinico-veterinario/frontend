@@ -107,3 +107,20 @@ export interface PacientesInactivosPage {
   totalElements: number;
   totalPages: number;
 }
+
+export interface ReporteVentasProductos {
+  fechaDesde: string;
+  fechaHasta: string;
+  resumen: {
+    ventas: number | null;
+    ingresos: number | null;
+    unidadesVendidas: number | null;
+    ticketPromedio: number | null;
+    productosStockBajo: number | null;
+    productosSinStock: number | null;
+  };
+  ventasPorMetodo: { nombre: string; cantidad: number; monto: number }[] | null;
+  ventasPorDia: { nombre: string; cantidad: number; monto: number }[] | null;
+  productosMasVendidos: { sku: string; nombre: string; cantidad: number; monto: number }[] | null;
+  alertasStock: { sku: string; nombre: string; categoria: string; stock: number; stockMinimo: number }[] | null;
+}

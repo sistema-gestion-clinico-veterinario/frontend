@@ -21,6 +21,12 @@ const MARGIN_X = 4;
 const CONTENT_WIDTH = ANCHO_PAGINA - MARGIN_X * 2;
 const CENTRO_X = ANCHO_PAGINA / 2;
 
+export interface NotaVentaPreview {
+  url: string;
+  nombreArchivo: string;
+  referencia: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class NotaVentaPdfService {
   private readonly auditLogService = inject(AuditLogService);
@@ -30,7 +36,7 @@ export class NotaVentaPdfService {
     pago: PagoResponse,
     empresa: EncabezadoEmpresaPdf | null = null,
     logoDataUrl: string | null = null
-  ): Promise<void> {
+  ): Promise<NotaVentaPreview> {
     const { jsPDF: JsPdf } = await import('jspdf');
     const folio = `NV-${String(pago.id).padStart(8, '0')}`;
 
@@ -41,18 +47,15 @@ export class NotaVentaPdfService {
     this.construirContenido(doc, true, cuenta, pago, empresa, logoDataUrl, folio);
 
     const blobUrl = URL.createObjectURL(doc.output('blob'));
-    const opened = window.open(blobUrl, '_blank');
-    if (opened) opened.opener = null;
-    else doc.save(`${folio}-${cuenta.numeroCita}.pdf`);
-    window.setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
     this.auditLogService.registrarDescarga('NOTA_VENTA_PDF', cuenta.numeroCita).subscribe();
+    return { url: blobUrl, nombreArchivo: `${folio}-${cuenta.numeroCita}.pdf`, referencia: folio };
   }
 
   async mostrarVentaLibre(
     venta: VentaLibreResponse,
     empresa: EncabezadoEmpresaPdf | null = null,
     logoDataUrl: string | null = null
-  ): Promise<void> {
+  ): Promise<NotaVentaPreview> {
     const { jsPDF: JsPdf } = await import('jspdf');
 
     const medidor = new JsPdf({ unit: 'mm', format: [ANCHO_PAGINA, 400] });
@@ -62,11 +65,19 @@ export class NotaVentaPdfService {
     this.construirContenidoVentaLibre(doc, true, venta, empresa, logoDataUrl);
 
     const blobUrl = URL.createObjectURL(doc.output('blob'));
-    const opened = window.open(blobUrl, '_blank');
-    if (opened) opened.opener = null;
-    else doc.save(`${venta.numeroVenta}.pdf`);
-    window.setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
     this.auditLogService.registrarDescarga('NOTA_VENTA_PDF', venta.numeroVenta).subscribe();
+    return { url: blobUrl, nombreArchivo: `${venta.numeroVenta}.pdf`, referencia: venta.numeroVenta };
+  }
+
+  descargar(preview: NotaVentaPreview): void {
+    const link = document.createElement('a');
+    link.href = preview.url;
+    link.download = preview.nombreArchivo;
+    link.click();
+  }
+
+  liberar(preview: NotaVentaPreview | null): void {
+    if (preview) URL.revokeObjectURL(preview.url);
   }
 
   /** Dibuja (o solo mide, si dibujar=false) toda la nota de venta y devuelve el alto final
