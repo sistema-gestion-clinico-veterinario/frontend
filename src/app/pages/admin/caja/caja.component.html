@@ -8,6 +8,7 @@
     </div>
     @if (!requiresCompanySelection) {
       <div class="flex flex-wrap items-center gap-2">
+        <button type="button" (click)="abrirHistorialSesiones()" class="flex h-[50px] items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-xs font-bold text-slate-600 hover:bg-slate-50"><i class="pi pi-history text-blue-500"></i>Historial de caja</button>
         <div class="flex h-[50px] min-w-[158px] items-center gap-3 rounded-xl border border-slate-200 bg-white px-4"><i class="pi pi-calendar text-blue-500"></i><div><p class="text-[10px] font-semibold text-slate-400">Hoy</p><p class="text-xs font-bold text-slate-700">{{ formatFechaActual() }}</p></div></div>
         @if (sesionCaja(); as sesion) {
           <div class="flex h-[50px] min-w-[188px] items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4">
@@ -224,4 +225,30 @@
     <div class="space-y-4 px-5 py-5">@if (tipoSesion !== 'ABRIR') { <div class="flex justify-between rounded-lg border border-slate-200 bg-slate-50 p-3"><span class="text-xs text-slate-600">Efectivo esperado</span><span class="text-sm font-bold text-slate-900">{{ formatMonto(sesionCaja()?.efectivoEsperado ?? 0) }}</span></div> }<label class="block"><span class="text-xs font-semibold text-slate-700">{{ tipoSesion === 'ABRIR' ? 'Fondo de apertura' : 'Efectivo contado' }} (S/)</span><input type="number" step="0.01" min="0" [max]="tipoSesion === 'ABRIR' ? 10000 : 100000" [(ngModel)]="sesionForm.monto" class="mt-1.5 h-10 w-full rounded-lg border border-slate-300 px-3 text-sm" /></label>@if (tipoSesion !== 'ABRIR') { <label class="block"><span class="text-xs font-semibold text-slate-700">Observaciones</span><textarea [(ngModel)]="sesionForm.observaciones" maxlength="300" rows="3" placeholder="Diferencias o incidencias" class="mt-1.5 w-full resize-none rounded-lg border border-slate-300 px-3 py-2 text-sm"></textarea></label> }</div>
     <div class="flex justify-end gap-2 border-t border-slate-200 bg-slate-50 px-5 py-4"><button (click)="showSesionModal.set(null)" class="h-9 rounded-lg border border-slate-300 px-4 text-sm font-semibold text-slate-600">Cancelar</button><button (click)="guardarSesion()" [disabled]="savingSesion()" class="h-9 rounded-lg bg-blue-500 px-4 text-sm font-semibold text-white disabled:opacity-50">{{ savingSesion() ? 'Guardando...' : tipoSesion === 'ABRIR' ? 'Abrir caja' : tipoSesion === 'ARQUEO' ? 'Registrar arqueo' : 'Cerrar caja' }}</button></div>
   </div></div>
+}
+
+@if (showHistorialSesiones()) {
+  <div class="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/45 sm:items-center sm:p-4" (click)="showHistorialSesiones.set(false)">
+    <div class="max-h-[85vh] w-full max-w-5xl overflow-hidden rounded-t-2xl border border-slate-200 bg-white sm:rounded-xl" (click)="$event.stopPropagation()">
+      <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4"><div><h2 class="font-bold text-slate-900">Historial de caja</h2><p class="mt-0.5 text-xs text-slate-500">Aperturas, arqueos y cierres de esta empresa</p></div><button (click)="showHistorialSesiones.set(false)" class="grid size-8 place-items-center rounded-lg text-slate-400 hover:bg-slate-50"><i class="pi pi-times"></i></button></div>
+      <div class="max-h-[62vh] overflow-auto">
+        <table class="w-full min-w-[900px] text-sm"><thead class="sticky top-0 bg-slate-50"><tr><th class="px-4 py-3 text-left text-[10px] uppercase text-slate-500">Estado</th><th class="px-4 py-3 text-left text-[10px] uppercase text-slate-500">Apertura</th><th class="px-4 py-3 text-left text-[10px] uppercase text-slate-500">Cierre</th><th class="px-4 py-3 text-left text-[10px] uppercase text-slate-500">Responsables</th><th class="px-4 py-3 text-right text-[10px] uppercase text-slate-500">Fondo inicial</th><th class="px-4 py-3 text-right text-[10px] uppercase text-slate-500">Contado</th><th class="px-4 py-3 text-right text-[10px] uppercase text-slate-500">Diferencia</th></tr></thead>
+          <tbody class="divide-y divide-slate-100">
+            @for (sesion of historialSesiones(); track sesion.id) { <tr><td class="px-4 py-3"><span class="rounded-full px-2 py-1 text-[10px] font-bold" [class]="sesion.estado === 'ABIERTA' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600'">{{ sesion.estado === 'ABIERTA' ? 'Abierta' : 'Cerrada' }}</span></td><td class="px-4 py-3 text-xs text-slate-600">{{ formatFecha(sesion.abiertaAt) }}</td><td class="px-4 py-3 text-xs text-slate-600">{{ sesion.cerradaAt ? formatFecha(sesion.cerradaAt) : '—' }}</td><td class="px-4 py-3 text-xs text-slate-600"><p>{{ sesion.abiertaPor || '—' }}</p>@if (sesion.cerradaPor) { <p class="mt-1 text-slate-400">{{ sesion.cerradaPor }}</p> }</td><td class="px-4 py-3 text-right text-xs font-semibold">{{ formatMonto(sesion.montoApertura) }}</td><td class="px-4 py-3 text-right text-xs font-semibold">{{ sesion.efectivoContado == null ? '—' : formatMonto(sesion.efectivoContado) }}</td><td class="px-4 py-3 text-right text-xs font-bold" [class.text-rose-600]="(sesion.diferencia ?? 0) < 0" [class.text-emerald-600]="(sesion.diferencia ?? 0) >= 0">{{ sesion.diferencia == null ? '—' : formatMonto(sesion.diferencia) }}</td></tr> }
+            @empty { <tr><td colspan="7" class="px-5 py-12 text-center text-sm text-slate-400">{{ historialSesionesLoading() ? 'Cargando historial...' : 'Aún no hay aperturas o cierres registrados.' }}</td></tr> }
+          </tbody></table>
+      </div>
+      <div class="flex items-center justify-between border-t border-slate-200 bg-slate-50 px-5 py-3"><span class="text-xs text-slate-500">{{ historialSesionesTotal() }} sesiones</span><div class="flex gap-2"><button (click)="cargarHistorialSesiones(historialSesionesPage() - 1)" [disabled]="historialSesionesPage() === 0 || historialSesionesLoading()" class="h-8 rounded-lg border border-slate-300 px-3 text-xs font-bold disabled:opacity-40">Anterior</button><button (click)="cargarHistorialSesiones(historialSesionesPage() + 1)" [disabled]="(historialSesionesPage() + 1) * historialSesionesSize >= historialSesionesTotal() || historialSesionesLoading()" class="h-8 rounded-lg border border-slate-300 px-3 text-xs font-bold disabled:opacity-40">Siguiente</button></div></div>
+    </div>
+  </div>
+}
+
+@if (notaVentaPreview(); as nota) {
+  <div class="fixed inset-0 z-[60] flex items-end justify-center bg-slate-950/50 sm:items-center sm:p-4" (click)="cerrarNotaVenta()">
+    <div class="flex h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-t-2xl border border-slate-200 bg-white sm:rounded-xl" (click)="$event.stopPropagation()">
+      <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4"><div><h2 class="font-bold text-slate-900">Nota de venta</h2><p class="mt-0.5 text-xs text-slate-500">{{ nota.referencia }}</p></div><button (click)="cerrarNotaVenta()" class="grid size-8 place-items-center rounded-lg text-slate-400 hover:bg-slate-50"><i class="pi pi-times"></i></button></div>
+      <iframe [src]="nota.safeUrl" title="Vista previa de la nota de venta" class="min-h-0 flex-1 bg-slate-100"></iframe>
+      <div class="flex justify-end gap-2 border-t border-slate-200 bg-slate-50 px-5 py-4"><button (click)="cerrarNotaVenta()" class="h-9 rounded-lg border border-slate-300 px-4 text-sm font-semibold text-slate-600">Cerrar</button><button (click)="descargarNotaVenta()" class="h-9 rounded-lg bg-blue-500 px-4 text-sm font-semibold text-white"><i class="pi pi-download mr-2"></i>Descargar PDF</button></div>
+    </div>
+  </div>
 }
