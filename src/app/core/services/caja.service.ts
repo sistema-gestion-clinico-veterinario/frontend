@@ -1,11 +1,12 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../../models/response/api-response';
 import { Page } from '../../models/response/page';
 import { MovimientoCajaResponse, ResumenCajaResponse, SesionCajaResponse } from '../../models/response/movimiento-caja-response';
 import { MovimientoEgresoRequest } from '../../models/request/movimiento-egreso-request';
 import { CuentaCitaResponse, DetalleCuentaRequest } from '../../models/response/cuenta-cita-response';
+import { SKIP_GLOBAL_LOADING } from '../interceptors/api.interceptor';
 
 @Injectable({ providedIn: 'root' })
 export class CajaService {
@@ -53,7 +54,10 @@ export class CajaService {
 
   listarPendientes(companyId: number, page = 0, size = 20) {
     const params = new HttpParams().set('companyId', companyId).set('page', page).set('size', size);
-    return this.http.get<ApiResponse<Page<CuentaCitaResponse>>>(`${this.apiUrl}/cuentas/pendientes`, { params });
+    return this.http.get<ApiResponse<Page<CuentaCitaResponse>>>(`${this.apiUrl}/cuentas/pendientes`, {
+      params,
+      context: new HttpContext().set(SKIP_GLOBAL_LOADING, true)
+    });
   }
 
   obtenerCuenta(citaId: number) {

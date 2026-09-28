@@ -128,7 +128,7 @@ export class DashboardComponent implements OnInit {
       const vals   = currentStats?.citasPorDia ?? [0, 0, 0, 0, 0, 0, 0];
       const maxVal = Math.max(...vals, 1);
       return {
-        labels: getDatesOfWeek(), values: vals, max: maxVal, color: '#0066AA',
+        labels: getDatesOfWeek(), values: vals, max: maxVal, color: '#018B99',
         yAxisLabels: [maxVal, Math.round(maxVal * 0.67), Math.round(maxVal * 0.33), 0]
       };
     } else if (period === 'week') {
@@ -218,9 +218,9 @@ export class DashboardComponent implements OnInit {
       total++;
     });
 
-    const colors       = ['#0066AA', '#9333EA', '#EC4899', '#F59E0B', '#10B981', '#3B82F6'];
-    const bgClasses    = ['bg-[#0066AA]/10','bg-purple-500/10','bg-pink-500/10','bg-amber-500/10','bg-emerald-500/10','bg-blue-500/10'];
-    const borderClasses= ['border-[#0066AA]/20','border-purple-500/20','border-pink-500/20','border-amber-500/20','border-emerald-500/20','border-blue-500/20'];
+    const colors       = ['#018B99', '#9333EA', '#EC4899', '#F59E0B', '#10B981', '#3B82F6'];
+    const bgClasses    = ['bg-blue-500/10','bg-purple-500/10','bg-pink-500/10','bg-amber-500/10','bg-emerald-500/10','bg-blue-500/10'];
+    const borderClasses= ['border-blue-500/20','border-purple-500/20','border-pink-500/20','border-amber-500/20','border-emerald-500/20','border-blue-500/20'];
 
     return Object.keys(counts)
       .map((name, index) => {
@@ -253,7 +253,7 @@ export class DashboardComponent implements OnInit {
 
   get roleBadgeClass(): string {
     if (this.isSuperAdmin)    return 'bg-violet-50 text-violet-700 border border-violet-100';
-    if (this.isAdmin)         return 'bg-blue-50 text-[#0066AA] border border-blue-100';
+    if (this.isAdmin)         return 'bg-blue-50 text-blue-500 border border-blue-100';
     return 'bg-slate-100 text-slate-600 border border-slate-200';
   }
 

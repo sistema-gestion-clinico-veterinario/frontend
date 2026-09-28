@@ -12,8 +12,8 @@ import { CitaResponse } from '../../../models/response/cita-response';
 /** Mismo color por estado que ya usa el mes de la Agenda, para que el widget del dashboard se
  * sienta como parte del mismo producto en vez de un calendario genérico aparte. */
 const ACCENT: Record<string, string> = {
-  PROGRAMADA: '#0066AA', PENDIENTE: '#d97706', CONFIRMADA: '#059669', REPROGRAMADA: '#7c3aed',
-  SALA_DE_ESPERA: '#0891b2', EN_PROCESO: '#ea580c', COMPLETADA: '#16a34a', CANCELADA: '#dc2626',
+  PROGRAMADA: '#018B99', PENDIENTE: '#d97706', CONFIRMADA: '#059669', REPROGRAMADA: '#7c3aed',
+  SALA_DE_ESPERA: '#018B99', EN_PROCESO: '#ea580c', COMPLETADA: '#16a34a', CANCELADA: '#dc2626',
   NO_ASISTIO: '#64748b'
 };
 
@@ -29,7 +29,7 @@ export interface CitaDelDiaPopover {
  * Calendario mensual de solo lectura para el dashboard: a diferencia de la Agenda completa
  * (edición, drag&drop, modales), aquí solo se necesita una vista rápida de qué días tienen
  * citas — mismo estilo visual que la Agenda (colores por estado), pero sin el resto de su estado.
- * Cada día con citas muestra puntos de color; al pasar el mouse o tocar el día aparece un
+ * Cada día con citas muestra un único indicador; al pasar el mouse o tocar el día aparece un
  * visualizador con el detalle de esas citas.
  */
 @Component({
@@ -197,20 +197,29 @@ export class DashboardCitasCalendarComponent {
   }
 
   private toEvents(citas: CitaResponse[]): EventInput[] {
-    return citas.map(cita => ({
-      id: String(cita.id),
-      title: cita.mascotaNombre,
-      start: cita.fechaHoraInicio,
-      end: cita.fechaHoraFin,
-      extendedProps: { cita }
+    const citasAgrupadas = new Map<string, CitaResponse[]>();
+    for (const cita of citas) {
+      const fecha = cita.fechaHoraInicio.slice(0, 10);
+      const citasDia = citasAgrupadas.get(fecha) ?? [];
+      citasDia.push(cita);
+      citasAgrupadas.set(fecha, citasDia);
+    }
+
+    return Array.from(citasAgrupadas.entries()).map(([fecha, citasDia]) => ({
+      id: `dia-${fecha}`,
+      title: `${citasDia.length} cita${citasDia.length === 1 ? '' : 's'}`,
+      start: fecha,
+      allDay: true,
+      extendedProps: {
+        accent: ACCENT[citasDia[0]?.estado ?? ''] ?? '#018B99'
+      }
     }));
   }
 
   private renderEvent(info: EventContentArg) {
-    const cita = info.event.extendedProps['cita'] as CitaResponse | undefined;
-    const accent = ACCENT[cita?.estado ?? ''] ?? '#0066AA';
+    const accent = info.event.extendedProps['accent'] as string | undefined;
     return {
-      html: `<span class="dashboard-day-dot" style="background:${accent}"></span>`
+      html: `<span class="dashboard-day-dot" style="background:${accent ?? '#018B99'}"></span>`
     };
   }
 

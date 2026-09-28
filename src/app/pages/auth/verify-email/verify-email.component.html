@@ -74,7 +74,7 @@
           <div class="space-y-2">
             <label class="block text-sm font-semibold text-slate-700">Nueva contraseña</label>
             <input formControlName="password" type="password" placeholder="Mínimo 12 caracteres"
-              class="h-12 w-full rounded-lg border border-slate-300 bg-white px-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15" />
+              class="h-12 w-full rounded-lg border border-slate-300 bg-white px-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15" />
             @if (passwordForm.get('password')?.invalid && passwordForm.get('password')?.touched) {
               <div class="text-sm font-medium text-rose-600">
                 @if (passwordForm.get('password')?.errors?.['required']) { <span>La contraseña es obligatoria.</span> }
@@ -86,7 +86,7 @@
           <div class="space-y-2">
             <label class="block text-sm font-semibold text-slate-700">Confirmar contraseña</label>
             <input formControlName="confirmPassword" type="password" placeholder="Repite la contraseña"
-              class="h-12 w-full rounded-lg border border-slate-300 bg-white px-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15" />
+              class="h-12 w-full rounded-lg border border-slate-300 bg-white px-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15" />
             @if (passwordForm.errors?.['mismatch'] && passwordForm.get('confirmPassword')?.touched) {
               <div class="text-sm font-medium text-rose-600">Las contraseñas no coinciden.</div>
             }
@@ -160,7 +160,7 @@
             <div class="space-y-2">
               <label class="block text-sm font-semibold text-slate-700">Correo electrónico</label>
               <input type="email" formControlName="email" placeholder="tu@correo.com"
-                class="h-12 w-full rounded-lg border border-slate-300 bg-white px-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/15" />
+                class="h-12 w-full rounded-lg border border-slate-300 bg-white px-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15" />
               @if (resendForm.get('email')?.touched && resendForm.get('email')?.invalid) {
                 <div class="text-sm font-medium text-rose-600">Ingresa un correo electrónico válido.</div>
               }

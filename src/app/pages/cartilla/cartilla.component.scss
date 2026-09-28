@@ -18,7 +18,7 @@
 }
 
 :host ::ng-deep .control-select.p-select.p-focus {
-  border-color: #0066aa;
+  border-color: rgb(var(--brand-500));
   box-shadow: 0 0 0 2px #dbeafe;
 }
 
@@ -45,7 +45,7 @@
 :host ::ng-deep .p-datepicker .p-datepicker-day-selected,
 :host ::ng-deep .p-datepicker .p-datepicker-today > span {
   color: #fff;
-  background: #0066aa;
+  background: rgb(var(--brand-500));
 }
 
 :host ::ng-deep .p-dialog {

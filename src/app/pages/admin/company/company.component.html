@@ -1,4 +1,4 @@
-<div class="p-3 sm:p-4 min-h-screen bg-slate-50">
+<div class="p-3 sm:p-4 min-h-screen bg-blue-50">
 
   <!-- ======================== -->
   <!-- SUPERADMIN: COMPANY LIST -->
@@ -11,7 +11,7 @@
           <p class="text-xs sm:text-sm text-slate-400 mt-1">Gestiona y supervisa todas las sedes registradas en el sistema</p>
         </div>
         <button (click)="openNew()"
-          class="flex items-center justify-center gap-2 bg-[#0066AA] hover:bg-[#005a96] text-white text-sm font-medium px-5 h-10 rounded-lg transition-colors shrink-0">
+          class="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium px-5 h-10 rounded-lg transition-colors shrink-0">
           <i class="pi pi-plus text-xs"></i>
           Registrar empresa
         </button>
@@ -56,7 +56,7 @@
                 <p-menu #companyMobileMenu [model]="companyActionItems(company)" [popup]="true" appendTo="body"></p-menu>
                 <button type="button" (click)="companyMobileMenu.toggle($event)"
                   aria-label="Abrir acciones"
-                  class="w-9 h-9 flex items-center justify-center rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50">
+                  class="w-9 h-9 flex items-center justify-center rounded-lg text-slate-400 hover:text-blue-500 hover:bg-blue-50">
                   <i class="pi pi-ellipsis-h text-xs"></i>
                 </button>
               </div>
@@ -117,7 +117,7 @@
                       <p-menu #companyMenu [model]="companyActionItems(company)" [popup]="true" appendTo="body"></p-menu>
                       <button type="button" (click)="companyMenu.toggle($event)"
                         aria-label="Abrir acciones"
-                        class="w-8 h-8 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-95">
+                        class="w-8 h-8 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-blue-500 hover:bg-blue-50 transition-all active:scale-95">
                         <i class="pi pi-ellipsis-h text-sm"></i>
                       </button>
                     </div>
@@ -147,7 +147,7 @@
               <i class="pi pi-angle-left"></i>
             </button>
             <button
-            class="w-7 h-7 flex items-center justify-center rounded-lg bg-[#0066AA] text-white text-xs font-medium">1</button>
+            class="w-7 h-7 flex items-center justify-center rounded-lg bg-blue-500 text-white text-xs font-medium">1</button>
             <button
               class="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 text-xs transition-colors">
               <i class="pi pi-angle-right"></i>
@@ -553,7 +553,7 @@
         <form [formGroup]="companyForm" (ngSubmit)="saveCompany()" class="space-y-6">
           <div class="space-y-4">
             <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
-              <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
+              <span class="w-1.5 h-4 bg-blue-500 rounded-full"></span>
               <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">1. Información Corporativa</h3>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -654,7 +654,7 @@
           </div>
           <div class="space-y-4">
             <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
-              <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
+              <span class="w-1.5 h-4 bg-blue-500 rounded-full"></span>
               <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">2. Acceso y Marca</h3>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-[1fr_140px] gap-4">
@@ -706,7 +706,7 @@
                 </div>
                 @if (companyForm.get('colorPrimario')?.invalid && companyForm.get('colorPrimario')?.touched) {
                   <p class="text-[11px] text-rose-500 ml-0.5">
-                    Debe ser un color hexadecimal, ej. #006BA8
+                    Debe ser un color hexadecimal, ej. #018B99
                   </p>
                 }
               </div>
@@ -714,7 +714,7 @@
           </div>
           <div class="space-y-4">
             <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
-              <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
+              <span class="w-1.5 h-4 bg-blue-500 rounded-full"></span>
               <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">3. Ubicación y Presencia Digital</h3>
             </div>
             <div class="grid grid-cols-1 gap-4">
@@ -811,7 +811,7 @@
           </div>
           <div class="space-y-4">
             <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
-              <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
+              <span class="w-1.5 h-4 bg-blue-500 rounded-full"></span>
               <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">4. Horarios de Atención del Sistema</h3>
             </div>
             <div class="grid grid-cols-1 gap-3">
@@ -858,7 +858,7 @@
               Descartar cambios
             </button>
             <button type="submit" [disabled]="loading"
-              class="px-8 py-2.5 text-sm font-bold text-white bg-[#0066AA] hover:bg-[#004488] rounded  disabled:opacity-50 transition-all flex items-center justify-center gap-2 min-w-[160px]">
+              class="px-8 py-2.5 text-sm font-bold text-white bg-blue-500 hover:bg-blue-600 rounded  disabled:opacity-50 transition-all flex items-center justify-center gap-2 min-w-[160px]">
               @if (loading) {
                 <i class="pi pi-spin pi-spinner text-xs"></i>
               }
@@ -880,7 +880,7 @@
       <!-- Header -->
       <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between shrink-0">
         <div class="flex items-center gap-3">
-          <div class="w-9 h-9 bg-blue-50 text-[#0066AA] rounded-lg flex items-center justify-center">
+          <div class="w-9 h-9 bg-blue-50 text-blue-500 rounded-lg flex items-center justify-center">
             <i class="pi pi-building text-base"></i>
           </div>
           <h2 class="text-sm font-bold text-slate-800">Detalles de la Empresa</h2>
@@ -896,7 +896,7 @@
         <div class="p-6 space-y-6">
           <!-- Logo + Name -->
           <div class="flex items-center gap-4">
-            <div class="w-16 h-16 rounded-xl bg-blue-50 flex items-center justify-center text-[#0066AA] font-bold text-2xl overflow-hidden shrink-0 border border-slate-200">
+            <div class="w-16 h-16 rounded-xl bg-blue-50 flex items-center justify-center text-blue-500 font-bold text-2xl overflow-hidden shrink-0 border border-slate-200">
               @if (comp.logoUrl) {
                 <img [src]="resolveLogoUrl(comp.logoUrl)" class="w-full h-full object-cover">
               }
@@ -1014,7 +1014,7 @@
           Cancelar
         </button>
         <button type="button" (click)="toggleActivo()"
-          [ngClass]="companyPendingStatus.activo ? 'bg-rose-600 hover:bg-rose-700' : 'bg-[#0066AA] hover:bg-[#004488]'"
+          [ngClass]="companyPendingStatus.activo ? 'bg-rose-600 hover:bg-rose-700' : 'bg-blue-500 hover:bg-blue-600'"
           class="px-5 py-2 text-sm font-bold text-white rounded transition-all">
           {{ companyPendingStatus.activo ? 'Desactivar' : 'Activar' }}
         </button>
@@ -1030,7 +1030,7 @@
   <div class="fixed inset-0 z-[130] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/50 backdrop-blur-sm">
     <div class="bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-xl overflow-hidden">
       <div class="px-5 sm:px-6 pt-8 sm:pt-6 pb-2 flex flex-col items-center text-center">
-        <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-blue-50 text-[#0066AA] flex items-center justify-center mb-3 sm:mb-4">
+        <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center mb-3 sm:mb-4">
           <i class="pi pi-info-circle text-xl sm:text-2xl"></i>
         </div>
         <h3 class="text-base sm:text-lg font-bold text-slate-800">{{ confirmDialog()!.title }}</h3>
@@ -1044,7 +1044,7 @@
           Cancelar
         </button>
         <button type="button" (click)="confirmDialog()!.onConfirm()"
-          class="w-full sm:w-auto px-6 py-3 sm:py-2.5 text-sm font-bold text-white bg-[#0066AA] hover:bg-[#004488] rounded-xl sm:rounded-lg transition-all">
+          class="w-full sm:w-auto px-6 py-3 sm:py-2.5 text-sm font-bold text-white bg-blue-500 hover:bg-blue-600 rounded-xl sm:rounded-lg transition-all">
           {{ isEdit ? 'Actualizar' : 'Confirmar' }}
         </button>
       </div>

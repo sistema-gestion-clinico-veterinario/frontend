@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, OnDestroy, ViewChild, inject, signal, computed, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, inject, signal, computed, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { TableModule } from 'primeng/table';
@@ -1707,7 +1707,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
 
   estadoAvatarClass(estado: EstadoCita): string {
     switch (estado) {
-      case EstadoCita.PROGRAMADA:     return 'bg-sky-100 text-sky-700';
+      case EstadoCita.PROGRAMADA:     return 'bg-blue-100 text-blue-700';
       case EstadoCita.PENDIENTE:      return 'bg-yellow-100 text-yellow-700';
       case EstadoCita.CONFIRMADA:     return 'bg-blue-100 text-blue-700';
       case EstadoCita.REPROGRAMADA:   return 'bg-orange-100 text-orange-700';
@@ -2044,8 +2044,8 @@ export class AgendaComponent implements OnInit, OnDestroy {
 
   private renderCalendarEvent(info: EventContentArg) {
     const cita = info.event.extendedProps['cita'] as CitaResponse | undefined;
-    const accent = cita ? this.calendarColor(cita.estado) : '#0066AA';
-    const background = cita ? this.calendarBgColor(cita.estado) : '#eff6ff';
+    const accent = cita ? this.calendarColor(cita.estado) : '#018B99';
+    const background = cita ? this.calendarBgColor(cita.estado) : '#f1fafa';
     const timeHtml = info.timeText
       ? `<span class="agenda-event-time" style="color:${accent}">${info.timeText}</span>`
       : '';
@@ -2135,11 +2135,11 @@ export class AgendaComponent implements OnInit, OnDestroy {
 
   private calendarColor(estado: EstadoCita): string {
     const colors: Record<string, string> = {
-      PROGRAMADA: '#0066AA',
+      PROGRAMADA: '#018B99',
       PENDIENTE: '#d97706',
       CONFIRMADA: '#059669',
       REPROGRAMADA: '#7c3aed',
-      SALA_DE_ESPERA: '#0891b2',
+      SALA_DE_ESPERA: '#018B99',
       EN_PROCESO: '#ea580c',
       COMPLETADA: '#16a34a',
       CANCELADA: '#dc2626',

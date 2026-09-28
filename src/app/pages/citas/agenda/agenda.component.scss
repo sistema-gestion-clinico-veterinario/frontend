@@ -47,7 +47,7 @@
     }
 
     .fc-dayGridMonth-view .fc-day-today .fc-daygrid-day-number {
-      background: #0066AA;
+      background: rgb(var(--brand-500));
       color: #fff;
     }
 
@@ -129,13 +129,13 @@
       padding: 0.125rem 0.25rem;
       border-radius: 0.25rem;
       background: transparent;
-      color: #0066AA;
+      color: rgb(var(--brand-500));
       font-size: 0.625rem;
       font-weight: 800;
     }
 
     .fc-dayGridMonth-view .fc-more-link:hover {
-      background: #eff6ff;
+      background: rgb(var(--brand-50));
     }
 
     .fc-popover {

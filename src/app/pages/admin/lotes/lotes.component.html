@@ -1,4 +1,4 @@
-<div class="p-3 sm:p-4 md:p-6 min-h-screen bg-slate-50">
+<div class="p-3 sm:p-4 md:p-6 min-h-screen bg-blue-50">
 
   @if (cargando() && !requiresCompanySelection) {
     <div class="animate-fade-in">
@@ -27,7 +27,7 @@
       </div>
       @if (!requiresCompanySelection) {
         <button *appHasPermission="'VISTA_LOTES:escribir'" (click)="openModal()"
-          class="flex items-center justify-center gap-2 bg-[#0066AA] hover:bg-[#005a96] text-white text-sm font-semibold px-5 h-10 rounded-lg transition-colors shrink-0">
+          class="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold px-5 h-10 rounded-lg transition-colors shrink-0">
           <i class="pi pi-plus text-xs"></i>
           Nuevo lote
         </button>
@@ -36,7 +36,7 @@
 
     @if (requiresCompanySelection) {
       <div class="bg-white border border-slate-200 rounded-lg px-5 py-4 flex items-start gap-3">
-        <i class="pi pi-building text-[#0066AA] mt-0.5"></i>
+        <i class="pi pi-building text-blue-500 mt-0.5"></i>
         <div>
           <p class="text-sm font-semibold text-slate-700">Selecciona una empresa</p>
           <p class="text-xs text-slate-500 mt-0.5">Elige una empresa en la parte superior para ver y gestionar sus lotes.</p>
@@ -98,7 +98,7 @@
                   <td class="px-5 py-2.5 text-right">
                     <div class="flex items-center justify-end gap-1">
                       <button *appHasPermission="'VISTA_LOTES:modificar'" (click)="openModal(lote)" aria-label="Editar lote"
-                        class="p-2 rounded-lg text-slate-500 hover:text-[#0066AA] hover:bg-blue-50 transition-colors">
+                        class="p-2 rounded-lg text-slate-500 hover:text-blue-500 hover:bg-blue-50 transition-colors">
                         <i class="pi pi-pencil text-sm"></i>
                       </button>
                       <button *appHasPermission="'VISTA_LOTES:eliminar'"
@@ -149,7 +149,7 @@
                 </div>
                 <div class="flex items-center justify-end gap-1 mt-2 pt-2 border-t border-slate-100">
                   <button *appHasPermission="'VISTA_LOTES:modificar'" (click)="openModal(lote)" aria-label="Editar lote"
-                    class="p-2 rounded-lg text-slate-500 hover:text-[#0066AA] hover:bg-blue-50 transition-colors">
+                    class="p-2 rounded-lg text-slate-500 hover:text-blue-500 hover:bg-blue-50 transition-colors">
                     <i class="pi pi-pencil text-sm"></i>
                   </button>
                   <button *appHasPermission="'VISTA_LOTES:eliminar'"
@@ -277,7 +277,7 @@
               Cancelar
             </button>
             <button type="submit" [disabled]="guardando()"
-              class="h-10 px-5 rounded-lg bg-[#0066AA] hover:bg-[#005a96] text-white text-sm font-semibold transition-colors disabled:opacity-60">
+              class="h-10 px-5 rounded-lg bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold transition-colors disabled:opacity-60">
               {{ guardando() ? 'Guardando...' : (editingLote() ? 'Guardar cambios' : 'Crear lote') }}
             </button>
           </div>

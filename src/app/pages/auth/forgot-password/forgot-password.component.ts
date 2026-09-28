@@ -7,10 +7,11 @@ import { CompanyService } from '../../../core/services/company.service';
 import { CompanySlugContext } from '../../../core/services/company-slug-context.service';
 import { lowercaseEmailValidator } from '../../../core/validators/lowercase-email.validator';
 import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
+import { SOFTVET_BRAND_COLOR, SOFTVET_LOGO_URL, SOFTVET_NAME } from '../../../core/constants/branding.constants';
 
-const DEFAULT_BRAND_COLOR = '#006BA8';
-const DEFAULT_LOGO_URL = 'https://toqqwxveqxhlottwetev.supabase.co/storage/v1/object/public/vargas_vet/Fondo%20de%20Pantalla%20Computador%20Simple%20Beige%20(7).png';
-const DEFAULT_COMPANY_NAME = 'SoftVet';
+const DEFAULT_BRAND_COLOR = SOFTVET_BRAND_COLOR;
+const DEFAULT_LOGO_URL = SOFTVET_LOGO_URL;
+const DEFAULT_COMPANY_NAME = SOFTVET_NAME;
 
 @Component({
   selector: 'app-forgot-password',

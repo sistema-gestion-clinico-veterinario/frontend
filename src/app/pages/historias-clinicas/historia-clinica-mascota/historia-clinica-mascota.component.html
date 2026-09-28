@@ -1,9 +1,9 @@
-<div class="p-4 sm:p-6 lg:p-4 min-h-screen bg-slate-50 font-['Barlow']">
+<div class="p-4 sm:p-6 lg:p-4 min-h-screen bg-blue-50 font-['Barlow']">
 
   <div class="mb-6 flex items-center justify-between gap-3 flex-wrap">
     <div class="flex items-center gap-3 min-w-0">
       <button (click)="volver()"
-        class="w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-400 hover:text-[#0066AA] hover:border-[#0066AA] shrink-0">
+        class="w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-400 hover:text-blue-500 hover:border-blue-500 shrink-0">
         <i class="pi pi-arrow-left text-sm"></i>
       </button>
       <div class="min-w-0">
@@ -18,7 +18,7 @@
     @if (hc()) {
       <div class="flex items-center gap-2">
         <button type="button" (click)="descargarHistoriaCompleta()" [disabled]="descargandoHistoriaCompleta()"
-          class="flex items-center gap-2 px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-600 text-xs font-bold hover:border-[#0066AA] hover:text-[#0066AA] transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+          class="flex items-center gap-2 px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-600 text-xs font-bold hover:border-blue-500 hover:text-blue-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
           @if (descargandoHistoriaCompleta()) {
             <i class="pi pi-spin pi-spinner text-xs"></i>
           } @else {
@@ -112,27 +112,27 @@
             <div class="flex flex-col gap-1">
               <label class="text-xs font-bold text-slate-600">Enfermedades previas</label>
               <textarea [(ngModel)]="antecedentesForm.enfermedades" rows="2" maxlength="500"
-              class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"></textarea>
+              class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"></textarea>
             </div>
             <div class="flex flex-col gap-1">
               <label class="text-xs font-bold text-slate-600">Procedimientos previos</label>
               <textarea [(ngModel)]="antecedentesForm.procedimientos" rows="2" maxlength="500"
-              class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"></textarea>
+              class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"></textarea>
             </div>
             <div class="flex flex-col gap-1">
               <label class="text-xs font-bold text-slate-600">Antecedentes personales</label>
               <textarea [(ngModel)]="antecedentesForm.antecedentesPersonales" rows="2" maxlength="500"
-              class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"></textarea>
+              class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"></textarea>
             </div>
             <div class="flex flex-col gap-1">
               <label class="text-xs font-bold text-slate-600">Antecedentes familiares</label>
               <textarea [(ngModel)]="antecedentesForm.antecedentesFamiliares" rows="2" maxlength="500"
-              class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"></textarea>
+              class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"></textarea>
             </div>
             <div class="flex flex-col gap-1">
               <label class="text-xs font-bold text-slate-600">Grupo sanguíneo</label>
               <input [(ngModel)]="antecedentesForm.grupoSanguineo" type="text" maxlength="20"
-                class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 bg-white outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20" />
+                class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 bg-white outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20" />
             </div>
           </div>
           <div class="flex items-center justify-end gap-2">
@@ -141,7 +141,7 @@
               Cancelar
             </button>
             <button type="button" (click)="guardarAntecedentes()" [disabled]="guardandoAntecedentes()"
-              class="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-[#0066AA] text-white text-xs font-bold hover:bg-[#0055aa] transition-all disabled:opacity-60">
+              class="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-blue-500 text-white text-xs font-bold hover:bg-blue-600 transition-all disabled:opacity-60">
               @if (guardandoAntecedentes()) {
                 <i class="pi pi-spin pi-spinner text-[10px]"></i>
               }
@@ -155,7 +155,7 @@
       <nav class="flex min-w-max items-center gap-7 px-1 font-['Barlow']" aria-label="Secciones de la historia de la mascota">
         <button type="button" (click)="seleccionarSeccion('consultas')"
         [class]="seccionActiva() === 'consultas'
-          ? 'flex items-center gap-2 border-b-2 border-[#0066AA] px-1 py-3.5 text-[#0066AA]'
+          ? 'flex items-center gap-2 border-b-2 border-blue-500 px-1 py-3.5 text-blue-500'
           : 'flex items-center gap-2 border-b-2 border-transparent px-1 py-3.5 text-slate-500 hover:text-slate-800'">
           <i class="pi pi-file-edit text-sm"></i>
           <strong class="text-base font-bold">Consultas</strong>
@@ -163,7 +163,7 @@
         </button>
         <button type="button" (click)="seleccionarSeccion('servicios')"
         [class]="seccionActiva() === 'servicios'
-          ? 'flex items-center gap-2 border-b-2 border-[#0066AA] px-1 py-3.5 text-[#0066AA]'
+          ? 'flex items-center gap-2 border-b-2 border-blue-500 px-1 py-3.5 text-blue-500'
           : 'flex items-center gap-2 border-b-2 border-transparent px-1 py-3.5 text-slate-500 hover:text-slate-800'">
           <i class="pi pi-scissors text-sm"></i>
           <strong class="text-base font-bold">Servicios</strong>
@@ -171,7 +171,7 @@
         </button>
         <button type="button" (click)="seleccionarSeccion('preventivos')"
         [class]="seccionActiva() === 'preventivos'
-          ? 'flex items-center gap-2 border-b-2 border-[#0066AA] px-1 py-3.5 text-[#0066AA]'
+          ? 'flex items-center gap-2 border-b-2 border-blue-500 px-1 py-3.5 text-blue-500'
           : 'flex items-center gap-2 border-b-2 border-transparent px-1 py-3.5 text-slate-500 hover:text-slate-800'">
           <i class="pi pi-shield text-sm"></i>
           <strong class="text-base font-bold">Preventivos</strong>
@@ -179,7 +179,7 @@
         </button>
         <button type="button" (click)="seleccionarSeccion('seguimiento')"
         [class]="seccionActiva() === 'seguimiento'
-          ? 'flex items-center gap-2 border-b-2 border-[#0066AA] px-1 py-3.5 text-[#0066AA]'
+          ? 'flex items-center gap-2 border-b-2 border-blue-500 px-1 py-3.5 text-blue-500'
           : 'flex items-center gap-2 border-b-2 border-transparent px-1 py-3.5 text-slate-500 hover:text-slate-800'">
           <i class="pi pi-heart-fill text-sm"></i>
           <strong class="text-base font-bold">Seguimiento</strong>
@@ -209,7 +209,7 @@
                 <button
                   (click)="seleccionarConsulta(consulta)"
               [class]="consultaActiva()?.id === consulta.id
-                ? 'w-full text-left px-4 py-3.5 bg-blue-50 border-l-2 border-[#0066AA]'
+                ? 'w-full text-left px-4 py-3.5 bg-blue-50 border-l-2 border-blue-500'
                 : 'w-full text-left px-4 py-3.5 hover:bg-slate-50 border-l-2 border-transparent'">
                   <p class="text-xs font-extrabold text-slate-800 leading-snug line-clamp-2">
                     {{ consulta.motivoConsulta }}
@@ -277,7 +277,7 @@
                     @if (canModify()) {
                       <button type="button"
                         (click)="editarConsulta(consultaActiva()!.id)"
-                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0066AA] text-white text-[10px] font-bold hover:bg-[#0055aa] transition-all">
+                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500 text-white text-[10px] font-bold hover:bg-blue-600 transition-all">
                         <i class="pi pi-pencil text-[9px]"></i> Editar
                       </button>
                     }
@@ -412,7 +412,7 @@
                       <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Recetas</p>
                       @if (consultaActiva()!.prescripciones.length > 0) {
                         <span
-                          class="bg-blue-100 text-[#0066AA] rounded-full px-1.5 py-0.5 text-[10px]">
+                          class="bg-blue-100 text-blue-500 rounded-full px-1.5 py-0.5 text-[10px]">
                           {{ consultaActiva()!.prescripciones.length }}
                         </span>
                       }
@@ -437,7 +437,7 @@
                             </div>
                             @if (p.viaAdministracion) {
                               <span
-                                class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-[#0066AA] shrink-0 uppercase">
+                                class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-500 shrink-0 uppercase">
                                 {{ p.viaAdministracion }}
                               </span>
                             }
@@ -479,7 +479,7 @@
                       <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Archivos</p>
                       @if (consultaActiva()!.archivos.length > 0) {
                         <span
-                          class="bg-blue-100 text-[#0066AA] rounded-full px-1.5 py-0.5 text-[10px]">
+                          class="bg-blue-100 text-blue-500 rounded-full px-1.5 py-0.5 text-[10px]">
                           {{ consultaActiva()!.archivos.length }}
                         </span>
                       }
@@ -506,10 +506,10 @@
                                 class="w-full h-full object-cover" alt="" />
                             }
                             @if (!(esImagen(a) && miniaturas().get(a.id)) && !previewCargando()) {
-                              <i class="pi pi-file text-slate-400 group-hover:text-[#0066AA]"></i>
+                              <i class="pi pi-file text-slate-400 group-hover:text-blue-500"></i>
                             }
                             @if (previewCargando()) {
-                              <i class="pi pi-spin pi-spinner text-[#0066AA]"></i>
+                              <i class="pi pi-spin pi-spinner text-blue-500"></i>
                             }
                           </div>
                           <div class="flex-1 min-w-0">
@@ -528,7 +528,7 @@
                               <p class="text-[10px] text-slate-400 mt-0.5 truncate">{{ a.descripcion }}</p>
                             }
                           </div>
-                          <i class="pi pi-eye text-xs text-slate-300 group-hover:text-[#0066AA] shrink-0"></i>
+                          <i class="pi pi-eye text-xs text-slate-300 group-hover:text-blue-500 shrink-0"></i>
                         </button>
                       }
                     </div>
@@ -610,7 +610,7 @@
           <!-- Calendario preventivo interactivo -->
           <div class="bg-white border border-slate-200 rounded-xl overflow-hidden h-fit">
             <div class="flex items-center gap-3 border-b border-slate-200 px-5 py-3">
-              <i class="pi pi-calendar text-base text-[#0066AA]"></i>
+              <i class="pi pi-calendar text-base text-blue-500"></i>
               <div class="min-w-0">
                 <h2 class="text-sm font-extrabold text-slate-900">Calendario preventivo</h2>
                 <p class="mt-0.5 text-[11px] text-slate-500">Selecciona un día para consultar sus controles</p>
@@ -618,16 +618,16 @@
             </div>
             <div class="flex items-center justify-between gap-2 border-b border-slate-200 px-4 py-2">
               <button (click)="calendarioMesAnterior()"
-                class="grid size-7 shrink-0 place-items-center rounded-lg border border-slate-200 text-slate-500 hover:border-[#0066AA] hover:text-[#0066AA]">
+                class="grid size-7 shrink-0 place-items-center rounded-lg border border-slate-200 text-slate-500 hover:border-blue-500 hover:text-blue-500">
                 <i class="pi pi-chevron-left text-[10px]"></i>
               </button>
               <div class="flex items-center gap-2">
                 <input type="month" [value]="calendarioMesInput()" (change)="onCalendarioMesInputChange($any($event.target).value)"
-                  class="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs font-extrabold text-slate-700 outline-none focus:border-[#0066AA]" />
-                <button type="button" (click)="irAHoy()" class="text-[10px] font-bold text-[#0066AA] hover:underline">Ir a hoy</button>
+                  class="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs font-extrabold text-slate-700 outline-none focus:border-blue-500" />
+                <button type="button" (click)="irAHoy()" class="text-[10px] font-bold text-blue-500 hover:underline">Ir a hoy</button>
               </div>
               <button (click)="calendarioMesSiguiente()"
-                class="grid size-7 shrink-0 place-items-center rounded-lg border border-slate-200 text-slate-500 hover:border-[#0066AA] hover:text-[#0066AA]">
+                class="grid size-7 shrink-0 place-items-center rounded-lg border border-slate-200 text-slate-500 hover:border-blue-500 hover:text-blue-500">
                 <i class="pi pi-chevron-right text-[10px]"></i>
               </button>
             </div>
@@ -646,12 +646,12 @@
                     [attr.aria-label]="'Ver controles del día ' + item.dia"
                     [title]="item.vacias.concat(item.desparas).join(', ') || 'Sin controles programados'"
                     class="relative flex h-8 flex-col items-center justify-center rounded-lg border border-transparent transition-colors hover:border-slate-300"
-                    [class.!border-[#0066AA]]="calendarioDiaSeleccionado() === item.dia || (item.dia === hoy().getDate() && calendarioEsMesActual())"
-                    [class.bg-[#0066AA]]="calendarioDiaSeleccionado() === item.dia">
+                    [class.!border-blue-500]="calendarioDiaSeleccionado() === item.dia || (item.dia === hoy().getDate() && calendarioEsMesActual())"
+                    [class.bg-blue-500]="calendarioDiaSeleccionado() === item.dia">
                     <span class="text-xs leading-none text-slate-600"
                       [class.font-extrabold]="item.vacias.length || item.desparas.length"
                       [class.!text-white]="calendarioDiaSeleccionado() === item.dia"
-                      [class.text-[#0066AA]]="item.dia === hoy().getDate() && calendarioEsMesActual() && calendarioDiaSeleccionado() !== item.dia"
+                      [class.text-blue-500]="item.dia === hoy().getDate() && calendarioEsMesActual() && calendarioDiaSeleccionado() !== item.dia"
                       [class.text-slate-500]="!item.vacias.length && !item.desparas.length && !(item.dia === hoy().getDate() && calendarioEsMesActual())">
                       {{ item.dia }}
                     </span>
@@ -685,7 +685,7 @@
           <div class="bg-white border border-slate-200 rounded-xl overflow-hidden h-fit">
             <header class="px-5 py-4 border-b border-slate-100 flex items-center justify-between gap-3 flex-wrap">
               <div class="flex items-center gap-3">
-                <i class="pi pi-clock text-base text-[#0066AA]"></i>
+                <i class="pi pi-clock text-base text-blue-500"></i>
                 <div>
                   <h2 class="text-sm font-extrabold text-slate-800">Agenda preventiva</h2>
                   <p class="text-[11px] text-slate-400 mt-0.5">Detalle del día seleccionado</p>
@@ -694,7 +694,7 @@
               @if (canModify()) {
                 <div class="flex items-center gap-2">
                   <button type="button" (click)="irARegistrarControl('VACUNACION')"
-                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0066AA] text-white text-[10px] font-bold hover:bg-[#0055aa] transition-all">
+                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500 text-white text-[10px] font-bold hover:bg-blue-600 transition-all">
                     <i class="pi pi-plus text-[9px]"></i> Registrar vacuna
                   </button>
                   <button type="button" (click)="irARegistrarControl('DESPARASITACION')"
@@ -734,7 +734,7 @@
             </ng-template>
             <div class="border-b border-slate-200 p-4">
               <div class="flex items-start gap-3">
-                <i class="pi pi-calendar text-sm text-[#0066AA] mt-0.5"></i>
+                <i class="pi pi-calendar text-sm text-blue-500 mt-0.5"></i>
                 <div>
                   <p class="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Día seleccionado</p>
                   <p class="mt-1 text-sm font-extrabold capitalize text-slate-800">{{ fechaCalendarioSeleccionadaTexto() }}</p>
@@ -794,17 +794,17 @@
                 <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-[11px] text-slate-400"></i>
                 <input type="text" [ngModel]="historialBusqueda()" (ngModelChange)="historialBusqueda.set($event)"
                   placeholder="Buscar por nombre..."
-                  class="w-full rounded-lg border border-slate-200 bg-slate-50 pl-8 pr-3 py-1.5 text-xs text-slate-700 outline-none focus:border-[#0066AA] focus:bg-white" />
+                  class="w-full rounded-lg border border-slate-200 bg-slate-50 pl-8 pr-3 py-1.5 text-xs text-slate-700 outline-none focus:border-blue-500 focus:bg-white" />
               </div>
               <div class="flex items-center gap-1.5 shrink-0">
                 <button type="button" (click)="historialFiltroTipo.set('TODOS')"
-                  [class]="historialFiltroTipo() === 'TODOS' ? 'bg-[#0066AA] text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'"
+                  [class]="historialFiltroTipo() === 'TODOS' ? 'bg-blue-500 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'"
                 class="rounded-full px-3 py-1 text-[10px] font-extrabold uppercase transition-colors">Todos</button>
                 <button type="button" (click)="historialFiltroTipo.set('VACUNACION')"
-                  [class]="historialFiltroTipo() === 'VACUNACION' ? 'bg-[#0066AA] text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'"
+                  [class]="historialFiltroTipo() === 'VACUNACION' ? 'bg-blue-500 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'"
                 class="rounded-full px-3 py-1 text-[10px] font-extrabold uppercase transition-colors">Vacunación</button>
                 <button type="button" (click)="historialFiltroTipo.set('DESPARASITACION')"
-                  [class]="historialFiltroTipo() === 'DESPARASITACION' ? 'bg-[#0066AA] text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'"
+                  [class]="historialFiltroTipo() === 'DESPARASITACION' ? 'bg-blue-500 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'"
                 class="rounded-full px-3 py-1 text-[10px] font-extrabold uppercase transition-colors">Desparasitación</button>
               </div>
             </div>
@@ -813,7 +813,7 @@
             <div class="overflow-x-auto">
               <table class="w-full min-w-[520px] text-left text-xs">
                 <thead>
-                  <tr class="text-[10px] font-extrabold uppercase tracking-wider text-white bg-[#0066AA]">
+                  <tr class="text-[10px] font-extrabold uppercase tracking-wider text-white bg-blue-500">
                     <th class="px-3 py-2.5 w-10">N°</th>
                     <th class="px-2 py-2.5">Control</th>
                     <th class="px-4 py-2.5">Tipo</th>
@@ -860,7 +860,7 @@
               </div>
               <button type="button" (click)="descargarCartilla('vacunacion')" [disabled]="!vacunas().length"
                 [title]="vacunas().length ? '' : 'Aún no hay vacunas registradas para esta mascota'"
-                class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0066AA] text-white text-[10px] font-bold hover:bg-[#0055aa] transition-all disabled:opacity-40 disabled:cursor-not-allowed shrink-0">
+                class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500 text-white text-[10px] font-bold hover:bg-blue-600 transition-all disabled:opacity-40 disabled:cursor-not-allowed shrink-0">
                 <i class="pi pi-download text-[9px]"></i> Descargar
               </button>
             </header>
@@ -886,7 +886,7 @@
               <div class="overflow-x-auto">
                 <table class="w-full min-w-[560px] text-left text-xs">
                   <thead>
-                    <tr class="text-[10px] font-extrabold uppercase tracking-wider text-white bg-[#0066AA]">
+                    <tr class="text-[10px] font-extrabold uppercase tracking-wider text-white bg-blue-500">
                       <th class="px-3 py-2.5 w-10">N°</th>
                       <th class="px-2 py-2.5">Vacuna</th>
                       <th class="px-4 py-2.5">Aplicada</th>
@@ -939,7 +939,7 @@
               </div>
               <button type="button" (click)="descargarCartilla('desparasitacion')" [disabled]="!desparasitaciones().length"
                 [title]="desparasitaciones().length ? '' : 'Aún no hay desparasitaciones registradas para esta mascota'"
-                class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0066AA] text-white text-[10px] font-bold hover:bg-[#0055aa] transition-all disabled:opacity-40 disabled:cursor-not-allowed shrink-0">
+                class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500 text-white text-[10px] font-bold hover:bg-blue-600 transition-all disabled:opacity-40 disabled:cursor-not-allowed shrink-0">
                 <i class="pi pi-download text-[9px]"></i> Descargar
               </button>
             </header>
@@ -965,7 +965,7 @@
               <div class="overflow-x-auto">
                 <table class="w-full min-w-[560px] text-left text-xs">
                   <thead>
-                    <tr class="text-[10px] font-extrabold uppercase tracking-wider text-white bg-[#0066AA]">
+                    <tr class="text-[10px] font-extrabold uppercase tracking-wider text-white bg-blue-500">
                       <th class="px-3 py-2.5 w-10">N°</th>
                       <th class="px-2 py-2.5">Producto</th>
                       <th class="px-4 py-2.5">Aplicada</th>
@@ -1013,7 +1013,7 @@
       <section class="flex flex-col gap-5">
         <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
           <div class="flex items-center gap-3 border-b border-slate-200 px-5 py-3">
-            <i class="pi pi-heart-fill text-base text-[#0066AA]"></i>
+            <i class="pi pi-heart-fill text-base text-blue-500"></i>
             <div class="min-w-0">
               <h2 class="text-sm font-extrabold text-slate-900">Diagnósticos</h2>
               <p class="mt-0.5 text-[11px] text-slate-500">Historial completo, sin importar en qué consulta se originaron</p>
@@ -1045,7 +1045,7 @@
                           </p>
                         }
                       </div>
-                      <span class="px-2 py-0.5 rounded-md bg-blue-50 text-[#0066AA] text-[10px] font-bold border border-blue-100 uppercase whitespace-nowrap">{{ d.tipo }}</span>
+                      <span class="px-2 py-0.5 rounded-md bg-blue-50 text-blue-500 text-[10px] font-bold border border-blue-100 uppercase whitespace-nowrap">{{ d.tipo }}</span>
                     </div>
                     @if (d.descripcion) {
                       <p class="text-xs text-slate-600 mb-3">{{ d.descripcion }}</p>
@@ -1056,7 +1056,7 @@
                         [disabled]="!canModify() || cambiandoEstadoId() === d.id"
                         [ngModel]="d.estado"
                         (ngModelChange)="cambiarEstadoDiagnosticoSeguimiento(d, $event)"
-                        class="rounded-lg border border-slate-200 px-2 py-1 text-[11px] font-bold text-slate-700 outline-none focus:border-[#0066AA] disabled:opacity-60">
+                        class="rounded-lg border border-slate-200 px-2 py-1 text-[11px] font-bold text-slate-700 outline-none focus:border-blue-500 disabled:opacity-60">
                         <option value="ACTIVO">Activo</option>
                         <option value="RESUELTO">Resuelto</option>
                         <option value="CRONICO">Crónico</option>
@@ -1074,7 +1074,7 @@
         </div>
         <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
           <div class="flex items-center gap-3 border-b border-slate-200 px-5 py-3">
-            <i class="pi pi-shield text-base text-[#0066AA]"></i>
+            <i class="pi pi-shield text-base text-blue-500"></i>
             <div class="min-w-0">
               <h2 class="text-sm font-extrabold text-slate-900">Tratamientos</h2>
               <p class="mt-0.5 text-[11px] text-slate-500">Protocolos y tratamientos, con o sin fecha de fin definida</p>
@@ -1106,7 +1106,7 @@
                       [disabled]="!canModify() || cambiandoEstadoId() === t.id"
                       [ngModel]="t.estado"
                       (ngModelChange)="cambiarEstadoTratamientoSeguimiento(t, $event)"
-                      class="rounded-lg border border-slate-200 px-2 py-1 text-[11px] font-bold text-slate-700 outline-none focus:border-[#0066AA] disabled:opacity-60">
+                      class="rounded-lg border border-slate-200 px-2 py-1 text-[11px] font-bold text-slate-700 outline-none focus:border-blue-500 disabled:opacity-60">
                       <option value="PENDIENTE">Pendiente</option>
                       <option value="ACTIVO">Activo</option>
                       <option value="EN_CURSO">En curso</option>

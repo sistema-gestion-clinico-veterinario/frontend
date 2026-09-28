@@ -1,7 +1,7 @@
 :host {
   --a11y-z: 2147483000;
-  --a11y-accent: #0066AA;
-  --a11y-accent-dark: #004d80;
+  --a11y-accent: rgb(var(--brand-500));
+  --a11y-accent-dark: rgb(var(--brand-600));
 }
 
 .a11y-fab {
@@ -187,7 +187,7 @@
   }
 
   &:not(:disabled):hover {
-    background: #1d4ed8;
+    background: rgb(var(--brand-600));
   }
 }
 

@@ -120,7 +120,7 @@ export class ApoderadoPortalComponent implements OnInit {
 
   getEspecieIcon(especie: string): string {
     switch (especie?.toUpperCase()) {
-      case 'PERRO': return 'pi pi-tag text-sky-500';
+      case 'PERRO': return 'pi pi-tag text-blue-500';
       case 'GATO': return 'pi pi-tag text-emerald-500';
       default: return 'pi pi-tag text-indigo-500';
     }

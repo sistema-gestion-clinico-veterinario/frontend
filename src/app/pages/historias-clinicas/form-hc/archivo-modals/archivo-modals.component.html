@@ -9,14 +9,14 @@
       (click)="$event.stopPropagation()">
       <div class="flex items-center justify-between px-5 py-3 border-b border-slate-100 bg-slate-50 rounded-t-2xl flex-shrink-0">
         <div class="flex items-center gap-3 min-w-0">
-          <i class="pi pi-eye text-[#0066AA] text-sm"></i>
+          <i class="pi pi-eye text-blue-500 text-sm"></i>
           <p class="text-sm font-bold text-slate-800 truncate">{{ previewArchivo.nombre }}</p>
           <span class="text-[10px] text-slate-400 flex-shrink-0">{{ formatBytes(previewArchivo.tamanioBytes) }}</span>
         </div>
         <div class="flex items-center gap-2 flex-shrink-0 ml-4">
           @if (previewTipo !== 'dcm') {
             <button type="button" (click)="descargar.emit(previewArchivo)"
-              class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-bold text-slate-600 hover:text-[#0066AA] hover:border-[#0066AA] transition-all">
+              class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-bold text-slate-600 hover:text-blue-500 hover:border-blue-500 transition-all">
               <i class="pi pi-download text-[10px]"></i> Descargar
             </button>
           }

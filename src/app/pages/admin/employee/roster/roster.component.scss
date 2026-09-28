@@ -137,7 +137,7 @@
 }
 
 .roster-calendar-day-active:hover {
-  background: #fbfdff;
+  background: #f8fcfc;
 }
 
 .roster-calendar-day-muted {
@@ -146,14 +146,14 @@
 }
 
 .roster-calendar-day-today {
-  background: #f8fcff;
-  outline: 2px solid #0066aa;
+  background: rgb(var(--brand-50));
+  outline: 2px solid rgb(var(--brand-500));
   outline-offset: -2px;
 }
 
 .roster-calendar-day-selected {
   background: #f1f7fb;
-  outline: 2px solid #0066aa;
+  outline: 2px solid rgb(var(--brand-500));
   outline-offset: -2px;
 }
 
@@ -246,7 +246,7 @@
   padding: 0.2rem 0.35rem;
   border: 1px solid #bfdbfe;
   border-radius: 0.35rem;
-  background: #eff6ff;
+  background: rgb(var(--brand-50));
   color: #075985;
   font-size: 0.62rem;
   font-weight: 800;
@@ -278,13 +278,13 @@
 }
 
 .roster-calendar-shift-chip:hover {
-  border-color: #0066aa;
-  background: #f8fcff;
+  border-color: rgb(var(--brand-500));
+  background: rgb(var(--brand-50));
 }
 
 .roster-calendar-shift-selected {
-  border-color: #0066aa;
-  background: #eff6ff;
+  border-color: rgb(var(--brand-500));
+  background: rgb(var(--brand-50));
 }
 
 .roster-calendar-shift-main {
@@ -296,7 +296,7 @@
 }
 
 .roster-calendar-shift-icon {
-  color: #0066aa;
+  color: rgb(var(--brand-500));
   font-size: 0.58rem;
   flex: 0 0 auto;
 }
@@ -345,8 +345,8 @@
 }
 
 .roster-calendar-shift-action-edit:hover {
-  color: #0066aa;
-  background: #e0f2fe;
+  color: rgb(var(--brand-500));
+  background: rgb(var(--brand-100));
 }
 
 .roster-calendar-shift-action-delete:hover {
@@ -369,7 +369,7 @@
 .roster-calendar-more-chip {
   width: 100%;
   color: #0f5f99;
-  background: #f8fcff;
+  background: rgb(var(--brand-50));
   border: 1px solid #bfdbfe;
 }
 
@@ -378,8 +378,8 @@
 }
 
 .roster-calendar-more-chip:hover {
-  color: #0066aa;
-  border-color: #0066aa;
+  color: rgb(var(--brand-500));
+  border-color: rgb(var(--brand-500));
   background: #ffffff;
 }
 
@@ -390,7 +390,7 @@
 }
 
 .roster-calendar-free-icon {
-  color: #0066aa;
+  color: rgb(var(--brand-500));
   font-size: 0.58rem;
 }
 
