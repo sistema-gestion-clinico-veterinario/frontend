@@ -1,23 +1,23 @@
 <p-toast position="top-right" />
 
-<main class="mx-auto min-h-screen max-w-full space-y-4 overflow-x-hidden bg-slate-50/40">
+<main class="mx-auto min-h-screen max-w-full space-y-4 overflow-x-hidden bg-blue-50">
   <header class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
     <div class="flex items-center gap-3">
-      <span class="grid size-12 shrink-0 place-items-center rounded-xl bg-cyan-50 text-[#07859a]"><i class="pi pi-wallet text-2xl"></i></span>
+      <span class="grid size-12 shrink-0 place-items-center rounded-xl bg-blue-50 text-blue-500"><i class="pi pi-wallet text-2xl"></i></span>
       <div><h1 class="text-2xl font-extrabold tracking-tight text-slate-900">Caja</h1><p class="mt-0.5 text-sm text-slate-500">Registra pagos de citas y ventas de productos de la clínica.</p></div>
     </div>
     @if (!requiresCompanySelection) {
       <div class="flex flex-wrap items-center gap-2">
-        <div class="flex h-[50px] min-w-[158px] items-center gap-3 rounded-xl border border-slate-200 bg-white px-4"><i class="pi pi-calendar text-[#07859a]"></i><div><p class="text-[10px] font-semibold text-slate-400">Hoy</p><p class="text-xs font-bold text-slate-700">{{ formatFechaActual() }}</p></div></div>
+        <div class="flex h-[50px] min-w-[158px] items-center gap-3 rounded-xl border border-slate-200 bg-white px-4"><i class="pi pi-calendar text-blue-500"></i><div><p class="text-[10px] font-semibold text-slate-400">Hoy</p><p class="text-xs font-bold text-slate-700">{{ formatFechaActual() }}</p></div></div>
         @if (sesionCaja(); as sesion) {
           <div class="flex h-[50px] min-w-[188px] items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4">
             <span class="grid size-8 place-items-center rounded-lg bg-white text-emerald-600"><i class="pi pi-lock-open text-sm"></i></span>
             <div><p class="text-[10px] font-bold uppercase tracking-wide text-emerald-600">Caja abierta</p><p class="text-xs font-bold text-slate-700">Efectivo esperado: {{ formatMonto(sesion.efectivoEsperado) }}</p></div>
           </div>
         } @else {
-          <button type="button" (click)="abrirModalSesion('ABRIR')" class="flex h-[50px] min-w-[188px] items-center gap-3 rounded-xl bg-[#078ba0] px-4 text-left text-white transition-colors hover:bg-[#06798b]">
+          <button type="button" (click)="abrirModalSesion('ABRIR')" class="flex h-[50px] min-w-[188px] items-center gap-3 rounded-xl bg-blue-500 px-4 text-left text-white transition-colors hover:bg-blue-600">
             <span class="grid size-8 place-items-center rounded-lg bg-white/15"><i class="pi pi-lock-open text-sm"></i></span>
-            <div><p class="text-[10px] font-bold uppercase tracking-wide text-cyan-100">Caja cerrada</p><p class="text-sm font-extrabold">Abrir caja</p></div>
+            <div><p class="text-[10px] font-bold uppercase tracking-wide text-blue-100">Caja cerrada</p><p class="text-sm font-extrabold">Abrir caja</p></div>
           </button>
         }
       </div>
@@ -25,7 +25,7 @@
   </header>
 
   @if (requiresCompanySelection) {
-    <section class="rounded-xl border border-slate-200 bg-white p-6"><div class="flex items-start gap-3"><span class="grid size-11 shrink-0 place-items-center rounded-xl bg-cyan-50 text-[#07859a]"><i class="pi pi-building"></i></span><div><h2 class="font-bold text-slate-900">Selecciona una empresa</h2><p class="mt-1 text-sm text-slate-500">La caja pertenece a una empresa específica. Elige una desde el selector superior.</p></div></div></section>
+    <section class="rounded-xl border border-slate-200 bg-white p-6"><div class="flex items-start gap-3"><span class="grid size-11 shrink-0 place-items-center rounded-xl bg-blue-50 text-blue-500"><i class="pi pi-building"></i></span><div><h2 class="font-bold text-slate-900">Selecciona una empresa</h2><p class="mt-1 text-sm text-slate-500">La caja pertenece a una empresa específica. Elige una desde el selector superior.</p></div></div></section>
   }
 
   @if (!requiresCompanySelection) {
@@ -34,7 +34,7 @@
         <article class="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-4"><span class="grid size-11 shrink-0 place-items-center rounded-full bg-emerald-50 text-emerald-600"><i class="pi pi-calendar"></i></span><div class="min-w-0"><p class="text-xs font-semibold text-slate-500">Ingresos por citas</p><p class="mt-1 truncate text-xl font-extrabold text-slate-900">{{ formatMonto(resumenCaja.ingresosCitas) }}</p></div></article>
         <article class="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-4"><span class="grid size-11 shrink-0 place-items-center rounded-full bg-teal-50 text-teal-600"><i class="pi pi-box"></i></span><div class="min-w-0"><p class="text-xs font-semibold text-slate-500">Ingresos por productos</p><p class="mt-1 truncate text-xl font-extrabold text-slate-900">{{ formatMonto(resumenCaja.ingresosProductos) }}</p></div></article>
         <article class="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-4"><span class="grid size-11 shrink-0 place-items-center rounded-full bg-rose-50 text-rose-500"><i class="pi pi-replay"></i></span><div class="min-w-0"><p class="text-xs font-semibold text-slate-500">Devoluciones</p><p class="mt-1 truncate text-xl font-extrabold text-slate-900">{{ formatMonto(resumenCaja.totalDevoluciones) }}</p></div></article>
-        <article class="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-4"><span class="grid size-11 shrink-0 place-items-center rounded-full bg-cyan-50 text-[#07859a]"><i class="pi pi-chart-bar"></i></span><div class="min-w-0"><p class="text-xs font-semibold text-slate-500">Balance del periodo</p><p class="mt-1 truncate text-xl font-extrabold text-slate-900">{{ formatMonto(resumenCaja.saldo) }}</p></div></article>
+        <article class="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-4"><span class="grid size-11 shrink-0 place-items-center rounded-full bg-blue-50 text-blue-500"><i class="pi pi-chart-bar"></i></span><div class="min-w-0"><p class="text-xs font-semibold text-slate-500">Balance del periodo</p><p class="mt-1 truncate text-xl font-extrabold text-slate-900">{{ formatMonto(resumenCaja.saldo) }}</p></div></article>
       </section>
     }
 
@@ -44,15 +44,15 @@
           <h2 class="text-sm font-extrabold text-slate-900">Buscar cliente o mascota</h2>
           <label class="relative mt-3 block"><i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400"></i>
             @if (panelActivo() === 'CITAS') {
-              <input [ngModel]="posSearch()" (ngModelChange)="posSearch.set($event)" placeholder="Cliente, mascota o número de cita..." class="h-11 w-full rounded-lg border border-slate-300 pl-10 pr-3 text-sm outline-none focus:border-[#078ba0]" />
+              <input [ngModel]="posSearch()" (ngModelChange)="posSearch.set($event)" placeholder="Cliente, mascota o número de cita..." class="h-11 w-full rounded-lg border border-slate-300 pl-10 pr-3 text-sm outline-none focus:border-blue-500" />
             } @else {
-              <input [ngModel]="productoSearch()" (ngModelChange)="productoSearch.set($event)" placeholder="Producto, categoría, marca o SKU..." class="h-11 w-full rounded-lg border border-slate-300 pl-10 pr-3 text-sm outline-none focus:border-[#078ba0]" />
+              <input [ngModel]="productoSearch()" (ngModelChange)="productoSearch.set($event)" placeholder="Producto, categoría, marca o SKU..." class="h-11 w-full rounded-lg border border-slate-300 pl-10 pr-3 text-sm outline-none focus:border-blue-500" />
             }
           </label>
         </div>
         <div class="grid grid-cols-2 border-b border-slate-200 bg-slate-50/60">
-          <button (click)="seleccionarPanel('CITAS')" class="h-12 border-b-2 text-xs font-bold" [class]="panelActivo() === 'CITAS' ? 'border-[#078ba0] bg-cyan-50/60 text-[#087e91]' : 'border-transparent text-slate-500 hover:bg-slate-50'"><i class="pi pi-calendar mr-2"></i>Citas del día ({{ cuentasPos().length }})</button>
-          <button (click)="seleccionarPanel('PRODUCTOS')" class="h-12 border-b-2 text-xs font-bold" [class]="panelActivo() === 'PRODUCTOS' ? 'border-[#078ba0] bg-cyan-50/60 text-[#087e91]' : 'border-transparent text-slate-500 hover:bg-slate-50'"><i class="pi pi-box mr-2"></i>Productos ({{ productosPos().length }})</button>
+          <button (click)="seleccionarPanel('CITAS')" class="h-12 border-b-2 text-xs font-bold" [class]="panelActivo() === 'CITAS' ? 'border-blue-500 bg-blue-50/60 text-blue-500' : 'border-transparent text-slate-500 hover:bg-slate-50'"><i class="pi pi-calendar mr-2"></i>Citas del día ({{ cuentasPos().length }})</button>
+          <button (click)="seleccionarPanel('PRODUCTOS')" class="h-12 border-b-2 text-xs font-bold" [class]="panelActivo() === 'PRODUCTOS' ? 'border-blue-500 bg-blue-50/60 text-blue-500' : 'border-transparent text-slate-500 hover:bg-slate-50'"><i class="pi pi-box mr-2"></i>Productos ({{ productosPos().length }})</button>
         </div>
         <div class="max-h-[440px] overflow-y-auto">
           @if (panelActivo() === 'CITAS') {
@@ -60,10 +60,10 @@
               <div class="grid place-items-center px-6 py-12 text-sm text-slate-400">Cargando citas...</div>
             } @else {
               @for (cuenta of cuentasPos(); track cuenta.citaId) {
-                <button (click)="abrirCuenta(cuenta)" class="flex w-full items-center gap-3 border-b border-slate-100 px-4 py-4 text-left hover:bg-cyan-50/40" [class.bg-cyan-50]="cuentaSeleccionada()?.citaId === cuenta.citaId">
+                <button (click)="abrirCuenta(cuenta)" class="flex w-full items-center gap-3 border-b border-slate-100 px-4 py-4 text-left hover:bg-blue-50/40" [class.bg-blue-50]="cuentaSeleccionada()?.citaId === cuenta.citaId">
                   <span class="grid size-11 shrink-0 place-items-center rounded-full bg-slate-100 text-2xl" role="img" [attr.aria-label]="'Mascota: ' + cuenta.especie">{{ emojiMascota(cuenta.especie) }}</span>
                   <span class="min-w-0 flex-1"><span class="block truncate text-sm font-extrabold text-slate-800">{{ cuenta.mascotaNombre }}</span><span class="block truncate text-xs text-slate-500">Prop. {{ cuenta.apoderadoNombre }}</span><span class="mt-0.5 block truncate text-[11px] text-slate-400">{{ cuenta.servicioNombre }} · {{ formatFecha(cuenta.fechaAtencion) }}</span></span>
-                  <span class="text-right"><b class="block text-xs text-slate-700">{{ formatMonto(cuenta.saldoPendiente) }}</b><span class="mt-2 grid size-7 place-items-center rounded-md bg-[#078ba0] text-white"><i class="pi pi-plus text-[10px]"></i></span></span>
+                  <span class="text-right"><b class="block text-xs text-slate-700">{{ formatMonto(cuenta.saldoPendiente) }}</b><span class="mt-2 grid size-7 place-items-center rounded-md bg-blue-500 text-white"><i class="pi pi-plus text-[10px]"></i></span></span>
                 </button>
               } @empty {
                 <div class="grid place-items-center px-6 py-12 text-center"><div><i class="pi pi-check-circle text-3xl text-emerald-400"></i><p class="mt-3 text-sm font-bold text-slate-700">No hay citas pendientes</p><p class="mt-1 text-xs text-slate-400">Las cuentas con saldo aparecerán aquí.</p></div></div>
@@ -72,9 +72,9 @@
           } @else {
             @for (producto of productosPos(); track producto.id) {
               <div class="flex items-center gap-3 border-b border-slate-100 px-4 py-3.5">
-                <span class="grid size-11 shrink-0 place-items-center overflow-hidden rounded-lg bg-slate-100 text-[#078ba0]">@if (producto.imagenUrl) { <img [src]="producto.imagenUrl" [alt]="producto.nombre" class="size-full object-cover" /> } @else { <i class="pi pi-box"></i> }</span>
+                <span class="grid size-11 shrink-0 place-items-center overflow-hidden rounded-lg bg-slate-100 text-blue-500">@if (producto.imagenUrl) { <img [src]="producto.imagenUrl" [alt]="producto.nombre" class="size-full object-cover" /> } @else { <i class="pi pi-box"></i> }</span>
                 <span class="min-w-0 flex-1"><span class="flex items-center gap-1.5"><b class="truncate text-sm text-slate-800">{{ producto.nombre }}</b>@if (producto.requiereReceta) { <span class="shrink-0 rounded-full bg-amber-50 px-1.5 py-0.5 text-[9px] font-bold text-amber-700">Receta</span> }</span><span class="block truncate text-xs text-slate-400">{{ producto.categoriaNombre }} · Stock {{ producto.stock }}</span></span>
-                <span class="text-right"><b class="block text-xs text-slate-700">{{ formatMonto(producto.precio) }}</b><button (click)="agregarProductoOperacion(producto)" [disabled]="producto.stock <= 0 || savingDetalle()" class="mt-2 grid size-7 place-items-center rounded-md bg-[#078ba0] text-white disabled:bg-slate-200 disabled:text-slate-400"><i class="pi pi-plus text-[10px]"></i></button></span>
+                <span class="text-right"><b class="block text-xs text-slate-700">{{ formatMonto(producto.precio) }}</b><button (click)="agregarProductoOperacion(producto)" [disabled]="producto.stock <= 0 || savingDetalle()" class="mt-2 grid size-7 place-items-center rounded-md bg-blue-500 text-white disabled:bg-slate-200 disabled:text-slate-400"><i class="pi pi-plus text-[10px]"></i></button></span>
               </div>
             } @empty {
               <div class="grid place-items-center px-6 py-12 text-center"><div><i class="pi pi-box text-3xl text-slate-300"></i><p class="mt-3 text-sm font-bold text-slate-700">No hay productos disponibles</p><p class="mt-1 text-xs text-slate-400">Prueba con otro término de búsqueda.</p></div></div>
@@ -85,8 +85,8 @@
 
       <article class="h-fit min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white">
         <header class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-5 py-4">
-          <div><h2 class="flex items-center gap-2 text-sm font-extrabold text-slate-900"><i class="pi pi-shopping-cart text-[#078ba0]"></i>Detalle de la venta</h2>@if (cuentaSeleccionada(); as cuenta) { <p class="mt-1 text-xs text-slate-500">{{ cuenta.mascotaNombre }} · {{ cuenta.numeroCita }} · {{ cuenta.apoderadoNombre }}</p> } @else { <p class="mt-1 text-xs text-slate-500">Venta directa de productos</p> }</div>
-          <div class="flex gap-2"><button (click)="limpiarOperacion()" class="h-9 rounded-lg border border-cyan-200 px-3 text-xs font-bold text-[#078ba0] hover:bg-cyan-50"><i class="pi pi-trash mr-1.5"></i>Limpiar</button><button (click)="seleccionarPanel('PRODUCTOS')" class="h-9 rounded-lg bg-[#078ba0] px-3 text-xs font-bold text-white hover:bg-[#06798b]"><i class="pi pi-plus mr-1.5"></i>Agregar producto</button></div>
+          <div><h2 class="flex items-center gap-2 text-sm font-extrabold text-slate-900"><i class="pi pi-shopping-cart text-blue-500"></i>Detalle de la venta</h2>@if (cuentaSeleccionada(); as cuenta) { <p class="mt-1 text-xs text-slate-500">{{ cuenta.mascotaNombre }} · {{ cuenta.numeroCita }} · {{ cuenta.apoderadoNombre }}</p> } @else { <p class="mt-1 text-xs text-slate-500">Venta directa de productos</p> }</div>
+          <div class="flex gap-2"><button (click)="limpiarOperacion()" class="h-9 rounded-lg border border-blue-200 px-3 text-xs font-bold text-blue-500 hover:bg-blue-50"><i class="pi pi-trash mr-1.5"></i>Limpiar</button><button (click)="seleccionarPanel('PRODUCTOS')" class="h-9 rounded-lg bg-blue-500 px-3 text-xs font-bold text-white hover:bg-blue-600"><i class="pi pi-plus mr-1.5"></i>Agregar producto</button></div>
         </header>
         @if (!cuentaSeleccionada()) {
           <div class="border-b border-slate-200 bg-slate-50/50 px-5 py-4">
@@ -98,8 +98,8 @@
             </div>
 
             @if (clienteSeleccionado; as cliente) {
-              <div class="flex items-center gap-3 rounded-lg border border-cyan-200 bg-white px-3 py-2.5">
-                <span class="grid size-9 shrink-0 place-items-center rounded-full bg-cyan-50 text-[#078ba0]"><i class="pi pi-user text-sm"></i></span>
+              <div class="flex items-center gap-3 rounded-lg border border-blue-200 bg-white px-3 py-2.5">
+                <span class="grid size-9 shrink-0 place-items-center rounded-full bg-blue-50 text-blue-500"><i class="pi pi-user text-sm"></i></span>
                 <div class="min-w-0 flex-1">
                   <p class="truncate text-sm font-bold text-slate-800">{{ cliente.nombre }} {{ cliente.apellido }}</p>
                   <p class="truncate text-[11px] text-slate-400">{{ cliente.tipoDocumento }} {{ cliente.numeroDocumento }}</p>
@@ -110,7 +110,7 @@
               <div class="flex gap-2">
                 <div class="relative min-w-0 flex-1">
                   <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-xs text-slate-400"></i>
-                  <input [(ngModel)]="clienteQuery" (keyup.enter)="buscarClientesVentaRapida()" maxlength="80" placeholder="Buscar por nombre o documento..." class="h-10 w-full rounded-lg border border-slate-300 bg-white pl-9 pr-3 text-sm outline-none focus:border-[#078ba0]" />
+                  <input [(ngModel)]="clienteQuery" (keyup.enter)="buscarClientesVentaRapida()" maxlength="80" placeholder="Buscar por nombre o documento..." class="h-10 w-full rounded-lg border border-slate-300 bg-white pl-9 pr-3 text-sm outline-none focus:border-blue-500" />
                 </div>
                 <button type="button" (click)="buscarClientesVentaRapida()" [disabled]="buscandoClientes() || !clienteQuery.trim()" class="h-10 rounded-lg border border-slate-300 bg-white px-3 text-xs font-bold text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:text-slate-300">{{ buscandoClientes() ? 'Buscando...' : 'Buscar' }}</button>
               </div>
@@ -129,7 +129,7 @@
               <div class="mt-2 flex items-center gap-2">
                 <span class="h-px flex-1 bg-slate-200"></span><span class="text-[9px] font-bold uppercase tracking-wide text-slate-400">o comprador no registrado</span><span class="h-px flex-1 bg-slate-200"></span>
               </div>
-              <input [(ngModel)]="clienteNombreLibre" maxlength="160" placeholder="Nombre del comprador (opcional)" class="mt-2 h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none focus:border-[#078ba0]" />
+              <input [(ngModel)]="clienteNombreLibre" maxlength="160" placeholder="Nombre del comprador (opcional)" class="mt-2 h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none focus:border-blue-500" />
             }
           </div>
         }
@@ -152,35 +152,35 @@
                 <p class="text-right text-xs font-semibold text-slate-600">{{ formatMonto(linea.producto.precio) }}</p><p class="text-right text-xs font-extrabold text-slate-800">{{ formatMonto(linea.cantidad * linea.producto.precio) }}</p><button (click)="quitarProductoOperacion(i)" class="grid size-8 place-items-center rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-500"><i class="pi pi-trash text-xs"></i></button>
               </div>
             } @empty {
-              <div class="grid place-items-center px-6 py-12 text-center"><div><span class="mx-auto grid size-12 place-items-center rounded-full bg-cyan-50 text-[#078ba0]"><i class="pi pi-shopping-cart text-lg"></i></span><p class="mt-3 text-sm font-bold text-slate-700">El detalle está vacío</p><p class="mt-1 max-w-xs text-xs leading-5 text-slate-400">Selecciona una cita o agrega productos para iniciar una operación.</p></div></div>
+              <div class="grid place-items-center px-6 py-12 text-center"><div><span class="mx-auto grid size-12 place-items-center rounded-full bg-blue-50 text-blue-500"><i class="pi pi-shopping-cart text-lg"></i></span><p class="mt-3 text-sm font-bold text-slate-700">El detalle está vacío</p><p class="mt-1 max-w-xs text-xs leading-5 text-slate-400">Selecciona una cita o agrega productos para iniciar una operación.</p></div></div>
             }
           }
         </div>
         @if (cuentaSeleccionada() || carritoVentaRapida().length > 0) {
           @if (carritoRequiereReceta()) { <div class="mx-5 mb-4 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-800"><i class="pi pi-exclamation-triangle mt-0.5"></i><span>Verifica la receta antes de cobrar los productos marcados.</span></div> }
-          <footer class="border-t border-slate-200 bg-slate-50/60 px-5 py-4"><div class="ml-auto max-w-[290px] space-y-2 text-sm"><div class="flex justify-between"><span class="text-slate-500">Subtotal sin IGV</span><span class="font-semibold text-slate-700">{{ formatMonto(subtotalSinIgv()) }}</span></div><div class="flex justify-between"><span class="text-slate-500">IGV incluido (18%)</span><span class="font-semibold text-slate-700">{{ formatMonto(igvIncluido()) }}</span></div><div class="flex justify-between border-t border-slate-200 pt-3"><span class="text-base font-extrabold text-slate-900">Total</span><span class="text-xl font-extrabold text-[#078ba0]">{{ formatMonto(totalOperacion()) }}</span></div></div></footer>
+          <footer class="border-t border-slate-200 bg-slate-50/60 px-5 py-4"><div class="ml-auto max-w-[290px] space-y-2 text-sm"><div class="flex justify-between"><span class="text-slate-500">Subtotal sin IGV</span><span class="font-semibold text-slate-700">{{ formatMonto(subtotalSinIgv()) }}</span></div><div class="flex justify-between"><span class="text-slate-500">IGV incluido (18%)</span><span class="font-semibold text-slate-700">{{ formatMonto(igvIncluido()) }}</span></div><div class="flex justify-between border-t border-slate-200 pt-3"><span class="text-base font-extrabold text-slate-900">Total</span><span class="text-xl font-extrabold text-blue-500">{{ formatMonto(totalOperacion()) }}</span></div></div></footer>
         }
       </article>
 
       <aside class="h-fit overflow-hidden rounded-xl border border-slate-200 bg-white">
-        <header class="border-b border-slate-200 px-5 py-4"><h2 class="flex items-center gap-2 text-sm font-extrabold text-slate-900"><i class="pi pi-credit-card text-[#078ba0]"></i>Método de pago</h2></header>
+        <header class="border-b border-slate-200 px-5 py-4"><h2 class="flex items-center gap-2 text-sm font-extrabold text-slate-900"><i class="pi pi-credit-card text-blue-500"></i>Método de pago</h2></header>
         <div class="p-4">
-          <div class="grid grid-cols-3 gap-1.5">
+          <div class="grid grid-cols-2 gap-2">
             @for (metodo of metodosPago; track metodo) {
-              <button (click)="seleccionarMetodoPago(metodo)" class="h-12 rounded-md border px-1 py-1 text-[9px] font-bold leading-tight" [class]="pagoForm.metodoPago === metodo ? 'border-[#078ba0] bg-[#078ba0] text-white' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'"><i class="pi mb-0.5 block text-xs" [class]="metodo === 'EFECTIVO' ? 'pi-wallet' : metodo === 'TARJETA' ? 'pi-credit-card' : metodo === 'TRANSFERENCIA' ? 'pi-arrow-right-arrow-left' : 'pi-mobile'"></i>{{ metodoPagoLabel(metodo) }}</button>
+              <button (click)="seleccionarMetodoPago(metodo)" class="flex h-16 flex-col items-center justify-center gap-1 rounded-md border text-xs font-bold" [class]="pagoForm.metodoPago === metodo ? 'border-blue-500 bg-blue-500 text-white' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'"><i class="pi text-base" [class]="metodo === 'EFECTIVO' ? 'pi-wallet' : metodo === 'TARJETA' ? 'pi-credit-card' : 'pi-mobile'"></i>{{ metodoPagoLabel(metodo) }}</button>
             }
           </div>
           <div class="mt-5 space-y-4">
             <label class="block"><span class="text-xs font-bold text-slate-600">Importe a cobrar</span><div class="mt-1.5 flex h-11 items-center rounded-lg border border-slate-200 bg-slate-50 px-3 text-base font-extrabold text-slate-800">{{ formatMonto(totalOperacion()) }}</div></label>
             @if (pagoForm.metodoPago === 'EFECTIVO') {
-              <label class="block"><span class="text-xs font-bold text-slate-600">Monto recibido</span><div class="relative mt-1.5"><span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-500">S/</span><input [ngModel]="pagoForm.montoRecibido" (ngModelChange)="limitarMontoRecibido($event)" type="number" min="0" max="10000" step="0.01" class="h-11 w-full rounded-lg border border-slate-300 pl-10 pr-3 text-base font-bold outline-none focus:border-[#078ba0]" /></div></label>
+              <label class="block"><span class="text-xs font-bold text-slate-600">Monto recibido</span><div class="relative mt-1.5"><span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-500">S/</span><input [ngModel]="pagoForm.montoRecibido" (ngModelChange)="limitarMontoRecibido($event)" type="number" min="0" max="10000" step="0.01" class="h-11 w-full rounded-lg border border-slate-300 pl-10 pr-3 text-base font-bold outline-none focus:border-blue-500" /></div></label>
               <label class="block"><span class="text-xs font-bold text-slate-600">Vuelto</span><div class="mt-1.5 flex h-11 items-center rounded-lg border border-slate-200 bg-slate-50 px-3 text-base font-extrabold text-emerald-600">{{ formatMonto(cambioPago()) }}</div></label>
             } @else {
               <div class="rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs leading-5 text-slate-500">Confirma que el pago por {{ metodoPagoLabel(pagoForm.metodoPago) }} fue recibido antes de registrar la operación.</div>
             }
           </div>
-          <button (click)="registrarOperacion()" [disabled]="savingPago() || guardandoVentaRapida() || (!cuentaSeleccionada() && carritoVentaRapida().length === 0)" class="mt-5 h-12 w-full rounded-lg bg-[#078ba0] text-sm font-extrabold text-white hover:bg-[#06798b] disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400"><i class="pi pi-credit-card mr-2"></i>{{ savingPago() || guardandoVentaRapida() ? 'Procesando...' : 'Registrar pago' }}</button>
-          <div class="mt-4 flex items-start gap-2 rounded-lg bg-cyan-50 px-3 py-3 text-[11px] leading-5 text-cyan-800"><i class="pi pi-info-circle mt-0.5"></i><span>El pago quedará registrado en caja y actualizará automáticamente el resumen del periodo.</span></div>
+          <button (click)="registrarOperacion()" [disabled]="savingPago() || guardandoVentaRapida() || (!cuentaSeleccionada() && carritoVentaRapida().length === 0)" class="mt-5 h-12 w-full rounded-lg bg-blue-500 text-sm font-extrabold text-white hover:bg-blue-600 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400"><i class="pi pi-credit-card mr-2"></i>{{ savingPago() || guardandoVentaRapida() ? 'Procesando...' : 'Registrar pago' }}</button>
+          <div class="mt-4 flex items-start gap-2 rounded-lg bg-blue-50 px-3 py-3 text-[11px] leading-5 text-blue-800"><i class="pi pi-info-circle mt-0.5"></i><span>El pago quedará registrado en caja y actualizará automáticamente el resumen del periodo.</span></div>
           @if (sesionCaja()) {
             <div class="mt-4 border-t border-slate-200 pt-4">
               <p class="mb-2 text-[10px] font-bold uppercase tracking-wide text-slate-400">Gestión de caja</p>
@@ -196,12 +196,12 @@
     </section>
 
     <section class="overflow-hidden rounded-xl border border-slate-200 bg-white">
-      <header class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-5 py-4"><h2 class="flex items-center gap-2 text-sm font-extrabold text-slate-900"><i class="pi pi-history text-[#078ba0]"></i>Últimos movimientos en caja</h2><div class="flex items-center gap-2"><span class="text-xs text-slate-400">{{ totalRecords() }} registros</span><button (click)="cargar()" class="grid size-8 place-items-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50"><i class="pi pi-refresh text-xs"></i></button></div></header>
+      <header class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-5 py-4"><h2 class="flex items-center gap-2 text-sm font-extrabold text-slate-900"><i class="pi pi-history text-blue-500"></i>Últimos movimientos en caja</h2><div class="flex items-center gap-2"><span class="text-xs text-slate-400">{{ totalRecords() }} registros</span><button (click)="cargar()" class="grid size-8 place-items-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50"><i class="pi pi-refresh text-xs"></i></button></div></header>
       <div class="overflow-x-auto"><table class="w-full min-w-[900px] text-sm">
         <thead class="bg-slate-50"><tr><th class="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-wide text-slate-500">Fecha / Hora</th><th class="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-wide text-slate-500">Concepto</th><th class="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-wide text-slate-500">Descripción</th><th class="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-wide text-slate-500">Método</th><th class="px-5 py-3 text-right text-[10px] font-bold uppercase tracking-wide text-slate-500">Monto</th><th class="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-wide text-slate-500">Usuario</th></tr></thead>
         <tbody class="divide-y divide-slate-100">
           @for (movimiento of movimientos(); track movimiento.id) {
-            <tr class="hover:bg-slate-50/70"><td class="whitespace-nowrap px-5 py-3 text-xs text-slate-500">{{ formatFecha(movimiento.fecha) }}</td><td class="px-5 py-3"><span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold" [class]="movimiento.concepto === 'PAGO_CITA' ? 'bg-emerald-50 text-emerald-700' : movimiento.concepto === 'VENTA_PRODUCTO' ? 'bg-cyan-50 text-cyan-700' : tipoBadge(movimiento.tipo)"><i class="pi" [class]="movimiento.concepto === 'PAGO_CITA' ? 'pi-calendar' : movimiento.concepto === 'VENTA_PRODUCTO' ? 'pi-box' : 'pi-receipt'"></i>{{ conceptoLabel(movimiento.concepto) }}</span></td><td class="max-w-[360px] px-5 py-3 text-xs text-slate-700">{{ movimiento.descripcion || 'Sin descripción' }}</td><td class="px-5 py-3 text-xs text-slate-500">{{ movimiento.metodoPago ? metodoPagoLabel($any(movimiento.metodoPago)) : '—' }}</td><td class="px-5 py-3 text-right text-xs font-extrabold" [class]="movimiento.tipo === 'INGRESO' ? 'text-emerald-600' : 'text-rose-600'">{{ movimiento.tipo === 'INGRESO' ? '+' : '-' }} {{ formatMonto(movimiento.monto) }}</td><td class="px-5 py-3 text-xs text-slate-500">{{ movimiento.registradoPor || '—' }}</td></tr>
+            <tr class="hover:bg-slate-50/70"><td class="whitespace-nowrap px-5 py-3 text-xs text-slate-500">{{ formatFecha(movimiento.fecha) }}</td><td class="px-5 py-3"><span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold" [class]="movimiento.concepto === 'PAGO_CITA' ? 'bg-emerald-50 text-emerald-700' : movimiento.concepto === 'VENTA_PRODUCTO' ? 'bg-blue-50 text-blue-700' : tipoBadge(movimiento.tipo)"><i class="pi" [class]="movimiento.concepto === 'PAGO_CITA' ? 'pi-calendar' : movimiento.concepto === 'VENTA_PRODUCTO' ? 'pi-box' : 'pi-receipt'"></i>{{ conceptoLabel(movimiento.concepto) }}</span></td><td class="max-w-[360px] px-5 py-3 text-xs text-slate-700">{{ movimiento.descripcion || 'Sin descripción' }}</td><td class="px-5 py-3 text-xs text-slate-500">{{ movimiento.metodoPago ? metodoPagoLabel($any(movimiento.metodoPago)) : '—' }}</td><td class="px-5 py-3 text-right text-xs font-extrabold" [class]="movimiento.tipo === 'INGRESO' ? 'text-emerald-600' : 'text-rose-600'">{{ movimiento.tipo === 'INGRESO' ? '+' : '-' }} {{ formatMonto(movimiento.monto) }}</td><td class="px-5 py-3 text-xs text-slate-500">{{ movimiento.registradoPor || '—' }}</td></tr>
           } @empty { <tr><td colspan="6" class="px-5 py-12 text-center text-sm text-slate-400">No hay movimientos registrados.</td></tr> }
         </tbody>
       </table></div>
@@ -222,6 +222,6 @@
   <div class="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/45 sm:items-center sm:p-4"><div class="w-full max-w-md overflow-hidden rounded-t-2xl border border-slate-200 bg-white sm:rounded-xl">
     <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4"><div><h2 class="font-bold text-slate-900">{{ tipoSesion === 'ABRIR' ? 'Abrir caja' : tipoSesion === 'ARQUEO' ? 'Arqueo de caja' : 'Cerrar caja' }}</h2><p class="mt-0.5 text-xs text-slate-500">{{ tipoSesion === 'ABRIR' ? 'Registra el fondo inicial de efectivo.' : 'Cuenta el efectivo físico disponible.' }}</p></div><button (click)="showSesionModal.set(null)" class="grid size-8 place-items-center rounded-lg text-slate-400 hover:bg-slate-50"><i class="pi pi-times"></i></button></div>
     <div class="space-y-4 px-5 py-5">@if (tipoSesion !== 'ABRIR') { <div class="flex justify-between rounded-lg border border-slate-200 bg-slate-50 p-3"><span class="text-xs text-slate-600">Efectivo esperado</span><span class="text-sm font-bold text-slate-900">{{ formatMonto(sesionCaja()?.efectivoEsperado ?? 0) }}</span></div> }<label class="block"><span class="text-xs font-semibold text-slate-700">{{ tipoSesion === 'ABRIR' ? 'Fondo de apertura' : 'Efectivo contado' }} (S/)</span><input type="number" step="0.01" min="0" [max]="tipoSesion === 'ABRIR' ? 10000 : 100000" [(ngModel)]="sesionForm.monto" class="mt-1.5 h-10 w-full rounded-lg border border-slate-300 px-3 text-sm" /></label>@if (tipoSesion !== 'ABRIR') { <label class="block"><span class="text-xs font-semibold text-slate-700">Observaciones</span><textarea [(ngModel)]="sesionForm.observaciones" maxlength="300" rows="3" placeholder="Diferencias o incidencias" class="mt-1.5 w-full resize-none rounded-lg border border-slate-300 px-3 py-2 text-sm"></textarea></label> }</div>
-    <div class="flex justify-end gap-2 border-t border-slate-200 bg-slate-50 px-5 py-4"><button (click)="showSesionModal.set(null)" class="h-9 rounded-lg border border-slate-300 px-4 text-sm font-semibold text-slate-600">Cancelar</button><button (click)="guardarSesion()" [disabled]="savingSesion()" class="h-9 rounded-lg bg-[#078ba0] px-4 text-sm font-semibold text-white disabled:opacity-50">{{ savingSesion() ? 'Guardando...' : tipoSesion === 'ABRIR' ? 'Abrir caja' : tipoSesion === 'ARQUEO' ? 'Registrar arqueo' : 'Cerrar caja' }}</button></div>
+    <div class="flex justify-end gap-2 border-t border-slate-200 bg-slate-50 px-5 py-4"><button (click)="showSesionModal.set(null)" class="h-9 rounded-lg border border-slate-300 px-4 text-sm font-semibold text-slate-600">Cancelar</button><button (click)="guardarSesion()" [disabled]="savingSesion()" class="h-9 rounded-lg bg-blue-500 px-4 text-sm font-semibold text-white disabled:opacity-50">{{ savingSesion() ? 'Guardando...' : tipoSesion === 'ABRIR' ? 'Abrir caja' : tipoSesion === 'ARQUEO' ? 'Registrar arqueo' : 'Cerrar caja' }}</button></div>
   </div></div>
 }

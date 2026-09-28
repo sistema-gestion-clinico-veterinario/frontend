@@ -90,7 +90,12 @@ export class SessionService {
       selectedEnterprise: preserveEnterprise && isPlatformAdmin
         ? this.authStore.selectedEnterprise()
         : data.companyId
-          ? { establishmentId: data.companyId, name: data.companyName, logoUrl: data.companyLogoUrl }
+          ? {
+              establishmentId: data.companyId,
+              name: data.companyName,
+              logoUrl: data.companyLogoUrl,
+              colorPrimario: data.companyColorPrimario ?? null,
+            }
           : null,
       menu: data.menu ?? [],
       originalMenu: data.menu ?? [],

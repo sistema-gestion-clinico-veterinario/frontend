@@ -12,6 +12,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { Role as CompanyRole } from '../../../models/response/permission';
 import { AssignedRoleDTO, MenuItemDTO, MenuStructureDTO, RolePurpose } from '../../../models/response/auth-login-response.model';
 import { SessionService } from '../../../core/services/session.service';
+import { MediaService } from '../../../core/services/media.service';
 
 @Component({
   selector: 'app-navbar',
@@ -28,10 +29,17 @@ export class NavbarComponent implements OnInit {
   private roleService = inject(RoleService);
   private authService = inject(AuthService);
   private sessionService = inject(SessionService);
+  private mediaService = inject(MediaService);
   private messageService = inject(MessageService);
   private router = inject(Router);
 
-  companies = signal<{label: string, value: number, ruc: string, logoUrl: string | null}[]>([]);
+  companies = signal<{
+    label: string;
+    value: number;
+    ruc: string;
+    logoUrl: string | null;
+    colorPrimario: string | null;
+  }[]>([]);
   companySearchTerm = signal('');
   companyRoles = signal<CompanyRole[]>([]);
   dropdownOpen = signal(false);
@@ -101,11 +109,26 @@ export class NavbarComponent implements OnInit {
           const companies = res.data?.content ?? [];
           const list = companies
             .filter(c => c.activo)
-            .map(c => ({ label: c.name, value: c.id, ruc: c.ruc ?? '', logoUrl: c.logoUrl ?? null }));
+            .map(c => ({
+              label: c.name,
+              value: c.id,
+              ruc: c.ruc ?? '',
+              logoUrl: this.mediaService.resolveUrl(c.logoUrl),
+              colorPrimario: c.colorPrimario ?? null,
+            }));
           this.companies.set(list);
 
           const currentSelected = this.authStore.selectedEnterprise();
           if (currentSelected) {
+            const refreshed = list.find(company => company.value === currentSelected.establishmentId);
+            if (refreshed) {
+              this.authStore.setSelectedEnterprise({
+                establishmentId: refreshed.value,
+                name: refreshed.label,
+                logoUrl: refreshed.logoUrl ?? undefined,
+                colorPrimario: refreshed.colorPrimario,
+              });
+            }
             this.loadCompanyRoles(currentSelected.establishmentId);
           }
           this.authStore.setLoadingEnterprise(false);
@@ -122,7 +145,12 @@ export class NavbarComponent implements OnInit {
     const selectedCompany = this.companies().find(c => c.value === companyId);
 
     if (selectedCompany) {
-      this.authStore.setSelectedEnterprise({ establishmentId: selectedCompany.value, name: selectedCompany.label });
+      this.authStore.setSelectedEnterprise({
+        establishmentId: selectedCompany.value,
+        name: selectedCompany.label,
+        logoUrl: selectedCompany.logoUrl ?? undefined,
+        colorPrimario: selectedCompany.colorPrimario,
+      });
       this.loadCompanyRoles(selectedCompany.value);
 
       const currentUrl = this.router.url;

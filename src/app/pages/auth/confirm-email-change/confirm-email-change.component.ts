@@ -11,14 +11,14 @@ import { AuthService } from '../../../core/services/auth.service';
     <main class="flex min-h-screen items-center justify-center bg-slate-50 p-4">
       <section class="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
         <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full"
-          [ngClass]="error() ? 'bg-red-50 text-red-600' : completed() ? 'bg-emerald-50 text-emerald-600' : 'bg-blue-50 text-[#0066AA]'">
+          [ngClass]="error() ? 'bg-red-50 text-red-600' : completed() ? 'bg-emerald-50 text-emerald-600' : 'bg-blue-50 text-blue-500'">
           <i class="pi" [ngClass]="loading() ? 'pi-spin pi-spinner' : error() ? 'pi-times' : 'pi-check'"></i>
         </div>
         <h1 class="text-xl font-bold text-slate-900">Confirmación de correo</h1>
         <p class="mt-3 text-sm leading-6 text-slate-600">{{ message() }}</p>
         @if (!loading()) {
           <a routerLink="/login"
-            class="mt-6 inline-flex h-10 items-center justify-center rounded-lg bg-[#0066AA] px-5 text-sm font-semibold text-white">
+            class="mt-6 inline-flex h-10 items-center justify-center rounded-lg bg-blue-500 px-5 text-sm font-semibold text-white">
             Ir al inicio de sesión
           </a>
         }

@@ -20,6 +20,7 @@ import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-lea
 import { lowercaseEmailValidator } from '../../../core/validators/lowercase-email.validator';
 import { textContentValidator } from '../../../core/validators/text-content.validator';
 import { normalizeText } from '../../../core/utils/normalize-text.util';
+import { SOFTVET_BRAND_COLOR } from '../../../core/constants/branding.constants';
 
 @Component({
   selector: 'app-company',
@@ -106,7 +107,7 @@ export class CompanyComponent implements OnInit {
       Validators.maxLength(100),
       Validators.pattern(/^[a-z0-9]+(-[a-z0-9]+)*$/)
     ]],
-    colorPrimario: ['#006BA8', [Validators.pattern(/^#[0-9a-fA-F]{6}$/)]],
+    colorPrimario: [SOFTVET_BRAND_COLOR, [Validators.pattern(/^#[0-9a-fA-F]{6}$/)]],
     operatingHours: this.fb.array([])
   });
 
@@ -278,7 +279,7 @@ export class CompanyComponent implements OnInit {
   }
 
   openNew() {
-    this.companyForm.reset({ colorPrimario: '#006BA8' });
+    this.companyForm.reset({ colorPrimario: SOFTVET_BRAND_COLOR });
     this.initOperatingHours();
     this.slugTouchedManually = false;
     this.originalSlug = null;
@@ -296,7 +297,7 @@ export class CompanyComponent implements OnInit {
         this.originalSlug = data.slug || null;
         this.companyForm.patchValue({
           ...data,
-          colorPrimario: data.colorPrimario || '#006BA8',
+          colorPrimario: data.colorPrimario || SOFTVET_BRAND_COLOR,
           hasWebsite: !!data.website
         });
         
@@ -382,15 +383,19 @@ export class CompanyComponent implements OnInit {
       : this.companyService.saveCompany(companyData);
 
     request.subscribe({
-      next: () => {
+      next: (response) => {
         this.confirmDialog.set(null);
         this.logoFile.set(null);
-        if (logoUrl && !this.isSuperAdmin()) {
-          const current = this.authStore.selectedEnterprise();
+        const current = this.authStore.selectedEnterprise();
+        const savedCompanyId = response.data?.id ?? companyData.id ?? current?.establishmentId;
+        const shouldRefreshBrand = !this.isSuperAdmin()
+          || (!!current && current.establishmentId === savedCompanyId);
+        if (shouldRefreshBrand && savedCompanyId) {
           this.authStore.setSelectedEnterprise({
-            establishmentId: current?.establishmentId ?? (this.authStore.companyId() ?? 0),
-            name: current?.name ?? formValue.name ?? '',
-            logoUrl
+            establishmentId: savedCompanyId,
+            name: response.data?.name ?? current?.name ?? formValue.name ?? '',
+            logoUrl: response.data?.logoUrl || logoUrl || current?.logoUrl,
+            colorPrimario: response.data?.colorPrimario || formValue.colorPrimario || SOFTVET_BRAND_COLOR,
           });
         }
         this.messageService.add({

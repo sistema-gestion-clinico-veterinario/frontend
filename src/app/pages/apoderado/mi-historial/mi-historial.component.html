@@ -1,4 +1,4 @@
-<div class="p-4 sm:p-6 lg:p-4 min-h-screen font-['Barlow'] bg-[#f4f6f9]">
+<div class="p-4 sm:p-6 lg:p-4 min-h-screen font-['Barlow'] bg-blue-50">
 
   <!-- Header principal de la vista -->
   <div class="mb-6 flex items-center justify-between">
@@ -47,10 +47,10 @@
               <button
                 (click)="seleccionarMascota(m)"
             [class]="mascotaActiva()?.id === m.id
-              ? 'w-full flex items-center gap-3 p-3 bg-blue-50/70 border-l-4 border-[#0066AA] rounded-r-xl transition-all'
+              ? 'w-full flex items-center gap-3 p-3 bg-blue-50/70 border-l-4 border-blue-500 rounded-r-xl transition-all'
               : 'w-full flex items-center gap-3 p-3 hover:bg-slate-50 border-l-4 border-transparent rounded-xl transition-all'">
                 <!-- Avatar Inicial -->
-                <div [class]="mascotaActiva()?.id === m.id ? 'bg-[#0066AA] text-white' : 'bg-slate-100 text-slate-600'"
+                <div [class]="mascotaActiva()?.id === m.id ? 'bg-blue-500 text-white' : 'bg-slate-100 text-slate-600'"
                   class="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm shrink-0 transition-colors">
                   {{ m.nombreCompleto.charAt(0) }}
                 </div>
@@ -76,7 +76,7 @@
       @if (!mascotaActiva()) {
         <div
           class="bg-white border border-slate-200 rounded-xl py-24 text-center px-6">
-          <div class="w-16 h-16 rounded-2xl bg-blue-50 text-[#0066AA] flex items-center justify-center mx-auto mb-4">
+          <div class="w-16 h-16 rounded-2xl bg-blue-50 text-blue-500 flex items-center justify-center mx-auto mb-4">
             <i class="pi pi-heart text-3xl"></i>
           </div>
           <h3 class="text-lg font-bold text-slate-800 mb-1">Visualiza el historial médico</h3>
@@ -128,7 +128,7 @@
       @if (mascotaActiva() && !loadingHc() && hc()) {
         <div class="mb-3 flex justify-end">
           <button type="button" (click)="descargarHistoriaCompleta()" [disabled]="descargandoHistoriaCompleta()"
-            class="flex items-center gap-2 px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-600 text-xs font-bold hover:border-[#0066AA] hover:text-[#0066AA] transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+            class="flex items-center gap-2 px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-600 text-xs font-bold hover:border-blue-500 hover:text-blue-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
             @if (descargandoHistoriaCompleta()) {
               <i class="pi pi-spin pi-spinner text-xs"></i>
             } @else {
@@ -141,7 +141,7 @@
         <div class="bg-white border border-slate-200 rounded-xl p-5 mb-5 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4">
           <div>
             <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-0.5 flex items-center gap-1"><i class="pi pi-heart text-[9px]"></i> Mascota</p>
-            <p class="text-sm font-bold text-[#0066AA]">{{ hc()!.mascotaNombre }}</p>
+            <p class="text-sm font-bold text-blue-500">{{ hc()!.mascotaNombre }}</p>
           </div>
           <div>
             <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-0.5 flex items-center gap-1"><i class="pi pi-tag text-[9px]"></i> Especie</p>
@@ -190,7 +190,7 @@
                   <button
                     (click)="seleccionarConsulta(consulta)"
                   [class]="consultaActiva()?.id === consulta.id
-                    ? 'w-full text-left px-4 py-3.5 bg-blue-50 border-l-2 border-[#0066AA]'
+                    ? 'w-full text-left px-4 py-3.5 bg-blue-50 border-l-2 border-blue-500'
                     : 'w-full text-left px-4 py-3.5 hover:bg-slate-50 border-l-2 border-transparent'">
                     <p class="text-xs font-extrabold text-slate-800 leading-snug line-clamp-2">
                       {{ consulta.motivoConsulta }}
@@ -249,30 +249,30 @@
                 <div class="flex border-b border-slate-100 px-5 bg-slate-50/50">
                   <button (click)="tabActiva.set('clinico')"
                   [class]="tabActiva() === 'clinico'
-                    ? 'py-3 text-xs font-extrabold text-[#0066AA] border-b-2 border-[#0066AA] mr-6'
+                    ? 'py-3 text-xs font-extrabold text-blue-500 border-b-2 border-blue-500 mr-6'
                     : 'py-3 text-xs font-bold text-slate-400 border-b-2 border-transparent mr-6 hover:text-slate-600'">
                     Clínico
                   </button>
                   <button (click)="tabActiva.set('recetas')"
                   [class]="tabActiva() === 'recetas'
-                    ? 'py-3 text-xs font-extrabold text-[#0066AA] border-b-2 border-[#0066AA] mr-6'
+                    ? 'py-3 text-xs font-extrabold text-blue-500 border-b-2 border-blue-500 mr-6'
                     : 'py-3 text-xs font-bold text-slate-400 border-b-2 border-transparent mr-6 hover:text-slate-600'">
                     Recetas
                     @if (consultaActiva()!.prescripciones?.length > 0) {
                       <span
-                        class="ml-1 bg-blue-100 text-[#0066AA] rounded-full px-1.5 py-0.5 text-[10px]">
+                        class="ml-1 bg-blue-100 text-blue-500 rounded-full px-1.5 py-0.5 text-[10px]">
                         {{ consultaActiva()!.prescripciones.length }}
                       </span>
                     }
                   </button>
                   <button (click)="tabActiva.set('archivos')"
                   [class]="tabActiva() === 'archivos'
-                    ? 'py-3 text-xs font-extrabold text-[#0066AA] border-b-2 border-[#0066AA]'
+                    ? 'py-3 text-xs font-extrabold text-blue-500 border-b-2 border-blue-500'
                     : 'py-3 text-xs font-bold text-slate-400 border-b-2 border-transparent hover:text-slate-600'">
                     Archivos
                     @if (consultaActiva()!.archivos?.length > 0) {
                       <span
-                        class="ml-1 bg-blue-100 text-[#0066AA] rounded-full px-1.5 py-0.5 text-[10px]">
+                        class="ml-1 bg-blue-100 text-blue-500 rounded-full px-1.5 py-0.5 text-[10px]">
                         {{ consultaActiva()!.archivos.length }}
                       </span>
                     }
@@ -410,7 +410,7 @@
                             </div>
                             @if (p.viaAdministracion) {
                               <span
-                                class="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-blue-50 text-[#0066AA] shrink-0 uppercase tracking-wide">
+                                class="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-500 shrink-0 uppercase tracking-wide">
                                 {{ p.viaAdministracion }}
                               </span>
                             }
@@ -486,7 +486,7 @@
         <!-- Cartillas preventivas: se muestran después del historial clínico. -->
         <section class="mt-6">
           <div class="mb-4 flex items-center gap-3">
-            <i class="pi pi-shield text-xl text-[#0066AA]"></i>
+            <i class="pi pi-shield text-xl text-blue-500"></i>
             <div>
               <h2 class="text-base font-extrabold text-slate-900">Cartillas preventivas</h2>
               <p class="mt-0.5 text-xs text-slate-500">Historial y próximos controles de {{ hc()!.mascotaNombre }}</p>
@@ -496,7 +496,7 @@
             <!-- Cartilla de vacunación -->
             <article class="overflow-hidden rounded-xl border border-slate-200 bg-white">
               <header class="flex items-center gap-3 border-b border-slate-200 px-5 py-4 bg-slate-50">
-                <i class="pi pi-shield text-lg text-[#0066AA]"></i>
+                <i class="pi pi-shield text-lg text-blue-500"></i>
                 <div><h3 class="text-sm font-extrabold text-slate-900">Cartilla de vacunación</h3><p class="text-[11px] text-slate-500">Registro cronológico de vacunas</p></div>
               </header>
               @if (filasCartillaVacunacion().length) {

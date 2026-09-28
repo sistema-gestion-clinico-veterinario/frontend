@@ -1,5 +1,5 @@
 :host {
-  --legal-accent: #0066AA;
+  --legal-accent: rgb(var(--brand-500));
   --legal-text: #1f2430;
   --legal-muted: #767c88;
   --legal-border: #dfe2e7;
@@ -166,8 +166,8 @@
   padding: 0 1.75rem;
 
   &:hover:not(:disabled) {
-    background: #005089;
-    border-color: #005089;
+    background: rgb(var(--brand-600));
+    border-color: rgb(var(--brand-600));
   }
 
   &:disabled {

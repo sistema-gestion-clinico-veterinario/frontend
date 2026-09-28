@@ -24,7 +24,7 @@
 
 .calendar-nav-button:hover,
 .calendar-nav-button:focus-visible {
-  color: #0066aa;
+  color: rgb(var(--brand-500));
   background: #f8fafc;
   outline: none;
 }
@@ -46,7 +46,7 @@
 
 .calendar-month-title:hover,
 .calendar-month-title:focus-visible {
-  color: #0066aa;
+  color: rgb(var(--brand-500));
   outline: none;
 }
 

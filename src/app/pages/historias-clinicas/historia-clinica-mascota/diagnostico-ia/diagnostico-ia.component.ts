@@ -22,7 +22,7 @@ import { formatearFechaClinica } from '../../../../shared/utils/fecha-clinica.ut
     .ia-report h2 {
       font-size: 0.68rem;
       font-weight: 800;
-      color: #0066AA;
+      color: var(--brand-primary);
       text-transform: uppercase;
       letter-spacing: 0.07em;
       margin: 1rem 0 0.35rem;

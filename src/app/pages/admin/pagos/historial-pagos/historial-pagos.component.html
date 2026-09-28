@@ -1,4 +1,4 @@
-﻿<p-toast></p-toast>
+<p-toast></p-toast>
 
 <div class="flex min-w-0 flex-col gap-6 overflow-x-hidden p-2 sm:p-4 animate-fade-in">
 
@@ -62,9 +62,9 @@
       <!-- ─── HEADER ─── -->
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div class="flex items-center gap-3">
-          <i class="pi pi-wallet text-[#0066AA] text-3xl shrink-0"></i>
+          <i class="pi pi-wallet text-blue-500 text-3xl shrink-0"></i>
           <div>
-            <p class="text-[11px] font-bold uppercase tracking-[.14em] text-[#0066AA]">Finanzas</p>
+            <p class="text-[11px] font-bold uppercase tracking-[.14em] text-blue-500">Finanzas</p>
             <h1 class="text-xl font-extrabold leading-tight tracking-tight text-slate-900">Historial de Pagos</h1>
             <p class="mt-1 text-sm text-slate-400 font-medium hidden sm:block">Registro completo de transacciones por servicios veterinarios</p>
           </div>
@@ -110,7 +110,7 @@
                   <!-- Detalle del pago -->
                   <div>
                     <div class="flex items-center gap-2 mb-2.5">
-                      <i class="pi pi-wallet text-[#0066AA] text-xs"></i>
+                      <i class="pi pi-wallet text-blue-500 text-xs"></i>
                       <h3 class="text-xs font-bold text-slate-600 uppercase tracking-wider">Detalle del pago</h3>
                     </div>
                     <div class="grid grid-cols-2 gap-x-4 gap-y-3 rounded-xl bg-slate-50 border border-slate-100 p-3.5">
@@ -144,7 +144,7 @@
                   <!-- Cita asociada -->
                   <div>
                     <div class="flex items-center gap-2 mb-2.5">
-                      <i class="pi pi-calendar text-[#0066AA] text-xs"></i>
+                      <i class="pi pi-calendar text-blue-500 text-xs"></i>
                       <h3 class="text-xs font-bold text-slate-600 uppercase tracking-wider">Cita asociada</h3>
                     </div>
                     <div class="grid grid-cols-2 gap-x-4 gap-y-3 rounded-xl bg-slate-50 border border-slate-100 p-3.5">
@@ -173,7 +173,7 @@
                   <!-- Cliente -->
                   <div>
                     <div class="flex items-center gap-2 mb-2.5">
-                      <i class="pi pi-user text-[#0066AA] text-xs"></i>
+                      <i class="pi pi-user text-blue-500 text-xs"></i>
                       <h3 class="text-xs font-bold text-slate-600 uppercase tracking-wider">Cliente</h3>
                     </div>
                     <div class="rounded-xl bg-slate-50 border border-slate-100 p-3.5">
@@ -200,7 +200,7 @@
         <select
           [value]="filtroEstado()"
           (change)="filtroEstado.set($any($event.target).value)"
-          class="w-full cursor-pointer rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0066AA]/20 sm:w-auto">
+          class="w-full cursor-pointer rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 sm:w-auto">
           <option value="">Todos los estados</option>
           <option value="PAID">Pagado</option>
           <option value="PENDING">Pendiente</option>
@@ -211,7 +211,7 @@
         <select
           [value]="filtroMetodo()"
           (change)="filtroMetodo.set($any($event.target).value)"
-          class="w-full cursor-pointer rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0066AA]/20 sm:w-auto">
+          class="w-full cursor-pointer rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 sm:w-auto">
           <option value="">Todos los métodos</option>
           <option value="EFECTIVO">Efectivo</option>
           <option value="YAPE">Yape</option>

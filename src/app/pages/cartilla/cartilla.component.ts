@@ -648,7 +648,7 @@ export class CartillaComponent implements OnInit {
     if (estado === 'ATRASADO') return 'rounded-lg bg-red-700 px-2.5 py-1 text-white font-bold';
     if (estado === 'CANCELADO') return 'text-slate-500 font-bold';
     if (estado === 'PENDIENTE' || estado === 'PROXIMO') return 'text-amber-700 font-bold';
-    if (estado === 'SUSPENDIDO_POR_CITA') return 'text-[#0066AA] font-bold';
+    if (estado === 'SUSPENDIDO_POR_CITA') return 'text-blue-500 font-bold';
     return 'text-slate-700 font-bold';
   }
 

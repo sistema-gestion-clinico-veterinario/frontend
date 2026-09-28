@@ -8,7 +8,7 @@
     <!-- Título -->
     <div class="flex flex-col min-w-0">
       <h1 class="text-lg font-bold text-slate-800 flex items-center gap-2">
-        <i class="pi pi-calendar-plus text-[#0066AA] flex-shrink-0"></i>
+        <i class="pi pi-calendar-plus text-blue-500 flex-shrink-0"></i>
         <span class="truncate">Mi Horario</span>
       </h1>
       <p class="text-xs text-slate-500 font-medium mt-0.5">Gestión de horarios y disponibilidad personal</p>
@@ -23,21 +23,21 @@
         <div class="flex bg-slate-50 p-1 rounded-lg border border-slate-200 h-9">
           <button (click)="changeView('day')"
             class="flex-1 text-[10px] font-bold uppercase tracking-tight rounded-md px-2 transition-colors"
-            [class.bg-[#0066AA]]="viewMode === 'day'"
+            [class.bg-blue-500]="viewMode === 'day'"
             [class.text-white]="viewMode === 'day'"
             [class.text-slate-500]="viewMode !== 'day'">
             Día
           </button>
           <button (click)="changeView('week')"
             class="flex-1 text-[10px] font-bold uppercase tracking-tight rounded-md px-2 transition-colors"
-            [class.bg-[#0066AA]]="viewMode === 'week'"
+            [class.bg-blue-500]="viewMode === 'week'"
             [class.text-white]="viewMode === 'week'"
             [class.text-slate-500]="viewMode !== 'week'">
             Semana
           </button>
           <button (click)="changeView('month')"
             class="flex-1 text-[10px] font-bold uppercase tracking-tight rounded-md px-2 transition-colors"
-            [class.bg-[#0066AA]]="viewMode === 'month'"
+            [class.bg-blue-500]="viewMode === 'month'"
             [class.text-white]="viewMode === 'month'"
             [class.text-slate-500]="viewMode !== 'month'">
             Mes
@@ -49,7 +49,7 @@
       <div class="flex flex-col w-full sm:w-56 md:w-64">
         <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Período</label>
         <div class="flex items-center bg-slate-50 rounded-lg border border-slate-200 h-9 overflow-hidden">
-          <button (click)="prev()" class="px-2 h-full text-slate-500 hover:bg-white hover:text-[#0066AA] flex-shrink-0 transition-colors">
+          <button (click)="prev()" class="px-2 h-full text-slate-500 hover:bg-white hover:text-blue-500 flex-shrink-0 transition-colors">
             <i class="pi pi-chevron-left text-[10px]"></i>
           </button>
           @if (viewMode === 'month') {
@@ -67,7 +67,7 @@
               {{ currentDate.getDate() }} {{ monthNames[currentDate.getMonth()] }}
             </span>
           }
-          <button (click)="next()" class="px-2 h-full text-slate-500 hover:bg-white hover:text-[#0066AA] flex-shrink-0 transition-colors">
+          <button (click)="next()" class="px-2 h-full text-slate-500 hover:bg-white hover:text-blue-500 flex-shrink-0 transition-colors">
             <i class="pi pi-chevron-right text-[10px]"></i>
           </button>
         </div>
@@ -79,7 +79,7 @@
   <!-- Resumen de Horas -->
   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
     <div class="bg-white border border-slate-200 p-3 rounded-2xl flex items-center gap-3">
-      <div class="w-9 h-9 bg-blue-50 rounded-xl flex items-center justify-center text-[#0066AA] flex-shrink-0">
+      <div class="w-9 h-9 bg-blue-50 rounded-xl flex items-center justify-center text-blue-500 flex-shrink-0">
         <i class="pi pi-clock text-base"></i>
       </div>
       <div class="min-w-0">
@@ -151,13 +151,13 @@
                 [class.text-slate-300]="item.otherMonth"
                 [class.text-slate-600]="!item.otherMonth && !item.isToday"
                 [class.text-white]="item.isToday"
-                [class.bg-[#0066AA]]="item.isToday">
+                [class.bg-blue-500]="item.isToday">
                 {{ item.day }}
               </span>
             </div>
             @if (item.shifts?.length) {
               <span
-                class="absolute bottom-2 left-1/2 hidden h-5 min-w-7 -translate-x-1/2 items-center justify-center gap-1 rounded border border-blue-200 bg-white px-1 text-[9px] font-extrabold text-[#0066AA] max-[640px]:inline-flex"
+                class="absolute bottom-2 left-1/2 hidden h-5 min-w-7 -translate-x-1/2 items-center justify-center gap-1 rounded border border-blue-200 bg-white px-1 text-[9px] font-extrabold text-blue-500 max-[640px]:inline-flex"
                 [attr.aria-label]="item.shifts.length + (item.shifts.length === 1 ? ' turno' : ' turnos')">
                 <i class="pi pi-clock text-[8px]" aria-hidden="true"></i>
                 {{ item.shifts.length }}
@@ -169,7 +169,7 @@
                 <div
                   class="flex items-center justify-between px-2 py-1.5 rounded-md border border-slate-200 bg-slate-50/50">
                   <div class="flex items-center gap-1.5 min-w-0">
-                    <i class="pi pi-clock text-[8px] text-[#0066AA]"></i>
+                    <i class="pi pi-clock text-[8px] text-blue-500"></i>
                     <span class="text-[9px] font-bold text-slate-700 truncate">
                       {{ shift.horaInicio | slice:0:5 }} – {{ shift.horaFin | slice:0:5 }}
                     </span>
@@ -193,7 +193,7 @@
     @if (viewMode === 'day') {
       <div class="flex items-center gap-4 px-6 py-4 border-b border-slate-100 bg-white">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 bg-[#0066AA] rounded-xl flex flex-col items-center justify-center text-white">
+          <div class="w-10 h-10 bg-blue-500 rounded-xl flex flex-col items-center justify-center text-white">
             <span class="text-[10px] uppercase font-bold leading-none">{{ currentDate.getDate() }}</span>
             <span class="text-[8px] uppercase font-medium opacity-80 leading-none mt-0.5">{{ monthNames[currentDate.getMonth()].substring(0,3) }}</span>
           </div>
@@ -226,7 +226,7 @@
               @for (shift of calendarDays[0].shifts; track shift) {
                 <div class="p-4 flex items-center justify-between">
                   <div class="flex items-center gap-4">
-                    <div class="w-10 h-10 bg-indigo-50 border border-indigo-100 rounded-lg flex items-center justify-center text-[#0066AA]">
+                    <div class="w-10 h-10 bg-indigo-50 border border-indigo-100 rounded-lg flex items-center justify-center text-blue-500">
                       <i class="pi pi-clock text-base"></i>
                     </div>
                     <div>
@@ -258,7 +258,7 @@
         aria-labelledby="my-schedule-day-title">
         <header class="flex items-start justify-between gap-4 border-b border-slate-200 px-4 py-4 md:px-5">
           <div class="min-w-0">
-            <p class="mb-1 text-[9px] font-extrabold uppercase tracking-wider text-[#0066AA]">Detalle de mi horario</p>
+            <p class="mb-1 text-[9px] font-extrabold uppercase tracking-wider text-blue-500">Detalle de mi horario</p>
             <h2 id="my-schedule-day-title" class="m-0 text-base font-extrabold text-slate-900">
               {{ formatCalendarFullDate(selectedDay.date) | titlecase }}
             </h2>
@@ -277,7 +277,7 @@
             <article
               class="grid grid-cols-2 gap-3 border-b border-slate-100 px-4 py-4 last:border-b-0 md:px-5">
               <div class="col-span-2 flex items-center gap-2 text-sm font-extrabold text-slate-800">
-                <i class="pi pi-clock text-xs text-[#0066AA]" aria-hidden="true"></i>
+                <i class="pi pi-clock text-xs text-blue-500" aria-hidden="true"></i>
                 <span>{{ shift.horaInicio | slice:0:5 }} – {{ shift.horaFin | slice:0:5 }}</span>
               </div>
               <div>
@@ -297,7 +297,7 @@
         </div>
         <footer class="border-t border-slate-200 px-4 py-3 md:px-5">
           <button type="button" (click)="closeDayDetails()"
-            class="flex h-9 w-full items-center justify-center rounded-lg bg-[#0066AA] text-xs font-extrabold text-white">
+            class="flex h-9 w-full items-center justify-center rounded-lg bg-blue-500 text-xs font-extrabold text-white">
             Cerrar
           </button>
         </footer>

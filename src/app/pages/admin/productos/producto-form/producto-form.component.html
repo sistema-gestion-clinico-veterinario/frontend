@@ -1,8 +1,8 @@
-<div class="min-h-screen bg-[#f7fafc] p-3 sm:p-4 md:p-6">
+<div class="min-h-screen bg-blue-50 p-3 sm:p-4 md:p-6">
   <div class="mb-5">
     <div class="flex flex-wrap items-center gap-3">
       <button (click)="cancelar()"
-        class="inline-flex h-10 shrink-0 items-center gap-2 rounded-lg border border-[#0792a7] bg-white px-4 text-sm font-semibold text-[#087f92] transition-colors hover:bg-cyan-50 focus:outline-none focus:ring-2 focus:ring-cyan-100">
+        class="inline-flex h-10 shrink-0 items-center gap-2 rounded-lg border border-blue-500 bg-white px-4 text-sm font-semibold text-blue-500 transition-colors hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-100">
         <i class="pi pi-arrow-left text-xs"></i>
         Volver
       </button>
@@ -20,7 +20,7 @@
       </div>
       @if (modoDetalle) {
         <button *appHasPermission="'VISTA_PRODUCTOS:modificar'" type="button" (click)="editarDesdeDetalle()"
-          class="ml-auto inline-flex h-10 items-center gap-2 rounded-lg bg-[#0792a7] px-4 text-sm font-bold text-white transition-colors hover:bg-[#067d90]">
+          class="ml-auto inline-flex h-10 items-center gap-2 rounded-lg bg-blue-500 px-4 text-sm font-bold text-white transition-colors hover:bg-blue-600">
           <i class="pi pi-pencil text-xs"></i>Editar producto
         </button>
       }
@@ -55,13 +55,13 @@
           <nav class="flex min-w-max items-center gap-7 px-1" aria-label="Secciones del producto">
             <button type="button" (click)="activeTab.set('datos')"
               [class]="activeTab() === 'datos'
-                ? 'flex items-center gap-2 border-b-2 border-[#0066AA] px-1 py-3 text-[#0066AA]'
+                ? 'flex items-center gap-2 border-b-2 border-blue-500 px-1 py-3 text-blue-500'
                 : 'flex items-center gap-2 border-b-2 border-transparent px-1 py-3 text-slate-500 hover:text-slate-800'">
               <strong class="text-sm font-bold">Datos generales</strong>
             </button>
             <button type="button" (click)="activeTab.set('lotes')"
               [class]="activeTab() === 'lotes'
-                ? 'flex items-center gap-2 border-b-2 border-[#0066AA] px-1 py-3 text-[#0066AA]'
+                ? 'flex items-center gap-2 border-b-2 border-blue-500 px-1 py-3 text-blue-500'
                 : 'flex items-center gap-2 border-b-2 border-transparent px-1 py-3 text-slate-500 hover:text-slate-800'">
               <strong class="text-sm font-bold">Lotes</strong>
               @if (lotes().length > 0) {
@@ -70,7 +70,7 @@
             </button>
             <button type="button" (click)="activeTab.set('ajustes')"
               [class]="activeTab() === 'ajustes'
-                ? 'flex items-center gap-2 border-b-2 border-[#0066AA] px-1 py-3 text-[#0066AA]'
+                ? 'flex items-center gap-2 border-b-2 border-blue-500 px-1 py-3 text-blue-500'
                 : 'flex items-center gap-2 border-b-2 border-transparent px-1 py-3 text-slate-500 hover:text-slate-800'">
               <strong class="text-sm font-bold">Historial de ajustes</strong>
             </button>
@@ -84,8 +84,8 @@
         <div class="space-y-3">
 
           <section class="rounded-xl border border-slate-200 bg-white p-4 sm:p-5">
-            <div class="relative mb-4 flex items-center gap-2 border-b border-slate-200 pb-3 after:absolute after:-bottom-px after:left-0 after:h-0.5 after:w-8 after:bg-[#0792a7]">
-              <i class="pi pi-shopping-bag text-[#0792a7]"></i>
+            <div class="relative mb-4 flex items-center gap-2 border-b border-slate-200 pb-3 after:absolute after:-bottom-px after:left-0 after:h-0.5 after:w-8 after:bg-blue-500">
+              <i class="pi pi-shopping-bag text-blue-500"></i>
               <h2 class="text-sm font-extrabold text-slate-800">Información general</h2>
             </div>
 
@@ -93,7 +93,7 @@
               <div class="flex flex-col gap-1">
                 <label class="text-sm font-semibold text-slate-700">Nombre del producto <span class="text-rose-500">*</span></label>
                 <input type="text" formControlName="nombre" maxlength="160" placeholder="Ej: Alimento Premium Adulto 3kg"
-                  [ngClass]="productoForm.get('nombre')?.invalid && productoForm.get('nombre')?.touched ? 'border-rose-400 focus:ring-rose-500/20 focus:border-rose-500' : 'border-slate-300 focus:ring-cyan-100 focus:border-[#0792a7]'"
+                  [ngClass]="productoForm.get('nombre')?.invalid && productoForm.get('nombre')?.touched ? 'border-rose-400 focus:ring-rose-500/20 focus:border-rose-500' : 'border-slate-300 focus:ring-blue-100 focus:border-blue-500'"
                   class="h-11 w-full rounded-lg border px-3 py-2 text-sm outline-none transition-colors focus:ring-2" />
                 @if (productoForm.get('nombre')?.touched && productoForm.get('nombre')?.errors?.['required']) {
                   <p class="text-xs text-rose-600 flex items-center gap-1"><i class="pi pi-exclamation-circle text-[10px]"></i>El nombre del producto es requerido</p>
@@ -111,7 +111,7 @@
               <div class="flex flex-col gap-1">
                 <label class="text-sm font-semibold text-slate-700">Categoría <span class="text-rose-500">*</span></label>
                 <select formControlName="categoriaId"
-                  [ngClass]="productoForm.get('categoriaId')?.invalid && productoForm.get('categoriaId')?.touched ? 'border-rose-400 focus:ring-rose-500/20 focus:border-rose-500' : 'border-slate-300 focus:ring-cyan-100 focus:border-[#0792a7]'"
+                  [ngClass]="productoForm.get('categoriaId')?.invalid && productoForm.get('categoriaId')?.touched ? 'border-rose-400 focus:ring-rose-500/20 focus:border-rose-500' : 'border-slate-300 focus:ring-blue-100 focus:border-blue-500'"
                   class="h-11 w-full rounded-lg border bg-white px-3 py-2 text-sm outline-none transition-colors focus:ring-2">
                   <option [ngValue]="null" disabled>Selecciona una categoría</option>
                   @for (cat of categorias(); track cat.id) {
@@ -121,7 +121,7 @@
                 @if (productoForm.get('categoriaId')?.touched && productoForm.get('categoriaId')?.errors?.['required']) {
                   <p class="flex items-center gap-1 text-xs text-rose-600"><i class="pi pi-exclamation-circle text-[10px]"></i>La categoría es requerida</p>
                 } @else if (categorias().length === 0) {
-                  <p class="text-xs text-slate-500">Aún no hay categorías. <a routerLink="/admin/categorias-producto" class="whitespace-nowrap font-semibold text-[#087f92] underline">Crear una</a></p>
+                  <p class="text-xs text-slate-500">Aún no hay categorías. <a routerLink="/admin/categorias-producto" class="whitespace-nowrap font-semibold text-blue-500 underline">Crear una</a></p>
                 } @else {
                   <p class="text-xs text-slate-500">Elige la categoría a la que pertenece.</p>
                 }
@@ -143,7 +143,7 @@
                 @if (productoForm.get('marcaId')?.touched && productoForm.get('marcaId')?.errors?.['required']) {
                   <p class="flex items-center gap-1 text-xs text-rose-600"><i class="pi pi-exclamation-circle text-[10px]"></i>La marca es requerida</p>
                 } @else if (marcas().length === 0) {
-                  <p class="text-xs text-slate-500">Aún no hay marcas. <a [routerLink]="['/admin/categorias-producto']" [queryParams]="{ tab: 'marcas' }" class="whitespace-nowrap font-semibold text-[#087f92] underline">Crear una</a></p>
+                  <p class="text-xs text-slate-500">Aún no hay marcas. <a [routerLink]="['/admin/categorias-producto']" [queryParams]="{ tab: 'marcas' }" class="whitespace-nowrap font-semibold text-blue-500 underline">Crear una</a></p>
                 } @else {
                   <p class="text-xs text-slate-500">Selecciona una marca registrada para esta empresa.</p>
                 }
@@ -154,7 +154,7 @@
                 <div class="relative">
                   <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-medium text-slate-400">S/</span>
                   <input type="number" step="0.01" formControlName="precio" placeholder="10.00" min="0.1"
-                    [ngClass]="productoForm.get('precio')?.invalid && productoForm.get('precio')?.touched ? 'border-rose-400 focus:ring-rose-500/20 focus:border-rose-500' : 'border-slate-300 focus:ring-cyan-100 focus:border-[#0792a7]'"
+                    [ngClass]="productoForm.get('precio')?.invalid && productoForm.get('precio')?.touched ? 'border-rose-400 focus:ring-rose-500/20 focus:border-rose-500' : 'border-slate-300 focus:ring-blue-100 focus:border-blue-500'"
                     class="h-11 w-full rounded-lg border py-2 pl-9 pr-3 text-sm outline-none transition-colors focus:ring-2" />
                 </div>
                 @if (productoForm.get('precio')?.invalid && productoForm.get('precio')?.touched) {
@@ -169,7 +169,7 @@
                 <div class="relative">
                   <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-medium text-slate-400">S/</span>
                   <input type="number" step="0.01" formControlName="costo" placeholder="0.00" min="0"
-                    [ngClass]="productoForm.get('costo')?.invalid && productoForm.get('costo')?.touched ? 'border-rose-400 focus:ring-rose-500/20 focus:border-rose-500' : 'border-slate-300 focus:ring-cyan-100 focus:border-[#0792a7]'"
+                    [ngClass]="productoForm.get('costo')?.invalid && productoForm.get('costo')?.touched ? 'border-rose-400 focus:ring-rose-500/20 focus:border-rose-500' : 'border-slate-300 focus:ring-blue-100 focus:border-blue-500'"
                     class="h-11 w-full rounded-lg border py-2 pl-9 pr-3 text-sm outline-none transition-colors focus:ring-2" />
                 </div>
                 @if (productoForm.get('costo')?.value && productoForm.get('precio')?.value) {
@@ -181,14 +181,14 @@
 
               <div class="flex flex-col gap-1">
                 <label class="text-sm font-semibold text-slate-700">Unidad de medida</label>
-                <select formControlName="unidadMedidaId" class="h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-[#0792a7] focus:ring-2 focus:ring-cyan-100">
+                <select formControlName="unidadMedidaId" class="h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
                   <option [ngValue]="null">Sin especificar</option>
                   @for (u of unidadesMedida(); track u.id) {
                     <option [ngValue]="u.id">{{ u.nombre }}</option>
                   }
                 </select>
                 @if (unidadesMedida().length === 0) {
-                  <p class="text-xs text-slate-500">Aún no hay unidades. <a [routerLink]="['/admin/categorias-producto']" [queryParams]="{ tab: 'unidades' }" class="whitespace-nowrap font-semibold text-[#087f92] underline">Crear una</a></p>
+                  <p class="text-xs text-slate-500">Aún no hay unidades. <a [routerLink]="['/admin/categorias-producto']" [queryParams]="{ tab: 'unidades' }" class="whitespace-nowrap font-semibold text-blue-500 underline">Crear una</a></p>
                 }
               </div>
 
@@ -203,7 +203,7 @@
                 <label class="text-sm font-semibold text-slate-700">Código de barras</label>
                 <div class="relative">
                   <input type="text" formControlName="codigoBarras" maxlength="64" placeholder="Escanea o escribe el código" (keydown.enter)="$event.preventDefault()"
-                    [ngClass]="productoForm.get('codigoBarras')?.invalid && productoForm.get('codigoBarras')?.touched ? 'border-rose-400 focus:ring-rose-500/20 focus:border-rose-500' : 'border-slate-300 focus:ring-cyan-100 focus:border-[#0792a7]'"
+                    [ngClass]="productoForm.get('codigoBarras')?.invalid && productoForm.get('codigoBarras')?.touched ? 'border-rose-400 focus:ring-rose-500/20 focus:border-rose-500' : 'border-slate-300 focus:ring-blue-100 focus:border-blue-500'"
                     class="h-11 w-full rounded-lg border py-2 pl-3 pr-10 text-sm outline-none transition-colors focus:ring-2" />
                   <i class="pi pi-barcode absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-400" aria-hidden="true"></i>
                 </div>
@@ -217,8 +217,8 @@
           </section>
 
           <section class="rounded-xl border border-slate-200 bg-white p-4 sm:p-5">
-            <div class="relative mb-4 flex items-center gap-2 border-b border-slate-200 pb-3 after:absolute after:-bottom-px after:left-0 after:h-0.5 after:w-8 after:bg-[#0792a7]">
-              <i class="pi pi-box text-[#0792a7]"></i>
+            <div class="relative mb-4 flex items-center gap-2 border-b border-slate-200 pb-3 after:absolute after:-bottom-px after:left-0 after:h-0.5 after:w-8 after:bg-blue-500">
+              <i class="pi pi-box text-blue-500"></i>
               <h2 class="text-sm font-extrabold text-slate-800">Inventario</h2>
             </div>
 
@@ -227,7 +227,7 @@
                 <label class="text-sm font-semibold text-slate-700">Stock disponible</label>
                 @if (!productoId) {
                   <input type="number" step="1" formControlName="stock" placeholder="0" min="0"
-                    [ngClass]="productoForm.get('stock')?.invalid && productoForm.get('stock')?.touched ? 'border-rose-400 focus:ring-rose-500/20 focus:border-rose-500' : 'border-slate-300 focus:ring-cyan-100 focus:border-[#0792a7]'"
+                    [ngClass]="productoForm.get('stock')?.invalid && productoForm.get('stock')?.touched ? 'border-rose-400 focus:ring-rose-500/20 focus:border-rose-500' : 'border-slate-300 focus:ring-blue-100 focus:border-blue-500'"
                     class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 outline-none h-11 transition-colors" />
                   @if (productoForm.get('stock')?.invalid && productoForm.get('stock')?.touched) {
                     <p class="text-xs text-rose-600 flex items-center gap-1"><i class="pi pi-exclamation-circle text-[10px]"></i>El stock no puede ser negativo</p>
@@ -240,7 +240,7 @@
                       class="w-full px-3 py-2 border border-slate-200 bg-slate-50 rounded-lg text-sm h-11 text-slate-600 font-semibold cursor-not-allowed" />
                     @if (!modoDetalle) {
                       <button *appHasPermission="'VISTA_PRODUCTOS:modificar'" type="button" (click)="openAjusteModal()"
-                        class="h-11 shrink-0 whitespace-nowrap rounded-lg border border-[#0792a7] px-3 text-sm font-bold text-[#087f92] transition-colors hover:bg-cyan-50">
+                        class="h-11 shrink-0 whitespace-nowrap rounded-lg border border-blue-500 px-3 text-sm font-bold text-blue-500 transition-colors hover:bg-blue-50">
                         Ajustar
                       </button>
                     }
@@ -251,7 +251,7 @@
               <div class="flex flex-col gap-1">
                 <label class="text-sm font-semibold text-slate-700">Stock mínimo</label>
                 <input type="number" step="1" formControlName="stockMinimo" placeholder="0" min="0"
-                  [ngClass]="productoForm.get('stockMinimo')?.invalid && productoForm.get('stockMinimo')?.touched ? 'border-rose-400 focus:ring-rose-500/20 focus:border-rose-500' : 'border-slate-300 focus:ring-cyan-100 focus:border-[#0792a7]'"
+                  [ngClass]="productoForm.get('stockMinimo')?.invalid && productoForm.get('stockMinimo')?.touched ? 'border-rose-400 focus:ring-rose-500/20 focus:border-rose-500' : 'border-slate-300 focus:ring-blue-100 focus:border-blue-500'"
                   class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 outline-none h-11 transition-colors" />
                 @if (productoForm.get('stockMinimo')?.invalid && productoForm.get('stockMinimo')?.touched) {
                   <p class="text-xs text-rose-600 flex items-center gap-1"><i class="pi pi-exclamation-circle text-[10px]"></i>El stock mínimo no puede ser negativo</p>
@@ -263,14 +263,14 @@
               <div class="flex flex-col gap-1">
                 <label class="text-sm font-semibold text-slate-700">Fecha de vencimiento</label>
                 <input type="date" formControlName="fechaVencimiento"
-                  class="h-11 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none transition-colors focus:border-[#0792a7] focus:ring-2 focus:ring-cyan-100" />
+                  class="h-11 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-100" />
                 <p class="text-xs text-slate-500">Opcional, para medicamentos y alimentos.</p>
               </div>
               <div class="flex flex-col gap-1">
                 <label class="text-sm font-semibold text-slate-700" aria-hidden="true">&nbsp;</label>
                 <label class="flex items-center gap-2.5 h-11 px-3 border border-slate-300 rounded-lg cursor-pointer select-none">
                   <input type="checkbox" formControlName="requiereReceta"
-                    class="h-4 w-4 shrink-0 cursor-pointer rounded accent-[#0792a7]" />
+                    class="h-4 w-4 shrink-0 cursor-pointer rounded accent-blue-500" />
                   <span class="text-sm font-medium text-slate-700">Requiere receta médica</span>
                 </label>
               </div>
@@ -278,14 +278,14 @@
           </section>
 
           <section class="rounded-xl border border-slate-200 bg-white p-4 sm:p-5">
-            <div class="relative mb-4 flex items-center gap-2 border-b border-slate-200 pb-3 after:absolute after:-bottom-px after:left-0 after:h-0.5 after:w-8 after:bg-[#0792a7]">
-              <i class="pi pi-file text-[#0792a7]"></i>
+            <div class="relative mb-4 flex items-center gap-2 border-b border-slate-200 pb-3 after:absolute after:-bottom-px after:left-0 after:h-0.5 after:w-8 after:bg-blue-500">
+              <i class="pi pi-file text-blue-500"></i>
               <h2 class="text-sm font-extrabold text-slate-800">Descripción</h2>
             </div>
 
             <div class="flex flex-col gap-1">
               <textarea formControlName="descripcion" rows="5" maxlength="1000" placeholder="Detalles adicionales del producto (opcional)"
-                [ngClass]="productoForm.get('descripcion')?.invalid && productoForm.get('descripcion')?.touched ? 'border-rose-400 focus:ring-rose-500/20 focus:border-rose-500' : 'border-slate-300 focus:ring-cyan-100 focus:border-[#0792a7]'"
+                [ngClass]="productoForm.get('descripcion')?.invalid && productoForm.get('descripcion')?.touched ? 'border-rose-400 focus:ring-rose-500/20 focus:border-rose-500' : 'border-slate-300 focus:ring-blue-100 focus:border-blue-500'"
                 class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 outline-none resize-none transition-colors"></textarea>
               <div class="flex items-center justify-between">
                 @if (productoForm.get('descripcion')?.touched && productoForm.get('descripcion')?.errors?.['maxlength']) {
@@ -303,7 +303,7 @@
         <div>
           <aside class="rounded-xl border border-slate-200 bg-white p-4 sm:p-5 lg:sticky lg:top-4">
             <div class="mb-4 flex items-start gap-3">
-              <span class="grid size-8 shrink-0 place-items-center rounded-lg bg-cyan-50 text-[#0792a7]"><i class="pi pi-image text-sm"></i></span>
+              <span class="grid size-8 shrink-0 place-items-center rounded-lg bg-blue-50 text-blue-500"><i class="pi pi-image text-sm"></i></span>
               <div><h2 class="text-sm font-extrabold text-slate-800">Foto del producto</h2><p class="mt-1 text-xs leading-5 text-slate-500">Agrega una imagen para identificar el producto en el catálogo.</p></div>
             </div>
 
@@ -315,7 +315,7 @@
                   </div>
                 } @else {
                   <div class="relative flex min-h-48 w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed px-4 py-8 text-center transition-colors"
-                    [ngClass]="isDragging() ? 'border-[#0792a7] bg-cyan-50' : 'border-slate-300 hover:border-[#0792a7] hover:bg-cyan-50/30'"
+                    [ngClass]="isDragging() ? 'border-blue-500 bg-blue-50' : 'border-slate-300 hover:border-blue-500 hover:bg-blue-50/30'"
                     (click)="fileInput.click()">
                     <i class="pi text-3xl text-slate-400" [ngClass]="isDragging() ? 'pi-upload' : 'pi-image'"></i>
                     <div class="space-y-0.5"><p class="text-sm font-semibold text-slate-700">{{ isDragging() ? 'Suéltala aquí' : 'Arrastra una foto aquí' }}</p><p class="text-xs text-slate-500">o haz clic para explorar tus archivos</p><p class="mt-1 text-xs text-slate-400">JPG, PNG o WEBP — máximo 5 MB</p></div>
@@ -330,27 +330,27 @@
                     <img [src]="previewUrl()" (error)="onPhotoError()"
                       class="w-full h-auto object-cover max-h-[220px] bg-slate-50" />
                     @if (isDragging()) {
-                      <div class="absolute inset-0 z-20 flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#0792a7] bg-cyan-50/95">
-                        <i class="pi pi-upload text-2xl text-[#0792a7]"></i>
-                        <p class="text-sm font-semibold text-[#087f92]">Suelta para reemplazar la foto</p>
+                      <div class="absolute inset-0 z-20 flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-blue-500 bg-blue-50/95">
+                        <i class="pi pi-upload text-2xl text-blue-500"></i>
+                        <p class="text-sm font-semibold text-blue-500">Suelta para reemplazar la foto</p>
                       </div>
                     }
                     @if (uploadingPhoto()) {
                       <div class="absolute inset-0 bg-white/85 flex items-center justify-center">
-                        <i class="pi pi-spin pi-spinner text-xl text-[#0792a7]"></i>
+                        <i class="pi pi-spin pi-spinner text-xl text-blue-500"></i>
                       </div>
                     }
                   </div>
                   @if (!modoDetalle) {
                     <div class="grid grid-cols-2 gap-2">
-                      <label class="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-[#0792a7] px-4 py-2 text-sm font-semibold text-[#087f92] transition-colors hover:bg-cyan-50"><i class="pi pi-upload text-sm"></i>Cambiar<input type="file" accept=".jpg,.jpeg,.png,.webp" (change)="onPhotoSelected($event)" class="hidden" /></label>
+                      <label class="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-blue-500 px-4 py-2 text-sm font-semibold text-blue-500 transition-colors hover:bg-blue-50"><i class="pi pi-upload text-sm"></i>Cambiar<input type="file" accept=".jpg,.jpeg,.png,.webp" (change)="onPhotoSelected($event)" class="hidden" /></label>
                       <button type="button" (click)="removePhoto()" class="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-rose-300 px-4 py-2 text-sm font-semibold text-rose-600 transition-colors hover:bg-rose-50"><i class="pi pi-trash text-sm"></i>Quitar</button>
                     </div>
                   }
                 </div>
               }
             </div>
-            <div class="mt-4 flex items-start gap-2 rounded-lg bg-cyan-50 px-3 py-3 text-xs leading-5 text-cyan-800"><i class="pi pi-info-circle mt-0.5"></i><span>Una buena imagen ayuda a identificar el producto y mejora la experiencia de compra.</span></div>
+            <div class="mt-4 flex items-start gap-2 rounded-lg bg-blue-50 px-3 py-3 text-xs leading-5 text-blue-800"><i class="pi pi-info-circle mt-0.5"></i><span>Una buena imagen ayuda a identificar el producto y mejora la experiencia de compra.</span></div>
           </aside>
         </div>
 
@@ -361,7 +361,7 @@
             Cancelar
           </button>
           <button type="submit" [disabled]="guardando() || uploadingPhoto()"
-            class="flex h-11 items-center justify-center gap-2 rounded-lg bg-[#0792a7] px-5 text-sm font-bold text-white transition-colors hover:bg-[#067d90] disabled:opacity-60">
+            class="flex h-11 items-center justify-center gap-2 rounded-lg bg-blue-500 px-5 text-sm font-bold text-white transition-colors hover:bg-blue-600 disabled:opacity-60">
             @if (guardando() || uploadingPhoto()) {
               <i class="pi pi-spin pi-spinner text-xs"></i>
             } @else {
@@ -383,7 +383,7 @@
             </div>
             @if (!modoDetalle) {
               <button *appHasPermission="'VISTA_PRODUCTOS:escribir'" type="button" (click)="openLoteModal()"
-                class="flex h-9 w-max shrink-0 items-center justify-center gap-2 rounded-lg bg-[#0792a7] px-4 text-xs font-semibold text-white transition-colors hover:bg-[#067d90]">
+                class="flex h-9 w-max shrink-0 items-center justify-center gap-2 rounded-lg bg-blue-500 px-4 text-xs font-semibold text-white transition-colors hover:bg-blue-600">
                 <i class="pi pi-plus text-[10px]"></i>Nuevo lote
               </button>
             }
@@ -420,7 +420,7 @@
                   @if (!modoDetalle) {
                     <div class="flex shrink-0 items-center gap-1.5">
                       <button *appHasPermission="'VISTA_PRODUCTOS:modificar'" type="button" (click)="toggleActivoLote(lote)" [class]="lote.activo ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-600 border-rose-200'" class="inline-flex items-center rounded border px-2.5 py-1 text-xs font-medium transition-colors">{{ lote.activo ? 'Activo' : 'Inactivo' }}</button>
-                      <button *appHasPermission="'VISTA_PRODUCTOS:modificar'" type="button" (click)="openLoteModal(lote)" aria-label="Editar lote" class="rounded-lg p-2 text-slate-500 transition-colors hover:bg-cyan-50 hover:text-[#0792a7]"><i class="pi pi-pencil text-sm"></i></button>
+                      <button *appHasPermission="'VISTA_PRODUCTOS:modificar'" type="button" (click)="openLoteModal(lote)" aria-label="Editar lote" class="rounded-lg p-2 text-slate-500 transition-colors hover:bg-blue-50 hover:text-blue-500"><i class="pi pi-pencil text-sm"></i></button>
                       <button *appHasPermission="'VISTA_PRODUCTOS:eliminar'" type="button" (click)="eliminarLote(lote)" aria-label="Eliminar lote" class="rounded-lg p-2 text-slate-500 transition-colors hover:bg-rose-50 hover:text-rose-600"><i class="pi pi-trash text-sm"></i></button>
                     </div>
                   } @else {
@@ -527,7 +527,7 @@
               Cancelar
             </button>
             <button type="submit" [disabled]="guardandoAjuste()"
-              class="h-10 px-5 rounded-lg bg-[#0066AA] hover:bg-[#005a96] text-white text-sm font-semibold transition-colors disabled:opacity-60">
+              class="h-10 px-5 rounded-lg bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold transition-colors disabled:opacity-60">
               {{ guardandoAjuste() ? 'Guardando...' : 'Confirmar ajuste' }}
             </button>
           </div>
@@ -604,7 +604,7 @@
               Cancelar
             </button>
             <button type="submit" [disabled]="guardandoLote()"
-              class="h-10 px-5 rounded-lg bg-[#0066AA] hover:bg-[#005a96] text-white text-sm font-semibold transition-colors disabled:opacity-60">
+              class="h-10 px-5 rounded-lg bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold transition-colors disabled:opacity-60">
               {{ guardandoLote() ? 'Guardando...' : (editingLote() ? 'Guardar cambios' : 'Crear lote') }}
             </button>
           </div>

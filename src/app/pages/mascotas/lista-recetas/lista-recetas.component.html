@@ -1,9 +1,9 @@
-<div class="p-3 sm:p-4 min-h-screen bg-slate-50 font-['Barlow']">
+<div class="p-3 sm:p-4 min-h-screen bg-blue-50 font-['Barlow']">
   <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-10">
     <div>
       <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Buscador de Recetas</h1>
       <p class="text-slate-500 font-medium mt-1 flex items-center gap-2">
-        <span class="w-2 h-2 rounded-full bg-[#0066AA]"></span>
+        <span class="w-2 h-2 rounded-full bg-blue-500"></span>
         Consulta y gestiona el historial de prescripciones médicas emitidas
       </p>
     </div>
@@ -30,21 +30,21 @@
   <div class="mb-5 bg-white border border-slate-200 rounded-xl p-4">
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
       <input type="text" [(ngModel)]="nombreMascota" (keyup.enter)="onFilterChange()" placeholder="Nombre de mascota"
-        class="h-10 px-3 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-blue-500/20">
+        class="h-10 px-3 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
       <input type="text" [(ngModel)]="numeroMicrochip" (keyup.enter)="onFilterChange()" placeholder="Microchip de mascota"
-        class="h-10 px-3 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-blue-500/20">
+        class="h-10 px-3 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
       <input type="text" [(ngModel)]="numeroDocumentoApoderado" (keyup.enter)="onFilterChange()" placeholder="Documento apoderado"
-        class="h-10 px-3 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-blue-500/20">
+        class="h-10 px-3 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
       <input type="text" [(ngModel)]="numeroDocumentoEmpleado" (keyup.enter)="onFilterChange()" placeholder="Documento empleado"
-        class="h-10 px-3 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-blue-500/20">
+        class="h-10 px-3 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
       <input type="text" [(ngModel)]="numeroHc" (keyup.enter)="onFilterChange()" placeholder="Número de HC"
-        class="h-10 px-3 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-blue-500/20">
+        class="h-10 px-3 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
       <input type="date" [(ngModel)]="fechaDesde" (change)="onFilterChange()"
-        class="h-10 px-3 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-blue-500/20">
+        class="h-10 px-3 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
       <input type="date" [(ngModel)]="fechaHasta" (change)="onFilterChange()"
-        class="h-10 px-3 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 outline-none focus:border-[#0066AA] focus:ring-2 focus:ring-blue-500/20">
+        class="h-10 px-3 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
       <button (click)="onFilterChange()"
-        class="h-10 flex items-center justify-center gap-2 rounded-lg bg-[#0066AA] text-white text-sm font-bold hover:bg-[#0055aa] transition-colors">
+        class="h-10 flex items-center justify-center gap-2 rounded-lg bg-blue-500 text-white text-sm font-bold hover:bg-blue-600 transition-colors">
         <i class="pi pi-search text-xs"></i>
         Buscar
       </button>
@@ -76,7 +76,7 @@
           <tr class="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors"
             [class.bg-blue-50]="selectedReceta()?.id === receta.id">
             <td class="px-6 py-2">
-              <span class="text-sm font-bold text-[#0066AA]">{{ receta.numeroHc }}</span>
+              <span class="text-sm font-bold text-blue-500">{{ receta.numeroHc }}</span>
             </td>
             <td class="px-6 py-2">
               <span class="text-sm font-medium text-slate-800">{{ receta.pacienteNombre }}</span>
@@ -101,13 +101,13 @@
               <div class="flex items-center justify-end gap-1">
                 <button
                   (click)="verReceta(receta)"
-                  class="p-2 rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-90"
+                  class="p-2 rounded-lg text-slate-400 hover:text-blue-500 hover:bg-blue-50 transition-all active:scale-90"
                 >
                   <i class="pi pi-eye text-sm"></i>
                 </button>
                 <button
                   (click)="imprimirReceta(receta)"
-                  class="p-2 rounded-lg text-slate-400 hover:text-[#0066AA] hover:bg-blue-50 transition-all active:scale-90"
+                  class="p-2 rounded-lg text-slate-400 hover:text-blue-500 hover:bg-blue-50 transition-all active:scale-90"
                 >
                   <i class="pi pi-print text-sm"></i>
                 </button>
@@ -156,7 +156,7 @@
 
           <div>
             <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Historia Clínica</label>
-            <p class="text-sm font-bold text-[#0066AA] mt-0.5">{{ receta.numeroHc }}</p>
+            <p class="text-sm font-bold text-blue-500 mt-0.5">{{ receta.numeroHc }}</p>
           </div>
 
           <div class="border-t border-slate-100 pt-5">

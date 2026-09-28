@@ -6,14 +6,14 @@
   <!-- Cabecera -->
   <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50 rounded-none">
     <div class="flex items-center gap-3">
-      <div class="w-10 h-10 rounded-xl bg-[#0066AA]/10 flex items-center justify-center border border-[#0066AA]/20">
-        <i class="pi pi-calendar-edit text-[#0066AA] text-lg"></i>
+      <div class="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
+        <i class="pi pi-calendar-edit text-blue-500 text-lg"></i>
       </div>
       <div>
         <h2 class="text-sm font-bold text-slate-800 leading-none">
           {{ currentData() ? 'Actualizar Horario' : 'Asignar Horario' }}
         </h2>
-        <p class="text-[10px] font-bold text-[#0066AA] uppercase tracking-wider mt-1 leading-none">
+        <p class="text-[10px] font-bold text-blue-500 uppercase tracking-wider mt-1 leading-none">
           {{ employeeName }}
         </p>
       </div>
@@ -31,7 +31,7 @@
       @if (currentData()) {
         <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
           <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <i class="pi pi-info-circle text-[#0066AA] text-xs"></i>
+            <i class="pi pi-info-circle text-blue-500 text-xs"></i>
             <h3 class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Valores Actuales</h3>
           </div>
           <div class="grid grid-cols-2 gap-y-2">
@@ -56,9 +56,9 @@
           </div>
           <div class="grid grid-cols-2 gap-2">
             <button type="button" (click)="setEditMode('single')"
-              [class.bg-[#0066AA]]="scheduleForm.get('editMode')?.value === 'single'"
+              [class.bg-blue-500]="scheduleForm.get('editMode')?.value === 'single'"
               [class.text-white]="scheduleForm.get('editMode')?.value === 'single'"
-              [class.border-[#0066AA]]="scheduleForm.get('editMode')?.value === 'single'"
+              [class.border-blue-500]="scheduleForm.get('editMode')?.value === 'single'"
               [class.bg-white]="scheduleForm.get('editMode')?.value !== 'single'"
               [class.text-slate-500]="scheduleForm.get('editMode')?.value !== 'single'"
               class="flex flex-col items-center justify-center gap-1 py-3 px-3 rounded-xl border border-slate-200 text-[10px] font-bold transition-all">
@@ -66,9 +66,9 @@
               ESTE DÍA
             </button>
             <button type="button" (click)="setEditMode('bulk')"
-              [class.bg-[#0066AA]]="scheduleForm.get('editMode')?.value === 'bulk'"
+              [class.bg-blue-500]="scheduleForm.get('editMode')?.value === 'bulk'"
               [class.text-white]="scheduleForm.get('editMode')?.value === 'bulk'"
-              [class.border-[#0066AA]]="scheduleForm.get('editMode')?.value === 'bulk'"
+              [class.border-blue-500]="scheduleForm.get('editMode')?.value === 'bulk'"
               [class.bg-white]="scheduleForm.get('editMode')?.value !== 'bulk'"
               [class.text-slate-500]="scheduleForm.get('editMode')?.value !== 'bulk'"
               class="flex flex-col items-center justify-center gap-1 py-3 px-3 rounded-xl border border-slate-200 text-[10px] font-bold transition-all">
@@ -85,7 +85,7 @@
       <!-- Sección 1: Fecha -->
       <div class="space-y-3">
         <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
-          <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
+          <span class="w-1.5 h-4 bg-blue-500 rounded-full"></span>
           <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">1. {{ preselectedDate() ? 'Fecha del turno' : 'Rango de fechas' }}</h3>
         </div>
         @if (preselectedDate()) {
@@ -116,7 +116,7 @@
           <!-- Sección 2: Horario -->
           <div class="space-y-3">
             <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
-              <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
+              <span class="w-1.5 h-4 bg-blue-500 rounded-full"></span>
               <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">2. Horario de turno</h3>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -134,7 +134,7 @@
                 <!-- Indicador de horario de clínica -->
                 @if (clinicHoursInfo()) {
                   <div
-                    class="mt-2 text-[10px] font-bold text-[#0066AA] bg-blue-50 border border-blue-100 rounded-md px-3 py-1.5 flex items-center gap-2">
+                    class="mt-2 text-[10px] font-bold text-blue-500 bg-blue-50 border border-blue-100 rounded-md px-3 py-1.5 flex items-center gap-2">
                     <i class="pi pi-clock text-[10px]"></i>
                     <span>{{ clinicHoursInfo() }}</span>
                   </div>
@@ -144,7 +144,7 @@
               <!-- Sección 3: Días -->
               <div class="space-y-3">
                 <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
-                  <span class="w-1.5 h-4 bg-[#0066AA] rounded-full"></span>
+                  <span class="w-1.5 h-4 bg-blue-500 rounded-full"></span>
                   <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">3. Días laborales</h3>
                 </div>
                 @if (preselectedDate()) {
@@ -162,9 +162,9 @@
                         (click)="toggleDay(d.key)"
                         [disabled]="!availableDays().has(d.key)"
                         class="flex flex-col items-center justify-center h-11 rounded-lg border text-xs font-bold transition-all"
-                        [class.bg-[#0066AA]]="isDaySelected(d.key) && availableDays().has(d.key)"
+                        [class.bg-blue-500]="isDaySelected(d.key) && availableDays().has(d.key)"
                         [class.text-white]="isDaySelected(d.key) && availableDays().has(d.key)"
-                        [class.border-[#0066AA]]="isDaySelected(d.key) && availableDays().has(d.key)"
+                        [class.border-blue-500]="isDaySelected(d.key) && availableDays().has(d.key)"
                         [class.bg-white]="!isDaySelected(d.key) || !availableDays().has(d.key)"
                         [class.text-slate-500]="!isDaySelected(d.key) && availableDays().has(d.key)"
                         [class.border-slate-300]="!isDaySelected(d.key) && availableDays().has(d.key)"
@@ -224,7 +224,7 @@
               Cancelar
             </button>
             <button (click)="onSave()" [disabled]="loading()"
-              class="px-8 py-2.5 text-sm font-bold text-white bg-[#0066AA] hover:bg-[#004488] rounded-lg disabled:opacity-50 flex items-center justify-center gap-2 min-w-[160px]">
+              class="px-8 py-2.5 text-sm font-bold text-white bg-blue-500 hover:bg-blue-600 rounded-lg disabled:opacity-50 flex items-center justify-center gap-2 min-w-[160px]">
               @if (loading()) {
                 <i class="pi pi-spin pi-spinner text-xs"></i>
               }

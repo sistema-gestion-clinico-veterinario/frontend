@@ -5,7 +5,7 @@
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg" (click)="$event.stopPropagation()">
       <div class="flex items-center gap-4 px-6 py-5 border-b border-slate-100 bg-slate-50 rounded-t-2xl">
         <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
-          <i class="pi pi-file-edit text-[#0066AA] text-lg"></i>
+          <i class="pi pi-file-edit text-blue-500 text-lg"></i>
         </div>
         <div>
           <h2 class="text-base font-extrabold text-slate-800 leading-tight">
@@ -20,7 +20,7 @@
             <label class="text-xs font-bold text-slate-600">Medicamento <span class="text-rose-500">*</span></label>
             <input type="text" formControlName="medicamento" maxlength="80" placeholder="Nombre del medicamento"
               (keydown)="blockMedicineNameInput($event)" (paste)="blockMedicineNamePaste($event)" (input)="sanitizeMedicineNameField('medicamento')"
-              class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
+              class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
               [ngClass]="{'border-rose-400': form.get('medicamento')?.invalid && form.get('medicamento')?.touched, 'border-slate-200': !(form.get('medicamento')?.invalid && form.get('medicamento')?.touched)}" />
               @if (form.get('medicamento')?.invalid && form.get('medicamento')?.touched) {
                 <span class="text-xs text-rose-500">
@@ -33,7 +33,7 @@
               <input type="text" formControlName="principioActivo" maxlength="80" placeholder="Ej: Amoxicilina"
                 (keydown)="blockMedicineNameInput($event)" (paste)="blockMedicineNamePaste($event)" (input)="sanitizeMedicineNameField('principioActivo')"
                 [ngClass]="{'border-rose-400': form.get('principioActivo')?.invalid && form.get('principioActivo')?.touched, 'border-slate-200': !(form.get('principioActivo')?.invalid && form.get('principioActivo')?.touched)}"
-                class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20" />
+                class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20" />
                 @if (form.get('principioActivo')?.invalid && form.get('principioActivo')?.touched) {
                   <span class="text-xs text-rose-500">{{ validationMessage('principioActivo') }}</span>
                 }
@@ -44,7 +44,7 @@
                 <label class="text-xs font-bold text-slate-600">Dosis <span class="text-rose-500">*</span></label>
                 <input type="text" formControlName="dosis" maxlength="80" placeholder="Ej: 250mg"
                   (keydown)="blockUnsafeTextInput($event)" (paste)="blockUnsafeTextPaste($event)" (input)="sanitizeTextField('dosis')"
-                  class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
+                  class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
                   [ngClass]="{'border-rose-400': form.get('dosis')?.invalid && form.get('dosis')?.touched, 'border-slate-200': !(form.get('dosis')?.invalid && form.get('dosis')?.touched)}" />
                   @if (form.get('dosis')?.invalid && form.get('dosis')?.touched) {
                     <span class="text-xs text-rose-500">
@@ -56,7 +56,7 @@
                   <label class="text-xs font-bold text-slate-600">Frecuencia <span class="text-rose-500">*</span></label>
                   <input type="text" formControlName="frecuencia" maxlength="80" placeholder="Ej: cada 8 horas"
                     (keydown)="blockUnsafeTextInput($event)" (paste)="blockUnsafeTextPaste($event)" (input)="sanitizeTextField('frecuencia')"
-                    class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
+                    class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
                     [ngClass]="{'border-rose-400': form.get('frecuencia')?.invalid && form.get('frecuencia')?.touched, 'border-slate-200': !(form.get('frecuencia')?.invalid && form.get('frecuencia')?.touched)}" />
                     @if (form.get('frecuencia')?.invalid && form.get('frecuencia')?.touched) {
                       <span class="text-xs text-rose-500">
@@ -68,7 +68,7 @@
                     <label class="text-xs font-bold text-slate-600">Duración (días)</label>
                     <input type="number" min="1" max="365" inputmode="numeric" formControlName="duracionDias" placeholder="Ej: 7"
                       (keydown)="blockInvalidIntegerInput($event)" (paste)="blockInvalidIntegerPaste($event)"
-                      class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
+                      class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
                       [ngClass]="{'border-rose-400': form.get('duracionDias')?.invalid && form.get('duracionDias')?.touched, 'border-slate-200': !(form.get('duracionDias')?.invalid && form.get('duracionDias')?.touched)}" />
                       @if (form.get('duracionDias')?.invalid && form.get('duracionDias')?.touched) {
                         <span class="text-xs text-rose-500">{{ validationMessage('duracionDias') }}</span>
@@ -79,7 +79,7 @@
                     <label class="text-xs font-bold text-slate-600">Vía de administración <span class="text-rose-500">*</span></label>
                     <div class="relative">
                       <select formControlName="viaAdministracion"
-                        class="w-full appearance-none rounded-xl border px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20 pr-10"
+                        class="w-full appearance-none rounded-xl border px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 pr-10"
                         [ngClass]="{'border-rose-400': form.get('viaAdministracion')?.invalid && form.get('viaAdministracion')?.touched, 'border-slate-200': !(form.get('viaAdministracion')?.invalid && form.get('viaAdministracion')?.touched)}">
                         <option value="" disabled>Seleccionar vía</option>
                         <option value="Oral">Oral</option>
@@ -103,7 +103,7 @@
                     <div class="flex flex-col gap-1">
                       <label class="text-xs font-bold text-slate-600">Fecha inicio <span class="text-rose-500">*</span></label>
                       <input type="date" formControlName="fechaInicio"
-                        class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
+                        class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
                         [ngClass]="{'border-rose-400': form.get('fechaInicio')?.invalid && form.get('fechaInicio')?.touched, 'border-slate-200': !(form.get('fechaInicio')?.invalid && form.get('fechaInicio')?.touched)}" />
                         @if (form.get('fechaInicio')?.invalid && form.get('fechaInicio')?.touched) {
                           <span class="text-xs text-rose-500">{{ validationMessage('fechaInicio') }}</span>
@@ -112,7 +112,7 @@
                       <div class="flex flex-col gap-1">
                         <label class="text-xs font-bold text-slate-600">Fecha fin</label>
                         <input type="date" formControlName="fechaFin"
-                          class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20" />
+                          class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20" />
                         </div>
                       </div>
                       <div class="flex flex-col gap-1">
@@ -120,7 +120,7 @@
                         <textarea formControlName="instrucciones" rows="2" maxlength="500" placeholder="Indicaciones adicionales para el propietario..."
                           (keydown)="blockUnsafeTextInput($event)" (paste)="blockUnsafeTextPaste($event)" (input)="sanitizeTextField('instrucciones')"
                           [ngClass]="{'border-rose-400': form.get('instrucciones')?.invalid && form.get('instrucciones')?.touched, 'border-slate-200': !(form.get('instrucciones')?.invalid && form.get('instrucciones')?.touched)}"
-                          class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 outline-none resize-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20">
+                          class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 outline-none resize-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
                         </textarea>
                         @if (form.get('instrucciones')?.invalid && form.get('instrucciones')?.touched) {
                           <span class="text-xs text-rose-500">{{ validationMessage('instrucciones') }}</span>
@@ -133,7 +133,7 @@
                         Cancelar
                       </button>
                       <button type="button" (click)="guardar.emit()"
-                        class="px-5 py-2 rounded-xl text-sm font-bold text-white bg-[#0066AA] hover:bg-[#0055aa] disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+                        class="px-5 py-2 rounded-xl text-sm font-bold text-white bg-blue-500 hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
                         <i class="pi pi-save mr-1.5"></i>
                         {{ recetaEditando ? 'Guardar cambios' : 'Agregar medicamento' }}
                       </button>

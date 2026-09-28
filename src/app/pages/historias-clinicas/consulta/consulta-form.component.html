@@ -1,9 +1,9 @@
-<div class="p-4 sm:p-6 lg:p-4 min-h-screen bg-slate-50 font-['Barlow']">
+<div class="p-4 sm:p-6 lg:p-4 min-h-screen bg-blue-50 font-['Barlow']">
 
   <div class="mb-5 flex items-center justify-between gap-3 flex-wrap">
     <div class="flex items-center gap-3">
       <button (click)="volver()"
-        class="w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-400 hover:text-[#0066AA] hover:border-[#0066AA]">
+        class="w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-400 hover:text-blue-500 hover:border-blue-500">
         <i class="pi pi-arrow-left text-sm"></i>
       </button>
       <div>
@@ -94,7 +94,7 @@
             class="text-rose-500">*</span></label>
             <div class="relative">
               <select formControlName="tipoConsulta"
-                class="w-full appearance-none rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20 pr-10"
+                class="w-full appearance-none rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 pr-10"
                 [ngClass]="{'border-rose-500': form.get('tipoConsulta')?.invalid && form.get('tipoConsulta')?.touched, 'border-slate-200': !(form.get('tipoConsulta')?.invalid && form.get('tipoConsulta')?.touched)}">
                 <option value="" disabled selected>Seleccionar tipo</option>
                 @for (tipo of tiposConsulta; track tipo) {
@@ -123,72 +123,72 @@
           <div class="flex border-b border-slate-100 px-5 overflow-x-auto">
             <button type="button" (click)="tabActiva.set('signos')"
             [class]="tabActiva() === 'signos'
-              ? 'py-3 text-xs font-extrabold text-[#0066AA] border-b-2 border-[#0066AA] mr-6 whitespace-nowrap'
+              ? 'py-3 text-xs font-extrabold text-blue-500 border-b-2 border-blue-500 mr-6 whitespace-nowrap'
               : 'py-3 text-xs font-bold text-slate-400 border-b-2 border-transparent mr-6 hover:text-slate-600 whitespace-nowrap'">
               Signos vitales
             </button>
             <button type="button" (click)="tabActiva.set('clinico')"
             [class]="tabActiva() === 'clinico'
-              ? 'py-3 text-xs font-extrabold text-[#0066AA] border-b-2 border-[#0066AA] mr-6 whitespace-nowrap'
+              ? 'py-3 text-xs font-extrabold text-blue-500 border-b-2 border-blue-500 mr-6 whitespace-nowrap'
               : 'py-3 text-xs font-bold text-slate-400 border-b-2 border-transparent mr-6 hover:text-slate-600 whitespace-nowrap'">
               Datos clínicos
             </button>
             <button type="button" (click)="tabActiva.set('diagnosticos')"
             [class]="tabActiva() === 'diagnosticos'
-              ? 'py-3 text-xs font-extrabold text-[#0066AA] border-b-2 border-[#0066AA] mr-6 whitespace-nowrap'
+              ? 'py-3 text-xs font-extrabold text-blue-500 border-b-2 border-blue-500 mr-6 whitespace-nowrap'
               : 'py-3 text-xs font-bold text-slate-400 border-b-2 border-transparent mr-6 hover:text-slate-600 whitespace-nowrap'">
               Diagnósticos
               @if (diagnosticos().length > 0) {
                 <span
-                  class="ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full bg-[#0066AA]/10 text-[#0066AA] text-[9px] font-black">
+                  class="ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full bg-blue-500/10 text-blue-500 text-[9px] font-black">
                   {{ diagnosticos().length }}
                 </span>
               }
             </button>
             <button type="button" (click)="tabActiva.set('tratamientos')"
             [class]="tabActiva() === 'tratamientos'
-              ? 'py-3 text-xs font-extrabold text-[#0066AA] border-b-2 border-[#0066AA] mr-6 whitespace-nowrap'
+              ? 'py-3 text-xs font-extrabold text-blue-500 border-b-2 border-blue-500 mr-6 whitespace-nowrap'
               : 'py-3 text-xs font-bold text-slate-400 border-b-2 border-transparent mr-6 hover:text-slate-600 whitespace-nowrap'">
               Tratamientos
               @if (tratamientos().length > 0) {
                 <span
-                  class="ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full bg-[#0066AA]/10 text-[#0066AA] text-[9px] font-black">
+                  class="ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full bg-blue-500/10 text-blue-500 text-[9px] font-black">
                   {{ tratamientos().length }}
                 </span>
               }
             </button>
             <button type="button" (click)="tabActiva.set('antecedentes')"
             [class]="tabActiva() === 'antecedentes'
-              ? 'py-3 text-xs font-extrabold text-[#0066AA] border-b-2 border-[#0066AA] mr-6 whitespace-nowrap'
+              ? 'py-3 text-xs font-extrabold text-blue-500 border-b-2 border-blue-500 mr-6 whitespace-nowrap'
               : 'py-3 text-xs font-bold text-slate-400 border-b-2 border-transparent mr-6 hover:text-slate-600 whitespace-nowrap'">
               Antecedentes HC
             </button>
             <button type="button" (click)="tabActiva.set('historial')"
             [class]="tabActiva() === 'historial'
-              ? 'py-3 text-xs font-extrabold text-[#0066AA] border-b-2 border-[#0066AA] mr-6 whitespace-nowrap'
+              ? 'py-3 text-xs font-extrabold text-blue-500 border-b-2 border-blue-500 mr-6 whitespace-nowrap'
               : 'py-3 text-xs font-bold text-slate-400 border-b-2 border-transparent mr-6 hover:text-slate-600 whitespace-nowrap'">
               Historial de Consultas
             </button>
             <button type="button" (click)="tabActiva.set('recetas')"
             [class]="tabActiva() === 'recetas'
-              ? 'py-3 text-xs font-extrabold text-[#0066AA] border-b-2 border-[#0066AA] mr-6 whitespace-nowrap'
+              ? 'py-3 text-xs font-extrabold text-blue-500 border-b-2 border-blue-500 mr-6 whitespace-nowrap'
               : 'py-3 text-xs font-bold text-slate-400 border-b-2 border-transparent mr-6 hover:text-slate-600 whitespace-nowrap'">
               Recetas
               @if (recetas().length > 0) {
                 <span
-                  class="ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full bg-[#0066AA]/10 text-[#0066AA] text-[9px] font-black">
+                  class="ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full bg-blue-500/10 text-blue-500 text-[9px] font-black">
                   {{ recetas().length }}
                 </span>
               }
             </button>
             <button type="button" (click)="tabActiva.set('examenes')"
             [class]="tabActiva() === 'examenes'
-              ? 'py-3 text-xs font-extrabold text-[#0066AA] border-b-2 border-[#0066AA] whitespace-nowrap'
+              ? 'py-3 text-xs font-extrabold text-blue-500 border-b-2 border-blue-500 whitespace-nowrap'
               : 'py-3 text-xs font-bold text-slate-400 border-b-2 border-transparent hover:text-slate-600 whitespace-nowrap'">
               Exámenes
               @if (archivos().length > 0) {
                 <span
-                  class="ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full bg-[#0066AA]/10 text-[#0066AA] text-[9px] font-black">
+                  class="ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full bg-blue-500/10 text-blue-500 text-[9px] font-black">
                   {{ archivos().length }}
                 </span>
               }
@@ -202,7 +202,7 @@
                   <input type="number" min="0.01" max="120" inputmode="decimal" formControlName="pesoEnConsulta" step="0.01" placeholder="0.0"
                     (keydown)="blockInvalidNumberInput($event, true)" (paste)="blockInvalidNumberPaste($event, true)"
                     (input)="sanitizeNumberField('pesoEnConsulta', 3, 2)"
-                    class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
+                    class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
                     [ngClass]="{'border-rose-500': form.get('pesoEnConsulta')?.invalid && form.get('pesoEnConsulta')?.touched, 'border-slate-200': !(form.get('pesoEnConsulta')?.invalid && form.get('pesoEnConsulta')?.touched)}" />
                     @if (form.get('pesoEnConsulta')?.invalid && form.get('pesoEnConsulta')?.touched) {
                       <span
@@ -214,7 +214,7 @@
                     <input type="number" min="0.1" max="45" inputmode="decimal" formControlName="temperatura" step="0.1" placeholder="0.0"
                       (keydown)="blockInvalidNumberInput($event, true)" (paste)="blockInvalidNumberPaste($event, true)"
                       (input)="sanitizeNumberField('temperatura', 2, 1)"
-                      class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
+                      class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
                       [ngClass]="{'border-rose-500': form.get('temperatura')?.invalid && form.get('temperatura')?.touched, 'border-slate-200': !(form.get('temperatura')?.invalid && form.get('temperatura')?.touched)}" />
                       @if (form.get('temperatura')?.invalid && form.get('temperatura')?.touched) {
                         <span
@@ -226,7 +226,7 @@
                       <input type="number" min="1" max="300" inputmode="numeric" formControlName="frecuenciaCardiaca" placeholder="0"
                         (keydown)="blockInvalidNumberInput($event)" (paste)="blockInvalidNumberPaste($event)"
                         (input)="sanitizeNumberField('frecuenciaCardiaca', 3)"
-                        class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
+                        class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
                         [ngClass]="{'border-rose-500': form.get('frecuenciaCardiaca')?.invalid && form.get('frecuenciaCardiaca')?.touched, 'border-slate-200': !(form.get('frecuenciaCardiaca')?.invalid && form.get('frecuenciaCardiaca')?.touched)}" />
                         @if (form.get('frecuenciaCardiaca')?.invalid && form.get('frecuenciaCardiaca')?.touched) {
                           <span
@@ -238,7 +238,7 @@
                         <input type="number" min="1" max="200" inputmode="numeric" formControlName="frecuenciaRespiratoria" placeholder="0"
                           (keydown)="blockInvalidNumberInput($event)" (paste)="blockInvalidNumberPaste($event)"
                           (input)="sanitizeNumberField('frecuenciaRespiratoria', 3)"
-                          class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
+                          class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
                           [ngClass]="{'border-rose-500': form.get('frecuenciaRespiratoria')?.invalid && form.get('frecuenciaRespiratoria')?.touched, 'border-slate-200': !(form.get('frecuenciaRespiratoria')?.invalid && form.get('frecuenciaRespiratoria')?.touched)}" />
                           @if (form.get('frecuenciaRespiratoria')?.invalid && form.get('frecuenciaRespiratoria')?.touched) {
                             <span
@@ -251,7 +251,7 @@
                           <label class="text-xs font-bold text-slate-600">Mucosas</label>
                           <input type="text" formControlName="mucosas" maxlength="80" placeholder="Ej: húmedas, rosadas..."
                             (keydown)="blockInvalidDescriptorTextInput($event)" (paste)="blockInvalidDescriptorTextPaste($event)" (input)="sanitizeDescriptorText('mucosas')"
-                            class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
+                            class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
                             [ngClass]="{'border-rose-500': form.get('mucosas')?.invalid && form.get('mucosas')?.touched, 'border-slate-200': !(form.get('mucosas')?.invalid && form.get('mucosas')?.touched)}" />
                             @if (form.get('mucosas')?.invalid && form.get('mucosas')?.touched) {
                               <span
@@ -262,7 +262,7 @@
                             <label class="text-xs font-bold text-slate-600">Turgencia de piel</label>
                             <input type="text" formControlName="turgenciaPiel" maxlength="80" placeholder="Ej: normal, disminuida..."
                               (keydown)="blockInvalidDescriptorTextInput($event)" (paste)="blockInvalidDescriptorTextPaste($event)" (input)="sanitizeDescriptorText('turgenciaPiel')"
-                              class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
+                              class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
                               [ngClass]="{'border-rose-500': form.get('turgenciaPiel')?.invalid && form.get('turgenciaPiel')?.touched, 'border-slate-200': !(form.get('turgenciaPiel')?.invalid && form.get('turgenciaPiel')?.touched)}" />
                               @if (form.get('turgenciaPiel')?.invalid && form.get('turgenciaPiel')?.touched) {
                                 <span
@@ -273,21 +273,21 @@
                           <div class="grid sm:grid-cols-2 gap-6">
                             <div class="flex flex-col gap-2 border rounded-xl border-slate-200 p-4 bg-slate-50/60">
                               <label class="flex items-center gap-2 cursor-pointer select-none">
-                                <input type="checkbox" formControlName="vacunacionAplicada" class="w-4 h-4 rounded accent-[#0066AA]" />
+                                <input type="checkbox" formControlName="vacunacionAplicada" class="w-4 h-4 rounded accent-blue-500" />
                                 <span class="text-sm font-medium text-slate-700">¿Se aplicó vacunación?</span>
                               </label>
                               <textarea formControlName="observacionVacunacion" rows="2" maxlength="500"
                                 placeholder="Observación de la vacunación aplicada..."
-                              class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"></textarea>
+                              class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"></textarea>
                             </div>
                             <div class="flex flex-col gap-2 border rounded-xl border-slate-200 p-4 bg-slate-50/60">
                               <label class="flex items-center gap-2 cursor-pointer select-none">
-                                <input type="checkbox" formControlName="desparasitacionAplicada" class="w-4 h-4 rounded accent-[#0066AA]" />
+                                <input type="checkbox" formControlName="desparasitacionAplicada" class="w-4 h-4 rounded accent-blue-500" />
                                 <span class="text-sm font-medium text-slate-700">¿Se aplicó desparasitación?</span>
                               </label>
                               <textarea formControlName="observacionDesparasitacion" rows="2" maxlength="500"
                                 placeholder="Observación de la desparasitación aplicada..."
-                              class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"></textarea>
+                              class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"></textarea>
                             </div>
                           </div>
                         </div>
@@ -299,7 +299,7 @@
                             <textarea formControlName="anamnesis" rows="4" maxlength="1000"
                               placeholder="Historia del problema actual, síntomas, evolución..."
                               (keydown)="blockInvalidClinicalTextInput($event)" (paste)="blockInvalidClinicalTextPaste($event)" (input)="sanitizeClinicalText('anamnesis')"
-                              class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
+                              class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
                               [ngClass]="{'border-rose-500': form.get('anamnesis')?.invalid && form.get('anamnesis')?.touched, 'border-slate-200': !(form.get('anamnesis')?.invalid && form.get('anamnesis')?.touched)}">
                             </textarea>
                             @if (form.get('anamnesis')?.invalid && form.get('anamnesis')?.touched) {
@@ -311,7 +311,7 @@
                             <label class="text-xs font-bold text-slate-600">Examen físico</label>
                             <textarea formControlName="examenFisico" rows="4" maxlength="1000" placeholder="Hallazgos del examen físico..."
                               (keydown)="blockInvalidClinicalTextInput($event)" (paste)="blockInvalidClinicalTextPaste($event)" (input)="sanitizeClinicalText('examenFisico')"
-                              class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
+                              class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
                               [ngClass]="{'border-rose-500': form.get('examenFisico')?.invalid && form.get('examenFisico')?.touched, 'border-slate-200': !(form.get('examenFisico')?.invalid && form.get('examenFisico')?.touched)}">
                             </textarea>
                             @if (form.get('examenFisico')?.invalid && form.get('examenFisico')?.touched) {
@@ -323,7 +323,7 @@
                             <label class="text-xs font-bold text-slate-600">Observaciones</label>
                             <textarea formControlName="observaciones" rows="3" maxlength="500" placeholder="Notas adicionales..."
                               (keydown)="blockInvalidClinicalTextInput($event)" (paste)="blockInvalidClinicalTextPaste($event)" (input)="sanitizeClinicalText('observaciones')"
-                              class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
+                              class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
                               [ngClass]="{'border-rose-500': form.get('observaciones')?.invalid && form.get('observaciones')?.touched, 'border-slate-200': !(form.get('observaciones')?.invalid && form.get('observaciones')?.touched)}">
                             </textarea>
                             @if (form.get('observaciones')?.invalid && form.get('observaciones')?.touched) {
@@ -336,11 +336,11 @@
                       @if (tabActiva() === 'antecedentes') {
                         <div class="p-5 flex flex-col gap-4">
                           <div class="flex items-center justify-between gap-3 bg-blue-50 border border-blue-100 rounded-xl px-4 py-2.5">
-                            <p class="text-xs text-[#0066AA]">
+                            <p class="text-xs text-blue-500">
                               <i class="pi pi-info-circle mr-1"></i>Antecedentes de la mascota, no de esta consulta puntual.
                             </p>
                             <button type="button" (click)="irAHistoriaClinicaCompleta()"
-                              class="text-xs font-bold text-[#0066AA] hover:underline whitespace-nowrap">
+                              class="text-xs font-bold text-blue-500 hover:underline whitespace-nowrap">
                               Editar en Historia Clínica
                             </button>
                           </div>
@@ -376,7 +376,7 @@
                                 <ng-template pTemplate="content" let-item>
                                   <div class="mb-6 bg-slate-50 border border-slate-100 rounded-xl p-4 ml-2 shadow-sm">
                                     <div class="flex items-center justify-between mb-2">
-                                      <span class="text-xs font-extrabold text-[#0066AA]">{{ formatFechaHora(item.fechaConsulta) }}</span>
+                                      <span class="text-xs font-extrabold text-blue-500">{{ formatFechaHora(item.fechaConsulta) }}</span>
                                       <span
                                         class="text-[10px] font-bold px-2 py-0.5 rounded bg-white border border-slate-200 text-slate-400 uppercase">{{
                                       item.tipoConsulta }}</span>
@@ -394,7 +394,7 @@
                                         </span>
                                       }
                                       <button type="button" (click)="verConsulta(item.id)"
-                                        class="ml-auto text-[10px] font-bold text-[#0066AA] hover:underline flex items-center gap-1">
+                                        class="ml-auto text-[10px] font-bold text-blue-500 hover:underline flex items-center gap-1">
                                         <i class="pi pi-external-link text-[9px]"></i> Ver detalle
                                       </button>
                                     </div>
@@ -418,7 +418,7 @@
                             </p>
                             @if (canCreateDiagnostico()) {
                               <button type="button" (click)="abrirNuevoDiagnostico()"
-                                class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0066AA] text-white text-xs font-bold hover:bg-[#0055aa] transition-all">
+                                class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500 text-white text-xs font-bold hover:bg-blue-600 transition-all">
                                 <i class="pi pi-plus text-[10px]"></i>
                                 Agregar diagnóstico
                               </button>
@@ -437,7 +437,7 @@
                                       }
                                     </div>
                                     <div class="flex items-center gap-1.5">
-                                      <span class="px-2 py-0.5 rounded-md bg-blue-50 text-[#0066AA] text-[10px] font-bold border border-blue-100 uppercase whitespace-nowrap">
+                                      <span class="px-2 py-0.5 rounded-md bg-blue-50 text-blue-500 text-[10px] font-bold border border-blue-100 uppercase whitespace-nowrap">
                                         {{ diagnostico.tipo }}
                                       </span>
                                       <span class="px-2 py-0.5 rounded-md bg-slate-50 text-slate-600 text-[10px] font-bold border border-slate-200 uppercase whitespace-nowrap">
@@ -451,7 +451,7 @@
                                   <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
                                     @if (canModifyDiagnostico()) {
                                       <button type="button" (click)="abrirEditarDiagnostico(diagnostico)"
-                                        class="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold text-slate-500 hover:text-[#0066AA] hover:bg-blue-50 border border-slate-200 hover:border-blue-200 transition-all">
+                                        class="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold text-slate-500 hover:text-blue-500 hover:bg-blue-50 border border-slate-200 hover:border-blue-200 transition-all">
                                         <i class="pi pi-pencil text-[9px]"></i> Editar
                                       </button>
                                     }
@@ -484,7 +484,7 @@
                             </p>
                             @if (canCreateTratamiento()) {
                               <button type="button" (click)="abrirNuevoTratamiento()"
-                                class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0066AA] text-white text-xs font-bold hover:bg-[#0055aa] transition-all">
+                                class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500 text-white text-xs font-bold hover:bg-blue-600 transition-all">
                                 <i class="pi pi-plus text-[10px]"></i>
                                 Agregar tratamiento
                               </button>
@@ -514,7 +514,7 @@
                                     <div class="flex items-center gap-2">
                                       @if (canModifyTratamiento()) {
                                         <button type="button" (click)="abrirEditarTratamiento(tratamiento)"
-                                          class="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold text-slate-500 hover:text-[#0066AA] hover:bg-blue-50 border border-slate-200 hover:border-blue-200 transition-all">
+                                          class="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold text-slate-500 hover:text-blue-500 hover:bg-blue-50 border border-slate-200 hover:border-blue-200 transition-all">
                                           <i class="pi pi-pencil text-[9px]"></i> Editar
                                         </button>
                                       }
@@ -549,14 +549,14 @@
                             <div class="flex items-center gap-2">
                               @if (recetas().length > 0) {
                                 <button type="button" (click)="imprimirRecetas()"
-                                  class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 text-xs font-bold hover:text-[#0066AA] hover:border-[#0066AA] transition-all">
+                                  class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 text-xs font-bold hover:text-blue-500 hover:border-blue-500 transition-all">
                                   <i class="pi pi-print text-[10px]"></i>
                                   Imprimir receta
                                 </button>
                               }
                               @if (canCreateReceta()) {
                                 <button type="button" (click)="abrirNuevaReceta()"
-                                  class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0066AA] text-white text-xs font-bold hover:bg-[#0055aa] transition-all">
+                                  class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500 text-white text-xs font-bold hover:bg-blue-600 transition-all">
                                   <i class="pi pi-plus text-[10px]"></i>
                                   Agregar medicamento
                                 </button>
@@ -575,7 +575,7 @@
                                         <p class="text-xs text-slate-400 mt-0.5">{{ receta.principioActivo }}</p>
                                       }
                                     </div>
-                                    <span class="px-2 py-0.5 rounded-md bg-blue-50 text-[#0066AA] text-[10px] font-bold border border-blue-100 uppercase whitespace-nowrap">
+                                    <span class="px-2 py-0.5 rounded-md bg-blue-50 text-blue-500 text-[10px] font-bold border border-blue-100 uppercase whitespace-nowrap">
                                       {{ receta.viaAdministracion }}
                                     </span>
                                   </div>
@@ -618,7 +618,7 @@
                                     <div class="flex items-center gap-2">
                                       @if (canModifyReceta()) {
                                         <button type="button" (click)="abrirEditarReceta(receta)"
-                                          class="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold text-slate-500 hover:text-[#0066AA] hover:bg-blue-50 border border-slate-200 hover:border-blue-200 transition-all">
+                                          class="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold text-slate-500 hover:text-blue-500 hover:bg-blue-50 border border-slate-200 hover:border-blue-200 transition-all">
                                           <i class="pi pi-pencil text-[9px]"></i> Editar
                                         </button>
                                       }
@@ -650,7 +650,7 @@
                             <textarea formControlName="indicacionesReceta" rows="3" maxlength="500"
                               placeholder="Indicaciones generales para el propietario sobre el tratamiento..."
                               [attr.readonly]="!canEditConsulta() ? true : null"
-                              class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 outline-none resize-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20"
+                              class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 outline-none resize-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
                               [ngClass]="{'bg-slate-50 text-slate-500 cursor-not-allowed': !canEditConsulta(), 'border-rose-500': form.get('indicacionesReceta')?.invalid && form.get('indicacionesReceta')?.touched, 'border-slate-200': !(form.get('indicacionesReceta')?.invalid && form.get('indicacionesReceta')?.touched)}">
                             </textarea>
                             @if (form.get('indicacionesReceta')?.invalid && form.get('indicacionesReceta')?.touched) {
@@ -669,7 +669,7 @@
                                 <div class="flex-1 min-w-0">
                                   <label class="block text-xs font-bold text-slate-600 mb-1.5">Seleccionar archivo</label>
                                   <label
-                                    class="flex items-center gap-2 w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-sm text-slate-500 cursor-pointer hover:border-[#0066AA] hover:text-[#0066AA] transition-all">
+                                    class="flex items-center gap-2 w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-sm text-slate-500 cursor-pointer hover:border-blue-500 hover:text-blue-500 transition-all">
                                     <i class="pi pi-upload text-[11px]"></i>
                                     <span class="truncate">{{ archivoPendiente() ? archivoPendiente()!.name : 'Elegir archivo...' }}</span>
                                     <input type="file" class="hidden" accept=".dcm,.pdf,.jpg,.jpeg,.png,.docx,.doc" (change)="onFileSelected($event)">
@@ -680,7 +680,7 @@
                                   <label class="block text-xs font-bold text-slate-600 mb-1.5">Tipo</label>
                                   <div class="relative">
                                     <select [value]="tipoSeleccionado()" (change)="tipoSeleccionado.set($any($event.target).value)"
-                                      class="w-full appearance-none rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-[#0066AA] pr-8">
+                                      class="w-full appearance-none rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-blue-500 pr-8">
                                       @for (t of tiposArchivo; track t) {
                                         <option [value]="t.value">{{ t.label }}</option>
                                       }
@@ -696,19 +696,19 @@
                                   <label class="text-xs font-bold text-slate-600">Descripción</label>
                                   <input type="text" [value]="descripcionArchivo()" (input)="descripcionArchivo.set($any($event.target).value)"
                                     placeholder="Ej: Hemograma completo"
-                                    class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20" />
+                                    class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20" />
                                   </div>
                                   <div class="w-full sm:w-44 flex flex-col gap-1">
                                     <label class="text-xs font-bold text-slate-600">Fecha del examen/documento</label>
                                     <input type="date" [value]="fechaDocumentoArchivo()" (input)="fechaDocumentoArchivo.set($any($event.target).value)"
                                       [max]="hoyIso"
-                                      class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-[#0066AA] focus:ring-2 focus:ring-[#0066AA]/20" />
+                                      class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20" />
                                     </div>
                                   </div>
                                   <p class="text-[10px] text-slate-400 -mt-2">La fecha de carga se registra automáticamente y se conserva por separado como metadato técnico.</p>
                                   <div class="flex justify-end">
                                     <button type="button" (click)="subirArchivo()" [disabled]="!archivoPendiente() || archivoSubiendo()"
-                                      class="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#0066AA] text-white text-xs font-bold hover:bg-[#0055aa] disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+                                      class="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-500 text-white text-xs font-bold hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
                                       <i class="pi" [ngClass]="archivoSubiendo() ? 'pi-spin pi-spinner' : 'pi-cloud-upload'"></i>
                                       {{ archivoSubiendo() ? 'Subiendo...' : 'Subir archivo' }}
                                     </button>
@@ -726,7 +726,7 @@
                                         class="flex items-center gap-3 bg-white border border-slate-100 rounded-xl px-4 py-3 hover:border-blue-100 hover:bg-blue-50/20 transition-all">
                                         <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
                   [ngClass]="{
-                    'bg-blue-50 text-[#0066AA]':   archivo.tipoMime === 'image/jpeg' || archivo.tipoMime === 'image/png',
+                    'bg-blue-50 text-blue-500':   archivo.tipoMime === 'image/jpeg' || archivo.tipoMime === 'image/png',
                     'bg-rose-50 text-rose-500':     archivo.tipoMime === 'application/pdf',
                     'bg-violet-50 text-violet-500': archivo.tipoMime === 'application/dicom' || archivo.tipoMime === 'application/octet-stream',
                     'bg-slate-50 text-slate-400':   true
@@ -755,7 +755,7 @@
                                         </div>
                                         <div class="flex items-center gap-1.5 flex-shrink-0">
                                           <button type="button" (click)="visualizarArchivo(archivo)" title="Visualizar"
-                                            class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:text-[#0066AA] hover:border-blue-200 hover:bg-blue-50 transition-all">
+                                            class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:text-blue-500 hover:border-blue-200 hover:bg-blue-50 transition-all">
                                             <i class="pi pi-eye text-xs"></i>
                                           </button>
                                           <button type="button" (click)="descargarArchivo(archivo)" title="Descargar"
@@ -881,7 +881,7 @@
 
                     <ng-template pTemplate="header">
                       <div class="flex items-center gap-4 py-1">
-                        <div class="w-10 h-10 rounded-xl bg-blue-50 text-[#0066AA] flex items-center justify-center">
+                        <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center">
                           <i class="pi pi-calendar-plus text-lg"></i>
                         </div>
                         <div class="flex flex-col">
@@ -900,7 +900,7 @@
                         <div class="flex-1 overflow-y-auto p-8 space-y-10">
                           <section>
                             <div
-                              class="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-[#0066AA]/10 text-[#0066AA] text-[10px] font-bold uppercase tracking-widest mb-4">
+                              class="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-blue-500/10 text-blue-500 text-[10px] font-bold uppercase tracking-widest mb-4">
                               <i class="pi pi-tag text-[9px]"></i>
                               {{ detalleSeleccionado()!.tipoConsulta }}
                             </div>
@@ -908,13 +908,13 @@
                               {{ detalleSeleccionado()!.motivoConsulta }}
                             </h3>
                             <p class="text-sm text-slate-500">
-                              Evaluado por <span class="text-[#0066AA] font-bold">{{ detalleSeleccionado()!.veterinarioNombre }}</span>
+                              Evaluado por <span class="text-blue-500 font-bold">{{ detalleSeleccionado()!.veterinarioNombre }}</span>
                             </p>
                           </section>
                           <section class="bg-blue-50/40 rounded-2xl p-6 border border-blue-50">
                             <div class="flex items-center gap-2 mb-5">
-                              <i class="pi pi-heart text-[#0066AA] text-xs"></i>
-                              <h4 class="text-[10px] font-black text-[#0066AA] uppercase tracking-[0.2em]">Signos Vitales</h4>
+                              <i class="pi pi-heart text-blue-500 text-xs"></i>
+                              <h4 class="text-[10px] font-black text-blue-500 uppercase tracking-[0.2em]">Signos Vitales</h4>
                             </div>
                             <div class="grid grid-cols-2 sm:grid-cols-4 gap-6">
                               <div>
@@ -1020,7 +1020,7 @@
                                     <div class="flex items-center justify-between mb-3">
                                       <p class="text-sm font-bold text-slate-900">{{ p.medicamento }}</p>
                                       <span
-                                        class="px-2 py-0.5 rounded bg-white text-[#0066AA] text-[9px] font-bold border border-blue-100 uppercase tracking-widest">
+                                        class="px-2 py-0.5 rounded bg-white text-blue-500 text-[9px] font-bold border border-blue-100 uppercase tracking-widest">
                                         {{ p.viaAdministracion }}
                                       </span>
                                     </div>
@@ -1045,7 +1045,7 @@
                         </div>
                         <div class="p-4 border-t border-slate-100 bg-slate-50/30 flex justify-end">
                           <button (click)="displayDetalleHistorial.set(false)"
-                            class="px-10 py-3 rounded-xl bg-[#0066AA] text-white text-sm font-bold shadow-lg shadow-blue-900/10 hover:bg-[#0055aa] transition-all">
+                            class="px-10 py-3 rounded-xl bg-blue-500 text-white text-sm font-bold shadow-lg shadow-blue-900/10 hover:bg-blue-600 transition-all">
                             Entendido
                           </button>
                         </div>
