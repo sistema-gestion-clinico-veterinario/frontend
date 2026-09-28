@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, effect } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -15,6 +15,8 @@ import { AuthStore } from '../../../store/auth.store';
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
 import { textContentValidator } from '../../../core/validators/text-content.validator';
+import { Subject, debounceTime } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 type Tab = 'categorias' | 'unidades';
 
@@ -40,6 +42,8 @@ export class CategoriasProductoComponent implements OnInit {
   private readonly categoriaProductoService = inject(CategoriaProductoService);
   private readonly unidadMedidaService = inject(UnidadMedidaService);
   private readonly messageService = inject(MessageService);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly searchTrigger = new Subject<void>();
   readonly authStore = inject(AuthStore);
   readonly loadingStore = inject(LoadingStore);
   private lastLoadedCompanyId: number | null | undefined = undefined;
@@ -53,8 +57,15 @@ export class CategoriasProductoComponent implements OnInit {
   }
 
   activeTab = signal<Tab>('categorias');
+  searchQuery = signal('');
+  estadoFiltro = signal<'TODOS' | 'ACTIVO' | 'INACTIVO'>('TODOS');
 
   constructor() {
+    this.searchTrigger.pipe(
+      debounceTime(350),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(() => this.reloadActiveTab(0));
+
     effect(() => {
       const companyId = this.activeCompanyId;
       if (this.lastLoadedCompanyId === companyId) return;
@@ -120,7 +131,7 @@ export class CategoriasProductoComponent implements OnInit {
   loadCategorias(page = this.categoriasPage()) {
     if (!this.activeCompanyId) return;
     const cid = this.activeCompanyId ?? undefined;
-    this.categoriaProductoService.listar(cid, page, this.pageSize).subscribe({
+    this.categoriaProductoService.listar(cid, page, this.pageSize, this.searchQuery(), this.activeFilter()).subscribe({
       next: (res) => {
         this.categorias.set(res.data.content || []);
         this.categoriasTotal.set(this.pageTotal(res.data));
@@ -205,7 +216,7 @@ export class CategoriasProductoComponent implements OnInit {
   loadUnidades(page = this.unidadesPage()) {
     if (!this.activeCompanyId) return;
     const cid = this.activeCompanyId ?? undefined;
-    this.unidadMedidaService.listar(cid, page, this.pageSize).subscribe({
+    this.unidadMedidaService.listar(cid, page, this.pageSize, this.searchQuery(), this.activeFilter()).subscribe({
       next: (res) => {
         this.unidades.set(res.data.content || []);
         this.unidadesTotal.set(this.pageTotal(res.data));
@@ -221,6 +232,38 @@ export class CategoriasProductoComponent implements OnInit {
 
   onUnidadesPageChange(event: any) {
     this.loadUnidades(Number(event.page) || 0);
+  }
+
+  onSearchChange(value: string) {
+    this.searchQuery.set(value);
+    this.searchTrigger.next();
+  }
+
+  onEstadoFiltroChange(value: string) {
+    this.estadoFiltro.set(value as 'TODOS' | 'ACTIVO' | 'INACTIVO');
+    this.reloadActiveTab(0);
+  }
+
+  limpiarFiltros() {
+    this.searchQuery.set('');
+    this.estadoFiltro.set('TODOS');
+    this.reloadActiveTab(0);
+  }
+
+  cambiarTab(tab: Tab) {
+    this.activeTab.set(tab);
+    this.reloadActiveTab(0);
+  }
+
+  private activeFilter(): boolean | undefined {
+    if (this.estadoFiltro() === 'ACTIVO') return true;
+    if (this.estadoFiltro() === 'INACTIVO') return false;
+    return undefined;
+  }
+
+  private reloadActiveTab(page = 0) {
+    if (this.activeTab() === 'categorias') this.loadCategorias(page);
+    else this.loadUnidades(page);
   }
 
   openUnidadModal(item?: UnidadMedidaResponse) {

@@ -18,9 +18,11 @@ export class CategoriaProductoService {
     return this.http.get<ApiResponse<CategoriaProductoResponse[]>>(`${this.url}/activas${query}`);
   }
 
-  listar(companyId?: number, page = 0, size = 20) {
+  listar(companyId?: number, page = 0, size = 20, search = '', activo?: boolean) {
     let query = `?page=${page}&size=${size}`;
     if (companyId) query += `&companyId=${companyId}`;
+    if (search.trim()) query += `&search=${encodeURIComponent(search.trim())}`;
+    if (activo !== undefined) query += `&activo=${activo}`;
     return this.http.get<ApiResponse<Page<CategoriaProductoResponse>>>(`${this.url}${query}`);
   }
 

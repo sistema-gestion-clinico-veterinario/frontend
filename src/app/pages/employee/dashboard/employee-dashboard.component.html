@@ -301,7 +301,7 @@
 
         <!-- 📅 CALENDARIO DE CITAS -->
         @if (canViewCitas()) {
-          <div class="bg-white rounded-2xl border border-slate-200 p-1.5 sm:p-2">
+          <div class="overflow-hidden rounded-lg border border-slate-200 bg-white">
             <app-dashboard-citas-calendar [companyId]="activeCompanyId" />
           </div>
         }

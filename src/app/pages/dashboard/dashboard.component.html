@@ -655,7 +655,7 @@
         <div class="order-1 md:order-none space-y-6">
           <!-- 📅 CALENDARIO DE CITAS -->
           @if (!isGlobalSuperAdminMode && canViewCitas()) {
-            <div class="bg-white rounded-2xl border border-slate-100 p-1.5 sm:p-2">
+            <div class="overflow-hidden rounded-lg border border-slate-200 bg-white">
               <app-dashboard-citas-calendar [companyId]="activeCompanyId" />
             </div>
           }

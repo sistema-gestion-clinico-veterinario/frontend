@@ -28,8 +28,9 @@ export class ProductoService {
     return this.http.get<ApiResponse<Page<ProductoResponse>>>(`${this.url}${query}`);
   }
 
-  obtener(id: number) {
-    return this.http.get<ApiResponse<ProductoResponse>>(`${this.url}/${id}`);
+  obtener(sku: string, companyId?: number) {
+    const query = companyId ? `?companyId=${companyId}` : '';
+    return this.http.get<ApiResponse<ProductoResponse>>(`${this.url}/sku/${encodeURIComponent(sku)}${query}`);
   }
 
   conteoPorCategoria(companyId?: number) {
@@ -41,15 +42,17 @@ export class ProductoService {
     return this.http.post<ApiResponse<ProductoResponse>>(this.url, request);
   }
 
-  actualizar(id: number, request: ProductoRequest) {
-    return this.http.put<ApiResponse<ProductoResponse>>(`${this.url}/${id}`, request);
+  actualizar(sku: string, request: ProductoRequest) {
+    return this.http.put<ApiResponse<ProductoResponse>>(`${this.url}/sku/${encodeURIComponent(sku)}`, request);
   }
 
-  eliminar(id: number) {
-    return this.http.delete<ApiResponse<void>>(`${this.url}/${id}`);
+  eliminar(sku: string, companyId?: number) {
+    const query = companyId ? `?companyId=${companyId}` : '';
+    return this.http.delete<ApiResponse<void>>(`${this.url}/sku/${encodeURIComponent(sku)}${query}`);
   }
 
-  toggleActivo(id: number) {
-    return this.http.patch<ApiResponse<ProductoResponse>>(`${this.url}/${id}/toggle`, {});
+  toggleActivo(sku: string, companyId?: number) {
+    const query = companyId ? `?companyId=${companyId}` : '';
+    return this.http.patch<ApiResponse<ProductoResponse>>(`${this.url}/sku/${encodeURIComponent(sku)}/toggle${query}`, {});
   }
 }
