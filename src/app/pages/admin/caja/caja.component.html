@@ -88,6 +88,51 @@
           <div><h2 class="flex items-center gap-2 text-sm font-extrabold text-slate-900"><i class="pi pi-shopping-cart text-[#078ba0]"></i>Detalle de la venta</h2>@if (cuentaSeleccionada(); as cuenta) { <p class="mt-1 text-xs text-slate-500">{{ cuenta.mascotaNombre }} · {{ cuenta.numeroCita }} · {{ cuenta.apoderadoNombre }}</p> } @else { <p class="mt-1 text-xs text-slate-500">Venta directa de productos</p> }</div>
           <div class="flex gap-2"><button (click)="limpiarOperacion()" class="h-9 rounded-lg border border-cyan-200 px-3 text-xs font-bold text-[#078ba0] hover:bg-cyan-50"><i class="pi pi-trash mr-1.5"></i>Limpiar</button><button (click)="seleccionarPanel('PRODUCTOS')" class="h-9 rounded-lg bg-[#078ba0] px-3 text-xs font-bold text-white hover:bg-[#06798b]"><i class="pi pi-plus mr-1.5"></i>Agregar producto</button></div>
         </header>
+        @if (!cuentaSeleccionada()) {
+          <div class="border-b border-slate-200 bg-slate-50/50 px-5 py-4">
+            <div class="mb-2 flex items-center justify-between gap-3">
+              <label class="text-xs font-bold text-slate-700">Cliente de la venta</label>
+              @if (!clienteSeleccionado && !clienteNombreLibre.trim()) {
+                <span class="text-[10px] font-semibold text-slate-400">Cliente de mostrador</span>
+              }
+            </div>
+
+            @if (clienteSeleccionado; as cliente) {
+              <div class="flex items-center gap-3 rounded-lg border border-cyan-200 bg-white px-3 py-2.5">
+                <span class="grid size-9 shrink-0 place-items-center rounded-full bg-cyan-50 text-[#078ba0]"><i class="pi pi-user text-sm"></i></span>
+                <div class="min-w-0 flex-1">
+                  <p class="truncate text-sm font-bold text-slate-800">{{ cliente.nombre }} {{ cliente.apellido }}</p>
+                  <p class="truncate text-[11px] text-slate-400">{{ cliente.tipoDocumento }} {{ cliente.numeroDocumento }}</p>
+                </div>
+                <button type="button" (click)="quitarClienteVentaRapida()" class="grid size-8 place-items-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600" aria-label="Quitar cliente" title="Quitar cliente"><i class="pi pi-times text-xs"></i></button>
+              </div>
+            } @else {
+              <div class="flex gap-2">
+                <div class="relative min-w-0 flex-1">
+                  <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-xs text-slate-400"></i>
+                  <input [(ngModel)]="clienteQuery" (keyup.enter)="buscarClientesVentaRapida()" maxlength="80" placeholder="Buscar por nombre o documento..." class="h-10 w-full rounded-lg border border-slate-300 bg-white pl-9 pr-3 text-sm outline-none focus:border-[#078ba0]" />
+                </div>
+                <button type="button" (click)="buscarClientesVentaRapida()" [disabled]="buscandoClientes() || !clienteQuery.trim()" class="h-10 rounded-lg border border-slate-300 bg-white px-3 text-xs font-bold text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:text-slate-300">{{ buscandoClientes() ? 'Buscando...' : 'Buscar' }}</button>
+              </div>
+
+              @if (clientesEncontrados().length > 0) {
+                <div class="mt-2 max-h-36 overflow-y-auto rounded-lg border border-slate-200 bg-white">
+                  @for (cliente of clientesEncontrados(); track cliente.id) {
+                    <button type="button" (click)="seleccionarClienteVentaRapida(cliente)" class="flex w-full items-center gap-3 border-b border-slate-100 px-3 py-2.5 text-left last:border-b-0 hover:bg-slate-50">
+                      <span class="grid size-8 shrink-0 place-items-center rounded-full bg-slate-100 text-slate-500"><i class="pi pi-user text-xs"></i></span>
+                      <span class="min-w-0"><span class="block truncate text-xs font-bold text-slate-700">{{ cliente.nombre }} {{ cliente.apellido }}</span><span class="block truncate text-[10px] text-slate-400">{{ cliente.tipoDocumento }} {{ cliente.numeroDocumento }}</span></span>
+                    </button>
+                  }
+                </div>
+              }
+
+              <div class="mt-2 flex items-center gap-2">
+                <span class="h-px flex-1 bg-slate-200"></span><span class="text-[9px] font-bold uppercase tracking-wide text-slate-400">o comprador no registrado</span><span class="h-px flex-1 bg-slate-200"></span>
+              </div>
+              <input [(ngModel)]="clienteNombreLibre" maxlength="160" placeholder="Nombre del comprador (opcional)" class="mt-2 h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none focus:border-[#078ba0]" />
+            }
+          </div>
+        }
         <div>
           <div class="hidden grid-cols-[minmax(0,1fr)_110px_110px_110px_36px] gap-3 border-b border-slate-200 bg-slate-50 px-5 py-3 text-[10px] font-bold uppercase tracking-wide text-slate-500 md:grid"><span>Producto / Servicio</span><span class="text-center">Cant.</span><span class="text-right">Precio</span><span class="text-right">Subtotal</span><span></span></div>
           @if (cuentaSeleccionada(); as cuenta) {
@@ -112,7 +157,6 @@
           }
         </div>
         @if (cuentaSeleccionada() || carritoVentaRapida().length > 0) {
-          <div class="mx-5 mb-4 flex items-start gap-2 rounded-lg border border-cyan-100 bg-cyan-50/60 px-3 py-2 text-[11px] text-cyan-800"><i class="pi pi-tag mt-0.5"></i><span>Puedes añadir productos a una cita o registrar una venta sin cita.</span></div>
           @if (carritoRequiereReceta()) { <div class="mx-5 mb-4 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-800"><i class="pi pi-exclamation-triangle mt-0.5"></i><span>Verifica la receta antes de cobrar los productos marcados.</span></div> }
           <footer class="border-t border-slate-200 bg-slate-50/60 px-5 py-4"><div class="ml-auto max-w-[290px] space-y-2 text-sm"><div class="flex justify-between"><span class="text-slate-500">Subtotal sin IGV</span><span class="font-semibold text-slate-700">{{ formatMonto(subtotalSinIgv()) }}</span></div><div class="flex justify-between"><span class="text-slate-500">IGV incluido (18%)</span><span class="font-semibold text-slate-700">{{ formatMonto(igvIncluido()) }}</span></div><div class="flex justify-between border-t border-slate-200 pt-3"><span class="text-base font-extrabold text-slate-900">Total</span><span class="text-xl font-extrabold text-[#078ba0]">{{ formatMonto(totalOperacion()) }}</span></div></div></footer>
         }

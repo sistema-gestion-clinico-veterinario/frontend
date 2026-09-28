@@ -5,6 +5,7 @@ export interface ProductoRequest {
   precio: number;
   costo?: number | null;
   marca?: string;
+  marcaId: number;
   stock?: number;
   stockMinimo?: number;
   descripcion?: string;

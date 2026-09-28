@@ -8,11 +8,13 @@ import { MessageService } from 'primeng/api';
 import { ProductoService } from '../../../../core/services/producto.service';
 import { CategoriaProductoService } from '../../../../core/services/categoria-producto.service';
 import { UnidadMedidaService } from '../../../../core/services/unidad-medida.service';
+import { MarcaProductoService } from '../../../../core/services/marca-producto.service';
 import { LoteService } from '../../../../core/services/lote.service';
 import { AjusteStockService } from '../../../../core/services/ajuste-stock.service';
 import { MediaService } from '../../../../core/services/media.service';
 import { CategoriaProductoResponse } from '../../../../models/response/categoria-producto-response';
 import { UnidadMedidaResponse } from '../../../../models/response/unidad-medida-response';
+import { MarcaProductoResponse } from '../../../../models/response/marca-producto-response';
 import { LoteResponse } from '../../../../models/response/lote-response';
 import { AjusteStockResponse } from '../../../../models/response/ajuste-stock-response';
 import { AuthStore } from '../../../../store/auth.store';
@@ -35,6 +37,7 @@ export class ProductoFormComponent implements OnInit {
   private readonly productoService = inject(ProductoService);
   private readonly categoriaProductoService = inject(CategoriaProductoService);
   private readonly unidadMedidaService = inject(UnidadMedidaService);
+  private readonly marcaProductoService = inject(MarcaProductoService);
   private readonly loteService = inject(LoteService);
   private readonly ajusteStockService = inject(AjusteStockService);
   readonly mediaService = inject(MediaService);
@@ -53,6 +56,8 @@ export class ProductoFormComponent implements OnInit {
   guardando = signal(false);
   categorias = signal<CategoriaProductoResponse[]>([]);
   unidadesMedida = signal<UnidadMedidaResponse[]>([]);
+  marcas = signal<MarcaProductoResponse[]>([]);
+  marcaActual = signal<{ id: number; nombre: string } | null>(null);
 
   lotes = signal<LoteResponse[]>([]);
   cargandoLotes = signal(false);
@@ -99,10 +104,10 @@ export class ProductoFormComponent implements OnInit {
     categoriaId: [null, Validators.required],
     precio:      [null, [Validators.required, Validators.min(0.1), Validators.max(5000)]],
     costo:       [null, [Validators.min(0), Validators.max(5000)]],
-    marca:       ['', [Validators.maxLength(80)]],
+    marcaId:     [null, Validators.required],
     stock:       [0, [Validators.min(0)]],
     stockMinimo: [0, [Validators.min(0)]],
-    descripcion: ['', [Validators.maxLength(300)]],
+    descripcion: ['', [Validators.maxLength(1000)]],
     imagenUrl:   [''],
     codigoBarras: ['', [Validators.maxLength(64), Validators.pattern(/^[A-Za-z0-9-]*$/)]],
     fechaVencimiento: [''],
@@ -125,18 +130,24 @@ export class ProductoFormComponent implements OnInit {
       error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar las unidades de medida' })
     });
 
+    this.marcaProductoService.listarActivas(this.activeCompanyId ?? undefined).subscribe({
+      next: res => this.marcas.set(res.data ?? []),
+      error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar las marcas de productos' })
+    });
+
     if (skuParam) {
       this.productoService.obtener(skuParam, this.activeCompanyId ?? undefined).subscribe({
         next: res => {
           const item = res.data;
           if (item) {
             this.productoId = item.id;
+            this.marcaActual.set(item.marcaId ? { id: item.marcaId, nombre: item.marca || 'Marca registrada' } : null);
             this.productoForm.patchValue({
               nombre: item.nombre,
               categoriaId: item.categoriaId,
               precio: item.precio,
               costo: item.costo ?? null,
-              marca: item.marca ?? '',
+              marcaId: item.marcaId ?? null,
               stock: item.stock,
               stockMinimo: item.stockMinimo,
               descripcion: item.descripcion ?? '',
@@ -162,6 +173,11 @@ export class ProductoFormComponent implements OnInit {
     } else {
       this.cargando.set(false);
     }
+  }
+
+  marcaActualEstaActiva(): boolean {
+    const actual = this.marcaActual();
+    return !!actual && this.marcas().some(marca => marca.id === actual.id);
   }
 
   private isValidFileType(file: File): boolean {

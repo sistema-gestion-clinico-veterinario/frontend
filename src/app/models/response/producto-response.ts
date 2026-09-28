@@ -8,6 +8,7 @@ export interface ProductoResponse {
   precio: number;
   costo?: number;
   marca?: string;
+  marcaId?: number;
   stock: number;
   stockMinimo: number;
   descripcion?: string;

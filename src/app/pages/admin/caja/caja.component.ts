@@ -335,9 +335,17 @@ export class CajaComponent implements OnInit, OnDestroy {
     const query = this.clienteQuery.trim();
     if (!query) { this.clientesEncontrados.set([]); return; }
     this.buscandoClientes.set(true);
-    this.apoderadoService.listar(this.companyId || undefined, query, undefined, 0, 8, true).subscribe({
+    const esDocumento = /^\d+$/.test(query);
+    this.apoderadoService.listar(
+      this.companyId || undefined,
+      esDocumento ? undefined : query,
+      esDocumento ? query : undefined,
+      0,
+      8,
+      true
+    ).subscribe({
       next: res => {
-        this.clientesEncontrados.set(res.data?.content ?? []);
+        this.clientesEncontrados.set((res.data?.content ?? []).filter(cliente => cliente.activo));
         this.buscandoClientes.set(false);
       },
       error: () => {
@@ -356,6 +364,7 @@ export class CajaComponent implements OnInit, OnDestroy {
 
   quitarClienteVentaRapida() {
     this.clienteSeleccionado = null;
+    this.clienteQuery = '';
   }
 
   cobrarVentaRapida() {
