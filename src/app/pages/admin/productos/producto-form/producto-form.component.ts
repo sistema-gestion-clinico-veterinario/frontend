@@ -111,8 +111,8 @@ export class ProductoFormComponent implements OnInit {
   });
 
   ngOnInit() {
-    const idParam = this.route.snapshot.paramMap.get('id');
-    this.productoId = idParam ? Number(idParam) : null;
+    const skuParam = this.route.snapshot.paramMap.get('sku');
+    this.productoSku.set(skuParam);
     this.modoDetalle = this.route.snapshot.data['modo'] === 'detalle';
 
     this.categoriaProductoService.listarActivas(this.activeCompanyId ?? undefined).subscribe({
@@ -125,11 +125,12 @@ export class ProductoFormComponent implements OnInit {
       error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar las unidades de medida' })
     });
 
-    if (this.productoId) {
-      this.productoService.obtener(this.productoId).subscribe({
+    if (skuParam) {
+      this.productoService.obtener(skuParam, this.activeCompanyId ?? undefined).subscribe({
         next: res => {
           const item = res.data;
           if (item) {
+            this.productoId = item.id;
             this.productoForm.patchValue({
               nombre: item.nombre,
               categoriaId: item.categoriaId,
@@ -146,7 +147,7 @@ export class ProductoFormComponent implements OnInit {
               unidadMedidaId: item.unidadMedidaId ?? null
             });
             this.previewUrl.set(this.mediaService.resolveUrl(item.imagenUrl));
-            this.productoSku.set(item.sku);
+            this.productoSku.set(item.sku || skuParam);
             if (this.modoDetalle) this.productoForm.disable({ emitEvent: false });
             this.cargarLotes();
             this.cargarAjustesStock();
@@ -251,8 +252,9 @@ export class ProductoFormComponent implements OnInit {
       };
 
       this.guardando.set(true);
-      const req = this.productoId
-        ? this.productoService.actualizar(this.productoId, payload)
+      const sku = this.productoSku();
+      const req = sku
+        ? this.productoService.actualizar(sku, payload)
         : this.productoService.crear(payload);
 
       req.subscribe({
@@ -291,8 +293,9 @@ export class ProductoFormComponent implements OnInit {
   }
 
   editarDesdeDetalle() {
-    if (!this.productoId || !this.authStore.hasAccess('VISTA_PRODUCTOS', 'modificar')) return;
-    this.router.navigate(['/admin/productos', this.productoId, 'editar']);
+    const sku = this.productoSku();
+    if (!sku || !this.authStore.hasAccess('VISTA_PRODUCTOS', 'modificar')) return;
+    this.router.navigate(['/admin/productos', sku, 'editar']);
   }
 
   cargarLotes() {

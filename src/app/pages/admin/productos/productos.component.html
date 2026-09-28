@@ -225,12 +225,22 @@
                       <div class="relative flex items-center gap-1">
                         <button *appHasPermission="'VISTA_PRODUCTOS:leer'" (click)="verProducto(item)" class="inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-xs font-bold text-[#087f92] hover:bg-cyan-50" aria-label="Ver detalle del producto"><i class="pi pi-eye text-xs"></i>Ver</button>
                         @if (puedeGestionarProductos()) {
-                          <button type="button" (click)="toggleMenuProducto(item.id)" class="grid size-8 place-items-center rounded-lg text-slate-500 hover:bg-slate-100" aria-label="Más acciones"><i class="pi pi-ellipsis-v text-xs"></i></button>
+                          <button type="button" (click)="$event.stopPropagation(); toggleMenuProducto(item.id)" class="grid size-8 place-items-center rounded-lg text-slate-500 hover:bg-slate-100" aria-label="Más acciones" [attr.aria-expanded]="menuProductoId() === item.id"><i class="pi pi-ellipsis-v text-xs"></i></button>
                           @if (menuProductoId() === item.id) {
-                            <div class="absolute bottom-10 right-0 z-30 w-40 overflow-hidden rounded-lg border border-slate-200 bg-white py-1">
-                              <button *appHasPermission="'VISTA_PRODUCTOS:modificar'" type="button" (click)="editarProducto(item)" class="block w-full px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50">Editar</button>
-                              <button *appHasPermission="'VISTA_PRODUCTOS:modificar'" type="button" (click)="openConfirm(item.activo ? 'Desactivar producto' : 'Activar producto', '¿Está seguro de ' + (item.activo ? 'desactivar' : 'activar') + ' el producto «' + item.nombre + '»?', 'toggle', item, 'warning', 'Confirmar')" class="block w-full px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50">{{ item.activo ? 'Desactivar' : 'Activar' }}</button>
-                              <button *appHasPermission="'VISTA_PRODUCTOS:eliminar'" type="button" (click)="openConfirm('Eliminar producto', '¿Está seguro de eliminar el producto «' + item.nombre + '»?', 'eliminar', item, 'danger', 'Eliminar')" class="block w-full px-3 py-2 text-left text-xs font-semibold text-rose-600 hover:bg-rose-50">Eliminar</button>
+                            <div (click)="$event.stopPropagation()" class="absolute bottom-10 right-0 z-30 w-44 overflow-hidden rounded-lg border border-slate-200 bg-white py-1.5">
+                              <button *appHasPermission="'VISTA_PRODUCTOS:modificar'" type="button" (click)="editarProducto(item)" class="flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50">
+                                <i class="pi pi-pencil w-4 text-center text-xs text-slate-500"></i>
+                                <span>Editar producto</span>
+                              </button>
+                              <button *appHasPermission="'VISTA_PRODUCTOS:modificar'" type="button" (click)="openConfirm(item.activo ? 'Desactivar producto' : 'Activar producto', '¿Está seguro de ' + (item.activo ? 'desactivar' : 'activar') + ' el producto «' + item.nombre + '»?', 'toggle', item, 'warning', 'Confirmar')" class="flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50">
+                                <i class="pi w-4 text-center text-xs" [ngClass]="item.activo ? 'pi-eye-slash text-amber-600' : 'pi-check-circle text-emerald-600'"></i>
+                                <span>{{ item.activo ? 'Desactivar' : 'Activar' }}</span>
+                              </button>
+                              <div *appHasPermission="'VISTA_PRODUCTOS:eliminar'" class="mx-3 my-1 border-t border-slate-100"></div>
+                              <button *appHasPermission="'VISTA_PRODUCTOS:eliminar'" type="button" (click)="openConfirm('Eliminar producto', '¿Está seguro de eliminar el producto «' + item.nombre + '»?', 'eliminar', item, 'danger', 'Eliminar')" class="flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-xs font-semibold text-rose-600 hover:bg-rose-50">
+                                <i class="pi pi-trash w-4 text-center text-xs"></i>
+                                <span>Eliminar</span>
+                              </button>
                             </div>
                           }
                         }
