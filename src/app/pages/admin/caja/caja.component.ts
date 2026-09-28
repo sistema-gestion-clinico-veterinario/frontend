@@ -1,4 +1,5 @@
 import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { firstValueFrom } from 'rxjs';
 
 import { FormsModule } from '@angular/forms';
@@ -13,7 +14,7 @@ import { normalizeText } from '../../../core/utils/normalize-text.util';
 import { PagoService } from '../../../core/services/pago.service';
 import { CuentaCitaResponse, DetalleCuentaRequest, DetalleCuentaResponse, TipoDetalleCuenta } from '../../../models/response/cuenta-cita-response';
 import { MetodoPago } from '../../../models/request/pago-request';
-import { NotaVentaPdfService } from '../../../core/services/nota-venta-pdf.service';
+import { NotaVentaPdfService, NotaVentaPreview } from '../../../core/services/nota-venta-pdf.service';
 import { CompanyService } from '../../../core/services/company.service';
 import { ProductoService } from '../../../core/services/producto.service';
 import { ProductoResponse } from '../../../models/response/producto-response';
@@ -37,6 +38,7 @@ export class CajaComponent implements OnInit, OnDestroy {
   private readonly messageService = inject(MessageService);
   private readonly pagoService    = inject(PagoService);
   private readonly notaVentaPdf   = inject(NotaVentaPdfService);
+  private readonly sanitizer      = inject(DomSanitizer);
   private readonly companyService = inject(CompanyService);
   private readonly productoService = inject(ProductoService);
   private readonly realtimeStompService = inject(RealtimeStompService);
@@ -56,6 +58,13 @@ export class CajaComponent implements OnInit, OnDestroy {
   sesionCaja = signal<SesionCajaResponse | null>(null);
   showSesionModal = signal<'ABRIR' | 'ARQUEO' | 'CERRAR' | null>(null);
   savingSesion = signal(false);
+  showHistorialSesiones = signal(false);
+  historialSesiones = signal<SesionCajaResponse[]>([]);
+  historialSesionesLoading = signal(false);
+  historialSesionesPage = signal(0);
+  historialSesionesTotal = signal(0);
+  readonly historialSesionesSize = 8;
+  notaVentaPreview = signal<(NotaVentaPreview & { safeUrl: SafeResourceUrl }) | null>(null);
   sesionForm = { monto: null as number | null, observaciones: '' };
 
   filtroDesde = '';
@@ -407,6 +416,7 @@ export class CajaComponent implements OnInit, OnDestroy {
         if (r.data) {
           void this.obtenerEncabezadoEmpresaPdf()
             .then(({ empresa, logoDataUrl }) => this.notaVentaPdf.mostrarVentaLibre(r.data!, empresa, logoDataUrl))
+            .then(preview => this.abrirNotaVenta(preview))
             .catch(() => this.messageService.add({
               severity: 'warn', summary: 'Venta registrada',
               detail: 'La venta se guardó, pero no se pudo generar la nota de venta.'
@@ -423,6 +433,7 @@ export class CajaComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.realtimeConnection?.disconnect();
     if (this.pendingRefreshTimer !== null) clearTimeout(this.pendingRefreshTimer);
+    this.notaVentaPdf.liberar(this.notaVentaPreview());
   }
 
   private conectarActualizacionCaja() {
@@ -577,6 +588,7 @@ export class CajaComponent implements OnInit, OnDestroy {
         if (r.data) {
           void this.obtenerEncabezadoEmpresaPdf()
             .then(({ empresa, logoDataUrl }) => this.notaVentaPdf.mostrar(cuenta, r.data!, empresa, logoDataUrl))
+            .then(preview => this.abrirNotaVenta(preview))
             .catch(() => this.messageService.add({
               severity: 'warn',
               summary: 'Pago registrado',
@@ -633,6 +645,45 @@ export class CajaComponent implements OnInit, OnDestroy {
     });
   }
 
+  abrirHistorialSesiones() {
+    if (!this.companyId) return;
+    this.showHistorialSesiones.set(true);
+    this.cargarHistorialSesiones(0);
+  }
+
+  cargarHistorialSesiones(page: number) {
+    if (!this.companyId) return;
+    this.historialSesionesLoading.set(true);
+    this.cajaService.listarSesiones(this.companyId, page, this.historialSesionesSize).subscribe({
+      next: r => {
+        this.historialSesiones.set(r.data?.content ?? []);
+        this.historialSesionesPage.set((r.data as any)?.page?.number ?? r.data?.number ?? page);
+        this.historialSesionesTotal.set((r.data as any)?.page?.totalElements ?? r.data?.totalElements ?? 0);
+        this.historialSesionesLoading.set(false);
+      },
+      error: () => {
+        this.historialSesionesLoading.set(false);
+        this.messageService.add({ severity: 'error', summary: 'No se cargó el historial', detail: 'Intenta nuevamente.' });
+      }
+    });
+  }
+
+  abrirNotaVenta(preview: NotaVentaPreview) {
+    this.notaVentaPdf.liberar(this.notaVentaPreview());
+    this.notaVentaPreview.set({ ...preview, safeUrl: this.sanitizer.bypassSecurityTrustResourceUrl(preview.url) });
+  }
+
+  cerrarNotaVenta() {
+    const preview = this.notaVentaPreview();
+    this.notaVentaPreview.set(null);
+    this.notaVentaPdf.liberar(preview);
+  }
+
+  descargarNotaVenta() {
+    const preview = this.notaVentaPreview();
+    if (preview) this.notaVentaPdf.descargar(preview);
+  }
+
   abrirModalSesion(tipo: 'ABRIR' | 'ARQUEO' | 'CERRAR') {
     this.sesionForm = {
       monto: tipo === 'ABRIR' ? 0 : Number(this.sesionCaja()?.efectivoEsperado ?? 0),
@@ -660,6 +711,7 @@ export class CajaComponent implements OnInit, OnDestroy {
         this.showSesionModal.set(null);
         this.savingSesion.set(false);
         this.cargar();
+        if (this.showHistorialSesiones()) this.cargarHistorialSesiones(0);
         this.messageService.add({ severity: 'success', summary: tipo === 'ABRIR' ? 'Caja abierta' : tipo === 'ARQUEO' ? 'Arqueo registrado' : 'Caja cerrada' });
       },
       error: err => {

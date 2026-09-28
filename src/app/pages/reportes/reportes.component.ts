@@ -23,7 +23,8 @@ import {
   ReportesClinicos,
   ReportesClinicosFiltros,
   ReportesComparativoEmpresas,
-  PacientesInactivosPage
+  PacientesInactivosPage,
+  ReporteVentasProductos
 } from '../../models/response/reportes-clinicos-response';
 import { AuthStore } from '../../store/auth.store';
 import { ReportesChartService } from './reportes-chart.service';
@@ -53,7 +54,7 @@ export default class ReportesComponent {
   private readonly reloadReports = new Subject<void>();
   private readonly chartCanvases =
     viewChildren<ElementRef<HTMLCanvasElement>>('reportChart');
-  private readonly selectedCompanyId = computed(() =>
+  readonly selectedCompanyId = computed(() =>
     this.authStore.selectedEnterprise()?.establishmentId
       ?? this.authStore.companyId()
       ?? undefined
@@ -76,6 +77,8 @@ export default class ReportesComponent {
   readonly data = signal<ReportesClinicos | null>(null);
   readonly comparativo = signal<ReportesComparativoEmpresas | null>(null);
   readonly pacientesInactivos = signal<PacientesInactivosPage | null>(null);
+  readonly ventasProductos = signal<ReporteVentasProductos | null>(null);
+  readonly tipoReporte = signal<'CLINICA' | 'VENTAS_PRODUCTOS'>('CLINICA');
   readonly pacientesInactivosPage = signal(0);
   private readonly pacientesInactivosPageSize = 10;
   readonly veterinarios = signal<EmpleadoListResponse[]>([]);
@@ -171,6 +174,17 @@ export default class ReportesComponent {
       .subscribe(response => this.data.set(response.data));
 
     combineLatest([
+      companyId$,
+      toObservable(this.tipoReporte),
+      this.reloadReports.pipe(startWith(undefined))
+    ]).pipe(
+      switchMap(([companyId, tipo]) => tipo === 'VENTAS_PRODUCTOS' && companyId != null
+        ? this.reportesService.obtenerVentasProductos(companyId, this.fechaDesde, this.fechaHasta).pipe(catchError(() => EMPTY))
+        : EMPTY),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(response => this.ventasProductos.set(response.data));
+
+    combineLatest([
       toObservable(this.verComparativoEmpresas),
       this.reloadReports.pipe(startWith(undefined))
     ])
@@ -219,6 +233,11 @@ export default class ReportesComponent {
     if (this.periodo === 'personalizado') return;
     this.actualizarRangoSeleccionado();
     this.pacientesInactivosPage.set(0);
+    this.reloadReports.next();
+  }
+
+  cambiarTipoReporte(tipo: 'CLINICA' | 'VENTAS_PRODUCTOS'): void {
+    this.tipoReporte.set(tipo);
     this.reloadReports.next();
   }
 
