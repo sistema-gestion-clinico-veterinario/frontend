@@ -6,6 +6,8 @@ import { MascotaRequest } from '../../models/request/mascota-request';
 import { Page } from '../../models/response/page';
 import { ApiResponse } from '../../models/response/api-response';
 import { SKIP_GLOBAL_LOADING } from '../interceptors/api.interceptor';
+import { MascotaRelacionRequest } from '../../models/request/mascota-relacion-request';
+import { MascotaRelacionResponse } from '../../models/response/mascota-relacion-response';
 
 @Injectable({
   providedIn: 'root'
@@ -56,5 +58,29 @@ export class MascotaService {
       otroMotivoBaja: otroMotivoBaja
     };
     return this.http.patch<ApiResponse<void>>(`${this.apiUrl}/${id}/status`, request);
+  }
+
+  listarRelaciones(uuid: string) {
+    return this.http.get<ApiResponse<MascotaRelacionResponse[]>>(
+      `${this.apiUrl}/${encodeURIComponent(uuid)}/relationships`
+    );
+  }
+
+  crearRelacion(uuid: string, request: MascotaRelacionRequest) {
+    return this.http.post<ApiResponse<MascotaRelacionResponse>>(
+      `${this.apiUrl}/${encodeURIComponent(uuid)}/relationships`, request
+    );
+  }
+
+  actualizarRelacion(uuid: string, relacionUuid: string, request: MascotaRelacionRequest) {
+    return this.http.put<ApiResponse<MascotaRelacionResponse>>(
+      `${this.apiUrl}/${encodeURIComponent(uuid)}/relationships/${encodeURIComponent(relacionUuid)}`, request
+    );
+  }
+
+  revocarRelacion(uuid: string, relacionUuid: string) {
+    return this.http.delete<ApiResponse<void>>(
+      `${this.apiUrl}/${encodeURIComponent(uuid)}/relationships/${encodeURIComponent(relacionUuid)}`
+    );
   }
 }
