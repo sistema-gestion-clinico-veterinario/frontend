@@ -20,6 +20,8 @@ import { InputFilterDirective } from '../../../core/directives/input-filter.dire
 import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
 import { textContentValidator } from '../../../core/validators/text-content.validator';
 import { normalizeText } from '../../../core/utils/normalize-text.util';
+import { MascotaRelacionRequest, TipoRelacionMascota } from '../../../models/request/mascota-relacion-request';
+import { MascotaRelacionResponse, TipoRelacionMascotaResponse } from '../../../models/response/mascota-relacion-response';
 
 @Component({
   selector: 'app-mascota-form',
@@ -62,6 +64,7 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
 
   isEdit     = signal<boolean>(false);
   editingId  = signal<number | null>(null);
+  mascotaUuid = signal<string | null>(null);
   returnPage = 0;
   returnUrl: string | null = null;
   apoderados = signal<{ label: string; value: number }[]>([]);
@@ -81,12 +84,25 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
   ncGenero    = signal('MASCULINO');
   ncDireccion = signal('');
   ncReferencias = signal('');
+  ncSubmitted = signal(false);
+  ncTouched = signal<Record<string, boolean>>({});
   previewUrl          = signal<string | null>(null);
   photoError          = signal(false);
   selectedFile        = signal<File | null>(null);
   uploadingPhoto      = signal<boolean>(false);
   isDragging          = signal<boolean>(false);
   zoomModalOpen       = signal<boolean>(false);
+  relaciones = signal<MascotaRelacionResponse[]>([]);
+  relacionesLoading = signal(false);
+  displayRelacionModal = signal(false);
+  savingRelacion = signal(false);
+  editingRelacion = signal<MascotaRelacionResponse | null>(null);
+
+  readonly tipoRelacionOpciones: { label: string; value: TipoRelacionMascota; description: string }[] = [
+    { label: 'Copropietario', value: 'COPROPIETARIO', description: 'Comparte la responsabilidad completa sobre la mascota.' },
+    { label: 'Representante autorizado', value: 'REPRESENTANTE_AUTORIZADO', description: 'Solo tendrá las autorizaciones que selecciones.' },
+    { label: 'Responsable de pago', value: 'RESPONSABLE_PAGO', description: 'Puede asumir pagos, sin acceso clínico ni capacidad de autorizar atención.' }
+  ];
 
   readonly especieOpciones = [
     { label: 'Perro',  value: 'PERRO'  },
@@ -123,6 +139,16 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
     peso:            [null, [Validators.min(0.01), Validators.max(120)]],
     fotoUrl:         ['', [Validators.maxLength(500), Validators.pattern(/^$|^https?:\/\/[^\s<>]+$/)]],
     apoderadoId:     [null, [Validators.required]],
+  });
+
+  relacionForm: FormGroup = this.fb.group({
+    apoderadoId: [null, [Validators.required]],
+    tipoRelacion: ['REPRESENTANTE_AUTORIZADO', [Validators.required]],
+    puedeRecibirInformacion: [false],
+    puedeAutorizarAtencion: [false],
+    puedeRealizarPagos: [false],
+    fechaFin: [null],
+    observaciones: ['', [Validators.maxLength(500)]],
   });
 
   razaForm: FormGroup = this.fb.group({
@@ -175,9 +201,11 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
       this.razaFilterText.set('');
       this.mascotaForm.get('razaId')?.setValue(null);
     });
+    this.relacionForm.get('tipoRelacion')?.valueChanges.subscribe(tipo => this.aplicarReglasRelacion(tipo));
   }
 
   private patchForm(m: MascotaResponse) {
+    this.mascotaUuid.set(m.uuid);
     this.mascotaForm.patchValue({
       nombre:          m.nombreCompleto,
       especie:         m.especie,
@@ -192,6 +220,150 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
     if (m.razaNombre) this.razaFilterText.set(m.razaNombre);
     this.photoError.set(false);
     this.previewUrl.set(this.mediaService.resolveUrl(m.fotoUrl));
+    this.loadRelaciones();
+  }
+
+  get canManageRelations(): boolean {
+    return this.authStore.hasAccess('VISTA_MASCOTAS', 'modificar');
+  }
+
+  loadRelaciones() {
+    const uuid = this.mascotaUuid();
+    if (!uuid) return;
+    this.relacionesLoading.set(true);
+    this.mascotaService.listarRelaciones(uuid).subscribe({
+      next: res => {
+        this.relaciones.set(res.data);
+        this.relacionesLoading.set(false);
+      },
+      error: err => {
+        this.relacionesLoading.set(false);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'No se pudieron cargar las personas vinculadas',
+          detail: err.error?.message || 'Inténtalo nuevamente.'
+        });
+      }
+    });
+  }
+
+  abrirNuevaRelacion() {
+    this.editingRelacion.set(null);
+    this.relacionForm.reset({
+      apoderadoId: null,
+      tipoRelacion: 'REPRESENTANTE_AUTORIZADO',
+      puedeRecibirInformacion: false,
+      puedeAutorizarAtencion: false,
+      puedeRealizarPagos: false,
+      fechaFin: null,
+      observaciones: ''
+    });
+    this.relacionForm.get('apoderadoId')?.enable({ emitEvent: false });
+    this.aplicarReglasRelacion('REPRESENTANTE_AUTORIZADO');
+    this.displayRelacionModal.set(true);
+  }
+
+  editarRelacion(relacion: MascotaRelacionResponse) {
+    if (relacion.tipoRelacion === 'PROPIETARIO_PRINCIPAL' || !relacion.activo) return;
+    this.editingRelacion.set(relacion);
+    this.relacionForm.reset({
+      apoderadoId: relacion.apoderadoId,
+      tipoRelacion: relacion.tipoRelacion,
+      puedeRecibirInformacion: relacion.puedeRecibirInformacion,
+      puedeAutorizarAtencion: relacion.puedeAutorizarAtencion,
+      puedeRealizarPagos: relacion.puedeRealizarPagos,
+      fechaFin: relacion.fechaFin ?? null,
+      observaciones: relacion.observaciones ?? ''
+    });
+    this.relacionForm.get('apoderadoId')?.disable({ emitEvent: false });
+    this.aplicarReglasRelacion(relacion.tipoRelacion);
+    this.displayRelacionModal.set(true);
+  }
+
+  guardarRelacion() {
+    if (this.relacionForm.invalid) {
+      this.relacionForm.markAllAsTouched();
+      return;
+    }
+    const raw = this.relacionForm.getRawValue();
+    if (raw.tipoRelacion === 'REPRESENTANTE_AUTORIZADO'
+        && !raw.puedeRecibirInformacion && !raw.puedeAutorizarAtencion && !raw.puedeRealizarPagos) {
+      this.messageService.add({ severity: 'warn', summary: 'Selecciona una autorización', detail: 'El representante debe tener al menos una autorización.' });
+      return;
+    }
+    const uuid = this.mascotaUuid();
+    if (!uuid) return;
+    const request: MascotaRelacionRequest = {
+      apoderadoId: Number(raw.apoderadoId),
+      tipoRelacion: raw.tipoRelacion,
+      puedeRecibirInformacion: !!raw.puedeRecibirInformacion,
+      puedeAutorizarAtencion: !!raw.puedeAutorizarAtencion,
+      puedeRealizarPagos: !!raw.puedeRealizarPagos,
+      fechaFin: raw.fechaFin || null,
+      observaciones: normalizeText(raw.observaciones) || null
+    };
+    this.savingRelacion.set(true);
+    const editing = this.editingRelacion();
+    const operation = editing
+      ? this.mascotaService.actualizarRelacion(uuid, editing.uuid, request)
+      : this.mascotaService.crearRelacion(uuid, request);
+    operation.subscribe({
+      next: () => {
+        this.savingRelacion.set(false);
+        this.displayRelacionModal.set(false);
+        this.loadRelaciones();
+        this.messageService.add({ severity: 'success', summary: 'Relación guardada', detail: 'Las autorizaciones quedaron registradas.' });
+      },
+      error: err => {
+        this.savingRelacion.set(false);
+        this.messageService.add({ severity: 'error', summary: 'No se pudo guardar', detail: err.error?.message || 'Revisa los datos e inténtalo nuevamente.' });
+      }
+    });
+  }
+
+  revocarRelacion(relacion: MascotaRelacionResponse) {
+    const uuid = this.mascotaUuid();
+    if (!uuid || relacion.tipoRelacion === 'PROPIETARIO_PRINCIPAL') return;
+    if (!window.confirm(`¿Revocar la autorización de ${relacion.personaNombre}?`)) return;
+    this.mascotaService.revocarRelacion(uuid, relacion.uuid).subscribe({
+      next: () => {
+        this.loadRelaciones();
+        this.messageService.add({ severity: 'success', summary: 'Autorización revocada', detail: 'La persona ya no podrá actuar por esta mascota.' });
+      },
+      error: err => this.messageService.add({ severity: 'error', summary: 'No se pudo revocar', detail: err.error?.message || 'Inténtalo nuevamente.' })
+    });
+  }
+
+  relacionLabel(tipo: TipoRelacionMascotaResponse): string {
+    const labels: Record<TipoRelacionMascotaResponse, string> = {
+      PROPIETARIO_PRINCIPAL: 'Propietario principal',
+      COPROPIETARIO: 'Copropietario',
+      REPRESENTANTE_AUTORIZADO: 'Representante autorizado',
+      RESPONSABLE_PAGO: 'Responsable de pago'
+    };
+    return labels[tipo];
+  }
+
+  autorizacionesDe(relacion: MascotaRelacionResponse): string[] {
+    const autorizaciones: string[] = [];
+    if (relacion.puedeRecibirInformacion) autorizaciones.push('Recibir información');
+    if (relacion.puedeAutorizarAtencion) autorizaciones.push('Autorizar atención');
+    if (relacion.puedeRealizarPagos) autorizaciones.push('Realizar pagos');
+    return autorizaciones;
+  }
+
+  private aplicarReglasRelacion(tipo: TipoRelacionMascotaResponse | null) {
+    const info = this.relacionForm.get('puedeRecibirInformacion');
+    const atencion = this.relacionForm.get('puedeAutorizarAtencion');
+    const pagos = this.relacionForm.get('puedeRealizarPagos');
+    [info, atencion, pagos].forEach(control => control?.enable({ emitEvent: false }));
+    if (tipo === 'COPROPIETARIO') {
+      this.relacionForm.patchValue({ puedeRecibirInformacion: true, puedeAutorizarAtencion: true, puedeRealizarPagos: true }, { emitEvent: false });
+      [info, atencion, pagos].forEach(control => control?.disable({ emitEvent: false }));
+    } else if (tipo === 'RESPONSABLE_PAGO') {
+      this.relacionForm.patchValue({ puedeRecibirInformacion: false, puedeAutorizarAtencion: false, puedeRealizarPagos: true }, { emitEvent: false });
+      [info, atencion, pagos].forEach(control => control?.disable({ emitEvent: false }));
+    }
   }
 
   goBack() {
@@ -469,7 +641,7 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
     const raw = input.value;
     let filtered = '';
     if (tipo === 'DNI' || tipo === 'CARNET_EXTRANJERIA') {
-      filtered = raw.replace(/\D/g, '');
+      filtered = raw.replace(/\D/g, '').slice(0, this.ncDocumentoMaxLength());
     } else if (tipo === 'PASAPORTE') {
       for (let i = 0; i < raw.length; i++) {
         const ch = raw[i];
@@ -479,10 +651,89 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
           filtered += ch;
         }
       }
+      filtered = filtered.slice(0, this.ncDocumentoMaxLength());
     }
-    if (filtered !== raw) {
-      input.value = filtered;
-      this.ncNumDoc.set(filtered);
+    input.value = filtered;
+    this.ncNumDoc.set(filtered);
+  }
+
+  onTipoDocumentoChange(tipo: string) {
+    this.ncTipoDoc.set(tipo);
+    this.ncNumDoc.set('');
+    this.marcarNcTocado('numeroDocumento');
+  }
+
+  ncDocumentoMaxLength(): number {
+    return this.ncTipoDoc() === 'DNI' ? 8 : 9;
+  }
+
+  ncDocumentoAyuda(): string {
+    if (this.ncTipoDoc() === 'DNI') return 'Ingresa exactamente 8 dígitos.';
+    if (this.ncTipoDoc() === 'CARNET_EXTRANJERIA') return 'Ingresa exactamente 9 dígitos.';
+    return 'Ingresa una letra seguida de 8 dígitos.';
+  }
+
+  marcarNcTocado(campo: string) {
+    this.ncTouched.update(actual => ({ ...actual, [campo]: true }));
+  }
+
+  mostrarNcError(campo: string): boolean {
+    return (this.ncSubmitted() || !!this.ncTouched()[campo]) && !!this.ncFieldError(campo);
+  }
+
+  ncFieldError(campo: string): string {
+    const nombre = this.ncNombre();
+    const apellido = this.ncApellido();
+    const documento = this.ncNumDoc().trim();
+    const telefono = this.ncTelefono().trim();
+    const correo = this.ncCorreo().trim();
+    const direccion = this.ncDireccion();
+    const referencias = this.ncReferencias();
+    const soloLetras = /^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/;
+    const textoSeguro = /^(?=.*\p{L})(?!.*[{}\[\]<>*|\\^~`=@])(?!(?:[\p{P}\p{S}\s]+)$).*$/u;
+
+    switch (campo) {
+      case 'nombre':
+        if (!nombre.trim()) return 'Los nombres son obligatorios.';
+        if (nombre.trim().length < 2) return 'Ingresa al menos 2 caracteres.';
+        if (nombre.length > 80) return 'Máximo 80 caracteres.';
+        if (nombre !== nombre.trim()) return 'No uses espacios al inicio o al final.';
+        if (!soloLetras.test(nombre)) return 'Solo se permiten letras y espacios.';
+        return '';
+      case 'apellido':
+        if (!apellido.trim()) return 'Los apellidos son obligatorios.';
+        if (apellido.trim().length < 2) return 'Ingresa al menos 2 caracteres.';
+        if (apellido.length > 80) return 'Máximo 80 caracteres.';
+        if (apellido !== apellido.trim()) return 'No uses espacios al inicio o al final.';
+        if (!soloLetras.test(apellido)) return 'Solo se permiten letras y espacios.';
+        return '';
+      case 'numeroDocumento': {
+        if (!documento) return 'El número de documento es obligatorio.';
+        const valido = this.ncTipoDoc() === 'DNI'
+          ? /^\d{8}$/.test(documento)
+          : this.ncTipoDoc() === 'PASAPORTE'
+            ? /^[A-Za-z]\d{8}$/.test(documento)
+            : /^\d{9}$/.test(documento);
+        return valido ? '' : this.ncDocumentoAyuda();
+      }
+      case 'telefono':
+        if (!telefono) return 'El teléfono es obligatorio.';
+        return /^\d{9}$/.test(telefono) ? '' : 'Ingresa exactamente 9 dígitos.';
+      case 'correo':
+        if (!correo) return 'El correo es obligatorio.';
+        if (correo.length > 100) return 'Máximo 100 caracteres.';
+        return /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/.test(correo)
+          ? '' : 'Ingresa un correo válido en minúsculas.';
+      case 'direccion':
+        if (!direccion.trim()) return 'La dirección es obligatoria.';
+        if (direccion.length > 200) return 'Máximo 200 caracteres.';
+        return textoSeguro.test(direccion.trim()) ? '' : 'Ingresa una dirección válida.';
+      case 'referencias':
+        if (!referencias.trim()) return '';
+        if (referencias.length > 500) return 'Máximo 500 caracteres.';
+        return textoSeguro.test(referencias.trim()) ? '' : 'Ingresa referencias válidas.';
+      default:
+        return '';
     }
   }
 
@@ -492,10 +743,21 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
       this.ncNombre.set(''); this.ncApellido.set(''); this.ncTipoDoc.set('DNI');
       this.ncNumDoc.set(''); this.ncTelefono.set(''); this.ncCorreo.set('');
       this.ncGenero.set('MASCULINO'); this.ncDireccion.set(''); this.ncReferencias.set('');
+      this.ncSubmitted.set(false); this.ncTouched.set({});
     }
   }
 
   crearCliente() {
+    this.ncSubmitted.set(true);
+    const campos = ['nombre', 'apellido', 'numeroDocumento', 'telefono', 'correo', 'direccion', 'referencias'];
+    if (campos.some(campo => !!this.ncFieldError(campo))) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Revisa los datos del propietario',
+        detail: 'Corrige los campos marcados antes de continuar.'
+      });
+      return;
+    }
     const nombre   = normalizeText(this.ncNombre());
     const apellido = normalizeText(this.ncApellido());
     const telefono = this.ncTelefono().trim();

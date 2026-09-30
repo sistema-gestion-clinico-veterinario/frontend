@@ -174,39 +174,63 @@
                           <div class="mt-2 border border-blue-200 rounded-lg p-4 space-y-3 bg-blue-50/30">
                             <p class="text-xs font-extrabold text-blue-500 uppercase tracking-wider">Nuevo propietario</p>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                              <input type="text" appInputFilter="letters" [appInputFilterMaxLength]="80" maxlength="80" [ngModel]="ncNombre()" (ngModelChange)="ncNombre.set($event)" [ngModelOptions]="{standalone: true}"
-                                placeholder="Nombres *"
-                                class="w-full h-9 px-3 border border-slate-200 rounded-lg text-sm font-medium outline-none focus:border-blue-500 bg-white transition-all" />
-                                <input type="text" appInputFilter="letters" [appInputFilterMaxLength]="80" maxlength="80" [ngModel]="ncApellido()" (ngModelChange)="ncApellido.set($event)" [ngModelOptions]="{standalone: true}"
-                                  placeholder="Apellidos *"
-                                  class="w-full h-9 px-3 border border-slate-200 rounded-lg text-sm font-medium outline-none focus:border-blue-500 bg-white transition-all" />
+                              <div>
+                                <input type="text" appInputFilter="letters" [appInputFilterMaxLength]="80" maxlength="80" [ngModel]="ncNombre()" (ngModelChange)="ncNombre.set($event)" (blur)="marcarNcTocado('nombre')" [ngModelOptions]="{standalone: true}"
+                                  placeholder="Nombres *" [attr.aria-invalid]="mostrarNcError('nombre')"
+                                  class="w-full h-9 px-3 border rounded-lg text-sm font-medium outline-none bg-white"
+                                  [class.border-rose-400]="mostrarNcError('nombre')" [class.border-slate-200]="!mostrarNcError('nombre')" />
+                                @if (mostrarNcError('nombre')) { <p class="mt-1 text-[11px] text-rose-600">{{ ncFieldError('nombre') }}</p> }
+                              </div>
+                              <div>
+                                <input type="text" appInputFilter="letters" [appInputFilterMaxLength]="80" maxlength="80" [ngModel]="ncApellido()" (ngModelChange)="ncApellido.set($event)" (blur)="marcarNcTocado('apellido')" [ngModelOptions]="{standalone: true}"
+                                  placeholder="Apellidos *" [attr.aria-invalid]="mostrarNcError('apellido')"
+                                  class="w-full h-9 px-3 border rounded-lg text-sm font-medium outline-none bg-white"
+                                  [class.border-rose-400]="mostrarNcError('apellido')" [class.border-slate-200]="!mostrarNcError('apellido')" />
+                                @if (mostrarNcError('apellido')) { <p class="mt-1 text-[11px] text-rose-600">{{ ncFieldError('apellido') }}</p> }
+                              </div>
                                 </div>
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                  <select [ngModel]="ncTipoDoc()" (ngModelChange)="ncTipoDoc.set($event)" [ngModelOptions]="{standalone: true}"
+                                  <select [ngModel]="ncTipoDoc()" (ngModelChange)="onTipoDocumentoChange($event)" [ngModelOptions]="{standalone: true}"
                                     class="w-full h-9 px-3 border border-slate-200 rounded-lg text-sm font-medium outline-none focus:border-blue-500 bg-white transition-all appearance-none cursor-pointer">
                                     @for (opt of tipoDocOpciones; track opt) {
                                       <option [value]="opt.value">{{ opt.label }}</option>
                                     }
                                   </select>
-                                  <input type="text" [ngModel]="ncNumDoc()" (ngModelChange)="ncNumDoc.set($event)" (input)="onDocInput($event)" [ngModelOptions]="{standalone: true}"
-                                    placeholder="N° Documento *"
-                                    class="w-full h-9 px-3 border border-slate-200 rounded-lg text-sm font-medium outline-none focus:border-blue-500 bg-white transition-all" />
+                                  <div>
+                                    <input type="text" [ngModel]="ncNumDoc()" (ngModelChange)="ncNumDoc.set($event)" (input)="onDocInput($event)" (blur)="marcarNcTocado('numeroDocumento')" [ngModelOptions]="{standalone: true}"
+                                      [attr.maxlength]="ncDocumentoMaxLength()" [attr.inputmode]="ncTipoDoc() === 'PASAPORTE' ? 'text' : 'numeric'" placeholder="N° Documento *" [attr.aria-invalid]="mostrarNcError('numeroDocumento')"
+                                      class="w-full h-9 px-3 border rounded-lg text-sm font-medium outline-none bg-white"
+                                      [class.border-rose-400]="mostrarNcError('numeroDocumento')" [class.border-slate-200]="!mostrarNcError('numeroDocumento')" />
+                                    @if (mostrarNcError('numeroDocumento')) { <p class="mt-1 text-[11px] text-rose-600">{{ ncFieldError('numeroDocumento') }}</p> }
+                                  </div>
                                   </div>
                                   <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                    <input type="tel" appInputFilter="digits" [appInputFilterMaxLength]="9" inputmode="numeric" maxlength="9" [ngModel]="ncTelefono()" (ngModelChange)="ncTelefono.set($event)" [ngModelOptions]="{standalone: true}"
-                                      placeholder="Teléfono *"
-                                      class="w-full h-9 px-3 border border-slate-200 rounded-lg text-sm font-medium outline-none focus:border-blue-500 bg-white transition-all" />
-                                      <input type="email" maxlength="100" [ngModel]="ncCorreo()" (ngModelChange)="ncCorreo.set($event)" [ngModelOptions]="{standalone: true}"
-                                        placeholder="Correo *"
-                                        class="w-full h-9 px-3 border border-slate-200 rounded-lg text-sm font-medium outline-none focus:border-blue-500 bg-white transition-all" />
+                                    <div>
+                                      <input type="tel" appInputFilter="digits" [appInputFilterMaxLength]="9" inputmode="numeric" maxlength="9" [ngModel]="ncTelefono()" (ngModelChange)="ncTelefono.set($event)" (blur)="marcarNcTocado('telefono')" [ngModelOptions]="{standalone: true}"
+                                        placeholder="Teléfono *" [attr.aria-invalid]="mostrarNcError('telefono')" class="w-full h-9 px-3 border rounded-lg text-sm font-medium outline-none bg-white"
+                                        [class.border-rose-400]="mostrarNcError('telefono')" [class.border-slate-200]="!mostrarNcError('telefono')" />
+                                      @if (mostrarNcError('telefono')) { <p class="mt-1 text-[11px] text-rose-600">{{ ncFieldError('telefono') }}</p> }
+                                    </div>
+                                    <div>
+                                      <input type="email" maxlength="100" [ngModel]="ncCorreo()" (ngModelChange)="ncCorreo.set($event)" (blur)="marcarNcTocado('correo')" [ngModelOptions]="{standalone: true}"
+                                        placeholder="Correo *" [attr.aria-invalid]="mostrarNcError('correo')" class="w-full h-9 px-3 border rounded-lg text-sm font-medium outline-none bg-white"
+                                        [class.border-rose-400]="mostrarNcError('correo')" [class.border-slate-200]="!mostrarNcError('correo')" />
+                                      @if (mostrarNcError('correo')) { <p class="mt-1 text-[11px] text-rose-600">{{ ncFieldError('correo') }}</p> }
+                                    </div>
                                       </div>
                                       <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                        <input type="text" maxlength="200" [ngModel]="ncDireccion()" (ngModelChange)="ncDireccion.set($event)" [ngModelOptions]="{standalone: true}"
-                                          placeholder="Dirección *"
-                                          class="w-full h-9 px-3 border border-slate-200 rounded-lg text-sm font-medium outline-none focus:border-blue-500 bg-white transition-all" />
-                                          <input type="text" maxlength="500" [ngModel]="ncReferencias()" (ngModelChange)="ncReferencias.set($event)" [ngModelOptions]="{standalone: true}"
-                                            placeholder="Referencias"
-                                            class="w-full h-9 px-3 border border-slate-200 rounded-lg text-sm font-medium outline-none focus:border-blue-500 bg-white transition-all" />
+                                        <div>
+                                          <input type="text" maxlength="200" [ngModel]="ncDireccion()" (ngModelChange)="ncDireccion.set($event)" (blur)="marcarNcTocado('direccion')" [ngModelOptions]="{standalone: true}"
+                                            placeholder="Dirección *" [attr.aria-invalid]="mostrarNcError('direccion')" class="w-full h-9 px-3 border rounded-lg text-sm font-medium outline-none bg-white"
+                                            [class.border-rose-400]="mostrarNcError('direccion')" [class.border-slate-200]="!mostrarNcError('direccion')" />
+                                          @if (mostrarNcError('direccion')) { <p class="mt-1 text-[11px] text-rose-600">{{ ncFieldError('direccion') }}</p> }
+                                        </div>
+                                        <div>
+                                          <input type="text" maxlength="500" [ngModel]="ncReferencias()" (ngModelChange)="ncReferencias.set($event)" (blur)="marcarNcTocado('referencias')" [ngModelOptions]="{standalone: true}"
+                                            placeholder="Referencias" [attr.aria-invalid]="mostrarNcError('referencias')" class="w-full h-9 px-3 border rounded-lg text-sm font-medium outline-none bg-white"
+                                            [class.border-rose-400]="mostrarNcError('referencias')" [class.border-slate-200]="!mostrarNcError('referencias')" />
+                                          @if (mostrarNcError('referencias')) { <p class="mt-1 text-[11px] text-rose-600">{{ ncFieldError('referencias') }}</p> }
+                                        </div>
                                           </div>
                                           <div class="flex gap-2">
                                             <button type="button" (click)="ncGenero.set('MASCULINO')"
@@ -349,6 +373,85 @@
                                 </div>
                               </form>
 
+                              @if (isEdit()) {
+                                <section class="border-t border-slate-200 bg-white px-4 py-5 sm:px-6 lg:px-7">
+                                  <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                                    <div>
+                                      <div class="flex items-center gap-2">
+                                        <i class="pi pi-users text-[var(--brand-primary)]"></i>
+                                        <h2 class="text-sm font-bold text-slate-800">Personas vinculadas</h2>
+                                      </div>
+                                      <p class="mt-1 max-w-2xl text-xs leading-5 text-slate-500">
+                                        Define quién puede recibir información, autorizar atención o realizar pagos por esta mascota.
+                                        Acompañarla a una cita no concede acceso automáticamente.
+                                      </p>
+                                    </div>
+                                    @if (canManageRelations) {
+                                      <button type="button" (click)="abrirNuevaRelacion()"
+                                        class="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-[var(--brand-primary)] px-4 text-xs font-bold text-white hover:bg-[var(--brand-hover)]">
+                                        <i class="pi pi-user-plus"></i>
+                                        Vincular persona
+                                      </button>
+                                    }
+                                  </div>
+
+                                  <div class="mt-4 overflow-hidden rounded-xl border border-slate-200">
+                                    @if (relacionesLoading()) {
+                                      <div class="space-y-3 p-4">
+                                        @for (item of [1, 2]; track item) {
+                                          <div class="h-14 animate-pulse rounded-lg bg-slate-100"></div>
+                                        }
+                                      </div>
+                                    } @else if (relaciones().length === 0) {
+                                      <div class="px-4 py-8 text-center">
+                                        <i class="pi pi-users text-2xl text-slate-300"></i>
+                                        <p class="mt-2 text-sm font-semibold text-slate-600">No hay personas vinculadas</p>
+                                        <p class="mt-1 text-xs text-slate-400">El propietario principal aparecerá aquí cuando se guarden los datos.</p>
+                                      </div>
+                                    } @else {
+                                      <div class="hidden grid-cols-[minmax(190px,1fr)_180px_minmax(260px,1.4fr)_100px] gap-4 border-b border-slate-200 bg-slate-50 px-4 py-2.5 text-[10px] font-bold uppercase tracking-wide text-slate-500 md:grid">
+                                        <span>Persona</span><span>Relación</span><span>Autorizaciones</span><span class="text-right">Acciones</span>
+                                      </div>
+                                      @for (relacion of relaciones(); track relacion.uuid) {
+                                        <div class="grid gap-3 border-b border-slate-100 px-4 py-3 last:border-b-0 md:grid-cols-[minmax(190px,1fr)_180px_minmax(260px,1.4fr)_100px] md:items-center md:gap-4"
+                                          [class.opacity-60]="!relacion.activo">
+                                          <div class="min-w-0">
+                                            <p class="truncate text-sm font-bold text-slate-800">{{ relacion.personaNombre }}</p>
+                                            <p class="mt-0.5 text-[11px] text-slate-400">{{ relacion.numeroDocumento }}</p>
+                                          </div>
+                                          <div>
+                                            <span class="inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold"
+                                              [ngClass]="relacion.tipoRelacion === 'PROPIETARIO_PRINCIPAL' ? 'bg-[var(--brand-soft-strong)] text-[var(--brand-hover)]' : 'bg-slate-100 text-slate-600'">
+                                              {{ relacionLabel(relacion.tipoRelacion) }}
+                                            </span>
+                                          </div>
+                                          <div class="flex flex-wrap gap-1.5">
+                                            @for (autorizacion of autorizacionesDe(relacion); track autorizacion) {
+                                              <span class="rounded-md border border-slate-200 bg-white px-2 py-1 text-[10px] font-semibold text-slate-600">{{ autorizacion }}</span>
+                                            }
+                                            @if (!relacion.activo) {
+                                              <span class="rounded-md bg-rose-50 px-2 py-1 text-[10px] font-bold text-rose-600">Revocada</span>
+                                            }
+                                          </div>
+                                          <div class="flex justify-end gap-1">
+                                            @if (canManageRelations && relacion.activo && relacion.tipoRelacion !== 'PROPIETARIO_PRINCIPAL') {
+                                              <button type="button" (click)="editarRelacion(relacion)" title="Editar autorizaciones"
+                                                class="grid size-8 place-items-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-[var(--brand-primary)]">
+                                                <i class="pi pi-pencil text-xs"></i>
+                                              </button>
+                                              <button type="button" (click)="revocarRelacion(relacion)" title="Revocar autorización"
+                                                class="grid size-8 place-items-center rounded-lg text-slate-500 hover:bg-rose-50 hover:text-rose-600">
+                                                <i class="pi pi-ban text-xs"></i>
+                                              </button>
+                                            }
+                                          </div>
+                                        </div>
+                                      }
+                                    }
+                                  </div>
+                                </section>
+                              }
+
                             </div>
 
                           </div>
@@ -406,6 +509,94 @@
                                       </div>
                                     </form>
                                   </div>
+                                </div>
+                              </div>
+                            }
+
+                            @if (displayRelacionModal()) {
+                              <div class="fixed inset-0 z-[120] flex items-end justify-center bg-slate-950/45 sm:items-center sm:p-4"
+                                (click)="displayRelacionModal.set(false)">
+                                <div class="w-full max-w-xl overflow-hidden rounded-t-2xl border border-slate-200 bg-white sm:rounded-xl"
+                                  (click)="$event.stopPropagation()">
+                                  <div class="flex items-start justify-between border-b border-slate-200 px-5 py-4">
+                                    <div>
+                                      <h2 class="text-base font-bold text-slate-900">{{ editingRelacion() ? 'Editar relación' : 'Vincular persona' }}</h2>
+                                      <p class="mt-0.5 text-xs text-slate-500">Estas autorizaciones se aplican únicamente a esta mascota.</p>
+                                    </div>
+                                    <button type="button" (click)="displayRelacionModal.set(false)"
+                                      class="grid size-8 place-items-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700">
+                                      <i class="pi pi-times"></i>
+                                    </button>
+                                  </div>
+
+                                  <form [formGroup]="relacionForm" (ngSubmit)="guardarRelacion()" class="max-h-[75vh] overflow-y-auto p-5">
+                                    <div class="space-y-4">
+                                      <div>
+                                        <label class="mb-1 block text-xs font-bold text-slate-700">Persona <span class="text-rose-500">*</span></label>
+                                        <select formControlName="apoderadoId" class="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none focus:border-[var(--brand-primary)]">
+                                          <option [ngValue]="null" disabled>Selecciona una persona registrada</option>
+                                          @for (opt of apoderados(); track opt.value) {
+                                            <option [ngValue]="opt.value">{{ opt.label }}</option>
+                                          }
+                                        </select>
+                                      </div>
+
+                                      <div>
+                                        <label class="mb-1 block text-xs font-bold text-slate-700">Tipo de relación <span class="text-rose-500">*</span></label>
+                                        <select formControlName="tipoRelacion" class="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none focus:border-[var(--brand-primary)]">
+                                          @for (opt of tipoRelacionOpciones; track opt.value) {
+                                            <option [value]="opt.value">{{ opt.label }}</option>
+                                          }
+                                        </select>
+                                        @for (opt of tipoRelacionOpciones; track opt.value) {
+                                          @if (relacionForm.get('tipoRelacion')?.value === opt.value) {
+                                            <p class="mt-1.5 text-[11px] leading-4 text-slate-500">{{ opt.description }}</p>
+                                          }
+                                        }
+                                      </div>
+
+                                      <fieldset>
+                                        <legend class="text-xs font-bold text-slate-700">¿Qué podrá hacer?</legend>
+                                        <div class="mt-2 divide-y divide-slate-100 rounded-xl border border-slate-200">
+                                          <label class="flex cursor-pointer items-start gap-3 px-3 py-3">
+                                            <input type="checkbox" formControlName="puedeRecibirInformacion" class="mt-0.5 size-4 accent-[var(--brand-primary)]" />
+                                            <span><strong class="block text-xs text-slate-700">Recibir información</strong><small class="mt-0.5 block text-[11px] leading-4 text-slate-500">Puede recibir indicaciones y actualizaciones clínicas autorizadas.</small></span>
+                                          </label>
+                                          <label class="flex cursor-pointer items-start gap-3 px-3 py-3">
+                                            <input type="checkbox" formControlName="puedeAutorizarAtencion" class="mt-0.5 size-4 accent-[var(--brand-primary)]" />
+                                            <span><strong class="block text-xs text-slate-700">Autorizar atención</strong><small class="mt-0.5 block text-[11px] leading-4 text-slate-500">Puede aprobar atención veterinaria dentro del alcance concedido. Los procedimientos especiales conservarán su consentimiento informado.</small></span>
+                                          </label>
+                                          <label class="flex cursor-pointer items-start gap-3 px-3 py-3">
+                                            <input type="checkbox" formControlName="puedeRealizarPagos" class="mt-0.5 size-4 accent-[var(--brand-primary)]" />
+                                            <span><strong class="block text-xs text-slate-700">Realizar pagos</strong><small class="mt-0.5 block text-[11px] leading-4 text-slate-500">Puede figurar como responsable de los pagos asociados a la atención.</small></span>
+                                          </label>
+                                        </div>
+                                      </fieldset>
+
+                                      <div class="grid gap-4 sm:grid-cols-2">
+                                        <div>
+                                          <label class="mb-1 block text-xs font-bold text-slate-700">Válido hasta</label>
+                                          <input type="date" formControlName="fechaFin" [min]="todayStr"
+                                            class="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm outline-none focus:border-[var(--brand-primary)]" />
+                                          <p class="mt-1 text-[10px] text-slate-400">Déjalo vacío si no tiene vencimiento.</p>
+                                        </div>
+                                        <div>
+                                          <label class="mb-1 block text-xs font-bold text-slate-700">Observación</label>
+                                          <textarea formControlName="observaciones" maxlength="500" rows="3" placeholder="Ej. Autorización presentada por escrito"
+                                            class="w-full resize-none rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-[var(--brand-primary)]"></textarea>
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    <div class="mt-5 flex justify-end gap-2 border-t border-slate-200 pt-4">
+                                      <button type="button" (click)="displayRelacionModal.set(false)" class="h-9 rounded-lg px-4 text-xs font-bold text-slate-600 hover:bg-slate-100">Cancelar</button>
+                                      <button type="submit" [disabled]="savingRelacion()"
+                                        class="inline-flex h-9 items-center gap-2 rounded-lg bg-[var(--brand-primary)] px-4 text-xs font-bold text-white hover:bg-[var(--brand-hover)] disabled:opacity-50">
+                                        @if (savingRelacion()) { <i class="pi pi-spin pi-spinner"></i> }
+                                        {{ savingRelacion() ? 'Guardando...' : 'Guardar relación' }}
+                                      </button>
+                                    </div>
+                                  </form>
                                 </div>
                               </div>
                             }
