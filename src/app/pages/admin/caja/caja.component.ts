@@ -24,6 +24,7 @@ import { ApoderadoService } from '../../../core/services/apoderado.service';
 import { ApoderadoListResponse } from '../../../models/response/apoderado-list-response';
 import { VentaLibreService } from '../../../core/services/venta-libre.service';
 import { VentaLibreItemRequest } from '../../../models/request/venta-libre-request';
+import { etiquetaAplicacionEspecie, EtiquetaAplicacionEspecie } from '../../../shared/utils/especie-producto.util';
 
 @Component({
   selector: 'app-caja',
@@ -845,6 +846,11 @@ export class CajaComponent implements OnInit, OnDestroy {
 
   formatMonto(m: number | null): string {
     return m != null ? `S/ ${Number(m).toFixed(2)}` : '—';
+  }
+
+  /** Etiqueta del catálogo: "Uso general" o "Para: perros y gatos". */
+  etiquetaAplicacion(producto: ProductoResponse): EtiquetaAplicacionEspecie | null {
+    return etiquetaAplicacionEspecie(producto.aplicacionEspecie, producto.especies);
   }
 
   formatFechaActual(): string {
