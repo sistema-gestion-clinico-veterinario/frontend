@@ -1,3 +1,5 @@
+import { EspecieMascota, TipoAplicacionProducto } from '../request/producto-request';
+
 export interface ProductoResponse {
   id: number;
   companyId: number;
@@ -19,6 +21,8 @@ export interface ProductoResponse {
   requiereReceta: boolean;
   unidadMedidaId?: number;
   unidadMedidaNombre?: string;
+  aplicacionEspecie: TipoAplicacionProducto;
+  especies: EspecieMascota[];
   proximoVencimientoLote?: string;
   activo: boolean;
   createdAt?: string;

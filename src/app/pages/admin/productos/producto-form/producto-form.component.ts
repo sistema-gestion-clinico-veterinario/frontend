@@ -1,5 +1,6 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ToastModule } from 'primeng/toast';
@@ -21,6 +22,7 @@ import { AuthStore } from '../../../../store/auth.store';
 import { noLeadingTrailingSpaceValidator } from '../../../../core/validators/no-leading-trailing-space.validator';
 import { textContentValidator } from '../../../../core/validators/text-content.validator';
 import { HasPermissionDirective } from '../../../../core/directives/has-permission.directive';
+import { ESPECIES_OPCIONES, EspecieMascota, TipoAplicacionProducto } from '../../../../models/request/producto-request';
 
 @Component({
   selector: 'app-producto-form',
@@ -43,6 +45,7 @@ export class ProductoFormComponent implements OnInit {
   readonly mediaService = inject(MediaService);
   private readonly messageService = inject(MessageService);
   private readonly authStore = inject(AuthStore);
+  private readonly destroyRef = inject(DestroyRef);
 
   get activeCompanyId(): number | null {
     return this.authStore.selectedEnterprise()?.establishmentId ?? this.authStore.companyId();
@@ -112,13 +115,52 @@ export class ProductoFormComponent implements OnInit {
     codigoBarras: ['', [Validators.maxLength(64), Validators.pattern(/^[A-Za-z0-9-]*$/)]],
     fechaVencimiento: [''],
     requiereReceta: [false],
-    unidadMedidaId: [null]
+    unidadMedidaId: [null],
+    aplicacionEspecie: [null as TipoAplicacionProducto | null, Validators.required],
+    especies: [[] as EspecieMascota[]]
   });
+
+  readonly especiesOpciones = ESPECIES_OPCIONES;
+
+  /** Clasificación pendiente: productos antiguos sin aplicacionEspecie no se pueden guardar. */
+  get clasificacionPendiente(): boolean {
+    return !this.productoForm.get('aplicacionEspecie')?.value;
+  }
+
+  /** Faltan especies cuando el producto es de especies específicas. */
+  get especiesIncompletas(): boolean {
+    return this.productoForm.get('aplicacionEspecie')?.value === 'ESPECIES_ESPECIFICAS'
+      && (this.productoForm.get('especies')?.value?.length ?? 0) === 0;
+  }
+
+  tieneEspecie(especie: EspecieMascota): boolean {
+    return (this.productoForm.get('especies')?.value ?? []).includes(especie);
+  }
+
+  toggleEspecie(especie: EspecieMascota, event: Event) {
+    if (this.modoDetalle) return;
+    const checked = (event.target as HTMLInputElement).checked;
+    const actuales: EspecieMascota[] = [...(this.productoForm.get('especies')?.value ?? [])];
+    const siguiente = checked
+      ? [...actuales, especie]
+      : actuales.filter(valor => valor !== especie);
+    this.productoForm.get('especies')?.setValue(siguiente);
+    this.productoForm.get('especies')?.markAsTouched();
+  }
 
   ngOnInit() {
     const skuParam = this.route.snapshot.paramMap.get('sku');
     this.productoSku.set(skuParam);
     this.modoDetalle = this.route.snapshot.data['modo'] === 'detalle';
+
+    // Al elegir "Uso general" no deben quedar especies seleccionadas.
+    this.productoForm.get('aplicacionEspecie')?.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(valor => {
+        if (valor !== 'ESPECIES_ESPECIFICAS') {
+          this.productoForm.get('especies')?.setValue([], { emitEvent: false });
+        }
+      });
 
     this.categoriaProductoService.listarActivas(this.activeCompanyId ?? undefined).subscribe({
       next: res => this.categorias.set(res.data ?? []),
@@ -155,7 +197,11 @@ export class ProductoFormComponent implements OnInit {
               codigoBarras: item.codigoBarras ?? '',
               fechaVencimiento: item.fechaVencimiento ?? '',
               requiereReceta: item.requiereReceta ?? false,
-              unidadMedidaId: item.unidadMedidaId ?? null
+              unidadMedidaId: item.unidadMedidaId ?? null,
+              aplicacionEspecie: item.aplicacionEspecie && item.aplicacionEspecie !== 'NO_ESPECIFICADO'
+                ? item.aplicacionEspecie
+                : null,
+              especies: item.especies ?? []
             });
             this.previewUrl.set(this.mediaService.resolveUrl(item.imagenUrl));
             this.productoSku.set(item.sku || skuParam);
@@ -255,6 +301,16 @@ export class ProductoFormComponent implements OnInit {
     const permiso = this.productoId ? 'modificar' : 'escribir';
     if (this.modoDetalle || !this.authStore.hasAccess('VISTA_PRODUCTOS', permiso)) return;
     if (this.productoForm.invalid) { this.productoForm.markAllAsTouched(); return; }
+    if (this.clasificacionPendiente) {
+      this.productoForm.get('aplicacionEspecie')?.markAsTouched();
+      this.messageService.add({ severity: 'warn', summary: 'Clasificación requerida', detail: 'Indica si el producto es de uso general o para especies específicas' });
+      return;
+    }
+    if (this.especiesIncompletas) {
+      this.productoForm.get('especies')?.markAsTouched();
+      this.messageService.add({ severity: 'warn', summary: 'Especie requerida', detail: 'Selecciona al menos una especie para el producto' });
+      return;
+    }
     const companyId = this.activeCompanyId;
 
     const doSave = (imagenUrl?: string) => {
@@ -264,6 +320,8 @@ export class ProductoFormComponent implements OnInit {
         imagenUrl: imagenUrl ?? val.imagenUrl,
         fechaVencimiento: val.fechaVencimiento || null,
         unidadMedidaId: val.unidadMedidaId || null,
+        aplicacionEspecie: val.aplicacionEspecie as TipoAplicacionProducto,
+        especies: val.aplicacionEspecie === 'ESPECIES_ESPECIFICAS' ? (val.especies ?? []) : [],
         ...(companyId ? { companyId } : {})
       };
 

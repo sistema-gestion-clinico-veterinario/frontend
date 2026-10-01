@@ -218,6 +218,59 @@
 
           <section class="rounded-xl border border-slate-200 bg-white p-4 sm:p-5">
             <div class="relative mb-4 flex items-center gap-2 border-b border-slate-200 pb-3 after:absolute after:-bottom-px after:left-0 after:h-0.5 after:w-8 after:bg-blue-500">
+              <i class="pi pi-filter text-blue-500"></i>
+              <h2 class="text-sm font-extrabold text-slate-800">Aplicación por especie</h2>
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label class="text-sm font-semibold text-slate-700">Tipo de aplicación <span class="text-rose-500">*</span></label>
+              <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                <label class="flex h-11 cursor-pointer select-none items-center gap-2.5 rounded-lg border px-3 transition-colors"
+                  [ngClass]="productoForm.get('aplicacionEspecie')?.value === 'USO_GENERAL' ? 'border-blue-500 bg-blue-50' : (productoForm.get('aplicacionEspecie')?.touched && clasificacionPendiente ? 'border-rose-400' : 'border-slate-300 hover:border-blue-400')">
+                  <input type="radio" formControlName="aplicacionEspecie" value="USO_GENERAL"
+                    class="h-4 w-4 shrink-0 cursor-pointer accent-blue-500" />
+                  <span class="text-sm font-medium text-slate-700">Uso general</span>
+                </label>
+                <label class="flex h-11 cursor-pointer select-none items-center gap-2.5 rounded-lg border px-3 transition-colors"
+                  [ngClass]="productoForm.get('aplicacionEspecie')?.value === 'ESPECIES_ESPECIFICAS' ? 'border-blue-500 bg-blue-50' : (productoForm.get('aplicacionEspecie')?.touched && clasificacionPendiente ? 'border-rose-400' : 'border-slate-300 hover:border-blue-400')">
+                  <input type="radio" formControlName="aplicacionEspecie" value="ESPECIES_ESPECIFICAS"
+                    class="h-4 w-4 shrink-0 cursor-pointer accent-blue-500" />
+                  <span class="text-sm font-medium text-slate-700">Especies específicas</span>
+                </label>
+              </div>
+              @if (productoForm.get('aplicacionEspecie')?.touched && clasificacionPendiente) {
+                <p class="flex items-center gap-1 text-xs text-rose-600"><i class="pi pi-exclamation-circle text-[10px]"></i>Indica si el producto es de uso general o para especies específicas</p>
+              } @else {
+                <p class="text-xs text-slate-500">"Uso general" queda reservado para insumos que no dependen de la especie (gasas, jeringas, desinfectantes). Los medicamentos deben indicar sus especies.</p>
+              }
+            </div>
+
+            @if (productoForm.get('aplicacionEspecie')?.value === 'ESPECIES_ESPECIFICAS') {
+              <div class="mt-4 flex flex-col gap-1">
+                <label class="text-sm font-semibold text-slate-700">Especies autorizadas <span class="text-rose-500">*</span></label>
+                <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  @for (esp of especiesOpciones; track esp.value) {
+                    <label class="flex h-10 cursor-pointer select-none items-center gap-2 rounded-lg border px-3 transition-colors hover:border-blue-400"
+                      [class.border-blue-500]="tieneEspecie(esp.value)"
+                      [class.bg-blue-50]="tieneEspecie(esp.value)"
+                      [class.border-slate-300]="!tieneEspecie(esp.value)">
+                      <input type="checkbox" [checked]="tieneEspecie(esp.value)" (change)="toggleEspecie(esp.value, $event)"
+                        class="h-4 w-4 shrink-0 cursor-pointer rounded accent-blue-500" />
+                      <span class="text-sm font-medium text-slate-700">{{ esp.label }}</span>
+                    </label>
+                  }
+                </div>
+                @if (especiesIncompletas && productoForm.get('especies')?.touched) {
+                  <p class="flex items-center gap-1 text-xs text-rose-600"><i class="pi pi-exclamation-circle text-[10px]"></i>Selecciona al menos una especie</p>
+                } @else {
+                  <p class="text-xs text-slate-500">Puedes marcar varias. Durante la atención, el sistema mostrará primero los productos compatibles con la mascota.</p>
+                }
+              </div>
+            }
+          </section>
+
+          <section class="rounded-xl border border-slate-200 bg-white p-4 sm:p-5">
+            <div class="relative mb-4 flex items-center gap-2 border-b border-slate-200 pb-3 after:absolute after:-bottom-px after:left-0 after:h-0.5 after:w-8 after:bg-blue-500">
               <i class="pi pi-box text-blue-500"></i>
               <h2 class="text-sm font-extrabold text-slate-800">Inventario</h2>
             </div>
