@@ -88,7 +88,7 @@ export class LotesComponent implements OnInit {
     numeroLote: ['', [Validators.required, Validators.maxLength(60), Validators.pattern(/^[A-Za-z0-9_-]+$/)]],
     fechaVencimiento: ['', Validators.required],
     fechaIngreso: [''],
-    cantidad: [0, [Validators.required, Validators.min(0)]],
+    cantidad: [1, [Validators.required, Validators.min(1)]],
     costoUnitario: [null, [Validators.min(0)]]
   });
 
@@ -119,7 +119,7 @@ export class LotesComponent implements OnInit {
   loadProductos() {
     if (!this.activeCompanyId) return;
     this.productoService.listarActivos(this.activeCompanyId ?? undefined).subscribe({
-      next: (res) => this.productos.set(res.data ?? []),
+      next: (res) => this.productos.set((res.data ?? []).filter(producto => producto.controlStock === 'LOTES')),
       error: () => {}
     });
   }
@@ -151,7 +151,7 @@ export class LotesComponent implements OnInit {
       numeroLote: item?.numeroLote ?? '',
       fechaVencimiento: item?.fechaVencimiento ?? '',
       fechaIngreso: item?.fechaIngreso ?? '',
-      cantidad: item?.cantidad ?? 0,
+      cantidad: item?.cantidadInicial ?? 1,
       costoUnitario: item?.costoUnitario ?? null
     });
     this.showModal.set(true);

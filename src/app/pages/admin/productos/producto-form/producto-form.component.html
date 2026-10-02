@@ -59,21 +59,24 @@
                 : 'flex items-center gap-2 border-b-2 border-transparent px-1 py-3 text-slate-500 hover:text-slate-800'">
               <strong class="text-sm font-bold">Datos generales</strong>
             </button>
-            <button type="button" (click)="activeTab.set('lotes')"
-              [class]="activeTab() === 'lotes'
-                ? 'flex items-center gap-2 border-b-2 border-blue-500 px-1 py-3 text-blue-500'
-                : 'flex items-center gap-2 border-b-2 border-transparent px-1 py-3 text-slate-500 hover:text-slate-800'">
-              <strong class="text-sm font-bold">Lotes</strong>
-              @if (lotes().length > 0) {
-                <span class="grid min-w-5 place-items-center rounded-full bg-slate-100 px-1.5 py-0.5 text-[11px] font-bold text-slate-600">{{ lotes().length }}</span>
-              }
-            </button>
-            <button type="button" (click)="activeTab.set('ajustes')"
-              [class]="activeTab() === 'ajustes'
-                ? 'flex items-center gap-2 border-b-2 border-blue-500 px-1 py-3 text-blue-500'
-                : 'flex items-center gap-2 border-b-2 border-transparent px-1 py-3 text-slate-500 hover:text-slate-800'">
-              <strong class="text-sm font-bold">Historial de ajustes</strong>
-            </button>
+            @if (esControlPorLotes) {
+              <button type="button" (click)="activeTab.set('lotes')"
+                [class]="activeTab() === 'lotes'
+                  ? 'flex items-center gap-2 border-b-2 border-blue-500 px-1 py-3 text-blue-500'
+                  : 'flex items-center gap-2 border-b-2 border-transparent px-1 py-3 text-slate-500 hover:text-slate-800'">
+                <strong class="text-sm font-bold">Lotes</strong>
+                @if (lotes().length > 0) {
+                  <span class="grid min-w-5 place-items-center rounded-full bg-slate-100 px-1.5 py-0.5 text-[11px] font-bold text-slate-600">{{ lotes().length }}</span>
+                }
+              </button>
+            } @else {
+              <button type="button" (click)="activeTab.set('ajustes')"
+                [class]="activeTab() === 'ajustes'
+                  ? 'flex items-center gap-2 border-b-2 border-blue-500 px-1 py-3 text-blue-500'
+                  : 'flex items-center gap-2 border-b-2 border-transparent px-1 py-3 text-slate-500 hover:text-slate-800'">
+                <strong class="text-sm font-bold">Historial de ajustes</strong>
+              </button>
+            }
           </nav>
         </div>
       }
@@ -240,8 +243,6 @@
               </div>
               @if (productoForm.get('aplicacionEspecie')?.touched && clasificacionPendiente) {
                 <p class="flex items-center gap-1 text-xs text-rose-600"><i class="pi pi-exclamation-circle text-[10px]"></i>Indica si el producto es de uso general o para especies específicas</p>
-              } @else {
-                <p class="text-xs text-slate-500">"Uso general" queda reservado para insumos que no dependen de la especie (gasas, jeringas, desinfectantes). Los medicamentos deben indicar sus especies.</p>
               }
             </div>
 
@@ -275,10 +276,33 @@
               <h2 class="text-sm font-extrabold text-slate-800">Inventario</h2>
             </div>
 
+            <div class="mb-4">
+              <label class="mb-2 block text-sm font-semibold text-slate-700">Control de stock <span class="text-rose-500">*</span></label>
+              <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                <label class="flex cursor-pointer items-start gap-3 rounded-lg border p-3"
+                  [ngClass]="!esControlPorLotes ? 'border-blue-500 bg-blue-50' : 'border-slate-300'">
+                  <input type="radio" formControlName="controlStock" value="DIRECTO" class="mt-0.5 h-4 w-4 accent-blue-500" />
+                  <span><strong class="block text-sm text-slate-800">Stock directo</strong><small class="text-xs text-slate-500">Para artículos sin trazabilidad por lote.</small></span>
+                </label>
+                <label class="flex cursor-pointer items-start gap-3 rounded-lg border p-3"
+                  [ngClass]="esControlPorLotes ? 'border-blue-500 bg-blue-50' : 'border-slate-300'">
+                  <input type="radio" formControlName="controlStock" value="LOTES" class="mt-0.5 h-4 w-4 accent-blue-500" />
+                  <span><strong class="block text-sm text-slate-800">Control por lotes</strong><small class="text-xs text-slate-500">Para productos con lote, vencimiento y salida FEFO.</small></span>
+                </label>
+              </div>
+              @if (!productoId && esControlPorLotes) {
+                <p class="mt-2 text-xs text-slate-500">Primero guarda el producto; luego registrarás el lote realmente recibido.</p>
+              }
+            </div>
+
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div class="flex flex-col gap-1">
                 <label class="text-sm font-semibold text-slate-700">Stock disponible</label>
-                @if (!productoId) {
+                @if (esControlPorLotes) {
+                  <input type="number" formControlName="stock" readonly
+                    class="w-full px-3 py-2 border border-slate-200 bg-slate-50 rounded-lg text-sm h-11 text-slate-600 font-semibold cursor-not-allowed" />
+                  <p class="text-xs text-slate-500">Se calcula con la cantidad disponible de los lotes activos y no vencidos.</p>
+                } @else if (!productoId) {
                   <input type="number" step="1" formControlName="stock" placeholder="0" min="0"
                     [ngClass]="productoForm.get('stock')?.invalid && productoForm.get('stock')?.touched ? 'border-rose-400 focus:ring-rose-500/20 focus:border-rose-500' : 'border-slate-300 focus:ring-blue-100 focus:border-blue-500'"
                     class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 outline-none h-11 transition-colors" />
@@ -313,12 +337,14 @@
                 }
               </div>
 
-              <div class="flex flex-col gap-1">
-                <label class="text-sm font-semibold text-slate-700">Fecha de vencimiento</label>
-                <input type="date" formControlName="fechaVencimiento"
-                  class="h-11 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-100" />
-                <p class="text-xs text-slate-500">Opcional, para medicamentos y alimentos.</p>
-              </div>
+              @if (!esControlPorLotes) {
+                <div class="flex flex-col gap-1">
+                  <label class="text-sm font-semibold text-slate-700">Fecha de vencimiento</label>
+                  <input type="date" formControlName="fechaVencimiento"
+                    class="h-11 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-100" />
+                  <p class="text-xs text-slate-500">Opcional para artículos sin control por lotes.</p>
+                </div>
+              }
               <div class="flex flex-col gap-1">
                 <label class="text-sm font-semibold text-slate-700" aria-hidden="true">&nbsp;</label>
                 <label class="flex items-center gap-2.5 h-11 px-3 border border-slate-300 rounded-lg cursor-pointer select-none">
@@ -427,7 +453,7 @@
       </form>
       }
 
-      @if (productoId && activeTab() === 'lotes') {
+      @if (productoId && esControlPorLotes && activeTab() === 'lotes') {
         <div class="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 md:p-6">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-2 mb-4">
             <div>
@@ -466,7 +492,7 @@
                       }
                     </div>
                     <p class="text-xs text-slate-500 mt-0.5">
-                      Vence {{ lote.fechaVencimiento | date:'dd/MM/yyyy' }} · Cantidad: {{ lote.cantidad }}
+                      Vence {{ lote.fechaVencimiento | date:'dd/MM/yyyy' }} · Disponible: {{ lote.cantidad }} de {{ lote.cantidadInicial }}
                       @if (lote.costoUnitario) { · Costo: S/ {{ lote.costoUnitario }} }
                     </p>
                   </div>
@@ -486,7 +512,7 @@
         </div>
       }
 
-      @if (productoId && activeTab() === 'ajustes') {
+      @if (productoId && !esControlPorLotes && activeTab() === 'ajustes') {
         <div class="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 md:p-6">
           <div class="border-b border-slate-200 pb-2 mb-4">
             <h2 class="text-sm font-bold text-slate-900 uppercase tracking-wide">Historial de ajustes de stock</h2>
@@ -633,12 +659,12 @@
 
           <div class="grid grid-cols-2 gap-3">
             <div class="flex flex-col gap-1">
-              <label class="text-sm font-semibold text-slate-700">Cantidad <span class="text-rose-500">*</span></label>
-              <input type="number" step="1" min="0" formControlName="cantidad"
+              <label class="text-sm font-semibold text-slate-700">Cantidad recibida <span class="text-rose-500">*</span></label>
+              <input type="number" step="1" min="1" formControlName="cantidad"
                 [ngClass]="loteForm.get('cantidad')?.invalid && loteForm.get('cantidad')?.touched ? 'border-rose-400' : 'border-slate-300'"
                 class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-11 transition-colors" />
               @if (loteForm.get('cantidad')?.touched && loteForm.get('cantidad')?.errors?.['min']) {
-                <p class="text-xs text-rose-600">No puede ser negativa</p>
+                <p class="text-xs text-rose-600">Debe ser mayor que cero</p>
               }
             </div>
             <div class="flex flex-col gap-1">

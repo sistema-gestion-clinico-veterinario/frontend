@@ -24,7 +24,7 @@ import { ApoderadoService } from '../../../core/services/apoderado.service';
 import { ApoderadoListResponse } from '../../../models/response/apoderado-list-response';
 import { VentaLibreService } from '../../../core/services/venta-libre.service';
 import { VentaLibreItemRequest } from '../../../models/request/venta-libre-request';
-import { etiquetaAplicacionEspecie, EtiquetaAplicacionEspecie } from '../../../shared/utils/especie-producto.util';
+import { etiquetaAplicacionEspecie, EtiquetaAplicacionEspecie, productoCompatibleConEspecie } from '../../../shared/utils/especie-producto.util';
 
 @Component({
   selector: 'app-caja',
@@ -98,12 +98,20 @@ export class CajaComponent implements OnInit, OnDestroy {
   productoSearch = signal('');
   productosPos = computed(() => {
     const term = normalizeText(this.productoSearch()).toLocaleLowerCase('es-PE');
-    return this.productos().filter(producto => {
+    const productos = this.productos().filter(producto => {
       const text = `${producto.nombre} ${producto.categoriaNombre ?? ''} ${producto.marca ?? ''} ${producto.sku ?? ''}`.toLocaleLowerCase('es-PE');
       return (!term || text.includes(term)) && producto.activo;
     });
+    const especie = this.cuentaSeleccionada()?.especie;
+    if (!especie) return productos;
+    return productos.sort((a, b) => {
+      const diferenciaCompatibilidad = Number(this.productoCompatible(b, especie)) - Number(this.productoCompatible(a, especie));
+      return diferenciaCompatibilidad || a.nombre.localeCompare(b.nombre, 'es-PE');
+    });
   });
   productoSeleccionadoId: number | null = null;
+  productoUsoExcepcional = signal<ProductoResponse | null>(null);
+  justificacionUsoExcepcional = '';
 
   mostrarVentaRapida = signal(false);
   guardandoVentaRapida = signal(false);
@@ -206,27 +214,20 @@ export class CajaComponent implements OnInit, OnDestroy {
 
     const cuenta = this.cuentaSeleccionada();
     if (cuenta) {
-      if (this.savingDetalle()) return;
-      const tipo: TipoDetalleCuenta = producto.categoriaNombre?.toUpperCase().includes('MEDICAMENTO') ? 'MEDICAMENTO' : 'INSUMO';
-      this.savingDetalle.set(true);
-      this.cajaService.agregarDetalle(cuenta.citaId, {
-        tipo,
-        descripcion: producto.nombre,
-        cantidad: 1,
-        precioUnitario: Number(producto.precio),
-        productoId: producto.id
-      }).subscribe({
-        next: response => {
-          this.cuentaSeleccionada.set(response.data);
-          this.prepararPago(response.data);
-          this.savingDetalle.set(false);
-          this.cargarPendientes();
-        },
-        error: err => {
-          this.savingDetalle.set(false);
-          this.messageService.add({ severity: 'error', summary: 'No se agregó el producto', detail: err?.error?.message ?? 'Intenta nuevamente.' });
+      if (!this.productoCompatible(producto, cuenta.especie)) {
+        if (!this.puedeAutorizarUsoExcepcional()) {
+          this.messageService.add({
+            severity: 'warn',
+            summary: 'Producto no compatible',
+            detail: `${producto.nombre} no está indicado para ${cuenta.mascotaNombre}. Se requiere permiso para crear o editar productos y una justificación clínica.`
+          });
+          return;
         }
-      });
+        this.justificacionUsoExcepcional = '';
+        this.productoUsoExcepcional.set(producto);
+        return;
+      }
+      this.agregarProductoACuenta(producto);
       return;
     }
 
@@ -243,6 +244,60 @@ export class CajaComponent implements OnInit, OnDestroy {
     }
     this.carritoVentaRapida.set(carrito);
     this.prepararPagoVentaLibre();
+  }
+
+  productoCompatible(producto: ProductoResponse, especie = this.cuentaSeleccionada()?.especie): boolean {
+    return productoCompatibleConEspecie(producto.aplicacionEspecie, producto.especies, especie);
+  }
+
+  puedeAutorizarUsoExcepcional(): boolean {
+    return this.authStore.hasAccess('VISTA_PRODUCTOS', 'escribir')
+      || this.authStore.hasAccess('VISTA_PRODUCTOS', 'modificar');
+  }
+
+  confirmarUsoExcepcional() {
+    const producto = this.productoUsoExcepcional();
+    const justificacion = normalizeText(this.justificacionUsoExcepcional);
+    if (!producto || this.savingDetalle()) return;
+    if (!hasMeaningfulText(justificacion) || justificacion.length < 10) {
+      this.messageService.add({ severity: 'warn', summary: 'Justificación requerida', detail: 'Describe el motivo clínico con al menos 10 caracteres.' });
+      return;
+    }
+    this.agregarProductoACuenta(producto, justificacion);
+  }
+
+  cerrarUsoExcepcional() {
+    if (this.savingDetalle()) return;
+    this.productoUsoExcepcional.set(null);
+    this.justificacionUsoExcepcional = '';
+  }
+
+  private agregarProductoACuenta(producto: ProductoResponse, justificacionUsoExcepcional?: string) {
+    const cuenta = this.cuentaSeleccionada();
+    if (!cuenta || this.savingDetalle()) return;
+    const tipo: TipoDetalleCuenta = producto.categoriaNombre?.toUpperCase().includes('MEDICAMENTO') ? 'MEDICAMENTO' : 'INSUMO';
+    this.savingDetalle.set(true);
+    this.cajaService.agregarDetalle(cuenta.citaId, {
+      tipo,
+      descripcion: producto.nombre,
+      cantidad: 1,
+      precioUnitario: Number(producto.precio),
+      productoId: producto.id,
+      ...(justificacionUsoExcepcional ? { justificacionUsoExcepcional } : {})
+    }).subscribe({
+      next: response => {
+        this.cuentaSeleccionada.set(response.data);
+        this.prepararPago(response.data);
+        this.savingDetalle.set(false);
+        this.productoUsoExcepcional.set(null);
+        this.justificacionUsoExcepcional = '';
+        this.cargarPendientes();
+      },
+      error: err => {
+        this.savingDetalle.set(false);
+        this.messageService.add({ severity: 'error', summary: 'No se agregó el producto', detail: err?.error?.message ?? 'Intenta nuevamente.' });
+      }
+    });
   }
 
   cambiarCantidadProducto(index: number, cambio: number) {

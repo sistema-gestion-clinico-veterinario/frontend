@@ -1,4 +1,4 @@
-import { etiquetaAplicacionEspecie } from './especie-producto.util';
+import { etiquetaAplicacionEspecie, productoCompatibleConEspecie } from './especie-producto.util';
 
 describe('etiquetaAplicacionEspecie', () => {
   it('etiqueta los productos de uso general', () => {
@@ -24,5 +24,19 @@ describe('etiquetaAplicacionEspecie', () => {
 
   it('avisa cuando un producto de especies específicas quedó sin especies', () => {
     expect(etiquetaAplicacionEspecie('ESPECIES_ESPECIFICAS', [])?.texto).toBe('Sin especies');
+  });
+});
+
+describe('productoCompatibleConEspecie', () => {
+  it('acepta productos de uso general para cualquier especie', () => {
+    expect(productoCompatibleConEspecie('USO_GENERAL', [], 'GATO')).toBeTrue();
+  });
+
+  it('acepta un producto específico cuando incluye la especie de la mascota', () => {
+    expect(productoCompatibleConEspecie('ESPECIES_ESPECIFICAS', ['PERRO', 'GATO'], 'GATO')).toBeTrue();
+  });
+
+  it('rechaza un producto específico destinado a otra especie', () => {
+    expect(productoCompatibleConEspecie('ESPECIES_ESPECIFICAS', ['PERRO'], 'AVE')).toBeFalse();
   });
 });

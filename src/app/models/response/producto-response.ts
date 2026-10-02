@@ -1,4 +1,4 @@
-import { EspecieMascota, TipoAplicacionProducto } from '../request/producto-request';
+import { EspecieMascota, TipoAplicacionProducto, TipoControlStock } from '../request/producto-request';
 
 export interface ProductoResponse {
   id: number;
@@ -12,6 +12,7 @@ export interface ProductoResponse {
   marca?: string;
   marcaId?: number;
   stock: number;
+  controlStock: TipoControlStock;
   stockMinimo: number;
   descripcion?: string;
   imagenUrl?: string;
