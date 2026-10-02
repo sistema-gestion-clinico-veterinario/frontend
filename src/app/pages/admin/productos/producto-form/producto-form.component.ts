@@ -22,7 +22,7 @@ import { AuthStore } from '../../../../store/auth.store';
 import { noLeadingTrailingSpaceValidator } from '../../../../core/validators/no-leading-trailing-space.validator';
 import { textContentValidator } from '../../../../core/validators/text-content.validator';
 import { HasPermissionDirective } from '../../../../core/directives/has-permission.directive';
-import { ESPECIES_OPCIONES, EspecieMascota, TipoAplicacionProducto } from '../../../../models/request/producto-request';
+import { ESPECIES_OPCIONES, EspecieMascota, TipoAplicacionProducto, TipoControlStock } from '../../../../models/request/producto-request';
 
 @Component({
   selector: 'app-producto-form',
@@ -71,7 +71,7 @@ export class ProductoFormComponent implements OnInit {
     numeroLote: ['', [Validators.required, Validators.maxLength(60), Validators.pattern(/^[A-Za-z0-9_-]+$/)]],
     fechaVencimiento: ['', Validators.required],
     fechaIngreso: [''],
-    cantidad: [0, [Validators.required, Validators.min(0)]],
+    cantidad: [1, [Validators.required, Validators.min(1)]],
     costoUnitario: [null, [Validators.min(0)]]
   });
 
@@ -109,6 +109,7 @@ export class ProductoFormComponent implements OnInit {
     costo:       [null, [Validators.min(0), Validators.max(5000)]],
     marcaId:     [null, Validators.required],
     stock:       [0, [Validators.min(0)]],
+    controlStock: ['DIRECTO' as TipoControlStock, Validators.required],
     stockMinimo: [0, [Validators.min(0)]],
     descripcion: ['', [Validators.maxLength(1000)]],
     imagenUrl:   [''],
@@ -121,6 +122,10 @@ export class ProductoFormComponent implements OnInit {
   });
 
   readonly especiesOpciones = ESPECIES_OPCIONES;
+
+  get esControlPorLotes(): boolean {
+    return this.productoForm.get('controlStock')?.value === 'LOTES';
+  }
 
   /** Clasificación pendiente: productos antiguos sin aplicacionEspecie no se pueden guardar. */
   get clasificacionPendiente(): boolean {
@@ -162,6 +167,14 @@ export class ProductoFormComponent implements OnInit {
         }
       });
 
+    this.productoForm.get('controlStock')?.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((valor: TipoControlStock) => {
+        if (valor === 'LOTES') {
+          this.productoForm.patchValue({ stock: 0, fechaVencimiento: '' }, { emitEvent: false });
+        }
+      });
+
     this.categoriaProductoService.listarActivas(this.activeCompanyId ?? undefined).subscribe({
       next: res => this.categorias.set(res.data ?? []),
       error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar las categorías' })
@@ -191,6 +204,7 @@ export class ProductoFormComponent implements OnInit {
               costo: item.costo ?? null,
               marcaId: item.marcaId ?? null,
               stock: item.stock,
+              controlStock: item.controlStock ?? 'DIRECTO',
               stockMinimo: item.stockMinimo,
               descripcion: item.descripcion ?? '',
               imagenUrl: item.imagenUrl ?? '',
@@ -206,8 +220,12 @@ export class ProductoFormComponent implements OnInit {
             this.previewUrl.set(this.mediaService.resolveUrl(item.imagenUrl));
             this.productoSku.set(item.sku || skuParam);
             if (this.modoDetalle) this.productoForm.disable({ emitEvent: false });
-            this.cargarLotes();
-            this.cargarAjustesStock();
+            if ((item.controlStock ?? 'DIRECTO') === 'LOTES') {
+              this.cargarLotes();
+              if (this.route.snapshot.queryParamMap.get('tab') === 'lotes') this.activeTab.set('lotes');
+            } else {
+              this.cargarAjustesStock();
+            }
           }
           this.cargando.set(false);
         },
@@ -318,7 +336,8 @@ export class ProductoFormComponent implements OnInit {
       const payload = {
         ...val,
         imagenUrl: imagenUrl ?? val.imagenUrl,
-        fechaVencimiento: val.fechaVencimiento || null,
+        stock: val.controlStock === 'LOTES' ? 0 : val.stock,
+        fechaVencimiento: val.controlStock === 'LOTES' ? null : (val.fechaVencimiento || null),
         unidadMedidaId: val.unidadMedidaId || null,
         aplicacionEspecie: val.aplicacionEspecie as TipoAplicacionProducto,
         especies: val.aplicacionEspecie === 'ESPECIES_ESPECIFICAS' ? (val.especies ?? []) : [],
@@ -332,7 +351,13 @@ export class ProductoFormComponent implements OnInit {
         : this.productoService.crear(payload);
 
       req.subscribe({
-        next: () => {
+        next: (res) => {
+          const creado = res.data;
+          if (!this.productoId && val.controlStock === 'LOTES' && creado?.sku) {
+            this.messageService.add({ severity: 'success', summary: 'Producto creado', detail: 'Ahora registra el primer lote recibido' });
+            this.router.navigate(['/admin/productos', creado.sku, 'editar'], { queryParams: { tab: 'lotes' } });
+            return;
+          }
           this.messageService.add({ severity: 'success', summary: 'Éxito', detail: this.productoId ? 'Producto actualizado' : 'Producto creado' });
           this.router.navigate(['/admin/productos']);
         },
@@ -379,6 +404,13 @@ export class ProductoFormComponent implements OnInit {
       next: (res) => {
         this.lotes.set(res.data.content || []);
         this.cargandoLotes.set(false);
+        const sku = this.productoSku();
+        if (sku) {
+          this.productoService.obtener(sku, this.activeCompanyId ?? undefined).subscribe({
+            next: producto => this.productoForm.patchValue({ stock: producto.data?.stock ?? 0 }, { emitEvent: false }),
+            error: () => {}
+          });
+        }
       },
       error: () => {
         this.cargandoLotes.set(false);
@@ -395,13 +427,14 @@ export class ProductoFormComponent implements OnInit {
       numeroLote: item?.numeroLote ?? '',
       fechaVencimiento: item?.fechaVencimiento ?? '',
       fechaIngreso: item?.fechaIngreso ?? '',
-      cantidad: item?.cantidad ?? 0,
+      cantidad: item?.cantidadInicial ?? 1,
       costoUnitario: item?.costoUnitario ?? null
     });
     this.showLoteModal.set(true);
   }
 
   guardarLote() {
+    if (this.guardandoLote()) return;
     if (this.loteForm.invalid || !this.productoId) { this.loteForm.markAllAsTouched(); return; }
     const val = this.loteForm.value;
     const companyId = this.activeCompanyId;

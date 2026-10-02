@@ -5,6 +5,7 @@
  * - NO_ESPECIFICADO: registros anteriores a la clasificación, pendientes de definir.
  */
 export type TipoAplicacionProducto = 'USO_GENERAL' | 'ESPECIES_ESPECIFICAS' | 'NO_ESPECIFICADO';
+export type TipoControlStock = 'DIRECTO' | 'LOTES';
 
 export type EspecieMascota =
   | 'PERRO'
@@ -34,6 +35,7 @@ export interface ProductoRequest {
   marca?: string;
   marcaId: number;
   stock?: number;
+  controlStock: TipoControlStock;
   stockMinimo?: number;
   descripcion?: string;
   imagenUrl?: string;
