@@ -211,6 +211,39 @@
   }
 </main>
 
+@if (productoUsoExcepcional(); as producto) {
+  <div class="fixed inset-0 z-[70] flex items-end justify-center bg-slate-950/45 sm:items-center sm:p-4" (click)="cerrarUsoExcepcional()">
+    <div class="w-full max-w-lg overflow-hidden rounded-t-2xl border border-slate-200 bg-white sm:rounded-xl" (click)="$event.stopPropagation()">
+      <div class="flex items-start justify-between gap-4 border-b border-slate-200 px-5 py-4">
+        <div>
+          <h2 class="font-bold text-slate-900">Autorizar uso excepcional</h2>
+          <p class="mt-1 text-xs leading-5 text-slate-500">El producto no está indicado para la especie de la mascota seleccionada.</p>
+        </div>
+        <button type="button" (click)="cerrarUsoExcepcional()" [disabled]="savingDetalle()" aria-label="Cerrar" class="grid size-8 shrink-0 place-items-center rounded-lg text-slate-400 hover:bg-slate-50 disabled:opacity-40"><i class="pi pi-times"></i></button>
+      </div>
+      <div class="space-y-4 px-5 py-5">
+        <div class="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-5 text-amber-900">
+          <p class="font-bold">{{ producto.nombre }}</p>
+          <p class="mt-1">{{ etiquetaAplicacion(producto)?.texto || 'Aplicación no especificada' }} · Mascota: {{ cuentaSeleccionada()?.mascotaNombre }} ({{ cuentaSeleccionada()?.especie }})</p>
+        </div>
+        <label class="block">
+          <span class="text-xs font-bold text-slate-700">Justificación clínica <span class="text-rose-500">*</span></span>
+          <textarea [(ngModel)]="justificacionUsoExcepcional" maxlength="500" rows="4" placeholder="Describe por qué se autoriza este producto para esta mascota"
+            class="mt-1.5 w-full resize-none rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-[var(--brand-primary)]"></textarea>
+          <span class="mt-1 block text-right text-[10px] text-slate-400">{{ justificacionUsoExcepcional.length }}/500</span>
+        </label>
+        <p class="flex items-start gap-2 text-[11px] leading-5 text-slate-500"><i class="pi pi-info-circle mt-0.5 text-[var(--brand-primary)]"></i><span>La autorización, el usuario y la justificación quedarán registrados en la auditoría.</span></p>
+      </div>
+      <div class="flex justify-end gap-2 border-t border-slate-200 bg-slate-50 px-5 py-4">
+        <button type="button" (click)="cerrarUsoExcepcional()" [disabled]="savingDetalle()" class="h-9 rounded-lg border border-slate-300 px-4 text-sm font-semibold text-slate-600 disabled:opacity-40">Cancelar</button>
+        <button type="button" (click)="confirmarUsoExcepcional()" [disabled]="savingDetalle()" class="h-9 rounded-lg bg-[var(--brand-primary)] px-4 text-sm font-semibold text-white hover:bg-[var(--brand-hover)] disabled:opacity-50">
+          {{ savingDetalle() ? 'Registrando...' : 'Autorizar y agregar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
 @if (showEgresoModal()) {
   <div class="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/45 sm:items-center sm:p-4"><div class="w-full max-w-md overflow-hidden rounded-t-2xl border border-slate-200 bg-white sm:rounded-xl">
     <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4"><div><h2 class="font-bold text-slate-900">Registrar egreso</h2><p class="mt-0.5 text-xs text-slate-500">Agrega un gasto operativo a la caja</p></div><button (click)="showEgresoModal.set(false)" class="grid size-8 place-items-center rounded-lg text-slate-400 hover:bg-slate-50"><i class="pi pi-times"></i></button></div>

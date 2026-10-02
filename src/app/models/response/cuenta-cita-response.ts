@@ -42,4 +42,5 @@ export interface DetalleCuentaRequest {
   cantidad: number;
   precioUnitario: number;
   productoId?: number;
+  justificacionUsoExcepcional?: string;
 }

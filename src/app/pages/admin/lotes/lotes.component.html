@@ -85,7 +85,7 @@
                       }
                     </div>
                   </td>
-                  <td class="px-5 py-2.5 text-right text-slate-700">{{ lote.cantidad }}</td>
+                  <td class="px-5 py-2.5 text-right text-slate-700">{{ lote.cantidad }} / {{ lote.cantidadInicial }}</td>
                   <td class="px-5 py-2.5 text-right text-slate-700">{{ lote.costoUnitario ? ('S/ ' + (lote.costoUnitario | number:'1.2-2')) : '—' }}</td>
                   <td class="px-5 py-2.5">
                     <button *appHasPermission="'VISTA_LOTES:modificar'"
@@ -140,7 +140,7 @@
                   </button>
                 </div>
                 <div class="flex items-center gap-1.5 mt-2">
-                  <span class="text-xs text-slate-500">Vence {{ lote.fechaVencimiento | date:'dd/MM/yyyy' }} · Cant: {{ lote.cantidad }}</span>
+                  <span class="text-xs text-slate-500">Vence {{ lote.fechaVencimiento | date:'dd/MM/yyyy' }} · Disponible: {{ lote.cantidad }} de {{ lote.cantidadInicial }}</span>
                   @if (loteVencido(lote.fechaVencimiento)) {
                     <span class="inline-flex items-center rounded border border-rose-300 bg-rose-50 px-1.5 py-0.5 text-[10px] font-bold text-rose-700">Vencido</span>
                   } @else if (loteProntoAVencer(lote.fechaVencimiento)) {
@@ -253,12 +253,12 @@
 
           <div class="grid grid-cols-2 gap-3">
             <div class="flex flex-col gap-1">
-              <label class="text-sm font-semibold text-slate-700">Cantidad <span class="text-rose-500">*</span></label>
-              <input type="number" step="1" min="0" formControlName="cantidad"
+              <label class="text-sm font-semibold text-slate-700">Cantidad recibida <span class="text-rose-500">*</span></label>
+              <input type="number" step="1" min="1" formControlName="cantidad"
                 [ngClass]="loteForm.get('cantidad')?.invalid && loteForm.get('cantidad')?.touched ? 'border-rose-400' : 'border-slate-300'"
                 class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-11 transition-colors" />
               @if (loteForm.get('cantidad')?.touched && loteForm.get('cantidad')?.errors?.['min']) {
-                <p class="text-xs text-rose-600">No puede ser negativa</p>
+                <p class="text-xs text-rose-600">Debe ser mayor que cero</p>
               }
             </div>
             <div class="flex flex-col gap-1">

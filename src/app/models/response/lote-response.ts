@@ -9,6 +9,7 @@ export interface LoteResponse {
   fechaVencimiento: string;
   fechaIngreso?: string;
   cantidad: number;
+  cantidadInicial: number;
   costoUnitario?: number;
   activo: boolean;
   createdAt?: string;

@@ -41,6 +41,16 @@ export function etiquetaAplicacionEspecie(
   return { texto: `Para: ${unirNombres(nombres)}`, clase: CLASE_ESPECIES };
 }
 
+/** Indica si un producto puede utilizarse normalmente para la especie de una cita. */
+export function productoCompatibleConEspecie(
+  aplicacion: TipoAplicacionProducto | null | undefined,
+  especies: readonly EspecieMascota[] | null | undefined,
+  especieMascota: EspecieMascota | null | undefined
+): boolean {
+  if (!especieMascota || aplicacion !== 'ESPECIES_ESPECIFICAS') return true;
+  return (especies ?? []).includes(especieMascota);
+}
+
 function unirNombres(nombres: string[]): string {
   if (nombres.length === 1) return nombres[0];
   if (nombres.length === 2) return `${nombres[0]} y ${nombres[1]}`;
