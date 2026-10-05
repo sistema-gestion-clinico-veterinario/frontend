@@ -53,6 +53,46 @@ describe('AuthStore', () => {
     });
   });
 
+  describe('preferencias por clínica', () => {
+    const empresa = (id: number) => ({ establishmentId: id, name: `Clínica ${id}` });
+
+    it('cada clínica guarda sus preferencias en su propia clave', () => {
+      store.setAuth({ ...cleanAuth, companyId: 1, companySlug: 'clinica-a', selectedEnterprise: empresa(1), roles: ['ROLE_ADMIN'], menu: [] });
+
+      expect(localStorage.getItem('auth_ui_preferences:clinica-a')).toContain('"establishmentId":1');
+      expect(localStorage.getItem('auth_ui_preferences')).toBeNull();
+    });
+
+    it('cerrar sesión en una clínica no borra las preferencias de otra', () => {
+      localStorage.setItem('auth_ui_preferences:clinica-b', JSON.stringify({ selectedEnterprise: empresa(2) }));
+      store.setAuth({ ...cleanAuth, companyId: 1, companySlug: 'clinica-a', selectedEnterprise: empresa(1), roles: ['ROLE_ADMIN'], menu: [] });
+
+      store.logout();
+
+      expect(localStorage.getItem('auth_ui_preferences:clinica-a')).toBeNull();
+      expect(localStorage.getItem('auth_ui_preferences:clinica-b')).not.toBeNull();
+    });
+
+    it('la cuenta de plataforma, sin clínica, conserva la clave de siempre', () => {
+      store.setAuth({ ...cleanAuth, companyId: null, companySlug: null, selectedEnterprise: empresa(9), roles: ['ROLE_SUPER'], menu: [] });
+
+      expect(localStorage.getItem('auth_ui_preferences')).toContain('"establishmentId":9');
+
+      store.logout();
+
+      expect(localStorage.getItem('auth_ui_preferences')).toBeNull();
+    });
+
+    it('no guarda identidad ni tokens bajo la clave de la clínica', () => {
+      store.setAuth({ ...cleanAuth, companyId: 1, companySlug: 'clinica-a', token: 'jwt-secreto', roles: ['ROLE_ADMIN'], menu: [] });
+
+      const guardado = localStorage.getItem('auth_ui_preferences:clinica-a') ?? '';
+
+      expect(guardado).not.toContain('jwt-secreto');
+      expect(guardado).not.toContain('ROLE_ADMIN');
+    });
+  });
+
   describe('hasAccess – flat menu item', () => {
     it('returns true when flat item has the requested permission', () => {
       store.setAuth({ ...cleanAuth, roles: ['ROLE_EMPLEADO'], menu: [flatItem('VISTA_MASCOTAS')] });

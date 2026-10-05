@@ -291,11 +291,18 @@
                     }
                   </div>
                 </div>
-                <button *appHasPermission="'VISTA_COMPANY:modificar'" (click)="openEditOwnCompany()"
-                  class="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors shrink-0 w-full sm:w-auto active:scale-95">
-                  <i class="pi pi-pencil text-xs"></i>
-                  Editar
-                </button>
+                <div class="flex w-full gap-2 sm:w-auto">
+                  <a routerLink="/admin/privacidad"
+                    class="flex flex-1 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 sm:flex-none">
+                    <i class="pi pi-shield text-xs text-[var(--brand-primary)]"></i>
+                    Privacidad
+                  </a>
+                  <button *appHasPermission="'VISTA_COMPANY:modificar'" (click)="openEditOwnCompany()"
+                    class="flex flex-1 items-center justify-center gap-2 rounded-lg bg-[var(--brand-primary-soft)] px-4 py-2 text-sm font-medium text-[var(--brand-primary)] sm:flex-none active:scale-95">
+                    <i class="pi pi-pencil text-xs"></i>
+                    Editar
+                  </button>
+                </div>
               </div>
               <div class="grid grid-cols-1 lg:grid-cols-3 divide-y lg:divide-y-0 lg:divide-x divide-slate-100">
                 <!-- Left: Contact + Location + Web/Description + Hours -->

@@ -1,0 +1,89 @@
+@if (visible()) {
+  <section class="rounded-2xl border border-slate-100 bg-white p-5">
+    <h3 class="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700">
+      <i class="pi pi-sign-out text-slate-400"></i> Cerrar mi cuenta
+    </h3>
+    <p class="text-xs leading-5 text-slate-600">
+      Dejas de acceder a esta clínica con tu cuenta. La clínica conserva sus registros (citas, historias y pagos)
+      y podrás reactivarla durante 30 días desde el enlace que te enviaremos por correo.
+      @if (isClient()) {
+        Tus mascotas quedarán sin atención programada hasta que la reactives.
+      }
+    </p>
+
+    @if (eligibility() && !eligibility()!.eligible) {
+      <p class="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs leading-5 text-slate-600">
+        {{ eligibility()!.reason }}
+      </p>
+    }
+
+    <button type="button" (click)="open()" [disabled]="!eligibility()?.eligible"
+      class="mt-4 rounded-lg border border-rose-300 px-4 py-2 text-sm font-semibold text-rose-600 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-50">
+      Cerrar mi cuenta
+    </button>
+  </section>
+
+  @if (dialogOpen()) {
+    <div class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/50 p-4" style="font-family: 'Barlow', sans-serif;">
+      <div class="w-full max-w-md overflow-hidden rounded-2xl border border-slate-200 bg-white">
+        <div class="flex items-center justify-between border-b border-slate-100 px-6 py-5">
+          <h2 class="text-sm font-bold text-slate-800">Cerrar mi cuenta</h2>
+          <button type="button" (click)="cancel()" title="Cerrar"
+            class="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-600">
+            <i class="pi pi-times text-xs"></i>
+          </button>
+        </div>
+
+        <div class="space-y-4 p-6">
+          @if (step() === 'request') {
+            <p class="text-xs leading-5 text-slate-600">
+              Para confirmar que eres tú, te enviaremos un código de 6 dígitos a tu correo.
+            </p>
+            @if (eligibility()?.requiresPassword) {
+              <div class="space-y-1.5">
+                <label for="close-password" class="text-xs font-semibold text-slate-700">Tu contraseña</label>
+                <input id="close-password" type="password" autocomplete="current-password"
+                  [value]="password()" (input)="password.set($any($event.target).value)"
+                  class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-800 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" />
+              </div>
+            }
+          } @else {
+            <p class="text-xs leading-5 text-slate-600">{{ info() }}</p>
+            <div class="space-y-1.5">
+              <label for="close-code" class="text-xs font-semibold text-slate-700">Código</label>
+              <input id="close-code" type="text" inputmode="numeric" maxlength="6" autocomplete="one-time-code"
+                [value]="code()" (input)="code.set($any($event.target).value)"
+                class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-center text-lg tracking-[0.5em] text-slate-800 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" />
+            </div>
+            <button type="button" (click)="sendCode()" [disabled]="working()"
+              class="text-xs font-semibold text-blue-600 hover:underline disabled:opacity-50">
+              Reenviar código
+            </button>
+          }
+
+          @if (error()) {
+            <p class="rounded-lg border border-rose-200 bg-rose-50 p-3 text-xs font-medium text-rose-700">{{ error() }}</p>
+          }
+
+          <div class="flex gap-3 pt-2">
+            <button type="button" (click)="cancel()" [disabled]="working()"
+              class="flex-1 rounded-lg border border-slate-200 py-2.5 text-sm font-semibold text-slate-500 transition hover:bg-slate-50">
+              Cancelar
+            </button>
+            @if (step() === 'request') {
+              <button type="button" (click)="sendCode()" [disabled]="working()"
+                class="flex-1 rounded-lg bg-blue-500 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-600 disabled:opacity-60">
+                {{ working() ? 'Enviando...' : 'Enviarme el código' }}
+              </button>
+            } @else {
+              <button type="button" (click)="confirm()" [disabled]="working()"
+                class="flex-1 rounded-lg bg-rose-500 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-600 disabled:opacity-60">
+                {{ working() ? 'Cerrando...' : 'Cerrar mi cuenta' }}
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+}

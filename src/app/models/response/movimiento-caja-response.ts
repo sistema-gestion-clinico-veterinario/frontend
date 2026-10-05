@@ -8,6 +8,8 @@ export interface MovimientoCajaResponse {
   descripcion: string | null;
   fecha: string;
   registradoPor: string | null;
+  registradoPorNombre?: string | null;
+  puntoCobro?: string | null;
   companyId: number;
 }
 
@@ -22,7 +24,10 @@ export interface SesionCajaResponse {
   abiertaAt: string;
   cerradaAt: string | null;
   abiertaPor: string;
+  abiertaPorNombre?: string | null;
   cerradaPor: string | null;
+  cerradaPorNombre?: string | null;
+  cajaNombre?: string | null;
   observaciones: string | null;
 }
 

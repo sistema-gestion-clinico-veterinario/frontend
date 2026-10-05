@@ -190,6 +190,12 @@
         </form>
       }
 
+      @if (authNotice) {
+        <div class="mt-5 rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm font-medium text-slate-600">
+          {{ authNotice }}
+        </div>
+      }
+
       @if (authError) {
         <div class="mt-5 flex items-start gap-2.5 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm font-medium text-rose-700">
           <svg class="mt-0.5 h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">

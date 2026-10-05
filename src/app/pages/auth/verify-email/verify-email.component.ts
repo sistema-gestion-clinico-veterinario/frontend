@@ -2,7 +2,6 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { environment } from '../../../../environments/environment';
 import { AuthService } from '../../../core/services/auth.service';
 import { CompanyService } from '../../../core/services/company.service';
 import { CompanySlugContext } from '../../../core/services/company-slug-context.service';
@@ -10,6 +9,7 @@ import { lowercaseEmailValidator } from '../../../core/validators/lowercase-emai
 import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
 import { strongPasswordValidators } from '../../../core/validators/password-policy.validator';
 import { SOFTVET_BRAND_COLOR, SOFTVET_LOGO_URL, SOFTVET_NAME } from '../../../core/constants/branding.constants';
+import { AvisoPublico, PrivacidadService } from '../../../core/services/privacidad.service';
 
 const DEFAULT_BRAND_COLOR = SOFTVET_BRAND_COLOR;
 const DEFAULT_LOGO_URL = SOFTVET_LOGO_URL;
@@ -19,6 +19,7 @@ const GOOGLE_ACTIVATION_ERROR_MESSAGES: Record<string, string> = {
   google_cancelado: 'La activación con Google fue cancelada.',
   google_email_no_verificado: 'La cuenta de Google no tiene el correo verificado.',
   google_correo_no_coincide: 'La cuenta de Google seleccionada no corresponde con el correo de la invitación. Utilice la cuenta de Google correcta, o cree su contraseña a continuación.',
+  google_cuenta_no_habilitada: 'Todavía no tiene un rol asignado en esta clínica. Pida a su administrador que se lo asigne para poder activar su cuenta.',
   google_fallo: 'No fue posible activar la cuenta con Google. Intente nuevamente, o cree su contraseña a continuación.',
 };
 
@@ -36,6 +37,7 @@ export class VerifyEmailComponent implements OnInit {
   private readonly companyService = inject(CompanyService);
   private readonly slugContext = inject(CompanySlugContext);
   private readonly fb = inject(FormBuilder);
+  private readonly privacidadService = inject(PrivacidadService);
 
   /** La empresa la resuelve la URL (slug), igual que login/forgot-password - el enlace
    * de verificación ya lo incluye (ver UsuarioServiceImpl.sendVerificationEmail). */
@@ -53,6 +55,10 @@ export class VerifyEmailComponent implements OnInit {
   estado = signal<'form' | 'enviando' | 'exito' | 'error' | 'reenviando' | 'reenviado'>('form');
   errorMsg = signal('');
   googleError = signal(this.readGoogleError());
+  startingGoogle = false;
+  emailEnmascarado = signal('');
+  reenvioPorEnlaceFallido = signal(false);
+  avisoPrivacidad = signal<AvisoPublico | null>(null);
 
   ngOnInit() {
     if (this.slug) {
@@ -67,6 +73,14 @@ export class VerifyEmailComponent implements OnInit {
           this.logoUrl = DEFAULT_LOGO_URL;
         }
       });
+      this.privacidadService.avisoPublico(this.slug).subscribe({
+        next: ({ data }) => {
+          this.avisoPrivacidad.set(data);
+          this.passwordForm.controls.avisoLeido.setValidators([Validators.requiredTrue]);
+          this.passwordForm.controls.avisoLeido.updateValueAndValidity({ emitEvent: false });
+        },
+        error: () => this.avisoPrivacidad.set(null)
+      });
     } else {
       this.logoUrl = DEFAULT_LOGO_URL;
     }
@@ -74,7 +88,8 @@ export class VerifyEmailComponent implements OnInit {
 
   passwordForm = this.fb.group({
     password: ['', strongPasswordValidators()],
-    confirmPassword: ['', strongPasswordValidators()]
+    confirmPassword: ['', strongPasswordValidators()],
+    avisoLeido: [false]
   }, { validators: this.passwordsMatch });
 
   resendForm = this.fb.group({
@@ -100,7 +115,8 @@ export class VerifyEmailComponent implements OnInit {
     }
     this.estado.set('enviando');
     this.errorMsg.set('');
-    this.authService.setupAccount(this.token, this.passwordForm.value.password!).subscribe({
+    this.authService.setupAccount(this.token, this.passwordForm.value.password!,
+      this.passwordForm.value.avisoLeido ?? false).subscribe({
       next: () => this.estado.set('exito'),
       error: (err) => {
         // 404 = el token en si no existe o expiro (enlace muerto, ahi si aplica
@@ -129,9 +145,29 @@ export class VerifyEmailComponent implements OnInit {
       return;
     }
     this.estado.set('reenviando');
-    this.authService.resendVerification(this.resendForm.value.email!).subscribe({
+    this.authService.resendVerification(this.resendForm.value.email!, this.slug).subscribe({
       next: () => this.estado.set('reenviado'),
       error: (err) => this.errorMsg.set(err.error?.message || 'Error al reenviar el correo')
+    });
+  }
+
+  reenviarPorEnlace() {
+    if (!this.token) return;
+    this.estado.set('reenviando');
+    this.authService.resendVerificationByToken(this.token, this.slug).subscribe({
+      next: (res) => {
+        this.emailEnmascarado.set(res.data?.email ?? '');
+        this.estado.set('reenviado');
+      },
+      error: (err) => {
+        this.estado.set('error');
+        if (err.status === 404) {
+          this.reenvioPorEnlaceFallido.set(true);
+          this.errorMsg.set('No pudimos reconocer este enlace. Escribe tu correo para recibir uno nuevo.');
+        } else {
+          this.errorMsg.set(err.error?.message || 'No se pudo reenviar el enlace. Intenta nuevamente.');
+        }
+      }
     });
   }
 
@@ -142,21 +178,23 @@ export class VerifyEmailComponent implements OnInit {
     this.router.navigate(['/login']);
   }
 
-  /** El token viaja como "state" (prefijo "activate:") para que /auth/google/callback
-   * sepa que este es un alta por invitación (no un login) y a qué cuenta corresponde -
-   * el backend exige que el correo que Google confirme sea EXACTAMENTE el de esa
-   * invitación antes de activar la cuenta. */
+  /** El token de invitación se deja en el servidor antes de salir a Google (no viaja en la URL);
+   * el backend exige que el correo que Google confirme sea EXACTAMENTE el de esa invitación
+   * antes de activar la cuenta. */
   continueWithGoogle(): void {
-    if (!this.token) return;
-    const params = new URLSearchParams({
-      client_id: environment.googleClientId,
-      redirect_uri: environment.googleRedirectUri,
-      response_type: 'code',
-      scope: 'openid email profile',
-      prompt: 'select_account',
-      state: `activate:${this.token}`,
+    if (!this.token || this.startingGoogle) return;
+    this.startingGoogle = true;
+    this.authService.createGoogleIntent({ activationToken: this.token }).subscribe({
+      next: ({ data }) => this.redirectTo(this.authService.googleStartUrl(data.intent)),
+      error: () => {
+        this.startingGoogle = false;
+        this.googleError.set(GOOGLE_ACTIVATION_ERROR_MESSAGES['google_fallo']);
+      },
     });
-    window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+  }
+
+  redirectTo(url: string): void {
+    window.location.href = url;
   }
 
   private readAndClearToken(): string {

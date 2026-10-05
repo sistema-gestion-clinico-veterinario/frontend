@@ -132,6 +132,10 @@ export class ResetPasswordComponent implements OnInit {
       error: (err) => {
         this.isSubmitting = false;
         this.errorMessage = err.error?.message || 'Error al restablecer la contraseña.';
+        // 404 = el enlace venció o ya se usó mientras la persona escribía: se ofrece pedir otro.
+        if (err.status === 404) {
+          this.isTokenValid = false;
+        }
       }
     });
   }

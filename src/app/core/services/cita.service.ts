@@ -75,7 +75,7 @@ export class CitaService {
   }
 
   cancelarCita(id: number, motivo: string) {
-    return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}/cancel?motivo=${encodeURIComponent(motivo)}`);
+    return this.http.delete<ApiResponse<CitaResponse>>(`${this.apiUrl}/${id}/cancel?motivo=${encodeURIComponent(motivo)}`);
   }
 
   eliminarCita(id: number) {

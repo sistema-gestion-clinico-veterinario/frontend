@@ -8,6 +8,7 @@ import { Title } from '@angular/platform-browser';
 import { environment } from '../environments/environment';
 import { SOFTVET_FAVICON_URL, SOFTVET_NAME } from './core/constants/branding.constants';
 import { BrandThemeService } from './core/services/brand-theme.service';
+import { SessionService } from './core/services/session.service';
 
 @Component({
   selector: 'app-root',
@@ -20,9 +21,12 @@ export class AppComponent {
   readonly authStore = inject(AuthStore);
   private readonly titleService = inject(Title);
   private readonly brandTheme = inject(BrandThemeService);
+  private readonly sessionService = inject(SessionService);
   private readonly defaultFavicon = SOFTVET_FAVICON_URL;
 
   constructor() {
+    this.sessionService.listenForCrossTabEvents();
+
     effect(() => {
       const empresa = this.authStore.selectedEnterprise();
       const empresaSesion = !this.authStore.isSuperAdmin() ? this.authStore.companyName() : null;

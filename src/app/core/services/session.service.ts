@@ -1,36 +1,112 @@
-import { Injectable, inject } from '@angular/core';
-import { Observable, catchError, finalize, map, of, shareReplay } from 'rxjs';
+import { Injectable, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
+import { Observable, catchError, finalize, map, of, retry, shareReplay, tap, timeout } from 'rxjs';
 import { AuthLoginData } from '../../models/response/auth-login-response.model';
+import { resolveInitialRoute } from '../routing/initial-route';
 import { AuthStore } from '../../store/auth.store';
 import { AuthService } from './auth.service';
 import { CompanySlugContext } from './company-slug-context.service';
 import { NavigationService } from './navigation.service';
 
-/**
- * Application service responsible for establishing the authenticated session.
- * Components and guards do not infer authentication from browser storage.
- */
 @Injectable({ providedIn: 'root' })
 export class SessionService {
   private readonly authService = inject(AuthService);
   private readonly authStore = inject(AuthStore);
   private readonly navigationService = inject(NavigationService);
   private readonly slugContext = inject(CompanySlugContext);
+  private readonly router = inject(Router);
   private initializationInFlight$: Observable<boolean> | null = null;
 
-  /**
-   * expectedSlug: el slug de empresa que la URL actual espera (la pantalla de login de
-   * esa empresa). Las cookies de sesion son del NAVEGADOR entero, no de esta pestaña -
-   * si ya hay una sesion valida pero es de OTRA empresa, nunca se establece en silencio
-   * (eso llevaba a la persona al dashboard de la empresa equivocada sin darse cuenta,
-   * con solo abrir /<otro-slug>/login en una pestaña nueva mientras seguia logueada en
-   * otra empresa en otra pestaña). Sin expectedSlug (login "global", sin marca de
-   * empresa) se preserva el comportamiento de siempre: cualquier sesion valida sirve.
-   */
-  initialize(expectedSlug?: string | null): Observable<boolean> {
+  private readonly authChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('softvet-auth') : null;
+  private closingSession = false;
+
+  readonly logoutError = signal<string | null>(null);
+  readonly sessionConflict = signal(false);
+
+  logout(): void {
+    if (this.closingSession) return;
+    this.closingSession = true;
+    this.logoutError.set(null);
+    this.authService.logout().pipe(
+      timeout(8000),
+      retry({ count: 1, delay: 500 }),
+      finalize(() => { this.closingSession = false; })
+    ).subscribe({
+      next: () => {
+        const slug = this.authStore.companySlug();
+        this.authStore.logout();
+        this.authChannel?.postMessage({ type: 'logout', slug });
+        this.router.navigateByUrl('/login', { replaceUrl: true });
+      },
+      error: () => this.logoutError.set(
+        'No se pudo cerrar la sesión. Revisa tu conexión e inténtalo de nuevo; si estás en un equipo compartido, no lo dejes sin cerrar la sesión.')
+    });
+  }
+
+  closeLocalSession(notice?: string): void {
+    const slug = this.authStore.companySlug();
+    this.authStore.logout();
+    this.authChannel?.postMessage({ type: 'logout', slug });
+    this.router.navigateByUrl(notice ? `/login?authNotice=${notice}` : '/login', { replaceUrl: true });
+  }
+
+  changeRole(roleId: number): Observable<AuthLoginData> {
+    return this.authService.switchRole(roleId).pipe(
+      map(({ data }) => data),
+      tap(data => {
+        this.applyRoleChange(data);
+        this.authChannel?.postMessage({ type: 'role-changed' });
+      })
+    );
+  }
+
+  listenForCrossTabEvents(): void {
+    if (!this.authChannel) return;
+    this.authChannel.onmessage = (event: MessageEvent) => {
+      if (this.authStore.sessionStatus() === 'anonymous') return;
+      if (event.data?.type === 'logout') {
+        const cerrada = (event.data.slug ?? null) as string | null;
+        if (cerrada !== (this.authStore.companySlug() ?? null)) return;
+        this.authStore.logout();
+        this.router.navigateByUrl('/login', { replaceUrl: true });
+      } else if (event.data?.type === 'role-changed') {
+        this.syncRoleFromServer();
+      }
+    };
+  }
+
+  /** Red de seguridad: si la sesión que llega no es de la clínica de esta pestaña (por ejemplo, una sesión abierta antes
+   * de que cada clínica tuviera sus propias cookies), no se adopta. */
+  endForOtherCompanySession(): void {
+    this.authStore.logout();
+    this.router.navigateByUrl('/login?authNotice=sesion_otra_clinica', { replaceUrl: true });
+  }
+
+  private syncRoleFromServer(): void {
+    this.authService.currentSession().subscribe({
+      next: ({ data }) => {
+        if (data.activeRoleId !== this.authStore.activeRoleId()) this.applyRoleChange(data);
+      },
+      error: () => {}
+    });
+  }
+
+  private applyRoleChange(data: AuthLoginData): void {
+    this.establish(data, true);
+    this.router.navigateByUrl(resolveInitialRoute(data.menu ?? [], data.activeRolePurpose), { replaceUrl: true });
+  }
+
+  /** platformOnly: la pantalla es del acceso de plataforma, así que una sesión de clínica no se adopta aunque exista. */
+  initialize(expectedSlug?: string | null, platformOnly = false): Observable<boolean> {
     const status = this.authStore.sessionStatus();
     if (status === 'authenticated') {
-      if (expectedSlug && this.authStore.companySlug() !== expectedSlug) return of(false);
+      if (expectedSlug && this.authStore.companySlug() !== expectedSlug) {
+        this.sessionConflict.set(true);
+        return of(false);
+      }
+      if (platformOnly && this.authStore.companySlug()) {
+        return of(false);
+      }
       return of(true);
     }
     if (status === 'anonymous') return of(false);
@@ -40,6 +116,11 @@ export class SessionService {
     this.initializationInFlight$ = this.authService.refreshToken().pipe(
       map(({ data }) => {
         if (expectedSlug && (data.companySlug ?? null) !== expectedSlug) {
+          this.authStore.logout();
+          this.sessionConflict.set(true);
+          return false;
+        }
+        if (platformOnly && data.companySlug) {
           this.authStore.logout();
           return false;
         }
@@ -60,9 +141,6 @@ export class SessionService {
   establish(data: AuthLoginData, preserveEnterprise = false): void {
     const isPlatformAdmin = data.activeRolePurpose === 'PLATFORM_ADMIN';
 
-    // La sesion real es la fuente de verdad del slug que se muestra en la
-    // URL de aqui en adelante - incluso si se entro por el login "global"
-    // sin slug, a partir de este punto toda navegacion interna lo lleva.
     this.slugContext.setSlug(data.companySlug ?? null);
 
     this.authStore.setAuth({
@@ -101,9 +179,6 @@ export class SessionService {
       originalMenu: data.menu ?? [],
       simulatedRoleId: null,
     });
-
-    // La navegación se refresca mediante su propio contrato. Durante la
-    // transición se conserva el menú incluido en la sesión como fallback.
     this.navigationService.getEffectiveNavigation().subscribe({
       next: ({ data: navigation }) => this.authStore.setMenu(navigation ?? []),
       error: () => {}

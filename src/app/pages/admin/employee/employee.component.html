@@ -142,13 +142,15 @@
                     <p class="font-extrabold text-slate-800 truncate">{{ employee.nombre }} {{ employee.apellido }}</p>
                     <p class="text-xs text-slate-400 truncate mt-0.5">{{ employee.numeroColegiatura || 'Sin colegiatura' }}</p>
                   </div>
-                  <button *appHasPermission="'VISTA_EMPLEADOS:modificar'" (click)="toggleStatus(employee)"
-                    [class]="employee.activo ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-500'"
-                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-all active:scale-95 shrink-0">
-                    <span [class]="employee.activo ? 'bg-green-500' : 'bg-red-400'" class="w-1.5 h-1.5 rounded-full"></span>
-                    {{ employee.activo ? 'Activo' : 'Inactivo' }}
-                  </button>
+                  <span [class]="statusChipClass(employee)"
+                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium shrink-0">
+                    <span [class]="statusDotClass(employee)" class="w-1.5 h-1.5 rounded-full"></span>
+                    {{ statusLabel(employee) }}
+                  </span>
                 </div>
+                @if (employee.cuentaPendiente) {
+                  <span class="mt-1 inline-block rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-500">Pendiente de activar</span>
+                }
                 <div class="grid grid-cols-2 gap-2 mt-3 text-xs">
                   <div class="rounded-lg bg-slate-50 px-3 py-2 col-span-2">
                     <span class="block text-[10px] font-bold text-slate-400 uppercase">Contacto</span>
@@ -247,12 +249,14 @@
               </div>
             </td>
             <td class="px-6 py-2">
-              <button *appHasPermission="'VISTA_EMPLEADOS:modificar'" (click)="toggleStatus(employee)"
-                [class]="employee.activo ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-500'"
-                class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium transition-all active:scale-95">
-                <span [class]="employee.activo ? 'bg-green-500' : 'bg-red-400'" class="w-1.5 h-1.5 rounded-full"></span>
-                {{ employee.activo ? 'Activo' : 'Inactivo' }}
-              </button>
+              <span [class]="statusChipClass(employee)"
+                class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium">
+                <span [class]="statusDotClass(employee)" class="w-1.5 h-1.5 rounded-full"></span>
+                {{ statusLabel(employee) }}
+              </span>
+              @if (employee.cuentaPendiente) {
+                <span class="ml-2 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-500">Pendiente de activar</span>
+              }
             </td>
             <td class="px-6 py-2 text-right">
               <div class="flex items-center justify-end">
@@ -292,6 +296,14 @@
           <p class="text-sm text-slate-500 mt-1">{{ confirmDialog()!.message }}</p>
         </div>
       </div>
+      @if (confirmDialog()!.askReason) {
+        <div class="mb-4">
+          <label for="confirm-reason" class="block text-xs font-medium text-slate-600 mb-1">Motivo (opcional)</label>
+          <textarea id="confirm-reason" rows="2" maxlength="300" [value]="confirmReason()"
+            (input)="confirmReason.set($any($event.target).value)"
+            class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:outline-none focus:border-slate-400"></textarea>
+        </div>
+      }
       <div class="flex justify-end gap-3">
         <button (click)="cancelConfirm()"
           class="px-4 py-2 rounded-lg border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
@@ -675,12 +687,43 @@
               </div>
             }
           </div>
+          @if (!isEdit()) {
+            <section class="space-y-3 border-t border-slate-200 pt-5">
+              <div class="flex items-center gap-2">
+                <span class="h-4 w-1.5 rounded-full bg-[var(--brand-primary)]"></span>
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Privacidad</h3>
+              </div>
+              @if (cargandoAviso()) {
+                <div class="rounded-lg border border-slate-200 p-4 text-sm text-slate-500">Cargando el aviso de privacidad…</div>
+              } @else if (avisoPrivacidad(); as aviso) {
+                <div class="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                  <p class="text-sm font-bold text-slate-800">Aviso de privacidad de {{ aviso.clinica }}</p>
+                  <p class="text-xs text-slate-500">Versión {{ aviso.version }} · muéstralo antes de recopilar los datos.</p>
+                  <details class="mt-2">
+                    <summary class="cursor-pointer text-xs font-bold text-[var(--brand-primary)]">Leer aviso completo</summary>
+                    <pre class="mt-3 max-h-56 overflow-y-auto whitespace-pre-wrap rounded-md border border-slate-200 bg-white p-3 font-sans text-xs leading-5 text-slate-600">{{ aviso.contenido }}</pre>
+                  </details>
+                </div>
+                <label class="flex cursor-pointer items-start gap-3 rounded-lg border border-slate-200 p-3">
+                  <input type="checkbox" formControlName="avisoInformado" class="mt-0.5 size-4 accent-[var(--brand-primary)]" />
+                  <span class="text-xs leading-5 text-slate-600"><strong class="block text-slate-800">La persona fue informada</strong>Confirmo que le mostré el aviso vigente antes de registrar sus datos.</span>
+                </label>
+                @if (employeeForm.get('avisoInformado')?.invalid && employeeForm.get('avisoInformado')?.touched) {
+                  <p class="text-xs text-rose-600">Debes confirmar que la persona fue informada.</p>
+                }
+              } @else {
+                <div class="rounded-lg border border-amber-200 bg-amber-50 p-4 text-xs leading-5 text-amber-800">
+                  La clínica todavía no publicó su aviso de privacidad. Debe publicarlo antes de registrar personal.
+                </div>
+              }
+            </section>
+          }
           <div class="flex justify-end gap-3 pt-6 border-t border-slate-200">
             <button type="button" (click)="displayModal.set(false)"
               class="px-5 py-2.5 text-sm font-semibold text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded transition-all">
               Descartar cambios
             </button>
-            <button type="submit"
+            <button type="submit" [disabled]="!isEdit() && !avisoPrivacidad()"
               class="px-8 py-2.5 text-sm font-bold text-white bg-blue-500 hover:bg-blue-600 rounded shadow-sm disabled:opacity-50 transition-all flex items-center justify-center gap-2 min-w-[160px]">
               {{ isEdit() ? 'Actualizar Registro' : 'Confirmar Personal' }}
             </button>
@@ -822,11 +865,11 @@
 <!-- Password Reset Modal -->
 @if (showPasswordResetModal()) {
   <div class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm font-['Barlow']">
-    <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-slate-100 flex flex-col overflow-hidden">
+    <div class="bg-white w-full max-w-md rounded-2xl border border-slate-200 flex flex-col overflow-hidden">
       <!-- Header -->
       <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
         <div class="flex items-center gap-3">
-          <div class="w-9 h-9 bg-amber-50 text-amber-600 rounded-lg flex items-center justify-center">
+          <div class="w-9 h-9 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center">
             <i class="pi pi-lock text-base"></i>
           </div>
           <h2 class="text-sm font-bold text-slate-800">Restablecer acceso</h2>
@@ -838,16 +881,13 @@
         </button>
       </div>
       <div class="p-6 space-y-4">
-        <div class="flex items-start gap-2.5 p-3.5 bg-amber-50 border border-amber-100 rounded-lg text-xs text-amber-800 font-semibold leading-relaxed">
-          <i class="pi pi-exclamation-triangle mt-0.5 text-sm shrink-0"></i>
-          <div>
-            Solicitarás el restablecimiento de acceso del empleado:
-            <span class="text-slate-800 font-bold block mt-0.5 uppercase">{{ selectedEmployeeForReset()?.nombre }} {{ selectedEmployeeForReset()?.apellido }}</span>
-          </div>
+        <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-600 leading-relaxed">
+          Vas a ayudar a recuperar el acceso de
+          <span class="text-slate-800 font-bold block mt-0.5 uppercase">{{ selectedEmployeeForReset()?.nombre }} {{ selectedEmployeeForReset()?.apellido }}</span>
         </div>
         <p class="text-xs leading-5 text-slate-600">
-          Se enviará un enlace temporal al correo registrado. El administrador no verá ni elegirá la nueva contraseña.
-          El enlace será de un solo uso y el cambio cerrará las sesiones existentes.
+          Le enviaremos un correo con un enlace para que cree una nueva contraseña. Tú no la verás ni la elegirás.
+          El enlace solo se puede usar una vez y vence pronto. Cuando lo use, se cerrarán sus sesiones abiertas.
         </p>
         <div class="flex gap-3 pt-2">
           <button type="button" (click)="showPasswordResetModal.set(false)"
@@ -860,7 +900,7 @@
             @if (requestingPasswordReset()) {
               <i class="pi pi-spin pi-spinner text-xs"></i>
             }
-            {{ requestingPasswordReset() ? 'Enviando...' : 'Enviar instrucciones' }}
+            {{ requestingPasswordReset() ? 'Enviando...' : 'Enviar enlace' }}
           </button>
         </div>
       </div>
@@ -877,5 +917,13 @@
   (resolved)="onConflictsResolved()"
 ></app-conflicting-appointments-dialog>
 
-
-
+@if (emailChangeTarget(); as target) {
+  <app-admin-email-change-modal
+    [userId]="target.userId!"
+    [displayName]="target.nombre + ' ' + target.apellido"
+    [currentEmail]="target.email"
+    [pending]="!!target.cuentaPendiente"
+    (closed)="emailChangeTarget.set(null)"
+    (sent)="onEmailChangeSent($event)">
+  </app-admin-email-change-modal>
+}

@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, computed, signal } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { TableModule } from 'primeng/table';
 import { MenuModule } from 'primeng/menu';
@@ -27,6 +28,7 @@ import { SOFTVET_BRAND_COLOR } from '../../../core/constants/branding.constants'
   standalone: true,
   imports: [
     CommonModule,
+    RouterModule,
     ReactiveFormsModule,
     TableModule,
     MenuModule,
