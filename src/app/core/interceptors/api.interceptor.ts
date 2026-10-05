@@ -5,8 +5,10 @@ import { BehaviorSubject, catchError, filter, finalize, Observable, switchMap, t
 import { AuthStore } from '../../store/auth.store';
 import { LoadingStore } from '../../store/loading.store';
 import { AuthService } from '../services/auth.service';
+import { CompanySlugContext } from '../services/company-slug-context.service';
 import { ThesisPerformanceSessionService } from '../services/thesis-performance-session.service';
 import { environment } from '../../../environments/environment';
+import { companySlugFromUrl } from '../routing/slug-url.utils';
 
 let isRefreshing = false;
 let refreshTokenSubject: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
@@ -25,6 +27,7 @@ const AUTH_ENDPOINTS_WITHOUT_REFRESH = [
   '/auth/validate-reset-token',
   '/auth/reset-password',
   '/auth/email-change/confirm-current',
+  '/auth/email-change/cancel',
   '/auth/email-change/confirm-new'
 ];
 
@@ -35,6 +38,7 @@ export const apiInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, nex
   const authStore = inject(AuthStore);
   const loadingStore = inject(LoadingStore);
   const authService = inject(AuthService);
+  const slugContext = inject(CompanySlugContext);
   const router = inject(Router);
   const thesisPerformanceSession = inject(ThesisPerformanceSessionService);
   const skipGlobalLoading = req.context.get(SKIP_GLOBAL_LOADING);
@@ -46,9 +50,24 @@ export const apiInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, nex
   const measurementHeaders = req.url.startsWith(environment.apiUrl)
     ? thesisPerformanceSession.requestHeaders()
     : null;
+  const companyId = authStore.companyId();
+  const declaresCompany = companyId != null && req.url.startsWith(environment.apiUrl) && !shouldSkipRefresh(req.url);
+  // La URL visible es la fuente de verdad del tenant de esta pestaña. Si el
+  // estado en memoria perteneciera a otra clínica, enviar su slug ocultaría el
+  // conflicto al backend y permitiría cargar datos bajo una URL equivocada.
+  const urlSlug = typeof window === 'undefined'
+    ? slugContext.slug()
+    : companySlugFromUrl(window.location.pathname);
+  const slug = urlSlug ?? slugContext.slug() ?? authStore.companySlug();
+  const declaresSlug = !!slug && req.url.startsWith(environment.apiUrl);
+  const headers = {
+    ...(measurementHeaders ?? {}),
+    ...(declaresCompany ? { 'X-Company-Id': String(companyId) } : {}),
+    ...(declaresSlug ? { 'X-Company-Slug': slug as string } : {})
+  };
   const authReq = req.clone({
     withCredentials: true,
-    ...(measurementHeaders ? { setHeaders: measurementHeaders } : {})
+    ...(Object.keys(headers).length ? { setHeaders: headers } : {})
   });
 
   const requestTimeout = req.url.includes('/media/upload')
@@ -61,6 +80,11 @@ export const apiInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, nex
       const isAuthRecoveryRequest = shouldSkipRefresh(req.url);
       if (error instanceof HttpErrorResponse && error.status === 401 && !isAuthRecoveryRequest) {
         return handle401Error(authReq, next, authStore, authService, router);
+      }
+      if (error instanceof HttpErrorResponse && error.status === 409
+          && error.error?.code === 'SESSION_COMPANY_MISMATCH') {
+        endForOtherCompanySession(authStore, router);
+        return throwError(() => error);
       }
       if (error instanceof HttpErrorResponse && error.status === 403
           && error.error?.code === 'TERMS_NOT_ACCEPTED'
@@ -77,6 +101,11 @@ export const apiInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, nex
   );
 };
 
+const endForOtherCompanySession = (authStore: any, router: Router): void => {
+  authStore.logout();
+  router.navigateByUrl('/login?authNotice=sesion_otra_clinica', { replaceUrl: true });
+};
+
 const handle401Error = (req: HttpRequest<any>, next: HttpHandlerFn, authStore: any, authService: AuthService, router: Router): Observable<HttpEvent<any>> => {
   if (!isRefreshing) {
     isRefreshing = true;
@@ -86,6 +115,13 @@ const handle401Error = (req: HttpRequest<any>, next: HttpHandlerFn, authStore: a
     return authService.refreshToken().pipe(
       switchMap((res: any) => {
         isRefreshing = false;
+        const currentCompany = authStore.companyId();
+        if (currentCompany != null && res.data.companyId != null && currentCompany !== res.data.companyId) {
+          refreshTokenSubject.next(false);
+          refreshTokenSubject = new BehaviorSubject<boolean>(false);
+          endForOtherCompanySession(authStore, router);
+          return throwError(() => new HttpErrorResponse({ status: 409, error: { code: 'SESSION_COMPANY_MISMATCH' } }));
+        }
         authStore.setAuth({
           token: null,
           refreshToken: null,

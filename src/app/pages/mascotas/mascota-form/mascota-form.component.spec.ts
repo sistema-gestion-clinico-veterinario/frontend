@@ -3,7 +3,7 @@ import { MascotaFormComponent } from './mascota-form.component';
 import { Router, ActivatedRoute } from '@angular/router';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { FormControl } from '@angular/forms';
-import { of } from 'rxjs';
+import { Subject, of } from 'rxjs';
 
 function createFileInputEvent(file: File): Event {
   const fakeInput = {
@@ -96,9 +96,11 @@ describe('MascotaFormComponent - crearCliente validations', () => {
 
     component.crearCliente();
 
+    expect(component.ncFieldError('numeroDocumento')).not.toBe('');
+    expect(component.ncFieldError('telefono')).toBe('');
     expect(addSpy).toHaveBeenCalledWith(jasmine.objectContaining({
       severity: 'warn',
-      summary: 'Documento inválido',
+      summary: 'Revisa los datos del propietario',
     }));
     expect(registrarSpy).not.toHaveBeenCalled();
   });
@@ -110,10 +112,74 @@ describe('MascotaFormComponent - crearCliente validations', () => {
 
     component.crearCliente();
 
+    expect(component.ncFieldError('telefono')).toBe('Ingresa exactamente 9 dígitos.');
+    expect(component.ncFieldError('numeroDocumento')).toBe('');
     expect(addSpy).toHaveBeenCalledWith(jasmine.objectContaining({
       severity: 'warn',
-      summary: 'Teléfono inválido',
+      summary: 'Revisa los datos del propietario',
     }));
     expect(registrarSpy).not.toHaveBeenCalled();
+  });
+
+  it('con datos válidos no muestra aviso de validación y llama al servicio', () => {
+    const registrarSpy = spyOn((component as any).apoderadoService, 'registrar').and.returnValue(new Subject());
+    spyOnProperty(component, 'activeCompanyId', 'get').and.returnValue(1);
+    component.ncNumDoc.set('12345678');
+
+    component.crearCliente();
+
+    expect(addSpy).not.toHaveBeenCalledWith(jasmine.objectContaining({ summary: 'Revisa los datos del propietario' }));
+    expect(registrarSpy).toHaveBeenCalled();
+  });
+
+  describe('vínculos con la mascota', () => {
+    function prepararVinculo(): jasmine.Spy {
+      (component as any).mascotaUuid.set('mascota-uuid');
+      const crear = spyOn((component as any).mascotaService, 'crearRelacion').and.returnValue(new Subject());
+      spyOn((component as any).mascotaService, 'actualizarRelacion').and.returnValue(new Subject());
+      return crear;
+    }
+
+    it('al vincular se puede indicar desde cuándo y si se le da acceso al portal', () => {
+      const crear = prepararVinculo();
+      component.abrirNuevaRelacion();
+      component.relacionForm.patchValue({
+        apoderadoId: 5, tipoRelacion: 'COPROPIETARIO', fechaInicio: '2099-01-10', darAccesoPortal: true
+      });
+
+      component.guardarRelacion();
+
+      expect(crear).toHaveBeenCalledWith('mascota-uuid', jasmine.objectContaining({
+        apoderadoId: 5, fechaInicio: '2099-01-10', darAccesoPortal: true
+      }));
+    });
+
+    it('por defecto el vínculo empieza hoy y no ofrece acceso al portal', () => {
+      const crear = prepararVinculo();
+      component.abrirNuevaRelacion();
+      component.relacionForm.patchValue({ apoderadoId: 5, tipoRelacion: 'COPROPIETARIO' });
+
+      component.guardarRelacion();
+
+      expect(crear).toHaveBeenCalledWith('mascota-uuid', jasmine.objectContaining({
+        fechaInicio: null, darAccesoPortal: false
+      }));
+    });
+
+    it('al editar no se vuelve a ofrecer la invitación y un vínculo por empezar sí deja cambiar su inicio', () => {
+      prepararVinculo();
+      const actualizar = (component as any).mascotaService.actualizarRelacion as jasmine.Spy;
+      component.editarRelacion({
+        uuid: 'rel-1', apoderadoId: 5, tipoRelacion: 'REPRESENTANTE_AUTORIZADO', activo: false, porEmpezar: true,
+        puedeRecibirInformacion: true, puedeAutorizarAtencion: false, puedeRealizarPagos: false,
+        fechaInicio: '2099-01-10', fechaFin: null
+      } as any);
+      expect(component.relacionForm.get('fechaInicio')?.value).toBe('2099-01-10');
+      component.relacionForm.patchValue({ darAccesoPortal: true });
+
+      component.guardarRelacion();
+
+      expect(actualizar).toHaveBeenCalledWith('mascota-uuid', 'rel-1', jasmine.objectContaining({ darAccesoPortal: false }));
+    });
   });
 });

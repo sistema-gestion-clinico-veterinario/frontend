@@ -1,5 +1,6 @@
 import { Component, inject, signal, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { AuthStore } from '../../../store/auth.store';
 import { AuthService } from '../../../core/services/auth.service';
@@ -24,11 +25,13 @@ export class ChangePasswordModalComponent {
   private readonly fb = inject(FormBuilder);
   readonly authStore = inject(AuthStore);
   private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
 
   showOld = signal(false);
   showNew = signal(false);
   showConfirm = signal(false);
   isSubmitting = signal(false);
+  completado = signal(false);
   errorMsg = signal<string | null>(null);
 
   form = this.fb.group({
@@ -80,34 +83,19 @@ export class ChangePasswordModalComponent {
     const { oldPassword, newPassword } = this.form.value;
     this.authService.changePassword({ oldPassword: oldPassword!, newPassword: newPassword! }).subscribe({
       next: () => {
-        this.authStore.setAuth({
-          token: null,
-          refreshToken: null,
-          roles: this.authStore.roles(),
-          companyId: this.authStore.companyId(),
-          companyName: this.authStore.companyName(),
-          nombreCompleto: this.authStore.nombreCompleto(),
-          userType: this.authStore.userType(),
-          empleadoId: this.authStore.empleadoId(),
-          passwordChanged: true,
-          needsCompanySelection: this.authStore.needsCompanySelection(),
-          selectedEnterprise: this.authStore.selectedEnterprise(),
-          menu: this.authStore.menu(),
-          assignedRoles: this.authStore.assignedRoles()
-          ,availableRoles: this.authStore.availableRoles()
-          ,activeRoleId: this.authStore.activeRoleId()
-          ,activeRoleName: this.authStore.activeRoleName()
-          ,activeRoleScope: this.authStore.activeRoleScope()
-          ,activeRolePurpose: this.authStore.activeRolePurpose()
-          ,permissionVersion: this.authStore.permissionVersion()
-        });
         this.isSubmitting.set(false);
-        this.dismissed.emit();
+        this.completado.set(true);
       },
       error: (err) => {
         this.errorMsg.set(err.error?.message ?? 'La contraseña actual es incorrecta.');
         this.isSubmitting.set(false);
       }
     });
+  }
+
+  irAlLogin() {
+    // El backend invalida todas las sesiones de esta credencial al cambiar la contraseña.
+    this.authStore.logout();
+    this.router.navigateByUrl('/login', { replaceUrl: true });
   }
 }

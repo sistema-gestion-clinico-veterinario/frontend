@@ -17,6 +17,14 @@ import { noLeadingTrailingSpaceValidator } from '../../core/validators/no-leadin
 import { textContentValidator } from '../../core/validators/text-content.validator';
 import { normalizeText } from '../../core/utils/normalize-text.util';
 import { AuthService } from '../../core/services/auth.service';
+import { LegalAcceptanceDTO, LegalService } from '../../core/services/legal.service';
+import { CloseAccountCardComponent } from './close-account/close-account-card.component';
+import {
+  AvisoPublico,
+  ConsentimientoEstado,
+  PrivacidadService,
+  RECORDATORIOS
+} from '../../core/services/privacidad.service';
 
 interface HorarioResumen {
   diaSemana: string;
@@ -37,7 +45,7 @@ const DIAS_SEMANA_ORDEN = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ToastModule, DialogModule, SkeletonModule, InputFilterDirective],
+  imports: [CommonModule, ReactiveFormsModule, ToastModule, DialogModule, SkeletonModule, InputFilterDirective, CloseAccountCardComponent],
   providers: [MessageService],
   templateUrl: './profile.component.html'
 })
@@ -48,6 +56,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
   private readonly messageService = inject(MessageService);
   private readonly authStore = inject(AuthStore);
   private readonly authService = inject(AuthService);
+  private readonly legalService = inject(LegalService);
+  private readonly privacidadService = inject(PrivacidadService);
   private readonly sanitizer = inject(DomSanitizer);
   readonly loadingStore = inject(LoadingStore);
 
@@ -62,6 +72,10 @@ export class ProfileComponent implements OnInit, OnDestroy {
   cargando = signal(true);
   showEmailChangeModal = signal(false);
   requestingEmailChange = signal(false);
+  legalAcceptances = signal<LegalAcceptanceDTO[]>([]);
+  avisoPrivacidad = signal<AvisoPublico | null>(null);
+  estadoPrivacidad = signal<ConsentimientoEstado | null>(null);
+  actualizandoPrivacidad = signal(false);
   readonly safePreviewUrl = computed(() => {
     const url = this.previewUrl();
     return url ? this.sanitizer.bypassSecurityTrustUrl(url) : null;
@@ -84,6 +98,79 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.loadProfile();
+    this.loadLegalAcceptances();
+    this.loadPrivacy();
+  }
+
+  loadPrivacy() {
+    this.privacidadService.avisoVigente().subscribe({
+      next: ({ data }) => {
+        this.avisoPrivacidad.set(data ?? null);
+        if (!data) return;
+        this.privacidadService.miEstado().subscribe({
+          next: ({ data: estado }) => this.estadoPrivacidad.set(estado),
+          error: () => this.estadoPrivacidad.set(null)
+        });
+      },
+      error: () => {
+        this.avisoPrivacidad.set(null);
+        this.estadoPrivacidad.set(null);
+      }
+    });
+  }
+
+  registrarLecturaAviso() {
+    if (this.actualizandoPrivacidad()) return;
+    this.actualizandoPrivacidad.set(true);
+    this.privacidadService.leiElAviso().subscribe({
+      next: ({ data }) => {
+        this.estadoPrivacidad.set(data);
+        this.actualizandoPrivacidad.set(false);
+        this.messageService.add({ severity: 'success', summary: 'Lectura registrada', detail: 'Guardamos la versión del aviso que leíste.' });
+      },
+      error: (err) => this.privacyError(err)
+    });
+  }
+
+  decidirRecordatorios(otorgar: boolean) {
+    if (this.actualizandoPrivacidad()) return;
+    this.actualizandoPrivacidad.set(true);
+    this.privacidadService.decidir(RECORDATORIOS, otorgar).subscribe({
+      next: ({ data }) => {
+        this.estadoPrivacidad.set(data);
+        this.actualizandoPrivacidad.set(false);
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Preferencia actualizada',
+          detail: otorgar ? 'Recibirás recordatorios preventivos.' : 'Ya no recibirás recordatorios preventivos.'
+        });
+      },
+      error: (err) => this.privacyError(err)
+    });
+  }
+
+  estadoRecordatorios(): 'OTORGADO' | 'RETIRADO' | 'SIN_REGISTRO' {
+    return this.estadoPrivacidad()?.finalidades.find(f => f.codigo === RECORDATORIOS)?.estado ?? 'SIN_REGISTRO';
+  }
+
+  private privacyError(err: any) {
+    this.actualizandoPrivacidad.set(false);
+    this.messageService.add({
+      severity: 'error',
+      summary: 'No se pudo actualizar tu privacidad',
+      detail: err?.error?.message ?? 'Inténtalo nuevamente.'
+    });
+  }
+
+  loadLegalAcceptances() {
+    this.legalService.getMyAcceptances().subscribe({
+      next: ({ data }) => this.legalAcceptances.set(data ?? []),
+      error: () => this.legalAcceptances.set([])
+    });
+  }
+
+  legalLabel(tipo: LegalAcceptanceDTO['tipo']): string {
+    return tipo === 'TERMINOS_Y_CONDICIONES' ? 'Términos y Condiciones' : 'Política de Privacidad';
   }
 
   loadProfile() {

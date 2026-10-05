@@ -9,6 +9,8 @@ export interface MascotaRelacionRequest {
   puedeRecibirInformacion: boolean;
   puedeAutorizarAtencion: boolean;
   puedeRealizarPagos: boolean;
+  fechaInicio?: string | null;
   fechaFin?: string | null;
   observaciones?: string | null;
+  darAccesoPortal?: boolean;
 }

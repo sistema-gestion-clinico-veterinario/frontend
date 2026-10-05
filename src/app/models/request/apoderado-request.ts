@@ -13,4 +13,6 @@ export interface ApoderadoRequest {
   observaciones?: string;
   companyId?: number;
   roleIds?: number[];
+  avisoInformado?: boolean;
+  consentimientoRecordatorios?: boolean | null;
 }

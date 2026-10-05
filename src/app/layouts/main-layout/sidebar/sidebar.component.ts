@@ -6,6 +6,7 @@ import { MenuItemDTO, MenuStructureDTO } from '../../../models/response/auth-log
 import { RouteMapperService } from '../../../core/services/route-mapper.service';
 import { MediaService } from '../../../core/services/media.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { SessionService } from '../../../core/services/session.service';
 import { SkeletonModule } from 'primeng/skeleton';
 import {
   SOFTVET_LOGO_URL,
@@ -37,6 +38,7 @@ export class SidebarComponent {
   private routeMapper = inject(RouteMapperService);
   private mediaService = inject(MediaService);
   private authService = inject(AuthService);
+  private sessionService = inject(SessionService);
 
   expandedSections = signal<Record<string, boolean>>({});
   companyLogoUrl = computed(() => this.authStore.selectedEnterprise()?.logoUrl
@@ -158,8 +160,6 @@ export class SidebarComponent {
     // El SlugUrlSerializer conoce el slug actual y lo antepone solo en la
     // barra de direcciones - al cerrar sesion se vuelve a la pantalla de
     // login marcada de la propia empresa, no al fallback generico.
-    this.authService.logout().subscribe({ error: () => {} });
-    this.authStore.logout();
-    this.router.navigateByUrl('/login', { replaceUrl: true });
+    this.sessionService.logout();
   }
 }

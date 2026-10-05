@@ -4,16 +4,29 @@ import { AuthStore } from '../../store/auth.store';
 import { resolveDashboardRoute, resolveInitialRoute } from '../../layouts/main-layout/navbar/navbar.component';
 import { map } from 'rxjs';
 import { SessionService } from '../services/session.service';
+import { CompanySlugContext } from '../services/company-slug-context.service';
+import { companySlugFromUrl } from '../routing/slug-url.utils';
 
 export const AuthGuard: CanActivateFn = (route, state) => {
   const authStore = inject(AuthStore);
   const router = inject(Router);
   const sessionService = inject(SessionService);
+  const slugContext = inject(CompanySlugContext);
 
-  return sessionService.initialize().pipe(
-    map((authenticated) => authenticated
-      ? validateAccess(route, authStore, router)
-      : router.createUrlTree(['/login']))
+  // Leer la barra de direcciones directamente evita que un estado de sesión
+  // previo reemplace el slug y haga pasar por válida otra clínica.
+  const urlSlug = typeof window === 'undefined'
+    ? slugContext.slug()
+    : companySlugFromUrl(window.location.pathname) ?? slugContext.slug();
+  return sessionService.initialize(urlSlug).pipe(
+    map((authenticated) => {
+      if (authenticated) return validateAccess(route, authStore, router);
+      if (sessionService.sessionConflict()) {
+        sessionService.sessionConflict.set(false);
+        return router.createUrlTree(['/login'], { queryParams: { authNotice: 'sesion_otra_clinica' } });
+      }
+      return router.createUrlTree(['/login']);
+    })
   );
 };
 

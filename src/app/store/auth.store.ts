@@ -1,5 +1,6 @@
 import { signalStore, withState, withMethods, patchState } from '@ngrx/signals';
 import { AssignedRoleDTO, MenuItemDTO, MenuStructureDTO, RolePurpose, RoleScope } from '../models/response/auth-login-response.model';
+import { companySlugFromUrl } from '../core/routing/slug-url.utils';
 
 interface Enterprise {
   establishmentId: number;
@@ -72,13 +73,18 @@ export interface AuthPayload {
 const UI_PREFERENCES_STORAGE_KEY = 'auth_ui_preferences';
 const LEGACY_AUTH_STORAGE_KEY = 'auth';
 
+/** Cada clínica guarda sus preferencias con su slug en la clave, para que cerrar sesión o cambiar algo en una no
+ * toque lo de otra que esté abierta en el mismo navegador. La cuenta de plataforma, sin slug, usa la clave de siempre. */
+export const preferencesStorageKey = (slug: string | null | undefined): string =>
+  slug ? `${UI_PREFERENCES_STORAGE_KEY}:${slug}` : UI_PREFERENCES_STORAGE_KEY;
+
 const createInitialState = (useStorage = true): AuthState => {
   let selectedEnterprise: Enterprise | null = null;
   if (useStorage && typeof window !== 'undefined') {
     // El formato anterior contenía identidad y permisos. Se elimina durante la
     // migración para impedir que vuelva a utilizarse accidentalmente.
     window.localStorage.removeItem(LEGACY_AUTH_STORAGE_KEY);
-    const stored = window.localStorage.getItem(UI_PREFERENCES_STORAGE_KEY);
+    const stored = window.localStorage.getItem(preferencesStorageKey(companySlugFromUrl(window.location.pathname)));
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
@@ -124,7 +130,7 @@ const saveToStorage = (state: AuthState) => {
   if (typeof window !== 'undefined') {
     // Solo se persisten preferencias visuales. Identidad, roles, menús y rutas
     // se reconstruyen siempre desde la sesión HttpOnly validada por el backend.
-    window.localStorage.setItem(UI_PREFERENCES_STORAGE_KEY, JSON.stringify({
+    window.localStorage.setItem(preferencesStorageKey(state.companySlug), JSON.stringify({
       selectedEnterprise: state.selectedEnterprise,
     }));
   }
@@ -335,9 +341,10 @@ export const AuthStore = signalStore(
     },
 
     logout() {
+      const slug = store.companySlug();
       patchState(store, createInitialState(false));
       if (typeof window !== 'undefined') {
-        window.localStorage.removeItem(UI_PREFERENCES_STORAGE_KEY);
+        window.localStorage.removeItem(preferencesStorageKey(slug));
         window.localStorage.removeItem(LEGACY_AUTH_STORAGE_KEY);
       }
     },

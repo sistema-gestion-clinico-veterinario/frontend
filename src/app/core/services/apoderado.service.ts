@@ -3,6 +3,8 @@ import { HttpClient, HttpContext } from '@angular/common/http';
 import { ApiResponse } from '../../models/response/api-response';
 import { Page } from '../../models/response/page';
 import { ApoderadoListResponse } from '../../models/response/apoderado-list-response';
+import { ApoderadoEstadoResponse, TipoInactividad } from '../../models/response/apoderado-estado-response';
+import { cuerpoDeEstado } from '../../shared/utils/person-status';
 import { environment } from '../../../environments/environment';
 import { ApoderadoRequest } from '../../models/request/apoderado-request';
 import { UserProfileDTO } from '../../models/response/user-profile-dto';
@@ -40,8 +42,13 @@ export class ApoderadoService {
     return this.http.put<ApiResponse<UserProfileDTO>>(`${this.apiUrl}/${id}`, data);
   }
 
-  cambiarEstado(id: number, active: boolean) {
-    return this.http.patch<ApiResponse<void>>(`${this.apiUrl}/${id}/status?active=${active}`, {});
+  cambiarEstado(id: number, active: boolean, opciones: { tipo?: TipoInactividad; reason?: string } = {}) {
+    return this.http.patch<ApiResponse<ApoderadoEstadoResponse>>(
+      `${this.apiUrl}/${id}/status?active=${active}`, cuerpoDeEstado(opciones));
+  }
+
+  reenviarInvitacion(id: number) {
+    return this.http.post<ApiResponse<void>>(`${this.apiUrl}/${id}/resend-invitation`, {});
   }
 
   citasConflictivas(id: number) {
@@ -49,7 +56,7 @@ export class ApoderadoService {
   }
 
   eliminar(id: number) {
-    return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`);
+    return this.http.delete<ApiResponse<ApoderadoEstadoResponse>>(`${this.apiUrl}/${id}`);
   }
 
   getPortalPerfil() {

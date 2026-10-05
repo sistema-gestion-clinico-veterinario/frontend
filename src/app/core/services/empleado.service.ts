@@ -4,6 +4,8 @@ import { Observable } from 'rxjs';
 
 import { ApiResponse } from '../../models/response/api-response';
 import { EmpleadoListResponse } from '../../models/response/empleado-list-response';
+import { TipoInactividad } from '../../models/response/apoderado-estado-response';
+import { cuerpoDeEstado } from '../../shared/utils/person-status';
 import { EmpleadoRequest } from '../../models/request/empleado-request';
 import { HorarioEmpleadoResponse } from '../../models/response/horario-empleado-response';
 import { UserProfileDTO } from '../../models/response/user-profile-dto';
@@ -39,8 +41,12 @@ export class EmpleadoService {
     return this.http.put<ApiResponse<UserProfileDTO>>(`${this.apiUrl}/${id}`, empleado);
   }
 
-  cambiarEstado(id: number, activo: boolean) {
-    return this.http.patch<ApiResponse<void>>(`${this.apiUrl}/${id}/status?active=${activo}`, {});
+  cambiarEstado(id: number, activo: boolean, opciones: { tipo?: TipoInactividad; reason?: string } = {}) {
+    return this.http.patch<ApiResponse<string[]>>(`${this.apiUrl}/${id}/status?active=${activo}`, cuerpoDeEstado(opciones));
+  }
+
+  reenviarInvitacion(id: number) {
+    return this.http.post<ApiResponse<void>>(`${this.apiUrl}/${id}/resend-invitation`, {});
   }
 
   citasConflictivas(id: number) {
@@ -48,7 +54,7 @@ export class EmpleadoService {
   }
 
   eliminar(id: number) {
-    return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`);
+    return this.http.delete<ApiResponse<string[]>>(`${this.apiUrl}/${id}`);
   }
 
   assignBulkSchedule(empleadoId: number, request: any): Observable<ApiResponse<void>> {
@@ -88,8 +94,8 @@ export class EmpleadoService {
     return this.http.get<ApiResponse<any[]>>(`${this.apiUrl}/schedules-report${params}`);
   }
 
-  requestPasswordReset(userId: number | null, email?: string): Observable<ApiResponse<void>> {
+  requestPasswordReset(userId: number | null, email?: string, companyId?: number | null): Observable<ApiResponse<void>> {
     const url = `${environment.apiUrl}/admin/users/reset-password`;
-    return this.http.post<ApiResponse<void>>(url, { userId, email });
+    return this.http.post<ApiResponse<void>>(url, { userId, email, companyId: companyId ?? null });
   }
 }

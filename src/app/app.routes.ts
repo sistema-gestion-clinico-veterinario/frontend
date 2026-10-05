@@ -16,6 +16,10 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/auth/login/login.component').then((m) => m.LoginComponent)
   },
   {
+    path: 'reactivate-account',
+    loadComponent: () => import('./pages/auth/reactivate-account/reactivate-account.component').then((m) => m.ReactivateAccountComponent)
+  },
+  {
     path: 'forgot-password',
     loadComponent: () => import('./pages/auth/forgot-password/forgot-password.component').then((m) => m.ForgotPasswordComponent) // forgot password route
   },
@@ -67,6 +71,11 @@ export const routes: Routes = [
         path: 'admin/company',
         data: { ventana: 'VISTA_COMPANY' },
         loadComponent: () => import('./pages/admin/company/company.component').then((m) => m.CompanyComponent)
+      },
+      {
+        path: 'admin/privacidad',
+        data: { ventana: 'VISTA_COMPANY', permiso: 'leer' },
+        loadComponent: () => import('./pages/admin/privacidad/privacidad.component').then((m) => m.PrivacidadComponent)
       },
       {
         path: 'auditoria',

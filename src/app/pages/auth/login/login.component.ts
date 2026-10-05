@@ -4,7 +4,6 @@ import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angu
 import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { catchError, debounceTime, distinctUntilChanged, finalize, from, of, switchMap, timeout } from 'rxjs';
-import { environment } from '../../../../environments/environment';
 import { AuthService } from '../../../core/services/auth.service';
 import { CompanyService, CompanySearchResult } from '../../../core/services/company.service';
 import { CompanySlugContext } from '../../../core/services/company-slug-context.service';
@@ -54,10 +53,22 @@ export class LoginComponent implements OnInit {
   logoUrl: string | null = null;
   colorPrimario = DEFAULT_BRAND_COLOR;
 
+  startingGoogle = false;
+  authNotice = '';
+
+  private static readonly NOTICES: Record<string, string> = {
+    cuenta_cerrada: 'Cerraste tu cuenta. Te enviamos un correo con el enlace para reactivarla durante los próximos 30 días.',
+    sesion_otra_clinica: 'La sesión que tenía este navegador no corresponde a esta clínica. Inicia sesión de nuevo para continuar; las sesiones de tus otras clínicas no se cierran.',
+  };
+
   private static readonly GOOGLE_ERROR_MESSAGES: Record<string, string> = {
     google_cancelado: 'Inicio de sesión con Google cancelado.',
     google_email_no_verificado: 'Tu cuenta de Google no tiene el correo verificado.',
     google_sin_acceso_clinica: 'Tu cuenta de Google no está registrada en esta veterinaria. Solicita acceso al administrador de la clínica o continúa con otra cuenta de Google.',
+    google_cuenta_cerrada: 'Cerraste tu cuenta en esta veterinaria. Para volver, usa el enlace de reactivación que te enviamos por correo (vale 30 días).',
+    google_cuenta_dada_de_baja: 'Tu acceso a esta veterinaria ya no está activo. Si crees que es un error, contacta al administrador de la clínica.',
+    google_cuenta_suspendida: 'Tu acceso a esta veterinaria está suspendido. Contacta al administrador de la clínica.',
+    google_cuenta_no_habilitada: 'Tu cuenta no puede ingresar por ahora. Contacta al administrador de la clínica.',
     google_fallo: 'No se pudo iniciar sesión con Google. Intenta nuevamente.',
   };
 
@@ -66,6 +77,7 @@ export class LoginComponent implements OnInit {
     this.isAdminRoute = this.router.url.startsWith('/admin/login');
     this.slug = this.isAdminRoute ? null : this.slugContext.slug();
 
+    this.authNotice = LoginComponent.NOTICES[this.route.snapshot.queryParamMap.get('authNotice') ?? ''] ?? '';
     const authErrorCode = this.route.snapshot.queryParamMap.get('authError');
     if (authErrorCode) {
       this.authError = LoginComponent.GOOGLE_ERROR_MESSAGES[authErrorCode]
@@ -88,7 +100,7 @@ export class LoginComponent implements OnInit {
     // son del navegador entero (compartidas entre pestañas), asi que sin este chequeo
     // abrir /<otro-slug>/login mientras se sigue logueado en otra empresa en otra
     // pestaña autenticaba en silencio contra la empresa equivocada.
-    this.sessionService.initialize(this.slug).subscribe((authenticated) => {
+    this.sessionService.initialize(this.slug, this.isAdminRoute).subscribe((authenticated) => {
       if (!authenticated) return;
       this.navigateToInitialRoute();
     });
@@ -246,20 +258,22 @@ export class LoginComponent implements OnInit {
     });
   }
 
-  /** El slug (si hay) viaja como "state" para que /auth/google/callback sepa contra qué
-   * empresa resolver la cuenta al volver - Google lo devuelve intacto en la redirección. */
+  /** La clínica (si hay) se deja en el servidor antes de salir a Google, para que el retorno
+   * sepa contra qué empresa resolver la cuenta sin llevarla en la URL. */
   continueWithGoogle(): void {
-    const params = new URLSearchParams({
-      client_id: environment.googleClientId,
-      redirect_uri: environment.googleRedirectUri,
-      response_type: 'code',
-      scope: 'openid email profile',
-      prompt: 'select_account',
+    if (this.startingGoogle) return;
+    this.startingGoogle = true;
+    this.authService.createGoogleIntent({ slug: this.slug }).subscribe({
+      next: ({ data }) => this.redirectTo(this.authService.googleStartUrl(data.intent)),
+      error: () => {
+        this.startingGoogle = false;
+        this.authError = LoginComponent.GOOGLE_ERROR_MESSAGES['google_fallo'];
+      },
     });
-    if (this.slug) {
-      params.set('state', this.slug);
-    }
-    window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+  }
+
+  redirectTo(url: string): void {
+    window.location.href = url;
   }
 
   private resolveLoginError(error: any): string {
