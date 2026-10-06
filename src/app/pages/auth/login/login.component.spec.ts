@@ -3,7 +3,7 @@ import { LoginComponent } from './login.component';
 import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { of, throwError } from 'rxjs';
+import { Subject, of, throwError } from 'rxjs';
 import { LoadingStore } from '../../../store/loading.store';
 
 const activatedRouteStub = { snapshot: { paramMap: convertToParamMap({}) } };
@@ -301,3 +301,70 @@ function createLoginInput(id: string, value: string) {
   input.value = value;
   document.body.appendChild(input);
 }
+
+describe('LoginComponent - continuar con Google', () => {
+  let component: LoginComponent;
+  let authService: jasmine.SpyObj<AuthService>;
+  let redirect: jasmine.Spy;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [LoginComponent, HttpClientTestingModule],
+      providers: [
+        { provide: Router, useValue: jasmine.createSpyObj('Router', ['navigateByUrl']) },
+        { provide: ActivatedRoute, useValue: activatedRouteStub },
+        { provide: AuthService, useValue: jasmine.createSpyObj('AuthService', ['createGoogleIntent', 'googleStartUrl']) },
+      ],
+    })
+      .overrideComponent(LoginComponent, { set: { template: '' } })
+      .compileComponents();
+
+    component = TestBed.createComponent(LoginComponent).componentInstance;
+    component.slug = 'vargas-vet';
+    authService = TestBed.inject(AuthService) as jasmine.SpyObj<AuthService>;
+    authService.googleStartUrl.and.callFake((intent: string) => `https://api.test/auth/google/start?intent=${intent}`);
+    redirect = spyOn(component, 'redirectTo');
+  });
+
+  it('deja la clínica en el servidor y sale a Google con el código opaco, sin llevar la clínica en la URL', () => {
+    authService.createGoogleIntent.and.returnValue(of({ success: true, message: 'ok', data: { intent: 'abc123' } }));
+
+    component.continueWithGoogle();
+
+    expect(authService.createGoogleIntent).toHaveBeenCalledWith({ slug: 'vargas-vet' });
+    expect(redirect).toHaveBeenCalledWith('https://api.test/auth/google/start?intent=abc123');
+    expect(redirect.calls.mostRecent().args[0]).not.toContain('vargas-vet');
+  });
+
+  it('ignora un segundo clic mientras el primero sigue en curso', () => {
+    authService.createGoogleIntent.and.returnValue(new Subject<any>());
+
+    component.continueWithGoogle();
+    component.continueWithGoogle();
+
+    expect(authService.createGoogleIntent).toHaveBeenCalledTimes(1);
+  });
+
+  it('si el servidor no responde, avisa y permite volver a intentar', () => {
+    authService.createGoogleIntent.and.returnValue(throwError(() => ({ status: 500 })));
+
+    component.continueWithGoogle();
+
+    expect(component.authError).toBe('No se pudo iniciar sesión con Google. Intenta nuevamente.');
+    expect(redirect).not.toHaveBeenCalled();
+    expect(component.startingGoogle).toBeFalse();
+  });
+
+  it('explica con claridad cada motivo por el que Google no deja entrar', () => {
+    const mensajes = (LoginComponent as any).GOOGLE_ERROR_MESSAGES as Record<string, string>;
+
+    expect(mensajes['google_cuenta_suspendida']).toContain('suspendido');
+    const avisos = (LoginComponent as any).NOTICES as Record<string, string>;
+    expect(avisos['sesion_otra_clinica']).toContain('no corresponde a esta clínica');
+    expect(avisos['sesion_otra_clinica']).toContain('no se cierran');
+    expect(mensajes['google_cuenta_cerrada']).toContain('enlace de reactivación');
+    expect(mensajes['google_cuenta_dada_de_baja']).toContain('ya no está activo');
+    expect(mensajes['google_cuenta_no_habilitada']).toContain('no puede ingresar por ahora');
+    expect(mensajes['google_sin_acceso_clinica']).toContain('no está registrada');
+  });
+});

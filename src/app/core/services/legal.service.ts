@@ -12,6 +12,15 @@ export interface LegalDocumentDTO {
   vigenteDesde: string;
 }
 
+export interface LegalAcceptanceDTO {
+  tipo: LegalDocumentDTO['tipo'];
+  version: string;
+  contenidoHash: string | null;
+  /** false en las aceptaciones anteriores al registro del texto exacto: no se puede demostrar qué texto se leyó. */
+  textoRecuperable: boolean;
+  fechaAceptacion: string;
+}
+
 export interface LegalStatusDTO {
   needsAcceptance: boolean;
   overdue: boolean;
@@ -30,6 +39,10 @@ export class LegalService {
 
   getStatus(): Observable<ApiResponse<LegalStatusDTO>> {
     return this.http.get<ApiResponse<LegalStatusDTO>>(`${this.baseUrl}/status`);
+  }
+
+  getMyAcceptances(): Observable<ApiResponse<LegalAcceptanceDTO[]>> {
+    return this.http.get<ApiResponse<LegalAcceptanceDTO[]>>(`${this.baseUrl}/my-acceptances`);
   }
 
   accept(legalDocumentIds: number[]): Observable<ApiResponse<void>> {

@@ -16,6 +16,14 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/auth/login/login.component').then((m) => m.LoginComponent)
   },
   {
+    path: 'privacidad',
+    loadComponent: () => import('./pages/legal/aviso-publico/aviso-publico.component').then((m) => m.AvisoPublicoComponent)
+  },
+  {
+    path: 'reactivate-account',
+    loadComponent: () => import('./pages/auth/reactivate-account/reactivate-account.component').then((m) => m.ReactivateAccountComponent)
+  },
+  {
     path: 'forgot-password',
     loadComponent: () => import('./pages/auth/forgot-password/forgot-password.component').then((m) => m.ForgotPasswordComponent) // forgot password route
   },
@@ -67,6 +75,11 @@ export const routes: Routes = [
         path: 'admin/company',
         data: { ventana: 'VISTA_COMPANY' },
         loadComponent: () => import('./pages/admin/company/company.component').then((m) => m.CompanyComponent)
+      },
+      {
+        path: 'admin/privacidad',
+        data: { ventana: 'VISTA_COMPANY', permiso: 'leer' },
+        loadComponent: () => import('./pages/admin/privacidad/privacidad.component').then((m) => m.PrivacidadComponent)
       },
       {
         path: 'auditoria',
@@ -334,6 +347,10 @@ export const routes: Routes = [
       {
         path: 'password-change',
         loadComponent: () => import('./pages/auth/password-change/password-change.component').then((m) => m.PasswordChangeComponent)
+      },
+      {
+        path: 'aviso-clinica',
+        loadComponent: () => import('./pages/legal/aviso-clinica/aviso-clinica.component').then((m) => m.AvisoClinicaComponent)
       },
       {
         path: 'legal/accept',

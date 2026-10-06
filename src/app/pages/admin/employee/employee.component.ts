@@ -21,12 +21,15 @@ import { EmpleadoListResponse } from '../../../models/response/empleado-list-res
 import { EmpleadoRequest, HorarioEmpleadoRequest } from '../../../models/request/empleado-request';
 import { AuthStore } from '../../../store/auth.store';
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
+import { PersonStatusAction, STATUS_ACTION_TEXT, availableStatusActions, personStatusChipClass, personStatusDotClass, personStatusLabel } from '../../../shared/utils/person-status';
 import { ConflictingAppointmentsDialogComponent } from '../../../shared/components/conflicting-appointments-dialog/conflicting-appointments-dialog.component';
 import { InputFilterDirective } from '../../../core/directives/input-filter.directive';
 import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
 import { lowercaseEmailValidator } from '../../../core/validators/lowercase-email.validator';
+import { AdminEmailChangeModalComponent } from '../../../shared/components/admin/admin-email-change-modal/admin-email-change-modal.component';
 import { textContentValidator } from '../../../core/validators/text-content.validator';
 import { normalizeText } from '../../../core/utils/normalize-text.util';
+import { AvisoPublico, PrivacidadService } from '../../../core/services/privacidad.service';
 
 @Component({
   selector: 'app-employee',
@@ -46,7 +49,8 @@ import { normalizeText } from '../../../core/utils/normalize-text.util';
     SkeletonModule,
     HasPermissionDirective,
     InputFilterDirective,
-    ConflictingAppointmentsDialogComponent
+    ConflictingAppointmentsDialogComponent,
+    AdminEmailChangeModalComponent
   ],
   providers: [MessageService],
   templateUrl: './employee.component.html'
@@ -61,6 +65,7 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   private readonly especialidadService = inject(EspecialidadService);
   private readonly tipoEmpleadoService = inject(TipoEmpleadoService);
   private readonly roleService = inject(RoleService);
+  private readonly privacidadService = inject(PrivacidadService);
   readonly authStore = inject(AuthStore);
 
   @ViewChild('empFileInput') empFileInput!: ElementRef<HTMLInputElement>;
@@ -69,7 +74,9 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   photoPreview = signal<string | null>(null);
   selectedFile = signal<File | null>(null);
 
-  confirmDialog = signal<{ title: string; message: string; onConfirm: () => void } | null>(null);
+  confirmDialog = signal<{ title: string; message: string; onConfirm: (reason?: string) => void; askReason: boolean } | null>(null);
+  confirmReason = signal('');
+  private pendingStatus: { action: PersonStatusAction; reason?: string } | null = null;
 
   employees = signal<EmpleadoListResponse[]>([]);
   cargando = signal<boolean>(true);
@@ -85,7 +92,10 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   searchFilter = signal<string>('');
   displayDetailModal = signal<boolean>(false);
   selectedEmployeeDetail = signal<EmpleadoRequest | null>(null);
+  avisoPrivacidad = signal<AvisoPublico | null>(null);
+  cargandoAviso = signal(false);
 
+  emailChangeTarget = signal<EmpleadoListResponse | null>(null);
   conflictDialogVisible = signal(false);
   conflictEmployee = signal<EmpleadoListResponse | null>(null);
 
@@ -150,12 +160,13 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     return this.mediaService.resolveUrl(path);
   }
 
-  openConfirm(title: string, message: string, onConfirm: () => void) {
-    this.confirmDialog.set({ title, message, onConfirm });
+  openConfirm(title: string, message: string, onConfirm: (reason?: string) => void, askReason = false) {
+    this.confirmReason.set('');
+    this.confirmDialog.set({ title, message, onConfirm, askReason });
   }
 
   confirmAction() {
-    this.confirmDialog()?.onConfirm();
+    this.confirmDialog()?.onConfirm(this.confirmReason().trim() || undefined);
     this.confirmDialog.set(null);
   }
 
@@ -216,7 +227,8 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     fotoUrl: ['', [Validators.maxLength(500), Validators.pattern(/^$|^https?:\/\/[^\s<>]+$/)]],
     numeroColegiatura: ['', [Validators.maxLength(30), noLeadingTrailingSpaceValidator(), textContentValidator({ requireLetter: false })]],
     especialidades: [[]],
-    tiposEmpleado: [[]]
+    tiposEmpleado: [[]],
+    avisoInformado: [false]
   });
 
   ngOnInit() {
@@ -227,6 +239,7 @@ export class EmployeeComponent implements OnInit, OnDestroy {
       this.loadRoles(companyId);
       this.employeeForm.get('companyId')?.setValue(companyId);
     }
+    this.loadAvisoPrivacidad();
 
     this.employeeForm.get('tiposEmpleado')?.valueChanges.subscribe(types => {
       const isVet = types?.some((type: string) => type.toUpperCase() === 'VETERINARIO');
@@ -393,6 +406,22 @@ export class EmployeeComponent implements OnInit, OnDestroy {
       command: () => this.openPasswordResetModal(employee)
     });
 
+    if (this.authStore.hasAccess('VISTA_GESTION_CREDENCIALES', 'modificar') && employee.activo && employee.userId) {
+      items.push({
+        label: employee.cuentaPendiente ? 'Corregir correo' : 'Cambiar correo de acceso',
+        icon: 'pi pi-at',
+        command: () => this.emailChangeTarget.set(employee)
+      });
+    }
+
+    if (this.canEmployeeAction('modificar') && employee.cuentaPendiente) {
+      items.push({
+        label: 'Reenviar invitación',
+        icon: 'pi pi-send',
+        command: () => this.reenviarInvitacion(employee)
+      });
+    }
+
     if (this.canEmployeeAction('modificar')) {
       items.push({
         label: 'Editar',
@@ -400,14 +429,13 @@ export class EmployeeComponent implements OnInit, OnDestroy {
         disabled: !employee.activo,
         command: () => this.editEmployee(employee)
       });
-    }
-
-    if (this.canEmployeeAction('eliminar')) {
-      items.push({
-        label: 'Eliminar',
-        icon: 'pi pi-trash',
-        command: () => this.deleteEmployee(employee)
-      });
+      for (const action of availableStatusActions({ activo: employee.activo, tipoInactividad: employee.tipoInactividad })) {
+        items.push({
+          label: STATUS_ACTION_TEXT[action].menuLabel,
+          icon: STATUS_ACTION_TEXT[action].icon,
+          command: () => this.changeStatus(employee, action)
+        });
+      }
     }
 
     this.employeeActionItemsCache.set(employee, items);
@@ -456,8 +484,10 @@ export class EmployeeComponent implements OnInit, OnDestroy {
       roleIds: [],
       especialidades: [],
       tiposEmpleado: [],
-      companyId: this.activeCompanyId
+      companyId: this.activeCompanyId,
+      avisoInformado: false
     });
+    this.setPrivacyValidator(true);
     this.horarios = this.diasSemana.map((d, i) => ({ diaSemana: d.key, activo: false, horaInicio: i % 2 === 0 ? '08:00' : '13:00', horaFin: i % 2 === 0 ? '13:00' : '18:00' }));
     this.isEdit.set(false);
     this.displayModal.set(true);
@@ -465,6 +495,7 @@ export class EmployeeComponent implements OnInit, OnDestroy {
 
   editEmployee(employee: EmpleadoListResponse) {
     this.isEdit.set(true);
+    this.setPrivacyValidator(false);
     this.selectedFile.set(null);
     this.photoPreview.set(this.mediaService.resolveUrl(employee.fotoUrl));
     this.empleadoService.getById(employee.id).subscribe({
@@ -494,6 +525,26 @@ export class EmployeeComponent implements OnInit, OnDestroy {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cargar la información del empleado' });
       }
     });
+  }
+
+  private loadAvisoPrivacidad() {
+    this.cargandoAviso.set(true);
+    this.privacidadService.avisoVigente().subscribe({
+      next: ({ data }) => {
+        this.avisoPrivacidad.set(data ?? null);
+        this.cargandoAviso.set(false);
+      },
+      error: () => {
+        this.avisoPrivacidad.set(null);
+        this.cargandoAviso.set(false);
+      }
+    });
+  }
+
+  private setPrivacyValidator(required: boolean) {
+    const control = this.employeeForm.get('avisoInformado');
+    control?.setValidators(required ? [Validators.requiredTrue] : []);
+    control?.updateValueAndValidity({ emitEvent: false });
   }
 
   confirmarGuardarEmpleado() {
@@ -583,63 +634,88 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     }
   }
 
-  toggleStatus(employee: EmpleadoListResponse) {
-    const action = employee.activo ? 'desactivar' : 'activar';
+  onEmailChangeSent(message: string) {
+    const corregido = !!this.emailChangeTarget()?.cuentaPendiente;
+    this.emailChangeTarget.set(null);
+    this.messageService.add({
+      severity: 'success',
+      summary: corregido ? 'Correo corregido' : 'Confirmación enviada',
+      detail: message
+    });
+    if (corregido) this.loadEmployees();
+  }
+
+  reenviarInvitacion(employee: EmpleadoListResponse) {
     this.openConfirm(
-      'Cambiar estado',
-      `¿Confirmas que deseas ${action} a ${employee.nombre} ${employee.apellido}?`,
+      'Reenviar invitación',
+      `¿Enviar un enlace de activación nuevo a ${employee.email}? El enlace anterior dejará de funcionar.`,
       () => {
-        this.empleadoService.cambiarEstado(employee.id, !employee.activo).subscribe({
+        this.empleadoService.reenviarInvitacion(employee.id).subscribe({
           next: () => {
-            this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Estado actualizado' });
+            this.messageService.add({ severity: 'success', summary: 'Invitación enviada', detail: `Se envió un enlace nuevo a ${employee.email}` });
             this.loadEmployees();
           },
-          error: (err) => {
-            const message = err.error?.message || 'No se pudo cambiar el estado';
-            if (message.includes('citas programadas vigentes')) {
-              this.conflictEmployee.set(employee);
-              this.conflictDialogVisible.set(true);
-            }
-            this.messageService.add({ severity: 'error', summary: 'Error', detail: message });
-          }
+          error: (err) => this.messageService.add({
+            severity: 'error', summary: 'No se reenvió la invitación',
+            detail: err.error?.message || 'Intenta nuevamente.'
+          })
         });
       }
     );
   }
 
-  onConflictsResolved() {
-    const employee = this.conflictEmployee();
-    if (!employee) return;
-    this.empleadoService.cambiarEstado(employee.id, !employee.activo).subscribe({
-      next: () => {
-        this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Estado actualizado' });
-        this.conflictEmployee.set(null);
+  changeStatus(employee: EmpleadoListResponse, action: PersonStatusAction) {
+    const text = STATUS_ACTION_TEXT[action];
+    const nombre = `${employee.nombre} ${employee.apellido}`;
+    this.openConfirm(
+      text.title,
+      text.confirm(nombre, 'empleado'),
+      (reason) => {
+        this.pendingStatus = { action, reason };
+        this.applyStatus(employee, action, reason);
+      },
+      text.askReason
+    );
+  }
+
+  private applyStatus(employee: EmpleadoListResponse, action: PersonStatusAction, reason?: string, fromConflict = false) {
+    const tipo = action === 'REACTIVAR' ? undefined : action;
+    this.empleadoService.cambiarEstado(employee.id, action === 'REACTIVAR', { tipo, reason }).subscribe({
+      next: (res) => {
+        this.messageService.add({ severity: 'success', summary: 'Éxito', detail: STATUS_ACTION_TEXT[action].success });
+        const cajas = res.data ?? [];
+        if (cajas.length) {
+          this.messageService.add({
+            severity: 'warn',
+            summary: 'Caja abierta',
+            detail: `${employee.nombre} ${employee.apellido} tenía abierta la caja ${cajas.join(', ')}. Un administrador debe cerrarla desde Caja.`,
+            life: 15000
+          });
+        }
+        if (fromConflict) this.conflictEmployee.set(null);
         this.loadEmployees();
       },
       error: (err) => {
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo cambiar el estado' });
+        const message = err.error?.message || 'No se pudo cambiar el estado';
+        if (!fromConflict && message.includes('citas programadas vigentes')) {
+          this.conflictEmployee.set(employee);
+          this.conflictDialogVisible.set(true);
+        }
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: message });
       }
     });
   }
 
-  deleteEmployee(employee: EmpleadoListResponse) {
-    this.openConfirm(
-      'Eliminar empleado',
-      `¿Estás seguro de que deseas eliminar a ${employee.nombre} ${employee.apellido}? Esta acción no se puede deshacer.`,
-      () => {
-        this.empleadoService.eliminar(employee.id).subscribe({
-          next: () => {
-            this.messageService.add({ severity: 'success', summary: 'Eliminado', detail: 'Empleado eliminado correctamente' });
-            this.loadEmployees();
-          },
-          error: (err) => {
-            this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo eliminar el empleado' });
-          }
-        });
-      }
-    );
+  onConflictsResolved() {
+    const employee = this.conflictEmployee();
+    const pending = this.pendingStatus;
+    if (!employee || !pending) return;
+    this.applyStatus(employee, pending.action, pending.reason, true);
   }
 
+  statusLabel = personStatusLabel;
+  statusChipClass = personStatusChipClass;
+  statusDotClass = personStatusDotClass;
   openPasswordResetModal(employee: EmpleadoListResponse) {
     this.selectedEmployeeForReset.set(employee);
     this.showPasswordResetModal.set(true);
@@ -652,19 +728,19 @@ export class EmployeeComponent implements OnInit, OnDestroy {
       return;
     }
     this.requestingPasswordReset.set(true);
-    this.empleadoService.requestPasswordReset(emp.userId ?? null, emp.email).subscribe({
+    this.empleadoService.requestPasswordReset(emp.userId ?? null, emp.email, this.activeCompanyId).subscribe({
       next: () => {
         this.requestingPasswordReset.set(false);
         this.messageService.add({
           severity: 'success',
-          summary: 'Instrucciones enviadas',
-          detail: 'El empleado deberá establecer personalmente su nueva contraseña desde el enlace recibido.'
+          summary: 'Enlace en camino',
+          detail: `Estamos enviando a ${emp.nombre} un correo para que cree su nueva contraseña. Si no le llega en unos minutos, revisa que su correo esté bien escrito e inténtalo de nuevo.`
         });
         this.showPasswordResetModal.set(false);
       },
       error: (err) => {
         this.requestingPasswordReset.set(false);
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudieron enviar las instrucciones' });
+        this.messageService.add({ severity: 'error', summary: 'No se pudo enviar', detail: err.error?.message || 'No se pudo enviar el enlace. Inténtalo de nuevo.' });
       }
     });
   }

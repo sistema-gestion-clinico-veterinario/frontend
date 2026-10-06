@@ -22,6 +22,7 @@ import { textContentValidator } from '../../../core/validators/text-content.vali
 import { normalizeText } from '../../../core/utils/normalize-text.util';
 import { MascotaRelacionRequest, TipoRelacionMascota } from '../../../models/request/mascota-relacion-request';
 import { MascotaRelacionResponse, TipoRelacionMascotaResponse } from '../../../models/response/mascota-relacion-response';
+import { AvisoPublico, PrivacidadService } from '../../../core/services/privacidad.service';
 
 @Component({
   selector: 'app-mascota-form',
@@ -45,6 +46,7 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
   private readonly mascotaService   = inject(MascotaService);
   private readonly apoderadoService = inject(ApoderadoService);
   private readonly razaService      = inject(RazaService);
+  private readonly privacidadService = inject(PrivacidadService);
   readonly mediaService     = inject(MediaService);
   private readonly messageService   = inject(MessageService);
   private readonly router           = inject(Router);
@@ -84,6 +86,9 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
   ncGenero    = signal('MASCULINO');
   ncDireccion = signal('');
   ncReferencias = signal('');
+  ncAvisoInformado = signal(false);
+  ncConsentimientoRecordatorios = signal<boolean | null>(null);
+  avisoPrivacidad = signal<AvisoPublico | null>(null);
   ncSubmitted = signal(false);
   ncTouched = signal<Record<string, boolean>>({});
   previewUrl          = signal<string | null>(null);
@@ -147,7 +152,9 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
     puedeRecibirInformacion: [false],
     puedeAutorizarAtencion: [false],
     puedeRealizarPagos: [false],
+    fechaInicio: [null],
     fechaFin: [null],
+    darAccesoPortal: [false],
     observaciones: ['', [Validators.maxLength(500)]],
   });
 
@@ -163,6 +170,10 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.privacidadService.avisoVigente().subscribe({
+      next: ({ data }) => this.avisoPrivacidad.set(data ?? null),
+      error: () => this.avisoPrivacidad.set(null)
+    });
     const requestedReturnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
     this.returnUrl = requestedReturnUrl?.startsWith('/') && !requestedReturnUrl.startsWith('//')
       ? requestedReturnUrl : null;
@@ -255,7 +266,9 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
       puedeRecibirInformacion: false,
       puedeAutorizarAtencion: false,
       puedeRealizarPagos: false,
+      fechaInicio: null,
       fechaFin: null,
+      darAccesoPortal: false,
       observaciones: ''
     });
     this.relacionForm.get('apoderadoId')?.enable({ emitEvent: false });
@@ -264,7 +277,7 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
   }
 
   editarRelacion(relacion: MascotaRelacionResponse) {
-    if (relacion.tipoRelacion === 'PROPIETARIO_PRINCIPAL' || !relacion.activo) return;
+    if (relacion.tipoRelacion === 'PROPIETARIO_PRINCIPAL' || !(relacion.activo || relacion.porEmpezar)) return;
     this.editingRelacion.set(relacion);
     this.relacionForm.reset({
       apoderadoId: relacion.apoderadoId,
@@ -272,7 +285,9 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
       puedeRecibirInformacion: relacion.puedeRecibirInformacion,
       puedeAutorizarAtencion: relacion.puedeAutorizarAtencion,
       puedeRealizarPagos: relacion.puedeRealizarPagos,
+      fechaInicio: relacion.porEmpezar ? relacion.fechaInicio : null,
       fechaFin: relacion.fechaFin ?? null,
+      darAccesoPortal: false,
       observaciones: relacion.observaciones ?? ''
     });
     this.relacionForm.get('apoderadoId')?.disable({ emitEvent: false });
@@ -299,7 +314,9 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
       puedeRecibirInformacion: !!raw.puedeRecibirInformacion,
       puedeAutorizarAtencion: !!raw.puedeAutorizarAtencion,
       puedeRealizarPagos: !!raw.puedeRealizarPagos,
+      fechaInicio: raw.fechaInicio || null,
       fechaFin: raw.fechaFin || null,
+      darAccesoPortal: !this.editingRelacion() && !!raw.darAccesoPortal,
       observaciones: normalizeText(raw.observaciones) || null
     };
     this.savingRelacion.set(true);
@@ -308,11 +325,15 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
       ? this.mascotaService.actualizarRelacion(uuid, editing.uuid, request)
       : this.mascotaService.crearRelacion(uuid, request);
     operation.subscribe({
-      next: () => {
+      next: res => {
         this.savingRelacion.set(false);
         this.displayRelacionModal.set(false);
         this.loadRelaciones();
         this.messageService.add({ severity: 'success', summary: 'Relación guardada', detail: 'Las autorizaciones quedaron registradas.' });
+        const aviso = res.data?.avisoMascota;
+        if (aviso) {
+          this.messageService.add({ severity: 'warn', summary: 'Estado de la mascota', detail: aviso, life: 9000 });
+        }
       },
       error: err => {
         this.savingRelacion.set(false);
@@ -326,9 +347,13 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
     if (!uuid || relacion.tipoRelacion === 'PROPIETARIO_PRINCIPAL') return;
     if (!window.confirm(`¿Revocar la autorización de ${relacion.personaNombre}?`)) return;
     this.mascotaService.revocarRelacion(uuid, relacion.uuid).subscribe({
-      next: () => {
+      next: res => {
         this.loadRelaciones();
         this.messageService.add({ severity: 'success', summary: 'Autorización revocada', detail: 'La persona ya no podrá actuar por esta mascota.' });
+        const aviso = (res.message ?? '').replace(/^Autorización revocada\.?\s*/, '');
+        if (aviso) {
+          this.messageService.add({ severity: 'warn', summary: 'Estado de la mascota', detail: aviso, life: 9000 });
+        }
       },
       error: err => this.messageService.add({ severity: 'error', summary: 'No se pudo revocar', detail: err.error?.message || 'Inténtalo nuevamente.' })
     });
@@ -743,6 +768,7 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
       this.ncNombre.set(''); this.ncApellido.set(''); this.ncTipoDoc.set('DNI');
       this.ncNumDoc.set(''); this.ncTelefono.set(''); this.ncCorreo.set('');
       this.ncGenero.set('MASCULINO'); this.ncDireccion.set(''); this.ncReferencias.set('');
+      this.ncAvisoInformado.set(false); this.ncConsentimientoRecordatorios.set(null);
       this.ncSubmitted.set(false); this.ncTouched.set({});
     }
   }
@@ -758,6 +784,15 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
       });
       return;
     }
+    if (!this.avisoPrivacidad() || !this.ncAvisoInformado()) {
+      this.messageService.add({
+        severity: 'warn', summary: 'Privacidad pendiente',
+        detail: !this.avisoPrivacidad()
+          ? 'La clínica debe publicar su aviso de privacidad antes de registrar personas.'
+          : 'Muestra el aviso y confirma que la persona fue informada.'
+      });
+      return;
+    }
     const nombre   = normalizeText(this.ncNombre());
     const apellido = normalizeText(this.ncApellido());
     const telefono = this.ncTelefono().trim();
@@ -765,43 +800,6 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
     const numDoc   = this.ncNumDoc().trim();
     const direccion = normalizeText(this.ncDireccion());
     const referencias = normalizeText(this.ncReferencias());
-    const textoSeguro = /^(?=.*\p{L})(?!.*[{}\[\]<>*|\\^~`=@])(?!(?:[\p{P}\p{S}\s]+)$).*$/u;
-
-    if (!nombre || !apellido || !telefono || !correo || !numDoc || !direccion) {
-      this.messageService.add({ severity: 'warn', summary: 'Campos incompletos', detail: 'Complete todos los campos obligatorios.' });
-      return;
-    }
-    if (nombre.length > 80 || apellido.length > 80 || direccion.length > 200 || referencias.length > 500) {
-      this.messageService.add({ severity: 'warn', summary: 'Limite excedido', detail: 'Revise la cantidad maxima de caracteres permitidos.' });
-      return;
-    }
-    if (!/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/.test(nombre) || !/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/.test(apellido)) {
-      this.messageService.add({ severity: 'warn', summary: 'Nombre inválido', detail: 'Nombres y apellidos solo aceptan letras y espacios.' });
-      return;
-    }
-    if (!/^[0-9]{9}$/.test(telefono)) {
-      this.messageService.add({ severity: 'warn', summary: 'Teléfono inválido', detail: 'Debe tener 9 dígitos.' });
-      return;
-    }
-    if (!/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/.test(correo)) {
-      this.messageService.add({ severity: 'warn', summary: 'Correo inválido', detail: 'Use un correo válido en minúsculas.' });
-      return;
-    }
-
-    if (!textoSeguro.test(direccion) || (referencias && !textoSeguro.test(referencias))) {
-      this.messageService.add({ severity: 'warn', summary: 'Texto invalido', detail: 'No use caracteres como }, *, <, > ni campos solo con puntos.' });
-      return;
-    }
-
-    const documentoValido = this.ncTipoDoc() === 'DNI'
-      ? /^\d{8}$/.test(numDoc)
-      : this.ncTipoDoc() === 'PASAPORTE'
-        ? /^[a-zA-Z]\d{8}$/.test(numDoc)
-        : /^\d{9}$/.test(numDoc);
-    if (!documentoValido) {
-      this.messageService.add({ severity: 'warn', summary: 'Documento inválido', detail: 'Verifique el formato del documento.' });
-      return;
-    }
 
     const companyId = this.activeCompanyId;
     if (!companyId) {
@@ -820,7 +818,9 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
       genero: this.ncGenero(),
       direccion,
       referencias: referencias || undefined,
-      companyId
+      companyId,
+      avisoInformado: true,
+      consentimientoRecordatorios: this.ncConsentimientoRecordatorios()
     }).subscribe({
       next: (res) => {
         const apoderadoId = res.data.apoderadoId ?? res.data.id;
@@ -933,4 +933,3 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
     return m[especie?.toUpperCase()] ?? especie;
   }
 }
-

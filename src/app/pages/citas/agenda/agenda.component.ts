@@ -48,12 +48,14 @@ import { InputFilterDirective } from '../../../core/directives/input-filter.dire
 import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
 import { textContentValidator } from '../../../core/validators/text-content.validator';
 import { normalizeText } from '../../../core/utils/normalize-text.util';
+import { describeManualNotice } from '../../../shared/utils/person-status';
 import { hasMeaningfulText, isLowercaseEmail } from '../../../core/utils/input-validation.util';
 import { ControlPreventivoService } from '../../../core/services/control-preventivo.service';
 import { ControlPreventivoResponse } from '../../../models/response/control-preventivo-response';
 import { RealtimeStompConnection, RealtimeStompService } from '../../../core/services/realtime-stomp.service';
 import { SugerenciasControlComponent } from './sugerencias-control/sugerencias-control.component';
 import { SugerenciaControlResponse } from '../../../models/response/sugerencia-control-response';
+import { AvisoPublico, PrivacidadService } from '../../../core/services/privacidad.service';
 export type Vista = 'lista' | 'dia' | 'semana' | 'mes';
 export type PeriodoAgenda = '' | 'hoy' | '7dias' | '30dias' | 'personalizado';
 
@@ -116,6 +118,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
   private readonly pagoService       = inject(PagoService);
   private readonly cajaService       = inject(CajaService);
   private readonly realtimeStompService = inject(RealtimeStompService);
+  private readonly privacidadService = inject(PrivacidadService);
   private readonly messageService    = inject(MessageService);
   private readonly confirmationService = inject(ConfirmationService);
   private readonly router            = inject(Router);
@@ -269,6 +272,9 @@ export class AgendaComponent implements OnInit, OnDestroy {
   ncNumDoc    = signal('');
   ncGenero    = signal('MASCULINO');
   ncDireccion = signal('');
+  ncAvisoInformado = signal(false);
+  ncConsentimientoRecordatorios = signal<boolean | null>(null);
+  avisoPrivacidad = signal<AvisoPublico | null>(null);
 
   showNuevaMascota   = signal(false);
   savingNuevaMascota = signal(false);
@@ -537,6 +543,10 @@ export class AgendaComponent implements OnInit, OnDestroy {
   });
 
   ngOnInit() {
+    this.privacidadService.avisoVigente().subscribe({
+      next: ({ data }) => this.avisoPrivacidad.set(data ?? null),
+      error: () => this.avisoPrivacidad.set(null)
+    });
     this.cargando.set(true);
     this.pendingInitialLoads = 0;
     this.loadCitas();
@@ -810,6 +820,8 @@ export class AgendaComponent implements OnInit, OnDestroy {
     this.ncNumDoc.set('');
     this.ncGenero.set('MASCULINO');
     this.ncDireccion.set('');
+    this.ncAvisoInformado.set(false);
+    this.ncConsentimientoRecordatorios.set(null);
   }
 
   selectVeterinario(vet: {label: string, value: number}) {
@@ -1096,6 +1108,15 @@ export class AgendaComponent implements OnInit, OnDestroy {
       this.messageService.add({ severity: 'warn', summary: 'Documento inválido', detail: 'Verifique el formato del documento.' });
       return;
     }
+    if (!this.avisoPrivacidad() || !this.ncAvisoInformado()) {
+      this.messageService.add({
+        severity: 'warn', summary: 'Privacidad pendiente',
+        detail: !this.avisoPrivacidad()
+          ? 'La clínica debe publicar su aviso de privacidad antes de registrar personas.'
+          : 'Muestra el aviso y confirma que la persona fue informada.'
+      });
+      return;
+    }
 
     this.savingNuevoCliente.set(true);
     this.apoderadoService.registrar({
@@ -1107,7 +1128,9 @@ export class AgendaComponent implements OnInit, OnDestroy {
       numeroDocumento: numDoc,
       genero: this.ncGenero(),
       direccion,
-      companyId: this.activeCompanyId ?? undefined
+      companyId: this.activeCompanyId ?? undefined,
+      avisoInformado: true,
+      consentimientoRecordatorios: this.ncConsentimientoRecordatorios()
     }).subscribe({
       next: (res) => {
         const apoderadoId = res.data.apoderadoId ?? res.data.id;
@@ -1286,13 +1309,17 @@ export class AgendaComponent implements OnInit, OnDestroy {
     
     const id = this.citaForm.get('id')?.value;
     const observer = {
-      next: () => {
+      next: (res: any) => {
         this.suppressSseToast = true;
         this.messageService.add({
           severity: 'success',
           summary: 'Listo',
           detail: id ? 'Cita actualizada' : 'Cita programada'
         });
+        const avisoManual = describeManualNotice(res?.data);
+        if (avisoManual) {
+          this.messageService.add({ severity: 'warn', summary: 'Avisa al cliente', detail: avisoManual, life: 15000 });
+        }
         this.displayModal.set(false);
         this.loadCitas();
       },
@@ -1502,9 +1529,13 @@ export class AgendaComponent implements OnInit, OnDestroy {
       rejectLabel: 'No, volver',
       accept: () => {
         this.citaService.cancelarCita(cita.id, '').subscribe({
-          next: () => {
+          next: (res) => {
             this.suppressSseToast = true;
             this.messageService.add({ severity: 'success', summary: 'Listo', detail: 'Cita cancelada correctamente.' });
+            const avisoManual = describeManualNotice(res?.data);
+            if (avisoManual) {
+              this.messageService.add({ severity: 'warn', summary: 'Avisa al cliente', detail: avisoManual, life: 15000 });
+            }
             this.loadCitas();
             if (this.vistaActual() !== 'lista') this.loadCitasCalendario();
             if ((cita.montoPagado ?? 0) > 0) {
@@ -2116,9 +2147,13 @@ export class AgendaComponent implements OnInit, OnDestroy {
       fechaHoraInicio: this.toLocalDateTimeString(nuevaFecha),
       motivoReprogramacion: 'Reprogramado desde agenda'
     }).subscribe({
-      next: () => {
+      next: (res) => {
         this.suppressSseToast = true;
         this.messageService.add({ severity: 'success', summary: 'Listo', detail: 'Cita reprogramada correctamente.' });
+        const avisoManual = describeManualNotice(res?.data);
+        if (avisoManual) {
+          this.messageService.add({ severity: 'warn', summary: 'Avisa al cliente', detail: avisoManual, life: 15000 });
+        }
         this.loadCitas();
         this.loadCitasCalendario();
       },

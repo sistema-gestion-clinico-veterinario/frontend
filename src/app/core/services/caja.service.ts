@@ -4,6 +4,7 @@ import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../../models/response/api-response';
 import { Page } from '../../models/response/page';
 import { MovimientoCajaResponse, ResumenCajaResponse, SesionCajaResponse } from '../../models/response/movimiento-caja-response';
+import { EstadoEquipo, PuntoCobro } from '../../models/response/punto-cobro';
 import { MovimientoEgresoRequest } from '../../models/request/movimiento-egreso-request';
 import { CuentaCitaResponse, DetalleCuentaRequest } from '../../models/response/cuenta-cita-response';
 import { SKIP_GLOBAL_LOADING } from '../interceptors/api.interceptor';
@@ -48,8 +49,38 @@ export class CajaService {
     return this.http.post<ApiResponse<SesionCajaResponse>>(`${this.apiUrl}/sesion/arqueo`, { companyId, efectivoContado, observaciones });
   }
 
-  cerrarCaja(companyId: number, efectivoContado: number, observaciones?: string) {
-    return this.http.post<ApiResponse<SesionCajaResponse>>(`${this.apiUrl}/sesion/cerrar`, { companyId, efectivoContado, observaciones });
+  cerrarCaja(companyId: number, efectivoContado: number, observaciones?: string, sesionId?: number) {
+    return this.http.post<ApiResponse<SesionCajaResponse>>(`${this.apiUrl}/sesion/cerrar`,
+      { companyId, efectivoContado, observaciones, ...(sesionId ? { sesionId } : {}) });
+  }
+
+  esteEquipo(companyId: number) {
+    const params = new HttpParams().set('companyId', companyId);
+    return this.http.get<ApiResponse<EstadoEquipo>>(`${this.apiUrl}/puntos/este-equipo`, { params });
+  }
+
+  puntosCobro(companyId: number) {
+    const params = new HttpParams().set('companyId', companyId);
+    return this.http.get<ApiResponse<PuntoCobro[]>>(`${this.apiUrl}/puntos`, { params });
+  }
+
+  crearPuntoCobro(companyId: number, nombre: string) {
+    return this.http.post<ApiResponse<PuntoCobro>>(`${this.apiUrl}/puntos`, { companyId, nombre });
+  }
+
+  actualizarPuntoCobro(id: number, companyId: number, nombre: string, activa?: boolean) {
+    return this.http.put<ApiResponse<PuntoCobro>>(`${this.apiUrl}/puntos/${id}`,
+      { companyId, nombre, ...(activa === undefined ? {} : { activa }) });
+  }
+
+  vincularPuntoCobro(id: number, companyId: number) {
+    const params = new HttpParams().set('companyId', companyId);
+    return this.http.post<ApiResponse<PuntoCobro>>(`${this.apiUrl}/puntos/${id}/vincular`, {}, { params });
+  }
+
+  desvincularPuntoCobro(id: number, companyId: number) {
+    const params = new HttpParams().set('companyId', companyId);
+    return this.http.post<ApiResponse<PuntoCobro>>(`${this.apiUrl}/puntos/${id}/desvincular`, {}, { params });
   }
 
   listarPendientes(companyId: number, page = 0, size = 20) {

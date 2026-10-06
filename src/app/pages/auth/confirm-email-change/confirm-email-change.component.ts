@@ -42,17 +42,29 @@ export class ConfirmEmailChangeComponent implements OnInit {
     if (fragmentParams.has('token')) {
       history.replaceState(null, '', location.pathname + location.search);
     }
-    if (!token || (type !== 'actual' && type !== 'nuevo')) {
+    if (!token || (type !== 'actual' && type !== 'nuevo' && type !== 'cancelar')) {
       this.fail('El enlace de confirmación no es válido.');
       return;
     }
 
+    if (type === 'cancelar') {
+      this.authService.cancelEmailChange(token).subscribe({
+        next: () => {
+          this.loading.set(false);
+          this.completed.set(true);
+          this.message.set('Cancelamos la solicitud de cambio de correo: tu correo de acceso no cambió. '
+            + 'Si no fuiste tú, te recomendamos cambiar tu contraseña y avisar a la empresa.');
+        },
+        error: (err) => this.fail(err.error?.message || 'El enlace es inválido o la solicitud ya no está vigente.')
+      });
+      return;
+    }
     this.authService.confirmEmailChange(type, token).subscribe({
       next: (response) => {
         this.loading.set(false);
         this.completed.set(response.data === true);
         this.message.set(response.data
-          ? 'El correo fue actualizado y todas las sesiones anteriores se cerraron.'
+          ? 'El correo fue actualizado y todas las sesiones anteriores se cerraron. Desde ahora inicia sesión con tu correo nuevo.'
           : 'Esta dirección fue confirmada. La operación se completará cuando se confirme también el otro correo.');
       },
       error: (err) => this.fail(err.error?.message || 'El enlace expiró o ya fue utilizado.')

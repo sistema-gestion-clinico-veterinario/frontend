@@ -13,6 +13,7 @@ import { EmpleadoService } from '../../../core/services/empleado.service';
 import { ApoderadoService } from '../../../core/services/apoderado.service';
 import { CitaResponse } from '../../../models/response/cita-response';
 import { EmpleadoListResponse } from '../../../models/response/empleado-list-response';
+import { describeManualNotice } from '../../utils/person-status';
 
 /** Panel de resolución de citas conflictivas: se muestra cuando se intenta
  * suspender un empleado o un cliente que aún tiene citas vigentes, porque el
@@ -91,8 +92,14 @@ export class ConflictingAppointmentsDialogComponent implements OnChanges {
     }
     this.saving.set(true);
     this.citaService.reasignarVeterinario(cita.id, veterinarioId, this.motivo()[cita.id]).pipe(finalize(() => this.saving.set(false))).subscribe({
-      next: () => {
-        this.messages.add({ severity: 'success', summary: 'Cita reasignada', detail: 'Se notificó al cliente por correo.' });
+      next: (res) => {
+        const avisoManual = describeManualNotice(res?.data);
+        this.messages.add({
+          severity: avisoManual ? 'warn' : 'success',
+          summary: 'Cita reasignada',
+          detail: avisoManual ?? 'Se notificó al cliente por correo.',
+          life: avisoManual ? 15000 : undefined
+        });
         this.cargar();
       },
       error: err => this.messages.add({ severity: 'error', summary: 'No se pudo reasignar', detail: err.error?.message || 'Ocurrió un error al reasignar la cita.' })
@@ -107,8 +114,14 @@ export class ConflictingAppointmentsDialogComponent implements OnChanges {
     }
     this.saving.set(true);
     this.citaService.cancelarCita(cita.id, motivo).pipe(finalize(() => this.saving.set(false))).subscribe({
-      next: () => {
-        this.messages.add({ severity: 'success', summary: 'Cita cancelada', detail: 'La cita fue cancelada.' });
+      next: (res) => {
+        const avisoManual = describeManualNotice(res?.data);
+        this.messages.add({
+          severity: avisoManual ? 'warn' : 'success',
+          summary: 'Cita cancelada',
+          detail: avisoManual ?? 'La cita fue cancelada.',
+          life: avisoManual ? 15000 : undefined
+        });
         this.cargar();
       },
       error: err => this.messages.add({ severity: 'error', summary: 'No se pudo cancelar', detail: err.error?.message || 'Ocurrió un error al cancelar la cita.' })

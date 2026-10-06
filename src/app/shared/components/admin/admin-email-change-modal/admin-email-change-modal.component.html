@@ -1,0 +1,88 @@
+<div class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm font-['Barlow']">
+  <div class="bg-white w-full max-w-md rounded-2xl border border-slate-100 flex flex-col overflow-hidden">
+    <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+      <div>
+        <h2 class="text-sm font-bold text-slate-800">{{ pending ? 'Corregir correo' : 'Cambiar correo de acceso' }}</h2>
+        <p class="text-xs text-slate-500 mt-0.5">{{ displayName }}</p>
+      </div>
+      <button type="button" (click)="closed.emit()" [disabled]="submitting()"
+        class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+        title="Cerrar">
+        <i class="pi pi-times text-xs"></i>
+      </button>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="p-6 space-y-4">
+      @if (pending) {
+        <p class="text-xs leading-5 text-slate-600">
+          Úsalo cuando el correo se escribió mal al registrar a la persona. Como todavía no activó su cuenta, el cambio se aplica
+          de inmediato y la invitación anterior deja de funcionar. Si es un cliente que ya tiene mascotas, o un empleado, le enviaremos
+          una invitación nueva al correo corregido; si es un cliente sin mascotas, la recibirá cuando se registre la primera.
+        </p>
+      } @else {
+        <p class="text-xs leading-5 text-slate-600">
+          Úsalo solo cuando la persona perdió el acceso a su correo y ya verificaste su identidad (por ejemplo, con su documento).
+          Enviaremos un enlace de confirmación al correo nuevo y un aviso al correo anterior. El cambio se aplica cuando la persona
+          confirma el correo nuevo, dentro de las próximas 24 horas. Si la persona entra con Google, solo podrá seguir haciéndolo
+          si el correo nuevo también es una cuenta de Google.
+        </p>
+      }
+
+      @if (errorMsg()) {
+        <div class="flex items-center gap-2 bg-rose-50 text-rose-600 text-xs font-semibold px-3.5 py-2.5 rounded-lg border border-rose-100">
+          <i class="pi pi-exclamation-circle text-sm shrink-0"></i>
+          <span>{{ errorMsg() }}</span>
+        </div>
+      }
+
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-semibold text-slate-700">Correo actual</label>
+        <input type="text" [value]="currentEmail" disabled
+          class="w-full px-3 py-2.5 border border-slate-200 bg-slate-50 rounded-lg text-sm text-slate-500" />
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-semibold text-slate-700">Correo nuevo</label>
+        <input type="email" formControlName="newEmail" placeholder="nuevo@correo.com" autocomplete="off"
+          class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-slate-800" />
+        @if (form.get('newEmail')?.touched && form.get('newEmail')?.invalid) {
+          <p class="text-[10px] text-rose-500 font-bold mt-1">Ingresa un correo válido, en minúsculas.</p>
+        }
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-semibold text-slate-700">Repite el correo nuevo</label>
+        <input type="email" formControlName="confirmEmail" placeholder="nuevo@correo.com" autocomplete="off"
+          class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-slate-800" />
+        @if (form.get('confirmEmail')?.touched && form.hasError('emailMismatch')) {
+          <p class="text-[10px] text-rose-500 font-bold mt-1">Los correos no coinciden.</p>
+        }
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-semibold text-slate-700">Nota para la auditoría (opcional)</label>
+        <textarea formControlName="motivo" rows="3" maxlength="300"
+          placeholder="Ej. Presentó su DNI en mostrador y perdió el acceso a su correo anterior"
+          class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-slate-800 resize-none"></textarea>
+        <div class="flex justify-between">
+          <span></span>
+          <span class="text-[10px] text-slate-400 mt-1">Si la escribes, queda en la auditoría</span>
+        </div>
+      </div>
+
+      <div class="flex gap-3 pt-2">
+        <button type="button" (click)="closed.emit()" [disabled]="submitting()"
+          class="flex-1 py-2.5 border border-slate-200 rounded-lg text-sm font-semibold text-slate-500 hover:bg-slate-50 transition-colors">
+          Cancelar
+        </button>
+        <button type="submit" [disabled]="submitting() || form.invalid"
+          class="flex-1 bg-blue-500 hover:bg-blue-600 disabled:opacity-60 text-white font-semibold py-2.5 rounded-lg text-sm transition-colors flex items-center justify-center gap-2">
+          @if (submitting()) {
+            <i class="pi pi-spin pi-spinner text-xs"></i>
+          }
+          {{ submitting() ? 'Enviando...' : pending ? 'Corregir correo' : 'Enviar confirmación' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

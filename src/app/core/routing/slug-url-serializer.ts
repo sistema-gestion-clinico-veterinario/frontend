@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { DefaultUrlSerializer, UrlSerializer, UrlTree } from '@angular/router';
 import { CompanySlugContext } from '../services/company-slug-context.service';
+import { companySlugFromUrl, firstSegmentOf, pathnameOf } from './slug-url.utils';
 
 /**
  * Primer segmento de TODAS las rutas reales que conoce Angular (publicas y
@@ -9,22 +10,6 @@ import { CompanySlugContext } from '../services/company-slug-context.service';
  * distinguir "esto es una pagina real" de "esto es un slug de empresa": si
  * el primer segmento de la URL NO esta en este set, se asume que es un slug.
  */
-const KNOWN_FIRST_SEGMENTS = new Set([
-  'login', 'admin', 'forgot-password', 'reset-password', 'confirm-email-change', 'auth',
-  'dashboard', 'reportes', 'company', 'auditoria', 'roles', 'ventanas', 'complementario',
-  'empleados', 'clientes', 'mascotas', 'empleado', 'recetas', 'historias-clinicas', 'citas',
-  'mi-horario', 'profile', 'password-change', 'legal', 'apoderado', 'mi-historial', 'pagos',
-  'caja', 'laboratorio', 'tesis'
-]);
-
-function pathnameOf(url: string): string {
-  return url.split('?')[0].split('#')[0];
-}
-
-function firstSegmentOf(pathname: string): string | null {
-  return pathname.split('/').filter(Boolean)[0] ?? null;
-}
-
 /**
  * Traduce entre la ruta "real" que conoce Angular Router (sin slug, ej.
  * /apoderado/dashboard) y lo que se ve en la barra de direcciones (con
@@ -44,12 +29,14 @@ export class SlugUrlSerializer extends UrlSerializer {
     // Sin primer segmento (raiz), o el primer segmento ya es una pagina real
     // conocida (sin slug delante, ej. SuperAdmin sin empresa, o un enlace
     // viejo sin marca) - se parsea tal cual, sin tocar nada.
-    if (!first || KNOWN_FIRST_SEGMENTS.has(first)) {
+    if (!first || !companySlugFromUrl(url)) {
       return this.inner.parse(url);
     }
 
-    // Cualquier otro primer segmento se asume que es el slug de una empresa.
-    this.slugContext.setSlug(first);
+    // Debe permanecer pura. Angular también ejecuta parse() al construir
+    // routerLink/UrlTree dentro de cálculos reactivos; escribir una señal aquí
+    // provoca NG0600. El contexto obtiene el slug inicial desde la ubicación
+    // del navegador y luego SessionService lo sincroniza con la sesión.
 
     const hashIndex = url.indexOf('#');
     const hash = hashIndex >= 0 ? url.slice(hashIndex) : '';

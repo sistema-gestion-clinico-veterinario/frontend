@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, output, signal, computed, HostListener } from '@angular/core';
+import { Component, OnInit, inject, output, signal, computed, HostListener, effect } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
@@ -8,9 +8,8 @@ import { ToastModule } from 'primeng/toast';
 import { AuthStore } from '../../../store/auth.store';
 import { CompanyService } from '../../../core/services/company.service';
 import { RoleService } from '../../../core/services/role.service';
-import { AuthService } from '../../../core/services/auth.service';
 import { Role as CompanyRole } from '../../../models/response/permission';
-import { AssignedRoleDTO, MenuItemDTO, MenuStructureDTO, RolePurpose } from '../../../models/response/auth-login-response.model';
+import { AssignedRoleDTO } from '../../../models/response/auth-login-response.model';
 import { SessionService } from '../../../core/services/session.service';
 import { MediaService } from '../../../core/services/media.service';
 
@@ -27,7 +26,6 @@ export class NavbarComponent implements OnInit {
   authStore = inject(AuthStore);
   private companyService = inject(CompanyService);
   private roleService = inject(RoleService);
-  private authService = inject(AuthService);
   private sessionService = inject(SessionService);
   private mediaService = inject(MediaService);
   private messageService = inject(MessageService);
@@ -100,6 +98,13 @@ export class NavbarComponent implements OnInit {
       }
     });
   }
+
+  private readonly logoutErrorToast = effect(() => {
+    const detail = this.sessionService.logoutError();
+    if (detail) {
+      this.messageService.add({ severity: 'error', summary: 'No se cerró la sesión', detail, life: 8000 });
+    }
+  });
 
   ngOnInit() {
     if (this.isSuperAdmin) {
@@ -204,16 +209,12 @@ export class NavbarComponent implements OnInit {
     }
 
     this.roleSwitching.set(true);
-    this.authService.switchRole(selectedRole.id).pipe(
+    this.sessionService.changeRole(selectedRole.id).pipe(
       finalize(() => {
         this.roleSwitching.set(false);
         this.activeRoleDropdownOpen.set(false);
       })
     ).subscribe({
-        next: (res) => {
-          this.sessionService.establish(res.data, true);
-          this.router.navigateByUrl(resolveInitialRoute(res.data.menu ?? [], res.data.activeRolePurpose), { replaceUrl: true });
-        },
         error: (err) => {
           const msg = err.error?.message || 'No se pudo cambiar el rol';
           this.messageService.add({ severity: 'error', summary: 'Error', detail: msg });
@@ -247,42 +248,8 @@ export class NavbarComponent implements OnInit {
     // El SlugUrlSerializer conoce el slug actual y lo antepone solo en la
     // barra de direcciones - al cerrar sesion se vuelve a la pantalla de
     // login marcada de la propia empresa, no al fallback generico.
-    this.authService.logout().subscribe({ error: () => {} });
-    this.authStore.logout();
-    this.router.navigate(['/login']);
+    this.sessionService.logout();
   }
 }
 
-export function resolveDashboardRoute(purpose?: RolePurpose | null): string {
-  if (purpose === 'PLATFORM_ADMIN') return '/dashboard';
-  if (purpose === 'COMPANY_ADMIN') return '/admin/dashboard';
-  if (purpose === 'CLIENT_PORTAL') return '/apoderado/dashboard';
-  return '/empleado/dashboard';
-}
-
-export function resolveInitialRoute(menu: (MenuStructureDTO | MenuItemDTO)[], purpose?: RolePurpose | null): string {
-  const menuRoute = findFirstMenuRoute(menu);
-  return menuRoute ? normalizeInitialRoute(menuRoute) : resolveDashboardRoute(purpose);
-}
-
-function findFirstMenuRoute(menu: (MenuStructureDTO | MenuItemDTO)[]): string | null {
-  for (const item of menu || []) {
-    if (isMenuStructure(item)) {
-      const vista = item.vistas.find(v => (v.activo ?? true) && v.leer !== false && !!v.ruta);
-      if (vista?.ruta) return vista.ruta;
-      continue;
-    }
-
-    if ((item.activo ?? true) && item.leer !== false && item.ruta) return item.ruta;
-  }
-
-  return null;
-}
-
-function normalizeInitialRoute(route: string): string {
-  return route.startsWith('/') ? route : `/${route}`;
-}
-
-function isMenuStructure(item: MenuStructureDTO | MenuItemDTO): item is MenuStructureDTO {
-  return 'vistas' in item && Array.isArray(item.vistas);
-}
+export { resolveDashboardRoute, resolveInitialRoute } from '../../../core/routing/initial-route';

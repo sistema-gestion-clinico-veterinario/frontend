@@ -171,6 +171,48 @@
                   }
                 </div>
               </div>
+              @if (estadoPrivacidadCliente(); as privacidad) {
+                <div class="bg-white rounded-lg p-6 border border-slate-200 space-y-4">
+                  <div class="flex items-start justify-between gap-3 border-b border-slate-100 pb-3">
+                    <div>
+                      <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest">Privacidad y comunicaciones</h4>
+                      <p class="mt-1 text-xs text-slate-500">Las decisiones se registran únicamente para esta clínica.</p>
+                    </div>
+                    @if (privacidad.avisoVersion) {
+                      <span class="shrink-0 rounded-full bg-slate-100 px-2 py-1 text-[10px] font-bold text-slate-500">Aviso v{{ privacidad.avisoVersion }}</span>
+                    }
+                  </div>
+
+                  @if (!privacidad.avisoPublicado) {
+                    <p class="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs leading-5 text-amber-800">La clínica debe publicar su aviso de privacidad antes de registrar decisiones.</p>
+                  } @else {
+                    <div class="flex items-center justify-between gap-3">
+                      <div>
+                        <p class="text-xs font-semibold text-slate-700">Constancia de información</p>
+                        <p class="text-[11px] text-slate-400">{{ privacidad.informada ? 'Registrada' : 'Pendiente' }}</p>
+                      </div>
+                      @if (!privacidad.informada && canClientAction('modificar')) {
+                        <button type="button" (click)="informarCliente()" [disabled]="actualizandoPrivacidadCliente()"
+                          class="rounded-lg border border-[var(--brand-primary)] px-3 py-2 text-xs font-semibold text-[var(--brand-primary)] disabled:opacity-50">Registrar información</button>
+                      }
+                    </div>
+                    <div class="border-t border-slate-100 pt-3">
+                      <p class="text-xs font-semibold text-slate-700">Recordatorios preventivos por correo</p>
+                      <p class="mt-1 text-[11px] text-slate-400">Son parte del servicio. Registra si el cliente pidió no recibirlos; puede cambiarlo después.</p>
+                      <div class="mt-3 grid grid-cols-2 gap-2">
+                        <button type="button" (click)="decidirRecordatoriosCliente(true)"
+                          [disabled]="!canClientAction('modificar') || actualizandoPrivacidadCliente()"
+                          [class]="estadoRecordatoriosCliente() !== 'RETIRADO' ? 'border-[var(--brand-primary)] bg-[var(--brand-primary)] text-white' : 'border-slate-200 bg-white text-slate-600'"
+                          class="rounded-lg border px-3 py-2 text-xs font-semibold disabled:opacity-50">Recibe recordatorios</button>
+                        <button type="button" (click)="decidirRecordatoriosCliente(false)"
+                          [disabled]="!canClientAction('modificar') || actualizandoPrivacidadCliente()"
+                          [class]="estadoRecordatoriosCliente() === 'RETIRADO' ? 'border-slate-500 bg-slate-100 text-slate-800' : 'border-slate-200 bg-white text-slate-600'"
+                          class="rounded-lg border px-3 py-2 text-xs font-semibold disabled:opacity-50">Pidió no recibirlos</button>
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
               <!-- Extra Notes -->
               @if (cli.referencias || cli.observaciones) {
                 <div class="bg-white rounded-lg p-6 border border-slate-200 space-y-4">
@@ -333,13 +375,15 @@
                       </p>
                       <p class="text-xs text-slate-400 truncate mt-0.5">{{ client.email }}</p>
                     </div>
-                    <button *appHasPermission="'VISTA_CLIENTES:modificar'" (click)="toggleStatus(client)"
-                      [class]="client.activo ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-500'"
-                      class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium transition-all active:scale-95 shrink-0">
-                      <span [class]="client.activo ? 'bg-green-500' : 'bg-red-400'" class="w-1.5 h-1.5 rounded-full"></span>
-                      {{ client.activo ? 'Activo' : 'Inactivo' }}
-                    </button>
+                    <span [class]="statusChipClass(client)"
+                      class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium shrink-0">
+                      <span [class]="statusDotClass(client)" class="w-1.5 h-1.5 rounded-full"></span>
+                      {{ statusLabel(client) }}
+                    </span>
                   </div>
+                  @if (client.cuentaPendiente) {
+                    <span class="mt-1 inline-block rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-500">Pendiente de activar</span>
+                  }
                   <div class="grid grid-cols-2 gap-2 mt-3 text-xs">
                     <div class="rounded-lg bg-slate-50 px-3 py-2">
                       <span class="block text-[10px] font-bold text-slate-400 uppercase">Teléfono</span>
@@ -407,12 +451,14 @@
                 </span>
               </td>
               <td class="px-6 py-2">
-                <button *appHasPermission="'VISTA_CLIENTES:modificar'" (click)="toggleStatus(client)"
-                  [class]="client.activo ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-500'"
-                  class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium transition-all active:scale-95">
-                  <span [class]="client.activo ? 'bg-green-500' : 'bg-red-400'" class="w-1.5 h-1.5 rounded-full"></span>
-                  {{ client.activo ? 'Activo' : 'Inactivo' }}
-                </button>
+                <span [class]="statusChipClass(client)"
+                  class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium">
+                  <span [class]="statusDotClass(client)" class="w-1.5 h-1.5 rounded-full"></span>
+                  {{ statusLabel(client) }}
+                </span>
+                @if (client.cuentaPendiente) {
+                  <span class="ml-2 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-500">Pendiente de activar</span>
+                }
               </td>
               <td class="px-6 py-2 text-right">
                 <div class="flex items-center justify-end">
@@ -455,6 +501,14 @@
           <p class="text-sm text-slate-500 mt-1">{{ confirmDialog()!.message }}</p>
         </div>
       </div>
+      @if (confirmDialog()!.askReason) {
+        <div class="mb-4">
+          <label for="confirm-reason" class="block text-xs font-medium text-slate-600 mb-1">Motivo (opcional)</label>
+          <textarea id="confirm-reason" rows="2" maxlength="300" [value]="confirmReason()"
+            (input)="confirmReason.set($any($event.target).value)"
+            class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:outline-none focus:border-slate-400"></textarea>
+        </div>
+      }
       <div class="flex justify-end gap-3">
         <button (click)="cancelConfirm()"
           class="px-4 py-2 rounded-lg border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
@@ -462,7 +516,7 @@
         </button>
         <button (click)="confirmAction()"
           class="px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-medium hover:bg-red-700 transition-colors">
-          Confirmar
+          {{ confirmDialog()!.confirmLabel ?? 'Confirmar' }}
         </button>
       </div>
     </div>
@@ -718,12 +772,51 @@
               </div>
             </div>
           </div>
+          @if (!isEdit()) {
+            <section class="space-y-3 border-t border-slate-200 pt-5">
+              <div class="flex items-center gap-2">
+                <span class="h-4 w-1.5 rounded-full bg-[var(--brand-primary)]"></span>
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">3. Privacidad y comunicaciones</h3>
+              </div>
+              @if (cargandoAviso()) {
+                <div class="rounded-lg border border-slate-200 p-4 text-sm text-slate-500">Cargando el aviso de privacidad…</div>
+              } @else if (avisoPrivacidad(); as aviso) {
+                <div class="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                  <div class="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <p class="text-sm font-bold text-slate-800">Aviso de privacidad de {{ aviso.clinica }}</p>
+                      <p class="text-xs text-slate-500">Versión {{ aviso.version }} · debe mostrarse antes de registrar los datos.</p>
+                    </div>
+                    <details class="w-full">
+                      <summary class="cursor-pointer text-xs font-bold text-[var(--brand-primary)]">Leer aviso completo</summary>
+                      <pre class="mt-3 max-h-56 overflow-y-auto whitespace-pre-wrap rounded-md border border-slate-200 bg-white p-3 font-sans text-xs leading-5 text-slate-600">{{ aviso.contenido }}</pre>
+                    </details>
+                  </div>
+                </div>
+                <label class="flex cursor-pointer items-start gap-3 rounded-lg border border-slate-200 p-3">
+                  <input type="checkbox" formControlName="avisoInformado" class="mt-0.5 size-4 accent-[var(--brand-primary)]" />
+                  <span class="text-xs leading-5 text-slate-600"><strong class="block text-slate-800">La persona fue informada</strong>Confirmo que le mostré el aviso de privacidad vigente antes de recopilar sus datos. Esto deja constancia de información; no reemplaza sus decisiones opcionales.</span>
+                </label>
+                @if (clientForm.get('avisoInformado')?.invalid && clientForm.get('avisoInformado')?.touched) {
+                  <p class="text-xs text-rose-600">Debes confirmar que la persona fue informada.</p>
+                }
+                <label class="flex cursor-pointer items-start gap-3 rounded-lg border border-slate-200 p-3">
+                  <input type="checkbox" [checked]="clientForm.get('consentimientoRecordatorios')?.value === false" (change)="clientForm.get('consentimientoRecordatorios')?.setValue($any($event.target).checked ? false : null)" class="mt-0.5 size-4 accent-[var(--brand-primary)]" />
+                  <span class="text-xs leading-5 text-slate-600"><strong class="block text-slate-800">Pidió no recibir recordatorios por correo</strong>Los recordatorios de vacunas son parte del servicio. Márcalo solo si el cliente pide no recibirlos; la atención no cambia.</span>
+                </label>
+              } @else {
+                <div class="rounded-lg border border-amber-200 bg-amber-50 p-4 text-xs leading-5 text-amber-800">
+                  La clínica todavía no publicó su aviso de privacidad. Debe publicarlo en la configuración de la empresa antes de registrar personas.
+                </div>
+              }
+            </section>
+          }
           <div class="flex justify-end gap-3 pt-6 border-t border-slate-200">
             <button type="button" (click)="displayModal.set(false)"
               class="px-5 py-2.5 text-sm font-semibold text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded transition-all">
               Descartar cambios
             </button>
-            <button type="submit" [disabled]="loadingStore.isLoading()"
+            <button type="submit" [disabled]="loadingStore.isLoading() || (!isEdit() && !avisoPrivacidad())"
               class="px-8 py-2.5 text-sm font-bold text-white bg-blue-500 hover:bg-blue-600 rounded disabled:opacity-50 transition-all flex items-center justify-center gap-2 min-w-[160px]">
               @if (loadingStore.isLoading()) {
                 <i class="pi pi-spin pi-spinner text-xs"></i>
@@ -745,3 +838,14 @@
   [entityLabel]="conflictClient() ? (conflictClient()!.nombre + ' ' + conflictClient()!.apellido) : ''"
   (resolved)="onConflictsResolved()"
 ></app-conflicting-appointments-dialog>
+
+@if (emailChangeTarget(); as target) {
+  <app-admin-email-change-modal
+    [userId]="target.userId!"
+    [displayName]="target.nombre + ' ' + target.apellido"
+    [currentEmail]="target.email"
+    [pending]="!!target.cuentaPendiente"
+    (closed)="emailChangeTarget.set(null)"
+    (sent)="onEmailChangeSent($event)">
+  </app-admin-email-change-modal>
+}

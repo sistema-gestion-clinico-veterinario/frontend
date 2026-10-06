@@ -9,6 +9,7 @@ import { MessageService } from 'primeng/api';
 import { CajaService } from '../../../core/services/caja.service';
 import { AuthStore } from '../../../store/auth.store';
 import { MovimientoCajaResponse, ResumenCajaResponse, SesionCajaResponse } from '../../../models/response/movimiento-caja-response';
+import { EstadoEquipo, PuntoCobro } from '../../../models/response/punto-cobro';
 import { hasMeaningfulText, isDateRangeValid } from '../../../core/utils/input-validation.util';
 import { normalizeText } from '../../../core/utils/normalize-text.util';
 import { PagoService } from '../../../core/services/pago.service';
@@ -60,6 +61,17 @@ export class CajaComponent implements OnInit, OnDestroy {
   showSesionModal = signal<'ABRIR' | 'ARQUEO' | 'CERRAR' | null>(null);
   savingSesion = signal(false);
   showHistorialSesiones = signal(false);
+  estadoEquipo = signal<EstadoEquipo | null>(null);
+  puntos = signal<PuntoCobro[]>([]);
+  showPuntos = signal(false);
+  trabajandoPuntos = signal(false);
+  editandoPuntoId = signal<number | null>(null);
+  sesionAjenaId = signal<number | null>(null);
+  nuevoPuntoNombre = '';
+  nombreEditado = '';
+  readonly puedeGestionarPuntos = computed(() =>
+    this.authStore.isSuperAdmin() || this.authStore.activeRolePurpose() === 'COMPANY_ADMIN');
+  readonly equipoSinRegistrar = computed(() => this.estadoEquipo()?.modo === 'NO_REGISTRADO');
   historialSesiones = signal<SesionCajaResponse[]>([]);
   historialSesionesLoading = signal(false);
   historialSesionesPage = signal(0);
@@ -191,6 +203,7 @@ export class CajaComponent implements OnInit, OnDestroy {
     this.cargar();
     this.cargarPendientes();
     this.cargarSesion();
+    this.cargarEstadoEquipo();
     this.conectarActualizacionCaja();
     this.cargarProductos();
   }
@@ -701,6 +714,104 @@ export class CajaComponent implements OnInit, OnDestroy {
     });
   }
 
+  cargarEstadoEquipo() {
+    if (!this.companyId) return;
+    this.cajaService.esteEquipo(this.companyId).subscribe({
+      next: r => this.estadoEquipo.set(r.data ?? null),
+      error: () => this.estadoEquipo.set(null)
+    });
+  }
+
+  abrirPuntos() {
+    this.showPuntos.set(true);
+    this.cargarPuntos();
+  }
+
+  cargarPuntos() {
+    if (!this.companyId) return;
+    this.trabajandoPuntos.set(true);
+    this.cajaService.puntosCobro(this.companyId).subscribe({
+      next: r => { this.puntos.set(r.data ?? []); this.trabajandoPuntos.set(false); },
+      error: () => {
+        this.trabajandoPuntos.set(false);
+        this.messageService.add({ severity: 'error', summary: 'No se cargaron los puntos de cobro', detail: 'Intenta nuevamente.' });
+      }
+    });
+  }
+
+  private despuesDeCambiarPuntos(exito: string) {
+    this.messageService.add({ severity: 'success', summary: exito });
+    this.cargarPuntos();
+    this.cargarEstadoEquipo();
+    this.cargarSesion();
+  }
+
+  private falloPuntos(err: any) {
+    this.trabajandoPuntos.set(false);
+    this.messageService.add({ severity: 'error', summary: 'No se completó la operación', detail: err?.error?.message ?? 'Intenta nuevamente.' });
+  }
+
+  crearPunto() {
+    const nombre = normalizeText(this.nuevoPuntoNombre);
+    if (!nombre || nombre.length < 2) {
+      this.messageService.add({ severity: 'warn', summary: 'Nombre inválido', detail: 'Escribe un nombre de al menos 2 caracteres.' });
+      return;
+    }
+    this.trabajandoPuntos.set(true);
+    this.cajaService.crearPuntoCobro(this.companyId, nombre).subscribe({
+      next: () => { this.nuevoPuntoNombre = ''; this.despuesDeCambiarPuntos('Punto de cobro creado'); },
+      error: err => this.falloPuntos(err)
+    });
+  }
+
+  empezarARenombrar(punto: PuntoCobro) {
+    this.editandoPuntoId.set(punto.id);
+    this.nombreEditado = punto.nombre;
+  }
+
+  guardarNombrePunto(punto: PuntoCobro) {
+    const nombre = normalizeText(this.nombreEditado);
+    if (!nombre || nombre.length < 2) {
+      this.messageService.add({ severity: 'warn', summary: 'Nombre inválido', detail: 'Escribe un nombre de al menos 2 caracteres.' });
+      return;
+    }
+    this.trabajandoPuntos.set(true);
+    this.cajaService.actualizarPuntoCobro(punto.id, this.companyId, nombre).subscribe({
+      next: () => { this.editandoPuntoId.set(null); this.despuesDeCambiarPuntos('Nombre actualizado'); },
+      error: err => this.falloPuntos(err)
+    });
+  }
+
+  cambiarActividadPunto(punto: PuntoCobro) {
+    this.trabajandoPuntos.set(true);
+    this.cajaService.actualizarPuntoCobro(punto.id, this.companyId, punto.nombre, !punto.activa).subscribe({
+      next: () => this.despuesDeCambiarPuntos(punto.activa ? 'Punto de cobro desactivado' : 'Punto de cobro activado'),
+      error: err => this.falloPuntos(err)
+    });
+  }
+
+  vincularPunto(punto: PuntoCobro) {
+    this.trabajandoPuntos.set(true);
+    this.cajaService.vincularPuntoCobro(punto.id, this.companyId).subscribe({
+      next: () => this.despuesDeCambiarPuntos('Este equipo quedó registrado'),
+      error: err => this.falloPuntos(err)
+    });
+  }
+
+  desvincularPunto(punto: PuntoCobro) {
+    this.trabajandoPuntos.set(true);
+    this.cajaService.desvincularPuntoCobro(punto.id, this.companyId).subscribe({
+      next: () => this.despuesDeCambiarPuntos('Se quitó el equipo del punto de cobro'),
+      error: err => this.falloPuntos(err)
+    });
+  }
+
+  cerrarSesionAjena(sesion: SesionCajaResponse) {
+    this.abrirModalSesion('CERRAR');
+    this.sesionAjenaId.set(sesion.id);
+    this.sesionForm.monto = Number(sesion.efectivoEsperado ?? 0);
+  }
+
   abrirHistorialSesiones() {
     if (!this.companyId) return;
     this.showHistorialSesiones.set(true);
@@ -741,6 +852,7 @@ export class CajaComponent implements OnInit, OnDestroy {
   }
 
   abrirModalSesion(tipo: 'ABRIR' | 'ARQUEO' | 'CERRAR') {
+    this.sesionAjenaId.set(null);
     this.sesionForm = {
       monto: tipo === 'ABRIR' ? 0 : Number(this.sesionCaja()?.efectivoEsperado ?? 0),
       observaciones: ''
@@ -760,10 +872,12 @@ export class CajaComponent implements OnInit, OnDestroy {
       ? this.cajaService.abrirCaja(this.companyId, monto)
       : tipo === 'ARQUEO'
         ? this.cajaService.arquearCaja(this.companyId, monto, normalizeText(this.sesionForm.observaciones))
-        : this.cajaService.cerrarCaja(this.companyId, monto, normalizeText(this.sesionForm.observaciones));
+        : this.cajaService.cerrarCaja(this.companyId, monto, normalizeText(this.sesionForm.observaciones), this.sesionAjenaId() ?? undefined);
+    const cierraLaDeOtra = tipo === 'CERRAR' && this.sesionAjenaId() !== null;
     request.subscribe({
       next: r => {
-        this.sesionCaja.set(tipo === 'CERRAR' ? null : r.data);
+        if (!cierraLaDeOtra) this.sesionCaja.set(tipo === 'CERRAR' ? null : r.data);
+        this.sesionAjenaId.set(null);
         this.showSesionModal.set(null);
         this.savingSesion.set(false);
         this.cargar();
@@ -892,6 +1006,10 @@ export class CajaComponent implements OnInit, OnDestroy {
       OTRO: 'Otro'
     };
     return map[c] ?? c;
+  }
+
+  responsable(nombre?: string | null, correo?: string | null): string {
+    return nombre || correo || '—';
   }
 
   formatFecha(f: string): string {

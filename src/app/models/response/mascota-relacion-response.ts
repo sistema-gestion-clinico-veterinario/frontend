@@ -19,8 +19,11 @@ export interface MascotaRelacionResponse {
   fechaFin?: string | null;
   observaciones?: string | null;
   activo: boolean;
+  porEmpezar?: boolean;
+  cuentaActivada?: boolean;
   createdAt: string;
   createdBy: string;
   updatedAt: string;
   updatedBy: string;
+  avisoMascota?: string | null;
 }

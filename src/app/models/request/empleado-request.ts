@@ -25,4 +25,5 @@ export interface EmpleadoRequest {
   tiposEmpleado?: string[];
   estado?: boolean;
   horarios?: HorarioEmpleadoRequest[];
+  avisoInformado?: boolean;
 }
