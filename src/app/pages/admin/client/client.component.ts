@@ -31,7 +31,7 @@ import { lowercaseEmailValidator } from '../../../core/validators/lowercase-emai
 import { textContentValidator } from '../../../core/validators/text-content.validator';
 import { normalizeText } from '../../../core/utils/normalize-text.util';
 import { Role } from '../../../models/response/permission';
-import { AvisoPublico, ConsentimientoEstado, PrivacidadService, RECORDATORIOS } from '../../../core/services/privacidad.service';
+import { AvisoPublico, ConsentimientoEstado, PrivacidadService, RECORDATORIOS, USO_IA } from '../../../core/services/privacidad.service';
 
 @Component({
   selector: 'app-client',
@@ -463,6 +463,30 @@ export class ClientComponent implements OnInit {
 
   estadoRecordatoriosCliente(): 'OTORGADO' | 'RETIRADO' | 'SIN_REGISTRO' {
     return this.estadoPrivacidadCliente()?.finalidades.find(f => f.codigo === RECORDATORIOS)?.estado ?? 'SIN_REGISTRO';
+  }
+
+  estadoIaCliente(): 'OTORGADO' | 'RETIRADO' | 'SIN_REGISTRO' {
+    return this.estadoPrivacidadCliente()?.finalidades.find(f => f.codigo === USO_IA)?.estado ?? 'SIN_REGISTRO';
+  }
+
+  decidirIaCliente(otorgar: boolean) {
+    const id = this.selectedClientId();
+    if (!id || !this.canClientAction('modificar') || this.actualizandoPrivacidadCliente()) return;
+    this.actualizandoPrivacidadCliente.set(true);
+    this.privacidadService.decidirPorElCliente(id, USO_IA, otorgar).subscribe({
+      next: ({ data }) => {
+        this.estadoPrivacidadCliente.set(data);
+        this.actualizandoPrivacidadCliente.set(false);
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Decisión registrada',
+          detail: otorgar
+            ? 'El cliente autorizó el uso de inteligencia artificial con los datos clínicos de sus mascotas.'
+            : 'El cliente no autoriza el uso de inteligencia artificial con los datos clínicos de sus mascotas.'
+        });
+      },
+      error: (err) => this.errorPrivacidadCliente(err)
+    });
   }
 
   informarCliente() {

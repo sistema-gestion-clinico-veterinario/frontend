@@ -1,0 +1,44 @@
+@if (pendientes().length) {
+  @if (collapsed()) {
+    <div class="flex shrink-0 justify-center border-t border-slate-200 p-3">
+      <a [routerLink]="pendientes()[0].ruta" [fragment]="pendientes()[0].fragmento" (click)="navigate.emit()"
+        [title]="'Privacidad de tus datos: ' + pendientes().length + (pendientes().length === 1 ? ' pendiente' : ' pendientes')"
+        class="relative flex h-10 w-10 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-500 transition-colors hover:bg-slate-50 hover:text-slate-700">
+        <i class="pi pi-lock text-[14px]"></i>
+        <span class="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--brand-primary)] px-1 text-[9px] font-bold text-white">{{ pendientes().length }}</span>
+      </a>
+    </div>
+  } @else {
+    <section class="shrink-0 border-t border-slate-200 p-3" aria-label="Privacidad de tus datos">
+      <div class="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+        <div class="flex items-center justify-between gap-2">
+          <p class="flex items-center gap-2 text-xs font-semibold text-slate-700">
+            <i class="pi pi-lock text-slate-400"></i> Privacidad de tus datos
+          </p>
+          <span class="flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--brand-primary)] px-1 text-[9px] font-bold text-white"
+            [attr.aria-label]="pendientes().length + (pendientes().length === 1 ? ' pendiente' : ' pendientes')">{{ pendientes().length }}</span>
+        </div>
+        <ul class="mt-2 divide-y divide-slate-100">
+          @for (pendiente of pendientes(); track pendiente.id) {
+            <li class="flex items-start gap-1 py-2 first:pt-0 last:pb-0">
+              <a [routerLink]="pendiente.ruta" [fragment]="pendiente.fragmento" (click)="navigate.emit()"
+                class="group min-w-0 flex-1">
+                <span class="block text-[12px] font-semibold leading-4 text-slate-700 group-hover:text-[var(--brand-primary)]">{{ pendiente.titulo }}</span>
+                <span class="mt-0.5 block text-[11px] leading-4 text-slate-500">{{ pendiente.detalle }}</span>
+                <span class="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-[var(--brand-primary)]">
+                  {{ pendiente.opcional ? 'Decidir' : 'Revisar' }} <i class="pi pi-arrow-right text-[9px]"></i>
+                </span>
+              </a>
+              @if (pendiente.opcional) {
+                <button type="button" (click)="descartar(pendiente.id)" title="Decidir más tarde" aria-label="Decidir más tarde"
+                  class="flex h-5 w-5 shrink-0 items-center justify-center rounded text-slate-400 hover:bg-slate-100 hover:text-slate-600">
+                  <i class="pi pi-times text-[9px]"></i>
+                </button>
+              }
+            </li>
+          }
+        </ul>
+      </div>
+    </section>
+  }
+}

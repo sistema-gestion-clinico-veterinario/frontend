@@ -6,6 +6,7 @@ import { ToastModule } from 'primeng/toast';
 import { DialogModule } from 'primeng/dialog';
 import { SkeletonModule } from 'primeng/skeleton';
 import { MessageService } from 'primeng/api';
+import { Router } from '@angular/router';
 import { ProfileService } from '../../core/services/profile.service';
 import { MediaService } from '../../core/services/media.service';
 import { ProfileResponse } from '../../models/response/profile-response';
@@ -18,12 +19,14 @@ import { textContentValidator } from '../../core/validators/text-content.validat
 import { normalizeText } from '../../core/utils/normalize-text.util';
 import { AuthService } from '../../core/services/auth.service';
 import { LegalAcceptanceDTO, LegalService } from '../../core/services/legal.service';
+import { PendientesPrivacidadService } from '../../core/services/pendientes-privacidad.service';
 import { CloseAccountCardComponent } from './close-account/close-account-card.component';
 import {
   AvisoPublico,
   ConsentimientoEstado,
   PrivacidadService,
-  RECORDATORIOS
+  RECORDATORIOS,
+  USO_IA
 } from '../../core/services/privacidad.service';
 
 interface HorarioResumen {
@@ -58,6 +61,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
   private readonly authService = inject(AuthService);
   private readonly legalService = inject(LegalService);
   private readonly privacidadService = inject(PrivacidadService);
+  private readonly pendientesPrivacidad = inject(PendientesPrivacidadService);
+  private readonly router = inject(Router);
   private readonly sanitizer = inject(DomSanitizer);
   readonly loadingStore = inject(LoadingStore);
 
@@ -108,7 +113,10 @@ export class ProfileComponent implements OnInit, OnDestroy {
         this.avisoPrivacidad.set(data ?? null);
         if (!data) return;
         this.privacidadService.miEstado().subscribe({
-          next: ({ data: estado }) => this.estadoPrivacidad.set(estado),
+          next: ({ data: estado }) => {
+            this.estadoPrivacidad.set(estado);
+            this.irAPrivacidadSiSeLaPidieron();
+          },
           error: () => this.estadoPrivacidad.set(null)
         });
       },
@@ -119,6 +127,21 @@ export class ProfileComponent implements OnInit, OnDestroy {
     });
   }
 
+  private irAPrivacidadSiSeLaPidieron(): void {
+    if (this.router.parseUrl(this.router.url).fragment !== 'privacidad') return;
+    let intentos = 0;
+    const desplazar = () => {
+      const bloque = document.getElementById('privacidad');
+      if (bloque) {
+        bloque.scrollIntoView({ block: 'start' });
+        setTimeout(() => bloque.scrollIntoView({ block: 'start' }), 400);
+      } else if (intentos++ < 20) {
+        requestAnimationFrame(desplazar);
+      }
+    };
+    requestAnimationFrame(desplazar);
+  }
+
   registrarLecturaAviso() {
     if (this.actualizandoPrivacidad()) return;
     this.actualizandoPrivacidad.set(true);
@@ -126,6 +149,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
       next: ({ data }) => {
         this.estadoPrivacidad.set(data);
         this.actualizandoPrivacidad.set(false);
+        this.pendientesPrivacidad.refrescar();
         this.messageService.add({ severity: 'success', summary: 'Lectura registrada', detail: 'Guardamos la versión del aviso que leíste.' });
       },
       error: (err) => this.privacyError(err)
@@ -147,6 +171,30 @@ export class ProfileComponent implements OnInit, OnDestroy {
       },
       error: (err) => this.privacyError(err)
     });
+  }
+
+  decidirIa(otorgar: boolean) {
+    if (this.actualizandoPrivacidad()) return;
+    this.actualizandoPrivacidad.set(true);
+    this.privacidadService.decidir(USO_IA, otorgar).subscribe({
+      next: ({ data }) => {
+        this.estadoPrivacidad.set(data);
+        this.actualizandoPrivacidad.set(false);
+        this.pendientesPrivacidad.refrescar();
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Preferencia actualizada',
+          detail: otorgar
+            ? 'Autorizaste el uso de inteligencia artificial con los datos clínicos de tus mascotas.'
+            : 'La clínica ya no usará inteligencia artificial con los datos clínicos de tus mascotas.'
+        });
+      },
+      error: (err) => this.privacyError(err)
+    });
+  }
+
+  estadoIa(): 'OTORGADO' | 'RETIRADO' | 'SIN_REGISTRO' {
+    return this.estadoPrivacidad()?.finalidades.find(f => f.codigo === USO_IA)?.estado ?? 'SIN_REGISTRO';
   }
 
   estadoRecordatorios(): 'OTORGADO' | 'RETIRADO' | 'SIN_REGISTRO' {

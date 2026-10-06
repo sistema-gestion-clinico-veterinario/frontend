@@ -34,6 +34,11 @@ export class AuthService {
     return this.http.post<AuthLoginResponse>(`${this.baseUrl}/google/exchange`, { code });
   }
 
+  /** Tras una cuenta cerrada, Google deja un ticket de un solo uso: confirmarlo reactiva la cuenta y abre la sesión. */
+  reactivateWithGoogle(ticket: string): Observable<AuthLoginResponse> {
+    return this.http.post<AuthLoginResponse>(`${this.baseUrl}/google/reactivate`, { ticket });
+  }
+
   /** Paso previo a Google: deja en el servidor la clínica o el enlace de activación y devuelve un
    * código opaco, para que ninguno de los dos viaje por la URL que pasa por Google. */
   createGoogleIntent(context: { slug?: string | null; activationToken?: string | null }): Observable<ApiResponse<{ intent: string }>> {

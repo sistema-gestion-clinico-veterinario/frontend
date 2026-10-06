@@ -1,4 +1,9 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Subject, catchError, debounceTime, distinctUntilChanged, of, switchMap } from 'rxjs';
+import { MascotaService } from '../../core/services/mascota.service';
+import { MascotaResponse } from '../../models/response/mascota-response';
+import { AutorizacionIa, IaAutorizacionService, esErrorDeAutorizacionIa } from '../../core/services/ia-autorizacion.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastModule } from 'primeng/toast';
@@ -16,6 +21,80 @@ import { LaboratorioIAResponse, ParametroClinico } from '../../models/response/l
 export class LaboratorioComponent {
   private readonly service = inject(LaboratorioIaService);
   private readonly toast   = inject(MessageService);
+  private readonly mascotaService = inject(MascotaService);
+  private readonly autorizacionService = inject(IaAutorizacionService);
+  private readonly busquedas = new Subject<string>();
+
+  mascota        = signal<MascotaResponse | null>(null);
+  resultados     = signal<MascotaResponse[]>([]);
+  buscando       = signal(false);
+  autorizacion   = signal<AutorizacionIa | null>(null);
+  verificando    = signal(false);
+  errorAutorizacion = signal(false);
+  textoBusqueda  = signal('');
+
+  readonly puedeAnalizar = computed(() =>
+    !!this.archivo() && !!this.mascota() && !!this.autorizacion()?.autorizada && !this.cargando());
+
+  constructor() {
+    this.busquedas.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      switchMap(texto => {
+        if (texto.trim().length < 2) {
+          this.resultados.set([]);
+          this.buscando.set(false);
+          return of(null);
+        }
+        this.buscando.set(true);
+        return this.mascotaService.listar(undefined, texto.trim(), undefined, 0, 6, true, true).pipe(
+          catchError(() => of(null)));
+      }),
+      takeUntilDestroyed(inject(DestroyRef))
+    ).subscribe(respuesta => {
+      this.buscando.set(false);
+      this.resultados.set(respuesta?.data?.content ?? []);
+    });
+  }
+
+  buscar(texto: string): void {
+    this.textoBusqueda.set(texto);
+    this.busquedas.next(texto);
+  }
+
+  elegirMascota(mascota: MascotaResponse): void {
+    this.mascota.set(mascota);
+    this.resultados.set([]);
+    this.textoBusqueda.set('');
+    const especie = /gato|felin/i.test(mascota.especie ?? '') ? 'Gato' : /perro|canin/i.test(mascota.especie ?? '') ? 'Perro' : null;
+    if (especie) this.especie.set(especie);
+    this.verificarAutorizacion();
+  }
+
+  quitarMascota(): void {
+    this.mascota.set(null);
+    this.autorizacion.set(null);
+    this.errorAutorizacion.set(false);
+    this.resultado.set(null);
+  }
+
+  verificarAutorizacion(): void {
+    const mascota = this.mascota();
+    if (!mascota) return;
+    this.verificando.set(true);
+    this.errorAutorizacion.set(false);
+    this.autorizacion.set(null);
+    this.autorizacionService.autorizacion(mascota.id).subscribe({
+      next: ({ data }) => {
+        this.autorizacion.set(data);
+        this.verificando.set(false);
+      },
+      error: () => {
+        this.errorAutorizacion.set(true);
+        this.verificando.set(false);
+      }
+    });
+  }
 
   archivo   = signal<File | null>(null);
   especie   = signal<string>('Perro');
@@ -50,11 +129,12 @@ export class LaboratorioComponent {
 
   analizar(): void {
     const file = this.archivo();
-    if (!file) return;
+    const mascota = this.mascota();
+    if (!file || !mascota || !this.autorizacion()?.autorizada) return;
     this.cargando.set(true);
     this.resultado.set(null);
 
-    this.service.analizar(file, this.especie()).subscribe({
+    this.service.analizar(file, this.especie(), mascota.id).subscribe({
       next: res => {
         this.resultado.set(res);
         this.cargando.set(false);
@@ -62,6 +142,10 @@ export class LaboratorioComponent {
       },
       error: err => {
         this.cargando.set(false);
+        if (esErrorDeAutorizacionIa(err)) {
+          const actual = this.autorizacion();
+          if (actual) this.autorizacion.set({ ...actual, autorizada: false, fecha: null, canal: null });
+        }
         const msg = err?.error?.message ?? 'No se pudo conectar con el servicio de IA.';
         this.toast.add({ severity: 'error', summary: 'Error', detail: msg });
       }

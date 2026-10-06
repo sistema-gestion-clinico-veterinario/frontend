@@ -5,7 +5,7 @@
     </h3>
     <p class="text-xs leading-5 text-slate-600">
       Dejas de acceder a esta clínica con tu cuenta. La clínica conserva sus registros (citas, historias y pagos)
-      y podrás reactivarla durante 30 días desde el enlace que te enviaremos por correo.
+      y podrás reactivarla durante 30 días iniciando sesión de nuevo.
       @if (isClient()) {
         Tus mascotas quedarán sin atención programada hasta que la reactives.
       }
@@ -78,7 +78,7 @@
             {{ cooldown() > 0 ? 'Reenviar código en ' + esperaLegible(cooldown()) : 'Reenviar código' }}
           </button>
           <p class="mt-5 rounded-xl bg-slate-50 p-3 text-xs leading-5 text-slate-600">
-            Al cerrar tu cuenta dejas de acceder a esta clínica. Podrás reactivarla durante 30 días con el enlace que te enviaremos por correo.
+            Al cerrar tu cuenta dejas de acceder a esta clínica. Podrás reactivarla durante 30 días iniciando sesión de nuevo.
           </p>
         }
 

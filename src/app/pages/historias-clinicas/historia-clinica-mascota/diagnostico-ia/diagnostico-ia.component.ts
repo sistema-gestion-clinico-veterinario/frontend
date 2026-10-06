@@ -2,6 +2,7 @@ import { Component, Input, inject, signal, OnChanges, ViewEncapsulation } from '
 import { CommonModule } from '@angular/common';
 import { Subscription, firstValueFrom } from 'rxjs';
 import { DiagnosticoIaService } from '../../../../core/services/diagnostico-ia.service';
+import { AutorizacionIa, IaAutorizacionService, esErrorDeAutorizacionIa } from '../../../../core/services/ia-autorizacion.service';
 import { HistoriaClinicaService } from '../../../../core/services/historia-clinica.service';
 import { ESCENARIO_LABEL } from '../../../../models/response/diagnostico-ia-response';
 import {
@@ -76,6 +77,7 @@ export class DiagnosticoIaComponent implements OnChanges {
   @Input() hc!: HistoriaClinicaDetalle;
 
   private readonly iaService = inject(DiagnosticoIaService);
+  private readonly autorizacionService = inject(IaAutorizacionService);
   private readonly hcService = inject(HistoriaClinicaService);
   private streamSub: Subscription | null = null;
 
@@ -87,6 +89,9 @@ export class DiagnosticoIaComponent implements OnChanges {
   escenario          = signal('');
   copiado            = signal(false);
   imageQualityIssues = signal<string[]>([]);
+  autorizacion       = signal<AutorizacionIa | null>(null);
+  verificandoAutorizacion = signal(false);
+  errorAutorizacion  = signal(false);
 
   get todasConsultas(): ConsultaResumen[] {
     return this.hc?.consultas ?? [];
@@ -127,9 +132,32 @@ export class DiagnosticoIaComponent implements OnChanges {
     this.escenario.set('');
     this.copiado.set(false);
     this.imageQualityIssues.set([]);
+    this.autorizacion.set(null);
+    this.errorAutorizacion.set(false);
   }
 
-  abrir(): void  { this.abierto.set(true); }
+  abrir(): void {
+    this.abierto.set(true);
+    this.verificarAutorizacion();
+  }
+
+  verificarAutorizacion(): void {
+    if (!this.hc?.mascotaId || this.verificandoAutorizacion()) return;
+    this.verificandoAutorizacion.set(true);
+    this.errorAutorizacion.set(false);
+    this.autorizacionService.autorizacion(this.hc.mascotaId).subscribe({
+      next: ({ data }) => {
+        this.autorizacion.set(data);
+        this.verificandoAutorizacion.set(false);
+      },
+      error: () => {
+        this.autorizacion.set(null);
+        this.errorAutorizacion.set(true);
+        this.verificandoAutorizacion.set(false);
+      },
+    });
+  }
+
   cerrar(): void {
     this.abierto.set(false);
     if (this.streaming()) {
@@ -278,7 +306,7 @@ export class DiagnosticoIaComponent implements OnChanges {
   }
 
   async analizar(): Promise<void> {
-    if (!this.todasConsultas.length) return;
+    if (!this.todasConsultas.length || !this.autorizacion()?.autorizada) return;
 
     this.streamSub?.unsubscribe();
     this.analizando.set(true);
@@ -309,18 +337,30 @@ export class DiagnosticoIaComponent implements OnChanges {
           }
         }
         if (evt.type === 'chunk')  this.texto.update(t => t + evt.text);
+        if (evt.type === 'error')  this.error.set('El asistente de IA no pudo responder. Inténtalo nuevamente.');
       },
-      error: () => {
-        this.error.set('No se pudo conectar con el asistente de IA. Inténtalo nuevamente.');
+      error: (err) => {
         this.streaming.set(false);
+        if (esErrorDeAutorizacionIa(err)) {
+          const actual = this.autorizacion();
+          if (actual) this.autorizacion.set({ ...actual, autorizada: false, fecha: null, canal: null });
+          return;
+        }
+        this.error.set('No se pudo conectar con el asistente de IA. Inténtalo nuevamente.');
       },
-      complete: () => this.streaming.set(false),
+      complete: () => {
+        this.streaming.set(false);
+        if (!this.texto() && !this.error()) {
+          this.error.set('El asistente de IA no devolvió respuesta. Inténtalo nuevamente.');
+        }
+      },
     });
   }
 
   private async buildFormData(): Promise<FormData> {
     const fd = new FormData();
     const consultas = this.todasConsultas;
+    fd.append('mascotaId', String(this.hc.mascotaId));
 
     const edadMeses = this.hc.edadAproximadaMeses ?? 0;
     const edadStr   = edadMeses >= 12

@@ -70,7 +70,7 @@ export const apiInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, nex
     ...(Object.keys(headers).length ? { setHeaders: headers } : {})
   });
 
-  const requestTimeout = req.url.includes('/media/upload')
+  const requestTimeout = req.url.includes('/media/upload') || req.url.includes('/ia/diagnostico')
     ? UPLOAD_REQUEST_TIMEOUT_MS
     : DEFAULT_REQUEST_TIMEOUT_MS;
 

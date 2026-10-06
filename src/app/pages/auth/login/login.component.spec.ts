@@ -132,6 +132,93 @@ describe('LoginComponent - submit validations', () => {
     expect(component.authError).toBe('Tu usuario no tiene ningún rol asignado. Contacta al administrador.');
   });
 
+  const cuentaCerrada409 = () => throwError(() => ({
+    status: 409,
+    error: { success: false, message: 'Tu cuenta está cerrada', data: { code: 'CUENTA_CERRADA', reactivableHasta: '2026-11-05T13:38:45' } }
+  }));
+
+  const sesionDeCliente = () => of({
+    data: { roles: ['ROLE_APODERADO'], assignedRoles: ['ROLE_APODERADO'], companyId: 1, menu: [] }
+  } as any);
+
+  it('con la contraseña correcta de una cuenta cerrada ofrece reactivarla en vez de mostrar un error', () => {
+    createLoginInput('username', 'ana');
+    createLoginInput('password', 'secret123');
+    authService.login.and.returnValue(cuentaCerrada409());
+
+    component.submit();
+
+    expect(component.showReactivar).toBeTrue();
+    expect(component.authError).toBeNull();
+    expect(component.fechaLimiteDeReactivacion).toBe('05/11/2026');
+  });
+
+  it('al aceptar, repite el inicio de sesión pidiendo reactivar y entra', () => {
+    const router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
+    createLoginInput('username', 'ana');
+    createLoginInput('password', 'secret123');
+    authService.login.and.returnValues(cuentaCerrada409(), sesionDeCliente());
+    component.submit();
+
+    component.reactivar();
+
+    expect(authService.login.calls.mostRecent().args[0]).toEqual(
+      { slug: 'duquedecan', username: 'ana', password: 'secret123', reactivarCuenta: true });
+    expect(router.navigateByUrl).toHaveBeenCalled();
+    expect(component.showReactivar).toBeFalse();
+    expect(component.authError).toBeNull();
+  });
+
+  it('el primer intento nunca reactiva por su cuenta', () => {
+    createLoginInput('username', 'ana');
+    createLoginInput('password', 'secret123');
+    authService.login.and.returnValue(cuentaCerrada409());
+
+    component.submit();
+
+    expect(authService.login).toHaveBeenCalledTimes(1);
+    expect(authService.login.calls.mostRecent().args[0].reactivarCuenta).toBeUndefined();
+  });
+
+  it('Ahora no cierra el diálogo, borra la contraseña y no reactiva', () => {
+    createLoginInput('username', 'ana');
+    createLoginInput('password', 'secret123');
+    authService.login.and.returnValue(cuentaCerrada409());
+    component.submit();
+
+    component.cerrarReactivar();
+
+    expect(component.showReactivar).toBeFalse();
+    expect((document.getElementById('password') as HTMLInputElement).value).toBe('');
+    expect(authService.login).toHaveBeenCalledTimes(1);
+  });
+
+  it('si la clínica gestiona el acceso, muestra su mensaje y cierra el diálogo', () => {
+    createLoginInput('username', 'ana');
+    createLoginInput('password', 'secret123');
+    authService.login.and.returnValues(cuentaCerrada409(), throwError(() => ({
+      status: 403, error: { message: 'Tu acceso a esta clínica lo gestiona el administrador. Contáctalo para volver.' }
+    })));
+    component.submit();
+
+    component.reactivar();
+
+    expect(component.showReactivar).toBeFalse();
+    expect(component.reactivando).toBeFalse();
+    expect(component.authError).toContain('lo gestiona el administrador');
+  });
+
+  it('una contraseña incorrecta sigue dando el error genérico, sin revelar nada', () => {
+    createLoginInput('username', 'ana');
+    createLoginInput('password', 'mala');
+    authService.login.and.returnValue(throwError(() => ({ status: 401, error: { message: 'Credenciales inválidas' } })));
+
+    component.submit();
+
+    expect(component.showReactivar).toBeFalse();
+    expect(component.authError).toBe('Credenciales inválidas');
+  });
+
   it('[BB-001] permite iniciar sesion con credenciales validas y redirige al usuario', () => {
     const router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
     createLoginInput('username', 'admin.test');
@@ -313,7 +400,7 @@ describe('LoginComponent - continuar con Google', () => {
       providers: [
         { provide: Router, useValue: jasmine.createSpyObj('Router', ['navigateByUrl']) },
         { provide: ActivatedRoute, useValue: activatedRouteStub },
-        { provide: AuthService, useValue: jasmine.createSpyObj('AuthService', ['createGoogleIntent', 'googleStartUrl']) },
+        { provide: AuthService, useValue: jasmine.createSpyObj('AuthService', ['createGoogleIntent', 'googleStartUrl', 'reactivateWithGoogle']) },
       ],
     })
       .overrideComponent(LoginComponent, { set: { template: '' } })
@@ -324,6 +411,7 @@ describe('LoginComponent - continuar con Google', () => {
     authService = TestBed.inject(AuthService) as jasmine.SpyObj<AuthService>;
     authService.googleStartUrl.and.callFake((intent: string) => `https://api.test/auth/google/start?intent=${intent}`);
     redirect = spyOn(component, 'redirectTo');
+    (TestBed.inject(Router) as jasmine.SpyObj<Router>).navigateByUrl.and.resolveTo(true);
   });
 
   it('deja la clínica en el servidor y sale a Google con el código opaco, sin llevar la clínica en la URL', () => {
@@ -362,31 +450,63 @@ describe('LoginComponent - continuar con Google', () => {
     const avisos = (LoginComponent as any).NOTICES as Record<string, string>;
     expect(avisos['sesion_otra_clinica']).toContain('no corresponde a esta clínica');
     expect(avisos['sesion_otra_clinica']).toContain('no se cierran');
-    expect(avisos['google_cuenta_cerrada']).toContain('enlace de reactivación');
-    expect(avisos['google_cuenta_cerrada']).toContain('ahora mismo');
-    expect(mensajes['google_cuenta_cerrada']).toBeUndefined();
+    expect(avisos['google_cuenta_cerrada']).toBeUndefined();
+    expect(mensajes['google_cuenta_cerrada']).toContain('ya no se puede reactivar');
     expect(mensajes['google_cuenta_dada_de_baja']).toContain('ya no está activo');
     expect(mensajes['google_cuenta_no_habilitada']).toContain('no puede ingresar por ahora');
     expect(mensajes['google_sin_acceso_clinica']).toContain('no está registrada');
   });
 
-  it('una cuenta cerrada se muestra como aviso informativo, no como error, y no habla de esperar', () => {
-    component.aplicarMensajesDeLaUrl(null, 'google_cuenta_cerrada');
+  it('con Google, una cuenta cerrada con su confirmación abre el diálogo de reactivar y no muestra error', () => {
+    component.aplicarMensajesDeLaUrl(null, 'google_cuenta_cerrada', 'ticket-1');
 
-    expect(component.authNotice).toContain('enlace de reactivación');
-    expect(component.authNotice).not.toMatch(/vale 30 días|esperar/);
+    expect(component.showReactivar).toBeTrue();
     expect(component.authError).toBeNull();
+    expect(component.showNotice).toBeFalse();
   });
 
-  it('el aviso se muestra en un diálogo con su título, y se puede cerrar', () => {
+  it('con Google, una cuenta cerrada sin confirmación (o vencida) explica que ya no se puede reactivar desde aquí', () => {
     component.aplicarMensajesDeLaUrl(null, 'google_cuenta_cerrada');
 
-    expect(component.showNotice).toBeTrue();
-    expect(component.noticeTitle).toBe('Tu cuenta está cerrada');
+    expect(component.showReactivar).toBeFalse();
+    expect(component.authError).toContain('ya no se puede reactivar');
+  });
 
-    component.closeNotice();
+  it('reactivar con Google canjea la confirmación y entra', () => {
+    const router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
+    authService.reactivateWithGoogle.and.returnValue(of({
+      data: { roles: ['ROLE_APODERADO'], assignedRoles: ['ROLE_APODERADO'], companyId: 1, menu: [] }
+    } as any));
+    component.aplicarMensajesDeLaUrl(null, 'google_cuenta_cerrada', 'ticket-1');
 
-    expect(component.showNotice).toBeFalse();
+    component.reactivar();
+
+    expect(authService.reactivateWithGoogle).toHaveBeenCalledWith('ticket-1');
+    expect(router.navigateByUrl).toHaveBeenCalled();
+    expect(component.showReactivar).toBeFalse();
+  });
+
+  it('Ahora no cierra el diálogo y olvida la confirmación', () => {
+    component.aplicarMensajesDeLaUrl(null, 'google_cuenta_cerrada', 'ticket-1');
+
+    component.cerrarReactivar();
+    component.reactivar();
+
+    expect(component.showReactivar).toBeFalse();
+    expect(authService.reactivateWithGoogle).not.toHaveBeenCalledWith('ticket-1');
+  });
+
+  it('si Google ya no acepta la confirmación, avisa y cierra el diálogo', () => {
+    authService.reactivateWithGoogle.and.returnValue(throwError(() => ({
+      status: 401, error: { message: 'La confirmación de Google expiró. Vuelve a continuar con Google.' }
+    })));
+    component.aplicarMensajesDeLaUrl(null, 'google_cuenta_cerrada', 'ticket-1');
+
+    component.reactivar();
+
+    expect(component.showReactivar).toBeFalse();
+    expect(component.reactivando).toBeFalse();
+    expect(component.authError).toContain('expiró');
   });
 
   it('un error de verdad no abre el diálogo de avisos', () => {

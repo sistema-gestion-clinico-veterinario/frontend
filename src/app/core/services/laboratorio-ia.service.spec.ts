@@ -23,7 +23,7 @@ describe('LaboratorioIaService integration', () => {
   it('debe enviar archivo y especie para analisis IA de laboratorio', () => {
     const file = new File(['hemograma'], 'hemograma.pdf', { type: 'application/pdf' });
 
-    service.analizar(file, 'PERRO').subscribe((response) => {
+    service.analizar(file, 'PERRO', 7).subscribe((response) => {
       expect(response.tipo).toBe('laboratorio');
       expect(response.especie).toBe('PERRO');
       expect(response.alertas).toContain('Leucocitos altos');
@@ -34,6 +34,7 @@ describe('LaboratorioIaService integration', () => {
     expect(req.request.body instanceof FormData).toBeTrue();
     expect(req.request.body.get('archivo')).toBe(file);
     expect(req.request.body.get('especie')).toBe('PERRO');
+    expect(req.request.body.get('mascotaId')).toBe('7');
 
     req.flush({
       success: true,
@@ -49,7 +50,7 @@ describe('LaboratorioIaService integration', () => {
   it('debe propagar error si el backend de IA falla', () => {
     const file = new File(['bad'], 'hemograma.pdf', { type: 'application/pdf' });
 
-    service.analizar(file, 'PERRO').subscribe({
+    service.analizar(file, 'PERRO', 7).subscribe({
       next: () => fail('No debe responder exitoso si IA falla'),
       error: (error) => {
         expect(error.status).toBe(503);
