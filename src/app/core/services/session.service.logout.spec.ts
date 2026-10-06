@@ -46,10 +46,10 @@ describe('SessionService - cierre de sesión', () => {
   });
 
   it('tras cerrar la cuenta limpia la sesión local, avisa a las otras pestañas y vuelve al login con el aviso', () => {
-    service.closeLocalSession('cuenta_cerrada');
+    service.closeLocalSession('aviso_de_prueba');
 
     expect(authStore.logout).toHaveBeenCalled();
-    expect(router.navigateByUrl).toHaveBeenCalledWith('/login?authNotice=cuenta_cerrada', { replaceUrl: true });
+    expect(router.navigateByUrl).toHaveBeenCalledWith('/login?authNotice=aviso_de_prueba', { replaceUrl: true });
   });
 
   it('sin aviso vuelve al login simple', () => {
