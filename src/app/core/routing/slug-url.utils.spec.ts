@@ -10,6 +10,11 @@ describe('slug-url utils', () => {
     expect(companySlugFromUrl('/login')).toBeNull();
   });
 
+  it('la página pública del aviso de privacidad cuelga del slug y no se confunde con una empresa', () => {
+    expect(companySlugFromUrl('/clinica-veterinaria-vargas/privacidad')).toBe('clinica-veterinaria-vargas');
+    expect(companySlugFromUrl('/privacidad')).toBeNull();
+  });
+
   it('analiza correctamente query y fragmento', () => {
     expect(pathnameOf('/vargas-vet/caja?tab=ventas#detalle')).toBe('/vargas-vet/caja');
     expect(firstSegmentOf('/vargas-vet/caja')).toBe('vargas-vet');

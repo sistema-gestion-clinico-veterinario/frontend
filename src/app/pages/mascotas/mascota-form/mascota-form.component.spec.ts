@@ -121,15 +121,63 @@ describe('MascotaFormComponent - crearCliente validations', () => {
     expect(registrarSpy).not.toHaveBeenCalled();
   });
 
-  it('con datos válidos no muestra aviso de validación y llama al servicio', () => {
-    const registrarSpy = spyOn((component as any).apoderadoService, 'registrar').and.returnValue(new Subject());
-    spyOnProperty(component, 'activeCompanyId', 'get').and.returnValue(1);
-    component.ncNumDoc.set('12345678');
+  describe('privacidad al registrar al propietario', () => {
+    const aviso = { clinica: 'Clínica Patitas', logoUrl: null, colorPrimario: null, version: 3, vigenteDesde: '2026-10-05T10:00:00', contenido: 'AVISO' };
+    let registrarSpy: jasmine.Spy;
 
-    component.crearCliente();
+    beforeEach(() => {
+      registrarSpy = spyOn((component as any).apoderadoService, 'registrar').and.returnValue(new Subject());
+      spyOnProperty(component, 'activeCompanyId', 'get').and.returnValue(1);
+      component.ncNumDoc.set('12345678');
+      component.avisoPrivacidad.set(aviso);
+      component.ncAvisoInformado.set(true);
+      component.ncConsentimientoRecordatorios.set(false);
+    });
 
-    expect(addSpy).not.toHaveBeenCalledWith(jasmine.objectContaining({ summary: 'Revisa los datos del propietario' }));
-    expect(registrarSpy).toHaveBeenCalled();
+    it('con datos válidos y la privacidad resuelta no muestra aviso de validación y llama al servicio', () => {
+      component.crearCliente();
+
+      expect(addSpy).not.toHaveBeenCalledWith(jasmine.objectContaining({ summary: 'Revisa los datos del propietario' }));
+      expect(registrarSpy).toHaveBeenCalled();
+    });
+
+    it('envía la constancia de que se informó y que pidió no recibir recordatorios cuando así se marcó', () => {
+      component.crearCliente();
+
+      expect(registrarSpy).toHaveBeenCalledWith(jasmine.objectContaining({
+        avisoInformado: true, consentimientoRecordatorios: false
+      }));
+    });
+
+    it('sin aviso publicado por la clínica no registra a nadie y lo explica', () => {
+      component.avisoPrivacidad.set(null);
+
+      component.crearCliente();
+
+      expect(registrarSpy).not.toHaveBeenCalled();
+      expect(addSpy).toHaveBeenCalledWith(jasmine.objectContaining({
+        summary: 'Privacidad pendiente', detail: jasmine.stringMatching(/publicar su aviso/)
+      }));
+    });
+
+    it('sin confirmar que la persona fue informada no registra', () => {
+      component.ncAvisoInformado.set(false);
+
+      component.crearCliente();
+
+      expect(registrarSpy).not.toHaveBeenCalled();
+      expect(addSpy).toHaveBeenCalledWith(jasmine.objectContaining({ summary: 'Privacidad pendiente' }));
+    });
+
+    it('los recordatorios son parte del servicio: sin marcar nada se registra y se envía sin decisión', () => {
+      component.ncConsentimientoRecordatorios.set(null);
+
+      component.crearCliente();
+
+      expect(registrarSpy).toHaveBeenCalledWith(jasmine.objectContaining({
+        avisoInformado: true, consentimientoRecordatorios: null
+      }));
+    });
   });
 
   describe('vínculos con la mascota', () => {

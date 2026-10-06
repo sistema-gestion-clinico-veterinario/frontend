@@ -2,7 +2,8 @@ import { inject } from '@angular/core';
 import { CanActivateFn, Router, ActivatedRouteSnapshot } from '@angular/router';
 import { AuthStore } from '../../store/auth.store';
 import { resolveDashboardRoute, resolveInitialRoute } from '../../layouts/main-layout/navbar/navbar.component';
-import { map } from 'rxjs';
+import { map, of, switchMap } from 'rxjs';
+import { AvisoClinicaGate } from '../services/aviso-clinica-gate.service';
 import { SessionService } from '../services/session.service';
 import { CompanySlugContext } from '../services/company-slug-context.service';
 import { companySlugFromUrl } from '../routing/slug-url.utils';
@@ -12,6 +13,7 @@ export const AuthGuard: CanActivateFn = (route, state) => {
   const router = inject(Router);
   const sessionService = inject(SessionService);
   const slugContext = inject(CompanySlugContext);
+  const avisoGate = inject(AvisoClinicaGate);
 
   // Leer la barra de direcciones directamente evita que un estado de sesión
   // previo reemplace el slug y haga pasar por válida otra clínica.
@@ -19,16 +21,29 @@ export const AuthGuard: CanActivateFn = (route, state) => {
     ? slugContext.slug()
     : companySlugFromUrl(window.location.pathname) ?? slugContext.slug();
   return sessionService.initialize(urlSlug).pipe(
-    map((authenticated) => {
-      if (authenticated) return validateAccess(route, authStore, router);
+    switchMap((authenticated) => {
+      if (authenticated) {
+        const acceso = validateAccess(route, authStore, router);
+        if (acceso !== true || estaExentaDelAviso(state?.url)) return of(acceso);
+        return avisoGate.debeMostrarse().pipe(
+          map((pendiente) => pendiente ? router.createUrlTree(['/aviso-clinica']) : true)
+        );
+      }
       if (sessionService.sessionConflict()) {
         sessionService.sessionConflict.set(false);
-        return router.createUrlTree(['/login'], { queryParams: { authNotice: 'sesion_otra_clinica' } });
+        return of(router.createUrlTree(['/login'], { queryParams: { authNotice: 'sesion_otra_clinica' } }));
       }
-      return router.createUrlTree(['/login']);
+      return of(router.createUrlTree(['/login']));
     })
   );
 };
+
+const RUTAS_SIN_AVISO = ['/aviso-clinica', '/legal/accept', '/password-change'];
+
+function estaExentaDelAviso(url: string | undefined): boolean {
+  const ruta = (url ?? '').split('?')[0].split('#')[0];
+  return RUTAS_SIN_AVISO.some((exenta) => ruta === exenta || ruta.startsWith(exenta + '/'));
+}
 
 function validateAccess(route: ActivatedRouteSnapshot, authStore: any, router: Router) {
   const currentMenu = authStore.menu() ?? [];

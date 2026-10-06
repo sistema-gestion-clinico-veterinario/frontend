@@ -198,16 +198,16 @@
                     </div>
                     <div class="border-t border-slate-100 pt-3">
                       <p class="text-xs font-semibold text-slate-700">Recordatorios preventivos por correo</p>
-                      <p class="mt-1 text-[11px] text-slate-400">Registra exactamente lo que decidió el cliente; puede cambiarlo después.</p>
+                      <p class="mt-1 text-[11px] text-slate-400">Son parte del servicio. Registra si el cliente pidió no recibirlos; puede cambiarlo después.</p>
                       <div class="mt-3 grid grid-cols-2 gap-2">
                         <button type="button" (click)="decidirRecordatoriosCliente(true)"
                           [disabled]="!canClientAction('modificar') || actualizandoPrivacidadCliente()"
-                          [class]="estadoRecordatoriosCliente() === 'OTORGADO' ? 'border-[var(--brand-primary)] bg-[var(--brand-primary)] text-white' : 'border-slate-200 bg-white text-slate-600'"
-                          class="rounded-lg border px-3 py-2 text-xs font-semibold disabled:opacity-50">Sí, acepta</button>
+                          [class]="estadoRecordatoriosCliente() !== 'RETIRADO' ? 'border-[var(--brand-primary)] bg-[var(--brand-primary)] text-white' : 'border-slate-200 bg-white text-slate-600'"
+                          class="rounded-lg border px-3 py-2 text-xs font-semibold disabled:opacity-50">Recibe recordatorios</button>
                         <button type="button" (click)="decidirRecordatoriosCliente(false)"
                           [disabled]="!canClientAction('modificar') || actualizandoPrivacidadCliente()"
                           [class]="estadoRecordatoriosCliente() === 'RETIRADO' ? 'border-slate-500 bg-slate-100 text-slate-800' : 'border-slate-200 bg-white text-slate-600'"
-                          class="rounded-lg border px-3 py-2 text-xs font-semibold disabled:opacity-50">No acepta</button>
+                          class="rounded-lg border px-3 py-2 text-xs font-semibold disabled:opacity-50">Pidió no recibirlos</button>
                       </div>
                     </div>
                   }
@@ -800,17 +800,10 @@
                 @if (clientForm.get('avisoInformado')?.invalid && clientForm.get('avisoInformado')?.touched) {
                   <p class="text-xs text-rose-600">Debes confirmar que la persona fue informada.</p>
                 }
-                <fieldset class="rounded-lg border border-slate-200 p-3">
-                  <legend class="px-1 text-xs font-bold text-slate-700">¿Acepta recibir recordatorios preventivos por correo?</legend>
-                  <p class="mb-3 text-xs text-slate-500">Esta decisión es opcional y no condiciona la atención veterinaria.</p>
-                  <div class="flex gap-5">
-                    <label class="flex items-center gap-2 text-sm text-slate-700"><input type="radio" formControlName="consentimientoRecordatorios" [value]="true" class="accent-[var(--brand-primary)]" /> Sí, acepta</label>
-                    <label class="flex items-center gap-2 text-sm text-slate-700"><input type="radio" formControlName="consentimientoRecordatorios" [value]="false" class="accent-[var(--brand-primary)]" /> No acepta</label>
-                  </div>
-                  @if (clientForm.get('consentimientoRecordatorios')?.invalid && clientForm.get('consentimientoRecordatorios')?.touched) {
-                    <p class="mt-2 text-xs text-rose-600">Registra la decisión de la persona; puede elegir que no.</p>
-                  }
-                </fieldset>
+                <label class="flex cursor-pointer items-start gap-3 rounded-lg border border-slate-200 p-3">
+                  <input type="checkbox" [checked]="clientForm.get('consentimientoRecordatorios')?.value === false" (change)="clientForm.get('consentimientoRecordatorios')?.setValue($any($event.target).checked ? false : null)" class="mt-0.5 size-4 accent-[var(--brand-primary)]" />
+                  <span class="text-xs leading-5 text-slate-600"><strong class="block text-slate-800">Pidió no recibir recordatorios por correo</strong>Los recordatorios de vacunas son parte del servicio. Márcalo solo si el cliente pide no recibirlos; la atención no cambia.</span>
+                </label>
               } @else {
                 <div class="rounded-lg border border-amber-200 bg-amber-50 p-4 text-xs leading-5 text-amber-800">
                   La clínica todavía no publicó su aviso de privacidad. Debe publicarlo en la configuración de la empresa antes de registrar personas.

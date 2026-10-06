@@ -292,7 +292,7 @@ export const AuthStore = signalStore(
     
     hasRouteAccess(routePattern: string): boolean {
       const normalized = normalizeRoute(routePattern);
-      if (!normalized || normalized === 'profile' || normalized === 'password-change' || normalized === 'legal/accept') return true;
+      if (!normalized || normalized === 'profile' || normalized === 'password-change' || normalized === 'legal/accept' || normalized === 'aviso-clinica') return true;
 
       // Mapeo de alias de rutas a su ruta canónica en la base de datos
       const ROUTE_ALIASES: Record<string, string> = {

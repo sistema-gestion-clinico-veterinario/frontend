@@ -10,8 +10,10 @@ import { resolveDashboardRoute } from '../../../layouts/main-layout/navbar/navba
 
 const LABELS: Record<LegalDocumentDTO['tipo'], string> = {
   TERMINOS_Y_CONDICIONES: 'Términos y Condiciones',
-  POLITICA_PRIVACIDAD: 'Política de Privacidad'
+  POLITICA_PRIVACIDAD: 'Política de privacidad de la plataforma'
 };
+
+const INFORMATIVOS: ReadonlyArray<LegalDocumentDTO['tipo']> = ['POLITICA_PRIVACIDAD'];
 
 @Component({
   selector: 'app-legal-accept',
@@ -44,14 +46,18 @@ export class LegalAcceptComponent implements OnInit {
 
   readonly currentChecked = computed(() => {
     const doc = this.currentDoc();
-    return doc ? !!this.checked()[doc.id] : false;
+    return doc ? this.esInformativo(doc) || !!this.checked()[doc.id] : false;
   });
 
   readonly allChecked = computed(() => {
     const docs = this.documents();
     const state = this.checked();
-    return docs.length > 0 && docs.every(d => state[d.id]);
+    return docs.length > 0 && docs.every(d => this.esInformativo(d) || state[d.id]);
   });
+
+  esInformativo(doc: LegalDocumentDTO): boolean {
+    return INFORMATIVOS.includes(doc.tipo);
+  }
 
   labelFor(doc: LegalDocumentDTO): string {
     return LABELS[doc.tipo] ?? doc.tipo;
