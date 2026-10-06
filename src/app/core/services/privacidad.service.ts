@@ -56,6 +56,7 @@ export interface ConsentimientoEstado {
   informadaVersion: number | null;
   informadaFecha: string | null;
   informadaCanal: CanalConsentimiento | null;
+  vistaPorLaPersona: boolean;
   finalidades: FinalidadEstado[];
 }
 

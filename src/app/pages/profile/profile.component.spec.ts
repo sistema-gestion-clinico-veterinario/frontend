@@ -55,7 +55,7 @@ describe('ProfileComponent', () => {
 
     it('nombra cada documento', () => {
       expect(component.legalLabel('TERMINOS_Y_CONDICIONES')).toBe('Términos y Condiciones');
-      expect(component.legalLabel('POLITICA_PRIVACIDAD')).toBe('Política de Privacidad');
+      expect(component.legalLabel('POLITICA_PRIVACIDAD')).toBe('Política de privacidad de la plataforma');
     });
   });
 });

@@ -1108,12 +1108,12 @@ export class AgendaComponent implements OnInit, OnDestroy {
       this.messageService.add({ severity: 'warn', summary: 'Documento inválido', detail: 'Verifique el formato del documento.' });
       return;
     }
-    if (!this.avisoPrivacidad() || !this.ncAvisoInformado() || this.ncConsentimientoRecordatorios() === null) {
+    if (!this.avisoPrivacidad() || !this.ncAvisoInformado()) {
       this.messageService.add({
         severity: 'warn', summary: 'Privacidad pendiente',
         detail: !this.avisoPrivacidad()
           ? 'La clínica debe publicar su aviso de privacidad antes de registrar personas.'
-          : 'Muestra el aviso y registra si la persona acepta o no los recordatorios.'
+          : 'Muestra el aviso y confirma que la persona fue informada.'
       });
       return;
     }

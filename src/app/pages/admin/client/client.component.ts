@@ -538,13 +538,8 @@ export class ClientComponent implements OnInit {
 
   private setPrivacyValidators(required: boolean) {
     const informado = this.clientForm.get('avisoInformado');
-    const recordatorios = this.clientForm.get('consentimientoRecordatorios');
     informado?.setValidators(required ? [Validators.requiredTrue] : []);
-    recordatorios?.setValidators(required
-      ? [(control: AbstractControl) => control.value === true || control.value === false ? null : { decisionRequired: true }]
-      : []);
     informado?.updateValueAndValidity({ emitEvent: false });
-    recordatorios?.updateValueAndValidity({ emitEvent: false });
   }
 
   saveClient() {

@@ -76,22 +76,26 @@ describe('LegalAcceptComponent', () => {
 
     expect(component.currentIndex()).toBe(1);
     expect(component.currentDoc()?.id).toBe(2);
-    expect(component.currentChecked()).toBeFalse();
-    expect(nextButton().disabled).toBeTrue();
+    expect(currentCheckbox()).toBeNull();
   });
 
-  it('en el último documento el botón dice "Aceptar y continuar" y al marcarlo se habilita', () => {
+  it('la política de la plataforma es informativa: sin casilla, con el botón habilitado y "Entendido y continuar"', () => {
     component.toggleCurrent(true);
     fixture.detectChanges();
     nextButton().click();
     fixture.detectChanges();
 
-    expect(nextButton().textContent).toContain('Aceptar y continuar');
-    expect(nextButton().disabled).toBeTrue();
-
-    component.toggleCurrent(true);
-    fixture.detectChanges();
+    expect(component.labelFor(component.currentDoc()!)).toBe('Política de privacidad de la plataforma');
+    expect(currentCheckbox()).toBeNull();
+    expect(fixture.nativeElement.textContent).toContain('no hay nada que aceptar');
+    expect(nextButton().textContent).toContain('Entendido y continuar');
     expect(nextButton().disabled).toBeFalse();
+  });
+
+  it('los términos y condiciones siguen exigiendo la casilla', () => {
+    expect(component.esInformativo(pendingDocuments[0])).toBeFalse();
+    expect(component.esInformativo(pendingDocuments[1])).toBeTrue();
+    expect(nextButton().disabled).toBeTrue();
   });
 
   it('al terminar el último documento llama a accept() con los ids de ambos documentos', () => {
@@ -99,8 +103,6 @@ describe('LegalAcceptComponent', () => {
     component.toggleCurrent(true);
     fixture.detectChanges();
     nextButton().click();
-    fixture.detectChanges();
-    component.toggleCurrent(true);
     fixture.detectChanges();
 
     nextButton().click();

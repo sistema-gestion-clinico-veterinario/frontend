@@ -170,7 +170,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
   }
 
   legalLabel(tipo: LegalAcceptanceDTO['tipo']): string {
-    return tipo === 'TERMINOS_Y_CONDICIONES' ? 'Términos y Condiciones' : 'Política de Privacidad';
+    return tipo === 'TERMINOS_Y_CONDICIONES' ? 'Términos y Condiciones' : 'Política de privacidad de la plataforma';
   }
 
   loadProfile() {

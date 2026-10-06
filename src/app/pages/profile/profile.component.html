@@ -514,14 +514,14 @@
                           </div>
                           <div class="border-t border-slate-100 pt-3">
                             <p class="text-xs font-semibold text-slate-600">Recordatorios preventivos por correo</p>
-                            <p class="mt-1 text-xs leading-5 text-slate-400">Es opcional y puedes cambiar esta decisión en cualquier momento.</p>
+                            <p class="mt-1 text-xs leading-5 text-slate-400">Son parte del servicio de la clínica. Puedes pedir no recibirlos en cualquier momento.</p>
                             <div class="mt-3 grid grid-cols-2 gap-2">
                               <button type="button" (click)="decidirRecordatorios(true)" [disabled]="actualizandoPrivacidad()"
-                                [class]="estadoRecordatorios() === 'OTORGADO' ? 'border-[var(--brand-primary)] bg-[var(--brand-primary)] text-white' : 'border-slate-200 bg-white text-slate-600'"
-                                class="rounded-lg border px-3 py-2 text-xs font-semibold disabled:opacity-50">Sí, acepto</button>
+                                [class]="estadoRecordatorios() !== 'RETIRADO' ? 'border-[var(--brand-primary)] bg-[var(--brand-primary)] text-white' : 'border-slate-200 bg-white text-slate-600'"
+                                class="rounded-lg border px-3 py-2 text-xs font-semibold disabled:opacity-50">Quiero recibirlos</button>
                               <button type="button" (click)="decidirRecordatorios(false)" [disabled]="actualizandoPrivacidad()"
                                 [class]="estadoRecordatorios() === 'RETIRADO' ? 'border-slate-500 bg-slate-100 text-slate-800' : 'border-slate-200 bg-white text-slate-600'"
-                                class="rounded-lg border px-3 py-2 text-xs font-semibold disabled:opacity-50">No acepto</button>
+                                class="rounded-lg border px-3 py-2 text-xs font-semibold disabled:opacity-50">No quiero recibirlos</button>
                             </div>
                           </div>
                         </div>

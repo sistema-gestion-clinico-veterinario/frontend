@@ -5,10 +5,12 @@ import { AuthGuard } from './auth.guard';
 import { SessionService } from '../services/session.service';
 import { CompanySlugContext } from '../services/company-slug-context.service';
 import { AuthStore } from '../../store/auth.store';
+import { AvisoClinicaGate } from '../services/aviso-clinica-gate.service';
 
 describe('AuthGuard - sesión de otra clínica', () => {
   let sessionService: any;
   let slug: string | null;
+  let avisoGate: { debeMostrarse: jasmine.Spy };
 
   beforeEach(() => {
     slug = 'clinica-b';
@@ -17,11 +19,13 @@ describe('AuthGuard - sesión de otra clínica', () => {
       sessionConflict: Object.assign(() => conflicto, { set: (valor: boolean) => { conflicto = valor; } })
     };
     conflicto = false;
+    avisoGate = { debeMostrarse: jasmine.createSpy('debeMostrarse').and.returnValue(of(false)) };
     TestBed.configureTestingModule({
       providers: [
         provideRouter([]),
         { provide: SessionService, useValue: sessionService },
         { provide: CompanySlugContext, useValue: { slug: () => slug } },
+        { provide: AvisoClinicaGate, useValue: avisoGate },
         { provide: AuthStore, useValue: { menu: () => [], activeRoleId: () => 1, activeRolePurpose: () => 'COMPANY_ADMIN', hasRouteAccess: () => true, hasAccess: () => true, logout: () => {} } },
       ],
     });
@@ -29,8 +33,8 @@ describe('AuthGuard - sesión de otra clínica', () => {
 
   let conflicto = false;
 
-  const ejecutar = () => TestBed.runInInjectionContext(() =>
-    AuthGuard({ data: {}, pathFromRoot: [] } as unknown as ActivatedRouteSnapshot, {} as RouterStateSnapshot)) as Observable<boolean | UrlTree>;
+  const ejecutar = (url?: string) => TestBed.runInInjectionContext(() =>
+    AuthGuard({ data: {}, pathFromRoot: [] } as unknown as ActivatedRouteSnapshot, { url } as RouterStateSnapshot)) as Observable<boolean | UrlTree>;
 
   it('le pasa a la sesión la clínica de la dirección para compararla', (done) => {
     sessionService.initialize.and.returnValue(of(true));
@@ -59,6 +63,50 @@ describe('AuthGuard - sesión de otra clínica', () => {
     ejecutar().subscribe((resultado) => {
       const router = TestBed.inject(Router);
       expect(router.serializeUrl(resultado as UrlTree)).not.toContain('authNotice');
+      done();
+    });
+  });
+
+  it('con el aviso de la clínica pendiente de ver, lleva a la pantalla del aviso', (done) => {
+    sessionService.initialize.and.returnValue(of(true));
+    avisoGate.debeMostrarse.and.returnValue(of(true));
+
+    ejecutar('/dashboard').subscribe((resultado) => {
+      const router = TestBed.inject(Router);
+      expect(router.serializeUrl(resultado as UrlTree)).toBe('/aviso-clinica');
+      done();
+    });
+  });
+
+  it('sin aviso pendiente deja pasar', (done) => {
+    sessionService.initialize.and.returnValue(of(true));
+
+    ejecutar('/dashboard').subscribe((resultado) => {
+      expect(resultado).toBeTrue();
+      done();
+    });
+  });
+
+  it('no vuelve a pedir el aviso en la propia pantalla del aviso, en los términos ni al cambiar la contraseña', (done) => {
+    sessionService.initialize.and.returnValue(of(true));
+    avisoGate.debeMostrarse.and.returnValue(of(true));
+
+    ejecutar('/aviso-clinica').subscribe((a) => {
+      ejecutar('/legal/accept').subscribe((b) => {
+        ejecutar('/password-change').subscribe((c) => {
+          expect([a, b, c]).toEqual([true, true, true]);
+          expect(avisoGate.debeMostrarse).not.toHaveBeenCalled();
+          done();
+        });
+      });
+    });
+  });
+
+  it('sin sesión no consulta el aviso', (done) => {
+    sessionService.initialize.and.returnValue(of(false));
+
+    ejecutar('/dashboard').subscribe(() => {
+      expect(avisoGate.debeMostrarse).not.toHaveBeenCalled();
       done();
     });
   });

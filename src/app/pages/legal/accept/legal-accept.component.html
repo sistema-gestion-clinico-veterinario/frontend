@@ -29,10 +29,14 @@
         </header>
         <div class="reader-body">{{ doc.contenido }}</div>
         <footer class="reader-footer">
-          <label class="agree-checkbox">
-            <input type="checkbox" [ngModel]="currentChecked()" (ngModelChange)="toggleCurrent($event)" />
-            <span>He leído y acepto {{ labelFor(doc) }}</span>
-          </label>
+          @if (esInformativo(doc)) {
+            <p class="agree-note">Este documento es informativo: léelo, no hay nada que aceptar.</p>
+          } @else {
+            <label class="agree-checkbox">
+              <input type="checkbox" [ngModel]="currentChecked()" (ngModelChange)="toggleCurrent($event)" />
+              <span>He leído y acepto {{ labelFor(doc) }}</span>
+            </label>
+          }
           <div class="reader-actions">
             <button type="button" class="btn-link" (click)="logout()">Cerrar sesión</button>
             <div class="reader-actions-right">
@@ -40,7 +44,7 @@
                 <button type="button" class="btn-outline" (click)="back()">Atrás</button>
               }
               <button type="button" class="btn-solid" [disabled]="!currentChecked() || submitting()" (click)="next()">
-                {{ submitting() ? 'Guardando…' : (isLastDoc() ? 'Aceptar y continuar' : 'Continuar') }}
+                {{ submitting() ? 'Guardando…' : (isLastDoc() ? (esInformativo(doc) ? 'Entendido y continuar' : 'Aceptar y continuar') : 'Continuar') }}
               </button>
             </div>
           </div>
