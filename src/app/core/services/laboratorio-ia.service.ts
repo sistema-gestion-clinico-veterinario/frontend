@@ -11,10 +11,11 @@ export class LaboratorioIaService {
   private readonly http = inject(HttpClient);
   private readonly url = `${environment.apiUrl}/laboratorio/analizar`;
 
-  analizar(archivo: File, especie: string): Observable<LaboratorioIAResponse> {
+  analizar(archivo: File, especie: string, mascotaId: number): Observable<LaboratorioIAResponse> {
     const form = new FormData();
     form.append('archivo', archivo);
     form.append('especie', especie);
+    form.append('mascotaId', String(mascotaId));
 
     return this.http
       .post<ApiResponse<LaboratorioIAResponse>>(this.url, form)

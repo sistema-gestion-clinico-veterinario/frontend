@@ -3,7 +3,8 @@ import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { catchError, debounceTime, distinctUntilChanged, finalize, from, of, switchMap, timeout } from 'rxjs';
+import { Observable, catchError, debounceTime, distinctUntilChanged, finalize, from, of, switchMap, timeout } from 'rxjs';
+import { AuthLoginResponse } from '../../../models/response/auth-login-response.model';
 import { AuthService } from '../../../core/services/auth.service';
 import { CompanyService, CompanySearchResult } from '../../../core/services/company.service';
 import { CompanySlugContext } from '../../../core/services/company-slug-context.service';
@@ -58,18 +59,23 @@ export class LoginComponent implements OnInit {
   noticeTitle = '';
   showNotice = false;
 
+  showReactivar = false;
+  reactivando = false;
+  reactivableHasta: string | null = null;
+  private ticketDeReactivacion: string | null = null;
+  private credencialesPendientes: { username: string; password: string } | null = null;
+
   private static readonly NOTICE_TITLES: Record<string, string> = {
-    google_cuenta_cerrada: 'Tu cuenta está cerrada',
     sesion_otra_clinica: 'Sesión de otra clínica',
   };
 
   private static readonly NOTICES: Record<string, string> = {
-    google_cuenta_cerrada: 'Para volver, abre el enlace de reactivación que te enviamos por correo. Puedes usarlo ahora mismo: sirve hasta 30 días después de haberla cerrado.',
     sesion_otra_clinica: 'La sesión que tenía este navegador no corresponde a esta clínica. Inicia sesión de nuevo para continuar; las sesiones de tus otras clínicas no se cierran.',
   };
 
   private static readonly GOOGLE_ERROR_MESSAGES: Record<string, string> = {
     google_cancelado: 'Inicio de sesión con Google cancelado.',
+    google_cuenta_cerrada: 'Tu cuenta está cerrada y ya no se puede reactivar desde aquí. Contacta al administrador de la clínica.',
     google_email_no_verificado: 'Tu cuenta de Google no tiene el correo verificado.',
     google_sin_acceso_clinica: 'Tu cuenta de Google no está registrada en esta veterinaria. Solicita acceso al administrador de la clínica o continúa con otra cuenta de Google.',
     google_cuenta_dada_de_baja: 'Tu acceso a esta veterinaria ya no está activo. Si crees que es un error, contacta al administrador de la clínica.',
@@ -85,7 +91,8 @@ export class LoginComponent implements OnInit {
 
     this.aplicarMensajesDeLaUrl(
       this.route.snapshot.queryParamMap.get('authNotice'),
-      this.route.snapshot.queryParamMap.get('authError'));
+      this.route.snapshot.queryParamMap.get('authError'),
+      this.leerTicketDeReactivacion());
 
     if (this.slug) {
       this.loadBranding(this.slug);
@@ -216,14 +223,42 @@ export class LoginComponent implements OnInit {
     }
 
     this.authError = null;
-    this.isSubmitting = true;
-    this.loadingStore.show();
+    this.credencialesPendientes = { username: rawUsername, password: rawPassword };
 
     // La empresa siempre la resuelve la URL (slug) - ya no existe login "global" sin
     // marca de empresa (aislamiento total entre empresas).
     const request$ = this.isAdminRoute
       ? this.authService.adminLogin({ username: rawUsername, password: rawPassword })
       : this.authService.login({ slug: this.slug!, username: rawUsername, password: rawPassword });
+
+    this.completarInicioDeSesion(request$);
+  }
+
+  reactivar(): void {
+    if (this.reactivando || (!this.ticketDeReactivacion && !this.credencialesPendientes)) return;
+    this.reactivando = true;
+    const request$ = this.ticketDeReactivacion
+      ? this.authService.reactivateWithGoogle(this.ticketDeReactivacion)
+      : this.authService.login({ slug: this.slug!, ...this.credencialesPendientes!, reactivarCuenta: true });
+    this.completarInicioDeSesion(request$);
+  }
+
+  cerrarReactivar(): void {
+    if (this.reactivando) return;
+    this.showReactivar = false;
+    this.ticketDeReactivacion = null;
+    this.credencialesPendientes = null;
+    this.limpiarClave();
+  }
+
+  get fechaLimiteDeReactivacion(): string {
+    const dia = (this.reactivableHasta ?? '').slice(0, 10).split('-');
+    return dia.length === 3 ? `${dia[2]}/${dia[1]}/${dia[0]}` : '';
+  }
+
+  private completarInicioDeSesion(request$: Observable<AuthLoginResponse>): void {
+    this.isSubmitting = true;
+    this.loadingStore.show();
 
     request$.pipe(
       timeout(15000),
@@ -235,6 +270,10 @@ export class LoginComponent implements OnInit {
         }
 
         this.sessionService.establish(data);
+        this.showReactivar = false;
+        this.reactivando = false;
+        this.ticketDeReactivacion = null;
+        this.credencialesPendientes = null;
         sessionStorage.removeItem('pw_modal_dismissed');
         const targetUrl = data.legalAcceptanceOverdue
           ? '/legal/accept'
@@ -248,17 +287,38 @@ export class LoginComponent implements OnInit {
     ).subscribe({
       next: () => {},
       error: (error) => {
+        if (!this.reactivando && error?.status === 409 && error?.error?.data?.code === 'CUENTA_CERRADA') {
+          this.reactivableHasta = error.error.data.reactivableHasta ?? null;
+          this.showReactivar = true;
+          return;
+        }
+        this.showReactivar = false;
+        this.reactivando = false;
+        this.ticketDeReactivacion = null;
+        this.credencialesPendientes = null;
         this.authError = this.resolveLoginError(error);
         // Contraseña incorrecta, cuenta que debe restablecerla, etc.: nunca dejar la contraseña
         // fallida escrita en el campo. Se excluye el error de red/timeout porque ahí la
         // contraseña no era el problema y reintentar con el mismo valor es razonable.
         if (!(error?.name === 'TimeoutError' || error?.status === 0)) {
-          this.loginForm.get('password')?.setValue('', { emitEvent: false });
-          const passwordInput = document.getElementById('password') as HTMLInputElement | null;
-          if (passwordInput) passwordInput.value = '';
+          this.limpiarClave();
         }
       },
     });
+  }
+
+  private limpiarClave(): void {
+    this.loginForm.get('password')?.setValue('', { emitEvent: false });
+    const passwordInput = document.getElementById('password') as HTMLInputElement | null;
+    if (passwordInput) passwordInput.value = '';
+  }
+
+  private leerTicketDeReactivacion(): string | null {
+    const ticket = new URLSearchParams(this.route.snapshot.fragment ?? '').get('reactivar');
+    if (ticket && typeof history !== 'undefined') {
+      history.replaceState(history.state, '', location.pathname + location.search);
+    }
+    return ticket;
   }
 
   /** La clínica (si hay) se deja en el servidor antes de salir a Google, para que el retorno
@@ -283,7 +343,12 @@ export class LoginComponent implements OnInit {
     this.showNotice = false;
   }
 
-  aplicarMensajesDeLaUrl(codigoDeAviso: string | null, codigoDeError: string | null): void {
+  aplicarMensajesDeLaUrl(codigoDeAviso: string | null, codigoDeError: string | null, ticketDeReactivacion: string | null = null): void {
+    if (codigoDeError === 'google_cuenta_cerrada' && ticketDeReactivacion) {
+      this.ticketDeReactivacion = ticketDeReactivacion;
+      this.showReactivar = true;
+      return;
+    }
     const codigo = LoginComponent.NOTICES[codigoDeAviso ?? ''] ? codigoDeAviso
       : LoginComponent.NOTICES[codigoDeError ?? ''] ? codigoDeError : null;
     this.authNotice = codigo ? LoginComponent.NOTICES[codigo] : '';

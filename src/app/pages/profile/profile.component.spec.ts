@@ -58,4 +58,62 @@ describe('ProfileComponent', () => {
       expect(component.legalLabel('POLITICA_PRIVACIDAD')).toBe('Política de privacidad de la plataforma');
     });
   });
+
+  describe('autorización del uso de IA', () => {
+    const estado = (estadoIa?: 'OTORGADO' | 'RETIRADO') => ({
+      avisoPublicado: true, avisoVersion: 1, informada: true, informadaVersion: 1, informadaFecha: null, informadaCanal: null,
+      vistaPorLaPersona: true,
+      finalidades: [
+        { codigo: 'RECORDATORIOS_PREVENTIVOS', descripcion: 'x', estado: 'OTORGADO', fecha: null, canal: null },
+        ...(estadoIa ? [{ codigo: 'USO_IA_CLINICA', descripcion: 'IA', estado: estadoIa, fecha: null, canal: null }] : [])
+      ]
+    }) as any;
+
+    it('por defecto no hay autorización', () => {
+      component.estadoPrivacidad.set(estado());
+
+      expect(component.estadoIa()).toBe('SIN_REGISTRO');
+    });
+
+    it('autorizar y retirar se registran como decisiones separadas de los recordatorios', () => {
+      const servicio = (component as any).privacidadService;
+      const decidir = spyOn(servicio, 'decidir').and.returnValues(
+        of({ success: true, message: 'ok', data: estado('OTORGADO') }),
+        of({ success: true, message: 'ok', data: estado('RETIRADO') }));
+
+      component.decidirIa(true);
+      expect(decidir).toHaveBeenCalledWith('USO_IA_CLINICA', true);
+      expect(component.estadoIa()).toBe('OTORGADO');
+
+      component.decidirIa(false);
+      expect(decidir).toHaveBeenCalledWith('USO_IA_CLINICA', false);
+      expect(component.estadoIa()).toBe('RETIRADO');
+    });
+
+    it('al decidir sobre la IA o confirmar la lectura, la tarjeta de pendientes se actualiza', () => {
+      const servicio = (component as any).privacidadService;
+      spyOn(servicio, 'decidir').and.returnValue(of({ success: true, message: 'ok', data: estado('OTORGADO') }));
+      spyOn(servicio, 'leiElAviso').and.returnValue(of({ success: true, message: 'ok', data: estado('OTORGADO') }));
+      const refrescar = spyOn((component as any).pendientesPrivacidad, 'refrescar');
+
+      component.decidirIa(true);
+      expect(refrescar).toHaveBeenCalledTimes(1);
+
+      component.registrarLecturaAviso();
+      expect(refrescar).toHaveBeenCalledTimes(2);
+    });
+
+    it('si no se pudo guardar, avisa y no cambia el estado', () => {
+      const servicio = (component as any).privacidadService;
+      component.estadoPrivacidad.set(estado());
+      spyOn(servicio, 'decidir').and.returnValue(throwError(() => ({ error: { message: 'La clínica aún no publicó su aviso' } })));
+      const aviso = spyOn((component as any).messageService, 'add');
+
+      component.decidirIa(true);
+
+      expect(component.estadoIa()).toBe('SIN_REGISTRO');
+      expect(component.actualizandoPrivacidad()).toBeFalse();
+      expect(aviso).toHaveBeenCalledWith(jasmine.objectContaining({ severity: 'error' }));
+    });
+  });
 });

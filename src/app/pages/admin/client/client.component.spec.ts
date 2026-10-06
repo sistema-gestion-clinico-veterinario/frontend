@@ -268,4 +268,46 @@ describe('ClientComponent', () => {
       });
     });
   });
+
+  describe('autorización del uso de IA', () => {
+    const estado = (estadoIa?: 'OTORGADO' | 'RETIRADO') => ({
+      avisoPublicado: true, avisoVersion: 1, informada: true, finalidades: estadoIa
+        ? [{ codigo: 'USO_IA_CLINICA', descripcion: 'IA', estado: estadoIa, fecha: null, canal: null }] : []
+    }) as any;
+
+    beforeEach(() => {
+      component.selectedClientId.set(7);
+      spyOn(component, 'canClientAction').and.returnValue(true);
+    });
+
+    it('sin registro, el cliente figura como no autorizado', () => {
+      component.estadoPrivacidadCliente.set(estado());
+
+      expect(component.estadoIaCliente()).toBe('SIN_REGISTRO');
+    });
+
+    it('el personal registra lo que el cliente decidió, para ese cliente', () => {
+      const decidir = spyOn((component as any).privacidadService, 'decidirPorElCliente').and.returnValues(
+        of({ success: true, message: 'ok', data: estado('OTORGADO') }),
+        of({ success: true, message: 'ok', data: estado('RETIRADO') }));
+      spyOn((component as any).messageService, 'add');
+
+      component.decidirIaCliente(true);
+      expect(decidir).toHaveBeenCalledWith(7, 'USO_IA_CLINICA', true);
+      expect(component.estadoIaCliente()).toBe('OTORGADO');
+
+      component.decidirIaCliente(false);
+      expect(decidir).toHaveBeenCalledWith(7, 'USO_IA_CLINICA', false);
+      expect(component.estadoIaCliente()).toBe('RETIRADO');
+    });
+
+    it('sin permiso para modificar clientes no se registra nada', () => {
+      (component.canClientAction as jasmine.Spy).and.returnValue(false);
+      const decidir = spyOn((component as any).privacidadService, 'decidirPorElCliente');
+
+      component.decidirIaCliente(true);
+
+      expect(decidir).not.toHaveBeenCalled();
+    });
+  });
 });

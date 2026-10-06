@@ -27,13 +27,14 @@ describe('AccountClosedComponent', () => {
 
   const texto = () => (fixture.nativeElement as HTMLElement).textContent ?? '';
 
-  it('explica de forma permanente que la cuenta se cerró, el plazo de 30 días y qué hacer si no llega el correo', () => {
+  it('explica de forma permanente que la cuenta se cerró, el plazo de 30 días y cómo volver iniciando sesión', () => {
     crear('clinica-patitas');
 
     expect(texto()).toContain('Tu cuenta fue cerrada');
     expect(texto()).toContain('Cerraste tu cuenta en Clínica Patitas');
     expect(texto()).toContain('Puedes reactivarla durante 30 días');
-    expect(texto()).toContain('revisa la carpeta de spam');
+    expect(texto()).toContain('iniciar sesión de nuevo');
+    expect(texto()).not.toContain('correo');
     expect(texto()).toContain('tendrá que registrarte de nuevo');
   });
 

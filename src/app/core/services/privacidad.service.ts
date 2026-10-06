@@ -61,6 +61,7 @@ export interface ConsentimientoEstado {
 }
 
 export const RECORDATORIOS = 'RECORDATORIOS_PREVENTIVOS';
+export const USO_IA = 'USO_IA_CLINICA';
 
 @Injectable({ providedIn: 'root' })
 export class PrivacidadService {

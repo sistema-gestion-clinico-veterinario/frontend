@@ -8,6 +8,7 @@ import { MediaService } from '../../../core/services/media.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { SessionService } from '../../../core/services/session.service';
 import { SkeletonModule } from 'primeng/skeleton';
+import { PendientesPrivacidadCardComponent } from './pendientes-privacidad-card/pendientes-privacidad-card.component';
 import {
   SOFTVET_LOGO_URL,
   SOFTVET_SIDEBAR_NAME,
@@ -25,7 +26,7 @@ interface MenuSection extends MenuStructureDTO {
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, SkeletonModule],
+  imports: [RouterLink, RouterLinkActive, SkeletonModule, PendientesPrivacidadCardComponent],
   templateUrl: './sidebar.component.html'
 })
 export class SidebarComponent {
