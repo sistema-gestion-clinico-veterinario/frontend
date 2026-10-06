@@ -362,9 +362,59 @@ describe('LoginComponent - continuar con Google', () => {
     const avisos = (LoginComponent as any).NOTICES as Record<string, string>;
     expect(avisos['sesion_otra_clinica']).toContain('no corresponde a esta clínica');
     expect(avisos['sesion_otra_clinica']).toContain('no se cierran');
-    expect(mensajes['google_cuenta_cerrada']).toContain('enlace de reactivación');
+    expect(avisos['google_cuenta_cerrada']).toContain('enlace de reactivación');
+    expect(avisos['google_cuenta_cerrada']).toContain('ahora mismo');
+    expect(mensajes['google_cuenta_cerrada']).toBeUndefined();
     expect(mensajes['google_cuenta_dada_de_baja']).toContain('ya no está activo');
     expect(mensajes['google_cuenta_no_habilitada']).toContain('no puede ingresar por ahora');
     expect(mensajes['google_sin_acceso_clinica']).toContain('no está registrada');
+  });
+
+  it('una cuenta cerrada se muestra como aviso informativo, no como error, y no habla de esperar', () => {
+    component.aplicarMensajesDeLaUrl(null, 'google_cuenta_cerrada');
+
+    expect(component.authNotice).toContain('enlace de reactivación');
+    expect(component.authNotice).not.toMatch(/vale 30 días|esperar/);
+    expect(component.authError).toBeNull();
+  });
+
+  it('el aviso se muestra en un diálogo con su título, y se puede cerrar', () => {
+    component.aplicarMensajesDeLaUrl(null, 'google_cuenta_cerrada');
+
+    expect(component.showNotice).toBeTrue();
+    expect(component.noticeTitle).toBe('Tu cuenta está cerrada');
+
+    component.closeNotice();
+
+    expect(component.showNotice).toBeFalse();
+  });
+
+  it('un error de verdad no abre el diálogo de avisos', () => {
+    component.aplicarMensajesDeLaUrl(null, 'google_cuenta_suspendida');
+
+    expect(component.showNotice).toBeFalse();
+    expect(component.noticeTitle).toBe('');
+  });
+
+  it('sin aviso ni error no hay diálogo', () => {
+    component.aplicarMensajesDeLaUrl(null, null);
+
+    expect(component.showNotice).toBeFalse();
+    expect(component.authNotice).toBe('');
+  });
+
+  it('los demás motivos de Google siguen siendo errores', () => {
+    component.aplicarMensajesDeLaUrl(null, 'google_cuenta_suspendida');
+
+    expect(component.authError).toContain('suspendido');
+    expect(component.authNotice).toBe('');
+  });
+
+  it('un código desconocido da el error genérico y un aviso de la dirección se muestra como aviso', () => {
+    component.aplicarMensajesDeLaUrl(null, 'codigo_raro');
+    expect(component.authError).toBe('No se pudo iniciar sesión con Google. Intenta nuevamente.');
+
+    component.aplicarMensajesDeLaUrl('sesion_otra_clinica', null);
+    expect(component.authNotice).toContain('no corresponde a esta clínica');
   });
 });

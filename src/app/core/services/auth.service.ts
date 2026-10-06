@@ -51,8 +51,8 @@ export class AuthService {
     return this.http.get<ApiResponse<AccountClosureEligibility>>(`${this.baseUrl}/account/closure`);
   }
 
-  requestAccountClosure(password: string | null): Observable<ApiResponse<void>> {
-    return this.http.post<ApiResponse<void>>(`${this.baseUrl}/account/closure/request`, { password });
+  requestAccountClosure(password: string | null): Observable<ApiResponse<{ retryAfterSeconds?: number } | undefined>> {
+    return this.http.post<ApiResponse<{ retryAfterSeconds?: number } | undefined>>(`${this.baseUrl}/account/closure/request`, { password });
   }
 
   confirmAccountClosure(code: string): Observable<ApiResponse<void>> {

@@ -55,9 +55,16 @@ export class LoginComponent implements OnInit {
 
   startingGoogle = false;
   authNotice = '';
+  noticeTitle = '';
+  showNotice = false;
+
+  private static readonly NOTICE_TITLES: Record<string, string> = {
+    google_cuenta_cerrada: 'Tu cuenta está cerrada',
+    sesion_otra_clinica: 'Sesión de otra clínica',
+  };
 
   private static readonly NOTICES: Record<string, string> = {
-    cuenta_cerrada: 'Cerraste tu cuenta. Te enviamos un correo con el enlace para reactivarla durante los próximos 30 días.',
+    google_cuenta_cerrada: 'Para volver, abre el enlace de reactivación que te enviamos por correo. Puedes usarlo ahora mismo: sirve hasta 30 días después de haberla cerrado.',
     sesion_otra_clinica: 'La sesión que tenía este navegador no corresponde a esta clínica. Inicia sesión de nuevo para continuar; las sesiones de tus otras clínicas no se cierran.',
   };
 
@@ -65,7 +72,6 @@ export class LoginComponent implements OnInit {
     google_cancelado: 'Inicio de sesión con Google cancelado.',
     google_email_no_verificado: 'Tu cuenta de Google no tiene el correo verificado.',
     google_sin_acceso_clinica: 'Tu cuenta de Google no está registrada en esta veterinaria. Solicita acceso al administrador de la clínica o continúa con otra cuenta de Google.',
-    google_cuenta_cerrada: 'Cerraste tu cuenta en esta veterinaria. Para volver, usa el enlace de reactivación que te enviamos por correo (vale 30 días).',
     google_cuenta_dada_de_baja: 'Tu acceso a esta veterinaria ya no está activo. Si crees que es un error, contacta al administrador de la clínica.',
     google_cuenta_suspendida: 'Tu acceso a esta veterinaria está suspendido. Contacta al administrador de la clínica.',
     google_cuenta_no_habilitada: 'Tu cuenta no puede ingresar por ahora. Contacta al administrador de la clínica.',
@@ -77,12 +83,9 @@ export class LoginComponent implements OnInit {
     this.isAdminRoute = this.router.url.startsWith('/admin/login');
     this.slug = this.isAdminRoute ? null : this.slugContext.slug();
 
-    this.authNotice = LoginComponent.NOTICES[this.route.snapshot.queryParamMap.get('authNotice') ?? ''] ?? '';
-    const authErrorCode = this.route.snapshot.queryParamMap.get('authError');
-    if (authErrorCode) {
-      this.authError = LoginComponent.GOOGLE_ERROR_MESSAGES[authErrorCode]
-        ?? 'No se pudo iniciar sesión con Google. Intenta nuevamente.';
-    }
+    this.aplicarMensajesDeLaUrl(
+      this.route.snapshot.queryParamMap.get('authNotice'),
+      this.route.snapshot.queryParamMap.get('authError'));
 
     if (this.slug) {
       this.loadBranding(this.slug);
@@ -274,6 +277,22 @@ export class LoginComponent implements OnInit {
 
   redirectTo(url: string): void {
     window.location.href = url;
+  }
+
+  closeNotice(): void {
+    this.showNotice = false;
+  }
+
+  aplicarMensajesDeLaUrl(codigoDeAviso: string | null, codigoDeError: string | null): void {
+    const codigo = LoginComponent.NOTICES[codigoDeAviso ?? ''] ? codigoDeAviso
+      : LoginComponent.NOTICES[codigoDeError ?? ''] ? codigoDeError : null;
+    this.authNotice = codigo ? LoginComponent.NOTICES[codigo] : '';
+    this.noticeTitle = codigo ? LoginComponent.NOTICE_TITLES[codigo] ?? '' : '';
+    this.showNotice = !!this.authNotice;
+    if (codigoDeError && !LoginComponent.NOTICES[codigoDeError]) {
+      this.authError = LoginComponent.GOOGLE_ERROR_MESSAGES[codigoDeError]
+        ?? 'No se pudo iniciar sesión con Google. Intenta nuevamente.';
+    }
   }
 
   private resolveLoginError(error: any): string {

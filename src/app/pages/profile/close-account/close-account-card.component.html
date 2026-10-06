@@ -1,6 +1,6 @@
 @if (visible()) {
-  <section class="rounded-2xl border border-slate-100 bg-white p-5">
-    <h3 class="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700">
+  <section class="rounded-2xl border border-slate-100 bg-white p-6">
+    <h3 class="mb-4 flex items-center gap-2 text-sm font-semibold text-slate-700">
       <i class="pi pi-sign-out text-slate-400"></i> Cerrar mi cuenta
     </h3>
     <p class="text-xs leading-5 text-slate-600">
@@ -24,64 +24,84 @@
   </section>
 
   @if (dialogOpen()) {
-    <div class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/50 p-4" style="font-family: 'Barlow', sans-serif;">
-      <div class="w-full max-w-md overflow-hidden rounded-2xl border border-slate-200 bg-white">
-        <div class="flex items-center justify-between border-b border-slate-100 px-6 py-5">
-          <h2 class="text-sm font-bold text-slate-800">Cerrar mi cuenta</h2>
-          <button type="button" (click)="cancel()" title="Cerrar"
-            class="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-600">
-            <i class="pi pi-times text-xs"></i>
-          </button>
+    <div class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/50 p-4" style="font-family: 'Barlow', sans-serif;"
+      (keydown.escape)="cancel()">
+      <div role="dialog" aria-modal="true" aria-labelledby="close-account-title"
+        class="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-xl sm:p-8">
+        <button type="button" (click)="cancel()" [disabled]="working()" title="Cerrar" aria-label="Cerrar"
+          class="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 disabled:opacity-50">
+          <i class="pi pi-times text-xs"></i>
+        </button>
+
+        <div class="flex h-12 w-12 items-center justify-center rounded-full"
+          [class]="step() === 'request' ? 'bg-slate-100 text-slate-600' : 'bg-rose-50 text-rose-500'">
+          <i class="pi text-lg" [class]="step() === 'request' ? 'pi-lock' : 'pi-envelope'"></i>
         </div>
 
-        <div class="space-y-4 p-6">
-          @if (step() === 'request') {
-            <p class="text-xs leading-5 text-slate-600">
-              Para confirmar que eres tú, te enviaremos un código de 6 dígitos a tu correo.
-            </p>
-            @if (eligibility()?.requiresPassword) {
-              <div class="space-y-1.5">
-                <label for="close-password" class="text-xs font-semibold text-slate-700">Tu contraseña</label>
-                <input id="close-password" type="password" autocomplete="current-password"
-                  [value]="password()" (input)="password.set($any($event.target).value)"
-                  class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-800 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" />
+        @if (step() === 'request') {
+          <h2 id="close-account-title" class="mt-5 text-xl font-bold text-slate-900">Confirma que eres tú</h2>
+          <p class="mt-2 text-sm leading-6 text-slate-500">
+            Para cerrar tu cuenta te enviaremos un código de 6 dígitos a tu correo.
+          </p>
+          @if (eligibility()?.requiresPassword) {
+            <div class="mt-5">
+              <label for="close-password" class="text-xs font-semibold text-slate-700">Tu contraseña</label>
+              <div class="relative mt-1.5">
+                <input id="close-password" [type]="showPassword() ? 'text' : 'password'" autocomplete="current-password" autofocus
+                  [value]="password()" (input)="password.set($any($event.target).value)" (keydown.enter)="sendCode()"
+                  class="h-12 w-full rounded-xl border border-slate-300 pl-4 pr-12 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" />
+                <button type="button" (click)="togglePassword()"
+                  [attr.aria-label]="showPassword() ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+                  class="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg text-slate-400 transition hover:text-slate-600">
+                  <i class="pi text-sm" [class]="showPassword() ? 'pi-eye-slash' : 'pi-eye'"></i>
+                </button>
               </div>
-            }
-          } @else {
-            <p class="text-xs leading-5 text-slate-600">{{ info() }}</p>
-            <div class="space-y-1.5">
-              <label for="close-code" class="text-xs font-semibold text-slate-700">Código</label>
-              <input id="close-code" type="text" inputmode="numeric" maxlength="6" autocomplete="one-time-code"
-                [value]="code()" (input)="code.set($any($event.target).value)"
-                class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-center text-lg tracking-[0.5em] text-slate-800 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" />
             </div>
-            <button type="button" (click)="sendCode()" [disabled]="working()"
-              class="text-xs font-semibold text-blue-600 hover:underline disabled:opacity-50">
-              Reenviar código
-            </button>
           }
-
-          @if (error()) {
-            <p class="rounded-lg border border-rose-200 bg-rose-50 p-3 text-xs font-medium text-rose-700">{{ error() }}</p>
-          }
-
-          <div class="flex gap-3 pt-2">
-            <button type="button" (click)="cancel()" [disabled]="working()"
-              class="flex-1 rounded-lg border border-slate-200 py-2.5 text-sm font-semibold text-slate-500 transition hover:bg-slate-50">
-              Cancelar
-            </button>
-            @if (step() === 'request') {
-              <button type="button" (click)="sendCode()" [disabled]="working()"
-                class="flex-1 rounded-lg bg-blue-500 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-600 disabled:opacity-60">
-                {{ working() ? 'Enviando...' : 'Enviarme el código' }}
-              </button>
-            } @else {
-              <button type="button" (click)="confirm()" [disabled]="working()"
-                class="flex-1 rounded-lg bg-rose-500 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-600 disabled:opacity-60">
-                {{ working() ? 'Cerrando...' : 'Cerrar mi cuenta' }}
-              </button>
-            }
+        } @else {
+          <h2 id="close-account-title" class="mt-5 text-xl font-bold text-slate-900">Escribe el código</h2>
+          <p class="mt-2 text-sm leading-6 text-slate-500">{{ info() }}</p>
+          <div class="mt-5">
+            <span id="close-code-label" class="sr-only">Código de 6 dígitos</span>
+            <div class="grid grid-cols-6 gap-2.5" role="group" aria-labelledby="close-code-label">
+              @for (i of casillas; track i) {
+                <input #casilla type="text" inputmode="numeric" maxlength="6" [attr.autocomplete]="i === 0 ? 'one-time-code' : 'off'"
+                  [attr.aria-label]="'Dígito ' + (i + 1) + ' de 6'" [value]="digitos()[i]"
+                  (input)="alEscribir(i, $event)" (keydown)="alPresionar(i, $event)" (paste)="alPegar(i, $event)"
+                  (focus)="$any($event.target).select()"
+                  class="h-14 w-full rounded-xl border border-slate-300 text-center text-xl font-semibold text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" />
+              }
+            </div>
           </div>
+          <button type="button" (click)="sendCode()" [disabled]="working() || cooldown() > 0"
+            class="mt-3 text-xs font-semibold text-blue-600 hover:underline disabled:cursor-not-allowed disabled:no-underline disabled:opacity-50">
+            {{ cooldown() > 0 ? 'Reenviar código en ' + esperaLegible(cooldown()) : 'Reenviar código' }}
+          </button>
+          <p class="mt-5 rounded-xl bg-slate-50 p-3 text-xs leading-5 text-slate-600">
+            Al cerrar tu cuenta dejas de acceder a esta clínica. Podrás reactivarla durante 30 días con el enlace que te enviaremos por correo.
+          </p>
+        }
+
+        @if (error()) {
+          <p class="mt-4 rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs font-medium text-rose-700">{{ error() }}</p>
+        }
+
+        <div class="mt-6 space-y-2">
+          @if (step() === 'request') {
+            <button type="button" (click)="sendCode()" [disabled]="working() || cooldown() > 0"
+              class="flex h-12 w-full items-center justify-center rounded-xl bg-[var(--brand-primary)] text-sm font-bold text-white transition hover:opacity-90 active:scale-[0.99] disabled:opacity-60">
+              {{ working() ? 'Enviando...' : cooldown() > 0 ? 'Espera ' + esperaLegible(cooldown()) : 'Enviarme el código' }}
+            </button>
+          } @else {
+            <button type="button" (click)="confirm()" [disabled]="working()"
+              class="flex h-12 w-full items-center justify-center rounded-xl bg-rose-500 text-sm font-bold text-white transition hover:bg-rose-600 active:scale-[0.99] disabled:opacity-60">
+              {{ working() ? 'Cerrando...' : 'Cerrar mi cuenta' }}
+            </button>
+          }
+          <button type="button" (click)="cancel()" [disabled]="working()"
+            class="flex h-11 w-full items-center justify-center rounded-xl text-sm font-semibold text-slate-500 transition hover:bg-slate-50 disabled:opacity-50">
+            Cancelar
+          </button>
         </div>
       </div>
     </div>

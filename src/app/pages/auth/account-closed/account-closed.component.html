@@ -1,0 +1,31 @@
+<div class="flex min-h-screen items-center justify-center bg-white px-6 py-10" style="font-family: 'Barlow', sans-serif;">
+  <main class="w-full max-w-md text-center">
+    <div class="mb-6 flex items-center justify-center">
+      @if (logoUrl) {
+        <img [src]="logoUrl" [alt]="companyName" class="h-20 w-auto max-w-[16rem] object-contain" />
+      } @else {
+        <p class="text-sm font-semibold text-slate-500">{{ companyName }}</p>
+      }
+    </div>
+
+    <h1 class="text-2xl font-extrabold tracking-tight text-slate-950">Tu cuenta fue cerrada</h1>
+    <p class="mt-2 text-base font-medium text-slate-500">
+      Cerraste tu cuenta en {{ companyName }}. Ya no puedes acceder con ella.
+    </p>
+
+    <section class="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-5 text-left">
+      <h2 class="text-sm font-bold text-slate-800">Puedes reactivarla durante 30 días</h2>
+      <p class="mt-2 text-sm leading-6 text-slate-600">
+        Te enviamos un correo con el enlace para reactivarla. Si no lo ves, revisa la carpeta de spam.
+      </p>
+      <p class="mt-3 text-xs leading-5 text-slate-500">
+        La clínica conserva sus registros (citas, historias y pagos). Si pasan más de 30 días, la clínica tendrá que registrarte de nuevo.
+      </p>
+    </section>
+
+    <a routerLink="/login" [style.background]="colorPrimario"
+      class="mt-7 flex h-12 w-full items-center justify-center rounded-lg text-sm font-bold text-white transition active:scale-[0.99]">
+      Ir al inicio de sesión
+    </a>
+  </main>
+</div>

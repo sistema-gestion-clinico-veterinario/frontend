@@ -20,6 +20,10 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/legal/aviso-publico/aviso-publico.component').then((m) => m.AvisoPublicoComponent)
   },
   {
+    path: 'cuenta-cerrada',
+    loadComponent: () => import('./pages/auth/account-closed/account-closed.component').then((m) => m.AccountClosedComponent)
+  },
+  {
     path: 'reactivate-account',
     loadComponent: () => import('./pages/auth/reactivate-account/reactivate-account.component').then((m) => m.ReactivateAccountComponent)
   },
