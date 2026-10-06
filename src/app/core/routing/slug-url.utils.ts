@@ -7,7 +7,7 @@ const KNOWN_FIRST_SEGMENTS = new Set([
   'dashboard', 'reportes', 'company', 'auditoria', 'roles', 'ventanas', 'complementario',
   'empleados', 'clientes', 'mascotas', 'empleado', 'recetas', 'historias-clinicas', 'citas',
   'mi-horario', 'profile', 'password-change', 'legal', 'apoderado', 'mi-historial', 'pagos',
-  'caja', 'laboratorio', 'tesis', 'privacidad', 'aviso-clinica'
+  'caja', 'laboratorio', 'tesis', 'privacidad', 'aviso-clinica', 'cuenta-cerrada'
 ]);
 const COMPANY_SLUG_PATTERN = /^[a-z0-9][a-z0-9-]{0,99}$/;
 

@@ -43,11 +43,11 @@ export class SessionService {
     });
   }
 
-  closeLocalSession(notice?: string): void {
+  closeLocalSession(notice?: string, destino = '/login'): void {
     const slug = this.authStore.companySlug();
     this.authStore.logout();
     this.authChannel?.postMessage({ type: 'logout', slug });
-    this.router.navigateByUrl(notice ? `/login?authNotice=${notice}` : '/login', { replaceUrl: true });
+    this.router.navigateByUrl(notice ? `${destino}?authNotice=${notice}` : destino, { replaceUrl: true });
   }
 
   changeRole(roleId: number): Observable<AuthLoginData> {

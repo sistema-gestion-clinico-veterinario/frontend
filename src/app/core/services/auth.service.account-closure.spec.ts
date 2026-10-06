@@ -26,9 +26,10 @@ describe('AuthService - cierre de cuenta', () => {
   });
 
   it('pide el código enviando la contraseña, o null si la persona no tiene una', () => {
-    service.requestAccountClosure('Clave-123').subscribe();
+    const ingresado = Math.random().toString(36).slice(2) + 'Aa1';
+    service.requestAccountClosure(ingresado).subscribe();
     const conClave = http.expectOne(`${base}/account/closure/request`);
-    expect(conClave.request.body).toEqual({ password: 'Clave-123' });
+    expect(conClave.request.body).toEqual({ password: ingresado });
     conClave.flush({ success: true, message: 'ok', data: null });
 
     service.requestAccountClosure(null).subscribe();
