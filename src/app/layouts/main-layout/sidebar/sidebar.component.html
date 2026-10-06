@@ -124,6 +124,8 @@
     </div>
   </nav>
 
+  <app-pendientes-privacidad-card [collapsed]="collapsed()" (navigate)="navigate.emit()" />
+
   <div class="flex shrink-0 justify-center border-t border-slate-200 p-3">
     <button
       type="button"

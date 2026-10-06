@@ -50,7 +50,44 @@
               <p class="text-xs text-slate-400">El asistente necesita al menos una consulta para generar un análisis.</p>
             </div>
           }
-          @if (todasConsultas.length) {
+          @if (todasConsultas.length && !autorizacion()?.autorizada) {
+            @if (verificandoAutorizacion()) {
+              <div class="flex flex-col items-center justify-center py-12 gap-3 text-center">
+                <div class="relative w-10 h-10">
+                  <div class="absolute inset-0 rounded-full border-4 border-slate-100"></div>
+                  <div class="absolute inset-0 rounded-full border-4 border-t-blue-500 animate-spin"></div>
+                </div>
+                <p class="text-xs text-slate-400">Verificando la autorización del titular…</p>
+              </div>
+            } @else if (errorAutorizacion()) {
+              <div class="bg-red-50 border border-red-100 rounded-xl p-4 text-center">
+                <i class="pi pi-exclamation-triangle text-xl text-red-400 block mb-2"></i>
+                <p class="text-xs font-bold text-red-600 mb-3">No se pudo verificar la autorización del titular.</p>
+                <button (click)="verificarAutorizacion()"
+                  class="px-4 py-2 rounded-lg bg-red-600 text-white text-xs font-extrabold hover:bg-red-700 transition-colors">
+                  Reintentar
+                </button>
+              </div>
+            } @else if (autorizacion()) {
+              <div class="bg-amber-50 border border-amber-200 rounded-xl p-5">
+                <div class="flex items-start gap-3">
+                  <i class="pi pi-lock text-lg text-amber-600 mt-0.5"></i>
+                  <div>
+                    <p class="text-sm font-extrabold text-amber-900 mb-1">La IA no se puede usar con los datos de {{ hc.mascotaNombre }}</p>
+                    <p class="text-xs leading-5 text-amber-800">
+                      {{ autorizacion()!.titular }}, titular de la mascota, no ha autorizado el uso de inteligencia artificial
+                      con sus datos clínicos. Es una autorización opcional y aparte de los términos de la clínica.
+                    </p>
+                    <p class="mt-2 text-xs leading-5 text-amber-800">
+                      Para continuar, el titular puede autorizarla desde su perfil en el portal, o se registra en su ficha de cliente,
+                      en «Privacidad y comunicaciones», cuando él lo decida.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            }
+          }
+          @if (todasConsultas.length && autorizacion()?.autorizada) {
             <!-- Resumen de datos que se analizarán -->
             <div class="bg-slate-50 rounded-xl p-4">
               <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-3">
