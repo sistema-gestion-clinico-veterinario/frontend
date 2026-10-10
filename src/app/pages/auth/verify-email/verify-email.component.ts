@@ -9,7 +9,7 @@ import { lowercaseEmailValidator } from '../../../core/validators/lowercase-emai
 import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
 import { strongPasswordValidators } from '../../../core/validators/password-policy.validator';
 import { SOFTVET_BRAND_COLOR, SOFTVET_LOGO_URL, SOFTVET_NAME } from '../../../core/constants/branding.constants';
-import { AvisoPublico, PrivacidadService } from '../../../core/services/privacidad.service';
+import { AudienciaAvisoPrivacidad, AvisoPublico, PrivacidadService } from '../../../core/services/privacidad.service';
 
 const DEFAULT_BRAND_COLOR = SOFTVET_BRAND_COLOR;
 const DEFAULT_LOGO_URL = SOFTVET_LOGO_URL;
@@ -42,6 +42,9 @@ export class VerifyEmailComponent implements OnInit {
   /** La empresa la resuelve la URL (slug), igual que login/forgot-password - el enlace
    * de verificación ya lo incluye (ver UsuarioServiceImpl.sendVerificationEmail). */
   slug: string | null = this.slugContext.slug();
+  audiencia: AudienciaAvisoPrivacidad = this.route.snapshot.queryParamMap?.get('audiencia') === 'TRABAJADORES_Y_USUARIOS'
+    ? 'TRABAJADORES_Y_USUARIOS'
+    : 'PROPIETARIOS_Y_AUTORIZADOS';
   companyName = DEFAULT_COMPANY_NAME;
   logoUrl: string | null = null;
   colorPrimario = DEFAULT_BRAND_COLOR;
@@ -73,12 +76,8 @@ export class VerifyEmailComponent implements OnInit {
           this.logoUrl = DEFAULT_LOGO_URL;
         }
       });
-      this.privacidadService.avisoPublico(this.slug).subscribe({
-        next: ({ data }) => {
-          this.avisoPrivacidad.set(data);
-          this.passwordForm.controls.avisoLeido.setValidators([Validators.requiredTrue]);
-          this.passwordForm.controls.avisoLeido.updateValueAndValidity({ emitEvent: false });
-        },
+      this.privacidadService.avisoPublico(this.slug, this.audiencia).subscribe({
+        next: ({ data }) => this.avisoPrivacidad.set(data),
         error: () => this.avisoPrivacidad.set(null)
       });
     } else {

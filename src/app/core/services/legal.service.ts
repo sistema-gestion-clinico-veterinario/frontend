@@ -19,6 +19,7 @@ export interface LegalAcceptanceDTO {
   /** false en las aceptaciones anteriores al registro del texto exacto: no se puede demostrar qué texto se leyó. */
   textoRecuperable: boolean;
   fechaAceptacion: string;
+  tipoConstancia?: 'ACEPTACION' | 'CONSTANCIA_LECTURA';
 }
 
 export interface LegalStatusDTO {

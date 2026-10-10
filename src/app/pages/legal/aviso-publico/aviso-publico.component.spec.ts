@@ -28,7 +28,8 @@ describe('AvisoPublicoComponent', () => {
     crear('clinica-patitas');
     privacidad.avisoPublico.and.returnValue(of({
       success: true, message: '', data: {
-        clinica: 'Clínica Patitas', logoUrl: null, colorPrimario: null, version: 2,
+        clinica: 'Clínica Patitas', logoUrl: null, colorPrimario: null,
+        audiencia: 'PROPIETARIOS_Y_AUTORIZADOS', version: 2,
         vigenteDesde: '2026-10-05T10:00:00', contenido: 'AVISO DE PRIVACIDAD\n1. Quién trata sus datos'
       }
     } as any));

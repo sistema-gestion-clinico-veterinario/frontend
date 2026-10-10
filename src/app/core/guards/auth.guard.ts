@@ -6,7 +6,7 @@ import { map, of, switchMap } from 'rxjs';
 import { AvisoClinicaGate } from '../services/aviso-clinica-gate.service';
 import { SessionService } from '../services/session.service';
 import { CompanySlugContext } from '../services/company-slug-context.service';
-import { companySlugFromUrl } from '../routing/slug-url.utils';
+import { companySlugFromUrl, firstSegmentOf, pathnameOf } from '../routing/slug-url.utils';
 
 export const AuthGuard: CanActivateFn = (route, state) => {
   const authStore = inject(AuthStore);
@@ -38,10 +38,14 @@ export const AuthGuard: CanActivateFn = (route, state) => {
   );
 };
 
-const RUTAS_SIN_AVISO = ['/aviso-clinica', '/legal/accept', '/password-change'];
+const RUTAS_SIN_AVISO = ['/aviso-clinica', '/password-change'];
 
 function estaExentaDelAviso(url: string | undefined): boolean {
-  const ruta = (url ?? '').split('?')[0].split('#')[0];
+  const completa = pathnameOf(url ?? '');
+  // Al abrir una dirección directa la URL trae el identificador de la clínica al inicio: se compara sin él.
+  const ruta = companySlugFromUrl(completa) && firstSegmentOf(completa)
+    ? '/' + completa.split('/').filter(Boolean).slice(1).join('/')
+    : completa;
   return RUTAS_SIN_AVISO.some((exenta) => ruta === exenta || ruta.startsWith(exenta + '/'));
 }
 
@@ -54,10 +58,6 @@ function validateAccess(route: ActivatedRouteSnapshot, authStore: any, router: R
     // real que Angular Router conozca).
     authStore.logout();
     return router.createUrlTree(['/login']);
-  }
-
-  if (route.data?.['thesisTool']) {
-    return true;
   }
 
   // Dynamic route pattern access check

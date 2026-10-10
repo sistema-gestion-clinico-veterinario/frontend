@@ -3,14 +3,14 @@
     <div class="flex shrink-0 justify-center border-t border-slate-200 p-3">
       <a [routerLink]="pendientes()[0].ruta" [fragment]="pendientes()[0].fragmento" (click)="navigate.emit()"
         [title]="'Privacidad de tus datos: ' + pendientes().length + (pendientes().length === 1 ? ' pendiente' : ' pendientes')"
-        class="relative flex h-10 w-10 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-500 transition-colors hover:bg-slate-50 hover:text-slate-700">
+        class="relative flex h-10 w-10 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-700">
         <i class="pi pi-lock text-[14px]"></i>
         <span class="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--brand-primary)] px-1 text-[9px] font-bold text-white">{{ pendientes().length }}</span>
       </a>
     </div>
   } @else {
     <section class="shrink-0 border-t border-slate-200 p-3" aria-label="Privacidad de tus datos">
-      <div class="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+      <div class="rounded-xl border border-slate-200 bg-white p-3">
         <div class="flex items-center justify-between gap-2">
           <p class="flex items-center gap-2 text-xs font-semibold text-slate-700">
             <i class="pi pi-lock text-slate-400"></i> Privacidad de tus datos

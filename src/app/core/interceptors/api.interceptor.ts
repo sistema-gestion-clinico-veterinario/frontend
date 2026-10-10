@@ -1,4 +1,4 @@
-import { HttpContextToken, HttpErrorResponse, HttpEvent, HttpHandlerFn, HttpRequest, HttpInterceptorFn } from '@angular/common/http';
+import { HttpErrorResponse, HttpEvent, HttpHandlerFn, HttpRequest, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject, catchError, filter, finalize, Observable, switchMap, take, throwError, timeout } from 'rxjs';
@@ -6,16 +6,18 @@ import { AuthStore } from '../../store/auth.store';
 import { LoadingStore } from '../../store/loading.store';
 import { AuthService } from '../services/auth.service';
 import { CompanySlugContext } from '../services/company-slug-context.service';
-import { ThesisPerformanceSessionService } from '../services/thesis-performance-session.service';
 import { environment } from '../../../environments/environment';
 import { companySlugFromUrl } from '../routing/slug-url.utils';
+import { SKIP_GLOBAL_LOADING } from './http-context.tokens';
+
+// Se conserva la exportación para los servicios existentes; las dependencias
+// nuevas deben importar el token desde http-context.tokens.
+export { SKIP_GLOBAL_LOADING } from './http-context.tokens';
 
 let isRefreshing = false;
 let refreshTokenSubject: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
 const DEFAULT_REQUEST_TIMEOUT_MS = 30000;
 const UPLOAD_REQUEST_TIMEOUT_MS = 120000;
-export const SKIP_GLOBAL_LOADING = new HttpContextToken<boolean>(() => false);
-
 const AUTH_ENDPOINTS_WITHOUT_REFRESH = [
   '/auth/login',
   '/auth/admin-login',
@@ -40,17 +42,16 @@ export const apiInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, nex
   const authService = inject(AuthService);
   const slugContext = inject(CompanySlugContext);
   const router = inject(Router);
-  const thesisPerformanceSession = inject(ThesisPerformanceSessionService);
   const skipGlobalLoading = req.context.get(SKIP_GLOBAL_LOADING);
 
   if (!skipGlobalLoading) {
     loadingStore.show();
   }
 
-  const measurementHeaders = req.url.startsWith(environment.apiUrl)
-    ? thesisPerformanceSession.requestHeaders()
-    : null;
-  const companyId = authStore.companyId();
+  // La sesión de una clínica trae su empresa desde el backend. En una sesión
+  // global, la empresa seleccionada en la barra superior define el contexto
+  // operativo de esta petición; el backend vuelve a validarlo.
+  const companyId = authStore.companyId() ?? authStore.selectedEnterprise()?.establishmentId ?? null;
   const declaresCompany = companyId != null && req.url.startsWith(environment.apiUrl) && !shouldSkipRefresh(req.url);
   // La URL visible es la fuente de verdad del tenant de esta pestaña. Si el
   // estado en memoria perteneciera a otra clínica, enviar su slug ocultaría el
@@ -61,7 +62,6 @@ export const apiInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, nex
   const slug = urlSlug ?? slugContext.slug() ?? authStore.companySlug();
   const declaresSlug = !!slug && req.url.startsWith(environment.apiUrl);
   const headers = {
-    ...(measurementHeaders ?? {}),
     ...(declaresCompany ? { 'X-Company-Id': String(companyId) } : {}),
     ...(declaresSlug ? { 'X-Company-Slug': slug as string } : {})
   };
@@ -85,6 +85,11 @@ export const apiInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, nex
           && error.error?.code === 'SESSION_COMPANY_MISMATCH') {
         endForOtherCompanySession(authStore, router);
         return throwError(() => error);
+      }
+      if (error instanceof HttpErrorResponse && error.status === 428
+          && error.error?.code === 'PRIVACY_NOTICE_REQUIRED'
+          && !router.url.includes('/aviso-clinica')) {
+        router.navigateByUrl('/aviso-clinica');
       }
       if (error instanceof HttpErrorResponse && error.status === 403
           && error.error?.code === 'TERMS_NOT_ACCEPTED'

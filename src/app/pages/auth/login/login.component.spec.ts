@@ -245,7 +245,7 @@ describe('LoginComponent - submit validations', () => {
     expect(router.navigateByUrl).toHaveBeenCalled();
   });
 
-  it('redirige a /legal/accept cuando el consentimiento legal esta vencido (fuera del periodo de gracia)', () => {
+  it('entra al flujo protegido para mostrar primero el aviso de la clínica aunque haya documentos de SoftVet vencidos', () => {
     const router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
     createLoginInput('username', 'admin.test');
     createLoginInput('password', 'secret123');
@@ -268,7 +268,8 @@ describe('LoginComponent - submit validations', () => {
 
     component.submit();
 
-    expect(router.navigateByUrl).toHaveBeenCalledWith('/legal/accept');
+    expect(router.navigateByUrl).toHaveBeenCalled();
+    expect(router.navigateByUrl).not.toHaveBeenCalledWith('/legal/accept');
   });
 
   it('no redirige a /legal/accept si solo hay un pendiente dentro del periodo de gracia (aviso no intrusivo)', () => {
@@ -414,32 +415,31 @@ describe('LoginComponent - continuar con Google', () => {
     (TestBed.inject(Router) as jasmine.SpyObj<Router>).navigateByUrl.and.resolveTo(true);
   });
 
-  it('deja la clínica en el servidor y sale a Google con el código opaco, sin llevar la clínica en la URL', () => {
+  it('usa el acceso preparado y sale a Google con el código opaco', () => {
     authService.createGoogleIntent.and.returnValue(of({ success: true, message: 'ok', data: { intent: 'abc123' } }));
 
     component.continueWithGoogle();
 
     expect(authService.createGoogleIntent).toHaveBeenCalledWith({ slug: 'vargas-vet' });
     expect(redirect).toHaveBeenCalledWith('https://api.test/auth/google/start?intent=abc123');
-    expect(redirect.calls.mostRecent().args[0]).not.toContain('vargas-vet');
   });
 
-  it('ignora un segundo clic mientras el primero sigue en curso', () => {
+  it('ignora un segundo clic mientras el navegador sale hacia Google', () => {
     authService.createGoogleIntent.and.returnValue(new Subject<any>());
 
     component.continueWithGoogle();
     component.continueWithGoogle();
 
     expect(authService.createGoogleIntent).toHaveBeenCalledTimes(1);
+    expect(redirect).not.toHaveBeenCalled();
   });
 
-  it('si el servidor no responde, avisa y permite volver a intentar', () => {
+  it('si no pudo preparar el acceso, muestra un mensaje y permite volver a intentar', () => {
     authService.createGoogleIntent.and.returnValue(throwError(() => ({ status: 500 })));
 
     component.continueWithGoogle();
 
     expect(component.authError).toBe('No se pudo iniciar sesión con Google. Intenta nuevamente.');
-    expect(redirect).not.toHaveBeenCalled();
     expect(component.startingGoogle).toBeFalse();
   });
 

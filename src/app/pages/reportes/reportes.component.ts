@@ -70,7 +70,7 @@ export default class ReportesComponent {
    * el backend ignore lo que elija aquí — el filtro "Todos"/otros nombres es engañoso si se
    * muestra de todas formas, así que se oculta y se fija a su propio empleado. */
   readonly canViewAllCitas = computed(() =>
-    this.authStore.dataScope('VISTA_CITAS_AGENDA') === 'COMPANY'
+    this.authStore.dataScope('VISTA_REPORTES') === 'COMPANY'
   );
   readonly userName = this.authStore.nombreCompleto() ?? '';
 

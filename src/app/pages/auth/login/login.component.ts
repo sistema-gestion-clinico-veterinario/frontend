@@ -3,9 +3,9 @@ import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { Observable, catchError, debounceTime, distinctUntilChanged, finalize, from, of, switchMap, timeout } from 'rxjs';
+import { Observable, catchError, debounceTime, distinctUntilChanged, finalize, from, map, of, shareReplay, switchMap, tap, timeout } from 'rxjs';
 import { AuthLoginResponse } from '../../../models/response/auth-login-response.model';
-import { AuthService } from '../../../core/services/auth.service';
+import { AuthService, GOOGLE_PENDING_SLUG_KEY } from '../../../core/services/auth.service';
 import { CompanyService, CompanySearchResult } from '../../../core/services/company.service';
 import { CompanySlugContext } from '../../../core/services/company-slug-context.service';
 import { AuthStore } from '../../../store/auth.store';
@@ -55,6 +55,9 @@ export class LoginComponent implements OnInit {
   colorPrimario = DEFAULT_BRAND_COLOR;
 
   startingGoogle = false;
+  private googleIntent: string | null = null;
+  private googleIntentExpiresAt = 0;
+  private googleIntentRequest$: Observable<string> | null = null;
   authNotice = '';
   noticeTitle = '';
   showNotice = false;
@@ -96,6 +99,7 @@ export class LoginComponent implements OnInit {
 
     if (this.slug) {
       this.loadBranding(this.slug);
+      this.prepareGoogleLogin();
     } else {
       // Sin slug (login global o SuperAdmin): no hay empresa que marcar, usa
       // el logo/color por defecto del sistema de una vez.
@@ -275,9 +279,11 @@ export class LoginComponent implements OnInit {
         this.ticketDeReactivacion = null;
         this.credencialesPendientes = null;
         sessionStorage.removeItem('pw_modal_dismissed');
-        const targetUrl = data.legalAcceptanceOverdue
-          ? '/legal/accept'
-          : resolveInitialRoute(data.menu ?? [], data.activeRolePurpose);
+        // La guarda de acceso mostrará primero el aviso vigente de la clínica.
+        // Los documentos de la plataforma permanecen en la campana de notificaciones
+        // y, si su plazo realmente venció, el backend puede restringir las operaciones
+        // protegidas mediante TERMS_NOT_ACCEPTED.
+        const targetUrl = resolveInitialRoute(data.menu ?? [], data.activeRolePurpose);
         return from(this.navigateWithFallback(targetUrl, data.activeRolePurpose));
       }),
       finalize(() => {
@@ -321,22 +327,52 @@ export class LoginComponent implements OnInit {
     return ticket;
   }
 
-  /** La clínica (si hay) se deja en el servidor antes de salir a Google, para que el retorno
-   * sepa contra qué empresa resolver la cuenta sin llevarla en la URL. */
+  /** El intent se prepara silenciosamente al cargar la página. En el uso normal este clic
+   * navega inmediatamente a Google; si la preparación aún no terminó, comparte esa misma
+   * solicitud sin mostrar el preloader global ni una pantalla intermedia. */
   continueWithGoogle(): void {
-    if (this.startingGoogle) return;
+    if (this.startingGoogle || !this.slug) return;
+    this.authError = null;
     this.startingGoogle = true;
-    this.authService.createGoogleIntent({ slug: this.slug }).subscribe({
-      next: ({ data }) => this.redirectTo(this.authService.googleStartUrl(data.intent)),
+    sessionStorage.setItem(GOOGLE_PENDING_SLUG_KEY, this.slug);
+    this.googleIntentFor(this.slug).subscribe({
+      next: (intent) => this.redirectTo(this.authService.googleStartUrl(intent)),
       error: () => {
         this.startingGoogle = false;
+        sessionStorage.removeItem(GOOGLE_PENDING_SLUG_KEY);
         this.authError = LoginComponent.GOOGLE_ERROR_MESSAGES['google_fallo'];
-      },
+      }
     });
   }
 
+  private prepareGoogleLogin(): void {
+    if (!this.slug || this.isAdminRoute) return;
+    this.googleIntentFor(this.slug).subscribe({ error: () => {} });
+  }
+
+  private googleIntentFor(slug: string): Observable<string> {
+    if (this.googleIntent && Date.now() < this.googleIntentExpiresAt) {
+      return of(this.googleIntent);
+    }
+    if (this.googleIntentRequest$) return this.googleIntentRequest$;
+
+    this.googleIntentRequest$ = this.authService.createGoogleIntent({ slug }).pipe(
+      map(({ data }) => data.intent),
+      tap((intent) => {
+        this.googleIntent = intent;
+        // El backend permite cinco minutos. Se renueva un minuto antes para no
+        // enviar a Google un código que pueda vencer durante la elección de cuenta.
+        this.googleIntentExpiresAt = Date.now() + 4 * 60_000;
+      }),
+      finalize(() => { this.googleIntentRequest$ = null; }),
+      shareReplay({ bufferSize: 1, refCount: false })
+    );
+    return this.googleIntentRequest$;
+  }
+
   redirectTo(url: string): void {
-    window.location.href = url;
+    // replace evita que "Atrás" vuelva a un login intermedio.
+    window.location.replace(url);
   }
 
   closeNotice(): void {
