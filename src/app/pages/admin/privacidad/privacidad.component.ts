@@ -4,7 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
-import { AvisoVersion, CamposAvisoPrivacidad, PrivacidadService } from '../../../core/services/privacidad.service';
+import { AudienciaAvisoPrivacidad, AvisoVersion, CamposAvisoPrivacidad, PrivacidadService, VistaPreviaAviso } from '../../../core/services/privacidad.service';
 import { AuthStore } from '../../../store/auth.store';
 
 @Component({
@@ -20,12 +20,22 @@ export class PrivacidadComponent implements OnInit {
   private readonly messages = inject(MessageService);
   private readonly authStore = inject(AuthStore);
 
-  readonly puedePublicar = computed(() => this.authStore.hasAccess('VISTA_COMPANY', 'modificar'));
+  /** El aviso lo redacta y publica solo el administrador de la clínica. */
+  readonly puedePublicar = computed(() => this.authStore.activeRolePurpose() === 'COMPANY_ADMIN');
 
   cargando = signal(true);
   publicando = signal(false);
+  vistaPrevia = signal<VistaPreviaAviso | null>(null);
+  modoVistaPrevia = signal<'ver' | 'publicar'>('ver');
+  cargandoVistaPrevia = signal(false);
   historial = signal<AvisoVersion[]>([]);
   vigente = signal<AvisoVersion | null>(null);
+  audiencia = signal<AudienciaAvisoPrivacidad>('PROPIETARIOS_Y_AUTORIZADOS');
+  readonly audienciaPropietarios: AudienciaAvisoPrivacidad = 'PROPIETARIOS_Y_AUTORIZADOS';
+  readonly audienciaTrabajadores: AudienciaAvisoPrivacidad = 'TRABAJADORES_Y_USUARIOS';
+  readonly nombreAudiencia = computed(() => this.audiencia() === this.audienciaPropietarios
+    ? 'propietarios y personas autorizadas'
+    : 'trabajadores y usuarios internos');
 
   form = this.fb.nonNullable.group({
     razonSocial: ['', [Validators.required, Validators.maxLength(150)]],
@@ -46,16 +56,33 @@ export class PrivacidadComponent implements OnInit {
   ngOnInit(): void {
     if (!this.puedePublicar()) {
       this.form.disable({ emitEvent: false });
+      this.cargarHistorial();
+      return;
     }
     this.cargar();
   }
 
+  private cargarHistorial(): void {
+    this.cargando.set(true);
+    this.service.historial(this.audiencia()).subscribe({
+      next: ({ data: versiones }) => {
+        this.historial.set(versiones ?? []);
+        this.vigente.set((versiones ?? []).find(v => v.activo) ?? null);
+        this.cargando.set(false);
+      },
+      error: (error) => {
+        this.cargando.set(false);
+        this.error(error, 'No se pudo cargar el historial del aviso.');
+      }
+    });
+  }
+
   cargar(): void {
     this.cargando.set(true);
-    this.service.plantilla().subscribe({
+    this.service.plantilla(this.audiencia()).subscribe({
       next: ({ data }) => {
         this.aplicar(data);
-        this.service.historial().subscribe({
+        this.service.historial(this.audiencia()).subscribe({
           next: ({ data: versiones }) => {
             this.historial.set(versiones ?? []);
             this.vigente.set((versiones ?? []).find(v => v.activo) ?? null);
@@ -71,9 +98,25 @@ export class PrivacidadComponent implements OnInit {
     });
   }
 
-  publicar(): void {
+  seleccionarAudiencia(audiencia: AudienciaAvisoPrivacidad): void {
+    if (this.audiencia() === audiencia || this.publicando() || this.cargandoVistaPrevia()) return;
+    this.cerrarVistaPrevia();
+    this.audiencia.set(audiencia);
+    this.historial.set([]);
+    this.vigente.set(null);
+    this.form.controls.confirmoRevisionLegal.setValue(false);
+    if (this.puedePublicar()) this.cargar();
+    else this.cargarHistorial();
+  }
+
+  verVistaPrevia(): void {
+    this.abrirVistaPrevia('ver');
+  }
+
+  /** Publicar pasa siempre por la vista previa: se confirma el texto exacto antes de que quede vigente. */
+  solicitarPublicacion(): void {
     if (!this.puedePublicar()) {
-      this.messages.add({ severity: 'warn', summary: 'Acción no permitida', detail: 'Tu rol puede consultar el aviso, pero no publicar una nueva versión.' });
+      this.messages.add({ severity: 'warn', summary: 'Acción no permitida', detail: 'Solo el administrador de la clínica puede publicar el aviso de privacidad.' });
       return;
     }
     if (this.form.invalid) {
@@ -81,8 +124,39 @@ export class PrivacidadComponent implements OnInit {
       this.messages.add({ severity: 'warn', summary: 'Revisa el aviso', detail: 'Completa los campos y confirma la revisión legal.' });
       return;
     }
+    this.abrirVistaPrevia('publicar');
+  }
+
+  cerrarVistaPrevia(): void {
+    if (this.publicando()) return;
+    this.vistaPrevia.set(null);
+  }
+
+  confirmarPublicacion(): void {
+    const previa = this.vistaPrevia();
+    if (!previa || previa.observaciones.length > 0 || previa.sinCambios) return;
+    this.publicar();
+  }
+
+  private abrirVistaPrevia(modo: 'ver' | 'publicar'): void {
+    if (!this.puedePublicar() || this.cargandoVistaPrevia()) return;
+    this.cargandoVistaPrevia.set(true);
+    this.service.vistaPrevia(this.armarCampos(), this.audiencia()).subscribe({
+      next: ({ data }) => {
+        this.modoVistaPrevia.set(modo);
+        this.vistaPrevia.set(data);
+        this.cargandoVistaPrevia.set(false);
+      },
+      error: (error) => {
+        this.cargandoVistaPrevia.set(false);
+        this.error(error, 'No se pudo generar la vista previa.');
+      }
+    });
+  }
+
+  private armarCampos(): CamposAvisoPrivacidad {
     const raw = this.form.getRawValue();
-    const campos: CamposAvisoPrivacidad = {
+    return {
       razonSocial: raw.razonSocial.trim(),
       ruc: raw.ruc.trim(),
       domicilio: raw.domicilio.trim(),
@@ -96,9 +170,15 @@ export class PrivacidadComponent implements OnInit {
       transferencias: raw.transferencias.trim(),
       plazoConservacion: raw.plazoConservacion.trim()
     };
+  }
+
+  private publicar(): void {
+    const campos = this.armarCampos();
+    const confirmo = this.form.getRawValue().confirmoRevisionLegal;
     this.publicando.set(true);
-    this.service.publicar(campos, raw.confirmoRevisionLegal).subscribe({
+    this.service.publicar(campos, confirmo, this.audiencia()).subscribe({
       next: ({ data }) => {
+        this.vistaPrevia.set(null);
         this.vigente.set(data);
         this.form.controls.confirmoRevisionLegal.setValue(false);
         this.messages.add({ severity: 'success', summary: 'Aviso publicado', detail: `La versión ${data.version} ya está vigente.` });

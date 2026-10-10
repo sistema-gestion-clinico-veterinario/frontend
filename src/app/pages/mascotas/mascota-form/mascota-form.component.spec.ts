@@ -122,7 +122,9 @@ describe('MascotaFormComponent - crearCliente validations', () => {
   });
 
   describe('privacidad al registrar al propietario', () => {
-    const aviso = { clinica: 'Clínica Patitas', logoUrl: null, colorPrimario: null, version: 3, vigenteDesde: '2026-10-05T10:00:00', contenido: 'AVISO' };
+    const aviso = { clinica: 'Clínica Patitas', logoUrl: null, colorPrimario: null,
+      audiencia: 'PROPIETARIOS_Y_AUTORIZADOS' as const, version: 3,
+      vigenteDesde: '2026-10-05T10:00:00', contenido: 'AVISO' };
     let registrarSpy: jasmine.Spy;
 
     beforeEach(() => {
@@ -131,7 +133,7 @@ describe('MascotaFormComponent - crearCliente validations', () => {
       component.ncNumDoc.set('12345678');
       component.avisoPrivacidad.set(aviso);
       component.ncAvisoInformado.set(true);
-      component.ncConsentimientoRecordatorios.set(false);
+      component.ncConsentimientoRecordatorios.set(true);
     });
 
     it('con datos válidos y la privacidad resuelta no muestra aviso de validación y llama al servicio', () => {
@@ -141,11 +143,11 @@ describe('MascotaFormComponent - crearCliente validations', () => {
       expect(registrarSpy).toHaveBeenCalled();
     });
 
-    it('envía la constancia de que se informó y que pidió no recibir recordatorios cuando así se marcó', () => {
+    it('envía la autorización expresa para recibir recordatorios cuando se marcó', () => {
       component.crearCliente();
 
       expect(registrarSpy).toHaveBeenCalledWith(jasmine.objectContaining({
-        avisoInformado: true, consentimientoRecordatorios: false
+        avisoInformado: true, consentimientoRecordatorios: true
       }));
     });
 
@@ -169,7 +171,7 @@ describe('MascotaFormComponent - crearCliente validations', () => {
       expect(addSpy).toHaveBeenCalledWith(jasmine.objectContaining({ summary: 'Privacidad pendiente' }));
     });
 
-    it('los recordatorios son parte del servicio: sin marcar nada se registra y se envía sin decisión', () => {
+    it('sin marcar la autorización se registra sin consentimiento para recordatorios', () => {
       component.ncConsentimientoRecordatorios.set(null);
 
       component.crearCliente();

@@ -58,10 +58,10 @@ export class PendientesPrivacidadService {
     if (this.authStore.needsLegalAcceptance()) {
       lista.push({
         id: 'terminos',
-        titulo: 'Términos y política de la plataforma',
+        titulo: 'Documentos de SoftVet actualizados',
         detalle: this.authStore.legalAcceptanceOverdue()
-          ? 'El plazo para aceptar la actualización ha vencido. Revísala y acéptala para continuar.'
-          : 'Se actualizaron estos documentos. Revísalos y acéptalos.',
+          ? 'El plazo para revisar los términos y la política de privacidad venció. Revisa las acciones pendientes.'
+          : 'SoftVet actualizó sus términos de uso o su política de privacidad. Revísalos desde esta notificación.',
         ruta: '/legal/accept',
         opcional: false
       });

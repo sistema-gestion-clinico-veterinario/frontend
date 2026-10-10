@@ -293,12 +293,12 @@
                 </div>
                 <div class="flex w-full gap-2 sm:w-auto">
                   <a routerLink="/admin/privacidad"
-                    class="flex flex-1 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 sm:flex-none">
-                    <i class="pi pi-shield text-xs text-[var(--brand-primary)]"></i>
-                    Privacidad
+                    class="flex h-10 flex-1 items-center justify-center gap-2 rounded-lg bg-slate-100 px-4 text-sm font-semibold text-slate-700 hover:bg-slate-200 sm:flex-none">
+                    <i class="pi pi-lock text-xs text-slate-500"></i>
+                    Aviso de privacidad
                   </a>
                   <button *appHasPermission="'VISTA_COMPANY:modificar'" (click)="openEditOwnCompany()"
-                    class="flex flex-1 items-center justify-center gap-2 rounded-lg bg-[var(--brand-primary-soft)] px-4 py-2 text-sm font-medium text-[var(--brand-primary)] sm:flex-none active:scale-95">
+                    class="flex h-10 flex-1 items-center justify-center gap-2 rounded-lg bg-[var(--brand-primary-soft)] px-4 text-sm font-semibold text-[var(--brand-primary)] hover:brightness-95 sm:flex-none">
                     <i class="pi pi-pencil text-xs"></i>
                     Editar
                   </button>
@@ -672,7 +672,7 @@
                   [class.border-slate-300]="!(companyForm.get('slug')?.invalid && companyForm.get('slug')?.touched)">
                   <span class="px-3 flex items-center bg-slate-50 text-slate-400 text-xs truncate max-w-[45%]">{{ currentOrigin }}/</span>
                   <input type="text" formControlName="slug" (input)="onSlugInput()" placeholder="mi-veterinaria" maxlength="100"
-                    class="flex-1 min-w-0 px-2 text-sm outline-none" />
+                    class="flex-1 min-w-0 px-2 text-sm outline-none disabled:bg-slate-50 disabled:text-slate-500" />
                   <span class="px-3 flex items-center bg-slate-50 text-slate-400 text-xs">/login</span>
                 </div>
                 @if (companyForm.get('slug')?.invalid && companyForm.get('slug')?.touched) {
@@ -688,7 +688,10 @@
                     }
                   </p>
                 }
-                @if (isEdit && companyForm.get('slug')?.value !== originalSlug) {
+                @if (!isSuperAdmin()) {
+                  <p class="text-[11px] text-slate-500 ml-0.5">Solo el administrador de la plataforma puede cambiar esta dirección.</p>
+                }
+                @if (isEdit && isSuperAdmin() && companyForm.get('slug')?.value !== originalSlug) {
                   <p class="text-[11px] text-rose-600 ml-0.5 font-semibold">
                     <i class="pi pi-exclamation-triangle"></i> Cambiarlo invalida los enlaces de acceso ya compartidos con esta empresa.
                   </p>

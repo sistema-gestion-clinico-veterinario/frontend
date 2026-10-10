@@ -309,8 +309,8 @@
                           Descartar
                         </button>
                         <button *appHasPermission="'VISTA_ROLES:modificar'"
-                          [disabled]="!selectedRole()?.activo"
-                          [title]="!selectedRole()?.activo ? 'No se pueden asignar permisos a un rol inactivo' : ''"
+                          [disabled]="!canConfigureRole(selectedRole())"
+                          [title]="!canConfigureRole(selectedRole()) ? 'Este rol base o inactivo no admite cambios de permisos' : ''"
                           (click)="savePermisos()"
                           class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                           <i class="pi pi-save mr-1"></i>Guardar permisos
@@ -370,8 +370,8 @@
                                 <div class="flex items-center gap-2">
                                   <i [class]="grupo.icono + ' text-xs text-slate-400'"></i>
                                   <span class="text-sm text-slate-700">{{ grupo.nombre }}</span>
-                                  @if (grupo.codigo === 'VISTA_CITAS_AGENDA') {
-                                    <select [ngModel]="grupo.dataScope" (ngModelChange)="setDataScope(grupo, $event)" [disabled]="!hasModifyAccess() || !selectedRole()?.activo" class="ml-auto rounded-md border border-slate-200 bg-white px-2 py-1 text-[10px] font-semibold text-slate-600">
+                                  @if (supportsDataScope(grupo.codigo)) {
+                                    <select [ngModel]="grupo.dataScope" (ngModelChange)="setDataScope(grupo, $event)" [disabled]="!canConfigureRole(selectedRole())" class="ml-auto rounded-md border border-slate-200 bg-white px-2 py-1 text-[10px] font-semibold text-slate-600">
                                       <option value="OWN">Sólo propias</option><option value="COMPANY">Toda la empresa</option>
                                     </select>
                                   }
@@ -403,8 +403,8 @@
                                   @if (!v.visibleMenu) {
                                     <span class="rounded bg-violet-50 px-1.5 py-0.5 text-[9px] font-semibold text-violet-700">Capacidad interna</span>
                                   }
-                                  @if (v.codigo === 'VISTA_CITAS_AGENDA') {
-                                    <select [ngModel]="v.dataScope" (ngModelChange)="setDataScope(v, $event)" [disabled]="!hasModifyAccess() || !selectedRole()?.activo" class="ml-auto rounded-md border border-slate-200 bg-white px-2 py-1 text-[10px] font-semibold text-slate-600">
+                                  @if (supportsDataScope(v.codigo)) {
+                                    <select [ngModel]="v.dataScope" (ngModelChange)="setDataScope(v, $event)" [disabled]="!canConfigureRole(selectedRole())" class="ml-auto rounded-md border border-slate-200 bg-white px-2 py-1 text-[10px] font-semibold text-slate-600">
                                       <option value="OWN">Sólo propias</option><option value="COMPANY">Toda la empresa</option>
                                     </select>
                                   }
@@ -452,7 +452,7 @@
     <input type="checkbox"
       [checked]="getPermiso(v, campo)"
       (change)="togglePermiso(v, campo)"
-      [disabled]="!hasModifyAccess() || !selectedRole()?.activo"
+      [disabled]="!canConfigureRole(selectedRole())"
       class="w-4 h-4 accent-blue-500 cursor-pointer disabled:opacity-50"
       />
   </div>
@@ -466,16 +466,16 @@
         <span class="rounded bg-violet-50 px-1.5 py-0.5 text-[9px] font-semibold text-violet-700">Capacidad interna</span>
       }
     </div>
-    @if (v.codigo === 'VISTA_CITAS_AGENDA') {
+    @if (supportsDataScope(v.codigo)) {
       <label class="flex items-center justify-between gap-3 rounded-lg bg-blue-50 px-3 py-2 text-xs font-semibold text-slate-600">Datos visibles
-        <select [ngModel]="v.dataScope" (ngModelChange)="setDataScope(v, $event)" [disabled]="!hasModifyAccess() || !selectedRole()?.activo" class="rounded-md border border-blue-200 bg-white px-2 py-1 text-xs"><option value="OWN">Sólo propias</option><option value="COMPANY">Toda la empresa</option></select>
+        <select [ngModel]="v.dataScope" (ngModelChange)="setDataScope(v, $event)" [disabled]="!canConfigureRole(selectedRole())" class="rounded-md border border-blue-200 bg-white px-2 py-1 text-xs"><option value="OWN">Sólo propias</option><option value="COMPANY">Toda la empresa</option></select>
       </label>
     }
     <div class="grid grid-cols-4 gap-2">
-      <label class="flex flex-col items-center gap-1.5 rounded-lg bg-slate-50 px-1 py-2 text-[10px] font-semibold text-slate-500">Ver<input type="checkbox" [checked]="getPermiso(v, 'leer')" (change)="togglePermiso(v, 'leer')" [disabled]="!hasModifyAccess() || !selectedRole()?.activo" class="size-4 accent-blue-500 disabled:opacity-50" /></label>
-      <label class="flex flex-col items-center gap-1.5 rounded-lg bg-slate-50 px-1 py-2 text-[10px] font-semibold text-slate-500">Crear<input type="checkbox" [checked]="getPermiso(v, 'escribir')" (change)="togglePermiso(v, 'escribir')" [disabled]="!hasModifyAccess() || !selectedRole()?.activo" class="size-4 accent-blue-500 disabled:opacity-50" /></label>
-      <label class="flex flex-col items-center gap-1.5 rounded-lg bg-slate-50 px-1 py-2 text-[10px] font-semibold text-slate-500">Editar<input type="checkbox" [checked]="getPermiso(v, 'modificar')" (change)="togglePermiso(v, 'modificar')" [disabled]="!hasModifyAccess() || !selectedRole()?.activo" class="size-4 accent-blue-500 disabled:opacity-50" /></label>
-      <label class="flex flex-col items-center gap-1.5 rounded-lg bg-slate-50 px-1 py-2 text-[10px] font-semibold text-slate-500">Eliminar<input type="checkbox" [checked]="getPermiso(v, 'eliminar')" (change)="togglePermiso(v, 'eliminar')" [disabled]="!hasModifyAccess() || !selectedRole()?.activo" class="size-4 accent-blue-500 disabled:opacity-50" /></label>
+      <label class="flex flex-col items-center gap-1.5 rounded-lg bg-slate-50 px-1 py-2 text-[10px] font-semibold text-slate-500">Ver<input type="checkbox" [checked]="getPermiso(v, 'leer')" (change)="togglePermiso(v, 'leer')" [disabled]="!canConfigureRole(selectedRole())" class="size-4 accent-blue-500 disabled:opacity-50" /></label>
+      <label class="flex flex-col items-center gap-1.5 rounded-lg bg-slate-50 px-1 py-2 text-[10px] font-semibold text-slate-500">Crear<input type="checkbox" [checked]="getPermiso(v, 'escribir')" (change)="togglePermiso(v, 'escribir')" [disabled]="!canConfigureRole(selectedRole())" class="size-4 accent-blue-500 disabled:opacity-50" /></label>
+      <label class="flex flex-col items-center gap-1.5 rounded-lg bg-slate-50 px-1 py-2 text-[10px] font-semibold text-slate-500">Editar<input type="checkbox" [checked]="getPermiso(v, 'modificar')" (change)="togglePermiso(v, 'modificar')" [disabled]="!canConfigureRole(selectedRole())" class="size-4 accent-blue-500 disabled:opacity-50" /></label>
+      <label class="flex flex-col items-center gap-1.5 rounded-lg bg-slate-50 px-1 py-2 text-[10px] font-semibold text-slate-500">Eliminar<input type="checkbox" [checked]="getPermiso(v, 'eliminar')" (change)="togglePermiso(v, 'eliminar')" [disabled]="!canConfigureRole(selectedRole())" class="size-4 accent-blue-500 disabled:opacity-50" /></label>
     </div>
   </article>
 </ng-template>

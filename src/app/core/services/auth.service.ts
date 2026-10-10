@@ -1,10 +1,13 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, catchError, finalize, shareReplay, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AdminLoginRequest, LoginRequest } from '../../models/request/login-request.model';
 import { AuthLoginResponse } from '../../models/response/auth-login-response.model';
 import { ApiResponse } from '../../models/response/api-response';
+import { SKIP_GLOBAL_LOADING } from '../interceptors/http-context.tokens';
+
+export const GOOGLE_PENDING_SLUG_KEY = 'softvet_google_pending_slug';
 
 export interface AccountClosureEligibility {
   eligible: boolean;
@@ -31,7 +34,9 @@ export class AuthService {
   /** Canjea el código de un solo uso que /auth/google/callback dejó en la URL de retorno
    * tras el consentimiento de Google - equivale a la respuesta de login normal. */
   exchangeGoogleCode(code: string): Observable<AuthLoginResponse> {
-    return this.http.post<AuthLoginResponse>(`${this.baseUrl}/google/exchange`, { code });
+    return this.http.post<AuthLoginResponse>(`${this.baseUrl}/google/exchange`, { code }, {
+      context: new HttpContext().set(SKIP_GLOBAL_LOADING, true)
+    });
   }
 
   /** Tras una cuenta cerrada, Google deja un ticket de un solo uso: confirmarlo reactiva la cuenta y abre la sesión. */
@@ -42,7 +47,9 @@ export class AuthService {
   /** Paso previo a Google: deja en el servidor la clínica o el enlace de activación y devuelve un
    * código opaco, para que ninguno de los dos viaje por la URL que pasa por Google. */
   createGoogleIntent(context: { slug?: string | null; activationToken?: string | null }): Observable<ApiResponse<{ intent: string }>> {
-    return this.http.post<ApiResponse<{ intent: string }>>(`${this.baseUrl}/google/intent`, context);
+    return this.http.post<ApiResponse<{ intent: string }>>(`${this.baseUrl}/google/intent`, context, {
+      context: new HttpContext().set(SKIP_GLOBAL_LOADING, true)
+    });
   }
 
   /** Debe apuntar al mismo dominio que el retorno de Google: la cookie que protege el flujo se

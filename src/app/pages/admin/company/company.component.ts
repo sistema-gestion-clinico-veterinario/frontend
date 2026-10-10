@@ -280,7 +280,18 @@ export class CompanyComponent implements OnInit {
     this.editCompany({ id: this.ownCompany()!.id } as CompanyListResponse);
   }
 
+  /** La URL de acceso solo la cambia el administrador de la plataforma; la clínica la ve pero no la edita. */
+  private aplicarPermisoDelSlug(): void {
+    const slug = this.companyForm.get('slug');
+    if (this.isSuperAdmin()) {
+      slug?.enable({ emitEvent: false });
+    } else {
+      slug?.disable({ emitEvent: false });
+    }
+  }
+
   openNew() {
+    this.companyForm.get('slug')?.enable({ emitEvent: false });
     this.companyForm.reset({ colorPrimario: SOFTVET_BRAND_COLOR });
     this.initOperatingHours();
     this.slugTouchedManually = false;
@@ -302,6 +313,7 @@ export class CompanyComponent implements OnInit {
           colorPrimario: data.colorPrimario || SOFTVET_BRAND_COLOR,
           hasWebsite: !!data.website
         });
+        this.aplicarPermisoDelSlug();
         
         this.operatingHours.clear();
         if (data.operatingHours && data.operatingHours.length > 0) {
@@ -337,7 +349,8 @@ export class CompanyComponent implements OnInit {
       return;
     }
 
-    const formValue = this.companyForm.value;
+    // getRawValue incluye la URL aunque esté bloqueada: el servidor la exige y, si no cambia, la acepta tal cual.
+    const formValue = this.companyForm.getRawValue();
 
     // La subida del logo (si aplica) se hace recien al confirmar, no antes -
     // el dialogo de confirmacion debe aparecer de inmediato al enviar el

@@ -159,7 +159,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
   decidirRecordatorios(otorgar: boolean) {
     if (this.actualizandoPrivacidad()) return;
     this.actualizandoPrivacidad.set(true);
-    this.privacidadService.decidir(RECORDATORIOS, otorgar).subscribe({
+    this.privacidadService.decidir(RECORDATORIOS, otorgar,
+      otorgar ? undefined : 'Revocación solicitada por el titular desde su portal').subscribe({
       next: ({ data }) => {
         this.estadoPrivacidad.set(data);
         this.actualizandoPrivacidad.set(false);
@@ -176,7 +177,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
   decidirIa(otorgar: boolean) {
     if (this.actualizandoPrivacidad()) return;
     this.actualizandoPrivacidad.set(true);
-    this.privacidadService.decidir(USO_IA, otorgar).subscribe({
+    this.privacidadService.decidir(USO_IA, otorgar,
+      otorgar ? undefined : 'Revocación solicitada por el titular desde su portal').subscribe({
       next: ({ data }) => {
         this.estadoPrivacidad.set(data);
         this.actualizandoPrivacidad.set(false);

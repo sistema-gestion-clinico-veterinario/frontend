@@ -27,6 +27,7 @@ export interface AuditLog {
   module: string;
   details: string;
   ipAddress: string;
+  dispositivo?: string | null;
 }
 
 @Injectable({

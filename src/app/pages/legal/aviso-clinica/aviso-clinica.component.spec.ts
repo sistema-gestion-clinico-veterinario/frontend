@@ -6,6 +6,7 @@ import { AvisoClinicaComponent } from './aviso-clinica.component';
 import { PrivacidadService } from '../../../core/services/privacidad.service';
 import { AvisoClinicaGate } from '../../../core/services/aviso-clinica-gate.service';
 import { AuthStore } from '../../../store/auth.store';
+import { SessionService } from '../../../core/services/session.service';
 
 describe('AvisoClinicaComponent', () => {
   let fixture: ComponentFixture<AvisoClinicaComponent>;
@@ -14,7 +15,8 @@ describe('AvisoClinicaComponent', () => {
   let router: jasmine.SpyObj<Router>;
 
   const aviso = {
-    clinica: 'Clínica Patitas', logoUrl: null, colorPrimario: null, version: 2,
+    clinica: 'Clínica Patitas', logoUrl: null, colorPrimario: null,
+    audiencia: 'PROPIETARIOS_Y_AUTORIZADOS', version: 2,
     vigenteDesde: '2026-10-05T10:00:00', contenido: '1. Quién trata sus datos'
   };
   const texto = () => (fixture.nativeElement as HTMLElement).textContent ?? '';
@@ -31,6 +33,7 @@ describe('AvisoClinicaComponent', () => {
         { provide: PrivacidadService, useValue: privacidad },
         { provide: AvisoClinicaGate, useValue: gate },
         { provide: Router, useValue: router },
+        { provide: SessionService, useValue: { logout: jasmine.createSpy('logout') } },
         { provide: AuthStore, useValue: { menu: () => [], activeRolePurpose: () => 'COMPANY_ADMIN' } }
       ]
     });
@@ -75,5 +78,15 @@ describe('AvisoClinicaComponent', () => {
 
     expect(gate.marcarVisto).toHaveBeenCalled();
     expect(router.navigateByUrl).toHaveBeenCalled();
+  });
+
+  it('si no puede cargar el aviso no continúa y ofrece reintentar o cerrar sesión', () => {
+    crear(throwError(() => new HttpErrorResponse({ status: 500, error: { message: 'Servicio no disponible' } })));
+
+    expect(texto()).toContain('No pudimos cargar el aviso de privacidad');
+    expect(texto()).toContain('Reintentar');
+    expect(texto()).toContain('Cerrar sesión');
+    expect(gate.marcarVisto).not.toHaveBeenCalled();
+    expect(router.navigateByUrl).not.toHaveBeenCalled();
   });
 });
