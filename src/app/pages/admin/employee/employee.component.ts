@@ -101,6 +101,7 @@ export class EmployeeComponent implements OnInit, OnDestroy {
 
   public toggleDropdown(name: string, event?: Event) {
     if (event) event.stopPropagation();
+    if (name === 'roleIds' && !this.canManageRoleAssignments()) return;
     if (this.openDropdown() === name) {
       this.openDropdown.set(null);
     } else {
@@ -139,6 +140,7 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   }
 
   public toggleSelection(controlName: string, value: any) {
+    if (controlName === 'roleIds' && !this.canManageRoleAssignments()) return;
     const control = this.employeeForm.get(controlName);
     if (!control) return;
     const currentValues = [...(control.value || [])];
@@ -373,6 +375,10 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     return this.authStore.hasAccess('VISTA_EMPLEADOS', tipo);
   }
 
+  canManageRoleAssignments(): boolean {
+    return this.authStore.hasAccess('VISTA_ROLES', 'modificar');
+  }
+
   viewEmployeeDetail(employee: EmpleadoListResponse) {
     this.empleadoService.getById(employee.id).subscribe({
       next: (res) => {
@@ -476,6 +482,14 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   }
 
   openNew() {
+    if (!this.canManageRoleAssignments()) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Permiso requerido',
+        detail: 'Para registrar personal también necesita permiso para asignar roles.'
+      });
+      return;
+    }
     this.selectedFile.set(null);
     this.photoPreview.set(null);
     this.employeeForm.reset({
@@ -529,7 +543,7 @@ export class EmployeeComponent implements OnInit, OnDestroy {
 
   private loadAvisoPrivacidad() {
     this.cargandoAviso.set(true);
-    this.privacidadService.avisoVigente().subscribe({
+    this.privacidadService.avisoVigente('TRABAJADORES_Y_USUARIOS').subscribe({
       next: ({ data }) => {
         this.avisoPrivacidad.set(data ?? null);
         this.cargandoAviso.set(false);

@@ -313,6 +313,16 @@ export const AuthStore = signalStore(
         'empleado/historias-clinicas': 'historias-clinicas',
       };
 
+      // Pantallas que no tienen su propia vista en el menú: se permiten con el módulo al que pertenecen.
+      const MODULOS_DE_PANTALLAS_DE_APOYO: Record<string, string[]> = {
+        'admin/privacidad': ['company', 'admin/company'],
+      };
+      const modulos = MODULOS_DE_PANTALLAS_DE_APOYO[normalized];
+      if (modulos) {
+        const permitidas = store.allowedRoutes().map(r => normalizeRoute(r));
+        return modulos.some(m => permitidas.some(r => r === m || r.startsWith(m + '/')));
+      }
+
       const canonicalRoute = ROUTE_ALIASES[normalized] ?? normalized;
 
       // Acceso exacto o a una sub-ruta (ej. detalle/edición) de un módulo permitido

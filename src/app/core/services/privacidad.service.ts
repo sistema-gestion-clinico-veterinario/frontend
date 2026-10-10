@@ -4,6 +4,8 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../../models/response/api-response';
 
+export type AudienciaAvisoPrivacidad = 'PROPIETARIOS_Y_AUTORIZADOS' | 'TRABAJADORES_Y_USUARIOS';
+
 export interface CamposAvisoPrivacidad {
   razonSocial: string;
   ruc: string;
@@ -23,19 +25,30 @@ export interface AvisoPublico {
   clinica: string;
   logoUrl: string | null;
   colorPrimario: string | null;
+  audiencia: AudienciaAvisoPrivacidad;
   version: number;
   vigenteDesde: string;
   contenido: string;
 }
 
 export interface AvisoVersion {
+  audiencia: AudienciaAvisoPrivacidad;
   version: number;
   contenido: string;
   contenidoHash: string;
   vigenteDesde: string;
   activo: boolean;
   creadoPor: string | null;
+  creadoDispositivo: string | null;
+  creadoIp: string | null;
   campos: CamposAvisoPrivacidad;
+}
+
+export interface VistaPreviaAviso {
+  version: number;
+  contenido: string;
+  sinCambios: boolean;
+  observaciones: string[];
 }
 
 export type CanalConsentimiento = 'PRESENCIAL' | 'PORTAL' | 'ACTIVACION';
@@ -68,24 +81,43 @@ export class PrivacidadService {
   private readonly http = inject(HttpClient);
   private readonly base = environment.apiUrl;
 
-  avisoPublico(slug: string): Observable<ApiResponse<AvisoPublico>> {
-    return this.http.get<ApiResponse<AvisoPublico>>(`${this.base}/public/privacidad/${encodeURIComponent(slug)}`);
+  avisoPublico(slug: string, audiencia: AudienciaAvisoPrivacidad = 'PROPIETARIOS_Y_AUTORIZADOS'): Observable<ApiResponse<AvisoPublico>> {
+    return this.http.get<ApiResponse<AvisoPublico>>(
+      `${this.base}/public/privacidad/${encodeURIComponent(slug)}`, { params: { audiencia } });
   }
 
-  avisoVigente(): Observable<ApiResponse<AvisoPublico | null>> {
-    return this.http.get<ApiResponse<AvisoPublico | null>>(`${this.base}/privacidad/aviso-vigente`);
+  avisoPublicoVersion(slug: string, version: number,
+                      audiencia: AudienciaAvisoPrivacidad): Observable<ApiResponse<AvisoPublico>> {
+    return this.http.get<ApiResponse<AvisoPublico>>(
+      `${this.base}/public/privacidad/${encodeURIComponent(slug)}/version/${version}`,
+      { params: { audiencia } });
   }
 
-  plantilla(): Observable<ApiResponse<CamposAvisoPrivacidad>> {
-    return this.http.get<ApiResponse<CamposAvisoPrivacidad>>(`${this.base}/admin/privacidad/aviso/plantilla`);
+  avisoVigente(audiencia?: AudienciaAvisoPrivacidad): Observable<ApiResponse<AvisoPublico | null>> {
+    return this.http.get<ApiResponse<AvisoPublico | null>>(
+      `${this.base}/privacidad/aviso-vigente`, audiencia ? { params: { audiencia } } : {});
   }
 
-  historial(): Observable<ApiResponse<AvisoVersion[]>> {
-    return this.http.get<ApiResponse<AvisoVersion[]>>(`${this.base}/admin/privacidad/aviso/historial`);
+  plantilla(audiencia: AudienciaAvisoPrivacidad = 'PROPIETARIOS_Y_AUTORIZADOS'): Observable<ApiResponse<CamposAvisoPrivacidad>> {
+    return this.http.get<ApiResponse<CamposAvisoPrivacidad>>(
+      `${this.base}/admin/privacidad/aviso/plantilla`, { params: { audiencia } });
   }
 
-  publicar(campos: CamposAvisoPrivacidad, confirmoRevisionLegal: boolean): Observable<ApiResponse<AvisoVersion>> {
-    return this.http.post<ApiResponse<AvisoVersion>>(`${this.base}/admin/privacidad/aviso`, { campos, confirmoRevisionLegal });
+  historial(audiencia: AudienciaAvisoPrivacidad = 'PROPIETARIOS_Y_AUTORIZADOS'): Observable<ApiResponse<AvisoVersion[]>> {
+    return this.http.get<ApiResponse<AvisoVersion[]>>(
+      `${this.base}/admin/privacidad/aviso/historial`, { params: { audiencia } });
+  }
+
+  vistaPrevia(campos: CamposAvisoPrivacidad,
+              audiencia: AudienciaAvisoPrivacidad = 'PROPIETARIOS_Y_AUTORIZADOS'): Observable<ApiResponse<VistaPreviaAviso>> {
+    return this.http.post<ApiResponse<VistaPreviaAviso>>(
+      `${this.base}/admin/privacidad/aviso/vista-previa`, { audiencia, campos });
+  }
+
+  publicar(campos: CamposAvisoPrivacidad, confirmoRevisionLegal: boolean,
+           audiencia: AudienciaAvisoPrivacidad = 'PROPIETARIOS_Y_AUTORIZADOS'): Observable<ApiResponse<AvisoVersion>> {
+    return this.http.post<ApiResponse<AvisoVersion>>(
+      `${this.base}/admin/privacidad/aviso`, { audiencia, campos, confirmoRevisionLegal });
   }
 
   miEstado(): Observable<ApiResponse<ConsentimientoEstado>> {

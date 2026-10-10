@@ -87,18 +87,51 @@ describe('AuthGuard - sesión de otra clínica', () => {
     });
   });
 
-  it('no vuelve a pedir el aviso en la propia pantalla del aviso, en los términos ni al cambiar la contraseña', (done) => {
+  it('no vuelve a pedir el aviso en su propia pantalla ni al cambiar la contraseña', (done) => {
     sessionService.initialize.and.returnValue(of(true));
     avisoGate.debeMostrarse.and.returnValue(of(true));
 
     ejecutar('/aviso-clinica').subscribe((a) => {
-      ejecutar('/legal/accept').subscribe((b) => {
-        ejecutar('/password-change').subscribe((c) => {
-          expect([a, b, c]).toEqual([true, true, true]);
+      ejecutar('/password-change').subscribe((b) => {
+          expect([a, b]).toEqual([true, true]);
           expect(avisoGate.debeMostrarse).not.toHaveBeenCalled();
           done();
-        });
       });
+    });
+  });
+
+  it('la exención también vale cuando la dirección trae la clínica al inicio, como al abrir un enlace directo', (done) => {
+    sessionService.initialize.and.returnValue(of(true));
+    avisoGate.debeMostrarse.and.returnValue(of(true));
+
+    ejecutar('/vargasvet-e2e/aviso-clinica').subscribe((a) => {
+        ejecutar('/vargasvet-e2e/password-change#a').subscribe((b) => {
+          expect([a, b]).toEqual([true, true]);
+          expect(avisoGate.debeMostrarse).not.toHaveBeenCalled();
+          done();
+      });
+    });
+  });
+
+  it('con la clínica en la dirección, las demás pantallas siguen yendo al aviso mientras esté pendiente', (done) => {
+    sessionService.initialize.and.returnValue(of(true));
+    avisoGate.debeMostrarse.and.returnValue(of(true));
+
+    ejecutar('/vargasvet-e2e/admin/privacidad').subscribe((resultado) => {
+      const router = TestBed.inject(Router);
+      expect(router.serializeUrl(resultado as UrlTree)).toBe('/aviso-clinica');
+      expect(avisoGate.debeMostrarse).toHaveBeenCalledTimes(1);
+      done();
+    });
+  });
+
+  it('una pantalla que solo se parece al nombre de una exención no queda exenta', (done) => {
+    sessionService.initialize.and.returnValue(of(true));
+    avisoGate.debeMostrarse.and.returnValue(of(true));
+
+    ejecutar('/vargasvet-e2e/mascotas/aviso-clinica-falso').subscribe(() => {
+      expect(avisoGate.debeMostrarse).toHaveBeenCalledTimes(1);
+      done();
     });
   });
 

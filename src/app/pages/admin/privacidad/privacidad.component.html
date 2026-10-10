@@ -11,10 +11,30 @@
       }
     </header>
 
+    <nav aria-label="Destinatarios del aviso" class="grid gap-2 rounded-xl border border-slate-200 bg-white p-2 sm:grid-cols-2">
+      <button type="button" (click)="seleccionarAudiencia(audienciaPropietarios)"
+        [attr.aria-pressed]="audiencia() === audienciaPropietarios"
+        [class]="audiencia() === audienciaPropietarios
+          ? 'rounded-lg border border-[var(--brand-primary)] bg-[color-mix(in_srgb,var(--brand-primary)_10%,white)] px-4 py-3 text-left text-sm font-bold text-[var(--brand-primary)]'
+          : 'rounded-lg border border-transparent px-4 py-3 text-left text-sm font-bold text-slate-600 hover:bg-slate-50'">
+        <i class="pi pi-users mr-2"></i>Propietarios y autorizados
+        <span class="mt-1 block pl-6 text-xs font-normal text-slate-500">Clientes, cuidadores y otras personas vinculadas a las mascotas.</span>
+      </button>
+      <button type="button" (click)="seleccionarAudiencia(audienciaTrabajadores)"
+        [attr.aria-pressed]="audiencia() === audienciaTrabajadores"
+        [class]="audiencia() === audienciaTrabajadores
+          ? 'rounded-lg border border-[var(--brand-primary)] bg-[color-mix(in_srgb,var(--brand-primary)_10%,white)] px-4 py-3 text-left text-sm font-bold text-[var(--brand-primary)]'
+          : 'rounded-lg border border-transparent px-4 py-3 text-left text-sm font-bold text-slate-600 hover:bg-slate-50'">
+        <i class="pi pi-id-card mr-2"></i>Trabajadores y usuarios
+        <span class="mt-1 block pl-6 text-xs font-normal text-slate-500">Personal, veterinarios, administradores y usuarios internos.</span>
+      </button>
+    </nav>
+
     @if (cargando()) {
       <div class="rounded-xl border border-slate-200 bg-white p-8 text-sm text-slate-500">Cargando configuración…</div>
     } @else {
-      <form [formGroup]="form" (ngSubmit)="publicar()" class="space-y-5">
+      @if (puedePublicar()) {
+      <form [formGroup]="form" (ngSubmit)="solicitarPublicacion()" class="space-y-5">
         <section class="rounded-xl border border-slate-200 bg-white p-5">
           <h2 class="mb-4 text-sm font-extrabold text-slate-800">Responsable del banco de datos</h2>
           <div class="grid gap-4 md:grid-cols-2">
@@ -41,28 +61,36 @@
         </section>
 
         @if (puedePublicar()) {
-          <section class="rounded-xl border border-amber-200 bg-amber-50 p-4">
+          <section class="rounded-xl border border-slate-200 bg-slate-50 p-4">
             <label class="flex cursor-pointer items-start gap-3">
               <input type="checkbox" formControlName="confirmoRevisionLegal" class="mt-0.5 size-4 accent-[var(--brand-primary)]" />
-              <span class="text-xs leading-5 text-amber-900"><strong class="block">Confirmación antes de publicar</strong>Confirmo que el contenido fue revisado por el responsable de la clínica y su asesor legal. Publicarlo genera una versión que no podrá editarse ni eliminarse.</span>
+              <span class="text-xs leading-5 text-slate-700"><strong class="block">Confirmación antes de publicar</strong>Confirmo que el contenido fue revisado por el responsable de la clínica y su asesor legal. Publicarlo genera una versión que no podrá editarse ni eliminarse, y queda registrado quién la publicó, cuándo y desde qué dispositivo.</span>
             </label>
           </section>
 
-          <div class="flex justify-end">
-            <button type="submit" [disabled]="publicando()" class="rounded-lg bg-[var(--brand-primary)] px-6 py-3 text-sm font-bold text-white disabled:opacity-50"><i class="pi pi-check mr-2"></i>{{ publicando() ? 'Publicando…' : 'Publicar nueva versión' }}</button>
+          <div class="flex flex-wrap justify-end gap-2">
+            <button type="button" (click)="verVistaPrevia()" [disabled]="cargandoVistaPrevia() || publicando()" class="rounded-lg bg-slate-100 px-6 py-3 text-sm font-bold text-slate-700 hover:bg-slate-200 disabled:opacity-50"><i class="pi pi-eye mr-2"></i>Vista previa</button>
+            <button type="submit" [disabled]="cargandoVistaPrevia() || publicando()" class="rounded-lg bg-[var(--brand-primary)] px-6 py-3 text-sm font-bold text-white disabled:opacity-50"><i class="pi pi-check mr-2"></i>{{ publicando() ? 'Publicando…' : 'Publicar nueva versión' }}</button>
           </div>
-        } @else {
-          <p class="rounded-lg border border-slate-200 bg-white p-3 text-xs text-slate-500">Tu rol tiene acceso de consulta. Para publicar una nueva versión se requiere el permiso de modificar empresa.</p>
         }
       </form>
+      } @else {
+        <p class="rounded-lg border border-slate-200 bg-white p-4 text-sm text-slate-600">Solo el administrador de la clínica puede redactar y publicar el aviso de privacidad. Aquí puedes consultar la versión vigente y el historial.</p>
+      }
 
       @if (historial().length) {
         <section class="rounded-xl border border-slate-200 bg-white p-5">
           <h2 class="mb-3 text-sm font-extrabold text-slate-800">Historial de versiones</h2>
           <div class="divide-y divide-slate-100">
-            @for (version of historial(); track version.version) {
+            @for (version of historial(); track version.audiencia + '-' + version.version) {
               <details class="py-3">
                 <summary class="flex cursor-pointer items-center justify-between gap-3 text-sm font-bold text-slate-700"><span>Versión {{ version.version }} · {{ version.vigenteDesde | date:'dd/MM/yyyy HH:mm' }}</span><span [class]="version.activo ? 'text-emerald-600' : 'text-slate-400'">{{ version.activo ? 'Vigente' : 'Reemplazada' }}</span></summary>
+                <p class="mt-3 text-xs leading-5 text-slate-500">
+                  Publicado por <strong class="text-slate-700">{{ version.creadoPor || 'usuario no registrado' }}</strong>
+                  el {{ version.vigenteDesde | date:'dd/MM/yyyy HH:mm' }}
+                  · Dispositivo: <strong class="text-slate-700">{{ version.creadoDispositivo || 'no registrado' }}</strong>
+                  @if (version.creadoIp) { · IP {{ version.creadoIp }} }
+                </p>
                 <pre class="mt-3 max-h-80 overflow-auto whitespace-pre-wrap rounded-lg bg-slate-50 p-4 font-sans text-xs leading-5 text-slate-600">{{ version.contenido }}</pre>
               </details>
             }
@@ -72,4 +100,46 @@
     }
   </div>
 </div>
+@if (vistaPrevia(); as previa) {
+  <div class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/50 p-4" (click)="cerrarVistaPrevia()" (keydown.escape)="cerrarVistaPrevia()">
+    <div role="dialog" aria-modal="true" aria-labelledby="vista-previa-titulo"
+      class="flex max-h-[90vh] w-full max-w-3xl flex-col rounded-2xl bg-white p-6" (click)="$event.stopPropagation()">
+      <h2 id="vista-previa-titulo" class="text-base font-bold text-slate-900">Vista previa del aviso</h2>
+      <p class="mt-1 text-xs leading-5 text-slate-500">
+        @if (modoVistaPrevia() === 'publicar') {
+          Así lo verán {{ nombreAudiencia() }}. Al confirmar se publicará como la versión {{ previa.version }}; quedará registrado quién lo publicó, cuándo y desde qué dispositivo.
+        } @else {
+          Así lo verán {{ nombreAudiencia() }}. Todavía no se ha publicado nada.
+        }
+      </p>
+      @if (previa.observaciones.length) {
+        <div class="mt-3 rounded-lg border border-rose-200 bg-rose-50 p-3 text-xs leading-5 text-rose-700">
+          <p class="font-bold">Antes de publicar, completa lo siguiente:</p>
+          <ul class="mt-1 list-disc pl-4">
+            @for (observacion of previa.observaciones; track observacion) {
+              <li>{{ observacion }}</li>
+            }
+          </ul>
+        </div>
+      }
+      @if (previa.sinCambios) {
+        <p class="mt-3 rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs leading-5 text-slate-600">Este contenido es igual al aviso vigente, así que no hay nada nuevo que publicar.</p>
+      }
+      <pre class="mt-4 min-h-0 flex-1 overflow-auto whitespace-pre-wrap rounded-lg bg-slate-50 p-4 font-sans text-xs leading-5 text-slate-700">{{ previa.contenido }}</pre>
+      <div class="mt-4 flex justify-end gap-2">
+        <button type="button" (click)="cerrarVistaPrevia()" [disabled]="publicando()"
+          class="rounded-lg bg-slate-100 px-5 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-200 disabled:opacity-50">
+          {{ modoVistaPrevia() === 'publicar' ? 'Seguir editando' : 'Cerrar' }}
+        </button>
+        @if (modoVistaPrevia() === 'publicar') {
+          <button type="button" (click)="confirmarPublicacion()"
+            [disabled]="publicando() || previa.observaciones.length > 0 || previa.sinCambios"
+            class="rounded-lg bg-[var(--brand-primary)] px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50">
+            {{ publicando() ? 'Publicando…' : 'Confirmar y publicar' }}
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+}
 <p-toast position="bottom-right"></p-toast>

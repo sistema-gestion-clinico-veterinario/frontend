@@ -12,6 +12,7 @@ import { Role as CompanyRole } from '../../../models/response/permission';
 import { AssignedRoleDTO } from '../../../models/response/auth-login-response.model';
 import { SessionService } from '../../../core/services/session.service';
 import { MediaService } from '../../../core/services/media.service';
+import { PendientePrivacidad, PendientesPrivacidadService } from '../../../core/services/pendientes-privacidad.service';
 
 @Component({
   selector: 'app-navbar',
@@ -30,6 +31,7 @@ export class NavbarComponent implements OnInit {
   private mediaService = inject(MediaService);
   private messageService = inject(MessageService);
   private router = inject(Router);
+  private pendientesService = inject(PendientesPrivacidadService);
 
   companies = signal<{
     label: string;
@@ -43,7 +45,10 @@ export class NavbarComponent implements OnInit {
   dropdownOpen = signal(false);
   companyDropdownOpen = signal(false);
   activeRoleDropdownOpen = signal(false);
+  notificationsOpen = signal(false);
   roleSwitching = signal(false);
+
+  readonly notifications = this.pendientesService.pendientes;
 
   get userName(): string { return this.authStore.nombreCompleto() ?? 'Usuario'; }
   get companyName(): string { return this.authStore.selectedEnterprise()?.name ?? this.authStore.companyName() ?? 'VargasVet'; }
@@ -88,6 +93,9 @@ export class NavbarComponent implements OnInit {
 
     if (!target.closest('#active-role-dropdown-container')) {
       this.activeRoleDropdownOpen.set(false);
+    }
+    if (!target.closest('#notifications-container')) {
+      this.notificationsOpen.set(false);
     }
   }
 
@@ -227,7 +235,28 @@ export class NavbarComponent implements OnInit {
     if (this.dropdownOpen()) {
       this.companyDropdownOpen.set(false);
       this.activeRoleDropdownOpen.set(false);
+      this.notificationsOpen.set(false);
     }
+  }
+
+  toggleNotifications(): void {
+    this.notificationsOpen.update(open => !open);
+    if (this.notificationsOpen()) {
+      this.dropdownOpen.set(false);
+      this.companyDropdownOpen.set(false);
+      this.activeRoleDropdownOpen.set(false);
+      this.pendientesService.refrescar();
+    }
+  }
+
+  openNotification(notification: PendientePrivacidad): void {
+    this.notificationsOpen.set(false);
+    this.router.navigate([notification.ruta], { fragment: notification.fragmento });
+  }
+
+  dismissNotification(notification: PendientePrivacidad, event: MouseEvent): void {
+    event.stopPropagation();
+    this.pendientesService.descartar(notification.id);
   }
 
   goToProfile() {

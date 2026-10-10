@@ -147,7 +147,7 @@
             }
           </div>
           <p class="text-sm text-slate-600 leading-relaxed">{{ log.details }}</p>
-          <p class="font-mono text-xs text-slate-400">{{ log.ipAddress || 'Interna' }}</p>
+          <p class="font-mono text-xs text-slate-400">{{ log.ipAddress || 'Interna' }} · {{ log.dispositivo || 'Dispositivo no registrado' }}</p>
         </div>
       }
     </div>
@@ -166,6 +166,7 @@
             <th class="px-4 py-2 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Acción</th>
             <th class="px-4 py-2 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Detalle de Operación</th>
             <th class="px-4 py-2 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider whitespace-nowrap">Origen IP</th>
+            <th class="px-4 py-2 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider whitespace-nowrap">Dispositivo</th>
           </tr>
         </thead>
         <tbody>
@@ -214,6 +215,9 @@
               </td>
               <td class="px-4 py-2 font-mono text-xs text-slate-500 whitespace-nowrap">
                 {{ log.ipAddress || 'Interna' }}
+              </td>
+              <td class="px-4 py-2 text-xs text-slate-500 whitespace-nowrap">
+                {{ log.dispositivo || 'No registrado' }}
               </td>
             </tr>
           }

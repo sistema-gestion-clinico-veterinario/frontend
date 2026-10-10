@@ -139,6 +139,21 @@ describe('AuthStore', () => {
       expect(store.hasRouteAccess('admin/mascotas')).toBeTrue();
     });
 
+    it('la pantalla de privacidad se abre con el módulo Mi Empresa, sea cual sea la ruta con la que llegue al menú', () => {
+      for (const ruta of ['/company', '/admin/company']) {
+        store.setAuth({ ...cleanAuth, roles: ['ROLE_ADMIN'], menu: [flatItem('VISTA_COMPANY', { ruta })] });
+
+        expect(store.hasRouteAccess('admin/privacidad')).withContext(ruta).toBeTrue();
+        expect(store.hasRouteAccess('/admin/privacidad/')).withContext(ruta).toBeTrue();
+      }
+    });
+
+    it('sin Mi Empresa en el menú no se puede entrar a la pantalla de privacidad', () => {
+      store.setAuth({ ...cleanAuth, roles: ['ROLE_EMPLEADO'], menu: [flatItem('VISTA_MASCOTAS', { ruta: '/mascotas' })] });
+
+      expect(store.hasRouteAccess('admin/privacidad')).toBeFalse();
+    });
+
     it('allows legal/accept for any authenticated user regardless of RBAC menu (utility route, like profile/password-change)', () => {
       store.setAuth({ ...cleanAuth, activeRolePurpose: 'PLATFORM_ADMIN', menu: [] });
       expect(store.hasRouteAccess('legal/accept')).toBeTrue();

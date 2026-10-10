@@ -1,7 +1,8 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { AvisoPublico, PrivacidadService } from '../../../core/services/privacidad.service';
+import { AudienciaAvisoPrivacidad, AvisoPublico, PrivacidadService } from '../../../core/services/privacidad.service';
 import { CompanySlugContext } from '../../../core/services/company-slug-context.service';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-aviso-publico',
@@ -31,6 +32,7 @@ import { CompanySlugContext } from '../../../core/services/company-slug-context.
 export class AvisoPublicoComponent implements OnInit {
   private readonly privacidad = inject(PrivacidadService);
   private readonly slugContext = inject(CompanySlugContext);
+  private readonly route = inject(ActivatedRoute);
 
   readonly aviso = signal<AvisoPublico | null>(null);
   readonly cargando = signal(true);
@@ -43,7 +45,14 @@ export class AvisoPublicoComponent implements OnInit {
       this.mensaje.set('No identificamos la clínica. Abre este enlace desde la página de ingreso de tu clínica.');
       return;
     }
-    this.privacidad.avisoPublico(slug).subscribe({
+    const audiencia: AudienciaAvisoPrivacidad = this.route.snapshot.queryParamMap.get('audiencia') === 'TRABAJADORES_Y_USUARIOS'
+      ? 'TRABAJADORES_Y_USUARIOS'
+      : 'PROPIETARIOS_Y_AUTORIZADOS';
+    const versionParam = Number(this.route.snapshot.queryParamMap.get('version'));
+    const solicitud = Number.isInteger(versionParam) && versionParam > 0
+      ? this.privacidad.avisoPublicoVersion(slug, versionParam, audiencia)
+      : this.privacidad.avisoPublico(slug, audiencia);
+    solicitud.subscribe({
       next: ({ data }) => {
         this.aviso.set(data);
         this.cargando.set(false);

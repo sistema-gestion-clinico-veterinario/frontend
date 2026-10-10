@@ -466,21 +466,24 @@
                       }
                     </div>
                   </div>
-                  <!-- Legal acceptances -->
+                  <!-- Constancias legales -->
                   <div class="bg-white rounded-2xl border border-slate-100 p-6">
                     <h3 class="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2">
-                      <i class="pi pi-file text-slate-400"></i> Documentos legales aceptados
+                      <i class="pi pi-file text-slate-400"></i> Documentos legales revisados
                     </h3>
                     @if (legalAcceptances().length === 0) {
-                      <p class="text-xs text-slate-400">Aún no hay aceptaciones registradas.</p>
+                      <p class="text-xs text-slate-400">Aún no hay constancias registradas.</p>
                     }
                     <ul class="space-y-4">
                       @for (aceptacion of legalAcceptances(); track aceptacion.tipo + aceptacion.version) {
                         <li class="text-xs leading-5">
                           <p class="font-medium text-slate-600">{{ legalLabel(aceptacion.tipo) }} · versión {{ aceptacion.version }}</p>
+                          <p class="mt-0.5 font-medium text-slate-500">
+                            {{ aceptacion.tipoConstancia === 'CONSTANCIA_LECTURA' || aceptacion.tipo === 'POLITICA_PRIVACIDAD' ? 'Lectura registrada' : 'Aceptación registrada' }}
+                          </p>
                           <p class="mt-0.5 text-slate-400">{{ aceptacion.fechaAceptacion | date:'dd/MM/yyyy HH:mm' }}</p>
                           @if (!aceptacion.textoRecuperable) {
-                            <p class="mt-0.5 text-slate-400">Aceptación anterior al registro del texto exacto.</p>
+                            <p class="mt-0.5 text-slate-400">Constancia anterior al registro del texto exacto.</p>
                           }
                         </li>
                       }
@@ -514,14 +517,14 @@
                           </div>
                           <div class="border-t border-slate-100 pt-3">
                             <p class="text-xs font-semibold text-slate-600">Recordatorios preventivos por correo</p>
-                            <p class="mt-1 text-xs leading-5 text-slate-400">Son parte del servicio de la clínica. Puedes pedir no recibirlos en cualquier momento.</p>
+                            <p class="mt-1 text-xs leading-5 text-slate-400">Son opcionales. Solo los recibirás si los autorizas y puedes retirar tu autorización cuando quieras.</p>
                             <div class="mt-3 grid grid-cols-2 gap-2">
                               <button type="button" (click)="decidirRecordatorios(true)" [disabled]="actualizandoPrivacidad()"
-                                [class]="estadoRecordatorios() !== 'RETIRADO' ? 'border-[var(--brand-primary)] bg-[var(--brand-primary)] text-white' : 'border-slate-200 bg-white text-slate-600'"
+                                [class]="estadoRecordatorios() === 'OTORGADO' ? 'border-[var(--brand-primary)] bg-[var(--brand-primary)] text-white' : 'border-slate-200 bg-white text-slate-600'"
                                 class="rounded-lg border px-3 py-2 text-xs font-semibold disabled:opacity-50">Quiero recibirlos</button>
                               <button type="button" (click)="decidirRecordatorios(false)" [disabled]="actualizandoPrivacidad()"
                                 [class]="estadoRecordatorios() === 'RETIRADO' ? 'border-slate-500 bg-slate-100 text-slate-800' : 'border-slate-200 bg-white text-slate-600'"
-                                class="rounded-lg border px-3 py-2 text-xs font-semibold disabled:opacity-50">No quiero recibirlos</button>
+                                class="rounded-lg border px-3 py-2 text-xs font-semibold disabled:opacity-50">No autorizo / revocar</button>
                             </div>
                           </div>
                           <div class="border-t border-slate-100 pt-3">

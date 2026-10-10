@@ -332,7 +332,7 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
 
       autoTable(doc, {
         startY: 25,
-        head: [['Fecha / Hora', 'Usuario', 'Rol', 'Clínica', 'Módulo', 'Acción', 'Detalle', 'IP']],
+        head: [['Fecha / Hora', 'Usuario', 'Rol', 'Clínica', 'Módulo', 'Acción', 'Detalle', 'IP', 'Dispositivo']],
         body: logs.map(l => [
           new Date(l.timestamp).toLocaleString('es-PE'),
           l.userEmail || 'Anónimo / Sistema',
@@ -341,14 +341,15 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
           l.module,
           l.action,
           l.details || '',
-          l.ipAddress || 'Interna'
+          l.ipAddress || 'Interna',
+          l.dispositivo || 'No registrado'
         ]),
         styles: { fontSize: 6.5, cellPadding: 1.5, textColor: dark, lineColor: [226, 232, 240], lineWidth: 0.1 },
         headStyles: { fillColor: [248, 250, 252], textColor: dark, fontStyle: 'bold', lineColor: dark, lineWidth: 0.2 },
         alternateRowStyles: { fillColor: [248, 250, 252] },
         columnStyles: {
           0: { cellWidth: 30 }, 1: { cellWidth: 38 }, 2: { cellWidth: 20 }, 3: { cellWidth: 28 },
-          4: { cellWidth: 22 }, 5: { cellWidth: 30 }, 7: { cellWidth: 22 }
+          4: { cellWidth: 22 }, 5: { cellWidth: 30 }, 7: { cellWidth: 22 }, 8: { cellWidth: 26 }
         },
         margin: { left: marginX, right: marginX }
       });
@@ -383,10 +384,10 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
 
       sheet.columns = [
         { width: 20 }, { width: 26 }, { width: 14 }, { width: 20 },
-        { width: 16 }, { width: 22 }, { width: 45 }, { width: 16 }
+        { width: 16 }, { width: 22 }, { width: 45 }, { width: 16 }, { width: 22 }
       ];
 
-      sheet.mergeCells('A1:H1');
+      sheet.mergeCells('A1:I1');
       const titleCell = sheet.getCell('A1');
       titleCell.value = `HISTORIAL DE AUDITORÍA — ${empresaNombre.toUpperCase()} (${conFiltros ? 'FILTRADO' : 'COMPLETO'})`;
       titleCell.font = { name: 'Calibri', bold: true, size: 14, color: { argb: 'FF0F172A' } };
@@ -394,7 +395,7 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
       titleCell.border = { bottom: { style: 'medium', color: { argb: 'FF0F172A' } } };
       sheet.getRow(1).height = 28;
 
-      sheet.mergeCells('A2:H2');
+      sheet.mergeCells('A2:I2');
       const subtitleCell = sheet.getCell('A2');
       subtitleCell.value = `Emitido: ${fechaEmision}  —  Total de registros: ${logs.length}`;
       subtitleCell.font = { name: 'Calibri', italic: true, size: 9, color: { argb: 'FF64748B' } };
@@ -403,7 +404,7 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
 
       const hdrRow = sheet.getRow(4);
       hdrRow.height = 20;
-      ['Fecha / Hora', 'Usuario', 'Rol', 'Clínica', 'Módulo', 'Acción', 'Detalle', 'IP'].forEach((label, col) => {
+      ['Fecha / Hora', 'Usuario', 'Rol', 'Clínica', 'Módulo', 'Acción', 'Detalle', 'IP', 'Dispositivo'].forEach((label, col) => {
         const cell = hdrRow.getCell(col + 1);
         cell.value = label;
         cell.font = { name: 'Calibri', bold: true, size: 10, color: { argb: 'FFFFFFFF' } };
@@ -421,7 +422,8 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
           l.module,
           l.action,
           l.details || '',
-          l.ipAddress || 'Interna'
+          l.ipAddress || 'Interna',
+          l.dispositivo || 'No registrado'
         ];
         values.forEach((v, col) => {
           const cell = row.getCell(col + 1);

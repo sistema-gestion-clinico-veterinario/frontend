@@ -543,7 +543,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
   });
 
   ngOnInit() {
-    this.privacidadService.avisoVigente().subscribe({
+    this.privacidadService.avisoVigente('PROPIETARIOS_Y_AUTORIZADOS').subscribe({
       next: ({ data }) => this.avisoPrivacidad.set(data ?? null),
       error: () => this.avisoPrivacidad.set(null)
     });

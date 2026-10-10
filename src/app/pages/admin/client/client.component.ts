@@ -149,6 +149,10 @@ export class ClientComponent implements OnInit {
     return this.authStore.hasAccess('VISTA_CLIENTES', tipo);
   }
 
+  canManageRoleAssignments(): boolean {
+    return this.authStore.hasAccess('VISTA_ROLES', 'modificar');
+  }
+
   clientActionItems(client: ApoderadoListResponse): MenuItem[] {
     const cached = this.clientActionItemsCache.get(client);
     if (cached) return cached;
@@ -430,6 +434,7 @@ export class ClientComponent implements OnInit {
   }
 
   toggleClientRole(roleId: number, checked: boolean) {
+    if (!this.canManageRoleAssignments()) return;
     const control = this.clientForm.get('roleIds');
     const selected = new Set<number>(control?.value ?? []);
     checked ? selected.add(roleId) : selected.delete(roleId);
@@ -473,7 +478,8 @@ export class ClientComponent implements OnInit {
     const id = this.selectedClientId();
     if (!id || !this.canClientAction('modificar') || this.actualizandoPrivacidadCliente()) return;
     this.actualizandoPrivacidadCliente.set(true);
-    this.privacidadService.decidirPorElCliente(id, USO_IA, otorgar).subscribe({
+    this.privacidadService.decidirPorElCliente(id, USO_IA, otorgar,
+      otorgar ? undefined : 'Revocación solicitada presencialmente por el cliente').subscribe({
       next: ({ data }) => {
         this.estadoPrivacidadCliente.set(data);
         this.actualizandoPrivacidadCliente.set(false);
@@ -507,7 +513,8 @@ export class ClientComponent implements OnInit {
     const id = this.selectedClientId();
     if (!id || !this.canClientAction('modificar') || this.actualizandoPrivacidadCliente()) return;
     this.actualizandoPrivacidadCliente.set(true);
-    this.privacidadService.decidirPorElCliente(id, RECORDATORIOS, otorgar).subscribe({
+    this.privacidadService.decidirPorElCliente(id, RECORDATORIOS, otorgar,
+      otorgar ? undefined : 'Revocación solicitada presencialmente por el cliente').subscribe({
       next: ({ data }) => {
         this.estadoPrivacidadCliente.set(data);
         this.actualizandoPrivacidadCliente.set(false);
@@ -552,7 +559,7 @@ export class ClientComponent implements OnInit {
 
   private loadAvisoPrivacidad() {
     this.cargandoAviso.set(true);
-    this.privacidadService.avisoVigente().pipe(
+    this.privacidadService.avisoVigente('PROPIETARIOS_Y_AUTORIZADOS').pipe(
       finalize(() => this.cargandoAviso.set(false))
     ).subscribe({
       next: ({ data }) => this.avisoPrivacidad.set(data ?? null),

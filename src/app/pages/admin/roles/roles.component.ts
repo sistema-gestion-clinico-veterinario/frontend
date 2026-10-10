@@ -27,6 +27,11 @@ type Section = 'empresa' | 'sistema';
   styleUrl: './roles.component.scss'
 })
 export class RolesComponent implements OnInit {
+  private readonly dataScopeCapableViews = new Set([
+    'VISTA_CITAS_AGENDA',
+    'VISTA_HISTORIAS',
+    'VISTA_REPORTES'
+  ]);
   private readonly roleService = inject(RoleService);
   private readonly messageService = inject(MessageService);
   private readonly authStore = inject(AuthStore);
@@ -256,12 +261,15 @@ export class RolesComponent implements OnInit {
 
   canEditRole(role: Role | null): boolean {
     if (!role) return false;
-    return this.hasModifyAccess();
+    return this.hasModifyAccess() && !role.systemManaged && !role.protectedRole;
   }
 
   canRenameRole(role: Role | null): boolean {
-    if (!role) return false;
-    return this.hasModifyAccess();
+    return this.canEditRole(role);
+  }
+
+  canConfigureRole(role: Role | null): boolean {
+    return this.canEditRole(role) && !!role?.activo;
   }
 
   setDataScope(v: RolVentanaPermiso, dataScope: 'OWN' | 'COMPANY') {
@@ -271,8 +279,12 @@ export class RolesComponent implements OnInit {
     this.permisosModificados.set(true);
   }
 
+  supportsDataScope(viewCode: string): boolean {
+    return this.dataScopeCapableViews.has(viewCode);
+  }
+
   canToggleRole(role: Role | null): boolean {
-    return !!role && this.hasModifyAccess() && !role.protectedRole;
+    return !!role && this.hasModifyAccess() && !role.systemManaged && !role.protectedRole;
   }
 
   startEditName() {
@@ -479,7 +491,9 @@ export class RolesComponent implements OnInit {
 
   canDeleteRole(role: Role | null): boolean {
     if (!role) return false;
-    return this.hasModifyAccess() && !role.protectedRole;
+    return this.authStore.hasAccess('VISTA_ROLES', 'eliminar')
+      && !role.systemManaged
+      && !role.protectedRole;
   }
 
   deleteRole(role: Role) {
