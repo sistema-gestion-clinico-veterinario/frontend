@@ -374,7 +374,7 @@
                         </div>
                         <div class="min-w-0">
                           <p class="text-[11px] font-bold text-slate-800 truncate leading-snug">{{ emp.nombre }} {{ emp.apellido }}</p>
-                          <p class="text-[9px] text-slate-400 truncate leading-none mt-0.5">{{ emp.email }}</p>
+                          <p class="text-[9px] text-slate-400 truncate leading-none mt-0.5">{{ emp.tiposEmpleado?.[0] || 'Personal' }}</p>
                         </div>
                       </div>
                       <span [class]="'px-1.5 py-0.5 rounded text-[7px] font-black uppercase tracking-widest border shrink-0 ' + (emp.activo ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-red-50 text-red-700 border-red-100')">
@@ -393,7 +393,7 @@
                   <table class="w-full text-left border-collapse">
                     <thead>
                       <tr class="border-b border-slate-100">
-                        <th class="pb-3 text-[9px] font-black text-slate-400 uppercase tracking-wider">Nombre / Email</th>
+                        <th class="pb-3 text-[9px] font-black text-slate-400 uppercase tracking-wider">Empleado</th>
                         <th class="pb-3 text-[9px] font-black text-slate-400 uppercase tracking-wider">Especialidad</th>
                         <th class="pb-3 text-[9px] font-black text-slate-400 uppercase tracking-wider text-right">Estado</th>
                       </tr>
@@ -408,12 +408,12 @@
                               </div>
                               <div class="min-w-0">
                                 <p class="text-xs font-bold text-slate-800 truncate leading-snug">{{ emp.nombre }} {{ emp.apellido }}</p>
-                                <p class="text-[10px] text-slate-400 truncate leading-none mt-1">{{ emp.email }}</p>
+                                <p class="text-[10px] text-slate-400 truncate leading-none mt-1">{{ emp.tiposEmpleado?.[0] || 'Personal' }}</p>
                               </div>
                             </div>
                           </td>
                           <td class="py-3 text-xs font-semibold text-slate-500">
-                            {{ emp.especialidadNombre || 'General' }}
+                            {{ emp.especialidades?.[0] || 'General' }}
                           </td>
                           <td class="py-3 text-right">
                             <span [class]="'px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border ' + (emp.activo ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-red-50 text-red-700 border-red-100')">
@@ -461,11 +461,11 @@
                         </div>
                         <div class="min-w-0">
                           <p class="text-[11px] font-bold text-slate-800 truncate leading-snug">{{ apo.nombre }} {{ apo.apellido }}</p>
-                          <p class="text-[9px] text-slate-400 truncate leading-none mt-0.5">{{ apo.email }}</p>
+                          <p class="text-[9px] text-slate-400 truncate leading-none mt-0.5">Propietario o autorizado</p>
                         </div>
                       </div>
-                      <span class="px-1.5 py-0.5 rounded text-[7px] font-black uppercase tracking-widest border bg-slate-50 text-slate-600 border-slate-100 shrink-0">
-                        {{ apo.tipoDocumento }}: {{ apo.numeroDocumento }}
+                      <span [class]="'px-1.5 py-0.5 rounded text-[7px] font-black uppercase tracking-widest border shrink-0 ' + (apo.activo ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-red-50 text-red-700 border-red-100')">
+                        {{ apo.activo ? 'Activo' : 'Inactivo' }}
                       </span>
                     </div>
                   }
@@ -480,9 +480,8 @@
                   <table class="w-full text-left border-collapse">
                     <thead>
                       <tr class="border-b border-slate-100">
-                        <th class="pb-3 text-[9px] font-black text-slate-400 uppercase tracking-wider">Nombre / Email</th>
-                        <th class="pb-3 text-[9px] font-black text-slate-400 uppercase tracking-wider">Teléfono</th>
-                        <th class="pb-3 text-[9px] font-black text-slate-400 uppercase tracking-wider text-right">Documento</th>
+                        <th class="pb-3 text-[9px] font-black text-slate-400 uppercase tracking-wider">Propietario o autorizado</th>
+                        <th class="pb-3 text-[9px] font-black text-slate-400 uppercase tracking-wider text-right">Estado</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -495,23 +494,20 @@
                               </div>
                               <div class="min-w-0">
                                 <p class="text-xs font-bold text-slate-800 truncate leading-snug">{{ apo.nombre }} {{ apo.apellido }}</p>
-                                <p class="text-[10px] text-slate-400 truncate leading-none mt-1">{{ apo.email }}</p>
+                                <p class="text-[10px] text-slate-400 truncate leading-none mt-1">Cliente de la sede</p>
                               </div>
                             </div>
                           </td>
-                          <td class="py-3 text-xs font-semibold text-slate-500">
-                            {{ apo.telefono || 'Sin teléfono' }}
-                          </td>
                           <td class="py-3 text-right">
-                            <span class="px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border bg-slate-50 text-slate-600 border-slate-100">
-                              {{ apo.tipoDocumento }}: {{ apo.numeroDocumento }}
+                            <span [class]="'px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border ' + (apo.activo ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-red-50 text-red-700 border-red-100')">
+                              {{ apo.activo ? 'Activo' : 'Inactivo' }}
                             </span>
                           </td>
                         </tr>
                       }
                       @if (apoderadosList().length === 0) {
                         <tr>
-                          <td colspan="3" class="text-center py-6 text-slate-400 text-xs italic font-medium">
+                          <td colspan="2" class="text-center py-6 text-slate-400 text-xs italic font-medium">
                             No hay apoderados registrados en esta empresa.
                           </td>
                         </tr>
@@ -543,7 +539,7 @@
                       <div class="flex items-center justify-between">
                         <div>
                           <p class="text-sm font-bold text-slate-800 truncate">{{ c.name }}</p>
-                          <p class="text-xs text-slate-400 truncate">RUC: {{ c.ruc }}</p>
+                          <p class="text-xs text-slate-400 truncate">Empresa registrada en la plataforma</p>
                         </div>
                         <span [class]="'px-2 py-0.5 rounded text-[10px] font-bold ' + (c.activo ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-red-50 text-red-600 border border-red-100')">{{ c.activo ? 'Activo' : 'Inactivo' }}</span>
                       </div>
@@ -580,7 +576,7 @@
                       <div class="min-w-0 flex-1">
                         <p class="text-xs font-black text-slate-800 truncate leading-snug">{{ pet.nombreCompleto }}</p>
                         <p class="text-[10px] text-slate-400 truncate mt-0.5">{{ pet.especie }} · {{ pet.raza }}</p>
-                        <p class="text-[9px] text-slate-500 truncate mt-0.5">Prop: {{ pet.apoderadoNombreCompleto }}</p>
+                        <p class="text-[9px] text-slate-500 truncate mt-0.5">Paciente veterinario</p>
                       </div>
                     </div>
                   }
@@ -807,10 +803,10 @@
                           </span>
                         </div>
                         <p class="text-[9px] sm:text-[10px] font-bold text-slate-600 truncate mb-0.5 sm:mb-1">
-                          {{ log.userEmail }}
+                          {{ log.userRole || 'Usuario autorizado' }} · {{ log.module || 'Sistema' }}
                         </p>
                         <p class="text-[8px] sm:text-[9px] text-slate-500 bg-slate-50 border border-slate-100 p-1.5 sm:p-2 rounded-lg leading-relaxed">
-                          {{ log.details }}
+                          La información completa está disponible en el módulo de auditoría.
                         </p>
                       </div>
                     </div>
@@ -851,8 +847,8 @@
                         @for (p of pagos(); track p) {
                           <div class="p-2.5 sm:p-3 rounded-xl border border-slate-100 bg-slate-50/30 hover:bg-slate-50 transition-all flex items-center justify-between gap-2 sm:gap-3">
                             <div class="min-w-0 flex-1">
-                              <p class="text-[11px] sm:text-xs font-black text-slate-800 truncate leading-snug">{{ p.clienteNombre || '—' }}</p>
-                              <p class="text-[8px] sm:text-[9px] text-slate-400 truncate mt-0.5">{{ p.servicioNombre || '—' }} · {{ p.mascotaNombre || '—' }}</p>
+                              <p class="text-[11px] sm:text-xs font-black text-slate-800 truncate leading-snug">{{ p.mascotaNombre || 'Paciente no indicado' }}</p>
+                              <p class="text-[8px] sm:text-[9px] text-slate-400 truncate mt-0.5">{{ p.servicioNombre || 'Servicio no indicado' }}</p>
                               <p class="text-[8px] sm:text-[9px] text-slate-500 font-medium mt-0.5">{{ p.metodoPago || '—' }} · {{ formatFechaSimple(p.fechaPago) }}</p>
                             </div>
                             <div class="text-right shrink-0 flex flex-col items-end gap-1">

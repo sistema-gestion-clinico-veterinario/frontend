@@ -1,8 +1,8 @@
 import { TestBed } from '@angular/core/testing';
-import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, provideHttpClient, withInterceptors } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { Router, provideRouter } from '@angular/router';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { apiInterceptor } from './api.interceptor';
 import { AuthStore } from '../../store/auth.store';
 import { AuthService } from '../services/auth.service';
@@ -32,6 +32,7 @@ describe('apiInterceptor - clínica de la sesión', () => {
     authStore = TestBed.inject(AuthStore);
     router = TestBed.inject(Router);
     spyOn(router, 'navigateByUrl').and.resolveTo(true);
+    spyOn(router, 'navigate').and.resolveTo(true);
     authStore.setAuth({ roles: ['ROLE_ADMIN'], companyId: 7, menu: [] } as any);
   });
 
@@ -142,5 +143,26 @@ describe('apiInterceptor - clínica de la sesión', () => {
 
     expect(respuesta).toEqual({ ok: true });
     expect(authStore.companyId()).toBe(7);
+  });
+
+  it('si la renovación falla porque la sesión estuvo inactiva, lleva al login con el aviso de inactividad', () => {
+    spyOn(authStore, 'logout').and.callThrough();
+    authService.refreshToken.and.returnValue(throwError(() => new HttpErrorResponse({
+      status: 401, error: { success: false, code: 'SESSION_IDLE_TIMEOUT' } })));
+    http.get(`${environment.apiUrl}/mascotas`).subscribe({ error: () => undefined });
+
+    controller.expectOne(`${environment.apiUrl}/mascotas`).flush({}, { status: 401, statusText: 'Unauthorized' });
+
+    expect(authStore.logout).toHaveBeenCalled();
+    expect(router.navigate).toHaveBeenCalledWith(['/login'], { queryParams: { authNotice: 'sesion_inactividad' }, replaceUrl: true });
+  });
+
+  it('si la renovación falla por otro motivo, lleva al login sin aviso de inactividad', () => {
+    authService.refreshToken.and.returnValue(throwError(() => new HttpErrorResponse({ status: 401, error: { success: false } })));
+    http.get(`${environment.apiUrl}/mascotas`).subscribe({ error: () => undefined });
+
+    controller.expectOne(`${environment.apiUrl}/mascotas`).flush({}, { status: 401, statusText: 'Unauthorized' });
+
+    expect(router.navigate).toHaveBeenCalledWith(['/login']);
   });
 });

@@ -70,10 +70,12 @@ export class LoginComponent implements OnInit {
 
   private static readonly NOTICE_TITLES: Record<string, string> = {
     sesion_otra_clinica: 'Sesión de otra clínica',
+    sesion_inactividad: 'Sesión cerrada por inactividad',
   };
 
   private static readonly NOTICES: Record<string, string> = {
     sesion_otra_clinica: 'La sesión que tenía este navegador no corresponde a esta clínica. Inicia sesión de nuevo para continuar; las sesiones de tus otras clínicas no se cierran.',
+    sesion_inactividad: 'Cerramos tu sesión por inactividad para proteger los datos de la clínica. Inicia sesión de nuevo para continuar.',
   };
 
   private static readonly GOOGLE_ERROR_MESSAGES: Record<string, string> = {

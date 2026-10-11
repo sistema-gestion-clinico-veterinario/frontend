@@ -66,4 +66,28 @@ describe('AuditoriaComponent - dispositivo', () => {
 
     expect(texto()).toContain('Dispositivo no registrado');
   });
+
+  it('se pueden filtrar los cambios al catálogo de vistas por módulo y por acción', () => {
+    expect(component.modulesList).toContain('Catálogo de vistas');
+    expect(component.actionsList).toEqual(jasmine.arrayContaining([
+      'REGISTRAR_VISTA', 'MODIFICAR_VISTA', 'RETIRAR_VISTA', 'REORDENAR_VISTAS',
+      'REGISTRAR_MODULO', 'MODIFICAR_MODULO', 'RETIRAR_MODULO'
+    ]));
+  });
+
+  it('se pueden filtrar las solicitudes de cancelación de datos y su resolución', () => {
+    expect(component.modulesList).toContain('Privacidad');
+    expect(component.actionsList).toEqual(jasmine.arrayContaining([
+      'SOLICITAR_CANCELACION_DATOS', 'REGISTRAR_SOLICITUD_CANCELACION_DATOS',
+      'EJECUTAR_CANCELACION_DATOS', 'RECHAZAR_CANCELACION_DATOS'
+    ]));
+  });
+
+  it('se pueden filtrar los cambios de roles, permisos y asignaciones, que son las acciones elevadas', () => {
+    expect(component.modulesList).toEqual(jasmine.arrayContaining(['Roles', 'Empresa']));
+    expect(component.actionsList).toEqual(jasmine.arrayContaining([
+      'CREAR_ROL', 'MODIFICAR_ROL', 'ACTIVAR_ROL', 'DESACTIVAR_ROL', 'ELIMINAR_ROL',
+      'MODIFICAR_PERMISOS_ROL', 'MODIFICAR_ASIGNACIONES_ROL', 'ACTUALIZAR_EMPRESA'
+    ]));
+  });
 });

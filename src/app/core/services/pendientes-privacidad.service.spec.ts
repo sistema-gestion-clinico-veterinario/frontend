@@ -186,19 +186,11 @@ describe('PendientesPrivacidadService', () => {
     expect(servicio.pendientes()).toEqual([]);
   });
 
-  it('al volver a la pestaña se consulta, pero no más de una vez por minuto', () => {
+  it('al volver a la pestaña no vuelve a consultar ni activa actualizaciones visuales inesperadas', () => {
     crear();
-    spyOnProperty(document, 'visibilityState', 'get').and.returnValue('visible');
-    const ahora = spyOn(Date, 'now');
-
-    ahora.and.returnValue(1_000_000);
-    document.dispatchEvent(new Event('visibilitychange'));
-    ahora.and.returnValue(1_030_000);
-    document.dispatchEvent(new Event('visibilitychange'));
-    ahora.and.returnValue(1_070_000);
     document.dispatchEvent(new Event('visibilitychange'));
 
-    expect(privacidad.miEstado).toHaveBeenCalledTimes(3);
+    expect(privacidad.miEstado).toHaveBeenCalledTimes(1);
   });
 
   it('si la consulta falla conserva lo último que sabía y no rompe nada', () => {

@@ -5,12 +5,21 @@ import { toObservable } from '@angular/core/rxjs-interop';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { distinctUntilChanged, skip } from 'rxjs/operators';
 import { AuthStore } from '../../store/auth.store';
-import { DashboardService, DashboardStats } from '../../core/services/dashboard.service';
+import {
+  DashboardAppointmentSummary,
+  DashboardAuditSummary,
+  DashboardCompanySummary,
+  DashboardEmployeeSummary,
+  DashboardGuardianSummary,
+  DashboardPaymentSummary,
+  DashboardPetSummary,
+  DashboardService,
+  DashboardStats
+} from '../../core/services/dashboard.service';
 import { SkeletonModule } from 'primeng/skeleton';
 import { FormsModule } from '@angular/forms';
 import { LoadingStore } from '../../store/loading.store';
 import { ChangePasswordModalComponent } from '../../layouts/main-layout/change-password-modal/change-password-modal.component';
-import { PagoListResponse } from '../../models/response/pago-response';
 import { DashboardCitasCalendarComponent } from './citas-calendar/citas-calendar.component';
 
 @Component({
@@ -54,23 +63,23 @@ export class DashboardComponent implements OnInit {
   }
 
   stats              = signal<DashboardStats | null>(null);
-  companies          = signal<any[]>([]);
+  companies          = signal<DashboardCompanySummary[]>([]);
   selectedCompanyId: number | null = null;
-  recentLogs         = signal<any[]>([]);
+  recentLogs         = signal<DashboardAuditSummary[]>([]);
   showPasswordModal  = signal(
     !this.authStore.passwordChanged() &&
     sessionStorage.getItem('pw_modal_dismissed') !== '1'
   );
 
-  employeesList       = signal<any[]>([]);
-  todayAppointmentsList = signal<any[]>([]);
-  petsList            = signal<any[]>([]);
+  employeesList       = signal<DashboardEmployeeSummary[]>([]);
+  todayAppointmentsList = signal<DashboardAppointmentSummary[]>([]);
+  petsList            = signal<DashboardPetSummary[]>([]);
   rolesList           = signal<any[]>([]);
-  apoderadosList      = signal<any[]>([]);
+  apoderadosList      = signal<DashboardGuardianSummary[]>([]);
   schedulesReport     = signal<any[]>([]);
-  allAppointments     = signal<any[]>([]);
+  allAppointments     = signal<DashboardAppointmentSummary[]>([]);
   chartPeriod         = signal<'day' | 'week' | 'month'>('day');
-  pagos               = signal<PagoListResponse[]>([]);
+  pagos               = signal<DashboardPaymentSummary[]>([]);
   loadingPagos        = signal(false);
   cargando            = signal(true);
 
@@ -176,7 +185,7 @@ export class DashboardComponent implements OnInit {
       const shiftEnd      = todayShift.horaFin.substring(0, 5);
       const isInsideShift = currentHourStr >= shiftStart && currentHourStr <= shiftEnd;
 
-      const isBusyNow = appointments.some((cita: any) => {
+      const isBusyNow = appointments.some(cita => {
         if (cita.veterinarioId !== emp.empleadoId) return false;
         if (!['EN_PROCESO', 'PROGRAMADA', 'REPROGRAMADA'].includes(cita.estado)) return false;
         const appStart = cita.fechaHoraInicio.split('T')[1]?.substring(0, 5);
@@ -212,7 +221,7 @@ export class DashboardComponent implements OnInit {
 
     const counts: Record<string, number> = {};
     let total = 0;
-    list.forEach((cita: any) => {
+    list.forEach(cita => {
       const sName = cita.servicioNombre || 'Consulta General';
       counts[sName] = (counts[sName] || 0) + 1;
       total++;

@@ -6,9 +6,17 @@
         <h1 class="text-2xl font-extrabold text-slate-900">Aviso de privacidad de la clínica</h1>
         <p class="mt-1 text-sm text-slate-500">Define la información que se mostrará antes de registrar datos personales. Cada publicación crea una versión inmutable.</p>
       </div>
-      @if (vigente(); as actual) {
-        <span class="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">Versión {{ actual.version }} vigente</span>
-      }
+      <div class="flex flex-wrap items-center gap-2">
+        @if (puedePublicar()) {
+          <a routerLink="/admin/privacidad/solicitudes"
+            class="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50">
+            <i class="pi pi-eraser mr-1"></i> Solicitudes de cancelación de datos
+          </a>
+        }
+        @if (vigente(); as actual) {
+          <span class="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">Versión {{ actual.version }} vigente</span>
+        }
+      </div>
     </header>
 
     <nav aria-label="Destinatarios del aviso" class="grid gap-2 rounded-xl border border-slate-200 bg-white p-2 sm:grid-cols-2">
