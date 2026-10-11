@@ -4,8 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { CdkDrag, CdkDropList, CdkDropListGroup, CdkDragHandle, CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
-import { forkJoin } from 'rxjs';
-import { MenuManagementService, VentanaDTO } from '../../../core/services/menu-management.service';
+import { MenuManagementService, VentanaDTO, VistaReordenItem } from '../../../core/services/menu-management.service';
 import { VistaDTO } from '../../../models/response/auth-login-response.model';
 import { LoadingStore } from '../../../store/loading.store';
 import { hasMeaningfulText } from '../../../core/utils/input-validation.util';
@@ -15,6 +14,7 @@ const STANDALONE_KEY = '__STANDALONE__';
 interface DisplayGroup {
   key: string;
   label: string;
+  ventanaId: number | null;
   items: VistaDTO[];
 }
 
@@ -87,46 +87,57 @@ expandedGroups = signal<Set<string>>(new Set());
     onConfirm: () => void;
   } | null>(null);
 
+  reordenHabilitado = computed(() => this.showInactive() && !this.filterText().trim());
+
   displayGroups = computed(() => {
-    const all = this.vistas();
-    const withActive = this.showInactive() ? all : all.filter(v => v.activo);
     const text = this.filterText().toLowerCase().trim();
-    const vistas = text
-      ? withActive.filter(v =>
-          v.nombre.toLowerCase().includes(text) || v.codigo.toLowerCase().includes(text))
-      : withActive;
+    const base = this.showInactive() ? this.vistas() : this.vistas().filter(v => v.activo);
+    const visibles = text
+      ? base.filter(v => v.nombre.toLowerCase().includes(text) || v.codigo.toLowerCase().includes(text))
+      : base;
 
-    const groupsMap = new Map<string, VistaDTO[]>();
-    for (const v of vistas) {
-      const g = v.grupo && v.grupo !== 'GENERAL' ? v.grupo : STANDALONE_KEY;
-      if (!groupsMap.has(g)) groupsMap.set(g, []);
-      groupsMap.get(g)!.push(v);
+    const grupos = new Map<string, DisplayGroup>();
+    const modulos = [...this.ventanas()].sort(
+      (a, b) => (a.orden ?? 0) - (b.orden ?? 0) || a.nombre.localeCompare(b.nombre));
+    for (const modulo of modulos) {
+      if (!text || visibles.some(v => v.ventanaId === modulo.id)) {
+        grupos.set(String(modulo.id), {
+          key: String(modulo.id),
+          label: modulo.activo ? modulo.nombre : `${modulo.nombre} (inactivo)`,
+          ventanaId: modulo.id,
+          items: []
+        });
+      }
+    }
+    for (const vista of visibles) {
+      const key = vista.ventanaId != null ? String(vista.ventanaId) : STANDALONE_KEY;
+      if (!grupos.has(key)) {
+        grupos.set(key, {
+          key,
+          label: key === STANDALONE_KEY ? 'Sin módulo' : (vista.ventanaNombre ?? `Módulo ${key}`),
+          ventanaId: vista.ventanaId ?? null,
+          items: []
+        });
+      }
+      grupos.get(key)!.items.push(vista);
+    }
+    if (!text && !grupos.has(STANDALONE_KEY)) {
+      grupos.set(STANDALONE_KEY, { key: STANDALONE_KEY, label: 'Sin módulo', ventanaId: null, items: [] });
     }
 
-    const result: DisplayGroup[] = [];
-    for (const [key, items] of groupsMap) {
-      result.push({ key, label: key === STANDALONE_KEY ? 'Sin grupo' : this.labelForGroup(key), items });
+    const resultado = [...grupos.values()];
+    for (const grupo of resultado) {
+      grupo.items.sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0) || a.nombre.localeCompare(b.nombre));
     }
-    return result;
+    return resultado.sort((a, b) =>
+      Number(a.key === STANDALONE_KEY) - Number(b.key === STANDALONE_KEY));
   });
-
-  private labelForGroup(key: string): string {
-    const map: Record<string, string> = {
-      ADMIN: 'Administración',
-      RRHH: 'Personal',
-      CLINICA: 'Clínica',
-      APODERADO: 'Portal Apoderado'
-    };
-    return map[key] || key;
-  }
-
 
   totalVistas = computed(() => this.vistas().length);
   activeVistas = computed(() => this.vistas().filter(v => v.activo).length);
   inactiveVistas = computed(() => this.vistas().filter(v => !v.activo).length);
   groupsCount = computed(() => this.displayGroups().filter(g => g.key !== STANDALONE_KEY).length);
   standaloneCount = computed(() => this.displayGroups().find(g => g.key === STANDALONE_KEY)?.items.length ?? 0);
-  groupOptions = computed(() => this.displayGroups().filter(g => g.key !== STANDALONE_KEY).map(g => g.key));
 
   openGroup = signal<string | null>(null);
 
@@ -145,10 +156,9 @@ isGroupExpanded(groupKey: string): boolean {
   return this.expandedGroups().has(groupKey);
 }
 
-// Añadir vista a un grupo específico
 addVistaToGroup(groupKey: string) {
   this.nuevaVista();
-  this.updateField('grupo', groupKey === '__STANDALONE__' ? 'GENERAL' : groupKey);
+  this.updateField('ventanaId', groupKey === STANDALONE_KEY ? null : Number(groupKey));
 }
 
   ngOnInit() {
@@ -178,24 +188,21 @@ addVistaToGroup(groupKey: string) {
   }
 
   onItemDrop(event: CdkDragDrop<VistaDTO[]>, targetGroupKey: string) {
+    if (!this.reordenHabilitado() || this.saving()) return;
     const groups = this.cloneGroups();
+    const target = groups.find(g => g.key === targetGroupKey);
+    if (!target) return;
 
     if (event.previousContainer === event.container) {
-      const group = groups.find(g => g.key === targetGroupKey);
-      if (!group) return;
-      moveItemInArray(group.items, event.previousIndex, event.currentIndex);
+      moveItemInArray(target.items, event.previousIndex, event.currentIndex);
     } else {
       const sourceGroupKey: string = event.item.data?.groupKey ?? targetGroupKey;
-      const sourceGroup = groups.find(g => g.key === sourceGroupKey);
-      const targetGroup = groups.find(g => g.key === targetGroupKey);
-      if (!sourceGroup || !targetGroup) return;
-      const [moved] = sourceGroup.items.splice(event.previousIndex, 1);
-      moved.grupo = targetGroupKey === STANDALONE_KEY ? 'GENERAL' : targetGroupKey;
-      moved.ordenGrupo = null;
-      targetGroup.items.splice(event.currentIndex, 0, moved);
+      const source = groups.find(g => g.key === sourceGroupKey);
+      if (!source) return;
+      const [moved] = source.items.splice(event.previousIndex, 1);
+      target.items.splice(event.currentIndex, 0, moved);
     }
 
-    this.vistas.set(this.flattenGroups(groups));
     this.saving.set(true);
     this.saveOrder(groups);
   }
@@ -204,34 +211,23 @@ addVistaToGroup(groupKey: string) {
     return this.displayGroups().map(g => ({ ...g, items: [...g.items] }));
   }
 
-  private flattenGroups(groups: DisplayGroup[]): VistaDTO[] {
-    return groups.flatMap(g => g.items);
-  }
-
   private saveOrder(groups: DisplayGroup[]) {
-    const payload: { id: number; orden: number; grupo: string; ordenGrupo: number | null }[] = [];
+    const payload: VistaReordenItem[] = groups.flatMap(group =>
+      group.items.map((item, index) => ({
+        id: item.id,
+        orden: (index + 1) * 10,
+        ventanaId: group.ventanaId,
+        sinModulo: group.ventanaId === null
+      })));
 
-    groups.forEach((group, groupIdx) => {
-      if (group.key === STANDALONE_KEY) {
-        group.items.forEach((item, itemIdx) => {
-          payload.push({
-            id: item.id,
-            orden: (itemIdx + 1) * 10,
-            grupo: 'GENERAL',
-            ordenGrupo: null
-          });
-        });
-      } else {
-        group.items.forEach((item, itemIdx) => {
-          payload.push({
-            id: item.id,
-            orden: (itemIdx + 1) * 10,
-            grupo: group.key,
-            ordenGrupo: (groupIdx + 1) * 10
-          });
-        });
-      }
-    });
+    const anterior = this.vistas();
+    const cambios = new Map(groups.flatMap(group =>
+      group.items.map((item, index) => [item.id, {
+        orden: (index + 1) * 10,
+        ventanaId: group.ventanaId,
+        ventanaNombre: group.ventanaId === null ? undefined : group.label
+      }] as const)));
+    this.vistas.set(anterior.map(v => cambios.has(v.id) ? { ...v, ...cambios.get(v.id)! } : v));
 
     this.menuService.reordenarVistas(payload).subscribe({
       next: () => this.saving.set(false),
@@ -401,36 +397,31 @@ addVistaToGroup(groupKey: string) {
   confirmAction() { const d = this.confirmDialog(); if (d) d.onConfirm(); }
 
   startRenameGroup(group: DisplayGroup) {
-    if (group.key === STANDALONE_KEY) return;
+    if (group.ventanaId === null) return;
     this.editingGroupKey.set(group.key);
-    this.editingGroupName.set(group.key);
+    this.editingGroupName.set(this.ventanas().find(v => v.id === group.ventanaId)?.nombre ?? '');
   }
 
-  confirmRenameGroup(oldKey: string) {
-    const newKey = this.editingGroupName().trim().toUpperCase().replace(/\s+/g, '_');
+  confirmRenameGroup(key: string) {
+    const nuevoNombre = this.editingGroupName().trim();
     this.editingGroupKey.set(null);
-    if (!newKey || newKey === oldKey) return;
-    if (!/^[A-Z0-9_-]{1,40}$/.test(newKey) || /^[\W_]+$/.test(newKey)) {
-      this.messageService.add({ severity: 'warn', summary: 'Grupo invalido', detail: 'Use letras, numeros, guion o guion bajo.' });
+    const modulo = this.ventanas().find(v => String(v.id) === key);
+    if (!modulo || !nuevoNombre || nuevoNombre === modulo.nombre) return;
+    if (nuevoNombre.length < 2 || nuevoNombre.length > 80 || !hasMeaningfulText(nuevoNombre, false)) {
+      this.messageService.add({ severity: 'warn', summary: 'Nombre invalido', detail: 'El nombre del módulo debe tener entre 2 y 80 caracteres.' });
       return;
     }
-    const toUpdate = this.vistas().filter(v => v.grupo === oldKey);
-    if (!toUpdate.length) return;
     this.loadingStore.show();
-    forkJoin(toUpdate.map(v =>
-      this.menuService.actualizarVista(v.id, {
-        nombre: v.nombre, grupo: newKey, ventanaId: v.ventanaId ?? null,
-        orden: v.orden, ordenGrupo: v.ordenGrupo, activo: v.activo, icono: v.icono || null
-      })
-    )).subscribe({
+    this.menuService.actualizarVentana(modulo.id, { ...modulo, nombre: nuevoNombre }).subscribe({
       next: () => {
         this.loadingStore.hide();
-        this.messageService.add({ severity: 'success', summary: 'Éxito', detail: `Grupo renombrado a "${newKey}"` });
+        this.messageService.add({ severity: 'success', summary: 'Éxito', detail: `Módulo renombrado a "${nuevoNombre}"` });
+        this.cargarVentanas();
         this.cargarVistas();
       },
-      error: () => {
+      error: (err) => {
         this.loadingStore.hide();
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo renombrar el grupo' });
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo renombrar el módulo' });
       }
     });
   }

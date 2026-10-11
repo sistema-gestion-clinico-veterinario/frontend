@@ -86,6 +86,11 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/admin/privacidad/privacidad.component').then((m) => m.PrivacidadComponent)
       },
       {
+        path: 'admin/privacidad/solicitudes',
+        data: { ventana: 'VISTA_COMPANY', permiso: 'leer' },
+        loadComponent: () => import('./pages/admin/privacidad/solicitudes/solicitudes-cancelacion.component').then((m) => m.SolicitudesCancelacionComponent)
+      },
+      {
         path: 'auditoria',
         data: { ventana: 'VISTA_AUDITORIA_ADMIN' },
         loadComponent: () => import('./pages/admin/auditoria/auditoria.component').then((m) => m.AuditoriaComponent)

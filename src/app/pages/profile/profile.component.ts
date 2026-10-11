@@ -21,6 +21,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { LegalAcceptanceDTO, LegalService } from '../../core/services/legal.service';
 import { PendientesPrivacidadService } from '../../core/services/pendientes-privacidad.service';
 import { CloseAccountCardComponent } from './close-account/close-account-card.component';
+import { CancelarDatosCardComponent } from './cancelar-datos/cancelar-datos-card.component';
 import {
   AvisoPublico,
   ConsentimientoEstado,
@@ -48,7 +49,7 @@ const DIAS_SEMANA_ORDEN = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ToastModule, DialogModule, SkeletonModule, InputFilterDirective, CloseAccountCardComponent],
+  imports: [CommonModule, ReactiveFormsModule, ToastModule, DialogModule, SkeletonModule, InputFilterDirective, CloseAccountCardComponent, CancelarDatosCardComponent],
   providers: [MessageService],
   templateUrl: './profile.component.html'
 })

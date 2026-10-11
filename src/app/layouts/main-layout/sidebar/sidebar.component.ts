@@ -130,6 +130,10 @@ export class SidebarComponent {
     return structures.sort((a, b) => (a.orden || 0) - (b.orden || 0));
   });
 
+  sesionCargada = computed(() => this.authStore.activeRoleId() != null);
+  cargandoMenu = computed(() => !this.sesionCargada() && this.menuStructure().length === 0);
+  sinOpciones = computed(() => this.sesionCargada() && this.menuStructure().length === 0);
+
   navItemClass(isActive: boolean): string {
     if (this.collapsed()) {
       return isActive

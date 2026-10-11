@@ -15,7 +15,6 @@ export interface PendientePrivacidad {
 }
 
 const CLAVE_DESCARTADOS = 'pendientes_privacidad_descartados';
-const ESPERA_AL_VOLVER_MS = 60_000;
 const PANTALLAS_QUE_RESUELVEN = ['/aviso-clinica', '/legal/accept', '/profile'];
 
 /**
@@ -33,7 +32,6 @@ export class PendientesPrivacidadService {
   private readonly estado = signal<ConsentimientoEstado | null>(null);
   private readonly descartados = signal<readonly string[]>([]);
   private readonly consultas = new Subject<void>();
-  private ultimaVisita = 0;
   private urlAnterior = '';
 
   readonly pendientes = computed<PendientePrivacidad[]>(() => {
@@ -107,17 +105,6 @@ export class PendientesPrivacidadService {
       if (this.pendientes().length > 0 && PANTALLAS_QUE_RESUELVEN.some(ruta => desde.includes(ruta))) this.refrescar();
     });
 
-    if (typeof document !== 'undefined') {
-      const alVolver = () => {
-        if (document.visibilityState !== 'visible') return;
-        const ahora = Date.now();
-        if (ahora - this.ultimaVisita < ESPERA_AL_VOLVER_MS) return;
-        this.ultimaVisita = ahora;
-        this.refrescar();
-      };
-      document.addEventListener('visibilitychange', alVolver);
-      this.destroyRef.onDestroy(() => document.removeEventListener('visibilitychange', alVolver));
-    }
   }
 
   refrescar(): void {

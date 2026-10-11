@@ -1,0 +1,116 @@
+@if (visible()) {
+  <section class="rounded-2xl border border-slate-100 bg-white p-6">
+    <h3 class="mb-4 flex items-center gap-2 text-sm font-semibold text-slate-700">
+      <i class="pi pi-eraser text-slate-400"></i> Cancelar mis datos personales
+    </h3>
+    <p class="text-xs leading-5 text-slate-600">
+      Puedes pedir que la clínica elimine tus datos personales: nombre, documento, correo, teléfono y dirección.
+      La clínica conserva los registros clínicos y comerciales que está obligada a guardar, pero ya sin identificarte.
+      Cuando se ejecute, tu cuenta se cierra y no se puede reactivar.
+    </p>
+
+    @if (pendiente(); as solicitud) {
+      <div class="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs leading-5 text-slate-700" role="status">
+        <p class="font-semibold text-slate-800">Tu solicitud está en revisión</p>
+        <p>Recibida el {{ solicitud.creadaAt | date: 'dd/MM/yyyy' }}. La clínica te responderá antes del {{ solicitud.fechaLimite | date: 'dd/MM/yyyy' }}.</p>
+      </div>
+    } @else {
+      @if (rechazada(); as solicitud) {
+        <div class="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs leading-5 text-slate-700" role="status">
+          <p class="font-semibold text-slate-800">La clínica no pudo atender tu última solicitud</p>
+          <p>{{ solicitud.motivoResolucion }}</p>
+        </div>
+      }
+      <button type="button" (click)="abrir()" [disabled]="!estado()?.puedeSolicitar"
+        class="mt-4 rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50">
+        Solicitar la cancelación de mis datos
+      </button>
+    }
+  </section>
+
+  @if (dialogoAbierto()) {
+    <div class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/50 p-4" (keydown.escape)="cancelar()">
+      <div role="dialog" aria-modal="true" aria-labelledby="cancelar-datos-titulo"
+        class="relative w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
+        <button type="button" (click)="cancelar()" [disabled]="trabajando()" title="Cerrar" aria-label="Cerrar"
+          class="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 disabled:opacity-50">
+          <i class="pi pi-times text-xs"></i>
+        </button>
+
+        @switch (paso()) {
+          @case ('inicio') {
+            <h2 id="cancelar-datos-titulo" class="text-xl font-bold text-slate-900">Confirma que eres tú</h2>
+            <p class="mt-2 text-sm leading-6 text-slate-500">
+              Para solicitar la cancelación de tus datos te enviaremos un código de 6 dígitos a tu correo.
+            </p>
+            @if (estado()?.requierePassword) {
+              <div class="mt-5">
+                <label for="cancelar-password" class="text-xs font-semibold text-slate-700">Tu contraseña</label>
+                <div class="relative mt-1.5">
+                  <input id="cancelar-password" [type]="mostrarPassword() ? 'text' : 'password'" autocomplete="current-password" autofocus
+                    [value]="password()" (input)="password.set($any($event.target).value)" (keydown.enter)="enviarCodigo()"
+                    class="h-12 w-full rounded-xl border border-slate-300 pl-4 pr-12 text-sm text-slate-800 outline-none focus:border-[var(--brand-primary)]" />
+                  <button type="button" (click)="alternarPassword()"
+                    [attr.aria-label]="mostrarPassword() ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+                    class="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg text-slate-400 hover:text-slate-600">
+                    <i class="pi text-sm" [class]="mostrarPassword() ? 'pi-eye-slash' : 'pi-eye'"></i>
+                  </button>
+                </div>
+              </div>
+            }
+            <div class="mt-4">
+              <label for="cancelar-motivo" class="text-xs font-semibold text-slate-700">Motivo (opcional)</label>
+              <textarea id="cancelar-motivo" rows="2" maxlength="500" [value]="motivo()" (input)="motivo.set($any($event.target).value)"
+                class="mt-1.5 w-full rounded-xl border border-slate-300 p-3 text-sm text-slate-800 outline-none focus:border-[var(--brand-primary)]"></textarea>
+            </div>
+          }
+          @case ('codigo') {
+            <h2 id="cancelar-datos-titulo" class="text-xl font-bold text-slate-900">Escribe el código</h2>
+            <p class="mt-2 text-sm leading-6 text-slate-500">{{ info() }}</p>
+            <div class="mt-5">
+              <app-codigo-verificacion [(codigo)]="codigo" (confirmar)="confirmar()" />
+            </div>
+            <button type="button" (click)="enviarCodigo()" [disabled]="trabajando() || espera() > 0"
+              class="mt-3 text-xs font-semibold text-[var(--brand-primary)] hover:underline disabled:cursor-not-allowed disabled:no-underline disabled:opacity-50">
+              {{ espera() > 0 ? 'Reenviar código en ' + esperaLegible(espera()) : 'Reenviar código' }}
+            </button>
+            <p class="mt-5 rounded-xl bg-slate-50 p-3 text-xs leading-5 text-slate-600">
+              Esto registra tu solicitud. Tu cuenta no se cierra todavía: la clínica la revisa y te avisa por correo cuando la atienda.
+            </p>
+          }
+          @case ('listo') {
+            <h2 id="cancelar-datos-titulo" class="text-xl font-bold text-slate-900">Solicitud recibida</h2>
+            <p class="mt-2 text-sm leading-6 text-slate-500">
+              La clínica revisará tu solicitud y te responderá por correo dentro del plazo indicado en tu perfil.
+            </p>
+          }
+        }
+
+        @if (error()) {
+          <p class="mt-4 rounded-xl border border-slate-300 bg-slate-50 p-3 text-xs font-medium text-slate-700" role="alert">{{ error() }}</p>
+        }
+
+        <div class="mt-6 space-y-2">
+          @switch (paso()) {
+            @case ('inicio') {
+              <button type="button" (click)="enviarCodigo()" [disabled]="trabajando() || espera() > 0"
+                class="flex h-12 w-full items-center justify-center rounded-xl bg-[var(--brand-primary)] text-sm font-bold text-white hover:opacity-90 disabled:opacity-60">
+                {{ trabajando() ? 'Enviando...' : espera() > 0 ? 'Espera ' + esperaLegible(espera()) : 'Enviarme el código' }}
+              </button>
+            }
+            @case ('codigo') {
+              <button type="button" (click)="confirmar()" [disabled]="trabajando()"
+                class="flex h-12 w-full items-center justify-center rounded-xl bg-[var(--brand-primary)] text-sm font-bold text-white hover:opacity-90 disabled:opacity-60">
+                {{ trabajando() ? 'Enviando...' : 'Registrar mi solicitud' }}
+              </button>
+            }
+          }
+          <button type="button" (click)="cancelar()" [disabled]="trabajando()"
+            class="flex h-11 w-full items-center justify-center rounded-xl text-sm font-semibold text-slate-500 hover:bg-slate-50 disabled:opacity-50">
+            {{ paso() === 'listo' ? 'Cerrar' : 'Cancelar' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+}
