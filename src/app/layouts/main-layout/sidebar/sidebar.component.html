@@ -35,7 +35,13 @@
     [class.px-3]="!collapsed()" [class.px-0]="collapsed()"
     >
     <div class="space-y-1">
-      @if (menuStructure().length === 0 && !collapsed()) {
+      @if (sinOpciones() && !collapsed()) {
+        <div class="mx-2 rounded-md border border-slate-200 px-3 py-3" role="status">
+          <p class="text-[13px] font-semibold text-slate-700">Sin opciones disponibles</p>
+          <p class="mt-1 text-xs leading-relaxed text-slate-500">Tu rol no tiene opciones habilitadas. Pide acceso al administrador.</p>
+        </div>
+      }
+      @if (cargandoMenu() && !collapsed()) {
         <div class="space-y-2 px-2">
           @for (i of [1,2,3,4,5]; track i) {
             <div class="flex h-10 items-center gap-3">

@@ -316,6 +316,7 @@ export const AuthStore = signalStore(
       // Pantallas que no tienen su propia vista en el menú: se permiten con el módulo al que pertenecen.
       const MODULOS_DE_PANTALLAS_DE_APOYO: Record<string, string[]> = {
         'admin/privacidad': ['company', 'admin/company'],
+        'admin/privacidad/solicitudes': ['company', 'admin/company'],
       };
       const modulos = MODULOS_DE_PANTALLAS_DE_APOYO[normalized];
       if (modulos) {

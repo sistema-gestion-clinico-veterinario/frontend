@@ -1,6 +1,7 @@
 
 import { Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { SOFTVET_LOGO_URL } from '../../../core/constants/branding.constants';
 import { AuthService, GOOGLE_PENDING_SLUG_KEY } from '../../../core/services/auth.service';
 import { SessionService } from '../../../core/services/session.service';
 import { resolveInitialRoute, resolveDashboardRoute } from '../../../layouts/main-layout/navbar/navbar.component';
@@ -13,19 +14,23 @@ import { resolveInitialRoute, resolveDashboardRoute } from '../../../layouts/mai
   standalone: true,
   imports: [],
   template: `
-    <div class="flex min-h-[100dvh] items-center justify-center bg-white" role="status" aria-live="polite">
-      <div class="flex flex-col items-center px-6 text-center">
-        <svg class="h-8 w-8 animate-spin text-[var(--brand-primary)]" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <circle class="opacity-25" cx="12" cy="12" r="9" stroke="currentColor" stroke-width="3"></circle>
-          <path class="opacity-90" fill="currentColor" d="M21 12a9 9 0 0 0-9-9v3a6 6 0 0 1 6 6h3Z"></path>
-        </svg>
-        <p class="mt-4 text-base font-bold text-slate-900">Completando el inicio de sesión</p>
-        <p class="mt-1 text-sm text-slate-500">Estamos verificando tu acceso a la clínica.</p>
-      </div>
+    <div
+      class="flex min-h-[100dvh] items-center justify-center bg-white"
+      role="status"
+      aria-live="polite"
+      aria-label="Iniciando sesión"
+    >
+      <img
+        [src]="logoUrl"
+        alt="SoftVet"
+        class="loader-pulse h-24 w-24 object-contain"
+      />
     </div>
   `
 })
 export class GoogleCallbackComponent implements OnInit {
+  protected readonly logoUrl = SOFTVET_LOGO_URL;
+
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly authService = inject(AuthService);

@@ -9,6 +9,17 @@ export interface VentanaDTO {
   codigo: string;
   nombre: string;
   activo: boolean;
+  orden?: number;
+  grupo?: string | null;
+  icono?: string | null;
+  presentacionDefault?: string;
+}
+
+export interface VistaReordenItem {
+  id: number;
+  orden: number;
+  ventanaId?: number | null;
+  sinModulo?: boolean;
 }
 
 @Injectable({
@@ -41,7 +52,11 @@ export class MenuManagementService {
     return this.http.delete<ApiResponse<void>>(`${this.vistaUrl}/${id}`);
   }
 
-  reordenarVistas(items: { id: number; orden: number; grupo: string; ordenGrupo: number | null }[]) {
+  reordenarVistas(items: VistaReordenItem[]) {
     return this.http.put<ApiResponse<void>>(`${this.vistaUrl}/reorder`, items);
+  }
+
+  actualizarVentana(id: number, data: VentanaDTO) {
+    return this.http.put<ApiResponse<VentanaDTO>>(`${this.ventanaUrl}/${id}`, data);
   }
 }

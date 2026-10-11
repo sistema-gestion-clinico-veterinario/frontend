@@ -55,7 +55,7 @@
         <i class="pi pi-folder text-violet-600 text-sm"></i>
       </div>
       <div>
-        <p class="text-[11px] text-slate-400 font-medium">Grupos</p>
+        <p class="text-[11px] text-slate-400 font-medium">Módulos</p>
         <p class="text-lg font-extrabold text-slate-800 leading-none">{{ groupsCount() }}</p>
       </div>
     </div>
@@ -137,13 +137,13 @@
                     <button
                       (click)="$event.stopPropagation(); startRenameGroup(group)"
                       class="p-1.5 rounded-lg text-slate-300 hover:text-blue-500 hover:bg-blue-50 transition-colors"
-                      title="Renombrar grupo">
+                      title="Renombrar módulo">
                       <i class="pi pi-pencil text-xs"></i>
                     </button>
                   }
                   <button (click)="$event.stopPropagation(); addVistaToGroup(group.key)"
                     class="p-1.5 rounded-lg text-slate-300 hover:text-blue-500 hover:bg-blue-50 transition-colors"
-                    title="Agregar vista a este grupo">
+                    title="Agregar vista a este módulo">
                     <i class="pi pi-plus text-xs"></i>
                   </button>
                   <i class="pi text-slate-300 text-xs ml-1"
@@ -154,6 +154,7 @@
                 <div
                   cdkDropList
                   [cdkDropListData]="group.items"
+                  [cdkDropListDisabled]="!reordenHabilitado()"
                   (cdkDropListDropped)="onItemDrop($event, group.key)"
                   class="min-h-[32px]">
                   @for (vista of group.items; track vista) {
@@ -191,7 +192,7 @@
                   }
                   @if (group.items.length === 0) {
                     <div class="py-3 text-center text-slate-300 text-xs">
-                      Sin vistas en este grupo
+                      Sin vistas en este módulo
                     </div>
                   }
                 </div>
@@ -204,7 +205,11 @@
         @if (displayGroups().length > 0) {
           <p class="text-[11px] text-slate-300 flex items-center gap-1.5 px-1 pt-1">
             <i class="pi pi-info-circle"></i>
-            Arrastra las vistas para reordenar o mover entre grupos
+            @if (reordenHabilitado()) {
+              Arrastra las vistas para reordenarlas o moverlas entre módulos. El menú lateral cambia en el siguiente inicio de sesión o recarga de cada usuario.
+            } @else {
+              Para reordenar o mover vistas, quita el buscador y muestra las vistas inactivas.
+            }
           </p>
         }
       </div>
@@ -301,30 +306,14 @@
                 }
               </div>
 
-              <!-- GRUPO -->
-              <div>
-                <label class="block text-[11px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5">Grupo</label>
-                <input type="text" list="grupos-disponibles"
-                  [ngModel]="vistaForm().grupo" (ngModelChange)="updateField('grupo', $event)"
-                  placeholder="ADMIN, CLINICA, RRHH..."
-                  class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
-                  <datalist id="grupos-disponibles">
-                    @for (g of groupOptions(); track g) {
-                      <option [value]="g"></option>
-                    }
-                    <option value="GENERAL"></option>
-                  </datalist>
-                  <p class="text-[11px] text-slate-400 mt-1">Usa <span class="font-mono bg-slate-100 px-1 rounded">GENERAL</span> para que aparezca sin grupo</p>
-                </div>
-
                 <!-- VENTANA -->
                 <div>
-                  <label class="block text-[11px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5">Ventana (menú lateral)</label>
+                  <label class="block text-[11px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5">Módulo (menú lateral)</label>
                   <select
                     [ngModel]="vistaForm().ventanaId"
                     (ngModelChange)="updateField('ventanaId', $event)"
                     class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white">
-                    <option [ngValue]="null">Sin ventana (no aparecerá en el menú)</option>
+                    <option [ngValue]="null">Sin módulo (aparece como entrada suelta)</option>
                     @for (v of ventanas(); track v.id) {
                       <option [ngValue]="v.id">{{ v.nombre }}{{ !v.activo ? ' (inactiva)' : '' }}</option>
                     }
@@ -366,12 +355,6 @@
                             placeholder="0" min="0"
                             class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
                           </div>
-                          <div>
-                            <label class="block text-[11px] font-semibold text-slate-500 mb-1">Orden del grupo</label>
-                            <input type="number" [ngModel]="vistaForm().ordenGrupo" (ngModelChange)="updateField('ordenGrupo', $event)"
-                              placeholder="Auto"
-                              class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
-                            </div>
                             <p class="sm:col-span-2 text-[11px] text-slate-400">Se actualiza automáticamente al arrastrar.</p>
                           </div>
                         }

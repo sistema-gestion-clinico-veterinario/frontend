@@ -1,8 +1,9 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../../models/response/api-response';
+import { SKIP_GLOBAL_LOADING } from '../interceptors/http-context.tokens';
 
 export type AudienciaAvisoPrivacidad = 'PROPIETARIOS_Y_AUTORIZADOS' | 'TRABAJADORES_Y_USUARIOS';
 
@@ -121,7 +122,13 @@ export class PrivacidadService {
   }
 
   miEstado(): Observable<ApiResponse<ConsentimientoEstado>> {
-    return this.http.get<ApiResponse<ConsentimientoEstado>>(`${this.base}/privacidad/mi-estado`);
+    // Esta consulta mantiene actualizado el contador de notificaciones y también
+    // se usa en guardas de navegación. No debe cubrir la aplicación con el
+    // preloader global ni dar la impresión de que la página se recargó.
+    return this.http.get<ApiResponse<ConsentimientoEstado>>(
+      `${this.base}/privacidad/mi-estado`,
+      { context: new HttpContext().set(SKIP_GLOBAL_LOADING, true) }
+    );
   }
 
   leiElAviso(): Observable<ApiResponse<ConsentimientoEstado>> {
