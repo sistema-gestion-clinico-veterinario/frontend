@@ -826,6 +826,7 @@
                   <p-confirmDialog></p-confirmDialog>
                   <p-toast position="bottom-right"></p-toast>
 
+                  @defer (when previewArchivo() || showConfirmEliminarArchivo()) {
                   <app-archivo-modals
                     [previewArchivo]="previewArchivo()"
                     [previewUrl]="previewUrl()"
@@ -837,7 +838,9 @@
                     (cancelarEliminar)="showConfirmEliminarArchivo.set(false); archivoEliminando.set(null)"
                     (confirmarEliminar)="eliminarArchivo()">
                   </app-archivo-modals>
+                  }
 
+                  @defer (when showRecetaModal() || showConfirmEliminar()) {
                   <app-receta-modals
                     [showForm]="showRecetaModal()"
                     [recetaEditando]="recetaEditando()"
@@ -850,7 +853,9 @@
                     (cancelarEliminar)="showConfirmEliminar.set(false); recetaEliminando.set(null)"
                     (confirmarEliminar)="eliminarReceta()">
                   </app-receta-modals>
+                  }
 
+                  @defer (when showDiagnosticoModal() || showConfirmEliminarDiagnostico()) {
                   <app-diagnostico-modals
                     [showForm]="showDiagnosticoModal()"
                     [diagnosticoEditando]="diagnosticoEditando()"
@@ -863,7 +868,9 @@
                     (cancelarEliminar)="showConfirmEliminarDiagnostico.set(false); diagnosticoEliminando.set(null)"
                     (confirmarEliminar)="eliminarDiagnostico()">
                   </app-diagnostico-modals>
+                  }
 
+                  @defer (when showTratamientoModal() || showConfirmEliminarTratamiento()) {
                   <app-tratamiento-modals
                     [showForm]="showTratamientoModal()"
                     [tratamientoEditando]="tratamientoEditando()"
@@ -876,6 +883,7 @@
                     (cancelarEliminar)="showConfirmEliminarTratamiento.set(false); tratamientoEliminando.set(null)"
                     (confirmarEliminar)="eliminarTratamiento()">
                   </app-tratamiento-modals>
+                  }
                   <p-drawer [visible]="displayDetalleHistorial()" (visibleChange)="displayDetalleHistorial.set($event)" position="right"
                     styleClass="w-full md:w-[500px] lg:w-[600px] border-l border-slate-200 shadow-none overflow-hidden">
 

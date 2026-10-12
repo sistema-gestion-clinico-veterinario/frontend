@@ -1,0 +1,158 @@
+<div (click)="closed.emit()"
+  class="fixed inset-0 z-[114] bg-slate-900/40 animate-in fade-in duration-200">
+</div>
+
+<div class="fixed inset-y-0 right-0 w-full sm:w-[400px] bg-slate-50 border-l border-slate-200 z-[115] flex flex-col animate-in slide-in-from-right duration-300">
+  <div class="flex items-center justify-between px-5 py-4 border-b border-slate-200 bg-slate-50">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl flex items-center justify-center font-extrabold text-base shrink-0"
+        [class]="avatarClass()">
+        {{ cita().mascotaNombre.charAt(0).toUpperCase() }}
+      </div>
+      <div class="min-w-0">
+        <h2 class="text-sm font-semibold text-slate-800 leading-tight truncate">{{ cita().mascotaNombre }}</h2>
+        <p class="text-[10px] text-slate-400 mt-0.5 truncate">{{ cita().apoderadoNombre }}</p>
+        <span class="inline-flex items-center mt-1 px-2 py-0.5 rounded-full text-[10px] font-bold"
+          [class]="statusClass()">{{ statusLabel() }}</span>
+      </div>
+    </div>
+    <button (click)="closed.emit()"
+      class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all">
+      <i class="pi pi-times text-sm"></i>
+    </button>
+  </div>
+
+  <div class="flex-1 overflow-y-auto p-5 space-y-5 bg-slate-50">
+    @if (cita().esEmergencia) {
+      <div class="flex items-center gap-2 px-3 py-2.5 bg-rose-50 border border-rose-200 rounded-xl">
+        <i class="pi pi-exclamation-triangle text-rose-500 shrink-0 text-sm"></i>
+        <span class="text-xs font-bold text-rose-600 uppercase tracking-wide">Cita de Emergencia</span>
+      </div>
+    }
+
+    <div class="space-y-3">
+      <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+        <i class="pi pi-calendar text-[10px]"></i> Fecha y Horario
+      </p>
+      <div class="grid grid-cols-2 gap-3">
+        <div class="bg-white border border-slate-200 rounded-xl px-3 py-2.5">
+          <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wide block mb-1">Fecha</span>
+          <span class="text-sm font-bold text-slate-800 block">{{ cita().fechaHoraInicio | date:'dd/MM/yyyy' }}</span>
+          <span class="text-[10px] text-slate-400 mt-0.5 block">{{ cita().fechaHoraInicio | date:'EEEE' | titlecase }}</span>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-xl px-3 py-2.5">
+          <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wide block mb-1">Turno</span>
+          <span class="text-sm font-bold text-slate-800 block">{{ cita().fechaHoraInicio | date:'HH:mm' }} – {{ cita().fechaHoraFin | date:'HH:mm' }}</span>
+          <span class="text-[10px] text-slate-400 mt-0.5 block">{{ cita().duracionMinutos }} min</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="space-y-3">
+      <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+        <i class="pi pi-heart text-[10px]"></i> Paciente y Médico
+      </p>
+      <div class="space-y-2">
+        <div class="flex items-center justify-between py-2 border-b border-slate-100">
+          <span class="text-xs text-slate-400 font-medium">Paciente</span>
+          <span class="text-xs font-semibold text-slate-800">{{ cita().mascotaNombre }}</span>
+        </div>
+        <div class="flex items-center justify-between py-2 border-b border-slate-100">
+          <span class="text-xs text-slate-400 font-medium">Apoderado</span>
+          <span class="text-xs font-semibold text-slate-800 truncate max-w-[160px] text-right">{{ cita().apoderadoNombre }}</span>
+        </div>
+        <div class="flex items-center justify-between py-2">
+          <span class="text-xs text-slate-400 font-medium">Veterinario</span>
+          <span class="text-xs font-semibold text-slate-800 truncate max-w-[160px] text-right">{{ cita().veterinarioNombre }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="space-y-3">
+      <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+        <i class="pi pi-file text-[10px]"></i> Motivo y Notas
+      </p>
+      <div class="bg-white border border-slate-200 rounded-xl px-3 py-2.5">
+        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wide block mb-1">Motivo</span>
+        <span class="text-sm font-medium text-slate-700 leading-snug">{{ cita().motivoCita }}</span>
+      </div>
+      @if (cita().notas) {
+        <div class="bg-white border border-slate-200 rounded-xl px-3 py-2.5">
+          <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wide block mb-1">Notas adicionales</span>
+          <span class="text-xs text-slate-600 leading-relaxed">{{ cita().notas }}</span>
+        </div>
+      }
+    </div>
+
+    @if (cita().servicioNombre) {
+      <div class="space-y-3">
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+          <i class="pi pi-wallet text-[10px]"></i> Servicio y Pago
+        </p>
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between py-2 border-b border-slate-100">
+            <span class="text-xs text-slate-400 font-medium">Servicio</span>
+            <span class="text-xs font-semibold text-slate-800">{{ cita().servicioNombre }}</span>
+          </div>
+          <div class="flex items-center justify-between py-2 border-b border-slate-100">
+            <span class="text-xs text-slate-400 font-medium">Total</span>
+            <span class="text-sm font-bold text-slate-800">S/ {{ cita().totalServicio | number:'1.2-2' }}</span>
+          </div>
+          @if ((cita().montoPagado ?? 0) > 0) {
+            <div class="flex items-center justify-between py-2 border-b border-slate-100">
+              <span class="text-xs text-slate-400 font-medium">Pagado</span>
+              <span class="text-xs font-bold text-emerald-600">S/ {{ cita().montoPagado | number:'1.2-2' }}</span>
+            </div>
+          }
+          @if ((cita().totalServicio ?? 0) > (cita().montoPagado ?? 0)) {
+            <div class="flex items-center justify-between py-2">
+              <span class="text-xs text-slate-400 font-medium">Saldo pendiente</span>
+              <span class="text-xs font-bold text-amber-600">S/ {{ ((cita().totalServicio ?? 0) - (cita().montoPagado ?? 0)) | number:'1.2-2' }}</span>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+
+  <div class="px-5 py-4 border-t border-slate-200 space-y-2 bg-slate-100">
+    <div class="flex gap-2">
+      @if (canCreateHistory() && (cita().estado === 'PROGRAMADA' || cita().estado === 'CONFIRMADA' || cita().estado === 'SALA_DE_ESPERA' || cita().estado === 'REPROGRAMADA')) {
+        <button (click)="consultationStarted.emit(cita())"
+          class="flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-bold rounded-xl transition-all bg-emerald-500 hover:bg-emerald-600 text-white">
+          <i class="pi pi-play text-xs"></i> Iniciar atención
+        </button>
+      }
+      @if (canReadHistory() && cita().estado === 'EN_PROCESO') {
+        <button (click)="consultationContinued.emit(cita())"
+          class="flex-1 flex items-center justify-center gap-2 py-2.5 bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold rounded-xl transition-all">
+          <i class="pi pi-pencil text-xs"></i> {{ canModifyHistory() ? 'Continuar consulta' : 'Ver consulta' }}
+        </button>
+      }
+      @if (canReadHistory() && (cita().estado === 'COMPLETADA' || cita().consultaId) && cita().estado !== 'EN_PROCESO') {
+        <button (click)="consultationViewed.emit(cita())"
+          class="flex-1 flex items-center justify-center gap-2 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold rounded-xl transition-all">
+          <i class="pi pi-file text-xs"></i> Ver consulta
+        </button>
+      }
+    </div>
+    <div class="flex gap-2">
+      @if (cancellationAllowed()) {
+        <button *appHasPermission="'VISTA_CITAS_AGENDA:modificar'" (click)="appointmentCancelled.emit(cita())"
+          class="flex-1 flex items-center justify-center gap-2 py-2 border border-slate-200 text-rose-500 hover:bg-rose-50 hover:border-rose-200 text-xs font-semibold rounded-xl transition-all">
+          <i class="pi pi-times text-xs"></i> Cancelar
+        </button>
+      }
+      @if (cita().estado === 'CANCELADA') {
+        <button *appHasPermission="'VISTA_CITAS_AGENDA:eliminar'" (click)="appointmentDeleted.emit(cita())"
+          class="flex-1 flex items-center justify-center gap-2 py-2 border border-slate-200 text-red-500 hover:bg-red-50 hover:border-red-200 text-xs font-semibold rounded-xl transition-all">
+          <i class="pi pi-trash text-xs"></i> Eliminar
+        </button>
+      }
+      <button (click)="closed.emit()"
+        class="flex-1 py-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 text-xs font-semibold rounded-xl transition-all">
+        Cerrar
+      </button>
+    </div>
+  </div>
+</div>

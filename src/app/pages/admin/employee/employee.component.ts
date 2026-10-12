@@ -148,10 +148,17 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     if (index > -1) {
       currentValues.splice(index, 1);
     } else {
+      if (controlName === 'roleIds' && currentValues.length >= this.maxRolesPorEmpresa) return;
       currentValues.push(value);
     }
     control.setValue(currentValues);
     control.markAsTouched();
+  }
+
+  readonly maxRolesPorEmpresa = 3;
+
+  public rolSeleccionable(value: any): boolean {
+    return this.isSelected('roleIds', value) || (this.employeeForm.get('roleIds')?.value?.length ?? 0) < this.maxRolesPorEmpresa;
   }
 
   public isSelected(controlName: string, value: any): boolean {

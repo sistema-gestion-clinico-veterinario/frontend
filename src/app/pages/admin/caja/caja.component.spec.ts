@@ -59,6 +59,28 @@ describe('CajaComponent', () => {
       expect(component.puedeGestionarPuntos()).toBeFalse();
     });
 
+    it('oculta Puntos de cobro para el personal y bloquea su apertura programática', () => {
+      const listar = spyOn(cajaService, 'puntosCobro');
+      (component as any).authStore.setAuth({ roles: ['ROLE_VETERINARIO'], companyId: 7, activeRolePurpose: 'CUSTOM', menu: [] } as any);
+
+      fixture.detectChanges();
+      component.abrirPuntos();
+
+      const botonPuntos = Array.from(fixture.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>)
+        .find(boton => boton.textContent?.includes('Puntos de cobro'));
+      expect(botonPuntos).toBeUndefined();
+      expect(component.showPuntos()).toBeFalse();
+      expect(listar).not.toHaveBeenCalled();
+    });
+
+    it('muestra Puntos de cobro a un administrador de empresa', () => {
+      fixture.detectChanges();
+
+      const botonPuntos = Array.from(fixture.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>)
+        .find(boton => boton.textContent?.includes('Puntos de cobro'));
+      expect(botonPuntos).toBeDefined();
+    });
+
     it('muestra qué punto de cobro es este equipo', () => {
       component.estadoEquipo.set({ modo: 'DISPOSITIVO', cajaNombre: 'Mostrador 2', mensaje: 'Este equipo es el punto de cobro «Mostrador 2».' });
       fixture.detectChanges();

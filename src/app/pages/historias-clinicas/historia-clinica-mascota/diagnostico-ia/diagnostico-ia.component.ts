@@ -75,6 +75,7 @@ import { formatearFechaClinica } from '../../../../shared/utils/fecha-clinica.ut
 })
 export class DiagnosticoIaComponent implements OnChanges {
   @Input() hc!: HistoriaClinicaDetalle;
+  @Input() openInitially = false;
 
   private readonly iaService = inject(DiagnosticoIaService);
   private readonly autorizacionService = inject(IaAutorizacionService);
@@ -134,6 +135,9 @@ export class DiagnosticoIaComponent implements OnChanges {
     this.imageQualityIssues.set([]);
     this.autorizacion.set(null);
     this.errorAutorizacion.set(false);
+    if (this.openInitially && !this.abierto()) {
+      this.abrir();
+    }
   }
 
   abrir(): void {

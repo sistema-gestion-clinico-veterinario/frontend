@@ -1,5 +1,5 @@
 
-import { Component, ElementRef, HostListener, ViewChild, inject, signal } from '@angular/core';
+import { Component, ElementRef, HostListener, ViewChild, ViewEncapsulation, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { filter } from 'rxjs';
@@ -10,7 +10,11 @@ import { SidebarComponent } from './sidebar/sidebar.component';
   selector: 'app-main-layout',
   standalone: true,
   imports: [RouterOutlet, SidebarComponent, NavbarComponent],
-  templateUrl: './main-layout.component.html'
+  templateUrl: './main-layout.component.html',
+  styleUrl: './main-layout.component.scss',
+  // Estas hojas son globales por diseño, pero se descargan solo después de
+  // autenticar, cuando se carga el layout que realmente utiliza sus clases.
+  encapsulation: ViewEncapsulation.None
 })
 export class MainLayoutComponent {
   @ViewChild('scrollContainer') private scrollContainer?: ElementRef<HTMLElement>;

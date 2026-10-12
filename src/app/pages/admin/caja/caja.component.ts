@@ -723,12 +723,13 @@ export class CajaComponent implements OnInit, OnDestroy {
   }
 
   abrirPuntos() {
+    if (!this.puedeGestionarPuntos()) return;
     this.showPuntos.set(true);
     this.cargarPuntos();
   }
 
   cargarPuntos() {
-    if (!this.companyId) return;
+    if (!this.companyId || !this.puedeGestionarPuntos()) return;
     this.trabajandoPuntos.set(true);
     this.cajaService.puntosCobro(this.companyId).subscribe({
       next: r => { this.puntos.set(r.data ?? []); this.trabajandoPuntos.set(false); },
@@ -752,6 +753,7 @@ export class CajaComponent implements OnInit, OnDestroy {
   }
 
   crearPunto() {
+    if (!this.puedeGestionarPuntos()) return;
     const nombre = normalizeText(this.nuevoPuntoNombre);
     if (!nombre || nombre.length < 2) {
       this.messageService.add({ severity: 'warn', summary: 'Nombre inválido', detail: 'Escribe un nombre de al menos 2 caracteres.' });
@@ -765,11 +767,13 @@ export class CajaComponent implements OnInit, OnDestroy {
   }
 
   empezarARenombrar(punto: PuntoCobro) {
+    if (!this.puedeGestionarPuntos()) return;
     this.editandoPuntoId.set(punto.id);
     this.nombreEditado = punto.nombre;
   }
 
   guardarNombrePunto(punto: PuntoCobro) {
+    if (!this.puedeGestionarPuntos()) return;
     const nombre = normalizeText(this.nombreEditado);
     if (!nombre || nombre.length < 2) {
       this.messageService.add({ severity: 'warn', summary: 'Nombre inválido', detail: 'Escribe un nombre de al menos 2 caracteres.' });
@@ -783,6 +787,7 @@ export class CajaComponent implements OnInit, OnDestroy {
   }
 
   cambiarActividadPunto(punto: PuntoCobro) {
+    if (!this.puedeGestionarPuntos()) return;
     this.trabajandoPuntos.set(true);
     this.cajaService.actualizarPuntoCobro(punto.id, this.companyId, punto.nombre, !punto.activa).subscribe({
       next: () => this.despuesDeCambiarPuntos(punto.activa ? 'Punto de cobro desactivado' : 'Punto de cobro activado'),
@@ -791,6 +796,7 @@ export class CajaComponent implements OnInit, OnDestroy {
   }
 
   vincularPunto(punto: PuntoCobro) {
+    if (!this.puedeGestionarPuntos()) return;
     this.trabajandoPuntos.set(true);
     this.cajaService.vincularPuntoCobro(punto.id, this.companyId).subscribe({
       next: () => this.despuesDeCambiarPuntos('Este equipo quedó registrado'),
@@ -799,6 +805,7 @@ export class CajaComponent implements OnInit, OnDestroy {
   }
 
   desvincularPunto(punto: PuntoCobro) {
+    if (!this.puedeGestionarPuntos()) return;
     this.trabajandoPuntos.set(true);
     this.cajaService.desvincularPuntoCobro(punto.id, this.companyId).subscribe({
       next: () => this.despuesDeCambiarPuntos('Se quitó el equipo del punto de cobro'),

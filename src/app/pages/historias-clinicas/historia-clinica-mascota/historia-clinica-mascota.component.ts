@@ -63,6 +63,7 @@ export class HistoriaClinicaMascotaComponent implements OnInit, OnDestroy {
   serviciosNoMedicos  = signal<CitaResponse[]>([]);
   loadingServicios    = signal(false);
   descargandoHistoriaCompleta = signal(false);
+  cargarAsistenteIa = signal(false);
 
   diagnosticosSeguimiento = signal<DiagnosticoResponse[]>([]);
   tratamientosSeguimiento = signal<TratamientoResponse[]>([]);

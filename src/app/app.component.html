@@ -1,3 +1,5 @@
 <app-process-loading-panel></app-process-loading-panel>
 <router-outlet></router-outlet>
-<app-accessibility-widget></app-accessibility-widget>
+@defer (on idle) {
+  <app-accessibility-widget></app-accessibility-widget>
+}

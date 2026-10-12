@@ -1,8 +1,8 @@
 import { Injectable, OnDestroy } from '@angular/core';
-import { Chart, ChartOptions, FontSpec, registerables } from 'chart.js';
+import type { Chart, ChartOptions, FontSpec } from 'chart.js';
 import { ItemCount, ItemMonto, ReportesClinicos } from '../../models/response/reportes-clinicos-response';
 
-Chart.register(...registerables);
+type ChartConstructor = typeof import('chart.js')['Chart'];
 
 export type ReportChartName = 'evolucion' | 'estados' | 'especies' | 'edades' | 'veterinarios' | 'frecuencia'
   | 'ingresosMetodo' | 'ingresosServicio';
@@ -124,9 +124,16 @@ function barOptions(indexAxis: 'x' | 'y'): ChartOptions<'bar'> {
 @Injectable()
 export class ReportesChartService implements OnDestroy {
   private charts: Chart[] = [];
+  private chartConstructor: ChartConstructor | null = null;
+  private chartRuntimePromise: Promise<ChartConstructor> | null = null;
+  private renderRequestId = 0;
 
-  render(reporte: ReportesClinicos, canvases: readonly HTMLCanvasElement[]): void {
-    this.destroy();
+  async render(reporte: ReportesClinicos, canvases: readonly HTMLCanvasElement[]): Promise<void> {
+    const requestId = ++this.renderRequestId;
+    this.destroyCharts();
+    this.chartConstructor = await this.loadChartRuntime();
+    if (requestId !== this.renderRequestId) return;
+
     const canvasByName = new Map<ReportChartName, HTMLCanvasElement>();
 
     canvases.forEach(canvas => {
@@ -171,6 +178,11 @@ export class ReportesChartService implements OnDestroy {
   }
 
   destroy(): void {
+    this.renderRequestId++;
+    this.destroyCharts();
+  }
+
+  private destroyCharts(): void {
     this.charts.forEach(chart => chart.destroy());
     this.charts = [];
   }
@@ -179,9 +191,19 @@ export class ReportesChartService implements OnDestroy {
     this.destroy();
   }
 
+  private loadChartRuntime(): Promise<ChartConstructor> {
+    if (!this.chartRuntimePromise) {
+      this.chartRuntimePromise = import('chart.js').then(({ Chart: ChartRuntime, registerables }) => {
+        ChartRuntime.register(...registerables);
+        return ChartRuntime;
+      });
+    }
+    return this.chartRuntimePromise;
+  }
+
   private createLine(canvas: HTMLCanvasElement | undefined, items: ItemCount[] | null): void {
     if (!canvas || !items || items.length === 0) return;
-    this.charts.push(new Chart(canvas, {
+    this.charts.push(new this.chartConstructor!(canvas, {
       type: 'line',
       data: {
         labels: items.map(item => item.label),
@@ -207,7 +229,7 @@ export class ReportesChartService implements OnDestroy {
     offset = 0
   ): void {
     if (!canvas || !items || items.length === 0) return;
-    this.charts.push(new Chart(canvas, {
+    this.charts.push(new this.chartConstructor!(canvas, {
       type: 'bar',
       data: this.barData(items, colorsByLabel, 34, offset),
       options: barOptions('x')
@@ -221,7 +243,7 @@ export class ReportesChartService implements OnDestroy {
     offset = 0
   ): void {
     if (!canvas || !items || items.length === 0) return;
-    this.charts.push(new Chart(canvas, {
+    this.charts.push(new this.chartConstructor!(canvas, {
       type: 'bar',
       data: this.barData(items, colorsByLabel, 22, offset),
       options: barOptions('y')
@@ -236,7 +258,7 @@ export class ReportesChartService implements OnDestroy {
   ): void {
     if (!canvas || !items || items.length === 0) return;
     const capped = capToTopWithOthers(items, 6);
-    this.charts.push(new Chart(canvas, {
+    this.charts.push(new this.chartConstructor!(canvas, {
       type: 'doughnut',
       data: {
         labels: capped.map(item => item.label),
@@ -270,7 +292,7 @@ export class ReportesChartService implements OnDestroy {
   ): void {
     if (!canvas || !items || items.length === 0) return;
     const capped = capToTopWithOthersMonto(items, 6);
-    this.charts.push(new Chart(canvas, {
+    this.charts.push(new this.chartConstructor!(canvas, {
       type: 'doughnut',
       data: {
         labels: capped.map(item => item.label),
@@ -324,7 +346,7 @@ export class ReportesChartService implements OnDestroy {
     offset = 0
   ): void {
     if (!canvas || !items || items.length === 0) return;
-    this.charts.push(new Chart(canvas, {
+    this.charts.push(new this.chartConstructor!(canvas, {
       type: 'bar',
       data: {
         labels: items.map(item => item.label),

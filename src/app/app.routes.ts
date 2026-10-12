@@ -1,6 +1,22 @@
 import { Routes } from '@angular/router';
 import { AuthGuard } from './core/guards/auth.guard';
 
+/**
+ * El login no usa componentes de PrimeNG. El preset completo se descarga al
+ * entrar al área autenticada, antes de crear su layout, para evitar trasladar
+ * estilos que no se utilizan en la página pública.
+ */
+const loadMainLayout = async () => {
+  const [{ default: Aura }, { usePreset }, { MainLayoutComponent }] = await Promise.all([
+    import('@primeng/themes/aura'),
+    import('@primeng/themes'),
+    import('./layouts/main-layout/main-layout.component')
+  ]);
+
+  usePreset(Aura);
+  return MainLayoutComponent;
+};
+
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   {
@@ -53,7 +69,7 @@ export const routes: Routes = [
   },
   {
     path: '',
-    loadComponent: () => import('./layouts/main-layout/main-layout.component').then((m) => m.MainLayoutComponent),
+    loadComponent: loadMainLayout,
     canActivate: [AuthGuard],
     canActivateChild: [AuthGuard],
     children: [
@@ -109,6 +125,11 @@ export const routes: Routes = [
         path: 'admin/roles',
         data: { ventana: 'VISTA_ROLES' },
         loadComponent: () => import('./pages/admin/roles/roles.component').then((m) => m.RolesComponent)
+      },
+      {
+        path: 'admin/roles/revision-accesos',
+        data: { ventana: 'VISTA_ROLES' },
+        loadComponent: () => import('./pages/admin/revision-accesos/revision-accesos.component').then((m) => m.RevisionAccesosComponent)
       },
       {
         path: 'ventanas',
