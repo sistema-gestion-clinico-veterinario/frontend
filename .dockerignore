@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.angular/
+.git/
+.idea/
+.vscode/
+coverage/
+playwright-report/
+test-results/
+*.log
+*.md

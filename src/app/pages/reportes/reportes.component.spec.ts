@@ -66,11 +66,11 @@ describe('ReportesComponent', () => {
     httpMock.verify();
   });
 
-  function flushInitialRequests(reporte = reporteFixture()) {
+  function flushInitialRequests(reporte = reporteFixture(), empleados: EmpleadoListResponse[] = []) {
     fixture.detectChanges();
 
     const empleadosReq = httpMock.expectOne(req => req.url.includes('/admin/employees'));
-    empleadosReq.flush({ success: true, message: '', data: empleadosPageFixture() } as ApiResponse<Page<EmpleadoListResponse>>);
+    empleadosReq.flush({ success: true, message: '', data: empleadosPageFixture(empleados) } as ApiResponse<Page<EmpleadoListResponse>>);
 
     const reportesReq = httpMock.expectOne(req => req.url.includes('/clinical-reports'));
     reportesReq.flush({ success: true, message: '', data: reporte } as ApiResponse<ReportesClinicos>);
@@ -81,6 +81,19 @@ describe('ReportesComponent', () => {
     flushInitialRequests(reporte);
 
     expect(component.data()?.resumen.consultas).toBe(42);
+  });
+
+  it('solo considera veterinarios activos para el filtro de empleado', () => {
+    const empleadoBase = {
+      email: 'persona@clinica.test', telefono: '', activo: true, especialidades: []
+    };
+    flushInitialRequests(reporteFixture(), [
+      { ...empleadoBase, id: 1, nombre: 'Ana', apellido: 'Vet', tiposEmpleado: ['VETERINARIO'] },
+      { ...empleadoBase, id: 2, nombre: 'Luis', apellido: 'Recepción', tiposEmpleado: ['RECEPCIONISTA'] },
+      { ...empleadoBase, id: 3, nombre: 'Eva', apellido: 'Inactiva', activo: false, tiposEmpleado: ['VETERINARIO'] }
+    ]);
+
+    expect(component.veterinarios().map(empleado => empleado.id)).toEqual([1]);
   });
 
   it('variacion() calcula el cambio porcentual respecto al periodo anterior', () => {

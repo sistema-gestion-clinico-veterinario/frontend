@@ -4,6 +4,7 @@ import {
   Component,
   DestroyRef,
   ElementRef,
+  Injector,
   afterRenderEffect,
   computed,
   inject,
@@ -12,7 +13,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { EMPTY, Subject, combineLatest } from 'rxjs';
+import { EMPTY, Subject, combineLatest, of } from 'rxjs';
 import { catchError, distinctUntilChanged, startWith, switchMap } from 'rxjs/operators';
 import { EmpleadoService } from '../../core/services/empleado.service';
 import { CompanyService } from '../../core/services/company.service';
@@ -28,17 +29,23 @@ import {
 } from '../../models/response/reportes-clinicos-response';
 import { AuthStore } from '../../store/auth.store';
 import { ReportesChartService } from './reportes-chart.service';
-import { ReportesExportService, ReportChartImage } from './reportes-export.service';
+import type { ReportesExportService, ReportChartImage } from './reportes-export.service';
 import { Periodo, calcularRangoPeriodo } from './reportes-periodo.utils';
 import { ReportesTopListComponent } from './top-list/top-list.component';
 import { ReportesMeterComponent } from './meter/meter.component';
 import { ReportesEmphasisComponent } from './emphasis/emphasis.component';
+import { ProductoService } from '../../core/services/producto.service';
+import { CategoriaProductoService } from '../../core/services/categoria-producto.service';
+import { MarcaProductoService } from '../../core/services/marca-producto.service';
+import { ProductoResponse } from '../../models/response/producto-response';
+import { CategoriaProductoResponse } from '../../models/response/categoria-producto-response';
+import { MarcaProductoResponse } from '../../models/response/marca-producto-response';
 
 @Component({
   selector: 'app-reportes',
   standalone: true,
   imports: [CommonModule, FormsModule, ReportesTopListComponent, ReportesMeterComponent, ReportesEmphasisComponent],
-  providers: [ReportesChartService, ReportesExportService],
+  providers: [ReportesChartService],
   templateUrl: './reportes.component.html',
   styleUrls: ['./reportes.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -48,10 +55,14 @@ export default class ReportesComponent {
   private readonly reportesService = inject(ReportesClinicosService);
   private readonly empleadoService = inject(EmpleadoService);
   private readonly companyService = inject(CompanyService);
+  private readonly productoService = inject(ProductoService);
+  private readonly categoriaProductoService = inject(CategoriaProductoService);
+  private readonly marcaProductoService = inject(MarcaProductoService);
   private readonly chartService = inject(ReportesChartService);
-  private readonly exportService = inject(ReportesExportService);
+  private readonly injector = inject(Injector);
   private readonly destroyRef = inject(DestroyRef);
   private readonly reloadReports = new Subject<void>();
+  private exportServicePromise: Promise<ReportesExportService> | null = null;
   private readonly chartCanvases =
     viewChildren<ElementRef<HTMLCanvasElement>>('reportChart');
   readonly selectedCompanyId = computed(() =>
@@ -72,8 +83,6 @@ export default class ReportesComponent {
   readonly canViewAllCitas = computed(() =>
     this.authStore.dataScope('VISTA_REPORTES') === 'COMPANY'
   );
-  readonly userName = this.authStore.nombreCompleto() ?? '';
-
   readonly data = signal<ReportesClinicos | null>(null);
   readonly comparativo = signal<ReportesComparativoEmpresas | null>(null);
   readonly pacientesInactivos = signal<PacientesInactivosPage | null>(null);
@@ -83,6 +92,9 @@ export default class ReportesComponent {
   private readonly pacientesInactivosPageSize = 10;
   readonly veterinarios = signal<EmpleadoListResponse[]>([]);
   readonly companyInfo = signal<CompanyDTO | null>(null);
+  readonly productos = signal<ProductoResponse[]>([]);
+  readonly categorias = signal<CategoriaProductoResponse[]>([]);
+  readonly marcas = signal<MarcaProductoResponse[]>([]);
   readonly diasSemana = [
     { id: 1, label: 'Lun' },
     { id: 2, label: 'Mar' },
@@ -108,6 +120,11 @@ export default class ReportesComponent {
   fechaHasta = '';
   veterinarioId: number | null = null;
   especie = '';
+  metodoPago = '';
+  categoriaId: number | null = null;
+  productoId: number | null = null;
+  marcaId: number | null = null;
+  estadoStock = '';
 
   readonly heatmapMax = computed(() =>
     Math.max(1, ...(this.data()?.demandaPorHorario ?? []).map(item => item.count))
@@ -129,22 +146,28 @@ export default class ReportesComponent {
     const companyId$ = toObservable(this.selectedCompanyId).pipe(
       distinctUntilChanged()
     );
+    const tipoReporte$ = toObservable(this.tipoReporte).pipe(distinctUntilChanged());
 
     companyId$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.pacientesInactivosPage.set(0));
 
-    companyId$
+    combineLatest([companyId$, tipoReporte$])
       .pipe(
-        switchMap(companyId =>
-          this.empleadoService.listar(companyId, undefined, 0, 200).pipe(
+        switchMap(([companyId, tipo]) =>
+          tipo === 'CLINICA'
+            ? this.empleadoService.listar(companyId, undefined, 0, 200).pipe(
             catchError(() => EMPTY)
           )
+            : EMPTY
         ),
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe(response => {
         const empleados = response.data.content ?? [];
         this.veterinarios.set(
-          empleados.filter(empleado => empleado.activo)
+          empleados.filter(empleado =>
+            empleado.activo
+            && empleado.tiposEmpleado?.some(tipo => tipo.trim().toUpperCase() === 'VETERINARIO')
+          )
         );
       });
 
@@ -159,15 +182,35 @@ export default class ReportesComponent {
       )
       .subscribe(response => this.companyInfo.set(response.data));
 
+    combineLatest([companyId$, tipoReporte$])
+      .pipe(
+        switchMap(([companyId, tipo]) => companyId == null || tipo !== 'VENTAS_PRODUCTOS'
+          ? EMPTY
+          : combineLatest([
+              this.productoService.listarActivos(companyId).pipe(catchError(() => of({ success: false, message: '', data: [] }))),
+              this.categoriaProductoService.listarActivas(companyId).pipe(catchError(() => of({ success: false, message: '', data: [] }))),
+              this.marcaProductoService.listarActivas(companyId).pipe(catchError(() => of({ success: false, message: '', data: [] })))
+            ])),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe(([productos, categorias, marcas]) => {
+        this.productos.set(productos.data ?? []);
+        this.categorias.set(categorias.data ?? []);
+        this.marcas.set(marcas.data ?? []);
+      });
+
     combineLatest([
       companyId$,
+      tipoReporte$,
       this.reloadReports.pipe(startWith(undefined))
     ])
       .pipe(
-        switchMap(([companyId]) =>
-          this.reportesService.obtenerReportes(this.buildFilters(companyId)).pipe(
-            catchError(() => EMPTY)
-          )
+        switchMap(([companyId, tipo]) =>
+          tipo === 'CLINICA'
+            ? this.reportesService.obtenerReportes(this.buildFilters(companyId)).pipe(
+                catchError(() => EMPTY)
+              )
+            : EMPTY
         ),
         takeUntilDestroyed(this.destroyRef)
       )
@@ -175,11 +218,11 @@ export default class ReportesComponent {
 
     combineLatest([
       companyId$,
-      toObservable(this.tipoReporte),
+      tipoReporte$,
       this.reloadReports.pipe(startWith(undefined))
     ]).pipe(
       switchMap(([companyId, tipo]) => tipo === 'VENTAS_PRODUCTOS' && companyId != null
-        ? this.reportesService.obtenerVentasProductos(companyId, this.fechaDesde, this.fechaHasta).pipe(catchError(() => EMPTY))
+        ? this.reportesService.obtenerVentasProductos(this.buildVentasFilters(companyId)).pipe(catchError(() => EMPTY))
         : EMPTY),
       takeUntilDestroyed(this.destroyRef)
     ).subscribe(response => this.ventasProductos.set(response.data));
@@ -202,12 +245,13 @@ export default class ReportesComponent {
 
     combineLatest([
       companyId$,
+      tipoReporte$,
       toObservable(this.pacientesInactivosPage),
       this.reloadReports.pipe(startWith(undefined))
     ])
       .pipe(
-        switchMap(([companyId, page]) =>
-          companyId == null
+        switchMap(([companyId, tipo, page]) =>
+          companyId == null || tipo !== 'CLINICA'
             ? EMPTY
             : this.reportesService
                 .obtenerPacientesInactivos(companyId, page, this.pacientesInactivosPageSize)
@@ -238,7 +282,6 @@ export default class ReportesComponent {
 
   cambiarTipoReporte(tipo: 'CLINICA' | 'VENTAS_PRODUCTOS'): void {
     this.tipoReporte.set(tipo);
-    this.reloadReports.next();
   }
 
   aplicarFiltros(): void {
@@ -251,6 +294,11 @@ export default class ReportesComponent {
     this.periodo = 'hoy';
     this.veterinarioId = null;
     this.especie = '';
+    this.metodoPago = '';
+    this.categoriaId = null;
+    this.productoId = null;
+    this.marcaId = null;
+    this.estadoStock = '';
     this.actualizarRangoSeleccionado();
     this.pacientesInactivosPage.set(0);
     this.reloadReports.next();
@@ -307,11 +355,19 @@ export default class ReportesComponent {
   }
 
   async exportarPdf(): Promise<void> {
+    if (this.tipoReporte() === 'VENTAS_PRODUCTOS') {
+      const reporteVentas = this.ventasProductos();
+      if (!reporteVentas) return;
+      const exportService = await this.getExportService();
+      await exportService.exportarVentasPdf(reporteVentas, this.companyInfo(), this.descripcionFiltrosVentas());
+      return;
+    }
     const reporte = this.data();
     if (!reporte) return;
+    const exportService = await this.getExportService();
     const empresa = this.companyInfo();
     const logoDataUrl = empresa?.logoUrl ? await this.descargarComoDataUrl(empresa.logoUrl) : null;
-    await this.exportService.exportarPdf(reporte, this.chartImagenesPorNombre(), empresa, logoDataUrl);
+    await exportService.exportarPdf(reporte, this.chartImagenesPorNombre(), empresa, logoDataUrl);
   }
 
   private async descargarComoDataUrl(url: string): Promise<string | null> {
@@ -345,11 +401,27 @@ export default class ReportesComponent {
   }
 
   async exportarExcel(): Promise<void> {
+    if (this.tipoReporte() === 'VENTAS_PRODUCTOS') {
+      const reporteVentas = this.ventasProductos();
+      if (!reporteVentas) return;
+      const exportService = await this.getExportService();
+      await exportService.exportarVentasExcel(reporteVentas, this.companyInfo(), this.descripcionFiltrosVentas());
+      return;
+    }
     const reporte = this.data();
     if (!reporte) return;
+    const exportService = await this.getExportService();
     const empresa = this.companyInfo();
     const logoDataUrl = empresa?.logoUrl ? await this.descargarComoDataUrl(empresa.logoUrl) : null;
-    await this.exportService.exportarExcel(reporte, empresa, logoDataUrl);
+    await exportService.exportarExcel(reporte, empresa, logoDataUrl);
+  }
+
+  private getExportService(): Promise<ReportesExportService> {
+    if (!this.exportServicePromise) {
+      this.exportServicePromise = import('./reportes-export.service')
+        .then(({ ReportesExportService: Service }) => this.injector.get(Service));
+    }
+    return this.exportServicePromise;
   }
 
   private actualizarRangoSeleccionado(): void {
@@ -374,5 +446,32 @@ export default class ReportesComponent {
       veterinarioId: this.veterinarioId ?? undefined,
       especie: this.especie || undefined
     };
+  }
+
+  private buildVentasFilters(companyId: number) {
+    return {
+      companyId,
+      fechaDesde: this.fechaDesde,
+      fechaHasta: this.fechaHasta,
+      metodoPago: (this.metodoPago || undefined) as 'EFECTIVO' | 'YAPE' | 'PLIN' | 'TARJETA' | undefined,
+      categoriaId: this.categoriaId ?? undefined,
+      productoId: this.productoId ?? undefined,
+      marcaId: this.marcaId ?? undefined,
+      estadoStock: (this.estadoStock || undefined) as 'NORMAL' | 'BAJO' | 'SIN_STOCK' | undefined
+    };
+  }
+
+  private descripcionFiltrosVentas(): string {
+    const categoria = this.categorias().find(item => item.id === this.categoriaId)?.nombre;
+    const producto = this.productos().find(item => item.id === this.productoId)?.nombre;
+    const marca = this.marcas().find(item => item.id === this.marcaId)?.nombre;
+    const estado = ({ NORMAL: 'Normal', BAJO: 'Stock bajo', SIN_STOCK: 'Sin stock' } as Record<string, string>)[this.estadoStock];
+    return [
+      this.metodoPago ? `Método: ${this.metodoPago}` : null,
+      categoria ? `Categoría: ${categoria}` : null,
+      producto ? `Producto: ${producto}` : null,
+      marca ? `Marca: ${marca}` : null,
+      estado ? `Stock: ${estado}` : null
+    ].filter((item): item is string => item != null).join(' · ') || 'Sin filtros adicionales';
   }
 }

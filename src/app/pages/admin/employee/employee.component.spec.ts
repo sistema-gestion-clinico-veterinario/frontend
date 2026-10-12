@@ -166,6 +166,40 @@ describe('EmployeeComponent', () => {
     });
   });
 
+  describe('roles por persona', () => {
+    const seleccionar = (...ids: number[]) => ids.forEach(id => component.toggleSelection('roleIds', id));
+
+    beforeEach(() => spyOn(component, 'canManageRoleAssignments').and.returnValue(true));
+
+    it('permite elegir hasta tres roles', () => {
+      seleccionar(1, 2, 3);
+
+      expect(component.employeeForm.get('roleIds')?.value).toEqual([1, 2, 3]);
+    });
+
+    it('no agrega un cuarto rol', () => {
+      seleccionar(1, 2, 3, 4);
+
+      expect(component.employeeForm.get('roleIds')?.value).toEqual([1, 2, 3]);
+      expect(component.rolSeleccionable(4)).toBeFalse();
+    });
+
+    it('al quitar uno se puede elegir otro', () => {
+      seleccionar(1, 2, 3);
+      component.toggleSelection('roleIds', 2);
+
+      expect(component.rolSeleccionable(4)).toBeTrue();
+      component.toggleSelection('roleIds', 4);
+      expect(component.employeeForm.get('roleIds')?.value).toEqual([1, 3, 4]);
+    });
+
+    it('los roles ya elegidos siguen pudiéndose quitar con el tope alcanzado', () => {
+      seleccionar(1, 2, 3);
+
+      expect(component.rolSeleccionable(1)).toBeTrue();
+    });
+  });
+
   describe('restablecer acceso', () => {
     let solicitar: jasmine.Spy;
     let aviso: jasmine.Spy;

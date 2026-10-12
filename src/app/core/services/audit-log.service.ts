@@ -14,7 +14,9 @@ export type TipoDescarga =
   | 'HISTORIA_CLINICA_PDF'
   | 'NOTA_VENTA_PDF'
   | 'REPORTE_CLINICO_PDF'
-  | 'REPORTE_CLINICO_EXCEL';
+  | 'REPORTE_CLINICO_EXCEL'
+  | 'REPORTE_VENTAS_PRODUCTOS_PDF'
+  | 'REPORTE_VENTAS_PRODUCTOS_EXCEL';
 
 export interface AuditLog {
   id: number;

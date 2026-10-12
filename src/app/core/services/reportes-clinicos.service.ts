@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { HttpParams } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../../models/response/api-response';
-import { ReportesClinicos, ReportesClinicosFiltros, ReportesComparativoEmpresas, PacientesInactivosPage, ReporteVentasProductos } from '../../models/response/reportes-clinicos-response';
+import { ReportesClinicos, ReportesClinicosFiltros, ReportesComparativoEmpresas, PacientesInactivosPage, ReporteVentasProductos, ReporteVentasProductosFiltros } from '../../models/response/reportes-clinicos-response';
 
 @Injectable({
   providedIn: 'root'
@@ -38,11 +38,11 @@ export class ReportesClinicosService {
     return this.http.get<ApiResponse<PacientesInactivosPage>>(`${this.apiUrl}/inactive-patients`, { params });
   }
 
-  obtenerVentasProductos(companyId: number | undefined, fechaDesde?: string, fechaHasta?: string) {
+  obtenerVentasProductos(filtros: ReporteVentasProductosFiltros) {
     let params = new HttpParams();
-    if (companyId != null) params = params.set('companyId', companyId);
-    if (fechaDesde) params = params.set('fechaDesde', fechaDesde);
-    if (fechaHasta) params = params.set('fechaHasta', fechaHasta);
+    Object.entries(filtros).forEach(([nombre, valor]) => {
+      if (valor !== undefined && valor !== null && valor !== '') params = params.set(nombre, String(valor));
+    });
     return this.http.get<ApiResponse<ReporteVentasProductos>>(`${this.apiUrl}/sales-products`, { params });
   }
 }

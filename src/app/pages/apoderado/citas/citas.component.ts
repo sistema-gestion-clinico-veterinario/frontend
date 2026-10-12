@@ -415,7 +415,7 @@ export class CitasComponent implements OnInit {
 
   canCancel(cita: any): boolean {
     if (!cita) return false;
-    if (!this.authStore.hasAccess('VISTA_MIS_CITAS', 'eliminar')) return false;
+    if (!this.authStore.hasAccess('VISTA_MIS_CITAS', 'modificar')) return false;
     const cancelableStates = ['PENDIENTE', 'CONFIRMADA', 'PROGRAMADA', 'REPROGRAMADA'];
     if (!cancelableStates.includes(cita.estado)) return false;
     const diffMs = this.toUtc5Ms(cita.fechaHoraInicio) - this.nowUtc5Ms();

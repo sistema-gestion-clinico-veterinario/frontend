@@ -1,0 +1,47 @@
+<div class="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+  <div class="bg-white w-full max-w-md rounded-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+    <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center">
+          <i class="pi pi-trash text-red-500 text-lg"></i>
+        </div>
+        <div>
+          <h2 class="text-base font-extrabold text-slate-900">Eliminar Cita</h2>
+          <p class="text-xs text-slate-400 mt-0.5">La cita quedará registrada como eliminada</p>
+        </div>
+      </div>
+      <button (click)="closed.emit()"
+        class="w-9 h-9 flex items-center justify-center rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all">
+        <i class="pi pi-times text-sm"></i>
+      </button>
+    </div>
+    <div class="p-6 space-y-4">
+      <div class="flex items-center gap-3 p-3 bg-red-50 rounded-xl border border-red-100">
+        <div class="w-9 h-9 rounded-lg bg-red-100 flex items-center justify-center font-bold text-red-600 text-sm shrink-0">
+          {{ cita().mascotaNombre.charAt(0) }}
+        </div>
+        <div>
+          <p class="text-sm font-bold text-slate-800">{{ cita().mascotaNombre }}</p>
+          <p class="text-xs text-slate-400">{{ cita().fechaHoraInicio | date:'dd/MM/yyyy — HH:mm' }}</p>
+        </div>
+      </div>
+      <p class="text-sm text-slate-600 leading-relaxed">
+        ¿Confirma que desea eliminar esta cita?
+        La cita cambiará a estado <span class="font-bold text-red-600">Eliminada</span> y no se mostrará en la agenda.
+      </p>
+    </div>
+    <div class="px-6 pb-6 flex gap-3">
+      <button (click)="closed.emit()"
+        class="flex-1 py-2.5 border border-slate-200 rounded-xl text-sm font-bold text-slate-500 hover:bg-slate-50 transition-all">
+        Cancelar
+      </button>
+      <button (click)="confirmed.emit()" [disabled]="processing()"
+        class="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-sm font-bold disabled:opacity-50 flex items-center justify-center gap-2 transition-all">
+        @if (processing()) {
+          <i class="pi pi-spin pi-spinner"></i>
+        }
+        {{ processing() ? 'Eliminando...' : 'Eliminar' }}
+      </button>
+    </div>
+  </div>
+</div>

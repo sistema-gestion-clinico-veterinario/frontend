@@ -119,8 +119,27 @@ export interface ReporteVentasProductos {
     productosStockBajo: number | null;
     productosSinStock: number | null;
   };
+  resumenAnterior: {
+    ventas: number | null;
+    ingresos: number | null;
+    unidadesVendidas: number | null;
+    ticketPromedio: number | null;
+    productosStockBajo: null;
+    productosSinStock: null;
+  };
   ventasPorMetodo: { nombre: string; cantidad: number; monto: number }[] | null;
   ventasPorDia: { nombre: string; cantidad: number; monto: number }[] | null;
   productosMasVendidos: { sku: string; nombre: string; cantidad: number; monto: number }[] | null;
   alertasStock: { sku: string; nombre: string; categoria: string; stock: number; stockMinimo: number }[] | null;
+}
+
+export interface ReporteVentasProductosFiltros {
+  companyId?: number;
+  fechaDesde?: string;
+  fechaHasta?: string;
+  metodoPago?: 'EFECTIVO' | 'YAPE' | 'PLIN' | 'TARJETA';
+  categoriaId?: number;
+  productoId?: number;
+  marcaId?: number;
+  estadoStock?: 'NORMAL' | 'BAJO' | 'SIN_STOCK';
 }

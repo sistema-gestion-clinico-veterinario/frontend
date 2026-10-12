@@ -1,0 +1,147 @@
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
+import { of } from 'rxjs';
+import { RevisionAccesosComponent } from './revision-accesos.component';
+import {
+  AccessReviewItem,
+  AccessReviewOverview,
+  AccessReviewService
+} from '../../../core/services/access-review.service';
+import { AuthStore } from '../../../store/auth.store';
+
+function acceso(assignmentId: number, nombre: string): AccessReviewItem {
+  return {
+    assignmentId,
+    usuarioId: assignmentId + 100,
+    nombre,
+    email: `${nombre.toLowerCase()}@clinica.test`,
+    roleId: assignmentId,
+    roleName: 'Administrador',
+    reasons: ['Administrador de la empresa'],
+    lastActivity: null,
+    assignedAt: null
+  };
+}
+
+const respuesta = <T>(data: T) => of({ success: true, message: '', data });
+
+describe('RevisionAccesosComponent', () => {
+  let fixture: ComponentFixture<RevisionAccesosComponent>;
+  let component: RevisionAccesosComponent;
+  let servicio: jasmine.SpyObj<AccessReviewService>;
+
+  const sinRevisiones: AccessReviewOverview = {
+    intervalDays: 90,
+    overdue: true,
+    nextDueAt: null,
+    lastReview: null,
+    items: [acceso(1, 'Ana'), acceso(2, 'Beto')]
+  };
+
+  function crear(puedeModificar = true): void {
+    servicio = jasmine.createSpyObj<AccessReviewService>('AccessReviewService', [
+      'obtener',
+      'registrar',
+      'historial',
+      'detalle'
+    ]);
+    servicio.obtener.and.returnValue(respuesta(sinRevisiones));
+    servicio.historial.and.returnValue(respuesta([]));
+    servicio.registrar.and.returnValue(
+      respuesta({
+        id: 1,
+        performedAt: '2026-10-12T10:00:00',
+        performedByEmail: 'admin@clinica.test',
+        reviewedCount: 2,
+        keptCount: 1,
+        revokedCount: 1,
+        notes: null
+      })
+    );
+
+    TestBed.configureTestingModule({
+      imports: [RevisionAccesosComponent],
+      providers: [provideRouter([]), { provide: AccessReviewService, useValue: servicio }]
+    });
+    spyOn(TestBed.inject(AuthStore), 'hasAccess').and.callFake(
+      (codigo: string, tipo: string = 'leer') => codigo === 'VISTA_ROLES' && (tipo === 'leer' || puedeModificar)
+    );
+    fixture = TestBed.createComponent(RevisionAccesosComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  }
+
+  it('avisa cuando todavía no se registró ninguna revisión', () => {
+    crear();
+    expect(fixture.nativeElement.querySelector('[data-testid="estado-revision"]').textContent).toContain(
+      'Aún no se ha registrado ninguna revisión'
+    );
+  });
+
+  it('no permite registrar hasta decidir sobre todos los accesos', () => {
+    crear();
+    const [ana, beto] = component.items();
+    expect(component.listo()).toBeFalse();
+
+    component.decidir(ana, 'KEEP');
+    expect(component.pendientes()).toBe(1);
+    expect(component.listo()).toBeFalse();
+
+    component.decidir(beto, 'KEEP');
+    expect(component.listo()).toBeTrue();
+  });
+
+  it('exige el motivo para retirar un acceso', () => {
+    crear();
+    const [ana, beto] = component.items();
+    component.decidir(ana, 'KEEP');
+    component.decidir(beto, 'REVOKE');
+    expect(component.faltanMotivos()).toBeTrue();
+    expect(component.listo()).toBeFalse();
+
+    component.motivo(beto, 'Cambió de puesto');
+    expect(component.listo()).toBeTrue();
+  });
+
+  it('envía las decisiones y las observaciones al registrar', () => {
+    crear();
+    const [ana, beto] = component.items();
+    component.decidir(ana, 'KEEP');
+    component.decidir(beto, 'REVOKE');
+    component.motivo(beto, ' Cambió de puesto ');
+    component.notas.set('Revisión trimestral');
+
+    component.registrar();
+
+    expect(servicio.registrar).toHaveBeenCalledWith(
+      [
+        { assignmentId: 1, decision: 'KEEP', comment: undefined },
+        { assignmentId: 2, decision: 'REVOKE', comment: 'Cambió de puesto' }
+      ],
+      'Revisión trimestral',
+      null
+    );
+  });
+
+  it('pide confirmación antes de retirar accesos y registra directo si solo se mantienen', () => {
+    crear();
+    const [ana, beto] = component.items();
+    component.decidir(ana, 'KEEP');
+    component.decidir(beto, 'REVOKE');
+    component.motivo(beto, 'Ya no trabaja aquí');
+
+    component.solicitarRegistro();
+    expect(component.confirmando()).toBeTrue();
+    expect(servicio.registrar).not.toHaveBeenCalled();
+
+    component.decidir(beto, 'KEEP');
+    component.solicitarRegistro();
+    expect(servicio.registrar).toHaveBeenCalledTimes(1);
+  });
+
+  it('no ofrece decisiones a quien solo puede consultar', () => {
+    crear(false);
+    expect(fixture.nativeElement.textContent).not.toContain('Mantener');
+    expect(fixture.nativeElement.textContent).not.toContain('Registrar revisión');
+  });
+});

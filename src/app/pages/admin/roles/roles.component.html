@@ -65,6 +65,11 @@
             <p class="text-[11px] font-bold uppercase tracking-[.14em] text-blue-500">Sistema</p>
             <h1 class="text-xl font-extrabold leading-tight tracking-tight text-slate-900">Gestión de Roles</h1>
             <p class="mt-1 text-sm text-slate-400 font-medium hidden sm:block">Administra los roles del sistema y de empresa</p>
+            @if (!isSuperAdmin() || activeCompanyId) {
+              <a [routerLink]="['/admin/roles/revision-accesos']" class="mt-1 inline-flex items-center gap-1 text-xs font-bold text-blue-500 hover:underline">
+                <i class="pi pi-verified text-[10px]"></i>Revisión de accesos privilegiados
+              </a>
+            }
           </div>
         </div>
         @if (isSuperAdmin()) {

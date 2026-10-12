@@ -3,7 +3,6 @@ import { provideRouter, withInMemoryScrolling, UrlSerializer } from '@angular/ro
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { providePrimeNG } from 'primeng/config';
-import Aura from '@primeng/themes/aura';
 import { routes } from './app.routes';
 import { apiInterceptor } from './core/interceptors/api.interceptor';
 import { SlugUrlSerializer } from './core/routing/slug-url-serializer';
@@ -20,7 +19,6 @@ export const appConfig: ApplicationConfig = {
     provideAnimationsAsync(),
     providePrimeNG({
       theme: {
-        preset: Aura,
         options: {
           darkModeSelector: 'none',
           cssLayer: {
