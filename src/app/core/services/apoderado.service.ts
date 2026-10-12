@@ -130,6 +130,6 @@ export class ApoderadoService {
   }
 
   cancelarPortalCita(id: number, motivo: string) {
-    return this.http.delete<ApiResponse<void>>(`${environment.apiUrl}/clients/portal/appointments/${id}/cancel?motivo=${encodeURIComponent(motivo)}`);
+    return this.http.patch<ApiResponse<void>>(`${environment.apiUrl}/clients/portal/appointments/${id}/cancel?motivo=${encodeURIComponent(motivo)}`, {});
   }
 }

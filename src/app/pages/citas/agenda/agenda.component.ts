@@ -32,11 +32,7 @@ import { AuthStore } from '../../../store/auth.store';
 import { Router } from '@angular/router';
 import { forkJoin, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
-import { FullCalendarComponent, FullCalendarModule } from '@fullcalendar/angular';
-import { CalendarOptions, EventContentArg, EventInput } from '@fullcalendar/core';
-import dayGridPlugin from '@fullcalendar/daygrid';
-import timeGridPlugin from '@fullcalendar/timegrid';
-import interactionPlugin from '@fullcalendar/interaction';
+import type { CalendarOptions, EventContentArg, EventInput } from '@fullcalendar/core';
 
 import { TooltipModule } from 'primeng/tooltip';
 import { MenuModule } from 'primeng/menu';
@@ -44,7 +40,6 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { PaginatorModule } from 'primeng/paginator';
 import { SkeletonModule } from 'primeng/skeleton';
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
-import { InputFilterDirective } from '../../../core/directives/input-filter.directive';
 import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
 import { textContentValidator } from '../../../core/validators/text-content.validator';
 import { normalizeText } from '../../../core/utils/normalize-text.util';
@@ -56,6 +51,12 @@ import { RealtimeStompConnection, RealtimeStompService } from '../../../core/ser
 import { SugerenciasControlComponent } from './sugerencias-control/sugerencias-control.component';
 import { SugerenciaControlResponse } from '../../../models/response/sugerencia-control-response';
 import { AvisoPublico, PrivacidadService } from '../../../core/services/privacidad.service';
+import { AgendaFullCalendarComponent } from './agenda-full-calendar/agenda-full-calendar.component';
+import { CitaDetailPanelComponent } from './cita-detail-panel/cita-detail-panel.component';
+import { DeleteAppointmentDialogComponent } from './delete-appointment-dialog/delete-appointment-dialog.component';
+import { PaymentDialogComponent } from './payment-dialog/payment-dialog.component';
+import { AppointmentFormPanelComponent } from './appointment-form-panel/appointment-form-panel.component';
+import type { AppointmentFormContext } from './appointment-form-panel/appointment-form-context';
 export type Vista = 'lista' | 'dia' | 'semana' | 'mes';
 export type PeriodoAgenda = '' | 'hoy' | '7dias' | '30dias' | 'personalizado';
 
@@ -93,17 +94,21 @@ interface HorarioResumen {
     ToastModule,
     PaginatorModule,
     SkeletonModule,
-    FullCalendarModule,
     HasPermissionDirective,
-    InputFilterDirective,
-    SugerenciasControlComponent
+    SugerenciasControlComponent,
+    AgendaFullCalendarComponent,
+    CitaDetailPanelComponent,
+    DeleteAppointmentDialogComponent,
+    PaymentDialogComponent,
+    AppointmentFormPanelComponent
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './agenda.component.html',
   styleUrl: './agenda.component.scss'
 })
 export class AgendaComponent implements OnInit, OnDestroy {
-  @ViewChild('fullCalendar') fullCalendar?: FullCalendarComponent;
+  readonly formContext: AppointmentFormContext = this;
+  @ViewChild('fullCalendar') fullCalendar?: AgendaFullCalendarComponent;
   private readonly citaActionItemsCache = new WeakMap<CitaResponse, MenuItem[]>();
 
   private readonly fb                = inject(FormBuilder);
@@ -127,6 +132,13 @@ export class AgendaComponent implements OnInit, OnDestroy {
 
   private realtimeConnection: RealtimeStompConnection | null = null;
   private lastWsDestination: string | null = null;
+  private desktopMediaQuery: MediaQueryList | null = null;
+  private formPeopleLoading = false;
+  private formPeopleLoaded = false;
+  readonly desktopCalendarEnabled = signal(false);
+  private readonly onDesktopMediaChange = (event: MediaQueryListEvent): void => {
+    this.desktopCalendarEnabled.set(event.matches);
+  };
 
   readonly canReadHistoria   = computed(() => this.authStore.hasAccess('VISTA_HISTORIAS', 'leer'));
   readonly canCreateHistoria = computed(() => this.authStore.hasAccess('VISTA_HISTORIAS', 'escribir'));
@@ -175,8 +187,6 @@ export class AgendaComponent implements OnInit, OnDestroy {
 
   citas            = signal<CitaResponse[]>([]);
   cargando         = signal<boolean>(true);
-  private pendingInitialLoads = 0;
-  private readonly TOTAL_INITIAL_LOADS = 6;
   private loadTimeout: any = null;
   private lastLazyEvent: any = { first: 0, rows: 10 };
   agendaFirst = 0;
@@ -376,7 +386,6 @@ export class AgendaComponent implements OnInit, OnDestroy {
   calendarEvents = signal<EventInput[]>([]);
   cargandoCal  = signal<boolean>(false);
   calendarOptions: CalendarOptions = {
-    plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
     initialView: 'timeGridDay',
     initialDate: new Date(),
     locale: 'es',
@@ -543,18 +552,15 @@ export class AgendaComponent implements OnInit, OnDestroy {
   });
 
   ngOnInit() {
+    this.initializeResponsiveCalendar();
     this.privacidadService.avisoVigente('PROPIETARIOS_Y_AUTORIZADOS').subscribe({
       next: ({ data }) => this.avisoPrivacidad.set(data ?? null),
       error: () => this.avisoPrivacidad.set(null)
     });
     this.cargando.set(true);
-    this.pendingInitialLoads = 0;
     this.loadCitas();
     this.loadServicios();
     this.loadVeterinarios();
-    this.loadTodosEmpleados();
-    this.loadClientes();
-    this.loadAllMascotas();
     if (!this.canViewAllCitas() && this.authStore.empleadoId()) {
       const empleadoId = this.authStore.empleadoId();
       this.filterVeterinarioId = empleadoId;
@@ -579,13 +585,15 @@ export class AgendaComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.realtimeConnection?.disconnect();
+    this.desktopMediaQuery?.removeEventListener('change', this.onDesktopMediaChange);
   }
 
-  private checkInitialLoadsComplete() {
-    this.pendingInitialLoads++;
-    if (this.pendingInitialLoads >= this.TOTAL_INITIAL_LOADS) {
-      this.cargando.set(false);
-    }
+  private initializeResponsiveCalendar(): void {
+    if (typeof window === 'undefined') return;
+
+    this.desktopMediaQuery = window.matchMedia('(min-width: 1024px)');
+    this.desktopCalendarEnabled.set(this.desktopMediaQuery.matches);
+    this.desktopMediaQuery.addEventListener('change', this.onDesktopMediaChange);
   }
 
   setupWebSocket() {
@@ -682,11 +690,11 @@ export class AgendaComponent implements OnInit, OnDestroy {
           const [y, m, d] = this.filterFecha.split('-').map(Number);
           this.fechaBase.set(new Date(y, m - 1, d));
         }
-        this.checkInitialLoadsComplete();
+        this.cargando.set(false);
       },
       error: () => {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar las citas' });
-        this.checkInitialLoadsComplete();
+        this.cargando.set(false);
       }
     });
   }
@@ -695,46 +703,66 @@ export class AgendaComponent implements OnInit, OnDestroy {
     const targetCompanyId = companyId || (this.activeCompanyId ?? undefined);
     this.empleadoService.listar(targetCompanyId, undefined, 0, 100).subscribe({
       next: (res) => {
+        const empleadosActivos = res.data.content.filter((e: any) => e.activo);
+        this.todosEmpleados.set(
+          empleadosActivos.map((e: any) => ({
+            id: e.id,
+            nombre: e.nombre,
+            apellido: e.apellido,
+            tiposEmpleado: e.tiposEmpleado ?? []
+          }))
+        );
         this.veterinarios.set(
-          res.data.content
+          empleadosActivos
+            .filter((e: any) => (e.tiposEmpleado ?? []).some((tipo: string) => tipo.toUpperCase() === 'VETERINARIO'))
             .map((e: any) => ({ label: `${e.nombre} ${e.apellido}`, value: e.id }))
         );
-        this.checkInitialLoadsComplete();
-      },
-      error: () => {
-        this.checkInitialLoadsComplete();
       }
     });
   }
 
-  loadClientes(companyId?: number) {
-    const targetCompanyId = companyId || (this.activeCompanyId ?? undefined);
-    this.apoderadoService.listar(targetCompanyId, undefined, undefined, 0, 100).subscribe({
-      next: (res) => {
+  /** Carga datos personales solo al abrir el formulario de una cita. */
+  private ensureFormPeopleLoaded(): void {
+    if (this.formPeopleLoaded || this.formPeopleLoading) return;
+
+    this.formPeopleLoading = true;
+    const companyId = this.activeCompanyId ?? undefined;
+    forkJoin({
+      clientes: this.apoderadoService.listar(companyId, undefined, undefined, 0, 100).pipe(
+        catchError(() => of(null))
+      ),
+      mascotas: this.mascotaService.listar(companyId, undefined, undefined, 0, 500).pipe(
+        catchError(() => of(null))
+      )
+    }).subscribe(({ clientes, mascotas }) => {
+      if (clientes) {
         this.clientes.set(
-          res.data.content
+          clientes.data.content
             .filter(c => c.activo)
             .map(c => ({ label: `${c.nombre} ${c.apellido}`, value: c.id }))
         );
-        this.checkInitialLoadsComplete();
-      },
-      error: () => {
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar los dueños' });
-        this.checkInitialLoadsComplete();
       }
-    });
-  }
 
-  loadAllMascotas(companyId?: number) {
-    const targetCompanyId = companyId || (this.activeCompanyId ?? undefined);
-    this.mascotaService.listar(targetCompanyId, undefined, undefined, 0, 500).subscribe({
-      next: (res) => {
-        this.allMascotas.set(res.data.content);
-        this.checkInitialLoadsComplete();
-      },
-      error: () => {
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar las mascotas' });
-        this.checkInitialLoadsComplete();
+      if (mascotas) {
+        this.allMascotas.set(mascotas.data.content);
+        const clienteId = this.selectedClienteId();
+        if (clienteId) {
+          this.filteredMascotas.set(
+            mascotas.data.content
+              .filter(m => m.apoderadoId === clienteId && m.activo)
+              .map(m => ({ label: m.nombreCompleto, value: m.id }))
+          );
+        }
+      }
+
+      this.formPeopleLoading = false;
+      this.formPeopleLoaded = !!clientes && !!mascotas;
+      if (!this.formPeopleLoaded) {
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Datos incompletos',
+          detail: 'No se pudieron cargar todos los dueños y mascotas. Vuelve a abrir el formulario para reintentar.'
+        });
       }
     });
   }
@@ -751,28 +779,9 @@ export class AgendaComponent implements OnInit, OnDestroy {
             precio: s.precio
           }))
         );
-        this.checkInitialLoadsComplete();
       },
       error: () => {
         this.servicios.set([]);
-        this.checkInitialLoadsComplete();
-      }
-    });
-  }
-
-  loadTodosEmpleados(companyId?: number) {
-    const cid = companyId ?? (this.activeCompanyId ?? undefined);
-    this.empleadoService.listar(cid, undefined, 0, 200).subscribe({
-      next: (res) => {
-        this.todosEmpleados.set(
-          res.data.content
-            .filter((e: any) => e.activo)
-            .map((e: any) => ({ id: e.id, nombre: e.nombre, apellido: e.apellido, tiposEmpleado: e.tiposEmpleado ?? [] }))
-        );
-        this.checkInitialLoadsComplete();
-      },
-      error: () => {
-        this.checkInitialLoadsComplete();
       }
     });
   }
@@ -966,6 +975,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
   }
 
   openNew() {
+    this.ensureFormPeopleLoaded();
     this.citaForm.reset({ esEmergencia: false, fechaCita: null, horaCita: null });
     this.selectedClienteLabel.set('Seleccionar dueño...');
     this.selectedMascotaLabel.set('Seleccionar mascota...');
@@ -1023,6 +1033,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
   }
 
   editarCita(cita: CitaResponse) {
+    this.ensureFormPeopleLoaded();
     this.originalCitaEdit.set(cita);
     this.selectedClienteLabel.set(cita.apoderadoNombre);
     this.selectedMascotaLabel.set(cita.mascotaNombre);
@@ -2040,8 +2051,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
       initialDate: this.fechaBase()
     };
     setTimeout(() => {
-      const api = this.fullCalendar?.getApi();
-      api?.changeView(viewName, this.fechaBase());
+      this.fullCalendar?.changeView(viewName, this.fechaBase());
     });
   }
 
@@ -2052,11 +2062,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
       events: this.calendarEvents()
     };
     setTimeout(() => {
-      const api = this.fullCalendar?.getApi();
-      if (!api) return;
-      api.gotoDate(this.fechaBase());
-      api.removeAllEvents();
-      api.addEventSource(this.calendarEvents());
+      this.fullCalendar?.replaceEvents(this.fechaBase(), this.calendarEvents());
     });
   }
 

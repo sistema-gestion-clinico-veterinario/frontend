@@ -5,6 +5,10 @@ import { MessageService, ConfirmationService } from 'primeng/api';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormControl, FormGroup } from '@angular/forms';
+import { of } from 'rxjs';
+import { ApoderadoService } from '../../../core/services/apoderado.service';
+import { MascotaService } from '../../../core/services/mascota.service';
+import { EmpleadoService } from '../../../core/services/empleado.service';
 
 describe('AgendaComponent', () => {
   let component: AgendaComponent;
@@ -63,6 +67,43 @@ describe('AgendaComponent', () => {
       const ctrl = component.citaForm.get('fechaHoraInicio')!;
       ctrl.patchValue(new Date('2025-07-05T10:00:00'), { emitEvent: false, onlySelf: true });
       expect(component.horariosValidator(ctrl)).toBeNull();
+    });
+  });
+
+  describe('carga eficiente de catálogos', () => {
+    it('carga dueños y mascotas al abrir el formulario y reutiliza el resultado', () => {
+      const apoderados = TestBed.inject(ApoderadoService);
+      const mascotas = TestBed.inject(MascotaService);
+      const listarApoderados = spyOn(apoderados, 'listar').and.returnValue(
+        of({ data: { content: [] } } as any)
+      );
+      const listarMascotas = spyOn(mascotas, 'listar').and.returnValue(
+        of({ data: { content: [] } } as any)
+      );
+
+      component.openNew();
+      component.openNew();
+
+      expect(listarApoderados).toHaveBeenCalledTimes(1);
+      expect(listarMascotas).toHaveBeenCalledTimes(1);
+    });
+
+    it('obtiene empleados una sola vez y expone como veterinarios solo los habilitados', () => {
+      const empleados = TestBed.inject(EmpleadoService);
+      spyOn(empleados, 'listar').and.returnValue(of({
+        data: {
+          content: [
+            { id: 1, nombre: 'Ana', apellido: 'Vet', activo: true, tiposEmpleado: ['VETERINARIO'] },
+            { id: 2, nombre: 'Luis', apellido: 'Admin', activo: true, tiposEmpleado: ['ADMINISTRATIVO'] },
+            { id: 3, nombre: 'Eva', apellido: 'Inactiva', activo: false, tiposEmpleado: ['VETERINARIO'] }
+          ]
+        }
+      } as any));
+
+      component.loadVeterinarios();
+
+      expect(component.todosEmpleados().map(e => e.id)).toEqual([1, 2]);
+      expect(component.veterinarios()).toEqual([{ label: 'Ana Vet', value: 1 }]);
     });
   });
 });

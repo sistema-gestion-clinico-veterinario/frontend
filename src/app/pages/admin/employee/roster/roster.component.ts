@@ -15,6 +15,7 @@ import { ToastModule } from 'primeng/toast';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { FormsModule } from '@angular/forms';
+import { firstValueFrom } from 'rxjs';
 import { ScheduleFormComponent } from './components/schedule-form/schedule-form.component';
 
 @Component({
@@ -227,10 +228,6 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
     if (companyId) {
       this.loadEmployeeList(companyId);
     }
-
-    this.companyService.getCompany().subscribe({
-      next: (res) => { if (res.data) this.company.set(res.data); }
-    });
 
     this.timeUpdateTimer = setInterval(() => {
       if (this.viewMode() === 'day') {
@@ -798,6 +795,24 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
     });
   }
 
+  /**
+   * Los datos corporativos solo se necesitan al generar un reporte.
+   * Se conservan después de la primera consulta para evitar solicitudes repetidas.
+   */
+  private async getCompanyForExport(): Promise<CompanyDTO | null> {
+    const cachedCompany = this.company();
+    if (cachedCompany) return cachedCompany;
+
+    try {
+      const response = await firstValueFrom(this.companyService.getCompany());
+      const company = response.data ?? null;
+      this.company.set(company);
+      return company;
+    } catch {
+      return null;
+    }
+  }
+
   async exportPdf() {
     const empName = this.selectedEmployeeName();
     if (!empName) {
@@ -809,7 +824,7 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
     const empCargo = this.selectedEmployeeCargo();
     const totalHrs = this.totalShiftsHours();
     const dateStr = this.currentDateFormatted();
-    const co = this.company();
+    const co = await this.getCompanyForExport();
 
     const { default: JsPdf } = await import('jspdf');
     const pdf = new JsPdf('l', 'mm', 'a4');
@@ -1058,7 +1073,7 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
     const totalHrs = this.totalShiftsHours();
     const weeks    = this.printableWeeks();
     const days     = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
-    const co       = this.company();
+    const co       = await this.getCompanyForExport();
     const companyName = co?.name || this.authStore.selectedEnterprise()?.name || 'Empresa';
 
     const headerFill = (hex: string): ExcelJS.Fill => ({ type: 'pattern', pattern: 'solid', fgColor: { argb: hex } });

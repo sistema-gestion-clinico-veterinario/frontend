@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import type jsPDF from 'jspdf';
 import type { UserOptions } from 'jspdf-autotable';
 import type ExcelJS from 'exceljs';
-import { HeatmapItem, ItemCount, ItemMonto, PacienteInactivo, ProximaAplicacion, ReportesClinicos } from '../../models/response/reportes-clinicos-response';
+import { HeatmapItem, ItemCount, ItemMonto, PacienteInactivo, ProximaAplicacion, ReportesClinicos, ReporteVentasProductos } from '../../models/response/reportes-clinicos-response';
 import { CompanyDTO } from '../../models/request/company-dto';
 import { AuditLogService } from '../../core/services/audit-log.service';
 
@@ -45,7 +45,7 @@ interface SeccionProxima {
   items: ProximaAplicacion[];
 }
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class ReportesExportService {
 
   private readonly auditLogService = inject(AuditLogService);
@@ -548,6 +548,96 @@ export class ReportesExportService {
     document.body.removeChild(link);
     URL.revokeObjectURL(link.href);
     this.auditLogService.registrarDescarga('REPORTE_CLINICO_EXCEL', `${reporte.fechaDesde} a ${reporte.fechaHasta}`).subscribe();
+  }
+
+  async exportarVentasPdf(reporte: ReporteVentasProductos, empresa: CompanyDTO | null = null, filtros = 'Sin filtros adicionales'): Promise<void> {
+    const [{ default: JsPdf }, { default: autoTable }] = await Promise.all([
+      import('jspdf'), import('jspdf-autotable')
+    ]);
+    const doc = new JsPdf();
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(16);
+    doc.text(empresa?.name ?? 'SoftVet', 14, 18);
+    doc.setFontSize(13);
+    doc.text('Reporte de ventas y productos', 14, 28);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.text(`Periodo: ${reporte.fechaDesde} al ${reporte.fechaHasta}`, 14, 35);
+    doc.text(`Filtros: ${filtros}`, 14, 40, { maxWidth: 180 });
+    const r = reporte.resumen;
+    const a = reporte.resumenAnterior;
+    autoTable(doc, {
+      startY: 47,
+      head: [['Indicador', 'Periodo actual', 'Periodo anterior']],
+      body: [
+        ['Ventas', r.ventas ?? 'Sin permiso', a.ventas ?? 'Sin permiso'],
+        ['Ingresos', r.ingresos == null ? 'Sin permiso' : this.formatMoney(r.ingresos), a.ingresos == null ? 'Sin permiso' : this.formatMoney(a.ingresos)],
+        ['Unidades vendidas', r.unidadesVendidas ?? 'Sin permiso', a.unidadesVendidas ?? 'Sin permiso'],
+        ['Ticket promedio', r.ticketPromedio == null ? 'Sin permiso' : this.formatMoney(r.ticketPromedio), a.ticketPromedio == null ? 'Sin permiso' : this.formatMoney(a.ticketPromedio)],
+        ['Productos con stock bajo', r.productosStockBajo ?? 'Sin permiso', 'No aplica'],
+        ['Productos sin stock', r.productosSinStock ?? 'Sin permiso', 'No aplica']
+      ]
+    });
+    let y = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 8;
+    if (reporte.productosMasVendidos?.length) {
+      autoTable(doc, { startY: y, head: [['SKU', 'Producto', 'Unidades', 'Importe']], body: reporte.productosMasVendidos.map(p => [p.sku, p.nombre, p.cantidad, this.formatMoney(p.monto)]) });
+      y = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 8;
+    }
+    if (reporte.ventasPorMetodo?.length) {
+      autoTable(doc, { startY: y, head: [['Método', 'Ventas', 'Importe']], body: reporte.ventasPorMetodo.map(m => [m.nombre, m.cantidad, this.formatMoney(m.monto)]) });
+      y = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 8;
+    }
+    if (reporte.alertasStock?.length) {
+      autoTable(doc, { startY: y, head: [['SKU', 'Producto', 'Categoría', 'Stock', 'Mínimo']], body: reporte.alertasStock.map(p => [p.sku, p.nombre, p.categoria, p.stock, p.stockMinimo]) });
+    }
+    doc.save(`reporte-ventas-productos-${reporte.fechaDesde}-${reporte.fechaHasta}.pdf`);
+    this.auditLogService.registrarDescarga('REPORTE_VENTAS_PRODUCTOS_PDF', `${reporte.fechaDesde} a ${reporte.fechaHasta}`).subscribe();
+  }
+
+  async exportarVentasExcel(reporte: ReporteVentasProductos, empresa: CompanyDTO | null = null, filtros = 'Sin filtros adicionales'): Promise<void> {
+    const ExcelJSModule = await import('exceljs');
+    const ExcelJSRuntime = (ExcelJSModule as any).default ?? ExcelJSModule;
+    const workbook: ExcelJS.Workbook = new ExcelJSRuntime.Workbook();
+    workbook.creator = empresa?.name ?? 'SoftVet';
+    const resumen = workbook.addWorksheet('Resumen');
+    resumen.addRow([empresa?.name ?? 'SoftVet']);
+    resumen.addRow(['Reporte de ventas y productos']);
+    resumen.addRow([`Periodo: ${reporte.fechaDesde} al ${reporte.fechaHasta}`]);
+    resumen.addRow([`Filtros: ${filtros}`]);
+    resumen.addRow([]);
+    resumen.addRow(['Indicador', 'Periodo actual', 'Periodo anterior']);
+    const r = reporte.resumen;
+    const a = reporte.resumenAnterior;
+    resumen.addRows([
+      ['Ventas', r.ventas, a.ventas], ['Ingresos', r.ingresos, a.ingresos],
+      ['Unidades vendidas', r.unidadesVendidas, a.unidadesVendidas],
+      ['Ticket promedio', r.ticketPromedio, a.ticketPromedio],
+      ['Productos con stock bajo', r.productosStockBajo, 'No aplica'],
+      ['Productos sin stock', r.productosSinStock, 'No aplica']
+    ]);
+    const productos = workbook.addWorksheet('Productos vendidos');
+    productos.addRow(['SKU', 'Producto', 'Unidades', 'Importe']);
+    (reporte.productosMasVendidos ?? []).forEach(p => productos.addRow([p.sku, p.nombre, p.cantidad, p.monto]));
+    const metodos = workbook.addWorksheet('Métodos de pago');
+    metodos.addRow(['Método', 'Ventas', 'Importe']);
+    (reporte.ventasPorMetodo ?? []).forEach(m => metodos.addRow([m.nombre, m.cantidad, m.monto]));
+    const inventario = workbook.addWorksheet('Inventario');
+    inventario.addRow(['SKU', 'Producto', 'Categoría', 'Stock', 'Mínimo']);
+    (reporte.alertasStock ?? []).forEach(p => inventario.addRow([p.sku, p.nombre, p.categoria, p.stock, p.stockMinimo]));
+    workbook.eachSheet(sheet => {
+      sheet.getRow(1).font = { bold: true };
+      sheet.columns.forEach(column => column.width = 24);
+    });
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `reporte-ventas-productos-${reporte.fechaDesde}-${reporte.fechaHasta}.xlsx`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(link.href);
+    this.auditLogService.registrarDescarga('REPORTE_VENTAS_PRODUCTOS_EXCEL', `${reporte.fechaDesde} a ${reporte.fechaHasta}`).subscribe();
   }
 
   private dimensionesImagen(dataUrl: string): Promise<{ width: number; height: number } | null> {

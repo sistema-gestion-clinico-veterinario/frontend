@@ -58,6 +58,16 @@ describe('DiagnosticoIaComponent', () => {
     expect(component.verificandoAutorizacion()).toBeFalse();
   });
 
+  it('se abre con el primer clic cuando fue cargado bajo demanda', () => {
+    autorizaciones.autorizacion.and.returnValue(respuesta(autorizacion()));
+    component.openInitially = true;
+
+    component.ngOnChanges();
+
+    expect(component.abierto()).toBeTrue();
+    expect(autorizaciones.autorizacion).toHaveBeenCalledOnceWith(7);
+  });
+
   it('si el titular no autorizó, no se envía nada a la IA aunque se fuerce el análisis', async () => {
     autorizaciones.autorizacion.and.returnValue(respuesta(autorizacion({ autorizada: false, fecha: null, canal: null })));
     component.abrir();

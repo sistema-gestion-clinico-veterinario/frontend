@@ -2,12 +2,16 @@
   <!-- Panel del formulario: a la derecha, blanco, angosto. -->
   <main class="login-panel flex min-h-[100dvh] flex-col justify-center overflow-y-auto bg-white px-5 py-6 sm:px-10 lg:w-[42%] lg:px-10 xl:w-[38%] xl:px-12 2xl:w-[36%] 2xl:px-16">
     <div class="login-panel__content mx-auto w-full max-w-sm">
-      <div class="login-logo mb-4 flex items-center justify-center gap-2.5 2xl:mb-6">
+      <div class="login-logo mb-4 flex h-16 items-center justify-center gap-2.5 lg:h-20 2xl:mb-6 2xl:h-24">
         @if (logoUrl) {
           <img
             [src]="logoUrl"
             [alt]="companyName"
-            class="h-16 w-auto max-w-[15rem] object-contain lg:h-20 2xl:h-24 2xl:max-w-[18rem]"
+            width="320"
+            height="180"
+            decoding="async"
+            fetchpriority="high"
+            class="h-full w-auto max-w-[15rem] object-contain 2xl:max-w-[18rem]"
             />
         }
       </div>
@@ -69,7 +73,7 @@
                       class="flex w-full items-center gap-3 p-3 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-50"
                       >
                       @if (clinic.logoUrl) {
-                        <img [src]="clinic.logoUrl" [alt]="clinic.name" class="h-8 w-8 shrink-0 rounded-full object-cover" />
+                        <img [src]="clinic.logoUrl" [alt]="clinic.name" width="32" height="32" loading="lazy" decoding="async" class="h-8 w-8 shrink-0 rounded-full object-cover" />
                       }
                       <span>{{ clinic.name }}</span>
                     </button>
@@ -337,11 +341,18 @@
       </div>
 
       <div class="login-hero__pet">
-        <img
-          src="https://toqqwxveqxhlottwetev.supabase.co/storage/v1/object/public/vargas_vet/image-Photoroom%20(3).png"
-          alt="Perro y gato"
-          class="login-hero__pet-image"
-          />
+        <picture>
+          <source media="(min-width: 1101px)" srcset="/assets/images/login-pets.webp" type="image/webp" />
+          <img
+            src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="
+            alt="Perro y gato"
+            width="467"
+            height="456"
+            decoding="async"
+            fetchpriority="high"
+            class="login-hero__pet-image"
+            />
+        </picture>
       </div>
 
       @if (!missingSlug) {

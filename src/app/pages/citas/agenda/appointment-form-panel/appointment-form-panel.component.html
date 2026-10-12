@@ -1,0 +1,593 @@
+      @if (context().displayModal()) {
+        <div
+          (click)="context().displayModal.set(false)"
+          class="fixed inset-0 z-[100] bg-slate-900/40 animate-in fade-in duration-200">
+        </div>
+      }
+      @if (context().displayModal()) {
+        <div
+          class="fixed inset-y-0 right-0 w-full sm:w-[520px] bg-white border-l border-slate-200 z-[101] flex flex-col animate-in slide-in-from-right duration-300 font-['Barlow']">
+          <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100 shrink-0">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="w-9 h-9 rounded-xl bg-blue-500/10 flex items-center justify-center shrink-0">
+                <i class="pi pi-calendar-plus text-blue-500 text-sm"></i>
+              </div>
+              <div class="min-w-0">
+                <h2 class="text-sm font-bold text-slate-800 leading-tight">
+                  {{ context().isReprogramando() ? 'Reprogramar Cita' : (context().citaForm.get('id')?.value ? 'Modificar Cita' : 'Nueva Cita Médica') }}
+                </h2>
+                <p class="text-[10px] text-slate-400 mt-0.5">
+                  {{ context().isReprogramando() ? 'Cambie la fecha y el horario' : (context().citaForm.get('id')?.value ? 'Actualice los datos de la cita' : 'Complete los datos para programar') }}
+                </p>
+              </div>
+            </div>
+            <button (click)="context().displayModal.set(false)"
+              class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all shrink-0">
+              <i class="pi pi-times text-sm"></i>
+            </button>
+          </div>
+          <div class="flex-1 overflow-y-auto">
+            <form id="citaSidebarForm" [formGroup]="context().citaForm" (ngSubmit)="context().saveCita()" class="agenda-form space-y-6 p-4 sm:p-5">
+              <div class="space-y-4">
+                <div class="flex items-center gap-2 pb-2 border-b border-slate-100">
+                  <span class="w-1.5 h-4 rounded-full bg-blue-500"></span>
+                  <h3 class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">1. Identificación del Paciente</h3>
+                </div>
+                <!-- ── Paso 1: Dueño ── -->
+                <div class="space-y-2">
+                  <div class="flex items-center justify-between min-h-[24px]">
+                    <label class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                      <span class="w-5 h-5 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center text-[10px] font-extrabold shrink-0">1</span>
+                      Dueño de la mascota
+                    </label>
+                    @if (!context().isReprogramando()) {
+                      <button type="button"
+                        (click)="context().showNuevoCliente.set(!context().showNuevoCliente()); context().showClienteSelector.set(false); context().showNuevaMascota.set(false)"
+                        class="text-[10px] font-bold flex items-center gap-1 px-2 py-1 rounded-lg transition-all"
+                        [class]="context().showNuevoCliente() ? 'bg-slate-100 text-slate-500 hover:bg-slate-200' : 'bg-blue-50 text-blue-500 hover:bg-blue-100'">
+                        <i [class]="context().showNuevoCliente() ? 'pi pi-times' : 'pi pi-plus'" class="text-[9px]"></i>
+                        {{ context().showNuevoCliente() ? 'Cancelar' : 'Nuevo cliente' }}
+                      </button>
+                    }
+                  </div>
+                  <div class="relative">
+                    <button type="button" [disabled]="context().isEditing() || context().isReprogramando()"
+                      (click)="!context().isEditing() && !context().isReprogramando() && context().showClienteSelector.set(!context().showClienteSelector())"
+                      class="w-full h-10 text-left px-3 border rounded-xl text-xs outline-none flex justify-between items-center transition-all"
+                      [class]="context().isEditing() || context().isReprogramando() ? 'bg-slate-50 border-slate-100 text-slate-400 cursor-not-allowed' : 'bg-white border-slate-200 hover:border-blue-500/50 cursor-pointer'">
+                      <span class="truncate" [class]="context().selectedClienteId() ? 'text-slate-800 font-bold' : 'text-slate-400 font-medium'">{{ context().selectedClienteLabel() }}</span>
+                      <i class="pi pi-chevron-down text-[10px] text-slate-400 shrink-0 ml-2"></i>
+                    </button>
+                    @if (context().showClienteSelector() && !context().isReprogramando()) {
+                      <div
+                        class="absolute z-50 mt-1 w-full bg-white border border-slate-200 rounded-xl overflow-hidden">
+                        <div class="p-2 border-b border-slate-100">
+                          <input type="text" [ngModel]="context().clienteSearch()" (ngModelChange)="context().clienteSearch.set($event)" [ngModelOptions]="{standalone: true}"
+                            placeholder="Buscar propietario..."
+                            class="w-full px-3 py-1.5 text-xs border border-slate-200 rounded-lg outline-none focus:border-blue-500 bg-slate-50 placeholder:text-slate-300">
+                          </div>
+                          <div class="max-h-44 overflow-y-auto">
+                            @for (c of context().filteredClientes(); track c) {
+                              <button (click)="context().onClienteChange(c)" type="button"
+                                class="w-full text-left px-4 py-2.5 text-xs hover:bg-blue-50 hover:text-blue-500 transition-colors border-b border-slate-50 last:border-0">
+                                {{ c.label }}
+                              </button>
+                            }
+                            @if (context().filteredClientes().length === 0) {
+                              <div class="p-4 text-center text-xs text-slate-400 italic">Sin resultados</div>
+                            }
+                          </div>
+                        </div>
+                      }
+                    </div>
+                    <!-- Form: Nuevo cliente -->
+                    @if (context().showNuevoCliente() && !context().isReprogramando()) {
+                      <div
+                        class="border border-blue-200 rounded-xl p-4 space-y-3 bg-blue-50/30">
+                        <p class="text-[10px] font-extrabold text-blue-500 uppercase tracking-wider flex items-center gap-1.5">
+                          <i class="pi pi-user-plus text-[10px]"></i> Datos del nuevo cliente
+                        </p>
+                        <div class="grid grid-cols-2 gap-2.5">
+                          <div class="flex flex-col gap-1">
+                            <label class="text-[10px] font-semibold text-slate-500">Nombre <span class="text-rose-500">*</span></label>
+                            <input type="text" appInputFilter="letters" [appInputFilterMaxLength]="80" maxlength="80" [ngModel]="context().ncNombre()" (ngModelChange)="context().onNewClientNameChange($event)" [ngModelOptions]="{standalone: true}"
+                              placeholder="Nombre"
+                              class="w-full h-9 px-3 border border-slate-200 rounded-lg text-xs font-semibold outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 bg-white placeholder:text-slate-300 transition-all">
+                            </div>
+                            <div class="flex flex-col gap-1">
+                              <label class="text-[10px] font-semibold text-slate-500">Apellido <span class="text-rose-500">*</span></label>
+                              <input type="text" appInputFilter="letters" [appInputFilterMaxLength]="80" maxlength="80" [ngModel]="context().ncApellido()" (ngModelChange)="context().onNewClientLastNameChange($event)" [ngModelOptions]="{standalone: true}"
+                                placeholder="Apellido"
+                                class="w-full h-9 px-3 border border-slate-200 rounded-lg text-xs font-semibold outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 bg-white placeholder:text-slate-300 transition-all">
+                              </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2.5">
+                              <div class="flex flex-col gap-1">
+                                <label class="text-[10px] font-semibold text-slate-500">Tipo Doc. <span class="text-rose-500">*</span></label>
+                                <select [ngModel]="context().ncTipoDoc()" (ngModelChange)="context().onNewClientDocumentTypeChange($event)" [ngModelOptions]="{standalone: true}"
+                                  class="w-full h-9 px-3 border border-slate-200 rounded-lg text-xs font-semibold outline-none focus:border-blue-500 bg-white transition-all cursor-pointer appearance-none">
+                                  <option value="DNI">DNI</option>
+                                  <option value="CARNET_EXTRANJERIA">Carnet Extranjería</option>
+                                  <option value="PASAPORTE">Pasaporte</option>
+                                </select>
+                              </div>
+                              <div class="flex flex-col gap-1">
+                                <label class="text-[10px] font-semibold text-slate-500">N° Documento <span class="text-rose-500">*</span></label>
+                                <input type="text" [appInputFilter]="context().ncTipoDoc() === 'PASAPORTE' ? 'alphanumeric' : 'digits'"
+                                  [appInputFilterMaxLength]="context().ncTipoDoc() === 'DNI' ? 8 : 9" [maxlength]="context().ncTipoDoc() === 'DNI' ? 8 : 9"
+                                  [ngModel]="context().ncNumDoc()" (ngModelChange)="context().onNewClientDocumentChange($event)" [ngModelOptions]="{standalone: true}"
+                                  placeholder="12345678"
+                                  class="w-full h-9 px-3 border border-slate-200 rounded-lg text-xs font-semibold outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 bg-white placeholder:text-slate-300 transition-all">
+                                </div>
+                              </div>
+                              <div class="grid grid-cols-2 gap-2.5">
+                                <div class="flex flex-col gap-1">
+                                  <label class="text-[10px] font-semibold text-slate-500">Teléfono <span class="text-rose-500">*</span></label>
+                                  <input type="tel" appInputFilter="digits" [appInputFilterMaxLength]="9" inputmode="numeric" maxlength="9" [ngModel]="context().ncTelefono()" (ngModelChange)="context().ncTelefono.set($event)" [ngModelOptions]="{standalone: true}"
+                                    placeholder="9XX XXX XXX"
+                                    class="w-full h-9 px-3 border border-slate-200 rounded-lg text-xs font-semibold outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 bg-white placeholder:text-slate-300 transition-all">
+                                  </div>
+                                  <div class="flex flex-col gap-1">
+                                    <label class="text-[10px] font-semibold text-slate-500">Correo <span class="text-rose-500">*</span></label>
+                                    <input type="email" maxlength="100" [ngModel]="context().ncCorreo()" (ngModelChange)="context().ncCorreo.set($event)" [ngModelOptions]="{standalone: true}"
+                                      placeholder="cliente@correo.com"
+                                      class="w-full h-9 px-3 border border-slate-200 rounded-lg text-xs font-semibold outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 bg-white placeholder:text-slate-300 transition-all">
+                                    </div>
+                                  </div>
+                                  <div class="flex flex-col gap-1">
+                                    <label class="text-[10px] font-semibold text-slate-500">Dirección <span class="text-rose-500">*</span></label>
+                                    <input type="text" [ngModel]="context().ncDireccion()" (ngModelChange)="context().ncDireccion.set($event)" [ngModelOptions]="{standalone: true}"
+                                      maxlength="200" placeholder="Av. Ejemplo 123, Distrito"
+                                      class="w-full h-9 px-3 border border-slate-200 rounded-lg text-xs font-semibold outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 bg-white placeholder:text-slate-300 transition-all">
+                                    </div>
+                                    <div class="flex flex-col gap-1">
+                                      <label class="text-[10px] font-semibold text-slate-500">Género <span class="text-rose-500">*</span></label>
+                                      <div class="grid grid-cols-2 gap-2">
+                                        <button type="button" (click)="context().ncGenero.set('MASCULINO')"
+                                          class="h-9 flex items-center justify-center gap-1.5 border rounded-lg text-xs font-bold transition-all"
+                                          [class]="context().ncGenero() === 'MASCULINO' ? 'bg-blue-500 text-white border-blue-500' : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300'">
+                                          <i class="pi pi-mars text-[10px]"></i> Masculino
+                                        </button>
+                                        <button type="button" (click)="context().ncGenero.set('FEMENINO')"
+                                          class="h-9 flex items-center justify-center gap-1.5 border rounded-lg text-xs font-bold transition-all"
+                                          [class]="context().ncGenero() === 'FEMENINO' ? 'bg-rose-500 text-white border-rose-500' : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300'">
+                                          <i class="pi pi-venus text-[10px]"></i> Femenino
+                                        </button>
+                                      </div>
+                                    </div>
+                                    @if (context().avisoPrivacidad(); as aviso) {
+                                      <div class="rounded-lg border border-slate-200 bg-white p-3 text-xs text-slate-600">
+                                        <p class="mb-2 leading-5">Estás registrando datos personales de un propietario. Infórmale cómo los utilizará la clínica antes de continuar.</p>
+                                        <p class="font-bold text-slate-800">Aviso de privacidad · versión {{ aviso.version }}</p>
+                                        <details class="mt-1"><summary class="cursor-pointer font-bold text-[var(--brand-primary)]">Leer aviso</summary><pre class="mt-2 max-h-40 overflow-auto whitespace-pre-wrap font-sans leading-5">{{ aviso.contenido }}</pre></details>
+                                        <label class="mt-3 flex items-start gap-2"><input type="checkbox" [ngModel]="context().ncAvisoInformado()" (ngModelChange)="context().ncAvisoInformado.set($event)" [ngModelOptions]="{standalone: true}" class="mt-0.5 accent-[var(--brand-primary)]" /> La persona fue informada antes de registrar sus datos.</label>
+                                        <label class="mt-3 flex items-start gap-2"><input type="checkbox" [ngModel]="context().ncConsentimientoRecordatorios() === true" (ngModelChange)="context().ncConsentimientoRecordatorios.set($event ? true : null)" [ngModelOptions]="{standalone: true}" class="mt-0.5 accent-[var(--brand-primary)]" /> La persona autoriza recibir recordatorios preventivos por correo. No autorizar no cambia la atención.</label>
+                                      </div>
+                                    } @else {
+                                      <p class="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">La clínica debe publicar su aviso de privacidad antes de registrar clientes.</p>
+                                    }
+                                    <button type="button" (click)="context().crearNuevoCliente()" [disabled]="context().savingNuevoCliente()"
+                                      class="w-full h-9 flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold rounded-lg transition-all disabled:opacity-50">
+                                      @if (context().savingNuevoCliente()) {
+                                        <i class="pi pi-spin pi-spinner text-xs"></i>
+                                      }
+                                      @if (!context().savingNuevoCliente()) {
+                                        <i class="pi pi-check text-xs"></i>
+                                      }
+                                      {{ context().savingNuevoCliente() ? 'Registrando cliente...' : 'Crear y seleccionar cliente' }}
+                                    </button>
+                                  </div>
+                                }
+                              </div>
+                              <div class="border-t border-dashed border-slate-200"></div>
+                              <!-- ── Paso 2: Mascota ── -->
+                              <div class="space-y-2">
+                                <div class="flex items-center justify-between min-h-[24px]">
+                                  <label class="text-xs font-bold flex items-center gap-1.5 transition-colors"
+                                    [class]="context().selectedClienteId() ? 'text-slate-700' : 'text-slate-300'">
+                                    <span class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-extrabold shrink-0 transition-colors"
+                                    [class]="context().selectedClienteId() ? 'bg-slate-100 text-slate-500' : 'bg-slate-50 text-slate-300'">2</span>
+                                    Mascota <span class="text-rose-400">*</span>
+                                  </label>
+                                  @if (!context().isReprogramando()) {
+                                    @if (context().selectedClienteId()) {
+                                      <button type="button"
+                                        (click)="context().toggleNuevaMascota()"
+                                        class="text-[10px] font-bold flex items-center gap-1 px-2 py-1 rounded-lg transition-all"
+                                        [class]="context().showNuevaMascota() ? 'bg-slate-100 text-slate-500 hover:bg-slate-200' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'">
+                                        <i [class]="context().showNuevaMascota() ? 'pi pi-times' : 'pi pi-plus'" class="text-[9px]"></i>
+                                        {{ context().showNuevaMascota() ? 'Cancelar' : 'Nueva mascota' }}
+                                      </button>
+                                    }
+                                    @if (!context().selectedClienteId()) {
+                                      <span
+                                      class="text-[10px] text-slate-300 italic">Selecciona un dueño primero</span>
+                                    }
+                                  }
+                                </div>
+                                <div class="relative">
+                                  <button type="button"
+                                    [disabled]="context().isReprogramando() || !context().selectedClienteId()"
+                                    (click)="context().selectedClienteId() && !context().isReprogramando() && context().showMascotaSelector.set(!context().showMascotaSelector())"
+                                    class="w-full h-10 text-left px-3 border rounded-xl text-xs outline-none flex justify-between items-center transition-all"
+                                    [class]="(context().isReprogramando() || !context().selectedClienteId()) ? 'bg-slate-50 border-slate-100 text-slate-300 cursor-not-allowed' : 'bg-white border-slate-200 hover:border-emerald-400/50 cursor-pointer'">
+                                    <span class="truncate" [class]="context().citaForm.get('mascotaId')?.value ? 'text-slate-800 font-bold' : (context().selectedClienteId() ? 'text-slate-400 font-medium' : 'text-slate-300 font-medium')">{{ context().selectedMascotaLabel() }}</span>
+                                    <i class="pi pi-chevron-down text-[10px] text-slate-400 shrink-0 ml-2"></i>
+                                  </button>
+                                  @if (context().showMascotaSelector() && context().selectedClienteId() && !context().isReprogramando()) {
+                                    <div
+                                      class="absolute z-50 mt-1 w-full bg-white border border-slate-200 rounded-xl max-h-44 overflow-y-auto">
+                                      @for (m of context().filteredMascotas(); track m) {
+                                        <button (click)="context().selectMascota(m)" type="button"
+                                          class="w-full text-left px-4 py-2.5 text-xs hover:bg-emerald-50 hover:text-emerald-700 transition-colors border-b border-slate-50 last:border-0">
+                                          {{ m.label }}
+                                        </button>
+                                      }
+                                      @if (context().filteredMascotas().length === 0) {
+                                        <div class="p-4 text-center text-xs text-slate-400 italic">
+                                          Sin mascotas — usa "Nueva mascota" para registrar una
+                                        </div>
+                                      }
+                                    </div>
+                                  }
+                                </div>
+                                <!-- Form: Nueva mascota -->
+                                @if (context().showNuevaMascota() && context().selectedClienteId() && !context().isReprogramando()) {
+                                  <div
+                                    class="border border-emerald-200 rounded-xl p-4 space-y-3 bg-emerald-50/30">
+                                    <p class="text-[10px] font-extrabold text-emerald-700 uppercase tracking-wider flex items-center gap-1.5">
+                                      <i class="pi pi-heart-fill text-[10px]"></i> Datos de la nueva mascota
+                                    </p>
+                                    <div class="flex flex-col gap-1">
+                                      <label class="text-[10px] font-semibold text-slate-500">Nombre <span class="text-rose-500">*</span></label>
+                                      <input type="text" appInputFilter="letters" [appInputFilterMaxLength]="80" maxlength="80" [ngModel]="context().nmNombre()" (ngModelChange)="context().onNewPetNameChange($event)" [ngModelOptions]="{standalone: true}"
+                                        placeholder="Ej: Luna"
+                                        class="w-full h-9 px-3 border border-slate-200 rounded-lg text-xs font-semibold outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/10 bg-white placeholder:text-slate-300 transition-all">
+                                      </div>
+                                      <div class="grid grid-cols-2 gap-2.5">
+                                        <div class="flex flex-col gap-1">
+                                          <label class="text-[10px] font-semibold text-slate-500">Especie <span class="text-rose-500">*</span></label>
+                                          <select [ngModel]="context().nmEspecie()" (ngModelChange)="context().onAgendaEspecieChange($event)" [ngModelOptions]="{standalone: true}"
+                                            class="w-full h-9 px-3 border border-slate-200 rounded-lg text-xs font-semibold outline-none focus:border-emerald-400 bg-white transition-all cursor-pointer appearance-none">
+                                            <option value="PERRO">Perro</option>
+                                            <option value="GATO">Gato</option>
+                                            <option value="CONEJO">Conejo</option>
+                                            <option value="AVE">Ave</option>
+                                            <option value="REPTIL">Reptil</option>
+                                            <option value="OTRO">Otro</option>
+                                          </select>
+                                        </div>
+                                        <div class="flex flex-col gap-1">
+                                          <label class="text-[10px] font-semibold text-slate-500">Sexo <span class="text-rose-500">*</span></label>
+                                          <select [ngModel]="context().nmSexo()" (ngModelChange)="context().nmSexo.set($event)" [ngModelOptions]="{standalone: true}"
+                                            class="w-full h-9 px-3 border border-slate-200 rounded-lg text-xs font-semibold outline-none focus:border-emerald-400 bg-white transition-all cursor-pointer appearance-none">
+                                            <option value="MACHO">Macho</option>
+                                            <option value="HEMBRA">Hembra</option>
+                                          </select>
+                                        </div>
+                                      </div>
+                                      <div class="grid grid-cols-2 gap-2.5">
+                                        <div class="flex flex-col gap-1">
+                                          <label class="text-[10px] font-semibold text-slate-500">Raza <span class="text-rose-500">*</span></label>
+                                          <div class="flex gap-1.5">
+                                            <select [ngModel]="context().nmRazaId()" (ngModelChange)="context().nmRazaId.set($event); $any($event)" [ngModelOptions]="{standalone: true}"
+                                              class="flex-1 h-9 px-3 border border-slate-200 rounded-lg text-xs font-semibold outline-none focus:border-emerald-400 bg-white transition-all cursor-pointer appearance-none">
+                                              <option [ngValue]="null" disabled>Seleccione</option>
+                                              @for (r of context().razasAgenda(); track r) {
+                                                <option [ngValue]="r.id">{{ r.nombre }}</option>
+                                              }
+                                            </select>
+                                            <button type="button" (click)="context().loadRazasAgenda()"
+                                              class="w-9 h-9 flex items-center justify-center rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-all flex-shrink-0"
+                                              title="Recargar razas">
+                                              <i class="pi pi-refresh text-base"></i>
+                                            </button>
+                                          </div>
+                                        </div>
+                                        <div class="flex flex-col gap-1">
+                                          <label class="text-[10px] font-semibold text-slate-500">Fecha de Nac. <span class="text-rose-500">*</span></label>
+                                          <input type="date" [ngModel]="context().nmFechaNac()" (ngModelChange)="context().nmFechaNac.set($event)" [ngModelOptions]="{standalone: true}"
+                                            [max]="context().toDateStr(context().today)"
+                                            class="w-full h-9 px-3 border border-slate-200 rounded-lg text-xs font-semibold outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/10 bg-white transition-all cursor-pointer">
+                                          </div>
+                                        </div>
+                                        <button type="button" (click)="context().crearNuevaMascota()" [disabled]="context().savingNuevaMascota()"
+                                          class="w-full h-9 flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-lg transition-all disabled:opacity-50">
+                                          @if (context().savingNuevaMascota()) {
+                                            <i class="pi pi-spin pi-spinner text-xs"></i>
+                                          }
+                                          @if (!context().savingNuevaMascota()) {
+                                            <i class="pi pi-check text-xs"></i>
+                                          }
+                                          {{ context().savingNuevaMascota() ? 'Registrando mascota...' : 'Crear y seleccionar mascota' }}
+                                        </button>
+                                      </div>
+                                    }
+                                  </div>
+                                </div>
+                                <div class="space-y-3">
+                                  <div class="flex items-center gap-2 pb-2 border-b border-slate-100">
+                                    <span class="w-1.5 h-4 rounded-full bg-blue-500"></span>
+                                    <h3 class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">2. Detalles de la Atención</h3>
+                                  </div>
+                                  <div class="grid grid-cols-2 gap-3">
+                                    <div class="flex flex-col gap-1.5">
+                                      <label class="text-xs font-semibold text-slate-600">Servicio <span class="text-rose-500">*</span></label>
+                                      <div class="relative">
+                                        <button type="button" [disabled]="context().isEditing() || context().isReprogramando()"
+                                          (click)="!context().isEditing() && !context().isReprogramando() && context().showServicioSelector.set(!context().showServicioSelector())"
+                                          class="w-full h-10 text-left px-3 border rounded-xl text-xs font-semibold outline-none flex justify-between items-center transition-all"
+                                          [class]="context().isEditing() || context().isReprogramando() ? 'bg-slate-50 border-slate-100 text-slate-400 cursor-not-allowed' : 'bg-white border-slate-200 hover:border-slate-300 cursor-pointer'">
+                                          <span class="truncate text-slate-600">{{ context().getServicioLabel() }}</span>
+                                          <i class="pi pi-chevron-down text-[10px] text-slate-400 shrink-0"></i>
+                                        </button>
+                                        @if (context().showServicioSelector() && !context().isEditing() && !context().isReprogramando()) {
+                                          <div
+                                            class="absolute z-50 mt-1 w-full bg-white border border-slate-200 rounded-xl max-h-44 overflow-y-auto">
+                                            @for (s of context().servicios(); track s) {
+                                              <button (click)="context().selectServicio(s)" type="button"
+                                                class="w-full text-left px-4 py-2.5 text-xs hover:bg-blue-50 hover:text-blue-500 transition-colors border-b border-slate-50 last:border-0">
+                                                {{ s.label }}
+                                              </button>
+                                            }
+                                            @if (context().servicios().length === 0) {
+                                              <div class="px-4 py-3 text-xs text-slate-400 italic">Sin context().servicios disponibles</div>
+                                            }
+                                          </div>
+                                        }
+                                      </div>
+                                    </div>
+                                    <div class="flex flex-col gap-1.5">
+                                      <label class="text-xs font-semibold text-slate-600">Empleado <span class="text-rose-500">*</span></label>
+                                      <div class="relative" (click)="$event.stopPropagation()">
+                                        <button type="button" [disabled]="context().isEditing() || (!context().isReprogramando() && !context().selectedServicioId())"
+                                          (click)="!context().isEditing() && context().selectedServicioId() && context().showVeterinarioSelector.set(!context().showVeterinarioSelector())"
+                                          class="w-full h-10 text-left px-3 border rounded-xl text-xs font-semibold outline-none flex justify-between items-center transition-all"
+                                          [class]="context().isEditing() || !context().selectedServicioId() ? 'bg-slate-50 border-slate-100 text-slate-300 cursor-not-allowed' : 'bg-white border-slate-200 hover:border-slate-300 cursor-pointer'">
+                                          <span class="truncate" [class.text-slate-600]="context().selectedServicioId() && !context().isEditing()" [class.text-slate-300]="!context().selectedServicioId() || context().isEditing()">{{ context().getVeterinarioLabel() }}</span>
+                                          <i class="pi pi-chevron-down text-[10px] text-slate-400 shrink-0"></i>
+                                        </button>
+                                        @if (!context().selectedServicioId()) {
+                                          <p class="text-[10px] text-slate-400 mt-0.5">Selecciona primero el servicio</p>
+                                        }
+                                        @if (context().showVeterinarioSelector() && !context().isEditing() && context().selectedServicioId()) {
+                                          <div
+                                            class="absolute z-50 mt-1 w-full bg-white border border-slate-200 rounded-xl max-h-44 overflow-y-auto">
+                                            @for (v of context().empleadosDelServicio(); track v) {
+                                              <button (click)="context().selectVeterinario(v)" type="button"
+                                                class="w-full text-left px-4 py-2.5 text-xs hover:bg-blue-50 hover:text-blue-500 transition-colors border-b border-slate-50 last:border-0">
+                                                {{ v.label }}
+                                              </button>
+                                            }
+                                            @if (context().empleadosDelServicio().length === 0) {
+                                              <div class="px-4 py-3 text-xs text-slate-400 italic">No hay empleados para este servicio</div>
+                                            }
+                                          </div>
+                                        }
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div class="space-y-3">
+                                  @if (context().controlesParaServicio().length) {
+                                    <div class="border border-blue-100 bg-blue-50/60 rounded-xl p-3">
+                                      <p class="text-[10px] font-extrabold text-blue-700 uppercase tracking-wider mb-2">Controles que atendera esta cita</p>
+                                      @for (control of context().controlesParaServicio(); track control) {
+                                        <label class="flex items-center gap-2 py-1.5 cursor-pointer">
+                                          <input type="checkbox" [checked]="context().controlPreventivoSeleccionado(control.id)"
+                                            (change)="context().toggleControlPreventivo(control.id, $any($event.target).checked)"
+                                            class="w-4 h-4 rounded border-slate-300 accent-blue-500">
+                                            <span class="text-xs font-bold text-slate-700">{{ control.nombreControl }}</span>
+                                            <span class="ml-auto text-[10px] text-slate-500">{{ control.fechaRecomendada | date:'dd/MM/yyyy' }}</span>
+                                          </label>
+                                        }
+                                      </div>
+                                    }
+                                    <div class="flex items-center gap-2 pb-2 border-b border-slate-100">
+                                      <span class="w-1.5 h-4 rounded-full bg-blue-500"></span>
+                                      <h3 class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">3. Fecha y Horario</h3>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-3">
+                                      @if (!context().citaForm.get('id')?.value || context().isReprogramando()) {
+                                        <div class="flex flex-col gap-1.5">
+                                          <label class="text-xs font-semibold text-slate-600">Fecha <span class="text-rose-500">*</span></label>
+                                          <input type="date" formControlName="fechaCita"
+                                            [min]="context().toDateStr(context().today)"
+                                            (change)="context().onFechaCitaChange($event)"
+                                            class="w-full h-10 px-3 border border-slate-200 rounded-xl text-xs font-semibold outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 bg-white transition-all cursor-pointer">
+                                          </div>
+                                        }
+                                        @if (context().citaForm.get('veterinarioId')?.value && (!context().citaForm.get('id')?.value || context().isReprogramando())) {
+                                          <div
+                                            class="rounded-xl border border-slate-200 bg-slate-50/70 p-3">
+                                            <div class="flex items-center justify-between gap-3 mb-2.5">
+                                              <div class="min-w-0">
+                                                <p class="text-[9px] font-bold uppercase tracking-wider text-slate-400">Horario del empleado</p>
+                                                <p class="text-xs font-bold text-slate-700 truncate">{{ context().getVeterinarioLabel() }}</p>
+                                              </div>
+                                              <i class="pi pi-clock text-blue-500 text-sm"></i>
+                                            </div>
+                                            <p class="text-[9px] font-semibold text-slate-400 mb-2">Guia de dias y rangos para elegir fecha.</p>
+                                            @if (context().horariosResumen.length > 0) {
+                                              <div class="space-y-2 max-h-[150px] overflow-y-auto pr-1">
+                                                @for (horario of context().horariosResumen; track horario) {
+                                                  <div
+                                                    class="rounded-lg bg-white border border-slate-100 px-2.5 py-2">
+                                                    <div class="flex items-center justify-between gap-2">
+                                                      <span class="text-[10px] font-extrabold text-slate-700">{{ context().formatDiaSemana(horario.diaSemana) }}</span>
+                                                      <span class="text-[10px] font-extrabold text-blue-500 whitespace-nowrap">
+                                                        {{ horario.horaInicio }} - {{ horario.horaFin }}
+                                                      </span>
+                                                    </div>
+                                                    <div class="mt-1 flex items-center justify-between gap-2">
+                                                      <span class="flex items-center gap-1.5 text-[9px] font-semibold text-slate-400 min-w-0">
+                                                        <i class="pi pi-calendar text-[9px] shrink-0"></i>
+                                                        <span class="truncate">{{ horario.rangoFechas }}</span>
+                                                      </span>
+                                                      @if (horario.totalFechas > 1) {
+                                                        <span
+                                                          class="text-[9px] font-bold text-slate-400 whitespace-nowrap">
+                                                          {{ horario.totalFechas }} fechas
+                                                        </span>
+                                                      }
+                                                    </div>
+                                                  </div>
+                                                }
+                                              </div>
+                                            } @else {
+                                              <div class="rounded-lg bg-white border border-slate-100 px-2.5 py-2 text-[10px] font-semibold text-slate-400">
+                                                Este empleado no tiene horarios activos registrados.
+                                              </div>
+                                            }
+                                          </div>
+                                        }
+                                        @if (context().citaForm.get('id')?.value && !context().isReprogramando()) {
+                                          <div class="flex flex-col gap-1.5 col-span-2">
+                                            <label class="text-xs font-semibold text-slate-600">Fecha y Hora</label>
+                                            <div class="w-full h-10 px-3 border border-slate-200 rounded-xl text-xs font-semibold text-slate-500 bg-slate-50 flex items-center">
+                                              {{ context().getReadOnlyFechaHora() }}
+                                            </div>
+                                          </div>
+                                        }
+                                      </div>
+                                      @if (!context().citaForm.get('id')?.value || context().isReprogramando()) {
+                                        <div class="flex flex-col gap-2">
+                                          <label class="text-xs font-semibold text-slate-600 flex items-center gap-2">
+                                            Horario disponible <span class="text-rose-500">*</span>
+                                            @if (context().loadingSlots()) {
+                                              <i class="pi pi-spin pi-spinner text-xs text-blue-500"></i>
+                                            }
+                                          </label>
+                                          @if (!context().citaForm.get('servicioId')?.value) {
+                                            <div
+                                              class="bg-slate-50 border border-slate-200 p-3 rounded-xl text-xs text-slate-400 flex items-center gap-2">
+                                              <i class="pi pi-info-circle text-slate-300 shrink-0"></i> Selecciona servicio y empleado primero.
+                                            </div>
+                                          }
+                                          @if (context().citaForm.get('servicioId')?.value && !context().citaForm.get('veterinarioId')?.value) {
+                                            <div
+                                              class="bg-slate-50 border border-slate-200 p-3 rounded-xl text-xs text-slate-400 flex items-center gap-2">
+                                              <i class="pi pi-user text-slate-300 shrink-0"></i> Selecciona el empleado responsable.
+                                            </div>
+                                          }
+                                          @if (context().citaForm.get('veterinarioId')?.value && context().citaForm.get('servicioId')?.value && !context().citaForm.get('fechaCita')?.value) {
+                                            <div
+                                              class="bg-slate-50 border border-slate-200 p-3 rounded-xl text-xs text-slate-400 flex items-center gap-2">
+                                              <i class="pi pi-calendar text-slate-300 shrink-0"></i> Selecciona una fecha para ver disponibilidad.
+                                            </div>
+                                          }
+                                          @if (context().citaForm.get('veterinarioId')?.value && context().citaForm.get('servicioId')?.value && context().citaForm.get('fechaCita')?.value && !context().loadingSlots() && !context().citaForm.get('esEmergencia')?.value) {
+                                            <div>
+                                              @if (context().availableSlots().length > 0) {
+                                                <div class="grid grid-cols-4 sm:grid-cols-5 gap-2 max-h-[136px] overflow-y-auto pr-1">
+                                                  @for (slot of context().availableSlots(); track slot) {
+                                                    <button type="button" (click)="context().selectTimeSlot(slot)"
+                                                      [class]="context().citaForm.get('horaCita')?.value === slot ? 'bg-blue-500 text-white border-blue-500' : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200'"
+                                                      class="px-1 py-2 border rounded-xl text-xs font-semibold text-center transition-all active:scale-95 cursor-pointer">
+                                                      {{ slot }}
+                                                    </button>
+                                                  }
+                                                </div>
+                                              }
+                                              @if (context().availableSlots().length === 0 && context().canBookEmergency()) {
+                                                <div
+                                                  class="space-y-2">
+                                                  <div class="bg-rose-50 border border-rose-200 p-3 rounded-xl text-rose-800 text-xs font-semibold flex items-start gap-2">
+                                                    <i class="pi pi-exclamation-triangle text-rose-500 mt-0.5 shrink-0"></i>
+                                                    <span>No hay horarios disponibles. Puedes agendar una cita de emergencia para este día.</span>
+                                                  </div>
+                                                  <button type="button" (click)="context().agendarEmergencia()"
+                                                    class="w-full py-2.5 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer">
+                                                    <i class="pi pi-exclamation-triangle text-xs"></i>
+                                                    Agendar como Emergencia
+                                                  </button>
+                                                </div>
+                                              }
+                                              @if (context().availableSlots().length === 0 && !context().canBookEmergency()) {
+                                                <div
+                                                  class="bg-amber-50 border border-amber-200 p-3 rounded-xl text-amber-800 text-xs font-semibold flex items-start gap-2">
+                                                  <i class="pi pi-info-circle text-amber-500 mt-0.5 shrink-0"></i>
+                                                  <span>No hay horarios disponibles para este día. Si necesitas atención de emergencia, acude presencialmente a la clínica para solicitar una cita.</span>
+                                                </div>
+                                              }
+                                            </div>
+                                          }
+                                          @if (context().citaForm.get('veterinarioId')?.value && context().citaForm.get('servicioId')?.value && context().citaForm.get('fechaCita')?.value && context().citaForm.get('esEmergencia')?.value) {
+                                            <div
+                                              class="bg-amber-50 border border-amber-200 p-3 rounded-xl text-amber-800 text-xs font-semibold flex items-start gap-2">
+                                              <i class="pi pi-clock text-amber-500 mt-0.5 shrink-0"></i>
+                                              <span>Cita de emergencia — se usará la hora actual: <strong>{{ context().citaForm.get('horaCita')?.value }}</strong></span>
+                                            </div>
+                                          }
+                                        </div>
+                                      }
+                                    </div>
+                                    @if (!context().isReprogramando()) {
+                                      <div class="space-y-3">
+                                        <div class="flex items-center gap-2 pb-2 border-b border-slate-100">
+                                          <span class="w-1.5 h-4 rounded-full bg-blue-500"></span>
+                                          <h3 class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">4. Datos Adicionales</h3>
+                                        </div>
+                                        <div class="flex flex-col gap-1.5">
+                                          <label class="text-xs font-semibold text-slate-600">Motivo de la Cita <span class="text-rose-500">*</span></label>
+                                          <input type="text" formControlName="motivoCita" maxlength="250" placeholder="Ej: Control de vacunas, decaimiento..."
+                                            class="w-full h-10 px-3 border border-slate-200 rounded-xl text-xs font-semibold outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 bg-white placeholder:text-slate-300 transition-all">
+                                            @if (context().citaForm.get('motivoCita')?.touched && context().citaForm.get('motivoCita')?.errors?.['leadingTrailingSpace']) {
+                                              <p class="text-[11px] text-rose-500">
+                                                No debe tener espacios al inicio o al final
+                                              </p>
+                                            }
+                                            @if (context().citaForm.get('motivoCita')?.touched && context().citaForm.get('motivoCita')?.errors?.['textContent']) {
+                                              <p class="text-[11px] text-rose-500">
+                                                Debe contener al menos una letra o número
+                                              </p>
+                                            }
+                                          </div>
+                                          <div class="flex flex-col gap-1.5">
+                                            <label class="text-xs font-semibold text-slate-600">Notas / Síntomas</label>
+                                            <textarea formControlName="notas" rows="3" maxlength="500" placeholder="Síntomas, conductas, observaciones..."
+                                            class="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-xs font-semibold outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 bg-white placeholder:text-slate-300 transition-all resize-none"></textarea>
+                                            @if (context().citaForm.get('notas')?.touched && context().citaForm.get('notas')?.errors?.['leadingTrailingSpace']) {
+                                              <p class="text-[11px] text-rose-500">
+                                                No debe tener espacios al inicio o al final
+                                              </p>
+                                            }
+                                            @if (context().citaForm.get('notas')?.touched && context().citaForm.get('notas')?.errors?.['textContent']) {
+                                              <p class="text-[11px] text-rose-500">
+                                                Debe contener al menos una letra o número
+                                              </p>
+                                            }
+                                          </div>
+                                          @if (context().canBookEmergency()) {
+                                            <label for="chkEmergenciaSB"
+                                              class="flex items-start gap-3 p-3.5 bg-rose-50 border border-rose-100 rounded-xl cursor-pointer">
+                                              <input type="checkbox" formControlName="esEmergencia" id="chkEmergenciaSB"
+                                                class="w-4 h-4 mt-0.5 accent-rose-600 shrink-0 cursor-pointer">
+                                                <div>
+                                                  <p class="text-xs font-bold text-rose-800 flex items-center gap-2">
+                                                    <i class="pi pi-exclamation-triangle text-rose-500"></i> Emergencia Médica
+                                                  </p>
+                                                  <p class="text-[10px] text-rose-500 mt-0.5 leading-relaxed">Omite las restricciones horarias del médico asignado.</p>
+                                                </div>
+                                              </label>
+                                            }
+                                          </div>
+                                        }
+                                      </form>
+                                    </div>
+                                    <div class="px-5 py-4 border-t border-slate-100 flex items-center justify-between gap-3 shrink-0 bg-white">
+                                      <button type="button" (click)="context().displayModal.set(false)"
+                                        class="px-4 py-2.5 text-xs font-semibold text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-all">
+                                        Descartar
+                                      </button>
+                                      <button type="submit" form="citaSidebarForm" [disabled]="context().loadingStore.isLoading()"
+                                        class="flex-1 max-w-[260px] py-2.5 text-xs font-bold text-white bg-blue-500 hover:bg-blue-600 rounded-xl disabled:opacity-50 transition-all flex items-center justify-center gap-2 cursor-pointer">
+                                        @if (context().loadingStore.isLoading()) {
+                                          <i class="pi pi-spin pi-spinner text-xs"></i>
+                                        }
+                                        {{ context().loadingStore.isLoading() ? 'Procesando...' : (context().isReprogramando() ? 'Confirmar Reprogramación' : (context().citaForm.get('id')?.value ? 'Guardar Cambios' : 'Confirmar Cita')) }}
+                                      </button>
+                                    </div>
+                                  </div>
+                                }
+
