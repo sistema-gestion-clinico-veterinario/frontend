@@ -732,6 +732,10 @@
                   <div class="rounded-lg border border-sky-200 bg-sky-50 p-4 text-xs leading-5 text-sky-800">
                     Esta es la cuenta administradora inicial de la nueva clínica. Después de activar su acceso, deberá publicar el aviso de privacidad antes de registrar a más personal.
                   </div>
+                } @else if (registraSinAviso()) {
+                  <div class="rounded-lg border border-sky-200 bg-sky-50 p-4 text-xs leading-5 text-sky-800">
+                    La clínica todavía no publicó su aviso de privacidad de trabajadores. Como administrador de plataforma puedes registrar a esta persona; quedará constancia en la auditoría.
+                  </div>
                 } @else {
                   <div class="rounded-lg border border-amber-200 bg-amber-50 p-4 text-xs leading-5 text-amber-800">
                     La clínica todavía no publicó su aviso de privacidad. Debe publicarlo antes de registrar personal.
