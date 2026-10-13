@@ -526,7 +526,7 @@ export class EmployeeComponent implements OnInit, OnDestroy {
       companyId: this.activeCompanyId,
       avisoInformado: false
     });
-    this.setPrivacyValidator(!this.registroAdministradorInicial());
+    this.setPrivacyValidator(this.exigeConfirmarAviso());
     this.horarios = this.diasSemana.map((d, i) => ({ diaSemana: d.key, activo: false, horaInicio: i % 2 === 0 ? '08:00' : '13:00', horaFin: i % 2 === 0 ? '13:00' : '18:00' }));
     this.isEdit.set(false);
     this.displayModal.set(true);
@@ -572,6 +572,9 @@ export class EmployeeComponent implements OnInit, OnDestroy {
       next: ({ data }) => {
         this.avisoPrivacidad.set(data ?? null);
         this.cargandoAviso.set(false);
+        if (this.displayModal() && !this.isEdit()) {
+          this.setPrivacyValidator(this.exigeConfirmarAviso());
+        }
       },
       error: () => {
         this.avisoPrivacidad.set(null);
@@ -597,8 +600,16 @@ export class EmployeeComponent implements OnInit, OnDestroy {
       role.purpose === 'COMPANY_ADMIN' && seleccionados.includes(role.value));
   }
 
+  registraSinAviso(): boolean {
+    return this.authStore.isSuperAdmin() && !this.avisoPrivacidad();
+  }
+
+  private exigeConfirmarAviso(): boolean {
+    return !this.registroAdministradorInicial() && !this.registraSinAviso();
+  }
+
   puedeConfirmarAlta(): boolean {
-    return !!this.avisoPrivacidad() || this.esAltaAdministradorInicialValida();
+    return !!this.avisoPrivacidad() || this.registraSinAviso();
   }
 
   confirmarGuardarEmpleado() {
