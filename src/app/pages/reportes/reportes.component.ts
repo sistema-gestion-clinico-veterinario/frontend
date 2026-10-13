@@ -71,15 +71,11 @@ export default class ReportesComponent {
       ?? undefined
   );
 
-  /** Administración de plataforma sin una empresa activa seleccionada: no hay "un" reporte que
-   * mostrar (mezclar cifras de empresas distintas sería engañoso), así que se muestra el
-   * comparativo por empresa en su lugar. Ver `comparativo` más abajo. */
+
   readonly isPlatformAdmin = computed(() => this.authStore.activeRolePurpose() === 'PLATFORM_ADMIN');
   readonly verComparativoEmpresas = computed(() => this.isPlatformAdmin() && this.selectedCompanyId() == null);
 
-  /** Igual que en Agenda: un usuario con alcance propio (OWN) solo ve sus propios datos aunque
-   * el backend ignore lo que elija aquí — el filtro "Todos"/otros nombres es engañoso si se
-   * muestra de todas formas, así que se oculta y se fija a su propio empleado. */
+
   readonly canViewAllCitas = computed(() =>
     this.authStore.dataScope('VISTA_REPORTES') === 'COMPANY'
   );
@@ -166,7 +162,7 @@ export default class ReportesComponent {
         this.veterinarios.set(
           empleados.filter(empleado =>
             empleado.activo
-            && empleado.tiposEmpleado?.some(tipo => tipo.trim().toUpperCase() === 'VETERINARIO')
+            && empleado.esVeterinario
           )
         );
       });

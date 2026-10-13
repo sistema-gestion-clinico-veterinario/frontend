@@ -4,13 +4,15 @@ import { FormsModule } from '@angular/forms';
 import { PaginatorModule } from 'primeng/paginator';
 import { Toast } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-import { AuditLogService, AuditLog } from '../../../core/services/audit-log.service';
+import { AuditLogService } from '../../../core/services/audit-log.service';
+import { AuditLog } from '../../../models/response/audit-log-response';
 import { CompanyService } from '../../../core/services/company.service';
 import { AuthStore } from '../../../store/auth.store';
 import { CompanyListResponse } from '../../../models/response/company-list-response';
 import { normalizeText } from '../../../core/utils/normalize-text.util';
 import { isDateRangeValid, isLowercaseEmail } from '../../../core/utils/input-validation.util';
-import { RealtimeStompConnection, RealtimeStompService } from '../../../core/services/realtime-stomp.service';
+import { RealtimeStompService } from '../../../core/services/realtime-stomp.service';
+import { RealtimeStompConnection } from '../../../models/realtime/realtime-stomp.model';
 
 @Component({
   selector: 'app-auditoria',
@@ -193,12 +195,10 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
     }
 
     this.loadTimeout = setTimeout(() => {
-      // Navegación de página y filtros nunca son initialLoad
       this.executeLoadLogs(page, false);
     }, 50);
   }
 
-  /** Devuelve los filtros activos ya validados/normalizados, o null si son inválidos (y avisa al usuario). */
   private buildActiveFilters(): {
     companyId?: number; userEmail?: string; action?: string; module?: string; startDate?: string; endDate?: string;
   } | null {
@@ -275,7 +275,6 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
 
   readonly exportando = signal(false);
 
-  /** true si hay al menos un filtro activo (además del scope de empresa forzado a usuarios no superadmin) */
   private hayFiltrosActivos(): boolean {
     return !!(this.userEmailFilter.trim() || this.actionFilter || this.moduleFilter
       || this.startDateFilter || this.endDateFilter || (this.isSuperAdmin() && this.selectedCompanyId));

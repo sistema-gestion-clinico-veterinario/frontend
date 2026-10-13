@@ -18,17 +18,17 @@ import { noLeadingTrailingSpaceValidator } from '../../core/validators/no-leadin
 import { textContentValidator } from '../../core/validators/text-content.validator';
 import { normalizeText } from '../../core/utils/normalize-text.util';
 import { AuthService } from '../../core/services/auth.service';
-import { LegalAcceptanceDTO, LegalService } from '../../core/services/legal.service';
+import { LegalService } from '../../core/services/legal.service';
+import { LegalAcceptanceDTO } from '../../models/legal/legal.model';
 import { PendientesPrivacidadService } from '../../core/services/pendientes-privacidad.service';
 import { CloseAccountCardComponent } from './close-account/close-account-card.component';
 import { CancelarDatosCardComponent } from './cancelar-datos/cancelar-datos-card.component';
+import { PrivacidadService } from '../../core/services/privacidad.service';
 import {
-  AvisoPublico,
-  ConsentimientoEstado,
-  PrivacidadService,
-  RECORDATORIOS,
-  USO_IA
-} from '../../core/services/privacidad.service';
+  FINALIDAD_RECORDATORIOS as RECORDATORIOS,
+  FINALIDAD_USO_IA as USO_IA
+} from '../../core/constants/privacidad.constants';
+import { AvisoPublico, ConsentimientoEstado } from '../../models/privacy/privacidad.model';
 
 interface HorarioResumen {
   diaSemana: string;

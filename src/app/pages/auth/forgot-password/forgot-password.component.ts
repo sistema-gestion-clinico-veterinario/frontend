@@ -26,9 +26,6 @@ export class ForgotPasswordComponent implements OnInit {
   private readonly companyService = inject(CompanyService);
   private readonly slugContext = inject(CompanySlugContext);
 
-  /** La empresa la resuelve la URL (slug), igual que en el login - sin ella el
-   * backend no puede saber a cual cuenta restablecer si el correo se repite entre
-   * empresas (apunta solo a la credencial sin empresa, SuperAdmin). */
   slug: string | null = this.slugContext.slug();
 
   brandLoaded = false;

@@ -268,6 +268,7 @@
                     <tr class="border-b border-slate-100">
                       <th class="text-left px-6 py-2 text-xs font-medium text-slate-400 uppercase tracking-wider w-1/3">Denominación</th>
                       <th class="text-left px-6 py-2 text-xs font-medium text-slate-400 uppercase tracking-wider">Descripción</th>
+                      <th class="text-left px-6 py-2 text-xs font-medium text-slate-400 uppercase tracking-wider">Atención clínica</th>
                       <th class="text-left px-6 py-2 text-xs font-medium text-slate-400 uppercase tracking-wider">Especialidades</th>
                       <th class="text-left px-6 py-2 text-xs font-medium text-slate-400 uppercase tracking-wider">Estado</th>
                       <th class="px-6 py-2 w-24"></th>
@@ -285,6 +286,11 @@
                       </td>
                       <td class="px-6 py-2">
                         <p class="text-sm text-slate-400">{{ item.descripcion || '—' }}</p>
+                      </td>
+                      <td class="px-6 py-2">
+                        <span class="text-xs font-medium" [class.text-green-700]="item.ejerceComoVeterinario" [class.text-slate-400]="!item.ejerceComoVeterinario">
+                          {{ item.ejerceComoVeterinario ? 'Veterinaria' : 'No clínica' }}
+                        </span>
                       </td>
                       <td class="px-6 py-2">
                         <span
@@ -318,7 +324,7 @@
                   </ng-template>
                   <ng-template pTemplate="emptymessage">
                     <tr>
-                      <td colspan="5" class="py-20 text-center">
+                      <td colspan="6" class="py-20 text-center">
                         <i class="pi pi-id-card text-3xl text-slate-200 block mb-3"></i>
                         <p class="text-sm text-slate-400 font-medium">No se han registrado tipos de empleado aún</p>
                       </td>
@@ -350,7 +356,13 @@
                         <span class="block text-[10px] font-bold text-slate-400 uppercase">Descripción</span>
                         <span class="font-bold text-slate-700">{{ item.descripcion || '—' }}</span>
                       </div>
-                      <div class="rounded-lg bg-slate-50 px-3 py-2 col-span-2">
+                      <div class="rounded-lg bg-slate-50 px-3 py-2">
+                        <span class="block text-[10px] font-bold text-slate-400 uppercase">Atención</span>
+                        <span [class]="item.ejerceComoVeterinario ? 'text-green-700' : 'text-slate-500'" class="font-bold">
+                          {{ item.ejerceComoVeterinario ? 'Veterinaria' : 'No clínica' }}
+                        </span>
+                      </div>
+                      <div class="rounded-lg bg-slate-50 px-3 py-2">
                         <span class="block text-[10px] font-bold text-slate-400 uppercase">Especialidades</span>
                         <span [class]="item.permiteEspecialidades ? 'text-green-700' : 'text-red-500'" class="font-bold">
                           {{ item.permiteEspecialidades ? 'Habilitado' : 'Desactivado' }}
@@ -433,6 +445,11 @@
                                 {{ item.tipoEmpleadoNombre }}
                               </span>
                             }
+                            @if (item.especialidadNombre) {
+                              <span class="px-1.5 py-0.5 rounded text-[8px] bg-violet-50 text-violet-600 font-extrabold uppercase tracking-wider w-max">
+                                {{ item.especialidadNombre }}
+                              </span>
+                            }
                           </div>
                         </div>
                       </td>
@@ -490,6 +507,11 @@
                             <span
                               class="px-1.5 py-0.5 rounded text-[8px] bg-purple-50 text-purple-600 font-extrabold uppercase tracking-wider w-max mt-1">
                               {{ item.tipoEmpleadoNombre }}
+                            </span>
+                          }
+                          @if (item.especialidadNombre) {
+                            <span class="px-1.5 py-0.5 rounded text-[8px] bg-violet-50 text-violet-600 font-extrabold uppercase tracking-wider w-max">
+                              {{ item.especialidadNombre }}
                             </span>
                           }
                         </div>
@@ -582,7 +604,7 @@
                       <td class="px-6 py-2 text-sm text-slate-600">{{ item.especie }}</td>
                       <td class="px-6 py-2 text-right text-sm font-semibold text-slate-800">S/ {{ item.precio }}</td>
                       <td class="px-6 py-2">
-                        <button (click)="confirmarToggleEstadoVacuna(item)"
+                        <button *appHasPermission="'VISTA_COMPLEMENTARIO:modificar'" (click)="confirmarToggleEstadoVacuna(item)"
                           class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-all active:scale-95"
                           [ngClass]="item.activo ? 'bg-green-50 text-green-700' : 'bg-slate-100 text-slate-500'">
                           <span class="w-1.5 h-1.5 rounded-full" [ngClass]="item.activo ? 'bg-green-500' : 'bg-slate-400'"></span>
@@ -621,7 +643,7 @@
                         <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-500 font-bold text-sm flex-shrink-0">{{ item.nombre?.substring(0,2) }}</div>
                         <span class="text-sm font-bold text-slate-800 truncate">{{ item.nombre }}</span>
                       </div>
-                      <button (click)="confirmarToggleEstadoVacuna(item)"
+                      <button *appHasPermission="'VISTA_COMPLEMENTARIO:modificar'" (click)="confirmarToggleEstadoVacuna(item)"
                         class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-all active:scale-95 shrink-0"
                         [ngClass]="item.activo ? 'bg-green-50 text-green-700' : 'bg-slate-100 text-slate-500'">
                         <span class="w-1.5 h-1.5 rounded-full" [ngClass]="item.activo ? 'bg-green-500' : 'bg-slate-400'"></span>
@@ -705,7 +727,7 @@
                       <td class="px-6 py-2 text-sm text-slate-600">{{ item.especie }}</td>
                       <td class="px-6 py-2 text-right text-sm font-semibold text-slate-800">S/ {{ item.precio }}</td>
                       <td class="px-6 py-2">
-                        <button (click)="confirmarToggleEstadoDesparasitante(item)"
+                        <button *appHasPermission="'VISTA_COMPLEMENTARIO:modificar'" (click)="confirmarToggleEstadoDesparasitante(item)"
                           class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-all active:scale-95"
                           [ngClass]="item.activo ? 'bg-green-50 text-green-700' : 'bg-slate-100 text-slate-500'">
                           <span class="w-1.5 h-1.5 rounded-full" [ngClass]="item.activo ? 'bg-green-500' : 'bg-slate-400'"></span>
@@ -744,7 +766,7 @@
                         <div class="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center text-purple-600 font-bold text-sm flex-shrink-0">{{ item.nombre?.substring(0,2) }}</div>
                         <span class="text-sm font-bold text-slate-800 truncate">{{ item.nombre }}</span>
                       </div>
-                      <button (click)="confirmarToggleEstadoDesparasitante(item)"
+                      <button *appHasPermission="'VISTA_COMPLEMENTARIO:modificar'" (click)="confirmarToggleEstadoDesparasitante(item)"
                         class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-all active:scale-95 shrink-0"
                         [ngClass]="item.activo ? 'bg-green-50 text-green-700' : 'bg-slate-100 text-slate-500'">
                         <span class="w-1.5 h-1.5 rounded-full" [ngClass]="item.activo ? 'bg-green-500' : 'bg-slate-400'"></span>
@@ -1029,7 +1051,18 @@
           <div class="flex items-start gap-3 p-3 bg-slate-50 border border-slate-200 rounded">
             <input type="checkbox" formControlName="permiteEspecialidades" id="chkEsp"
               class="w-4 h-4 text-blue-600 border-slate-300 rounded mt-0.5 focus:ring-blue-500">
-            <label for="chkEsp" class="text-sm font-bold text-slate-700 leading-none cursor-pointer">Permite Especialidades</label>
+            <label for="chkEsp" class="cursor-pointer">
+              <span class="block text-sm font-bold text-slate-700 leading-none">Permite Especialidades</span>
+              <span class="mt-1 block text-xs text-slate-500">Permite asignar especialidades a las personas que tengan este tipo de empleado.</span>
+            </label>
+          </div>
+          <div class="flex items-start gap-3 p-3 bg-slate-50 border border-slate-200 rounded">
+            <input type="checkbox" formControlName="esVeterinario" id="chkVet"
+              class="w-4 h-4 text-blue-600 border-slate-300 rounded mt-0.5 focus:ring-blue-500">
+            <label for="chkVet" class="cursor-pointer">
+              <span class="block text-sm font-bold text-slate-700 leading-none">Ejerce como veterinario</span>
+              <span class="mt-1 block text-xs text-slate-500">Exige colegiatura y habilita el flujo clínico, sin depender del nombre que la empresa asigne al cargo.</span>
+            </label>
           </div>
           <div class="flex flex-col sm:flex-row sm:justify-end gap-3 pt-6 border-t border-slate-200">
             <button type="button" (click)="showTipoModal.set(false)"
@@ -1164,6 +1197,22 @@
               <i class="pi pi-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 pointer-events-none"></i>
             </div>
             <p class="text-[10px] text-slate-400 mt-0.5">Sincroniza la agenda para que solo este tipo de profesional pueda ser reservado para este servicio.</p>
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-semibold text-slate-700 ml-0.5">Especialidad requerida <span class="font-normal text-slate-400">(opcional)</span></label>
+            <div class="relative">
+              <select formControlName="especialidadId" [disabled]="!tipoServicioPermiteEspecialidades()"
+                class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 bg-white transition-all appearance-none font-bold text-slate-700 disabled:bg-slate-100 disabled:text-slate-400">
+                <option [ngValue]="null">No requiere una especialidad específica</option>
+                @for (especialidad of especialidadesActivas(); track especialidad.id) {
+                  <option [ngValue]="especialidad.id">{{ especialidad.nombre }}</option>
+                }
+              </select>
+              <i class="pi pi-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 pointer-events-none"></i>
+            </div>
+            <p class="text-[10px] text-slate-400 mt-0.5">
+              Selecciona primero un tipo de empleado que permita especialidades.
+            </p>
           </div>
           <div class="flex items-start gap-3 p-3 bg-slate-50 border border-slate-200 rounded">
             <input type="checkbox" formControlName="disponible" id="chkDisp"

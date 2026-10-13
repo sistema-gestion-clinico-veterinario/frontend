@@ -12,6 +12,9 @@ export interface EmpleadoListResponse {
   cuentaPendiente?: boolean;
   tipoInactividad?: TipoInactividad | null;
   tiposEmpleado: string[];
+  tipoEmpleadoIds?: number[];
+  esVeterinario?: boolean;
   especialidades: string[];
+  especialidadIds?: number[];
   userId?: number;
 }

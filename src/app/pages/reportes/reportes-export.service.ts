@@ -357,7 +357,6 @@ export class ReportesExportService {
     return cursorY + cardHeight;
   }
 
-  /** Dibuja 1 o 2 gráficos lado a lado (misma fila) para aprovechar mejor el espacio de la hoja. */
   private drawChartRow(
     doc: jsPDF,
     entradas: { titulo: string; imagen: ReportChartImage }[],

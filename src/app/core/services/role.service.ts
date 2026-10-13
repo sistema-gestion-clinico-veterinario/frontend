@@ -4,38 +4,7 @@ import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../../models/response/api-response';
 import { Role } from '../../models/response/permission';
 import { map } from 'rxjs';
-
-export interface RolVentanaPermiso {
-  ventanaId: number;
-  vistaId?: number;
-  codigo: string;
-  nombre: string;
-  icono: string | null;
-  ruta?: string;
-  parentId: number | null;
-  parentCodigo: string | null;
-  leer: boolean;
-  escribir: boolean;
-  modificar: boolean;
-  eliminar: boolean;
-  dataScope: 'OWN' | 'COMPANY';
-  visibleMenu: boolean;
-  vistas?: any[]; // For vistas inside the ventana
-}
-
-interface RolVistaPermiso {
-  vistaId: number;
-  codigo: string;
-  nombre: string;
-  grupo?: string;
-  ruta?: string;
-  leer: boolean;
-  escribir: boolean;
-  modificar: boolean;
-  eliminar: boolean;
-  dataScope: 'OWN' | 'COMPANY';
-  visibleMenu: boolean;
-}
+import { RolVentanaPermiso, RolVistaPermiso } from '../../models/role/role-permission.model';
 
 @Injectable({
   providedIn: 'root'

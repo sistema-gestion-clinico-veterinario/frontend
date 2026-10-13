@@ -3,7 +3,8 @@ import { TestBed } from '@angular/core/testing';
 import { NavigationEnd, Router } from '@angular/router';
 import { Subject, of, throwError } from 'rxjs';
 import { PendientesPrivacidadService } from './pendientes-privacidad.service';
-import { ConsentimientoEstado, PrivacidadService } from './privacidad.service';
+import { PrivacidadService } from './privacidad.service';
+import { ConsentimientoEstado } from '../../models/privacy/privacidad.model';
 import { AuthStore } from '../../store/auth.store';
 
 describe('PendientesPrivacidadService', () => {

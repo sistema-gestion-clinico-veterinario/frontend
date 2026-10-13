@@ -4,22 +4,7 @@ import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../../models/response/api-response';
 import { Page } from '../../models/response/page';
 import { AplicacionPreventivaResponse, ControlPreventivoResponse, TipoControlPreventivo, TipoVacunaResponse } from '../../models/response/control-preventivo-response';
-
-export interface RegistroVacunacionPayload {
-  controlPreventivoId?: number;
-  tipoVacunaId: number;
-  fechaAplicacion: string;
-  periodicidadMeses: number;
-  fechaProximaDosis?: string;
-}
-
-export interface RegistroDesparasitacionPayload {
-  controlPreventivoId?: number;
-  producto: string;
-  fechaAplicacion: string;
-  periodicidadMeses: number;
-  fechaProximaAplicacion?: string;
-}
+import { RegistroDesparasitacionPayload, RegistroVacunacionPayload } from '../../models/request/control-preventivo-registro-request';
 
 @Injectable({ providedIn: 'root' })
 export class ControlPreventivoService {

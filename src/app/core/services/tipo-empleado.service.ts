@@ -17,11 +17,11 @@ export class TipoEmpleadoService {
     return this.http.get<ApiResponse<Page<any>>>(`${this.apiUrl}${params}`);
   }
 
-  crear(data: { nombre: string; descripcion?: string; permiteEspecialidades?: boolean; company?: { id: number } }) {
+  crear(data: { nombre: string; descripcion?: string; permiteEspecialidades?: boolean; esVeterinario?: boolean; company?: { id: number } }) {
     return this.http.post<ApiResponse<any>>(this.apiUrl, data);
   }
 
-  actualizar(id: number, data: { nombre: string; descripcion?: string; permiteEspecialidades?: boolean; company?: { id: number } }) {
+  actualizar(id: number, data: { nombre: string; descripcion?: string; permiteEspecialidades?: boolean; esVeterinario?: boolean; company?: { id: number } }) {
     return this.http.put<ApiResponse<any>>(`${this.apiUrl}/${id}`, data);
   }
 

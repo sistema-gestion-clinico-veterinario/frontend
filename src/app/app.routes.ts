@@ -1,11 +1,8 @@
 import { Routes } from '@angular/router';
 import { AuthGuard } from './core/guards/auth.guard';
+import { APP_ROUTE_PATHS } from './core/routing/app-routes.constants';
 
-/**
- * El login no usa componentes de PrimeNG. El preset completo se descarga al
- * entrar al área autenticada, antes de crear su layout, para evitar trasladar
- * estilos que no se utilizan en la página pública.
- */
+
 const loadMainLayout = async () => {
   const [{ default: Aura }, { usePreset }, { MainLayoutComponent }] = await Promise.all([
     import('@primeng/themes/aura'),
@@ -20,14 +17,12 @@ const loadMainLayout = async () => {
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   {
-    // Ruta reservada para SuperAdmin - no depende del slug de ninguna empresa,
-    // declarada antes del patron ':slug/login' para que no choque con el.
+ 
     path: 'admin/login',
     loadComponent: () => import('./pages/auth/login/login.component').then((m) => m.LoginComponent)
   },
   {
-    // Fallback sin slug (enlace raiz, marcadores viejos, etc.) - el mismo
-    // componente detecta la ausencia de slug y no permite enviar el formulario.
+  
     path: 'login',
     loadComponent: () => import('./pages/auth/login/login.component').then((m) => m.LoginComponent)
   },
@@ -371,7 +366,7 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/employee/dashboard/employee-dashboard.component').then((m) => m.EmployeeDashboardComponent)
       },
       {
-        path: 'profile',
+        path: APP_ROUTE_PATHS.PROFILE,
         loadComponent: () => import('./pages/profile/profile.component').then((m) => m.ProfileComponent)
       },
       {
@@ -379,11 +374,11 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/auth/password-change/password-change.component').then((m) => m.PasswordChangeComponent)
       },
       {
-        path: 'aviso-clinica',
+        path: APP_ROUTE_PATHS.CLINIC_PRIVACY_NOTICE,
         loadComponent: () => import('./pages/legal/aviso-clinica/aviso-clinica.component').then((m) => m.AvisoClinicaComponent)
       },
       {
-        path: 'legal/accept',
+        path: APP_ROUTE_PATHS.LEGAL_ACCEPTANCE,
         loadComponent: () => import('./pages/legal/accept/legal-accept.component').then((m) => m.LegalAcceptComponent)
       },
       {

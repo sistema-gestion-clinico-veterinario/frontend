@@ -282,4 +282,47 @@ describe('EmployeeComponent', () => {
       expect(component.requestingPasswordReset()).toBeFalse();
     });
   });
+
+  describe('colegiatura', () => {
+    const catalogo = [
+      { label: 'Veterinario', value: 'Veterinario', esVeterinario: true, permiteEspecialidades: true },
+      { label: 'Médico clínico', value: 'Médico clínico', esVeterinario: true, permiteEspecialidades: false },
+      { label: 'Recepcionista', value: 'Recepcionista', esVeterinario: false, permiteEspecialidades: false }
+    ];
+
+    beforeEach(() => component.tiposEmpleadoList.set(catalogo));
+
+    it('se pide colegiatura a los tipos veterinarios, sea cual sea su nombre', () => {
+      for (const nombre of ['Veterinario', 'Médico clínico']) {
+        component.employeeForm.get('tiposEmpleado')?.setValue([nombre]);
+        expect(component.esVeterinario()).withContext(nombre).toBeTrue();
+        component.employeeForm.get('numeroColegiatura')?.setValue('');
+        expect(component.employeeForm.get('numeroColegiatura')?.valid).withContext(nombre).toBeFalse();
+      }
+    });
+
+    it('no se infiere la capacidad por el nombre del tipo', () => {
+      component.tiposEmpleadoList.set([{ label: 'Veterinario', value: 'Veterinario', esVeterinario: false, permiteEspecialidades: false }]);
+      component.employeeForm.get('tiposEmpleado')?.setValue(['Veterinario']);
+
+      expect(component.esVeterinario()).toBeFalse();
+      expect(component.employeeForm.get('numeroColegiatura')?.valid).toBeTrue();
+    });
+
+    it('no se pide para otros cargos', () => {
+      component.employeeForm.get('tiposEmpleado')?.setValue(['Recepcionista']);
+      expect(component.esVeterinario()).toBeFalse();
+      expect(component.employeeForm.get('numeroColegiatura')?.valid).toBeTrue();
+    });
+
+    it('separa la capacidad veterinaria de la asignación de especialidades', () => {
+      component.employeeForm.get('tiposEmpleado')?.setValue(['Médico clínico']);
+      expect(component.esVeterinario()).toBeTrue();
+      expect(component.permiteEspecialidades()).toBeFalse();
+
+      component.employeeForm.get('tiposEmpleado')?.setValue(['Veterinario']);
+      expect(component.esVeterinario()).toBeTrue();
+      expect(component.permiteEspecialidades()).toBeTrue();
+    });
+  });
 });

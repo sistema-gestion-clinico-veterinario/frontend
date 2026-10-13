@@ -289,7 +289,7 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
     return Math.round(total * 100) / 100;
   }
 
-  /** Formats a Date as YYYY-MM-DD using LOCAL timezone (avoids UTC shift from toISOString). */
+
   private formatLocalDate(d: Date): string {
     const year  = d.getFullYear();
     const month = String(d.getMonth() + 1).padStart(2, '0');
@@ -795,10 +795,6 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
     });
   }
 
-  /**
-   * Los datos corporativos solo se necesitan al generar un reporte.
-   * Se conservan después de la primera consulta para evitar solicitudes repetidas.
-   */
   private async getCompanyForExport(): Promise<CompanyDTO | null> {
     const cachedCompany = this.company();
     if (cachedCompany) return cachedCompany;

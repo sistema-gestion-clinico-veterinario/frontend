@@ -6,9 +6,7 @@ import { AuthService, GOOGLE_PENDING_SLUG_KEY } from '../../../core/services/aut
 import { SessionService } from '../../../core/services/session.service';
 import { resolveInitialRoute, resolveDashboardRoute } from '../../../layouts/main-layout/navbar/navbar.component';
 
-/** Adonde el backend redirige al navegador tras /auth/google/callback: aquí solo se
- * canjea el código de un solo uso por la sesión real (mismo resultado que un login
- * normal), nunca queda expuesto un token en la URL. */
+
 @Component({
   selector: 'app-google-callback',
   standalone: true,

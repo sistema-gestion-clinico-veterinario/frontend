@@ -5,15 +5,10 @@ import { environment } from '../../../environments/environment';
 import { AdminLoginRequest, LoginRequest } from '../../models/request/login-request.model';
 import { AuthLoginResponse } from '../../models/response/auth-login-response.model';
 import { ApiResponse } from '../../models/response/api-response';
+import { AccountClosureEligibility } from '../../models/response/account-closure-eligibility-response';
 import { SKIP_GLOBAL_LOADING } from '../interceptors/http-context.tokens';
 
 export const GOOGLE_PENDING_SLUG_KEY = 'softvet_google_pending_slug';
-
-export interface AccountClosureEligibility {
-  eligible: boolean;
-  reason: string | null;
-  requiresPassword: boolean;
-}
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -26,34 +21,27 @@ export class AuthService {
     return this.http.post<AuthLoginResponse>(`${this.baseUrl}/login`, credentials);
   }
 
-  /** Ruta reservada para SuperAdmin - no depende del slug de ninguna empresa. */
+
   adminLogin(credentials: AdminLoginRequest): Observable<AuthLoginResponse> {
     return this.http.post<AuthLoginResponse>(`${this.baseUrl}/admin-login`, credentials);
   }
 
-  /** Canjea el código de un solo uso que /auth/google/callback dejó en la URL de retorno
-   * tras el consentimiento de Google - equivale a la respuesta de login normal. */
   exchangeGoogleCode(code: string): Observable<AuthLoginResponse> {
     return this.http.post<AuthLoginResponse>(`${this.baseUrl}/google/exchange`, { code }, {
       context: new HttpContext().set(SKIP_GLOBAL_LOADING, true)
     });
   }
 
-  /** Tras una cuenta cerrada, Google deja un ticket de un solo uso: confirmarlo reactiva la cuenta y abre la sesión. */
+
   reactivateWithGoogle(ticket: string): Observable<AuthLoginResponse> {
     return this.http.post<AuthLoginResponse>(`${this.baseUrl}/google/reactivate`, { ticket });
   }
 
-  /** Paso previo a Google: deja en el servidor la clínica o el enlace de activación y devuelve un
-   * código opaco, para que ninguno de los dos viaje por la URL que pasa por Google. */
   createGoogleIntent(context: { slug?: string | null; activationToken?: string | null }): Observable<ApiResponse<{ intent: string }>> {
     return this.http.post<ApiResponse<{ intent: string }>>(`${this.baseUrl}/google/intent`, context, {
       context: new HttpContext().set(SKIP_GLOBAL_LOADING, true)
     });
   }
-
-  /** Debe apuntar al mismo dominio que el retorno de Google: la cookie que protege el flujo se
-   * fija ahí y tiene que viajar de vuelta en el callback. */
   googleStartUrl(intent: string): string {
     const start = environment.googleRedirectUri.replace(/\/callback$/, '/start');
     return `${start}?intent=${encodeURIComponent(intent)}`;
@@ -120,9 +108,7 @@ export class AuthService {
     return this.http.post<AuthLoginResponse>(`${this.baseUrl}/switch-role`, { roleId });
   }
 
-  /** slug: empresa desde la que se pide el reset (misma pantalla que el login) - sin
-   * el, el backend no puede desambiguar entre cuentas con el mismo correo en distintas
-   * empresas y apunta solo a la credencial sin empresa (SuperAdmin). */
+
   forgotPassword(email: string, slug: string | null): Observable<ApiResponse<void>> {
     return this.http.post<ApiResponse<void>>(`${this.baseUrl}/forgot-password`, { email, slug });
   }

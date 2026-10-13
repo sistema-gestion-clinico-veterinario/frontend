@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
-import { RealtimeStompConnection, RealtimeStompService } from './realtime-stomp.service';
+import { RealtimeStompService } from './realtime-stomp.service';
+import { RealtimeStompConnection } from '../../models/realtime/realtime-stomp.model';
 import { RealtimeTicketService } from './realtime-ticket.service';
 
 class FakeWebSocket {

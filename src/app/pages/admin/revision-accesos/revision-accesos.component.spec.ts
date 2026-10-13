@@ -4,9 +4,9 @@ import { of } from 'rxjs';
 import { RevisionAccesosComponent } from './revision-accesos.component';
 import {
   AccessReviewItem,
-  AccessReviewOverview,
-  AccessReviewService
-} from '../../../core/services/access-review.service';
+  AccessReviewOverview
+} from '../../../models/access-review/access-review.model';
+import { AccessReviewService } from '../../../core/services/access-review.service';
 import { AuthStore } from '../../../store/auth.store';
 
 function acceso(assignmentId: number, nombre: string): AccessReviewItem {
@@ -143,5 +143,44 @@ describe('RevisionAccesosComponent', () => {
     crear(false);
     expect(fixture.nativeElement.textContent).not.toContain('Mantener');
     expect(fixture.nativeElement.textContent).not.toContain('Registrar revisión');
+  });
+
+  describe('presentación', () => {
+    it('agrupa en una sola tarjeta los roles de la misma persona', () => {
+      crear();
+      const mismaPersona = { ...acceso(3, 'Ana'), usuarioId: 101, roleName: 'ROLE_VETERINARIO' };
+      component.overview.set({ ...sinRevisiones, items: [acceso(1, 'Ana'), mismaPersona, acceso(2, 'Beto')] });
+
+      const grupos = component.grupos();
+
+      expect(grupos.length).toBe(2);
+      expect(grupos[0].accesos.map(a => a.assignmentId)).toEqual([1, 3]);
+    });
+
+    it('muestra el nombre del rol sin el prefijo técnico', () => {
+      crear();
+      expect(component.rolLegible('ROLE_VETERINARIO')).toBe('Veterinario');
+      expect(component.rolLegible('ROLE_JEFE_DE_CAJA')).toBe('Jefe de caja');
+    });
+
+    it('mantener los pendientes no cambia lo ya decidido y completa el avance', () => {
+      crear();
+      const [ana, beto] = component.items();
+      component.decidir(ana, 'REVOKE');
+      component.motivo(ana, 'Ya no trabaja aquí');
+
+      component.mantenerPendientes();
+
+      expect(component.decisionDe(ana)?.decision).toBe('REVOKE');
+      expect(component.decisionDe(beto)?.decision).toBe('KEEP');
+      expect(component.pendientes()).toBe(0);
+      expect(component.avance()).toBe(100);
+    });
+
+    it('calcula las iniciales para el avatar', () => {
+      crear();
+      expect(component.iniciales('Felipe Alva Vargas')).toBe('FA');
+      expect(component.iniciales('Ana')).toBe('A');
+    });
   });
 });

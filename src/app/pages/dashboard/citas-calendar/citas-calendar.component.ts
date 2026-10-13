@@ -9,8 +9,7 @@ import { Router } from '@angular/router';
 import { CitaService } from '../../../core/services/cita.service';
 import { CitaResponse } from '../../../models/response/cita-response';
 
-/** Mismo color por estado que ya usa el mes de la Agenda, para que el widget del dashboard se
- * sienta como parte del mismo producto en vez de un calendario genérico aparte. */
+
 const ACCENT: Record<string, string> = {
   PROGRAMADA: '#018B99', PENDIENTE: '#d97706', CONFIRMADA: '#059669', REPROGRAMADA: '#7c3aed',
   SALA_DE_ESPERA: '#018B99', EN_PROCESO: '#ea580c', COMPLETADA: '#16a34a', CANCELADA: '#dc2626',
@@ -25,13 +24,7 @@ export interface CitaDelDiaPopover {
   citas: CitaResponse[];
 }
 
-/**
- * Calendario mensual de solo lectura para el dashboard: a diferencia de la Agenda completa
- * (edición, drag&drop, modales), aquí solo se necesita una vista rápida de qué días tienen
- * citas — mismo estilo visual que la Agenda (colores por estado), pero sin el resto de su estado.
- * Cada día con citas muestra un único indicador; al pasar el mouse o tocar el día aparece un
- * visualizador con el detalle de esas citas.
- */
+
 @Component({
   selector: 'app-dashboard-citas-calendar',
   standalone: true,
@@ -98,9 +91,7 @@ export class DashboardCitasCalendarComponent {
     this.calendarComponent?.getApi().today();
   }
 
-  /** Cierre con un pequeño retraso: si el mouse va del día hacia el panel, cruza un hueco donde
-   * no está ni sobre el día ni sobre el panel todavía — sin este margen, ese instante dispara el
-   * mouseleave del día y el panel se cierra antes de que el usuario llegue a él. */
+
   private cierreTimeout: ReturnType<typeof setTimeout> | null = null;
 
   cerrarPopoverConRetraso(): void {
@@ -160,7 +151,7 @@ export class DashboardCitasCalendarComponent {
     this.citasPorFecha = index;
   }
 
-  /** Hover (escritorio) y click/toque (móvil) muestran el mismo visualizador de citas del día. */
+
   private attachDayVisualizer(info: DayCellMountArg): void {
     const fecha = this.toDateInput(info.date);
     const el = info.el as HTMLElement;

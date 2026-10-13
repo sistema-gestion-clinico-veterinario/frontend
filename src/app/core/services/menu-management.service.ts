@@ -3,24 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../../models/response/api-response';
 import { VistaDTO } from '../../models/response/auth-login-response.model';
-
-export interface VentanaDTO {
-  id: number;
-  codigo: string;
-  nombre: string;
-  activo: boolean;
-  orden?: number;
-  grupo?: string | null;
-  icono?: string | null;
-  presentacionDefault?: string;
-}
-
-export interface VistaReordenItem {
-  id: number;
-  orden: number;
-  ventanaId?: number | null;
-  sinModulo?: boolean;
-}
+import { VentanaDTO, VistaReordenItem } from '../../models/menu/menu-management.model';
 
 @Injectable({
   providedIn: 'root'

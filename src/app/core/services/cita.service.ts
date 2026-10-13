@@ -7,13 +7,7 @@ import { Page } from '../../models/response/page';
 import { ApiResponse } from '../../models/response/api-response';
 import { EstadoCita } from '../enums/estado-cita.enum';
 import { RecordatorioWhatsAppResponse } from '../../models/response/recordatorio-whatsapp-response';
-
-export interface AgendaCounters {
-  programadas: number;
-  enProceso: number;
-  completadas: number;
-  canceladas: number;
-}
+import { AgendaCounters } from '../../models/response/agenda-counters-response';
 
 @Injectable({
   providedIn: 'root'

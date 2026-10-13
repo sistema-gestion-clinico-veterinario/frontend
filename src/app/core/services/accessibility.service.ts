@@ -1,27 +1,8 @@
 import { Injectable, computed, signal } from '@angular/core';
-
-export type ContrastMode = 'normal' | 'high' | 'inverted';
-export type CursorSize = 'normal' | 'large' | 'xlarge';
-export type TextAlignMode = 'default' | 'left' | 'center' | 'right' | 'justify';
-
-export interface AccessibilitySettings {
-  contrast: ContrastMode;
-  grayscale: boolean;
-  saturation: number; // uno de SATURATION_LEVELS
-  brightness: number; // uno de BRIGHTNESS_LEVELS
-  textSize: number; // 100 - 200 (%), pasos de 20
-  letterSpacing: number; // 0 - 3 pasos
-  lineHeight: number; // 0 - 3 pasos
-  textAlign: TextAlignMode;
-  highlightLinks: boolean;
-  highlightHeadings: boolean;
-  readableFont: boolean;
-  stopAnimations: boolean;
-  hideImages: boolean;
-  cursorSize: CursorSize;
-  readingGuide: boolean;
-  readingMask: boolean;
-}
+import { AccessibilitySettings } from '../../models/ui/accessibility-settings.model';
+import { ContrastMode } from '../../types/accessibility/contrast-mode.type';
+import { CursorSize } from '../../types/accessibility/cursor-size.type';
+import { TextAlignMode } from '../../types/accessibility/text-align-mode.type';
 
 const STORAGE_KEY = 'accessibility_preferences';
 
@@ -66,7 +47,6 @@ function loadInitialSettings(): AccessibilitySettings {
   }
 }
 
-/** Avanza al siguiente valor del arreglo y da la vuelta al llegar al final. */
 function nextInOrder<T>(order: readonly T[], current: T): T {
   return order[(order.indexOf(current) + 1) % order.length];
 }
@@ -81,7 +61,6 @@ export class AccessibilityService {
     return JSON.stringify(current) !== JSON.stringify(DEFAULT_SETTINGS);
   });
 
-  // Niveles (0-based) usados por las cards para pintar la barra de progreso.
   readonly contrastLevel = computed(() => CONTRAST_ORDER.indexOf(this.settingsSignal().contrast));
   readonly cursorLevel = computed(() => CURSOR_ORDER.indexOf(this.settingsSignal().cursorSize));
   readonly textAlignLevel = computed(() => TEXT_ALIGN_ORDER.indexOf(this.settingsSignal().textAlign));
@@ -102,8 +81,7 @@ export class AccessibilityService {
   };
 
   constructor() {
-    // Aplica lo que ya hubiera en localStorage desde el primer render,
-    // sin esperar a la primera mutación.
+
     this.applyToDocument(this.settingsSignal());
   }
 
@@ -113,7 +91,7 @@ export class AccessibilityService {
     this.commit(current => ({ ...current, [key]: !current[key] }));
   }
 
-  /** Cada "step*" avanza un nivel y da la vuelta a 0 al pasar el máximo — un solo tap por card. */
+
   stepContrast(): void {
     this.commit(current => ({ ...current, contrast: nextInOrder(CONTRAST_ORDER, current.contrast) }));
   }

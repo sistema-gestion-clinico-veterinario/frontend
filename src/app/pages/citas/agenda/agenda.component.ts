@@ -10,7 +10,8 @@ import { DatePickerModule } from 'primeng/datepicker';
 import { TextareaModule } from 'primeng/textarea';
 import { ToastModule } from 'primeng/toast';
 import { MessageService, ConfirmationService, MenuItem } from 'primeng/api';
-import { AgendaCounters, CitaService } from '../../../core/services/cita.service';
+import { CitaService } from '../../../core/services/cita.service';
+import { AgendaCounters } from '../../../models/response/agenda-counters-response';
 import { CajaService } from '../../../core/services/caja.service';
 import { EmpleadoService } from '../../../core/services/empleado.service';
 import { ApoderadoService } from '../../../core/services/apoderado.service';
@@ -47,10 +48,12 @@ import { describeManualNotice } from '../../../shared/utils/person-status';
 import { hasMeaningfulText, isLowercaseEmail } from '../../../core/utils/input-validation.util';
 import { ControlPreventivoService } from '../../../core/services/control-preventivo.service';
 import { ControlPreventivoResponse } from '../../../models/response/control-preventivo-response';
-import { RealtimeStompConnection, RealtimeStompService } from '../../../core/services/realtime-stomp.service';
+import { RealtimeStompService } from '../../../core/services/realtime-stomp.service';
+import { RealtimeStompConnection } from '../../../models/realtime/realtime-stomp.model';
 import { SugerenciasControlComponent } from './sugerencias-control/sugerencias-control.component';
 import { SugerenciaControlResponse } from '../../../models/response/sugerencia-control-response';
-import { AvisoPublico, PrivacidadService } from '../../../core/services/privacidad.service';
+import { PrivacidadService } from '../../../core/services/privacidad.service';
+import { AvisoPublico } from '../../../models/privacy/privacidad.model';
 import { AgendaFullCalendarComponent } from './agenda-full-calendar/agenda-full-calendar.component';
 import { CitaDetailPanelComponent } from './cita-detail-panel/cita-detail-panel.component';
 import { DeleteAppointmentDialogComponent } from './delete-appointment-dialog/delete-appointment-dialog.component';
@@ -232,7 +235,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
   loadingSlots        = signal<boolean>(false);
   servicios            = signal<{ label: string; value: number; precio: number }[]>([]);
   serviciosConDetalle  = signal<ServicioResponse[]>([]);
-  todosEmpleados       = signal<{ id: number; nombre: string; apellido: string; tiposEmpleado: string[] }[]>([]);
+  todosEmpleados       = signal<{ id: number; nombre: string; apellido: string; tiposEmpleado: string[]; tipoEmpleadoIds: number[]; especialidadIds: number[] }[]>([]);
   selectedServicioId   = signal<number | null>(null);
   controlesPreventivosMascota = signal<ControlPreventivoResponse[]>([]);
   readonly controlesParaServicio = computed(() => {
@@ -709,19 +712,21 @@ export class AgendaComponent implements OnInit, OnDestroy {
             id: e.id,
             nombre: e.nombre,
             apellido: e.apellido,
-            tiposEmpleado: e.tiposEmpleado ?? []
+            tiposEmpleado: e.tiposEmpleado ?? [],
+            tipoEmpleadoIds: e.tipoEmpleadoIds ?? [],
+            especialidadIds: e.especialidadIds ?? []
           }))
         );
         this.veterinarios.set(
           empleadosActivos
-            .filter((e: any) => (e.tiposEmpleado ?? []).some((tipo: string) => tipo.toUpperCase() === 'VETERINARIO'))
+            .filter((e: any) => !!e.esVeterinario)
             .map((e: any) => ({ label: `${e.nombre} ${e.apellido}`, value: e.id }))
         );
       }
     });
   }
 
-  /** Carga datos personales solo al abrir el formulario de una cita. */
+
   private ensureFormPeopleLoaded(): void {
     if (this.formPeopleLoaded || this.formPeopleLoading) return;
 
@@ -868,13 +873,13 @@ export class AgendaComponent implements OnInit, OnDestroy {
     if (!servicioId) { this.empleadosDelServicio.set([]); return; }
     const servicio = this.serviciosConDetalle().find(s => s.id === servicioId);
     const todos = this.todosEmpleados();
-    if (!servicio?.tipoEmpleadoNombre) {
+    if (!servicio?.tipoEmpleadoId) {
       this.empleadosDelServicio.set(todos.map(e => ({ label: `${e.nombre} ${e.apellido}`, value: e.id })));
       return;
     }
-    const tipoTarget = servicio.tipoEmpleadoNombre.toUpperCase().trim();
     const filtered = todos.filter(e =>
-      e.tiposEmpleado.some(t => t.toUpperCase().trim() === tipoTarget)
+      e.tipoEmpleadoIds.includes(servicio.tipoEmpleadoId!)
+      && (!servicio.especialidadId || e.especialidadIds.includes(servicio.especialidadId))
     );
     this.empleadosDelServicio.set(filtered.map(e => ({ label: `${e.nombre} ${e.apellido}`, value: e.id })));
   }
@@ -1307,7 +1312,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
       fechaHoraInicio: localIsoString
     };
 
-    // Edit: preserve original vet, service, emergency fields (not editable)
+
     if (isEditing) {
       const orig = this.originalCitaEdit();
       if (orig) {
@@ -1715,11 +1720,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
     return labels[estado] ?? estado;
   }
 
-  /**
-   * Antes usaba 9 colores distintos (uno por estado), lo que sobrecargaba la
-   * vista de color sin necesidad. Se agrupa en 4 significados reales:
-   * neutro (aún no ocurre), en curso, completada, y cancelada/no asistió.
-   */
+
   estadoClass(estado: EstadoCita): string {
     switch (estado) {
       case EstadoCita.EN_PROCESO:     return 'bg-amber-50 text-amber-700';
@@ -1871,7 +1872,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
     return dias > 90 ? 'El periodo máximo permitido es de 90 días.' : null;
   }
 
-  /** Fecha y hora completas de una cita, para mostrarse en su propia fila (sin encabezado de grupo por día). */
+
   fechaHoraCompleta(fechaHoraInicio: string | Date): string {
     const fechaDate = new Date(fechaHoraInicio);
     const fecha = fechaDate.toLocaleDateString('es-PE', {
@@ -1887,7 +1888,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
     return `${fecha} · ${hora}`;
   }
 
-  /** Solo la fecha (sin hora), para mostrarse con menor peso visual junto a la hora. */
+
   fechaSinHora(fechaHoraInicio: string | Date): string {
     return new Date(fechaHoraInicio).toLocaleDateString('es-PE', {
       weekday: 'short',

@@ -14,6 +14,7 @@ import { SugerenciaControlResponse } from '../../models/response/sugerencia-cont
 import { ArchivoClinicoResponse } from '../../models/response/archivo-clinico-response';
 import { Page } from '../../models/response/page';
 import { ApiResponse } from '../../models/response/api-response';
+import { Observable, from, switchMap } from 'rxjs';
 import { SKIP_GLOBAL_LOADING } from '../interceptors/api.interceptor';
 
 @Injectable({
@@ -185,8 +186,16 @@ export class HistoriaClinicaService {
     return this.http.post<ApiResponse<ArchivoClinicoResponse>>(`${this.citasUrl}/${consultaId}/files`, form);
   }
 
-  obtenerContenidoArchivo(consultaId: number, id: number, descargar = false) {
-    return this.http.get(`${this.citasUrl}/${consultaId}/files/${id}/content?descargar=${descargar}`, { responseType: 'blob' });
+  obtenerContenidoArchivo(consultaId: number, id: number, descargar = false): Observable<Blob> {
+    const base = `${this.citasUrl}/${consultaId}/files/${id}`;
+    return this.http.get<ApiResponse<{ url?: string }>>(`${base}/content-url?descargar=${descargar}`).pipe(
+      switchMap(({ data }) => data?.url
+        ? from(fetch(data.url, { referrerPolicy: 'no-referrer' }).then(respuesta => {
+            if (!respuesta.ok) throw new Error('No se pudo descargar el archivo');
+            return respuesta.blob();
+          }))
+        : this.http.get(`${base}/content?descargar=${descargar}`, { responseType: 'blob' }))
+    );
   }
 
   eliminarArchivo(consultaId: number, id: number) {

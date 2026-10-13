@@ -10,7 +10,7 @@ export class DiagnosticoIaService {
   private readonly http = inject(HttpClient);
   private readonly url = `${environment.apiUrl}/ia/diagnostico`;
 
-  /** La consulta pasa por el servidor de la clínica, que comprueba la autorización del titular antes de enviarla a la IA. */
+
   analizarStream(formData: FormData): Observable<SseEvento> {
     return new Observable(observer => {
       let procesado = 0;

@@ -76,4 +76,40 @@ describe('HistoriaClinicaService integration', () => {
       },
     });
   });
+
+  describe('contenido de archivos clínicos', () => {
+    const base = () => `${(service as any).citasUrl}/4/files/9`;
+
+    it('baja el archivo desde el enlace temporal sin pasar por el servidor ni enviar credenciales', async () => {
+      const fetchSpy = spyOn(window, 'fetch').and.resolveTo(new Response(new Blob(['pdf']), { status: 200 }));
+      const resultado = service.obtenerContenidoArchivo(4, 9).toPromise();
+
+      httpMock.expectOne(`${base()}/content-url?descargar=false`)
+        .flush({ success: true, message: 'ok', data: { url: 'https://proyecto.supabase.co/firmado?token=abc' } });
+      const blob = await resultado;
+
+      expect(fetchSpy).toHaveBeenCalledWith('https://proyecto.supabase.co/firmado?token=abc', { referrerPolicy: 'no-referrer' });
+      expect(blob!.size).toBe(3);
+    });
+
+    it('si el archivo está guardado en el servidor, lo pide al servidor', () => {
+      service.obtenerContenidoArchivo(4, 9, true).subscribe();
+
+      httpMock.expectOne(`${base()}/content-url?descargar=true`)
+        .flush({ success: true, message: 'ok', data: {} });
+      const respaldo = httpMock.expectOne(`${base()}/content?descargar=true`);
+      expect(respaldo.request.responseType).toBe('blob');
+      respaldo.flush(new Blob(['x']));
+    });
+
+    it('si la descarga del enlace falla, informa el error', async () => {
+      spyOn(window, 'fetch').and.resolveTo(new Response('', { status: 403 }));
+      const resultado = service.obtenerContenidoArchivo(4, 9).toPromise();
+
+      httpMock.expectOne(`${base()}/content-url?descargar=false`)
+        .flush({ success: true, message: 'ok', data: { url: 'https://proyecto.supabase.co/x' } });
+
+      await expectAsync(resultado).toBeRejectedWithError('No se pudo descargar el archivo');
+    });
+  });
 });

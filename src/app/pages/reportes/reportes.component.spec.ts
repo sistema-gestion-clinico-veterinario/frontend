@@ -88,9 +88,9 @@ describe('ReportesComponent', () => {
       email: 'persona@clinica.test', telefono: '', activo: true, especialidades: []
     };
     flushInitialRequests(reporteFixture(), [
-      { ...empleadoBase, id: 1, nombre: 'Ana', apellido: 'Vet', tiposEmpleado: ['VETERINARIO'] },
+      { ...empleadoBase, id: 1, nombre: 'Ana', apellido: 'Vet', tiposEmpleado: ['Veterinario'], esVeterinario: true },
       { ...empleadoBase, id: 2, nombre: 'Luis', apellido: 'Recepción', tiposEmpleado: ['RECEPCIONISTA'] },
-      { ...empleadoBase, id: 3, nombre: 'Eva', apellido: 'Inactiva', activo: false, tiposEmpleado: ['VETERINARIO'] }
+      { ...empleadoBase, id: 3, nombre: 'Eva', apellido: 'Inactiva', activo: false, tiposEmpleado: ['Veterinario'], esVeterinario: true }
     ]);
 
     expect(component.veterinarios().map(empleado => empleado.id)).toEqual([1]);

@@ -19,10 +19,7 @@ const CLASE_USO_GENERAL = 'rounded-full bg-slate-100 px-1.5 py-0.5 text-[9px] fo
 const CLASE_ESPECIES = 'rounded-full bg-emerald-50 px-1.5 py-0.5 text-[9px] font-bold text-emerald-700';
 const CLASE_SIN_ESPECIES = 'rounded-full bg-rose-50 px-1.5 py-0.5 text-[9px] font-bold text-rose-600';
 
-/**
- * Etiqueta para el catálogo de venta: "Uso general" o "Para: perros y gatos".
- * Devuelve null cuando el producto todavía no está clasificado (registros antiguos).
- */
+
 export function etiquetaAplicacionEspecie(
   aplicacion?: TipoAplicacionProducto | null,
   especies?: readonly EspecieMascota[] | null
@@ -41,7 +38,7 @@ export function etiquetaAplicacionEspecie(
   return { texto: `Para: ${unirNombres(nombres)}`, clase: CLASE_ESPECIES };
 }
 
-/** Indica si un producto puede utilizarse normalmente para la especie de una cita. */
+
 export function productoCompatibleConEspecie(
   aplicacion: TipoAplicacionProducto | null | undefined,
   especies: readonly EspecieMascota[] | null | undefined,

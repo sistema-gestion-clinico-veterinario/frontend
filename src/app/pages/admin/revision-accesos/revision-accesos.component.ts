@@ -6,18 +6,25 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { SkeletonModule } from 'primeng/skeleton';
 import {
-  AccessReviewDecision,
   AccessReviewDetail,
   AccessReviewItem,
   AccessReviewOverview,
-  AccessReviewService,
   AccessReviewSummary
-} from '../../../core/services/access-review.service';
+} from '../../../models/access-review/access-review.model';
+import { AccessReviewService } from '../../../core/services/access-review.service';
+import { AccessReviewDecision } from '../../../types/access-review-decision.type';
 import { AuthStore } from '../../../store/auth.store';
 
 interface Decision {
   decision: AccessReviewDecision;
   comment: string;
+}
+
+interface GrupoDePersona {
+  usuarioId: number;
+  nombre: string;
+  email: string | null;
+  accesos: AccessReviewItem[];
 }
 
 @Component({
@@ -54,6 +61,22 @@ export class RevisionAccesosComponent implements OnInit {
       return decision?.decision === 'REVOKE' && !decision.comment.trim();
     })
   );
+  readonly decididos = computed(() => this.items().length - this.pendientes());
+  readonly avance = computed(() =>
+    this.items().length === 0 ? 0 : Math.round((this.decididos() / this.items().length) * 100)
+  );
+  readonly grupos = computed<GrupoDePersona[]>(() => {
+    const porPersona = new Map<number, GrupoDePersona>();
+    for (const item of this.items()) {
+      const grupo = porPersona.get(item.usuarioId);
+      if (grupo) {
+        grupo.accesos.push(item);
+      } else {
+        porPersona.set(item.usuarioId, { usuarioId: item.usuarioId, nombre: item.nombre, email: item.email, accesos: [item] });
+      }
+    }
+    return [...porPersona.values()];
+  });
   readonly listo = computed(() => this.items().length > 0 && this.pendientes() === 0 && !this.faltanMotivos());
 
   private get companyId(): number | null {
@@ -99,6 +122,28 @@ export class RevisionAccesosComponent implements OnInit {
       ...todas,
       [item.assignmentId]: { decision: todas[item.assignmentId]?.decision ?? 'REVOKE', comment }
     }));
+  }
+
+  mantenerPendientes(): void {
+    this.decisiones.update(todas => {
+      const siguientes = { ...todas };
+      for (const item of this.items()) {
+        if (!siguientes[item.assignmentId]) {
+          siguientes[item.assignmentId] = { decision: 'KEEP', comment: '' };
+        }
+      }
+      return siguientes;
+    });
+    this.confirmando.set(false);
+  }
+
+  rolLegible(nombre: string): string {
+    const texto = nombre.replace(/^ROLE_/, '').replaceAll('_', ' ').toLowerCase();
+    return texto.charAt(0).toUpperCase() + texto.slice(1);
+  }
+
+  iniciales(nombre: string): string {
+    return nombre.split(/\s+/).filter(Boolean).slice(0, 2).map(parte => parte.charAt(0).toUpperCase()).join('');
   }
 
   decisionDe(item: AccessReviewItem): Decision | undefined {

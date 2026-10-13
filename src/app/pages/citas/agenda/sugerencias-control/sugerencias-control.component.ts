@@ -3,10 +3,7 @@ import { CommonModule } from '@angular/common';
 import { HistoriaClinicaService } from '../../../../core/services/historia-clinica.service';
 import { SugerenciaControlResponse } from '../../../../models/response/sugerencia-control-response';
 
-/** Sugiere agendar una cita de control cuando un tratamiento está por finalizar o
- * un diagnóstico en seguimiento/crónico tiene una fecha de próximo control cercana.
- * Nunca agenda nada por su cuenta - solo prellena el formulario de "Nueva cita" para
- * que el personal confirme, igual que el resto de recordatorios del sistema. */
+
 @Component({
   selector: 'app-sugerencias-control',
   standalone: true,

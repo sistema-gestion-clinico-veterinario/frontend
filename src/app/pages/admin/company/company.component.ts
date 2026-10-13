@@ -73,7 +73,7 @@ export class CompanyComponent implements OnInit {
   totalRecords: number = 0;
   companyPendingStatus: CompanyListResponse | null = null;
 
-  // Detalle
+  
   displayDetailPanel = signal(false);
   selectedCompanyDetail = signal<CompanyDTO | null>(null);
 
@@ -103,8 +103,6 @@ export class CompanyComponent implements OnInit {
     description: ['', [Validators.maxLength(500), noLeadingTrailingSpaceValidator(), textContentValidator()]],
     businessHours: ['', [Validators.maxLength(100), textContentValidator({ requireLetter: false })]],
     logoUrl: ['', [Validators.maxLength(500), Validators.pattern(/^$|^https?:\/\/[^\s<>]+$/)]],
-    // Lo elige quien crea la empresa - no se deriva del nombre en silencio
-    // (distintas veterinarias pueden compartir nombre o preferir otra URL).
     slug: ['', [
       Validators.required,
       Validators.maxLength(100),
@@ -114,13 +112,11 @@ export class CompanyComponent implements OnInit {
     operatingHours: this.fb.array([])
   });
 
-  /** Origen actual (dominio) para armar el link completo de acceso - no se
-   * hardcodea, porque el slug funciona igual sin importar el dominio. */
+
   readonly currentOrigin = window.location.origin;
 
   private slugTouchedManually = false;
-  /** Slug con el que se abrio el formulario de edicion - el aviso de que
-   * cambiarlo invalida enlaces solo debe verse si realmente se modifico. */
+
   originalSlug: string | null = null;
 
   private slugify(value: string): string {
@@ -281,7 +277,7 @@ export class CompanyComponent implements OnInit {
     this.editCompany({ id: this.ownCompany()!.id } as CompanyListResponse);
   }
 
-  /** La URL de acceso solo la cambia el administrador de la plataforma; la clínica la ve pero no la edita. */
+
   private aplicarPermisoDelSlug(): void {
     const slug = this.companyForm.get('slug');
     if (this.isSuperAdmin()) {

@@ -127,12 +127,12 @@ export class ProductoFormComponent implements OnInit {
     return this.productoForm.get('controlStock')?.value === 'LOTES';
   }
 
-  /** Clasificación pendiente: productos antiguos sin aplicacionEspecie no se pueden guardar. */
+
   get clasificacionPendiente(): boolean {
     return !this.productoForm.get('aplicacionEspecie')?.value;
   }
 
-  /** Faltan especies cuando el producto es de especies específicas. */
+
   get especiesIncompletas(): boolean {
     return this.productoForm.get('aplicacionEspecie')?.value === 'ESPECIES_ESPECIFICAS'
       && (this.productoForm.get('especies')?.value?.length ?? 0) === 0;

@@ -3,15 +3,7 @@ import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../../models/response/api-response';
 import { ProfileResponse } from '../../models/response/profile-response';
-
-export interface ProfileUpdateRequest {
-  nombre?: string;
-  apellido?: string;
-  telefono?: string;
-  direccion?: string;
-  observaciones?: string;
-  fotoUrl?: string;
-}
+import { ProfileUpdateRequest } from '../../models/request/profile-update-request';
 
 @Injectable({ providedIn: 'root' })
 export class ProfileService {
