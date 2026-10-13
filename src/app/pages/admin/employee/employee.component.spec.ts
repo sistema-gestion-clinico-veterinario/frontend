@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { EmployeeComponent } from './employee.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
 describe('EmployeeComponent', () => {
@@ -10,6 +11,7 @@ describe('EmployeeComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [EmployeeComponent, HttpClientTestingModule],
+      providers: [provideRouter([])],
     })
     .overrideComponent(EmployeeComponent, { set: { template: '' } })
     .compileComponents();
@@ -21,6 +23,47 @@ describe('EmployeeComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  describe('alta de personal sin aviso de privacidad publicado', () => {
+    const aviso = { clinica: 'Clínica', version: 1, contenido: 'x' } as any;
+
+    it('la plataforma puede registrar aunque la clínica no haya publicado su aviso', () => {
+      spyOn(component.authStore, 'isSuperAdmin').and.returnValue(true);
+      component.avisoPrivacidad.set(null);
+
+      expect(component.registraSinAviso()).toBeTrue();
+      expect(component.puedeConfirmarAlta()).toBeTrue();
+    });
+
+    it('el personal de la clínica no puede registrar mientras no exista el aviso', () => {
+      spyOn(component.authStore, 'isSuperAdmin').and.returnValue(false);
+      component.avisoPrivacidad.set(null);
+
+      expect(component.registraSinAviso()).toBeFalse();
+      expect(component.puedeConfirmarAlta()).toBeFalse();
+    });
+
+    it('con aviso publicado nadie registra sin confirmar que informó a la persona', () => {
+      spyOn(component.authStore, 'isSuperAdmin').and.returnValue(true);
+      spyOn(component, 'canManageRoleAssignments').and.returnValue(true);
+      component.avisoPrivacidad.set(aviso);
+      component.openNew();
+
+      expect(component.registraSinAviso()).toBeFalse();
+      expect(component.employeeForm.get('avisoInformado')?.valid).toBeFalse();
+      component.employeeForm.get('avisoInformado')?.setValue(true);
+      expect(component.employeeForm.get('avisoInformado')?.valid).toBeTrue();
+    });
+
+    it('sin aviso, la plataforma no queda bloqueada por la confirmación de aviso', () => {
+      spyOn(component.authStore, 'isSuperAdmin').and.returnValue(true);
+      spyOn(component, 'canManageRoleAssignments').and.returnValue(true);
+      component.avisoPrivacidad.set(null);
+      component.openNew();
+
+      expect(component.employeeForm.get('avisoInformado')?.valid).toBeTrue();
+    });
   });
 
   describe('suspender, dar de baja y reactivar', () => {
