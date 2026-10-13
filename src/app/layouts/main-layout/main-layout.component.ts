@@ -1,15 +1,19 @@
 
-import { Component, ElementRef, HostListener, ViewChild, ViewEncapsulation, inject, signal } from '@angular/core';
+import { Component, ElementRef, HostListener, ViewChild, ViewEncapsulation, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { filter } from 'rxjs';
+import { AuthStore } from '../../store/auth.store';
+import { ChangePasswordModalComponent } from './change-password-modal/change-password-modal.component';
 import { NavbarComponent } from './navbar/navbar.component';
 import { SidebarComponent } from './sidebar/sidebar.component';
+
+const PASSWORD_MODAL_DISMISSED_KEY = 'pw_modal_dismissed';
 
 @Component({
   selector: 'app-main-layout',
   standalone: true,
-  imports: [RouterOutlet, SidebarComponent, NavbarComponent],
+  imports: [RouterOutlet, SidebarComponent, NavbarComponent, ChangePasswordModalComponent],
   templateUrl: './main-layout.component.html',
   styleUrl: './main-layout.component.scss',
   // Estas hojas son globales por diseño, pero se descargan solo después de
@@ -19,8 +23,18 @@ import { SidebarComponent } from './sidebar/sidebar.component';
 export class MainLayoutComponent {
   @ViewChild('scrollContainer') private scrollContainer?: ElementRef<HTMLElement>;
 
+  private readonly authStore = inject(AuthStore);
+
   sidebarCollapsed = signal(false);
   mobileSidebarOpen = signal(false);
+
+  private readonly passwordModalDismissed = signal(sessionStorage.getItem(PASSWORD_MODAL_DISMISSED_KEY) === '1');
+  readonly showPasswordModal = computed(() => !this.authStore.passwordChanged() && !this.passwordModalDismissed());
+
+  dismissPasswordModal() {
+    sessionStorage.setItem(PASSWORD_MODAL_DISMISSED_KEY, '1');
+    this.passwordModalDismissed.set(true);
+  }
 
   constructor() {
     // El contenido se desplaza dentro de este <main>, no en la ventana, por lo

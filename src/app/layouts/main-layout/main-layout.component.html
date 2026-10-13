@@ -18,3 +18,7 @@
     </main>
   </div>
 </div>
+
+@if (showPasswordModal()) {
+  <app-change-password-modal (dismissed)="dismissPasswordModal()" />
+}

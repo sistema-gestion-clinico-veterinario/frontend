@@ -448,8 +448,8 @@ describe('LoginComponent - continuar con Google', () => {
 
     expect(mensajes['google_cuenta_suspendida']).toContain('suspendido');
     const avisos = (LoginComponent as any).NOTICES as Record<string, string>;
-    expect(avisos['sesion_otra_clinica']).toContain('no corresponde a esta clínica');
-    expect(avisos['sesion_otra_clinica']).toContain('no se cierran');
+    expect(avisos['sesion_otra_clinica']).toContain('vuelve a iniciar sesión');
+    expect(avisos['sesion_otra_clinica']).toContain('permanecerán activas');
     expect(avisos['google_cuenta_cerrada']).toBeUndefined();
     expect(mensajes['google_cuenta_cerrada']).toContain('ya no se puede reactivar');
     expect(mensajes['google_cuenta_dada_de_baja']).toContain('ya no está activo');
@@ -535,6 +535,7 @@ describe('LoginComponent - continuar con Google', () => {
     expect(component.authError).toBe('No se pudo iniciar sesión con Google. Intenta nuevamente.');
 
     component.aplicarMensajesDeLaUrl('sesion_otra_clinica', null);
-    expect(component.authNotice).toContain('no corresponde a esta clínica');
+    expect(component.noticeTitle).toBe('Vuelve a iniciar sesión');
+    expect(component.authNotice).toContain('vuelve a iniciar sesión');
   });
 });

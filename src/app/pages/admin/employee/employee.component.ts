@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, inject, signal, HostListener, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators, AbstractControl } from '@angular/forms';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
@@ -30,6 +30,7 @@ import { AdminEmailChangeModalComponent } from '../../../shared/components/admin
 import { textContentValidator } from '../../../core/validators/text-content.validator';
 import { normalizeText } from '../../../core/utils/normalize-text.util';
 import { AvisoPublico, PrivacidadService } from '../../../core/services/privacidad.service';
+import { Role } from '../../../models/response/permission';
 
 @Component({
   selector: 'app-employee',
@@ -66,6 +67,8 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   private readonly tipoEmpleadoService = inject(TipoEmpleadoService);
   private readonly roleService = inject(RoleService);
   private readonly privacidadService = inject(PrivacidadService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   readonly authStore = inject(AuthStore);
 
   @ViewChild('empFileInput') empFileInput!: ElementRef<HTMLInputElement>;
@@ -94,6 +97,7 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   selectedEmployeeDetail = signal<EmpleadoRequest | null>(null);
   avisoPrivacidad = signal<AvisoPublico | null>(null);
   cargandoAviso = signal(false);
+  registroAdministradorInicial = signal(false);
 
   emailChangeTarget = signal<EmpleadoListResponse | null>(null);
   conflictDialogVisible = signal(false);
@@ -187,7 +191,7 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     return this.authStore.selectedEnterprise()?.establishmentId ?? this.authStore.companyId();
   }
 
-  roles = signal<{ label: string; value: number }[]>([]);
+  roles = signal<{ label: string; value: number; purpose: Role['purpose'] }[]>([]);
 
   tipoDocumentos = [
     { label: 'DNI', value: 'DNI' },
@@ -241,6 +245,10 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   });
 
   ngOnInit() {
+    this.registroAdministradorInicial.set(
+      this.route.snapshot.queryParamMap.get('alta') === 'administrador-inicial'
+        && this.authStore.isSuperAdmin()
+    );
     const companyId = this.activeCompanyId;
     if (companyId) {
       this.loadEspecialidades(companyId);
@@ -249,6 +257,9 @@ export class EmployeeComponent implements OnInit, OnDestroy {
       this.employeeForm.get('companyId')?.setValue(companyId);
     }
     this.loadAvisoPrivacidad();
+    if (this.registroAdministradorInicial()) {
+      this.openNew();
+    }
 
     this.employeeForm.get('tiposEmpleado')?.valueChanges.subscribe(types => {
       const isVet = types?.some((type: string) => type.toUpperCase() === 'VETERINARIO');
@@ -364,9 +375,16 @@ export class EmployeeComponent implements OnInit, OnDestroy {
           .filter(role => role.activo && role.scope === 'STAFF')
           .map(r => ({
             label: this.roleLabel(r.name),
-            value: r.id
+            value: r.id,
+            purpose: r.purpose
           }));
         this.roles.set(list);
+        if (this.registroAdministradorInicial() && !this.isEdit()) {
+          const administrador = list.find(role => role.purpose === 'COMPANY_ADMIN');
+          if (administrador) {
+            this.employeeForm.get('roleIds')?.setValue([administrador.value]);
+          }
+        }
       },
       error: () => {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar los roles' });
@@ -508,7 +526,7 @@ export class EmployeeComponent implements OnInit, OnDestroy {
       companyId: this.activeCompanyId,
       avisoInformado: false
     });
-    this.setPrivacyValidator(true);
+    this.setPrivacyValidator(!this.registroAdministradorInicial());
     this.horarios = this.diasSemana.map((d, i) => ({ diaSemana: d.key, activo: false, horaInicio: i % 2 === 0 ? '08:00' : '13:00', horaFin: i % 2 === 0 ? '13:00' : '18:00' }));
     this.isEdit.set(false);
     this.displayModal.set(true);
@@ -568,6 +586,21 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     control?.updateValueAndValidity({ emitEvent: false });
   }
 
+  esAltaAdministradorInicialValida(): boolean {
+    if (!this.registroAdministradorInicial()
+        || !this.authStore.isSuperAdmin()
+        || this.totalRecords() !== 0) {
+      return false;
+    }
+    const seleccionados: number[] = this.employeeForm.get('roleIds')?.value ?? [];
+    return this.roles().some(role =>
+      role.purpose === 'COMPANY_ADMIN' && seleccionados.includes(role.value));
+  }
+
+  puedeConfirmarAlta(): boolean {
+    return !!this.avisoPrivacidad() || this.esAltaAdministradorInicialValida();
+  }
+
   confirmarGuardarEmpleado() {
     if (this.employeeForm.invalid) {
       this.employeeForm.markAllAsTouched();
@@ -624,6 +657,15 @@ export class EmployeeComponent implements OnInit, OnDestroy {
             });
           }
           this.displayModal.set(false);
+          if (this.registroAdministradorInicial()) {
+            this.registroAdministradorInicial.set(false);
+            this.router.navigate([], {
+              relativeTo: this.route,
+              queryParams: { alta: null },
+              queryParamsHandling: 'merge',
+              replaceUrl: true
+            });
+          }
           this.loadEmployees();
         },
         error: (err) => {
