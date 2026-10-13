@@ -1,7 +1,8 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
-import { AvisoPublico, PrivacidadService } from '../../../core/services/privacidad.service';
+import { PrivacidadService } from '../../../core/services/privacidad.service';
+import { AvisoPublico } from '../../../models/privacy/privacidad.model';
 import { AvisoClinicaGate } from '../../../core/services/aviso-clinica-gate.service';
 import { AuthStore } from '../../../store/auth.store';
 import { resolveInitialRoute } from '../../../layouts/main-layout/navbar/navbar.component';

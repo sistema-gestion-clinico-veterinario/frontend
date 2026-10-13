@@ -8,7 +8,6 @@ export interface CitaResponse {
   apoderadoId: number;
   apoderadoNombre: string;
   apoderadoEmail?: string;
-  /** Solo tras crear, reprogramar, reasignar o cancelar: el aviso al cliente no pudo ir por correo. */
   requiereAvisoManual?: boolean;
   telefonoAviso?: string | null;
   veterinarioId: number;

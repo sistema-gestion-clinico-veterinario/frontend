@@ -5,6 +5,7 @@ import { CompanyDTO } from '../../models/request/company-dto';
 import { CompanyListResponse } from '../../models/response/company-list-response';
 import { Page } from '../../models/response/page';
 import { ApiResponse } from '../../models/response/api-response';
+import { CompanyBrandingResponse, CompanySearchResult } from '../../models/response/company-public-response';
 import { SKIP_GLOBAL_LOADING } from '../interceptors/api.interceptor';
 
 @Injectable({
@@ -38,30 +39,16 @@ export class CompanyService {
     return this.http.patch<ApiResponse<CompanyListResponse>>(`${this.apiUrl}/${id}/toggle-active`, {});
   }
 
-  /** Publico, sin autenticacion - pinta el login antes de iniciar sesion. */
   getBrandingBySlug(slug: string) {
     return this.http.get<ApiResponse<CompanyBrandingResponse>>(
       `${environment.apiUrl}/company/branding/${slug}`
     );
   }
 
-  /** Publico, sin autenticacion - buscador de clinica para el login sin slug. */
   searchByName(query: string) {
     return this.http.get<ApiResponse<CompanySearchResult[]>>(
       `${environment.apiUrl}/company/search`,
       { params: { q: query }, context: new HttpContext().set(SKIP_GLOBAL_LOADING, true) }
     );
   }
-}
-
-export interface CompanyBrandingResponse {
-  name: string;
-  logoUrl: string | null;
-  colorPrimario: string | null;
-}
-
-export interface CompanySearchResult {
-  name: string;
-  slug: string;
-  logoUrl: string | null;
 }

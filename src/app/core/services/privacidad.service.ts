@@ -3,79 +3,15 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../../models/response/api-response';
+import {
+  AvisoPublico,
+  AvisoVersion,
+  CamposAvisoPrivacidad,
+  ConsentimientoEstado,
+  VistaPreviaAviso
+} from '../../models/privacy/privacidad.model';
+import { AudienciaAvisoPrivacidad } from '../../types/privacy/audiencia-aviso-privacidad.type';
 import { SKIP_GLOBAL_LOADING } from '../interceptors/http-context.tokens';
-
-export type AudienciaAvisoPrivacidad = 'PROPIETARIOS_Y_AUTORIZADOS' | 'TRABAJADORES_Y_USUARIOS';
-
-export interface CamposAvisoPrivacidad {
-  razonSocial: string;
-  ruc: string;
-  domicilio: string;
-  correoDerechos: string;
-  registroBancoDatos: string | null;
-  encargadoTratamiento: string | null;
-  finalidades: string[];
-  datosObligatorios: string[];
-  datosFacultativos: string[];
-  destinatarios: string[];
-  transferencias: string;
-  plazoConservacion: string;
-}
-
-export interface AvisoPublico {
-  clinica: string;
-  logoUrl: string | null;
-  colorPrimario: string | null;
-  audiencia: AudienciaAvisoPrivacidad;
-  version: number;
-  vigenteDesde: string;
-  contenido: string;
-}
-
-export interface AvisoVersion {
-  audiencia: AudienciaAvisoPrivacidad;
-  version: number;
-  contenido: string;
-  contenidoHash: string;
-  vigenteDesde: string;
-  activo: boolean;
-  creadoPor: string | null;
-  creadoDispositivo: string | null;
-  creadoIp: string | null;
-  campos: CamposAvisoPrivacidad;
-}
-
-export interface VistaPreviaAviso {
-  version: number;
-  contenido: string;
-  sinCambios: boolean;
-  observaciones: string[];
-}
-
-export type CanalConsentimiento = 'PRESENCIAL' | 'PORTAL' | 'ACTIVACION';
-export type EstadoFinalidad = 'OTORGADO' | 'RETIRADO' | 'SIN_REGISTRO';
-
-export interface FinalidadEstado {
-  codigo: string;
-  descripcion: string;
-  estado: EstadoFinalidad;
-  fecha: string | null;
-  canal: CanalConsentimiento | null;
-}
-
-export interface ConsentimientoEstado {
-  avisoPublicado: boolean;
-  avisoVersion: number | null;
-  informada: boolean;
-  informadaVersion: number | null;
-  informadaFecha: string | null;
-  informadaCanal: CanalConsentimiento | null;
-  vistaPorLaPersona: boolean;
-  finalidades: FinalidadEstado[];
-}
-
-export const RECORDATORIOS = 'RECORDATORIOS_PREVENTIVOS';
-export const USO_IA = 'USO_IA_CLINICA';
 
 @Injectable({ providedIn: 'root' })
 export class PrivacidadService {
@@ -122,9 +58,6 @@ export class PrivacidadService {
   }
 
   miEstado(): Observable<ApiResponse<ConsentimientoEstado>> {
-    // Esta consulta mantiene actualizado el contador de notificaciones y también
-    // se usa en guardas de navegación. No debe cubrir la aplicación con el
-    // preloader global ni dar la impresión de que la página se recargó.
     return this.http.get<ApiResponse<ConsentimientoEstado>>(
       `${this.base}/privacidad/mi-estado`,
       { context: new HttpContext().set(SKIP_GLOBAL_LOADING, true) }

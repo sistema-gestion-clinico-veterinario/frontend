@@ -1,9 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 import { CancelarDatosCardComponent } from './cancelar-datos-card.component';
+import { CancelacionDatosService } from '../../../core/services/cancelacion-datos.service';
 import {
-  CancelacionDatosElegibilidad, CancelacionDatosService, SolicitudCancelacion
-} from '../../../core/services/cancelacion-datos.service';
+  CancelacionDatosElegibilidad,
+  SolicitudCancelacion
+} from '../../../models/privacy/cancelacion-datos.model';
 import { AuthStore } from '../../../store/auth.store';
 
 describe('CancelarDatosCardComponent', () => {

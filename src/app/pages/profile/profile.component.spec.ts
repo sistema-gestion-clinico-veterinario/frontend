@@ -2,7 +2,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ProfileComponent } from './profile.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { of, throwError } from 'rxjs';
-import { LegalAcceptanceDTO, LegalService } from '../../core/services/legal.service';
+import { LegalService } from '../../core/services/legal.service';
+import { LegalAcceptanceDTO } from '../../models/legal/legal.model';
 
 describe('ProfileComponent', () => {
   let component: ProfileComponent;

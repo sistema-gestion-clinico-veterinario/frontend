@@ -61,7 +61,7 @@ export class CitasComponent implements OnInit {
   readonly loadingStore = inject(LoadingStore);
   private loadTimeout: any = null;
 
-  // Lists & Signals
+
   mascotas = signal<any[]>([]);
   citas = signal<any[]>([]);
   servicios = signal<any[]>([]);
@@ -71,7 +71,7 @@ export class CitasComponent implements OnInit {
   companyPhone = signal<string>('');
   isCurrentlyOpen = signal<boolean>(true);
 
-  // Dropdown options for pet filter
+
   petFilterOptions = computed(() => {
     const pets = this.mascotas();
     return [
@@ -84,23 +84,23 @@ export class CitasComponent implements OnInit {
     ];
   });
 
-  // Computed stats
+
   activeCitasCount = computed(() => this.citas().filter(c => c.estado === 'PENDIENTE' || c.estado === 'CONFIRMADA' || c.estado === 'PROGRAMADA' || c.estado === 'REPROGRAMADA').length);
   completedCitasCount = computed(() => this.citas().filter(c => c.estado === 'COMPLETADA' || c.estado === 'ATENDIDA').length);
   pendingPaymentCount = computed(() => this.citas().filter(c => this.canPagar(c)).length);
   
-  // View Modes & Filters
+
   citasViewMode = signal<'list' | 'grid'>('list');
   selectedPetFilter = signal<number | null>(null);
   loadingSlots = signal<boolean>(false);
   today = new Date();
 
-  // Pagination
+
   currentPage = signal<number>(0);
   totalRecords = signal<number>(0);
   pageSize = signal<number>(10);
 
-  // Modals & States
+
   displayCitaModal = signal<boolean>(false);
   isEditing = signal<boolean>(false);
   isRescheduling = signal<boolean>(false);
@@ -111,7 +111,7 @@ export class CitasComponent implements OnInit {
   private pendingRequest: any = null;
   private pendingCancelCitaId: number | null = null;
 
-  // ── PAGO YAPE ──────────────────────────────────────────────────
+
   displayPagoModal = signal<boolean>(false);
   citaPendientePago = signal<any | null>(null);
   yapePhone         = signal<string>('');
@@ -122,8 +122,7 @@ export class CitasComponent implements OnInit {
   onYapePhoneChange(val: string) { this.yapePhone.set(val.replace(/\D/g, '').slice(0, 9)); }
   onYapeOtpChange(val: string)   { this.yapeOtp.set(val.replace(/\D/g, '').slice(0, 6)); }
 
-  // ── PAGO – helpers ─────────────────────────────────────────────
-  /** Muestra el botón "Pagar" si la cita está ATENDIDA y no tiene pago registrado */
+
   canPagar(cita: any): boolean {
     return false;
   }
@@ -132,7 +131,6 @@ export class CitasComponent implements OnInit {
     this.citaPendientePago.set(cita);
     this.yapePhone.set('');
     this.yapeOtp.set('');
-    // Pre-llenar con el email del apoderado autenticado
     this.yapeEmail.set(this.authStore.nombreCompleto() ? (this.authStore as any).email?.() ?? '' : '');
     this.displayPagoModal.set(true);
   }
@@ -192,7 +190,7 @@ export class CitasComponent implements OnInit {
       }
     });
   }
-  // ───────────────────────────────────────────────────────────────
+
 
   citaForm: FormGroup = this.fb.group({
     mascotaId: [null, [Validators.required]],

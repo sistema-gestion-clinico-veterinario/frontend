@@ -9,7 +9,9 @@ import { lowercaseEmailValidator } from '../../../core/validators/lowercase-emai
 import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
 import { strongPasswordValidators } from '../../../core/validators/password-policy.validator';
 import { SOFTVET_BRAND_COLOR, SOFTVET_LOGO_URL, SOFTVET_NAME } from '../../../core/constants/branding.constants';
-import { AudienciaAvisoPrivacidad, AvisoPublico, PrivacidadService } from '../../../core/services/privacidad.service';
+import { PrivacidadService } from '../../../core/services/privacidad.service';
+import { AvisoPublico } from '../../../models/privacy/privacidad.model';
+import { AudienciaAvisoPrivacidad } from '../../../types/privacy/audiencia-aviso-privacidad.type';
 
 const DEFAULT_BRAND_COLOR = SOFTVET_BRAND_COLOR;
 const DEFAULT_LOGO_URL = SOFTVET_LOGO_URL;
@@ -39,8 +41,7 @@ export class VerifyEmailComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly privacidadService = inject(PrivacidadService);
 
-  /** La empresa la resuelve la URL (slug), igual que login/forgot-password - el enlace
-   * de verificación ya lo incluye (ver UsuarioServiceImpl.sendVerificationEmail). */
+
   slug: string | null = this.slugContext.slug();
   audiencia: AudienciaAvisoPrivacidad = this.route.snapshot.queryParamMap?.get('audiencia') === 'TRABAJADORES_Y_USUARIOS'
     ? 'TRABAJADORES_Y_USUARIOS'
@@ -48,10 +49,6 @@ export class VerifyEmailComponent implements OnInit {
   companyName = DEFAULT_COMPANY_NAME;
   logoUrl: string | null = null;
   colorPrimario = DEFAULT_BRAND_COLOR;
-  /** Si el slug viene en la URL (siempre debería, el enlace del correo lo incluye) pero
-   * no pudimos cargar la marca, lo mostramos - antes fallaba en silencio y se veia el
-   * nombre generico "SystemVet" como si nada, sin forma de distinguir un bug real de
-   * que de verdad no hay slug. */
   brandNotFound = false;
 
   token = this.readAndClearToken();
@@ -118,10 +115,6 @@ export class VerifyEmailComponent implements OnInit {
       this.passwordForm.value.avisoLeido ?? false).subscribe({
       next: () => this.estado.set('exito'),
       error: (err) => {
-        // 404 = el token en si no existe o expiro (enlace muerto, ahi si aplica
-        // "reenviar enlace"). Cualquier otro codigo es un problema con lo que la
-        // persona envio (politica de contraseña, cuenta ya activada) - se queda en el
-        // formulario para corregirlo, en vez de hacerla pensar que su invitación se rompió.
         if (err.status === 404) {
           this.estado.set('error');
           this.errorMsg.set(err.error?.message || 'El enlace expiró o ya fue utilizado.');
@@ -171,15 +164,11 @@ export class VerifyEmailComponent implements OnInit {
   }
 
   irAlLogin() {
-    // El SlugUrlSerializer ya sabe el slug de esta pagina (si lo hay) y lo
-    // vuelve a anteponer solo en la barra de direcciones - no hace falta
-    // construirlo a mano aqui.
+
     this.router.navigate(['/login']);
   }
 
-  /** El token de invitación se deja en el servidor antes de salir a Google (no viaja en la URL);
-   * el backend exige que el correo que Google confirme sea EXACTAMENTE el de esa invitación
-   * antes de activar la cuenta. */
+
   continueWithGoogle(): void {
     if (!this.token || this.startingGoogle) return;
     this.startingGoogle = true;

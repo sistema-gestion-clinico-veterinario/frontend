@@ -4,33 +4,8 @@ import { catchError, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Page } from '../../models/response/page';
 import { ApiResponse } from '../../models/response/api-response';
-
-export type TipoDescarga =
-  | 'HORARIO_PDF'
-  | 'HORARIO_EXCEL'
-  | 'CARTILLA_VACUNACION'
-  | 'CARTILLA_DESPARASITACION'
-  | 'RECETA_PDF'
-  | 'HISTORIA_CLINICA_PDF'
-  | 'NOTA_VENTA_PDF'
-  | 'REPORTE_CLINICO_PDF'
-  | 'REPORTE_CLINICO_EXCEL'
-  | 'REPORTE_VENTAS_PRODUCTOS_PDF'
-  | 'REPORTE_VENTAS_PRODUCTOS_EXCEL';
-
-export interface AuditLog {
-  id: number;
-  timestamp: string;
-  userEmail: string;
-  userRole: string;
-  companyId: number;
-  companyName: string;
-  action: string;
-  module: string;
-  details: string;
-  ipAddress: string;
-  dispositivo?: string | null;
-}
+import { AuditLog } from '../../models/response/audit-log-response';
+import { TipoDescarga } from '../../types/tipo-descarga.type';
 
 @Injectable({
   providedIn: 'root'
@@ -87,10 +62,6 @@ export class AuditLogService {
     return this.http.get<ApiResponse<Page<AuditLog>>>(this.apiUrl, { params });
   }
 
-  /**
-   * Trae, sin paginar (hasta un tope razonable en el backend), todos los registros que
-   * coinciden con los filtros activos, para poder exportarlos a PDF/Excel.
-   */
   exportLogs(filters: {
     companyId?: number;
     userEmail?: string;
@@ -123,12 +94,6 @@ export class AuditLogService {
     return this.http.get<ApiResponse<AuditLog[]>>(`${this.apiUrl}/export`, { params });
   }
 
-  /**
-   * Registra en el historial de auditoría una descarga/impresión generada en el navegador
-   * (PDF/Excel de horarios, cartillas, recetas...) que de otro modo no dejaría rastro, ya que
-   * se genera 100% en el cliente sin pasar por ningún endpoint de negocio.
-   * Falla en silencio: nunca debe bloquear ni retrasar la descarga que el usuario ya inició.
-   */
   registrarDescarga(tipo: TipoDescarga, referencia?: string) {
     return this.http.post<ApiResponse<void>>(`${environment.apiUrl}/audit-logs/downloads`, {
       tipo,

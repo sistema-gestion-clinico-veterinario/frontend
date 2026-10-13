@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { CamposAvisoPrivacidad, PrivacidadService } from './privacidad.service';
+import { PrivacidadService } from './privacidad.service';
+import { CamposAvisoPrivacidad } from '../../models/privacy/privacidad.model';
 import { environment } from '../../../environments/environment';
 
 describe('PrivacidadService - aviso de la clínica', () => {

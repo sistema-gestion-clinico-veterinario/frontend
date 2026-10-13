@@ -8,7 +8,6 @@ interface PersonStatus {
   tipoInactividad?: TipoInactividad | null;
 }
 
-/** Cuerpo del cambio de estado: solo viaja lo que se indicó. */
 export function cuerpoDeEstado(opciones: { tipo?: TipoInactividad; reason?: string }): { tipo?: TipoInactividad; reason?: string } {
   const cuerpo: { tipo?: TipoInactividad; reason?: string } = {};
   if (opciones.tipo) cuerpo.tipo = opciones.tipo;
@@ -31,7 +30,6 @@ export function personStatusDotClass(person: PersonStatus): string {
   return person.tipoInactividad === 'SUSPENSION' ? 'bg-slate-400' : 'bg-red-400';
 }
 
-/** Acciones de estado disponibles: una persona activa se suspende o se da de baja; una suspendida puede pasar a baja o reactivarse; una baja solo se reactiva. */
 export function availableStatusActions(person: PersonStatus): PersonStatusAction[] {
   if (person.activo) return ['SUSPENSION', 'BAJA'];
   return person.tipoInactividad === 'SUSPENSION' ? ['BAJA', 'REACTIVAR'] : ['REACTIVAR'];
@@ -77,7 +75,7 @@ function nombres(lista: string[]): string {
   return lista.join(', ');
 }
 
-/** Resumen para el administrador de lo que pasó con las mascotas del cliente; null si no hubo nada que contar. */
+
 export function describePetOutcome(resultado: ApoderadoEstadoResponse | null | undefined):
     { severity: 'info' | 'warn'; detail: string } | null {
   if (!resultado) return null;
@@ -103,7 +101,7 @@ export function describePetOutcome(resultado: ApoderadoEstadoResponse | null | u
   return { severity: hayAdvertencia ? 'warn' : 'info', detail: partes.join(' ') };
 }
 
-/** Si el aviso al cliente no pudo ir por correo, indica cómo avisarle; null si el correo sí pudo enviarse. */
+
 export function describeManualNotice(cita: CitaResponse | null | undefined): string | null {
   if (!cita?.requiereAvisoManual) return null;
   const telefono = cita.telefonoAviso?.trim();

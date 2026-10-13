@@ -3,7 +3,8 @@ import { Component, ElementRef, OnInit, inject, signal, computed } from '@angula
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
-import { LegalDocumentDTO, LegalService } from '../../../core/services/legal.service';
+import { LegalService } from '../../../core/services/legal.service';
+import { LegalDocumentDTO } from '../../../models/legal/legal.model';
 import { AuthService } from '../../../core/services/auth.service';
 import { AuthStore } from '../../../store/auth.store';
 import { resolveDashboardRoute } from '../../../layouts/main-layout/navbar/navbar.component';
@@ -106,13 +107,6 @@ export class LegalAcceptComponent implements OnInit {
     this.scrollToTop();
   }
 
-  /**
-   * Cambiar de documento no navega de ruta (sigue siendo /legal/accept), así
-   * que ni el scroll de la ventana ni el reset de scroll del layout principal
-   * se disparan solos. El contenedor real con scroll puede ser la ventana
-   * (página standalone) o un ancestro con overflow propio (dentro del layout
-   * principal autenticado) — se resetean ambos por las dudas.
-   */
   private scrollToTop(): void {
     window.scrollTo({ top: 0 });
     let node: HTMLElement | null = this.elementRef.nativeElement.parentElement;

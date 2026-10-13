@@ -2,7 +2,8 @@ import { Component, Input, inject, signal, OnChanges, ViewEncapsulation } from '
 import { CommonModule } from '@angular/common';
 import { Subscription, firstValueFrom } from 'rxjs';
 import { DiagnosticoIaService } from '../../../../core/services/diagnostico-ia.service';
-import { AutorizacionIa, IaAutorizacionService, esErrorDeAutorizacionIa } from '../../../../core/services/ia-autorizacion.service';
+import { IaAutorizacionService, esErrorDeAutorizacionIa } from '../../../../core/services/ia-autorizacion.service';
+import { AutorizacionIa } from '../../../../models/response/autorizacion-ia-response';
 import { HistoriaClinicaService } from '../../../../core/services/historia-clinica.service';
 import { ESCENARIO_LABEL } from '../../../../models/response/diagnostico-ia-response';
 import {

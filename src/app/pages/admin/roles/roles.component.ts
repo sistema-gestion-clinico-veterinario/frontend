@@ -5,7 +5,8 @@ import { Router, RouterLink } from '@angular/router';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { SkeletonModule } from 'primeng/skeleton';
-import { RoleService, RolVentanaPermiso } from '../../../core/services/role.service';
+import { RoleService } from '../../../core/services/role.service';
+import { RolVentanaPermiso } from '../../../models/role/role-permission.model';
 import { LoadingStore } from '../../../store/loading.store';
 import { AuthStore } from '../../../store/auth.store';
 import { AuthService } from '../../../core/services/auth.service';
@@ -89,12 +90,6 @@ export class RolesComponent implements OnInit {
     }
   }
 
-  /**
-   * Llamar este método desde el navbar cuando el superadmin cambia de empresa.
-   * El navbar ya tiene su propio mecanismo de selectCompany(); si necesitas
-   * refrescar los roles al cambiar empresa, emite un evento desde el navbar
-   * y suscríbete aquí a un servicio compartido (ej. CompanyChangeService).
-   */
   reloadForCompany(companyId: number) {
     this.selectedRole.set(null);
     this.ventanaPermisos.set([]);
@@ -268,8 +263,18 @@ export class RolesComponent implements OnInit {
     return this.canEditRole(role);
   }
 
+  canEditBaseRolePermissions(role: Role | null): boolean {
+    return !!role && this.isSuperAdmin() && this.hasModifyAccess()
+      && (role.systemManaged || role.protectedRole)
+      && role.purpose !== 'PLATFORM_ADMIN';
+  }
+
   canConfigureRole(role: Role | null): boolean {
-    return this.canEditRole(role) && !!role?.activo;
+    return (this.canEditRole(role) || this.canEditBaseRolePermissions(role)) && !!role?.activo;
+  }
+
+  editsBaseRoleForAllCompanies(role: Role | null): boolean {
+    return this.canEditBaseRolePermissions(role) && role!.companyId === null;
   }
 
   setDataScope(v: RolVentanaPermiso, dataScope: 'OWN' | 'COMPANY') {

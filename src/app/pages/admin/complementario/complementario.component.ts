@@ -218,6 +218,8 @@ export class ComplementarioComponent implements OnInit {
   }
 
   especialidades = signal<any[]>([]);
+  especialidadesCatalogo = signal<any[]>([]);
+  especialidadesActivas = computed(() => this.especialidadesCatalogo());
   especialidadesTotal = signal(0);
   especialidadesPage = signal(0);
   showEspModal = signal(false);
@@ -236,7 +238,8 @@ export class ComplementarioComponent implements OnInit {
   tipoForm: FormGroup = this.fb.group({
     nombre: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100), noLeadingTrailingSpaceValidator(), lettersOnlyValidator()]],
     descripcion: ['', [Validators.maxLength(500), noLeadingTrailingSpaceValidator(), textContentValidator()]],
-    permiteEspecialidades: [false]
+    permiteEspecialidades: [false],
+    esVeterinario: [false]
   });
 
 
@@ -253,6 +256,7 @@ export class ComplementarioComponent implements OnInit {
     duracionEstimada: [20, [Validators.required, Validators.min(5), Validators.max(240)]],
     disponible:  [true],
     tipoEmpleadoId: [null],
+    especialidadId: [null],
     tipoControlPreventivo: ['NO_APLICA']
   });
 
@@ -291,6 +295,17 @@ export class ComplementarioComponent implements OnInit {
   });
 
   ngOnInit() {
+    this.servicioForm.get('tipoEmpleadoId')?.valueChanges.subscribe(() => {
+      if (!this.tipoServicioPermiteEspecialidades()) {
+        this.servicioForm.get('especialidadId')?.setValue(null, { emitEvent: false });
+      }
+    });
+  }
+
+  tipoServicioPermiteEspecialidades(): boolean {
+    const tipoId = Number(this.servicioForm.get('tipoEmpleadoId')?.value);
+    return this.tiposEmpleadoActivos().some(tipo =>
+      tipo.id === tipoId && tipo.permiteEspecialidades === true);
   }
 
   loadAll() {
@@ -301,6 +316,7 @@ export class ComplementarioComponent implements OnInit {
 
     this.cargando.set(true);
     this.loadEspecialidades();
+    this.loadEspecialidadesCatalogo();
     this.loadTiposEmpleado();
     this.loadTiposEmpleadoCatalogo();
     this.loadServicios();
@@ -319,6 +335,7 @@ export class ComplementarioComponent implements OnInit {
 
   private clearData() {
     this.especialidades.set([]);
+    this.especialidadesCatalogo.set([]);
     this.especialidadesTotal.set(0);
     this.tiposEmpleado.set([]);
     this.tiposEmpleadoCatalogo.set([]);
@@ -348,6 +365,14 @@ export class ComplementarioComponent implements OnInit {
     });
   }
 
+  loadEspecialidadesCatalogo() {
+    if (!this.activeCompanyId) return;
+    this.especialidadService.listar(this.activeCompanyId, 0, 100).subscribe({
+      next: (res) => this.especialidadesCatalogo.set(res.data.content ?? res.data),
+      error: () => this.especialidadesCatalogo.set([])
+    });
+  }
+
   openEspModal(item?: any) {
     this.editingEsp.set(item ?? null);
     this.espForm.reset({ nombre: item?.nombre ?? '', descripcion: item?.descripcion ?? '' });
@@ -373,6 +398,7 @@ export class ComplementarioComponent implements OnInit {
         this.messageService.add({ severity: 'success', summary: 'Éxito', detail: this.editingEsp() ? 'Especialidad actualizada' : 'Especialidad creada' });
         this.showEspModal.set(false);
         this.loadEspecialidades(this.editingEsp() ? this.especialidadesPage() : 0);
+        this.loadEspecialidadesCatalogo();
         this.loadingStore.hide();
       },
       error: (err) => {
@@ -388,6 +414,7 @@ export class ComplementarioComponent implements OnInit {
       next: () => {
         this.messageService.add({ severity: 'success', summary: 'Eliminada', detail: 'Especialidad eliminada' });
         this.loadEspecialidades(this.especialidadesPage());
+        this.loadEspecialidadesCatalogo();
         this.loadingStore.hide();
       },
       error: (err) => {
@@ -423,7 +450,8 @@ export class ComplementarioComponent implements OnInit {
     this.tipoForm.reset({
       nombre: item?.nombre ?? '',
       descripcion: item?.descripcion ?? '',
-      permiteEspecialidades: item?.permiteEspecialidades ?? false
+      permiteEspecialidades: item?.permiteEspecialidades ?? false,
+      esVeterinario: item?.ejerceComoVeterinario ?? item?.esVeterinario ?? false
     });
     this.showTipoModal.set(true);
   }
@@ -514,6 +542,7 @@ export class ComplementarioComponent implements OnInit {
       duracionEstimada: item?.duracionEstimada ?? 20,
       disponible:  item?.disponible  ?? true,
       tipoEmpleadoId: item?.tipoEmpleadoId ?? null,
+      especialidadId: item?.especialidadId ?? null,
       tipoControlPreventivo: item?.tipoControlPreventivo ?? 'NO_APLICA'
     });
     this.showServicioModal.set(true);

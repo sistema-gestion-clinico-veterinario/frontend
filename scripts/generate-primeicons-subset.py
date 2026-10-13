@@ -1,9 +1,4 @@
-"""Genera el CSS y la fuente PrimeIcons usados realmente por la aplicación.
 
-El artefacto generado se versiona para que el build de producción no dependa de
-Python ni de fonttools. Ejecute este script después de añadir una clase `pi-*`
-nueva a las plantillas o componentes.
-"""
 
 from __future__ import annotations
 

@@ -1,7 +1,4 @@
-/**
- * Primer segmento de todas las rutas reales que conoce Angular. Cualquier
- * otro primer segmento corresponde al identificador público de una empresa.
- */
+
 const KNOWN_FIRST_SEGMENTS = new Set([
   'login', 'admin', 'forgot-password', 'reset-password', 'confirm-email-change', 'auth',
   'dashboard', 'reportes', 'company', 'auditoria', 'roles', 'ventanas', 'complementario',

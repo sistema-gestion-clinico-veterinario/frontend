@@ -93,9 +93,9 @@ describe('AgendaComponent', () => {
       spyOn(empleados, 'listar').and.returnValue(of({
         data: {
           content: [
-            { id: 1, nombre: 'Ana', apellido: 'Vet', activo: true, tiposEmpleado: ['VETERINARIO'] },
+            { id: 1, nombre: 'Ana', apellido: 'Vet', activo: true, tiposEmpleado: ['Veterinario'], esVeterinario: true },
             { id: 2, nombre: 'Luis', apellido: 'Admin', activo: true, tiposEmpleado: ['ADMINISTRATIVO'] },
-            { id: 3, nombre: 'Eva', apellido: 'Inactiva', activo: false, tiposEmpleado: ['VETERINARIO'] }
+            { id: 3, nombre: 'Eva', apellido: 'Inactiva', activo: false, tiposEmpleado: ['Veterinario'], esVeterinario: true }
           ]
         }
       } as any));

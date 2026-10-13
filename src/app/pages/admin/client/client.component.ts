@@ -31,7 +31,9 @@ import { lowercaseEmailValidator } from '../../../core/validators/lowercase-emai
 import { textContentValidator } from '../../../core/validators/text-content.validator';
 import { normalizeText } from '../../../core/utils/normalize-text.util';
 import { Role } from '../../../models/response/permission';
-import { AvisoPublico, ConsentimientoEstado, PrivacidadService, RECORDATORIOS, USO_IA } from '../../../core/services/privacidad.service';
+import { PrivacidadService } from '../../../core/services/privacidad.service';
+import { FINALIDAD_RECORDATORIOS as RECORDATORIOS, FINALIDAD_USO_IA as USO_IA } from '../../../core/constants/privacidad.constants';
+import { AvisoPublico, ConsentimientoEstado } from '../../../models/privacy/privacidad.model';
 
 @Component({
   selector: 'app-client',

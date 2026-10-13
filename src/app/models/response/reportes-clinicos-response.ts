@@ -13,7 +13,6 @@ export interface ProximaAplicacion {
 export interface ResumenReporte {
   consultas: number;
   pacientesAtendidos: number;
-  /** null cuando el usuario no tiene permiso VISTA_PAGOS: el dato financiero no se expone. */
   ingresos: number | null;
   nuevosPacientes: number;
   tiempoPromedioAtencionMinutos: number;
@@ -39,12 +38,6 @@ export interface PacienteInactivo {
   diasSinVisitar: number;
 }
 
-/**
- * Cada sección puede venir en `null` cuando el usuario no tiene el permiso de dominio
- * correspondiente (VISTA_CITAS, VISTA_PAGOS, VISTA_MASCOTAS, VISTA_CONTROL_PREVENTIVO) — el
- * backend simplemente omite la sección en vez de calcularla. Distinto de un arreglo vacío `[]`,
- * que significa "tiene permiso, pero no hay datos para el periodo filtrado".
- */
 export interface ReportesClinicos {
   fechaDesde: string;
   fechaHasta: string;
@@ -85,21 +78,19 @@ export interface EmpresaResumen {
   companyName: string;
   consultas: number;
   pacientesAtendidos: number;
-  /** null cuando el usuario no tiene permiso VISTA_PAGOS: el dato financiero no se expone. */
   ingresos: number | null;
   nuevosPacientes: number;
   porcentajeCitasCompletadas: number;
   noAsistieron: number;
 }
 
-/** Solo para administración de plataforma: un resumen por empresa, sin mezclar sus cifras. */
 export interface ReportesComparativoEmpresas {
   fechaDesde: string;
   fechaHasta: string;
   empresas: EmpresaResumen[];
 }
 
-/** Página de "Pacientes sin visitar hace 3+ meses", calculada y paginada desde el backend. */
+
 export interface PacientesInactivosPage {
   content: PacienteInactivo[];
   page: number;

@@ -3,20 +3,6 @@ import { DefaultUrlSerializer, UrlSerializer, UrlTree } from '@angular/router';
 import { CompanySlugContext } from '../services/company-slug-context.service';
 import { companySlugFromUrl, firstSegmentOf, pathnameOf } from './slug-url.utils';
 
-/**
- * Primer segmento de TODAS las rutas reales que conoce Angular (publicas y
- * las hijas del layout autenticado) - ver app.routes.ts, mantener sincronizado
- * si se agrega una ruta nueva con un primer segmento distinto. Sirve para
- * distinguir "esto es una pagina real" de "esto es un slug de empresa": si
- * el primer segmento de la URL NO esta en este set, se asume que es un slug.
- */
-/**
- * Traduce entre la ruta "real" que conoce Angular Router (sin slug, ej.
- * /apoderado/dashboard) y lo que se ve en la barra de direcciones (con
- * slug, ej. /clinica-vargas-vet/apoderado/dashboard) - sin que ninguna de
- * las pantallas o navegaciones existentes necesiten saber de slugs. Ver
- * CompanySlugContext para la fuente de verdad del slug actual.
- */
 @Injectable()
 export class SlugUrlSerializer extends UrlSerializer {
   private readonly inner = new DefaultUrlSerializer();
@@ -26,17 +12,10 @@ export class SlugUrlSerializer extends UrlSerializer {
     const pathname = pathnameOf(url);
     const first = firstSegmentOf(pathname);
 
-    // Sin primer segmento (raiz), o el primer segmento ya es una pagina real
-    // conocida (sin slug delante, ej. SuperAdmin sin empresa, o un enlace
-    // viejo sin marca) - se parsea tal cual, sin tocar nada.
     if (!first || !companySlugFromUrl(url)) {
       return this.inner.parse(url);
     }
 
-    // Debe permanecer pura. Angular también ejecuta parse() al construir
-    // routerLink/UrlTree dentro de cálculos reactivos; escribir una señal aquí
-    // provoca NG0600. El contexto obtiene el slug inicial desde la ubicación
-    // del navegador y luego SessionService lo sincroniza con la sesión.
 
     const hashIndex = url.indexOf('#');
     const hash = hashIndex >= 0 ? url.slice(hashIndex) : '';
@@ -52,8 +31,6 @@ export class SlugUrlSerializer extends UrlSerializer {
   override serialize(tree: UrlTree): string {
     const url = this.inner.serialize(tree);
 
-    // Ruta reservada para SuperAdmin - nunca lleva slug, sin importar el
-    // ultimo slug conocido (podria venir de una pestaña anterior).
     if (pathnameOf(url) === '/admin/login') {
       return url;
     }

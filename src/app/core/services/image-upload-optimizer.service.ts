@@ -1,14 +1,10 @@
 import { Injectable } from '@angular/core';
+import { ImageDimensions } from '../../models/ui/image-dimensions.model';
 
 const MAX_IMAGE_DIMENSION = 1600;
 const OPTIMIZATION_THRESHOLD_BYTES = 250 * 1024;
 const WEBP_QUALITY = 0.82;
 const OPTIMIZABLE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
-
-export interface ImageDimensions {
-  width: number;
-  height: number;
-}
 
 export function calculateTargetDimensions(
   width: number,
@@ -26,10 +22,7 @@ export function calculateTargetDimensions(
   };
 }
 
-/**
- * Optimiza únicamente imágenes de presentación (perfil, mascota y logotipo).
- * Los documentos e imágenes clínicas utilizan otro flujo y no pasan por aquí.
- */
+
 @Injectable({ providedIn: 'root' })
 export class ImageUploadOptimizerService {
   async optimize(file: File): Promise<File> {

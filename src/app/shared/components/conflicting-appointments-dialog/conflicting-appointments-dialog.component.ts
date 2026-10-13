@@ -15,13 +15,7 @@ import { CitaResponse } from '../../../models/response/cita-response';
 import { EmpleadoListResponse } from '../../../models/response/empleado-list-response';
 import { describeManualNotice } from '../../utils/person-status';
 
-/** Panel de resolución de citas conflictivas: se muestra cuando se intenta
- * suspender un empleado o un cliente que aún tiene citas vigentes, porque el
- * backend bloquea esa acción hasta que se resuelvan (ver ApoderadoServiceImpl /
- * EmpleadoServiceImpl .cambiarEstado). Para un empleado, cada cita se reasigna a
- * otro veterinario (misma fecha/hora, sin reprogramar). Para un cliente, cada
- * cita se cancela, porque no existe "reasignar" para un apoderado que ya no será
- * cliente activo. */
+
 @Component({
   selector: 'app-conflicting-appointments-dialog',
   standalone: true,

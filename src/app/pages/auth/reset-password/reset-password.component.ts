@@ -27,8 +27,7 @@ export class ResetPasswordComponent implements OnInit {
   private readonly companyService = inject(CompanyService);
   private readonly slugContext = inject(CompanySlugContext);
 
-  /** La empresa la resuelve la URL (slug), igual que login/forgot-password/verify-email -
-   * el enlace de reset ya lo incluye (ver UsuarioServiceImpl.issuePasswordResetToken). */
+
   slug: string | null = this.slugContext.slug();
   companyName = DEFAULT_COMPANY_NAME;
   logoUrl: string | null = null;

@@ -22,7 +22,6 @@ export class ReportesClinicosService {
     return this.http.get<ApiResponse<ReportesClinicos>>(this.apiUrl, { params });
   }
 
-  /** Solo para administración de plataforma: un resumen por empresa, sin mezclar sus cifras. */
   obtenerComparativoEmpresas(fechaDesde?: string, fechaHasta?: string, especie?: string) {
     let params = new HttpParams();
     if (fechaDesde) params = params.set('fechaDesde', fechaDesde);
@@ -31,7 +30,6 @@ export class ReportesClinicosService {
     return this.http.get<ApiResponse<ReportesComparativoEmpresas>>(`${this.apiUrl}/comparison`, { params });
   }
 
-  /** Paginado desde el backend: no trae de una vez todas las mascotas inactivas de la empresa. */
   obtenerPacientesInactivos(companyId: number | undefined, page: number, size: number) {
     let params = new HttpParams().set('page', page).set('size', size);
     if (companyId != null) params = params.set('companyId', companyId);

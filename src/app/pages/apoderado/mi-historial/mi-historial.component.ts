@@ -5,7 +5,8 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 
 import { ApoderadoService } from '../../../core/services/apoderado.service';
-import { CompanyService, CompanyBrandingResponse } from '../../../core/services/company.service';
+import { CompanyService } from '../../../core/services/company.service';
+import { CompanyBrandingResponse } from '../../../models/response/company-public-response';
 import { CompanySlugContext } from '../../../core/services/company-slug-context.service';
 import { HistoriaClinicaPdfService } from '../../../core/services/historia-clinica-pdf.service';
 import { HistoriaClinicaDetalle } from '../../../models/response/historia-clinica-response';

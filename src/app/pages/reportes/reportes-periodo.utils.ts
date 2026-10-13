@@ -12,11 +12,6 @@ function toDateInput(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
-/**
- * Día calendario "de hoy" según la zona horaria de la clínica (America/Lima), no la del navegador.
- * El backend calcula todos sus rangos con AppClock (fijo a Lima); si el filtro rápido usara el reloj
- * local del dispositivo, un usuario en otra zona horaria vería un rango distinto al que espera la clínica.
- */
 function obtenerFechaActualLima(): Date {
   const partes = new Intl.DateTimeFormat('en-CA', {
     timeZone: 'America/Lima',
@@ -29,7 +24,7 @@ function obtenerFechaActualLima(): Date {
   return new Date(valor('year'), valor('month') - 1, valor('day'));
 }
 
-/** Tope máximo de un rango personalizado, según el límite que ya aplica el backend. */
+
 export const RANGO_MESES_MAXIMO = 36;
 
 function rangoUltimosMeses(hoy: Date, meses: number): RangoPeriodo {

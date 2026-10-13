@@ -29,7 +29,8 @@ import { lowercaseEmailValidator } from '../../../core/validators/lowercase-emai
 import { AdminEmailChangeModalComponent } from '../../../shared/components/admin/admin-email-change-modal/admin-email-change-modal.component';
 import { textContentValidator } from '../../../core/validators/text-content.validator';
 import { normalizeText } from '../../../core/utils/normalize-text.util';
-import { AvisoPublico, PrivacidadService } from '../../../core/services/privacidad.service';
+import { PrivacidadService } from '../../../core/services/privacidad.service';
+import { AvisoPublico } from '../../../models/privacy/privacidad.model';
 import { Role } from '../../../models/response/permission';
 
 @Component({
@@ -262,7 +263,8 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     }
 
     this.employeeForm.get('tiposEmpleado')?.valueChanges.subscribe(types => {
-      const isVet = types?.some((type: string) => type.toUpperCase() === 'VETERINARIO');
+      const isVet = this.esVeterinario(types);
+      const permiteEspecialidades = this.permiteEspecialidades(types);
       const collegiatura = this.employeeForm.get('numeroColegiatura');
       const commonValidators = [noLeadingTrailingSpaceValidator(), textContentValidator({ requireLetter: false })];
       if (isVet) {
@@ -279,6 +281,10 @@ export class EmployeeComponent implements OnInit, OnDestroy {
         ]);
       }
       collegiatura?.updateValueAndValidity();
+      if (!permiteEspecialidades) {
+        this.employeeForm.get('especialidades')?.setValue([], { emitEvent: false });
+        if (this.openDropdown() === 'especialidades') this.openDropdown.set(null);
+      }
     });
 
     this.employeeForm.get('tipoDocumento')?.valueChanges.subscribe(tipo => {
@@ -357,7 +363,12 @@ export class EmployeeComponent implements OnInit, OnDestroy {
       next: (res) => {
         const list = (res.data.content || [])
           .filter(t => t.estado !== false)
-          .map(t => ({ label: t.nombre, value: t.nombre }));
+          .map(t => ({
+            label: t.nombre,
+            value: t.nombre,
+            esVeterinario: !!(t.ejerceComoVeterinario ?? t.esVeterinario),
+            permiteEspecialidades: !!t.permiteEspecialidades
+          }));
         this.tiposEmpleadoList.set(list);
       }
     });
@@ -598,6 +609,17 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     const seleccionados: number[] = this.employeeForm.get('roleIds')?.value ?? [];
     return this.roles().some(role =>
       role.purpose === 'COMPANY_ADMIN' && seleccionados.includes(role.value));
+  }
+
+  esVeterinario(tipos: string[] | null | undefined = this.employeeForm.get('tiposEmpleado')?.value): boolean {
+    const catalogo = this.tiposEmpleadoList();
+    return !!tipos?.some(tipo => catalogo.some(t => t.value === tipo && t.esVeterinario));
+  }
+
+  permiteEspecialidades(tipos: string[] | null | undefined = this.employeeForm.get('tiposEmpleado')?.value): boolean {
+    const catalogo = this.tiposEmpleadoList();
+    return !!tipos?.some(tipo =>
+      catalogo.some(t => t.value === tipo && t.permiteEspecialidades));
   }
 
   registraSinAviso(): boolean {

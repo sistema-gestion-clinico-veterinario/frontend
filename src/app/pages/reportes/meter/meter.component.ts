@@ -2,11 +2,6 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { ItemCount } from '../../../models/response/reportes-clinicos-response';
 
-/**
- * Medidor de una sola proporción contra el 100% (p. ej. "Al día" vs "Atrasado"), en vez de otra
- * dona más: un cumplimiento es una única cifra con un objetivo, no una identidad categórica —
- * el medidor lo comunica más directo que un círculo partido en dos.
- */
 @Component({
   selector: 'app-reportes-meter',
   standalone: true,

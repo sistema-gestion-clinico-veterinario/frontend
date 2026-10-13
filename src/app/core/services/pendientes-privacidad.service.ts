@@ -2,26 +2,15 @@ import { DestroyRef, Injectable, computed, effect, inject, signal, untracked } f
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router } from '@angular/router';
 import { EMPTY, Subject, catchError, filter, switchMap } from 'rxjs';
+import { FINALIDAD_USO_IA } from '../constants/privacidad.constants';
+import { PRIVACY_RESOLUTION_ROUTES, APP_ROUTE_PATHS, toAbsoluteRoute } from '../routing/app-routes.constants';
+import { ConsentimientoEstado } from '../../models/privacy/privacidad.model';
+import { PendientePrivacidad } from '../../models/ui/pendiente-privacidad.model';
 import { AuthStore } from '../../store/auth.store';
-import { ConsentimientoEstado, PrivacidadService, USO_IA } from './privacidad.service';
-
-export interface PendientePrivacidad {
-  id: 'aviso' | 'terminos' | 'ia';
-  titulo: string;
-  detalle: string;
-  ruta: string;
-  fragmento?: string;
-  opcional: boolean;
-}
+import { PrivacidadService } from './privacidad.service';
 
 const CLAVE_DESCARTADOS = 'pendientes_privacidad_descartados';
-const PANTALLAS_QUE_RESUELVEN = ['/aviso-clinica', '/legal/accept', '/profile'];
 
-/**
- * Reúne lo que la persona aún debe revisar o decidir sobre su privacidad: el aviso de la clínica, los términos de la
- * plataforma y, si es cliente, la autorización opcional de IA. Cuando todo está al día no hay pendientes; si se publica
- * una versión nueva vuelven a aparecer.
- */
 @Injectable({ providedIn: 'root' })
 export class PendientesPrivacidadService {
   private readonly privacidad = inject(PrivacidadService);
@@ -47,7 +36,7 @@ export class PendientesPrivacidadService {
         detalle: actualizado
           ? 'La clínica actualizó su aviso de privacidad. Revísalo y confirma tu lectura.'
           : 'Revisa el aviso de privacidad de la clínica y confirma tu lectura.',
-        ruta: '/profile',
+        ruta: toAbsoluteRoute(APP_ROUTE_PATHS.PROFILE),
         fragmento: 'privacidad',
         opcional: false
       });
@@ -60,19 +49,19 @@ export class PendientesPrivacidadService {
         detalle: this.authStore.legalAcceptanceOverdue()
           ? 'El plazo para revisar los términos y la política de privacidad venció. Revisa las acciones pendientes.'
           : 'SoftVet actualizó sus términos de uso o su política de privacidad. Revísalos desde esta notificación.',
-        ruta: '/legal/accept',
+        ruta: toAbsoluteRoute(APP_ROUTE_PATHS.LEGAL_ACCEPTANCE),
         opcional: false
       });
     }
 
-    const decisionIa = estado?.finalidades.find(f => f.codigo === USO_IA)?.estado;
+    const decisionIa = estado?.finalidades.find(f => f.codigo === FINALIDAD_USO_IA)?.estado;
     if (this.authStore.activeRolePurpose() === 'CLIENT_PORTAL' && decisionIa === 'SIN_REGISTRO'
         && !this.descartados().includes('ia')) {
       lista.push({
         id: 'ia',
         titulo: 'Uso de inteligencia artificial',
         detalle: 'Es opcional. Indica si autorizas su uso con los datos clínicos de tus mascotas.',
-        ruta: '/profile',
+        ruta: toAbsoluteRoute(APP_ROUTE_PATHS.PROFILE),
         fragmento: 'privacidad',
         opcional: true
       });
@@ -102,7 +91,7 @@ export class PendientesPrivacidadService {
     ).subscribe(evento => {
       const desde = this.urlAnterior;
       this.urlAnterior = evento.urlAfterRedirects;
-      if (this.pendientes().length > 0 && PANTALLAS_QUE_RESUELVEN.some(ruta => desde.includes(ruta))) this.refrescar();
+      if (this.pendientes().length > 0 && PRIVACY_RESOLUTION_ROUTES.some(ruta => desde.includes(ruta))) this.refrescar();
     });
 
   }

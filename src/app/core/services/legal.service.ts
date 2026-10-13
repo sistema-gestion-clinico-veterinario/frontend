@@ -3,30 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../../models/response/api-response';
-
-export interface LegalDocumentDTO {
-  id: number;
-  tipo: 'TERMINOS_Y_CONDICIONES' | 'POLITICA_PRIVACIDAD';
-  version: string;
-  contenido: string;
-  vigenteDesde: string;
-}
-
-export interface LegalAcceptanceDTO {
-  tipo: LegalDocumentDTO['tipo'];
-  version: string;
-  contenidoHash: string | null;
-  /** false en las aceptaciones anteriores al registro del texto exacto: no se puede demostrar qué texto se leyó. */
-  textoRecuperable: boolean;
-  fechaAceptacion: string;
-  tipoConstancia?: 'ACEPTACION' | 'CONSTANCIA_LECTURA';
-}
-
-export interface LegalStatusDTO {
-  needsAcceptance: boolean;
-  overdue: boolean;
-  pendingDocuments: LegalDocumentDTO[];
-}
+import { LegalAcceptanceDTO, LegalDocumentDTO, LegalStatusDTO } from '../../models/legal/legal.model';
 
 @Injectable({ providedIn: 'root' })
 export class LegalService {
