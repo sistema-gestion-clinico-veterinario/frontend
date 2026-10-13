@@ -19,13 +19,12 @@ import {
 import { SkeletonModule } from 'primeng/skeleton';
 import { FormsModule } from '@angular/forms';
 import { LoadingStore } from '../../store/loading.store';
-import { ChangePasswordModalComponent } from '../../layouts/main-layout/change-password-modal/change-password-modal.component';
 import { DashboardCitasCalendarComponent } from './citas-calendar/citas-calendar.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, SkeletonModule, FormsModule, RouterModule, ChangePasswordModalComponent, DashboardCitasCalendarComponent],
+  imports: [CommonModule, SkeletonModule, FormsModule, RouterModule, DashboardCitasCalendarComponent],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })
@@ -66,11 +65,6 @@ export class DashboardComponent implements OnInit {
   companies          = signal<DashboardCompanySummary[]>([]);
   selectedCompanyId: number | null = null;
   recentLogs         = signal<DashboardAuditSummary[]>([]);
-  showPasswordModal  = signal(
-    !this.authStore.passwordChanged() &&
-    sessionStorage.getItem('pw_modal_dismissed') !== '1'
-  );
-
   employeesList       = signal<DashboardEmployeeSummary[]>([]);
   todayAppointmentsList = signal<DashboardAppointmentSummary[]>([]);
   petsList            = signal<DashboardPetSummary[]>([]);
@@ -440,11 +434,6 @@ export class DashboardComponent implements OnInit {
     if (action.includes('CONSULTA'))
       return { icon: 'pi-search', bg: 'bg-blue-50', text: 'text-blue-700', dot: 'bg-blue-400' };
     return { icon: 'pi-bolt', bg: 'bg-indigo-50', text: 'text-indigo-700', dot: 'bg-indigo-400' };
-  }
-
-  dismissPasswordModal() {
-    sessionStorage.setItem('pw_modal_dismissed', '1');
-    this.showPasswordModal.set(false);
   }
 
   logout() {

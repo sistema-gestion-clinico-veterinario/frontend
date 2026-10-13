@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, computed, signal } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { TableModule } from 'primeng/table';
 import { MenuModule } from 'primeng/menu';
@@ -49,6 +49,7 @@ export class CompanyComponent implements OnInit {
   private readonly mediaService = inject(MediaService);
   private readonly roleService = inject(RoleService);
   private readonly sanitizer = inject(DomSanitizer);
+  private readonly router = inject(Router);
   readonly authStore = inject(AuthStore);
 
   readonly isSuperAdmin = computed(() => this.authStore.isSuperAdmin());
@@ -420,6 +421,18 @@ export class CompanyComponent implements OnInit {
         });
         this.displayModal = false;
         this.loading = false;
+        if (!this.isEdit && this.isSuperAdmin() && savedCompanyId) {
+          this.authStore.setSelectedEnterprise({
+            establishmentId: savedCompanyId,
+            name: response.data?.name ?? formValue.name ?? '',
+            logoUrl: response.data?.logoUrl || logoUrl || undefined,
+            colorPrimario: response.data?.colorPrimario || formValue.colorPrimario || SOFTVET_BRAND_COLOR,
+          });
+          this.router.navigate(['/admin/empleados'], {
+            queryParams: { alta: 'administrador-inicial' }
+          });
+          return;
+        }
         if (this.isSuperAdmin()) {
           this.loadCompanies();
         } else {
