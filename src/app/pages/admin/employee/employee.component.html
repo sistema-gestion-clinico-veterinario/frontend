@@ -697,9 +697,15 @@
                 <span class="h-4 w-1.5 rounded-full bg-[var(--brand-primary)]"></span>
                 <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Privacidad</h3>
               </div>
-              <p class="rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs leading-5 text-slate-600">
-                Estás registrando datos personales de un trabajador o usuario interno. Antes de guardar, infórmale cómo los utilizará la clínica y muéstrale el aviso vigente.
-              </p>
+              @if (esAltaAdministradorInicialValida()) {
+                <p class="rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs leading-5 text-slate-600">
+                  Estás registrando a la primera persona administradora de la clínica. Esta cuenta es necesaria para completar la configuración inicial y publicar el aviso de privacidad de la empresa.
+                </p>
+              } @else {
+                <p class="rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs leading-5 text-slate-600">
+                  Estás registrando datos personales de un trabajador o usuario interno. Antes de guardar, infórmale cómo los utilizará la clínica y muéstrale el aviso vigente.
+                </p>
+              }
               @if (cargandoAviso()) {
                 <div class="rounded-lg border border-slate-200 p-4 text-sm text-slate-500">Cargando el aviso de privacidad…</div>
               } @else if (avisoPrivacidad(); as aviso) {
@@ -722,9 +728,15 @@
                   <p class="text-[11px] text-slate-500 ml-0.5">No tiene permiso para modificar los roles asignados.</p>
                 }
               } @else {
-                <div class="rounded-lg border border-amber-200 bg-amber-50 p-4 text-xs leading-5 text-amber-800">
-                  La clínica todavía no publicó su aviso de privacidad. Debe publicarlo antes de registrar personal.
-                </div>
+                @if (esAltaAdministradorInicialValida()) {
+                  <div class="rounded-lg border border-sky-200 bg-sky-50 p-4 text-xs leading-5 text-sky-800">
+                    Esta es la cuenta administradora inicial de la nueva clínica. Después de activar su acceso, deberá publicar el aviso de privacidad antes de registrar a más personal.
+                  </div>
+                } @else {
+                  <div class="rounded-lg border border-amber-200 bg-amber-50 p-4 text-xs leading-5 text-amber-800">
+                    La clínica todavía no publicó su aviso de privacidad. Debe publicarlo antes de registrar personal.
+                  </div>
+                }
               }
             </section>
           }
@@ -733,7 +745,7 @@
               class="px-5 py-2.5 text-sm font-semibold text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded transition-all">
               Descartar cambios
             </button>
-            <button type="submit" [disabled]="!isEdit() && !avisoPrivacidad()"
+            <button type="submit" [disabled]="!isEdit() && !puedeConfirmarAlta()"
               class="px-8 py-2.5 text-sm font-bold text-white bg-blue-500 hover:bg-blue-600 rounded shadow-sm disabled:opacity-50 transition-all flex items-center justify-center gap-2 min-w-[160px]">
               {{ isEdit() ? 'Actualizar Registro' : 'Confirmar Personal' }}
             </button>

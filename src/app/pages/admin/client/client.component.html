@@ -131,7 +131,7 @@
               <div class="bg-white rounded-lg p-6 border border-slate-200 space-y-4">
                 <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2">Información de Contacto</h4>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  <a [href]="'mailto:' + cli.email" class="group flex items-start gap-3 p-3 rounded-md hover:bg-slate-50 transition-all duration-200 border border-transparent hover:border-slate-200">
+                  <a [attr.href]="cli.email.includes('*') ? null : 'mailto:' + cli.email" class="group flex items-start gap-3 p-3 rounded-md hover:bg-slate-50 transition-all duration-200 border border-transparent hover:border-slate-200">
                     <div class="w-8 h-8 rounded-md bg-slate-100 text-slate-600 flex items-center justify-center shrink-0 transition-colors group-hover:bg-blue-500/10 group-hover:text-blue-500">
                       <i class="pi pi-envelope text-xs"></i>
                     </div>
@@ -140,7 +140,7 @@
                       <span class="text-sm font-semibold text-slate-700 block truncate mt-0.5">{{ cli.email }}</span>
                     </div>
                   </a>
-                  <a [href]="'tel:' + cli.telefono" class="group flex items-start gap-3 p-3 rounded-md hover:bg-slate-50 transition-all duration-200 border border-transparent hover:border-slate-200">
+                  <a [attr.href]="cli.telefono.includes('*') ? null : 'tel:' + cli.telefono" class="group flex items-start gap-3 p-3 rounded-md hover:bg-slate-50 transition-all duration-200 border border-transparent hover:border-slate-200">
                     <div class="w-8 h-8 rounded-md bg-slate-100 text-slate-600 flex items-center justify-center shrink-0 transition-colors group-hover:bg-blue-500/10 group-hover:text-blue-500">
                       <i class="pi pi-phone text-xs"></i>
                     </div>

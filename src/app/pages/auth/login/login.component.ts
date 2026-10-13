@@ -69,12 +69,12 @@ export class LoginComponent implements OnInit {
   private credencialesPendientes: { username: string; password: string } | null = null;
 
   private static readonly NOTICE_TITLES: Record<string, string> = {
-    sesion_otra_clinica: 'Sesión de otra clínica',
+    sesion_otra_clinica: 'Vuelve a iniciar sesión',
     sesion_inactividad: 'Sesión cerrada por inactividad',
   };
 
   private static readonly NOTICES: Record<string, string> = {
-    sesion_otra_clinica: 'La sesión que tenía este navegador no corresponde a esta clínica. Inicia sesión de nuevo para continuar; las sesiones de tus otras clínicas no se cierran.',
+    sesion_otra_clinica: 'Por seguridad, vuelve a iniciar sesión para acceder a esta clínica. Tus sesiones abiertas en otras clínicas permanecerán activas.',
     sesion_inactividad: 'Cerramos tu sesión por inactividad para proteger los datos de la clínica. Inicia sesión de nuevo para continuar.',
   };
 
