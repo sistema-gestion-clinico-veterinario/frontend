@@ -2,7 +2,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { PrivacidadComponent } from './privacidad.component';
-import { AvisoVersion, CamposAvisoPrivacidad, PrivacidadService, VistaPreviaAviso } from '../../../core/services/privacidad.service';
+import { PrivacidadService } from '../../../core/services/privacidad.service';
+import { AvisoVersion, CamposAvisoPrivacidad, VistaPreviaAviso } from '../../../models/privacy/privacidad.model';
 import { AuthStore } from '../../../store/auth.store';
 
 describe('PrivacidadComponent', () => {

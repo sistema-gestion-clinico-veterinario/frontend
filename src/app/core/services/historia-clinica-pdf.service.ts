@@ -4,6 +4,7 @@ import type { UserOptions } from 'jspdf-autotable';
 import { AuditLogService } from './audit-log.service';
 import { formatearFechaClinica } from '../../shared/utils/fecha-clinica.util';
 import { HistoriaClinicaDetalle, ConsultaResumen } from '../../models/response/historia-clinica-response';
+import { EncabezadoEmpresaPdf } from '../../models/pdf/pdf.model';
 
 const PRIMARY: [number, number, number] = [0, 102, 170];
 const TEXT_MUTED: [number, number, number] = [90, 90, 90];
@@ -15,14 +16,6 @@ const TIPO_CONSULTA_LABEL: Record<string, string> = {
   CONSULTA_GENERAL: 'Consulta general', URGENCIA: 'Urgencia', CONTROL: 'Control',
   CIRUGIA: 'Cirugía', VACUNACION: 'Vacunación', DESPARASITACION: 'Desparasitación'
 };
-
-export interface EncabezadoEmpresaPdf {
-  name?: string | null;
-  address?: string | null;
-  phone?: string | null;
-  email?: string | null;
-  ruc?: string | null;
-}
 
 @Injectable({ providedIn: 'root' })
 export class HistoriaClinicaPdfService {

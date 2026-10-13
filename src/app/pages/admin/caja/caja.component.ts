@@ -15,12 +15,14 @@ import { normalizeText } from '../../../core/utils/normalize-text.util';
 import { PagoService } from '../../../core/services/pago.service';
 import { CuentaCitaResponse, DetalleCuentaRequest, DetalleCuentaResponse, TipoDetalleCuenta } from '../../../models/response/cuenta-cita-response';
 import { MetodoPago } from '../../../models/request/pago-request';
-import { NotaVentaPdfService, NotaVentaPreview } from '../../../core/services/nota-venta-pdf.service';
+import { NotaVentaPdfService } from '../../../core/services/nota-venta-pdf.service';
+import { NotaVentaPreview } from '../../../models/pdf/pdf.model';
 import { CompanyService } from '../../../core/services/company.service';
 import { ProductoService } from '../../../core/services/producto.service';
 import { ProductoResponse } from '../../../models/response/producto-response';
 import { CompanyDTO } from '../../../models/request/company-dto';
-import { RealtimeStompConnection, RealtimeStompService } from '../../../core/services/realtime-stomp.service';
+import { RealtimeStompService } from '../../../core/services/realtime-stomp.service';
+import { RealtimeStompConnection } from '../../../models/realtime/realtime-stomp.model';
 import { ApoderadoService } from '../../../core/services/apoderado.service';
 import { ApoderadoListResponse } from '../../../models/response/apoderado-list-response';
 import { VentaLibreService } from '../../../core/services/venta-libre.service';
@@ -1028,7 +1030,6 @@ export class CajaComponent implements OnInit, OnDestroy {
     return m != null ? `S/ ${Number(m).toFixed(2)}` : '—';
   }
 
-  /** Etiqueta del catálogo: "Uso general" o "Para: perros y gatos". */
   etiquetaAplicacion(producto: ProductoResponse): EtiquetaAplicacionEspecie | null {
     return etiquetaAplicacionEspecie(producto.aplicacionEspecie, producto.especies);
   }

@@ -2,11 +2,6 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { ItemCount } from '../../../models/response/reportes-clinicos-response';
 
-/**
- * Ranking "Top N" como lista numerada con barra inline, en vez de otro gráfico de barras más.
- * Pensado para paneles donde antes se repetía el mismo tipo de gráfico de la página (ver queja
- * de usuario: demasiados gráficos de barras idénticos con distintos datos).
- */
 @Component({
   selector: 'app-reportes-top-list',
   standalone: true,

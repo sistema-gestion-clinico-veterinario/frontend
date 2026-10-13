@@ -4,5 +4,8 @@ export interface ServicioRequest {
   descripcion: string;
   precio: number;
   disponible?: boolean;
+  duracionEstimada?: number;
+  tipoEmpleadoId?: number | null;
+  especialidadId?: number | null;
   tipoControlPreventivo?: 'VACUNACION' | 'DESPARASITACION' | 'NO_APLICA';
 }

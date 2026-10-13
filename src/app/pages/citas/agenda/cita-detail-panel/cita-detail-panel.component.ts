@@ -3,7 +3,7 @@ import { Component, input, output } from '@angular/core';
 import { HasPermissionDirective } from '../../../../core/directives/has-permission.directive';
 import { CitaResponse } from '../../../../models/response/cita-response';
 
-/** Panel de solo presentación para consultar y accionar una cita. */
+
 @Component({
   selector: 'app-cita-detail-panel',
   standalone: true,

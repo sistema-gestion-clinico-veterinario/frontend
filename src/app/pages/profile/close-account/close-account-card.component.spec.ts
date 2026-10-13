@@ -2,7 +2,8 @@ import { ComponentFixture, TestBed, discardPeriodicTasks, fakeAsync, tick } from
 import { signal } from '@angular/core';
 import { of, throwError } from 'rxjs';
 import { CloseAccountCardComponent } from './close-account-card.component';
-import { AccountClosureEligibility, AuthService } from '../../../core/services/auth.service';
+import { AuthService } from '../../../core/services/auth.service';
+import { AccountClosureEligibility } from '../../../models/response/account-closure-eligibility-response';
 import { SessionService } from '../../../core/services/session.service';
 import { AuthStore } from '../../../store/auth.store';
 

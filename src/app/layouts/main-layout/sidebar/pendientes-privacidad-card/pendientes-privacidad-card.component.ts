@@ -1,6 +1,7 @@
 import { Component, inject, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { PendientePrivacidad, PendientesPrivacidadService } from '../../../../core/services/pendientes-privacidad.service';
+import { PendientesPrivacidadService } from '../../../../core/services/pendientes-privacidad.service';
+import { PendientePrivacidad } from '../../../../models/ui/pendiente-privacidad.model';
 
 @Component({
   selector: 'app-pendientes-privacidad-card',

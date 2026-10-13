@@ -6,7 +6,8 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Observable, catchError, debounceTime, distinctUntilChanged, finalize, from, map, of, shareReplay, switchMap, tap, timeout } from 'rxjs';
 import { AuthLoginResponse } from '../../../models/response/auth-login-response.model';
 import { AuthService, GOOGLE_PENDING_SLUG_KEY } from '../../../core/services/auth.service';
-import { CompanyService, CompanySearchResult } from '../../../core/services/company.service';
+import { CompanyService } from '../../../core/services/company.service';
+import { CompanySearchResult } from '../../../models/response/company-public-response';
 import { CompanySlugContext } from '../../../core/services/company-slug-context.service';
 import { AuthStore } from '../../../store/auth.store';
 import { resolveInitialRoute, resolveDashboardRoute } from '../../../layouts/main-layout/navbar/navbar.component';
@@ -41,16 +42,12 @@ export class LoginComponent implements OnInit {
   isSubmitting = false;
   showPassword = false;
 
-  /** La empresa la resuelve la URL (slug), nunca una pantalla de seleccion
-   * posterior al login. */
+
   slug: string | null = null;
   isAdminRoute = false;
   brandLoaded = false;
   brandNotFound = false;
   companyName = DEFAULT_COMPANY_NAME;
-  // Nulo mientras se resuelve el slug: mostrar el logo generico del sistema
-  // de entrada (aunque sea un instante, al recargar la pagina) se veia como
-  // que "cargó mal" - mejor un espacio vacio/skeleton hasta tener el real.
   logoUrl: string | null = null;
   colorPrimario = DEFAULT_BRAND_COLOR;
 
@@ -103,19 +100,12 @@ export class LoginComponent implements OnInit {
       this.loadBranding(this.slug);
       this.prepareGoogleLogin();
     } else {
-      // Sin slug (login global o SuperAdmin): no hay empresa que marcar, usa
-      // el logo/color por defecto del sistema de una vez.
       this.logoUrl = DEFAULT_LOGO_URL;
       this.brandLoaded = true;
       if (this.missingSlug) {
         this.setupClinicSearch();
       }
     }
-
-    // Con slug, solo se reusa una sesion existente si es DE ESTA empresa - las cookies
-    // son del navegador entero (compartidas entre pestañas), asi que sin este chequeo
-    // abrir /<otro-slug>/login mientras se sigue logueado en otra empresa en otra
-    // pestaña autenticaba en silencio contra la empresa equivocada.
     this.sessionService.initialize(this.slug, this.isAdminRoute).subscribe((authenticated) => {
       if (!authenticated) return;
       this.navigateToInitialRoute();
@@ -155,17 +145,10 @@ export class LoginComponent implements OnInit {
     if (hour < 19) return 'Buenas tardes';
     return 'Buenas noches';
   }
-
-  /** Sin slug (y sin ser la ruta de SuperAdmin) no hay forma de saber contra que
-   * empresa autenticar - aislamiento total entre empresas, ya no existe un login
-   * "global". El backend rechaza cualquier intento sin slug de todos modos; esto solo
-   * evita mostrarle a la persona un formulario que nunca va a funcionar. */
   get missingSlug(): boolean {
     return !this.isAdminRoute && !this.slug;
   }
 
-  /** Buscador de clinica que se muestra cuando falta el slug - reemplaza al
-   * formulario, que el backend rechazaria de todos modos sin empresa resuelta. */
   clinicSearchControl = new FormControl('');
   clinicResults: CompanySearchResult[] = [];
   searchingClinics = false;
@@ -192,12 +175,6 @@ export class LoginComponent implements OnInit {
     });
   }
 
-  /** Navegacion "dura" (no SPA) a proposito: el SlugUrlSerializer le quita el slug a
-   * la URL ANTES de que el Router la vea, asi que "/login" (donde ya estamos, sin slug)
-   * y "/<slug>/login" resuelven al mismo UrlTree interno - Angular trata la navegacion
-   * como "misma URL" y la ignora por defecto (onSameUrlNavigation: 'ignore'), dejando el
-   * boton sin efecto. Recargar la pagina evita ese caso especial y reinicia el componente
-   * ya con el slug correcto. */
   goToClinic(result: CompanySearchResult): void {
     window.location.href = `/${result.slug}/login`;
   }
@@ -230,9 +207,6 @@ export class LoginComponent implements OnInit {
 
     this.authError = null;
     this.credencialesPendientes = { username: rawUsername, password: rawPassword };
-
-    // La empresa siempre la resuelve la URL (slug) - ya no existe login "global" sin
-    // marca de empresa (aislamiento total entre empresas).
     const request$ = this.isAdminRoute
       ? this.authService.adminLogin({ username: rawUsername, password: rawPassword })
       : this.authService.login({ slug: this.slug!, username: rawUsername, password: rawPassword });
@@ -281,10 +255,6 @@ export class LoginComponent implements OnInit {
         this.ticketDeReactivacion = null;
         this.credencialesPendientes = null;
         sessionStorage.removeItem('pw_modal_dismissed');
-        // La guarda de acceso mostrará primero el aviso vigente de la clínica.
-        // Los documentos de la plataforma permanecen en la campana de notificaciones
-        // y, si su plazo realmente venció, el backend puede restringir las operaciones
-        // protegidas mediante TERMS_NOT_ACCEPTED.
         const targetUrl = resolveInitialRoute(data.menu ?? [], data.activeRolePurpose);
         return from(this.navigateWithFallback(targetUrl, data.activeRolePurpose));
       }),
@@ -305,9 +275,7 @@ export class LoginComponent implements OnInit {
         this.ticketDeReactivacion = null;
         this.credencialesPendientes = null;
         this.authError = this.resolveLoginError(error);
-        // Contraseña incorrecta, cuenta que debe restablecerla, etc.: nunca dejar la contraseña
-        // fallida escrita en el campo. Se excluye el error de red/timeout porque ahí la
-        // contraseña no era el problema y reintentar con el mismo valor es razonable.
+  
         if (!(error?.name === 'TimeoutError' || error?.status === 0)) {
           this.limpiarClave();
         }
@@ -329,9 +297,6 @@ export class LoginComponent implements OnInit {
     return ticket;
   }
 
-  /** El intent se prepara silenciosamente al cargar la página. En el uso normal este clic
-   * navega inmediatamente a Google; si la preparación aún no terminó, comparte esa misma
-   * solicitud sin mostrar el preloader global ni una pantalla intermedia. */
   continueWithGoogle(): void {
     if (this.startingGoogle || !this.slug) return;
     this.authError = null;
@@ -362,8 +327,6 @@ export class LoginComponent implements OnInit {
       map(({ data }) => data.intent),
       tap((intent) => {
         this.googleIntent = intent;
-        // El backend permite cinco minutos. Se renueva un minuto antes para no
-        // enviar a Google un código que pueda vencer durante la elección de cuenta.
         this.googleIntentExpiresAt = Date.now() + 4 * 60_000;
       }),
       finalize(() => { this.googleIntentRequest$ = null; }),
@@ -373,7 +336,6 @@ export class LoginComponent implements OnInit {
   }
 
   redirectTo(url: string): void {
-    // replace evita que "Atrás" vuelva a un login intermedio.
     window.location.replace(url);
   }
 
@@ -419,12 +381,7 @@ export class LoginComponent implements OnInit {
     this.navigateWithFallback(targetUrl, this.authStore.activeRolePurpose()).subscribe();
   }
 
-  /**
-   * Some vistas configured in the menu may not have a matching Angular route
-   * (e.g. a view removed or never built). If navigation silently fails
-   * (navigateByUrl resolves false, caught by the wildcard route), fall back
-   * to the purpose-based dashboard instead of stranding the user on /login.
-   */
+
   private navigateWithFallback(targetUrl: string, purpose?: string | null) {
     return from(this.router.navigateByUrl(targetUrl)).pipe(
       switchMap((navigated) => {

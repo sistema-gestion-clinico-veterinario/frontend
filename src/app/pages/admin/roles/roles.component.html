@@ -315,12 +315,17 @@
                         </button>
                         <button *appHasPermission="'VISTA_ROLES:modificar'"
                           [disabled]="!canConfigureRole(selectedRole())"
-                          [title]="!canConfigureRole(selectedRole()) ? 'Este rol base o inactivo no admite cambios de permisos' : ''"
+                          [title]="!canConfigureRole(selectedRole()) ? 'Este rol no admite cambios de permisos' : ''"
                           (click)="savePermisos()"
                           class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                           <i class="pi pi-save mr-1"></i>Guardar permisos
                         </button>
                       </div>
+                    }
+                    @if (editsBaseRoleForAllCompanies(selectedRole())) {
+                      <p class="w-full rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs leading-5 text-slate-600">
+                        Este es un rol base compartido por todas las empresas. Los cambios de permisos se aplican a todas ellas y quedan registrados en la auditoría.
+                      </p>
                     }
                     @if (!selectedRole()?.activo) {
                       <div class="mt-2">

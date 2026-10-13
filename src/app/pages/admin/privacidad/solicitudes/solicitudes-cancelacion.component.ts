@@ -2,7 +2,8 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ApoderadoService } from '../../../../core/services/apoderado.service';
-import { CancelacionDatosService, SolicitudCancelacion } from '../../../../core/services/cancelacion-datos.service';
+import { CancelacionDatosService } from '../../../../core/services/cancelacion-datos.service';
+import { SolicitudCancelacion } from '../../../../models/privacy/cancelacion-datos.model';
 import { ApoderadoListResponse } from '../../../../models/response/apoderado-list-response';
 
 type Filtro = 'PENDIENTES' | 'RESUELTAS' | 'TODAS';

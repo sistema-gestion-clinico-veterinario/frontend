@@ -1,17 +1,5 @@
 import { formatearFechaClinica, parseFechaClinicaLocal } from './fecha-clinica.util';
 
-/**
- * CP-RF31-01: una fecha clínica pura (YYYY-MM-DD) debe conservar el mismo
- * día calendario mostrado al usuario, sin desplazarse por zona horaria.
- *
- * `parseFechaClinicaLocal` construye el `Date` a partir de sus componentes
- * locales (año, mes, día), no de un parseo ISO. Esa construcción es, por
- * diseño, invariante ante el huso horario de la máquina que ejecuta la
- * prueba: los getters getFullYear/getMonth/getDate de un `Date` construido
- * así siempre devuelven exactamente lo que se pasó, sin importar el huso.
- * Por eso las aserciones principales no dependen de fijar TZ=America/Lima
- * en el entorno — son correctas bajo cualquier huso, incluido UTC-5.
- */
 describe('fecha-clinica.util', () => {
   const casos: Array<[string, number, number, number, string]> = [
     ['2026-09-09', 2026, 9, 9, '09/09/2026'],
@@ -47,11 +35,7 @@ describe('fecha-clinica.util', () => {
   });
 
   it('caracteriza el defecto original de CP-RF31-01 bajo el huso de Perú (UTC-5)', () => {
-    // Un "YYYY-MM-DD" parseado con el constructor directo de Date es, por
-    // especificación ECMA-402, siempre medianoche UTC — esta instancia de
-    // tiempo es la misma sin importar el huso de la máquina que ejecuta la
-    // prueba. Al proyectarla explícitamente sobre America/Lima (UTC-5),
-    // retrocede al día calendario anterior: el defecto que reportó CP-RF31-01.
+
     const fechaBuggy = new Date('2026-09-11');
     const renderizadoBuggy = fechaBuggy.toLocaleDateString('es-PE', {
       day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'America/Lima',

@@ -1,59 +1,13 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
+import {
+  AccessReviewDecisionRequest,
+  AccessReviewDetail,
+  AccessReviewOverview,
+  AccessReviewSummary
+} from '../../models/access-review/access-review.model';
 import { ApiResponse } from '../../models/response/api-response';
-
-export type AccessReviewDecision = 'KEEP' | 'REVOKE';
-
-export interface AccessReviewItem {
-  assignmentId: number;
-  usuarioId: number;
-  nombre: string;
-  email: string | null;
-  roleId: number;
-  roleName: string;
-  reasons: string[];
-  lastActivity: string | null;
-  assignedAt: string | null;
-}
-
-export interface AccessReviewSummary {
-  id: number;
-  performedAt: string;
-  performedByEmail: string | null;
-  reviewedCount: number;
-  keptCount: number;
-  revokedCount: number;
-  notes: string | null;
-}
-
-export interface AccessReviewOverview {
-  intervalDays: number;
-  overdue: boolean;
-  nextDueAt: string | null;
-  lastReview: AccessReviewSummary | null;
-  items: AccessReviewItem[];
-}
-
-export interface AccessReviewEntry {
-  nombre: string;
-  email: string | null;
-  roleName: string;
-  reasons: string;
-  decision: AccessReviewDecision;
-  comment: string | null;
-}
-
-export interface AccessReviewDetail {
-  review: AccessReviewSummary;
-  entries: AccessReviewEntry[];
-}
-
-export interface AccessReviewDecisionRequest {
-  assignmentId: number;
-  decision: AccessReviewDecision;
-  comment?: string;
-}
 
 @Injectable({ providedIn: 'root' })
 export class AccessReviewService {

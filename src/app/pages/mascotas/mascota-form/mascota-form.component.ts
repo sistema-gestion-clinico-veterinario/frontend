@@ -22,7 +22,8 @@ import { textContentValidator } from '../../../core/validators/text-content.vali
 import { normalizeText } from '../../../core/utils/normalize-text.util';
 import { MascotaRelacionRequest, TipoRelacionMascota } from '../../../models/request/mascota-relacion-request';
 import { MascotaRelacionResponse, TipoRelacionMascotaResponse } from '../../../models/response/mascota-relacion-response';
-import { AvisoPublico, PrivacidadService } from '../../../core/services/privacidad.service';
+import { PrivacidadService } from '../../../core/services/privacidad.service';
+import { AvisoPublico } from '../../../models/privacy/privacidad.model';
 
 @Component({
   selector: 'app-mascota-form',

@@ -2,11 +2,6 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { ItemCount } from '../../../models/response/reportes-clinicos-response';
 
-/**
- * Forma "emphasis": destaca el elemento #1 en grande y deja el resto como una lista compacta y
- * apagada al lado — distinto tanto de la dona como de la lista numerada con barras que ya se usan
- * en otros paneles de "top N" de esta misma página.
- */
 @Component({
   selector: 'app-reportes-emphasis',
   standalone: true,

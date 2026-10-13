@@ -1,9 +1,4 @@
-/**
- * Tipo de aplicación de un producto según la especie a la que va dirigido.
- * - USO_GENERAL: insumos que no dependen biológicamente de una especie (gasas, jeringas).
- * - ESPECIES_ESPECIFICAS: medicamentos/productos dirigidos a una o varias especies.
- * - NO_ESPECIFICADO: registros anteriores a la clasificación, pendientes de definir.
- */
+
 export type TipoAplicacionProducto = 'USO_GENERAL' | 'ESPECIES_ESPECIFICAS' | 'NO_ESPECIFICADO';
 export type TipoControlStock = 'DIRECTO' | 'LOTES';
 

@@ -4,7 +4,9 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
-import { AudienciaAvisoPrivacidad, AvisoVersion, CamposAvisoPrivacidad, PrivacidadService, VistaPreviaAviso } from '../../../core/services/privacidad.service';
+import { PrivacidadService } from '../../../core/services/privacidad.service';
+import { AvisoVersion, CamposAvisoPrivacidad, VistaPreviaAviso } from '../../../models/privacy/privacidad.model';
+import { AudienciaAvisoPrivacidad } from '../../../types/privacy/audiencia-aviso-privacidad.type';
 import { AuthStore } from '../../../store/auth.store';
 
 @Component({
@@ -20,7 +22,7 @@ export class PrivacidadComponent implements OnInit {
   private readonly messages = inject(MessageService);
   private readonly authStore = inject(AuthStore);
 
-  /** El aviso lo redacta y publica solo el administrador de la clínica. */
+
   readonly puedePublicar = computed(() => this.authStore.activeRolePurpose() === 'COMPANY_ADMIN');
 
   cargando = signal(true);
@@ -113,7 +115,7 @@ export class PrivacidadComponent implements OnInit {
     this.abrirVistaPrevia('ver');
   }
 
-  /** Publicar pasa siempre por la vista previa: se confirma el texto exacto antes de que quede vigente. */
+
   solicitarPublicacion(): void {
     if (!this.puedePublicar()) {
       this.messages.add({ severity: 'warn', summary: 'Acción no permitida', detail: 'Solo el administrador de la clínica puede publicar el aviso de privacidad.' });

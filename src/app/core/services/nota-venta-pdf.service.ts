@@ -5,7 +5,7 @@ import { PagoResponse } from '../../models/response/pago-response';
 import { VentaLibreResponse } from '../../models/response/venta-libre-response';
 import { montoEnLetrasSoles } from '../../shared/utils/monto-en-letras.util';
 import { AuditLogService } from './audit-log.service';
-import { EncabezadoEmpresaPdf } from './historia-clinica-pdf.service';
+import { EncabezadoEmpresaPdf, NotaVentaPreview } from '../../models/pdf/pdf.model';
 
 const TEXT_MUTED: [number, number, number] = [90, 90, 90];
 const TEXT_DARK: [number, number, number] = [20, 20, 20];
@@ -20,12 +20,6 @@ const ANCHO_PAGINA = 80;
 const MARGIN_X = 4;
 const CONTENT_WIDTH = ANCHO_PAGINA - MARGIN_X * 2;
 const CENTRO_X = ANCHO_PAGINA / 2;
-
-export interface NotaVentaPreview {
-  url: string;
-  nombreArchivo: string;
-  referencia: string;
-}
 
 @Injectable({ providedIn: 'root' })
 export class NotaVentaPdfService {
@@ -80,11 +74,6 @@ export class NotaVentaPdfService {
     if (preview) URL.revokeObjectURL(preview.url);
   }
 
-  /** Dibuja (o solo mide, si dibujar=false) toda la nota de venta y devuelve el alto final
-   * usado. El primer paso mide sobre una página "grande" de sobra para saber cuánto alto
-   * necesita el contenido real; el segundo dibuja de verdad sobre una página ya creada con
-   * ese alto exacto - jsPDF convierte cada coordenada Y al alto de página vigente en el
-   * momento de dibujar, así que no se puede "achicar" la página después de haber dibujado. */
   private construirContenido(
     doc: jsPDF,
     dibujar: boolean,

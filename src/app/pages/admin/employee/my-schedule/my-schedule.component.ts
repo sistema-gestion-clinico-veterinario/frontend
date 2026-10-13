@@ -58,7 +58,7 @@ export class MyScheduleComponent implements OnInit {
     return new Date(y, m - 1, d).toDateString() === date.toDateString();
   }
 
-  /** Formats a Date as YYYY-MM-DD using LOCAL timezone (avoids UTC shift from toISOString). */
+
   private toLocalDateStr(d: Date): string {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   }

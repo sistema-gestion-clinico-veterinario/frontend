@@ -1,8 +1,7 @@
 import { DOCUMENT } from '@angular/common';
 import { inject, Injectable } from '@angular/core';
 import { SOFTVET_BRAND_COLOR } from '../constants/branding.constants';
-
-type Rgb = readonly [number, number, number];
+import { Rgb } from '../../types/rgb.type';
 
 @Injectable({ providedIn: 'root' })
 export class BrandThemeService {

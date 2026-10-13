@@ -4,7 +4,8 @@ import { of, throwError } from 'rxjs';
 import { LaboratorioComponent } from './laboratorio.component';
 import { MascotaService } from '../../core/services/mascota.service';
 import { LaboratorioIaService } from '../../core/services/laboratorio-ia.service';
-import { AutorizacionIa, IaAutorizacionService } from '../../core/services/ia-autorizacion.service';
+import { IaAutorizacionService } from '../../core/services/ia-autorizacion.service';
+import { AutorizacionIa } from '../../models/response/autorizacion-ia-response';
 
 describe('LaboratorioComponent', () => {
   let component: LaboratorioComponent;

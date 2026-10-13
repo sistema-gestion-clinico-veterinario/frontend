@@ -73,16 +73,14 @@ export interface AuthPayload {
 const UI_PREFERENCES_STORAGE_KEY = 'auth_ui_preferences';
 const LEGACY_AUTH_STORAGE_KEY = 'auth';
 
-/** Cada clínica guarda sus preferencias con su slug en la clave, para que cerrar sesión o cambiar algo en una no
- * toque lo de otra que esté abierta en el mismo navegador. La cuenta de plataforma, sin slug, usa la clave de siempre. */
+
 export const preferencesStorageKey = (slug: string | null | undefined): string =>
   slug ? `${UI_PREFERENCES_STORAGE_KEY}:${slug}` : UI_PREFERENCES_STORAGE_KEY;
 
 const createInitialState = (useStorage = true): AuthState => {
   let selectedEnterprise: Enterprise | null = null;
   if (useStorage && typeof window !== 'undefined') {
-    // El formato anterior contenía identidad y permisos. Se elimina durante la
-    // migración para impedir que vuelva a utilizarse accidentalmente.
+
     window.localStorage.removeItem(LEGACY_AUTH_STORAGE_KEY);
     const stored = window.localStorage.getItem(preferencesStorageKey(companySlugFromUrl(window.location.pathname)));
     if (stored) {
@@ -128,8 +126,6 @@ const createInitialState = (useStorage = true): AuthState => {
 
 const saveToStorage = (state: AuthState) => {
   if (typeof window !== 'undefined') {
-    // Solo se persisten preferencias visuales. Identidad, roles, menús y rutas
-    // se reconstruyen siempre desde la sesión HttpOnly validada por el backend.
     window.localStorage.setItem(preferencesStorageKey(state.companySlug), JSON.stringify({
       selectedEnterprise: state.selectedEnterprise,
     }));
@@ -313,7 +309,6 @@ export const AuthStore = signalStore(
         'empleado/historias-clinicas': 'historias-clinicas',
       };
 
-      // Pantallas que no tienen su propia vista en el menú: se permiten con el módulo al que pertenecen.
       const MODULOS_DE_PANTALLAS_DE_APOYO: Record<string, string[]> = {
         'admin/privacidad': ['company', 'admin/company'],
         'admin/privacidad/solicitudes': ['company', 'admin/company'],
@@ -326,12 +321,12 @@ export const AuthStore = signalStore(
 
       const canonicalRoute = ROUTE_ALIASES[normalized] ?? normalized;
 
-      // Acceso exacto o a una sub-ruta (ej. detalle/edición) de un módulo permitido
+  
       if (store.allowedRoutes().some(r => canonicalRoute === r || canonicalRoute.startsWith(r + '/'))) {
         return true;
       }
 
-      // Probar quitando prefijos de roles en caso de rutas relativas dinámicas
+
       const cleanPattern = stripPrefix(canonicalRoute);
       const cleanAllowed = store.allowedRoutes().map(r => stripPrefix(r));
 

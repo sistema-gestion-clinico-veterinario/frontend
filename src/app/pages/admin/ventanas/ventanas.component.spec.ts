@@ -1,7 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 import { VentanasComponent } from './ventanas.component';
-import { MenuManagementService, VentanaDTO } from '../../../core/services/menu-management.service';
+import { MenuManagementService } from '../../../core/services/menu-management.service';
+import { VentanaDTO } from '../../../models/menu/menu-management.model';
 import { VistaDTO } from '../../../models/response/auth-login-response.model';
 
 describe('VentanasComponent - estructura del menú', () => {

@@ -74,9 +74,6 @@ export class SessionService {
       }
     };
   }
-
-  /** Red de seguridad: si la sesión que llega no es de la clínica de esta pestaña (por ejemplo, una sesión abierta antes
-   * de que cada clínica tuviera sus propias cookies), no se adopta. */
   endForOtherCompanySession(): void {
     this.authStore.logout();
     this.router.navigateByUrl('/login?authNotice=sesion_otra_clinica', { replaceUrl: true });
@@ -96,7 +93,6 @@ export class SessionService {
     this.router.navigateByUrl(resolveInitialRoute(data.menu ?? [], data.activeRolePurpose), { replaceUrl: true });
   }
 
-  /** platformOnly: la pantalla es del acceso de plataforma, así que una sesión de clínica no se adopta aunque exista. */
   initialize(expectedSlug?: string | null, platformOnly = false): Observable<boolean> {
     const status = this.authStore.sessionStatus();
     if (status === 'authenticated') {

@@ -1,5 +1,6 @@
 import { Component, ElementRef, Injector, OnDestroy, OnInit, afterNextRender, computed, inject, signal, viewChildren } from '@angular/core';
-import { AccountClosureEligibility, AuthService } from '../../../core/services/auth.service';
+import { AuthService } from '../../../core/services/auth.service';
+import { AccountClosureEligibility } from '../../../models/response/account-closure-eligibility-response';
 import { SessionService } from '../../../core/services/session.service';
 import { AuthStore } from '../../../store/auth.store';
 

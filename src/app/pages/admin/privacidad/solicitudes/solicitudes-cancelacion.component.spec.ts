@@ -2,7 +2,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { SolicitudesCancelacionComponent } from './solicitudes-cancelacion.component';
-import { CancelacionDatosService, SolicitudCancelacion } from '../../../../core/services/cancelacion-datos.service';
+import { CancelacionDatosService } from '../../../../core/services/cancelacion-datos.service';
+import { SolicitudCancelacion } from '../../../../models/privacy/cancelacion-datos.model';
 import { ApoderadoService } from '../../../../core/services/apoderado.service';
 
 describe('SolicitudesCancelacionComponent', () => {

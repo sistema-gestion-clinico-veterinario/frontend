@@ -134,19 +134,14 @@ export class EmployeeDashboardComponent implements OnInit {
       });
   }
 
-  // Appointment Actions
-
-  /** true si la cita puede iniciarse (dentro de la hora previa al horario) */
   canIniciar(cita: any): boolean {
     if (!cita?.fechaHoraInicio) return false;
     const ahora = Date.now();
     const inicio = new Date(cita.fechaHoraInicio).getTime();
     const minutosRestantes = (inicio - ahora) / 60000;
-    // Permite iniciar si faltan ≤ 60 min (o ya pasó la hora de inicio)
     return minutosRestantes <= 60;
   }
 
-  /** Texto descriptivo del tiempo restante para poder iniciar */
   tiempoParaIniciar(cita: any): string {
     if (!cita?.fechaHoraInicio) return '';
     const ahora = Date.now();
@@ -234,7 +229,7 @@ export class EmployeeDashboardComponent implements OnInit {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   }
 
-  // Quick Action Card Links
+
   get quickActions(): { label: string; icon: string; route: string; colorClass: string; permission?: string }[] {
     const list = [
       {

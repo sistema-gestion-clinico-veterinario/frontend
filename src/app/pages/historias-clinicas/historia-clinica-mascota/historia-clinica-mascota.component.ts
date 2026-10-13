@@ -120,7 +120,6 @@ export class HistoriaClinicaMascotaComponent implements OnInit, OnDestroy {
   readonly controlesAtrasados = computed(() =>
     (this.hc()?.controlesPreventivos ?? []).filter(control => control.estado === 'ATRASADO').length);
 
-  /** Historial completo (todos los estados, todos los meses) para no depender de navegar el calendario. */
   readonly todosLosControles = computed(() =>
     [...(this.hc()?.controlesPreventivos ?? [])].sort((a, b) => b.fechaRecomendada.localeCompare(a.fechaRecomendada)));
 

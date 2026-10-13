@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, DestroyRef, Injector, OnInit, afterNextRender, computed, inject, signal, viewChild } from '@angular/core';
-import { CancelacionDatosElegibilidad, CancelacionDatosService } from '../../../core/services/cancelacion-datos.service';
+import { CancelacionDatosService } from '../../../core/services/cancelacion-datos.service';
+import { CancelacionDatosElegibilidad } from '../../../models/privacy/cancelacion-datos.model';
 import { CodigoVerificacionComponent } from '../../../shared/components/codigo-verificacion/codigo-verificacion.component';
 import { AuthStore } from '../../../store/auth.store';
 

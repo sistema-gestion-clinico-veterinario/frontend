@@ -3,7 +3,8 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { Subject, of, throwError } from 'rxjs';
 import { DiagnosticoIaComponent } from './diagnostico-ia.component';
 import { DiagnosticoIaService } from '../../../../core/services/diagnostico-ia.service';
-import { AutorizacionIa, IaAutorizacionService } from '../../../../core/services/ia-autorizacion.service';
+import { IaAutorizacionService } from '../../../../core/services/ia-autorizacion.service';
+import { AutorizacionIa } from '../../../../models/response/autorizacion-ia-response';
 import { SseEvento } from '../../../../models/response/diagnostico-ia-response';
 
 describe('DiagnosticoIaComponent', () => {

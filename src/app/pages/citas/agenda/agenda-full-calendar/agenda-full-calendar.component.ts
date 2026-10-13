@@ -5,13 +5,6 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import timeGridPlugin from '@fullcalendar/timegrid';
 
-/**
- * Adaptador aislado para FullCalendar.
- *
- * Se mantiene fuera de AgendaComponent para que Angular pueda generar un
- * chunk diferido: la vista lista y los dispositivos pequenos no descargan la
- * libreria completa del calendario.
- */
 @Component({
   selector: 'app-agenda-full-calendar',
   standalone: true,

@@ -13,9 +13,9 @@ import {
   DashboardGuardianSummary,
   DashboardPaymentSummary,
   DashboardPetSummary,
-  DashboardService,
   DashboardStats
-} from '../../core/services/dashboard.service';
+} from '../../models/response/dashboard-overview-response';
+import { DashboardService } from '../../core/services/dashboard.service';
 import { SkeletonModule } from 'primeng/skeleton';
 import { FormsModule } from '@angular/forms';
 import { LoadingStore } from '../../store/loading.store';

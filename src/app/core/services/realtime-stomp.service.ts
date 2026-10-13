@@ -2,19 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { RealtimeTicketService } from './realtime-ticket.service';
-
-export interface RealtimeStompConnection {
-  disconnect(): void;
-  isConnected(): boolean;
-  isActive(): boolean;
-}
-
-interface RealtimeStompOptions {
-  label?: string;
-  heartbeatMs?: number;
-  initialReconnectDelayMs?: number;
-  maxReconnectDelayMs?: number;
-}
+import { RealtimeStompConnection, RealtimeStompOptions } from '../../models/realtime/realtime-stomp.model';
 
 @Injectable({ providedIn: 'root' })
 export class RealtimeStompService {

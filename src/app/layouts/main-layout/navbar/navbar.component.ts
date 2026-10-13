@@ -12,7 +12,8 @@ import { Role as CompanyRole } from '../../../models/response/permission';
 import { AssignedRoleDTO } from '../../../models/response/auth-login-response.model';
 import { SessionService } from '../../../core/services/session.service';
 import { MediaService } from '../../../core/services/media.service';
-import { PendientePrivacidad, PendientesPrivacidadService } from '../../../core/services/pendientes-privacidad.service';
+import { PendientesPrivacidadService } from '../../../core/services/pendientes-privacidad.service';
+import { PendientePrivacidad } from '../../../models/ui/pendiente-privacidad.model';
 
 @Component({
   selector: 'app-navbar',
@@ -64,12 +65,6 @@ export class NavbarComponent implements OnInit {
     return found ? found.label : 'Seleccionar Empresa';
   }
 
-  /** Filtro client-side: la lista ya viene completa (hasta 1000 empresas en una sola
-   * llamada), asi que no hace falta ida y vuelta al servidor para buscar mientras
-   * se escribe - solo con superar unas pocas decenas de empresas ya no cabe todo
-   * visible sin desplazarse, y dos empresas con nombres parecidos (ej. "Clinica
-   * Veterinaria Vargas Vet" vs "Veterinaria Vargas Vet") son dificiles de distinguir
-   * sin mas datos, por eso se muestra tambien el RUC. */
   filteredCompanies = computed(() => {
     const term = this.companySearchTerm().trim().toLowerCase();
     if (!term) return this.companies();

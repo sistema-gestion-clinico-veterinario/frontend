@@ -3,15 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../../models/response/api-response';
-import { CanalConsentimiento } from './privacidad.service';
-
-export interface AutorizacionIa {
-  autorizada: boolean;
-  apoderadoId: number;
-  titular: string;
-  fecha: string | null;
-  canal: CanalConsentimiento | null;
-}
+import { AutorizacionIa } from '../../models/response/autorizacion-ia-response';
 
 export const IA_SIN_AUTORIZACION = 'IA_SIN_AUTORIZACION';
 
