@@ -53,7 +53,7 @@
       </div>
 
       <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-        <!-- Desktop table -->
+   
         <div class="hidden md:block overflow-x-auto">
           <table class="w-full text-sm">
             <thead>
@@ -122,7 +122,7 @@
           }
         </div>
 
-        <!-- Mobile cards -->
+
         @if (lotes().length > 0) {
           <div class="md:hidden divide-y divide-slate-100">
             @for (lote of lotes(); track lote.id) {
@@ -188,7 +188,7 @@
   }
 </div>
 
-<!-- Modal: Lote -->
+
 @if (showModal()) {
   <div class="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/50">
     <div class="bg-white w-full max-w-sm rounded-t-xl sm:rounded-xl border border-slate-200 flex flex-col max-h-[95dvh]">
@@ -287,7 +287,7 @@
   </div>
 }
 
-<!-- Confirm dialog -->
+
 @if (confirmDialog()) {
   <div class="fixed inset-0 z-[200] flex items-end sm:items-center justify-center bg-black/40 p-0 sm:p-4">
     <div class="bg-white rounded-t-xl sm:rounded-xl p-6 max-w-sm w-full mx-0 sm:mx-4 border border-slate-200">

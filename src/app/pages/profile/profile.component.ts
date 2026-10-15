@@ -6,7 +6,7 @@ import { ToastModule } from 'primeng/toast';
 import { DialogModule } from 'primeng/dialog';
 import { SkeletonModule } from 'primeng/skeleton';
 import { MessageService } from 'primeng/api';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { ProfileService } from '../../core/services/profile.service';
 import { MediaService } from '../../core/services/media.service';
 import { ProfileResponse } from '../../models/response/profile-response';
@@ -29,6 +29,7 @@ import {
   FINALIDAD_USO_IA as USO_IA
 } from '../../core/constants/privacidad.constants';
 import { AvisoPublico, ConsentimientoEstado } from '../../models/privacy/privacidad.model';
+import { CompanyComplianceService } from '../../core/services/company-compliance.service';
 
 interface HorarioResumen {
   diaSemana: string;
@@ -49,7 +50,7 @@ const DIAS_SEMANA_ORDEN = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ToastModule, DialogModule, SkeletonModule, InputFilterDirective, CloseAccountCardComponent, CancelarDatosCardComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, ToastModule, DialogModule, SkeletonModule, InputFilterDirective, CloseAccountCardComponent, CancelarDatosCardComponent],
   providers: [MessageService],
   templateUrl: './profile.component.html'
 })
@@ -63,6 +64,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
   private readonly legalService = inject(LegalService);
   private readonly privacidadService = inject(PrivacidadService);
   private readonly pendientesPrivacidad = inject(PendientesPrivacidadService);
+  private readonly complianceService = inject(CompanyComplianceService);
   private readonly router = inject(Router);
   private readonly sanitizer = inject(DomSanitizer);
   readonly loadingStore = inject(LoadingStore);
@@ -82,6 +84,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
   avisoPrivacidad = signal<AvisoPublico | null>(null);
   estadoPrivacidad = signal<ConsentimientoEstado | null>(null);
   actualizandoPrivacidad = signal(false);
+  derechosDatosDisponibles = signal(true);
   readonly safePreviewUrl = computed(() => {
     const url = this.previewUrl();
     return url ? this.sanitizer.bypassSecurityTrustUrl(url) : null;
@@ -105,7 +108,15 @@ export class ProfileComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.loadProfile();
     this.loadLegalAcceptances();
-    this.loadPrivacy();
+    this.complianceService.actualesDeMiClinica().subscribe({
+      next: ({ data }) => {
+        const aviso = data.find(c => c.control === 'AVISO_PRIVACIDAD');
+        const derechos = data.find(c => c.control === 'DERECHOS_DATOS');
+        this.derechosDatosDisponibles.set(!!derechos?.gestionadoPorSoftvet);
+        if (aviso?.gestionadoPorSoftvet) this.loadPrivacy();
+      },
+      error: () => this.loadPrivacy()
+    });
   }
 
   loadPrivacy() {
@@ -202,6 +213,14 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
   estadoRecordatorios(): 'OTORGADO' | 'RETIRADO' | 'SIN_REGISTRO' {
     return this.estadoPrivacidad()?.finalidades.find(f => f.codigo === RECORDATORIOS)?.estado ?? 'SIN_REGISTRO';
+  }
+
+  iaDisponible(): boolean {
+    return this.estadoPrivacidad()?.finalidades.some(f => f.codigo === USO_IA) ?? false;
+  }
+
+  recordatoriosDisponibles(): boolean {
+    return this.estadoPrivacidad()?.finalidades.some(f => f.codigo === RECORDATORIOS) ?? false;
   }
 
   private privacyError(err: any) {

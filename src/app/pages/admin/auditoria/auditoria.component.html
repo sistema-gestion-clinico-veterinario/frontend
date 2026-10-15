@@ -152,26 +152,27 @@
       }
     </div>
 
-    <div class="hidden lg:block">
-      <table class="w-full table-fixed text-sm">
-        <colgroup>
-          <col class="w-[15%]" />
-          <col class="w-[23%]" />
-          <col class="w-[29%]" />
-          <col class="w-[33%]" />
-        </colgroup>
+    <div class="hidden lg:block overflow-x-auto">
+      <table class="w-full text-sm">
         <thead class="bg-slate-50 border-b border-slate-200">
           <tr>
             <th class="px-4 py-2 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider whitespace-nowrap">Fecha / Hora</th>
             <th class="px-4 py-2 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Usuario</th>
-            <th class="px-4 py-2 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Evento</th>
+            <th class="px-4 py-2 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider whitespace-nowrap">Rol</th>
+            @if (isSuperAdmin()) {
+              <th class="px-4 py-2 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider whitespace-nowrap">Clínica</th>
+            }
+            <th class="px-4 py-2 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Módulo</th>
+            <th class="px-4 py-2 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Acción</th>
             <th class="px-4 py-2 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Detalle de Operación</th>
+            <th class="px-4 py-2 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider whitespace-nowrap">Origen IP</th>
+            <th class="px-4 py-2 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider whitespace-nowrap">Dispositivo</th>
           </tr>
         </thead>
         <tbody>
           @if (logs().length === 0) {
             <tr>
-              <td colspan="4" class="text-center py-16">
+              <td [attr.colspan]="isSuperAdmin() ? 8 : 7" class="text-center py-16">
                 <div class="flex flex-col items-center justify-center gap-2 text-slate-400">
                   <i class="pi pi-inbox text-4xl"></i>
                   <p class="font-medium text-slate-600 text-sm">No se encontraron registros de auditoría</p>
@@ -186,34 +187,37 @@
               <td class="px-4 py-2 text-sm whitespace-nowrap">
                 {{ log.timestamp | date: 'dd/MM/yyyy HH:mm:ss' }}
               </td>
-              <td class="px-4 py-3 align-top">
-                <p class="truncate text-sm font-medium text-slate-800" [title]="log.userEmail">
-                  {{ log.userEmail || 'Anónimo / Sistema' }}
-                </p>
-                @if (isSuperAdmin()) {
-                  <p class="mt-1 truncate text-xs text-slate-400" [title]="log.companyName || 'Multi-Sede'">
-                    {{ log.companyName || 'Multi-Sede' }}
-                  </p>
-                }
+              <td class="px-4 py-2 text-sm font-medium text-slate-800 max-w-[200px] truncate" [title]="log.userEmail">
+                {{ log.userEmail || 'Anónimo / Sistema' }}
               </td>
-              <td class="px-4 py-3 align-top">
-                <div class="flex flex-wrap items-center gap-1.5">
-                  <span class="max-w-full truncate text-xs px-2 py-0.5 rounded-full bg-slate-100 border border-slate-200 text-slate-600" [title]="log.userRole || '-'">
-                    {{ log.userRole || '-' }}
-                  </span>
-                  <span [ngClass]="getModuleBadgeClass(log.module)" class="max-w-full truncate text-xs px-2 py-0.5 font-semibold rounded-md border" [title]="log.module">
+              <td class="px-4 py-2 whitespace-nowrap">
+                <span class="text-xs px-2 py-0.5 rounded-full bg-slate-100 border border-slate-200 text-slate-600">
+                  {{ log.userRole || '-' }}
+                </span>
+              </td>
+              @if (isSuperAdmin()) {
+                <td class="px-4 py-2 whitespace-nowrap text-sm font-semibold text-slate-700">
+                  {{ log.companyName || 'Multi-Sede' }}
+                </td>
+              }
+              <td class="px-4 py-2 whitespace-nowrap">
+                <span [ngClass]="getModuleBadgeClass(log.module)" class="text-xs px-2.5 py-1 font-semibold rounded-md border">
                   {{ log.module }}
-                  </span>
-                </div>
-                <span [ngClass]="getActionBadgeClass(log.action)" class="mt-1.5 block max-w-full truncate rounded-full border px-2 py-0.5 text-xs font-bold" [title]="log.action">
-                    {{ log.action }}
-                  </span>
+                </span>
               </td>
-              <td class="px-4 py-3 align-top text-sm">
-                <p class="line-clamp-2 break-words leading-5 text-slate-600" [title]="log.details">{{ log.details }}</p>
-                <p class="mt-1 truncate font-mono text-[11px] text-slate-400" [title]="(log.ipAddress || 'Interna') + ' · ' + (log.dispositivo || 'Dispositivo no registrado')">
-                  {{ log.ipAddress || 'Interna' }} · {{ log.dispositivo || 'Dispositivo no registrado' }}
-                </p>
+              <td class="px-4 py-2 whitespace-nowrap">
+                <span [ngClass]="getActionBadgeClass(log.action)" class="text-xs px-2.5 py-1 font-bold rounded-full border">
+                  {{ log.action }}
+                </span>
+              </td>
+              <td class="px-4 py-2 text-sm max-w-[260px]">
+                <span class="line-clamp-2" [title]="log.details">{{ log.details }}</span>
+              </td>
+              <td class="px-4 py-2 font-mono text-xs text-slate-500 whitespace-nowrap">
+                {{ log.ipAddress || 'Interna' }}
+              </td>
+              <td class="px-4 py-2 text-xs text-slate-500 whitespace-nowrap">
+                {{ log.dispositivo || 'No registrado' }}
               </td>
             </tr>
           }

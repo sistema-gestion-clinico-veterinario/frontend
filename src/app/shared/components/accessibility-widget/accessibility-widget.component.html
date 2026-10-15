@@ -15,7 +15,7 @@
   <div class="a11y-overlay" (click)="closePanel()"></div>
 }
 
-<!-- Card de ajuste por niveles: un solo tap avanza y da la vuelta; barra inferior = progreso -->
+
 <ng-template #levelCard let-icon="icon" let-label="label" let-level="level" let-maxLevel="maxLevel"
   let-subtitle="subtitle" let-onClick="onClick">
   <button type="button" class="a11y-tile" [class.active]="level > 0" (click)="onClick()"
@@ -37,7 +37,7 @@
   </button>
 </ng-template>
 
-<!-- Card de ajuste on/off simple -->
+
 <ng-template #toggleCard let-icon="icon" let-label="label" let-active="active" let-onClick="onClick">
   <button type="button" class="a11y-tile" [class.active]="active" (click)="onClick()" [attr.aria-pressed]="active">
     @if (active) {

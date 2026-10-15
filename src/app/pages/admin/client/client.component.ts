@@ -32,6 +32,7 @@ import { textContentValidator } from '../../../core/validators/text-content.vali
 import { normalizeText } from '../../../core/utils/normalize-text.util';
 import { Role } from '../../../models/response/permission';
 import { PrivacidadService } from '../../../core/services/privacidad.service';
+import { CompanyComplianceService } from '../../../core/services/company-compliance.service';
 import { FINALIDAD_RECORDATORIOS as RECORDATORIOS, FINALIDAD_USO_IA as USO_IA } from '../../../core/constants/privacidad.constants';
 import { AvisoPublico, ConsentimientoEstado } from '../../../models/privacy/privacidad.model';
 
@@ -67,6 +68,7 @@ export class ClientComponent implements OnInit {
   private readonly companyService = inject(CompanyService);
   private readonly roleService = inject(RoleService);
   private readonly privacidadService = inject(PrivacidadService);
+  private readonly complianceService = inject(CompanyComplianceService);
   private readonly messageService = inject(MessageService);
   readonly authStore = inject(AuthStore);
   readonly loadingStore = inject(LoadingStore);
@@ -90,6 +92,9 @@ export class ClientComponent implements OnInit {
   cargandoAviso = signal(false);
   estadoPrivacidadCliente = signal<ConsentimientoEstado | null>(null);
   actualizandoPrivacidadCliente = signal(false);
+  avisoSoftvet = signal(true);
+  iaConsentimientoSoftvet = signal(true);
+  recordatoriosConsentimientoSoftvet = signal(true);
 
   searchNombre = signal('');
   searchDocumento = signal('');
@@ -279,6 +284,14 @@ export class ClientComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.complianceService.actualesDeMiClinica().subscribe({
+      next: respuesta => {
+        const controles = respuesta.data;
+        this.avisoSoftvet.set(!!controles.find(c => c.control === 'AVISO_PRIVACIDAD')?.gestionadoPorSoftvet);
+        this.iaConsentimientoSoftvet.set(!!controles.find(c => c.control === 'USO_IA')?.gestionadoPorSoftvet);
+        this.recordatoriosConsentimientoSoftvet.set(!!controles.find(c => c.control === 'RECORDATORIOS_CORREO')?.gestionadoPorSoftvet);
+      }
+    });
     const companyId = this.activeCompanyId;
     if (companyId) {
       this.loadClientRoles(companyId);
@@ -470,6 +483,10 @@ export class ClientComponent implements OnInit {
 
   estadoRecordatoriosCliente(): 'OTORGADO' | 'RETIRADO' | 'SIN_REGISTRO' {
     return this.estadoPrivacidadCliente()?.finalidades.find(f => f.codigo === RECORDATORIOS)?.estado ?? 'SIN_REGISTRO';
+  }
+
+  mostrarPrivacidadSoftvet(): boolean {
+    return this.avisoSoftvet() || this.iaConsentimientoSoftvet() || this.recordatoriosConsentimientoSoftvet();
   }
 
   estadoIaCliente(): 'OTORGADO' | 'RETIRADO' | 'SIN_REGISTRO' {

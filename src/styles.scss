@@ -82,7 +82,6 @@
     font-size: 15px;
   }
 
-  /* Desactivar el ojo nativo de Edge/Windows para evitar duplicidad con el personalizado */
   input::-ms-reveal,
   input::-ms-clear {
     display: none !important;
@@ -290,7 +289,6 @@
   }
 }
 
-/* ─── Loader animation ─── */
 @keyframes loaderFlip {
   0% { transform: rotateY(0deg); }
   50% { transform: rotateY(180deg); }
@@ -300,7 +298,6 @@
   animation: loaderFlip 1.8s ease-in-out infinite;
 }
 
-/* Mensajes globales: ancho y contenido seguros en pantallas pequeñas. */
 .p-toast {
   max-width: calc(100vw - 2rem);
 }
@@ -367,7 +364,7 @@
     line-height: 1.125rem;
   }
 
-  /* Paginadores compactos: una sola fila en teléfonos. */
+
   .p-paginator {
     display: flex !important;
     width: 100%;
@@ -410,10 +407,7 @@
   }
 }
 
-/* ============================================================
-   Accesibilidad — clases aplicadas dinámicamente sobre <html>
-   por AccessibilityService (frontend/src/app/core/services/accessibility.service.ts)
-   ============================================================ */
+
 :root {
   --a11y-saturate: 100%;
   --a11y-brightness: 100%;
@@ -446,19 +440,10 @@ html.a11y-contrast-inverted.a11y-grayscale {
   filter: saturate(var(--a11y-saturate)) brightness(var(--a11y-brightness)) invert(100%) hue-rotate(180deg) grayscale(100%);
 }
 
-/* El tamaño de texto se aplica sobre el font-size RAÍZ (<html>), no sobre <body>:
-   Tailwind define sus utilidades text-sm/text-base/text-lg/etc. en unidades
-   "rem", que siempre se calculan contra el font-size de <html> — cambiar solo
-   el de <body> no afecta a ningún elemento con una clase de texto de Tailwind,
-   que es prácticamente todo el sitio. Por eso antes "no se notaba".*/
 html {
   font-size: calc(16px * var(--a11y-text-scale));
 }
 
-/* Espaciado de letras e interlineado: solo se fuerzan con !important sobre TODOS
-   los elementos (incluyendo inputs/botones/selects, que por defecto NO heredan
-   tipografía del body en ningún navegador) cuando el usuario realmente activó
-   el ajuste — así no se altera el diseño por defecto del resto del sitio. */
 html.a11y-letter-spacing-active * {
   letter-spacing: var(--a11y-letter-spacing) !important;
 }

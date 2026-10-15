@@ -6,6 +6,9 @@ import { AuthStore } from '../../../store/auth.store';
 import { MediaService } from '../../../core/services/media.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { SessionService } from '../../../core/services/session.service';
+import { CompanyComplianceService } from '../../../core/services/company-compliance.service';
+import { GuidedTourService } from '../../../core/services/guided-tour.service';
+import { of } from 'rxjs';
 import { MenuItemDTO, MenuStructureDTO } from '../../../models/response/auth-login-response.model';
 
 describe('SidebarComponent - navegación permitida', () => {
@@ -40,6 +43,7 @@ describe('SidebarComponent - navegación permitida', () => {
           useValue: {
             menu,
             activeRoleId,
+            activeRolePurpose: () => 'CUSTOM',
             nombreCompleto: () => 'Ana Torres',
             activeRoleName: () => 'ROLE_VETERINARIO',
             selectedEnterprise: () => null,
@@ -50,6 +54,8 @@ describe('SidebarComponent - navegación permitida', () => {
         { provide: MediaService, useValue: { resolveUrl: (u: string | null | undefined) => u ?? null } },
         { provide: AuthService, useValue: {} },
         { provide: SessionService, useValue: { logout: jasmine.createSpy('logout') } },
+        { provide: CompanyComplianceService, useValue: { actualesDeMiClinica: () => of({ data: [] }) } },
+        { provide: GuidedTourService, useValue: { initialize: () => {}, start: () => {}, postpone: () => {}, offerVisible: () => false } },
       ],
     }).compileComponents();
     fixture = TestBed.createComponent(SidebarComponent);

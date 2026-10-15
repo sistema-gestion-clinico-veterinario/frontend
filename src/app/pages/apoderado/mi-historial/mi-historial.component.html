@@ -1,6 +1,6 @@
 <div class="p-4 sm:p-6 lg:p-4 min-h-screen font-['Barlow'] bg-blue-50">
 
-  <!-- Header principal de la vista -->
+
   <div class="mb-6 flex items-center justify-between">
     <div>
       <h1 class="text-2xl font-extrabold text-slate-900 leading-tight">Historias Clínicas</h1>
@@ -10,10 +10,10 @@
     </div>
   </div>
 
-  <!-- Layout de Dos Paneles Principal -->
+
   <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
 
-    <!-- ─── PANEL IZQUIERDO: Selector de Mascotas ─── -->
+
     <div class="lg:col-span-1 flex flex-col gap-3">
       <div class="bg-white border border-slate-200 rounded-xl overflow-hidden p-4">
         <h2 class="text-xs font-extrabold text-slate-400 uppercase tracking-widest mb-3">Tus Mascotas</h2>
@@ -69,10 +69,9 @@
       </div>
     </div>
 
-    <!-- ─── PANEL DERECHO: Historia Clínica de la Mascota Seleccionada ─── -->
+
     <div class="lg:col-span-3">
 
-      <!-- Estado: Ninguna Mascota Seleccionada -->
       @if (!mascotaActiva()) {
         <div
           class="bg-white border border-slate-200 rounded-xl py-24 text-center px-6">
