@@ -92,6 +92,11 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/admin/company/company.component').then((m) => m.CompanyComponent)
       },
       {
+        path: 'admin/company/:id/compliance',
+        data: { ventana: 'VISTA_COMPANY', permiso: 'leer', purposes: ['PLATFORM_ADMIN'] },
+        loadComponent: () => import('./pages/admin/company/compliance/company-compliance.component').then((m) => m.CompanyComplianceComponent)
+      },
+      {
         path: 'admin/privacidad',
         data: { ventana: 'VISTA_COMPANY', permiso: 'leer' },
         loadComponent: () => import('./pages/admin/privacidad/privacidad.component').then((m) => m.PrivacidadComponent)
@@ -100,6 +105,11 @@ export const routes: Routes = [
         path: 'admin/privacidad/solicitudes',
         data: { ventana: 'VISTA_COMPANY', permiso: 'leer' },
         loadComponent: () => import('./pages/admin/privacidad/solicitudes/solicitudes-cancelacion.component').then((m) => m.SolicitudesCancelacionComponent)
+      },
+      {
+        path: 'admin/privacidad/derechos',
+        data: { ventana: 'VISTA_COMPANY', permiso: 'leer' },
+        loadComponent: () => import('./pages/admin/privacidad/derechos/derechos-admin.component').then((m) => m.DerechosAdminComponent)
       },
       {
         path: 'auditoria',
@@ -370,6 +380,15 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/profile/profile.component').then((m) => m.ProfileComponent)
       },
       {
+        path: 'privacidad/derechos',
+        loadComponent: () => import('./pages/privacy/derechos-datos.component').then((m) => m.DerechosDatosComponent)
+      },
+      {
+        path: 'consentimientos-veterinarios',
+        data: { ventana: 'VISTA_HISTORIAS', permiso: 'leer' },
+        loadComponent: () => import('./pages/historias-clinicas/consentimientos/consentimientos-veterinarios.component').then((m) => m.ConsentimientosVeterinariosComponent)
+      },
+      {
         path: 'password-change',
         loadComponent: () => import('./pages/auth/password-change/password-change.component').then((m) => m.PasswordChangeComponent)
       },
@@ -405,6 +424,11 @@ export const routes: Routes = [
         path: 'apoderado/mis-recetas',
         data: { ventana: 'VISTA_MIS_RECETAS' },
         loadComponent: () => import('./pages/apoderado/mis-recetas/mis-recetas.component').then((m) => m.MisRecetasComponent)
+      },
+      {
+        path: 'apoderado/consentimientos',
+        data: { ventana: 'VISTA_MI_HISTORIAL', permiso: 'leer' },
+        loadComponent: () => import('./pages/apoderado/consentimientos/consentimientos.component').then((m) => m.ConsentimientosComponent)
       },
       {
         path: 'mi-historial/:mascotaId',

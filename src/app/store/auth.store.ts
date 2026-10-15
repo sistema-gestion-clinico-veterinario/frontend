@@ -288,7 +288,7 @@ export const AuthStore = signalStore(
     
     hasRouteAccess(routePattern: string): boolean {
       const normalized = normalizeRoute(routePattern);
-      if (!normalized || normalized === 'profile' || normalized === 'password-change' || normalized === 'legal/accept' || normalized === 'aviso-clinica') return true;
+      if (!normalized || normalized === 'profile' || normalized === 'password-change' || normalized === 'legal/accept' || normalized === 'aviso-clinica' || normalized === 'privacidad/derechos') return true;
 
       // Mapeo de alias de rutas a su ruta canónica en la base de datos
       const ROUTE_ALIASES: Record<string, string> = {
@@ -307,11 +307,14 @@ export const AuthStore = signalStore(
         'empleado/recetas': 'recetas',
         'admin/historias-clinicas': 'historias-clinicas',
         'empleado/historias-clinicas': 'historias-clinicas',
+        'consentimientos-veterinarios': 'historias-clinicas',
+        'apoderado/consentimientos': 'apoderado/mi-historial',
       };
 
       const MODULOS_DE_PANTALLAS_DE_APOYO: Record<string, string[]> = {
         'admin/privacidad': ['company', 'admin/company'],
         'admin/privacidad/solicitudes': ['company', 'admin/company'],
+        'admin/privacidad/derechos': ['company', 'admin/company'],
       };
       const modulos = MODULOS_DE_PANTALLAS_DE_APOYO[normalized];
       if (modulos) {

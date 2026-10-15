@@ -11,6 +11,7 @@ import { LoadingStore } from '../../../store/loading.store';
 import { AuthStore } from '../../../store/auth.store';
 import { FormsModule } from '@angular/forms';
 import { HistoriaClinicaResumen } from '../../../models/response/historia-clinica-response';
+import { CompanyComplianceService } from '../../../core/services/company-compliance.service';
 
 @Component({
   selector: 'app-lista-hc',
@@ -23,11 +24,17 @@ export class ListaHcComponent implements OnInit {
   readonly loadingStore         = inject(LoadingStore);
   readonly authStore            = inject(AuthStore);
   private readonly router       = inject(Router);
+  private readonly complianceService = inject(CompanyComplianceService);
 
   cargando = signal(true);
 
   historias    = signal<HistoriaClinicaResumen[]>([]);
   totalRecords = signal(0);
+  consentimientoVetDisponible = signal(false);
+
+  abrirConsentimientos(): void {
+    void this.router.navigate(['/consentimientos-veterinarios']);
+  }
   currentPage  = 0;
   readonly pageSize = 10;
 
@@ -40,6 +47,9 @@ export class ListaHcComponent implements OnInit {
 
   ngOnInit() {
     this.cargarHistorias();
+    this.complianceService.actualesDeMiClinica().subscribe({
+      next: r => this.consentimientoVetDisponible.set(!!r.data.find(c => c.control === 'CONSENTIMIENTO_VETERINARIO')?.gestionadoPorSoftvet)
+    });
   }
 
   get activeCompanyId(): number | undefined {

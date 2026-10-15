@@ -1,8 +1,6 @@
 <div class="p-3 sm:p-4 min-h-screen bg-blue-50">
 
-  <!-- ======================== -->
-  <!-- SUPERADMIN: COMPANY LIST -->
-  <!-- ======================== -->
+
   @if (isSuperAdmin()) {
     @if (!cargando()) {
       <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-6 sm:mb-8">
@@ -10,13 +8,13 @@
           <h1 class="text-xl sm:text-2xl font-semibold text-slate-800">Administración de empresas</h1>
           <p class="text-xs sm:text-sm text-slate-400 mt-1">Gestiona y supervisa todas las sedes registradas en el sistema</p>
         </div>
-        <button (click)="openNew()"
+        <button (click)="openNew()" data-tour="company-create"
           class="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium px-5 h-10 rounded-lg transition-colors shrink-0">
           <i class="pi pi-plus text-xs"></i>
           Registrar empresa
         </button>
       </div>
-      <!-- Mobile: card list -->
+
       @if (companies.length > 0) {
         <div class="lg:hidden space-y-3 mb-4">
           @for (company of companies; track company) {
@@ -160,7 +158,7 @@
         </div>
       </div>
     }
-    <!-- Skeleton: SuperAdmin company list -->
+
     @if (cargando()) {
       <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-6 sm:mb-8">
         <div>
@@ -169,7 +167,6 @@
         </div>
         <p-skeleton width="10rem" height="2.5rem" borderRadius="0.5rem" />
       </div>
-      <!-- Mobile skeleton cards -->
       <div class="lg:hidden space-y-3 mb-4">
         @for (i of [1,2,3,4,5]; track i) {
           <div class="bg-white border border-slate-200 rounded-xl p-4">
@@ -243,9 +240,7 @@
     }
   }
 
-  <!-- ======================== -->
-  <!-- NON-SUPERADMIN: COMPANY PROFILE -->
-  <!-- ======================== -->
+
   @if (!isSuperAdmin()) {
     @if (!cargando()) {
       <div class="max-w-full mx-auto space-y-6 sm:space-y-8">
@@ -253,9 +248,7 @@
           <h1 class="text-xl sm:text-2xl font-semibold text-slate-800">Mi Empresa</h1>
           <p class="text-xs sm:text-sm text-slate-400 mt-1">Gestión de tu sede o establecimiento</p>
         </div>
-        <!-- ========================= -->
-        <!-- PERFIL -->
-        <!-- ========================= -->
+ 
         <section>
           <div class="flex items-center gap-2 mb-3 sm:mb-4">
             <i class="pi pi-building text-slate-500"></i>
@@ -263,7 +256,7 @@
           </div>
           @if (ownCompany(); as company) {
             <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-              <!-- Header with logo & edit -->
+   
               <div class="px-4 sm:px-6 py-4 sm:py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100 bg-slate-50/50">
                 <div class="flex items-center gap-3 sm:gap-4">
                   <div class="relative shrink-0">
@@ -305,7 +298,7 @@
                 </div>
               </div>
               <div class="grid grid-cols-1 lg:grid-cols-3 divide-y lg:divide-y-0 lg:divide-x divide-slate-100">
-                <!-- Left: Contact + Location + Web/Description + Hours -->
+          
                 <div class="lg:col-span-2 px-4 sm:px-6 py-4 sm:py-5 flex flex-col">
                   <div>
                     <div class="flex items-center gap-2 mb-3 sm:mb-4">
@@ -403,7 +396,7 @@
                     </div>
                   }
                 </div>
-                <!-- Right: Map (full column) -->
+
                 <div class="px-4 sm:px-6 py-4 sm:py-5">
                   <div class="h-full min-h-[350px]">
                     <iframe
@@ -424,9 +417,7 @@
             </div>
           }
         </section>
-        <!-- ========================= -->
-        <!-- ROLES -->
-        <!-- ========================= -->
+     
         <section>
           <div class="flex items-center gap-2 mb-3 sm:mb-4">
             <i class="pi pi-shield text-slate-500"></i>
@@ -461,7 +452,7 @@
         </section>
       </div>
     }
-    <!-- Skeleton: Admin company profile -->
+
     @if (cargando()) {
       <div class="max-w-full mx-auto space-y-6 sm:space-y-8">
         <div>
@@ -542,17 +533,15 @@
 
 </div>
 
-<!-- ======================== -->
-<!-- CREATE/EDIT MODAL (shared) -->
-<!-- ======================== -->
+
 @if (displayModal) {
   <div class="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/50 backdrop-blur-sm">
-    <div class="bg-white w-full sm:max-w-2xl rounded-t-xl sm:rounded-lg flex flex-col max-h-[90vh] sm:max-h-[95vh]">
+    <div data-tour="company-modal" class="bg-white w-full sm:max-w-2xl rounded-t-xl sm:rounded-lg flex flex-col max-h-[90vh] sm:max-h-[95vh]">
       <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50 rounded-t-xl sm:rounded-t-lg">
         <h2 class="text-sm sm:text-lg font-bold text-slate-800">
           {{ isEdit ? (isSuperAdmin() ? 'Modificar Registro de Empresa' : 'Editar Mi Empresa') : 'Registro de Nueva Entidad' }}
         </h2>
-        <button (click)="displayModal = false" class="text-slate-400 hover:text-slate-600 transition-colors p-2">
+        <button (click)="displayModal = false" data-tour="company-modal-close" class="text-slate-400 hover:text-slate-600 transition-colors p-2">
           <i class="pi pi-times"></i>
         </button>
       </div>
@@ -624,7 +613,7 @@
                   </p>
                 }
               </div>
-              <!-- Logo -->
+
               <div class="sm:col-span-2">
                 <label class="text-xs font-semibold text-slate-700 ml-0.5 block mb-2">Logo de la empresa</label>
                 <div
@@ -881,13 +870,9 @@
   </div>
 }
 
-<!-- ======================== -->
-<!-- COMPANY DETAIL MODAL (superadmin/admin) -->
-<!-- ======================== -->
 @if (displayDetailPanel()) {
   <div class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm font-['Barlow']" (click)="displayDetailPanel.set(false)">
     <div class="bg-white w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-100 flex flex-col" (click)="$event.stopPropagation()">
-      <!-- Header -->
       <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between shrink-0">
         <div class="flex items-center gap-3">
           <div class="w-9 h-9 bg-blue-50 text-blue-500 rounded-lg flex items-center justify-center">
@@ -901,10 +886,8 @@
           <i class="pi pi-times text-xs"></i>
         </button>
       </div>
-      <!-- Body -->
       @if (selectedCompanyDetail(); as comp) {
         <div class="p-6 space-y-6">
-          <!-- Logo + Name -->
           <div class="flex items-center gap-4">
             <div class="w-16 h-16 rounded-xl bg-blue-50 flex items-center justify-center text-blue-500 font-bold text-2xl overflow-hidden shrink-0 border border-slate-200">
               @if (comp.logoUrl) {
@@ -919,9 +902,9 @@
               <p class="text-xs text-slate-400 font-medium">RUC: {{ comp.ruc }}</p>
             </div>
           </div>
-          <!-- Grid -->
+
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
-            <!-- Enlace de acceso -->
+
             @if (comp.slug) {
               <div class="sm:col-span-2">
                 <label class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Enlace de acceso</label>
@@ -937,22 +920,22 @@
                 </div>
               </div>
             }
-            <!-- Correo Electrónico -->
+    
             <div>
               <label class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Correo Electrónico</label>
               <p class="text-sm font-semibold text-slate-800 mt-0.5">{{ comp.email || '—' }}</p>
             </div>
-            <!-- Teléfono -->
+   
             <div>
               <label class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Teléfono</label>
               <p class="text-sm font-semibold text-slate-800 mt-0.5">{{ comp.phone || '—' }}</p>
             </div>
-            <!-- Dirección -->
+        
             <div class="sm:col-span-2">
               <label class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Dirección</label>
               <p class="text-sm font-semibold text-slate-800 mt-0.5">{{ comp.address || '—' }}</p>
             </div>
-            <!-- Sitio Web -->
+
             @if (comp.website) {
               <div class="sm:col-span-2">
                 <label class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Sitio Web</label>
@@ -961,14 +944,14 @@
                 </p>
               </div>
             }
-            <!-- Descripción -->
+  
             @if (comp.description) {
               <div class="sm:col-span-2">
                 <label class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Descripción / Notas</label>
                 <p class="text-sm text-slate-700 mt-0.5 bg-slate-50 rounded-lg p-3 border border-slate-100">{{ comp.description }}</p>
               </div>
             }
-            <!-- Horarios de Operación -->
+
             @if (comp.operatingHours?.length) {
               <div class="sm:col-span-2">
                 <label class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block mb-2">Horarios de Operación</label>
@@ -999,9 +982,6 @@
   </div>
 }
 
-<!-- ======================== -->
-<!-- TOGGLE-ACTIVE CONFIRM (superadmin only) -->
-<!-- ======================== -->
 @if (companyPendingStatus) {
   <div class="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
     <div class="bg-white w-full max-w-md rounded-lg  overflow-hidden">
@@ -1033,9 +1013,6 @@
   </div>
 }
 
-<!-- ======================== -->
-<!-- SAVE CONFIRM DIALOG -->
-<!-- ======================== -->
 @if (confirmDialog()) {
   <div class="fixed inset-0 z-[130] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/50 backdrop-blur-sm">
     <div class="bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-xl overflow-hidden">

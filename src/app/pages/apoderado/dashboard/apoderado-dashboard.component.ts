@@ -8,6 +8,7 @@ import { ApoderadoService } from '../../../core/services/apoderado.service';
 import { LoadingStore } from '../../../store/loading.store';
 import { PagoService } from '../../../core/services/pago.service';
 import { PagoListResponse } from '../../../models/response/pago-response';
+import { CompanyComplianceService } from '../../../core/services/company-compliance.service';
 
 @Component({
   selector: 'app-apoderado-dashboard',
@@ -22,6 +23,7 @@ export class ApoderadoDashboardComponent implements OnInit {
   private readonly loadingStore     = inject(LoadingStore);
   private readonly messageService   = inject(MessageService);
   private readonly pagoService      = inject(PagoService);
+  private readonly complianceService = inject(CompanyComplianceService);
 
   readonly today = new Date();
 
@@ -39,6 +41,7 @@ export class ApoderadoDashboardComponent implements OnInit {
   canViewMisCitas     = computed(() => this.authStore.hasAccess('VISTA_MIS_CITAS', 'leer'));
   canViewMisMascotas  = computed(() => this.authStore.hasAccess('VISTA_MIS_MASCOTAS', 'leer'));
   canViewMiHistorial  = computed(() => this.authStore.hasAccess('VISTA_MI_HISTORIAL', 'leer'));
+  consentimientoVetDisponible = signal(false);
 
   totalPagos      = computed(() => this.pagos().length);
   pagosPagados    = computed(() => this.pagos().filter(p => p.estado === 'PAID' || p.estado === 'COMPLETADO').length);
@@ -73,6 +76,9 @@ export class ApoderadoDashboardComponent implements OnInit {
   ngOnInit() {
     this.loadDashboard();
     this.loadCompanyInfo();
+    this.complianceService.actualesDeMiClinica().subscribe({
+      next: r => this.consentimientoVetDisponible.set(!!r.data.find(c => c.control === 'CONSENTIMIENTO_VETERINARIO')?.gestionadoPorSoftvet)
+    });
   }
 
 private loadCompanyInfo() {

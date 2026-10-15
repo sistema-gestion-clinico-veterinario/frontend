@@ -11,6 +11,7 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { LaboratorioIaService } from '../../core/services/laboratorio-ia.service';
 import { LaboratorioIAResponse, ParametroClinico } from '../../models/response/laboratorio-ia-response';
+import { CompanyComplianceService } from '../../core/services/company-compliance.service';
 
 @Component({
   selector: 'app-laboratorio',
@@ -24,6 +25,7 @@ export class LaboratorioComponent {
   private readonly toast   = inject(MessageService);
   private readonly mascotaService = inject(MascotaService);
   private readonly autorizacionService = inject(IaAutorizacionService);
+  private readonly complianceService = inject(CompanyComplianceService);
   private readonly busquedas = new Subject<string>();
 
   mascota        = signal<MascotaResponse | null>(null);
@@ -33,11 +35,18 @@ export class LaboratorioComponent {
   verificando    = signal(false);
   errorAutorizacion = signal(false);
   textoBusqueda  = signal('');
+  iaDisponible   = signal<boolean | null>(null);
 
   readonly puedeAnalizar = computed(() =>
     !!this.archivo() && !!this.mascota() && !!this.autorizacion()?.autorizada && !this.cargando());
 
   constructor() {
+    this.complianceService.actualesDeMiClinica().subscribe({
+      next: respuesta => this.iaDisponible.set(
+        !!respuesta.data.find(control => control.control === 'USO_IA')?.habilitado
+      ),
+      error: () => this.iaDisponible.set(false)
+    });
     this.busquedas.pipe(
       debounceTime(300),
       distinctUntilChanged(),

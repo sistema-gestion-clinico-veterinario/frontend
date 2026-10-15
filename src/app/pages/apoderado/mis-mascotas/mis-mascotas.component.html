@@ -54,7 +54,7 @@
               <span>Limpiar filtros</span>
             </button>
           }
-          <!-- Contador -->
+        
           @if (totalRecords() > 0) {
             <div class="ml-auto text-[12px] text-slate-400 font-medium whitespace-nowrap hidden lg:block">
               {{ totalRecords() }} resultado{{ totalRecords() !== 1 ? 's' : '' }}
@@ -63,7 +63,7 @@
         </div>
       </div>
 
-      <!-- ─── LOADING ─── -->
+
       @if (isLoading()) {
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-5">
           @for (i of [1,2,3,4,5,6]; track i) {
@@ -79,7 +79,7 @@
         </div>
       }
 
-      <!-- ─── EMPTY STATE ─── -->
+
       @if (!isLoading() && mascotas().length === 0) {
         <div
           class="bg-white border border-slate-200 rounded-xl p-8 sm:p-16 flex flex-col items-center justify-center text-center">
@@ -93,14 +93,11 @@
         </div>
       }
 
-      <!-- ═══════════════════════════════════════════ -->
-      <!-- ─── DETALLE ÚNICO (solo 1 mascota en total) ─── -->
-      <!-- ═══════════════════════════════════════════ -->
       @if (!isLoading() && esMascotaUnica(); as mascota) {
         <div
           class="bg-white border border-slate-200 rounded-xl overflow-hidden">
           <div class="flex flex-col sm:flex-row">
-            <!-- Foto -->
+
             <div class="relative sm:w-64 h-56 sm:h-auto shrink-0 overflow-hidden"
               [ngClass]="mascota.activo ? 'bg-blue-50' : 'bg-slate-100'">
               @if (mascota.fotoUrl) {
@@ -121,7 +118,7 @@
                 </button>
               }
             </div>
-            <!-- Info -->
+     
             <div class="flex-1 p-6 flex flex-col">
               <div class="flex items-start justify-between gap-3 mb-5">
                 <div>
@@ -170,16 +167,13 @@
         </div>
       }
 
-      <!-- ═══════════════════════════════════════════ -->
-      <!-- ─── CARDS (2 o más mascotas) ─── -->
-      <!-- ═══════════════════════════════════════════ -->
       @if (!isLoading() && mascotas().length > 0 && !esMascotaUnica()) {
         <div
           class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-5">
           @for (mascota of mascotas(); track mascota) {
             <div
               class="bg-white border border-slate-200 rounded-xl overflow-hidden flex flex-col group hover:border-blue-500/40 transition-colors">
-              <!-- Foto de perfil (portada) -->
+   
               <div class="relative h-36 w-full shrink-0 overflow-hidden"
                 [ngClass]="mascota.activo ? 'bg-blue-50' : 'bg-slate-100'">
                 @if (mascota.fotoUrl) {

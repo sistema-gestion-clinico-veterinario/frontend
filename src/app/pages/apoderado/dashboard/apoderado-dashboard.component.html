@@ -327,6 +327,13 @@
                   <i class="pi pi-book text-xl text-indigo-600"></i>
                   <span class="text-[10px] font-extrabold text-slate-600 uppercase tracking-wider text-center leading-tight">Mi Historial</span>
                 </a>
+                @if (consentimientoVetDisponible()) {
+                <a routerLink="/apoderado/consentimientos"
+                  class="flex flex-col items-center gap-2 p-4 rounded-xl border border-slate-100 hover:border-indigo-200 hover:bg-indigo-50/50 transition-all cursor-pointer">
+                  <i class="pi pi-file-edit text-xl text-indigo-600"></i>
+                  <span class="text-[10px] font-extrabold text-slate-600 uppercase tracking-wider text-center leading-tight">Consentimientos</span>
+                </a>
+                }
               }
               @if (canViewMisPagos()) {
                 <a routerLink="/apoderado/mis-pagos"

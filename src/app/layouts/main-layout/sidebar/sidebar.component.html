@@ -30,6 +30,34 @@
     </div>
   </div>
 
+  <div class="shrink-0 border-b border-slate-100 p-2" [class.px-3]="!collapsed()">
+    @if (guidedTour.offerVisible() && !collapsed()) {
+      <div class="relative rounded-lg border border-blue-100 bg-blue-50 p-3">
+        <button type="button" (click)="guidedTour.postpone()" aria-label="Cerrar sugerencia de guía"
+          class="absolute right-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-md text-slate-400 hover:bg-white hover:text-slate-700">
+          <i class="pi pi-times text-[10px]"></i>
+        </button>
+        <div class="pr-7">
+          <p class="text-xs font-extrabold text-slate-800">Conoce SoftVet</p>
+          <p class="mt-1 text-[11px] leading-4 text-slate-500">Recorre las funciones principales sin guardar cambios.</p>
+        </div>
+        <button type="button" (click)="startGuide()"
+          class="mt-2 rounded-md bg-blue-600 px-3 py-1.5 text-[11px] font-bold text-white hover:bg-blue-700">
+          Iniciar recorrido
+        </button>
+      </div>
+    } @else {
+      <button type="button" data-tour="guide-launcher" (click)="startGuide()"
+        class="flex min-h-9 items-center rounded-md text-slate-500 hover:bg-blue-50 hover:text-blue-600"
+        [class.w-full]="!collapsed()" [class.justify-start]="!collapsed()" [class.gap-2.5]="!collapsed()"
+        [class.px-3]="!collapsed()" [class.w-10]="collapsed()" [class.justify-center]="collapsed()"
+        [title]="collapsed() ? 'Guía de inicio' : ''">
+        <i class="pi pi-question-circle text-[13px]"></i>
+        @if (!collapsed()) { <span class="text-[13px] font-semibold">Guía de inicio</span> }
+      </button>
+    }
+  </div>
+
   <nav
     class="flex-1 overflow-y-auto py-4 [scrollbar-width:thin] [scrollbar-color:rgba(100,116,139,0.28)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-300 hover:[&::-webkit-scrollbar-thumb]:bg-slate-400"
     [class.px-3]="!collapsed()" [class.px-0]="collapsed()"
@@ -78,6 +106,7 @@
               <div class="space-y-0.5" [class.pl-3]="!collapsed()">
                 @for (vista of structure.vistas; track vista) {
                   <a
+                    [attr.data-tour-menu]="vista.codigo"
                     [routerLink]="vista.ruta"
                     routerLinkActive="active-link"
                     #rla="routerLinkActive"
@@ -105,6 +134,7 @@
         }
         @if (!isGrouped(structure) && structure.vistas.length === 1) {
           <a
+            [attr.data-tour-menu]="structure.vistas[0].codigo"
             [routerLink]="structure.vistas[0].ruta"
             routerLinkActive="active-link"
             #rlaItem="routerLinkActive"

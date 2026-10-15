@@ -26,17 +26,19 @@
           }
           Descargar historia clínica
         </button>
-        @defer (when cargarAsistenteIa()) {
-          <app-diagnostico-ia [hc]="hc()!" [openInitially]="true"></app-diagnostico-ia>
-        } @placeholder {
-          <button type="button" (click)="cargarAsistenteIa.set(true)"
-            class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-500 text-white text-xs font-extrabold hover:bg-blue-600 active:scale-95 transition-all duration-150">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round"
-                d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23-.693L5 14.5m14.8.8l1.402 1.402c1.232 1.232.65 3.318-1.067 3.611A48.309 48.309 0 0112 21c-2.773 0-5.491-.235-8.135-.687-1.718-.293-2.3-2.379-1.067-3.61L5 14.5" />
-            </svg>
-            Asistente IA
-          </button>
+        @if (iaDisponible()) {
+          @defer (when cargarAsistenteIa()) {
+            <app-diagnostico-ia [hc]="hc()!" [openInitially]="true"></app-diagnostico-ia>
+          } @placeholder {
+            <button type="button" (click)="cargarAsistenteIa.set(true)"
+              class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-500 text-white text-xs font-extrabold hover:bg-blue-600 active:scale-95 transition-all duration-150">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23-.693L5 14.5m14.8.8l1.402 1.402c1.232 1.232.65 3.318-1.067 3.611A48.309 48.309 0 0112 21c-2.773 0-5.491-.235-8.135-.687-1.718-.293-2.3-2.379-1.067-3.61L5 14.5" />
+              </svg>
+              Asistente IA
+            </button>
+          }
         }
       </div>
     }
@@ -303,7 +305,7 @@
                 <p class="text-xs text-slate-400 font-medium">Selecciona una consulta para ver su detalle</p>
               </div>
             }
-            <!-- Todo el detalle de la consulta en un solo scroll: sin tabs ni clics extra -->
+  
             @if (consultaActiva()) {
               <div class="max-h-[75vh] overflow-y-auto divide-y divide-slate-100">
                 <div class="p-5 flex flex-col gap-5">
@@ -618,7 +620,7 @@
     @if (seccionActiva() === 'preventivos') {
       <section class="flex flex-col gap-4">
         <div class="grid grid-cols-1 items-start gap-5 lg:grid-cols-[380px_1fr]">
-          <!-- Calendario preventivo interactivo -->
+     
           <div class="bg-white border border-slate-200 rounded-xl overflow-hidden h-fit">
             <div class="flex items-center gap-3 border-b border-slate-200 px-5 py-3">
               <i class="pi pi-calendar text-base text-blue-500"></i>
@@ -692,7 +694,7 @@
               <p class="mt-2 text-[10px] text-slate-500">{{ controlesMesCalendario().length }} control{{ controlesMesCalendario().length === 1 ? '' : 'es' }} en este mes</p>
             </div>
           </div>
-          <!-- Controles Pendientes -->
+   
           <div class="bg-white border border-slate-200 rounded-xl overflow-hidden h-fit">
             <header class="px-5 py-4 border-b border-slate-100 flex items-center justify-between gap-3 flex-wrap">
               <div class="flex items-center gap-3">
@@ -790,7 +792,7 @@
             </div>
           </div>
         </div>
-        <!-- Historial completo de controles: todo junto, sin navegar mes a mes -->
+      
         <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
           <header class="px-5 py-4 border-b border-slate-100 flex items-center gap-3">
             <i class="pi pi-list text-base text-violet-600"></i>
@@ -859,7 +861,7 @@
           }
         </div>
         <div class="grid grid-cols-1 gap-5 xl:grid-cols-2">
-          <!-- Cartilla de Vacunación -->
+       
           <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
             <header class="px-5 py-4 border-b border-slate-100 flex items-center justify-between gap-3">
               <div class="flex items-center gap-3 min-w-0">
@@ -938,7 +940,7 @@
               <p class="py-10 text-center text-xs text-slate-400">Sin vacunas registradas</p>
             }
           </div>
-          <!-- Cartilla de Desparasitación -->
+        
           <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
             <header class="px-5 py-4 border-b border-slate-100 flex items-center justify-between gap-3">
               <div class="flex items-center gap-3 min-w-0">

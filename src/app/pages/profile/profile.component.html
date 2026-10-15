@@ -515,6 +515,7 @@
                               </button>
                             }
                           </div>
+                          @if (recordatoriosDisponibles()) {
                           <div class="border-t border-slate-100 pt-3">
                             <p class="text-xs font-semibold text-slate-600">Recordatorios preventivos por correo</p>
                             <p class="mt-1 text-xs leading-5 text-slate-400">Son opcionales. Solo los recibirás si los autorizas y puedes retirar tu autorización cuando quieras.</p>
@@ -527,6 +528,8 @@
                                 class="rounded-lg border px-3 py-2 text-xs font-semibold disabled:opacity-50">No autorizo / revocar</button>
                             </div>
                           </div>
+                          }
+                          @if (iaDisponible()) {
                           <div class="border-t border-slate-100 pt-3">
                             <p class="text-xs font-semibold text-slate-600">Inteligencia artificial en la atención de tus mascotas</p>
                             <p class="mt-1 text-xs leading-5 text-slate-400">
@@ -547,11 +550,21 @@
                                 class="rounded-lg border px-3 py-2 text-xs font-semibold disabled:opacity-60">No autorizo</button>
                             </div>
                           </div>
+                          }
                         </div>
+                      }
+                      @if (derechosDatosDisponibles()) {
+                      <a routerLink="/privacidad/derechos"
+                        class="mt-4 flex items-center justify-between rounded-lg border border-slate-200 px-4 py-3 text-xs font-semibold text-slate-700 hover:bg-slate-50">
+                        <span><i class="pi pi-id-card mr-2 text-[var(--brand-primary)]"></i>Ejercer y consultar mis derechos sobre datos</span>
+                        <i class="pi pi-arrow-right text-slate-400"></i>
+                      </a>
                       }
                     </div>
                   }
-                  <app-cancelar-datos-card class="block" />
+                  @if (derechosDatosDisponibles()) {
+                    <div id="cancelacion-datos" class="scroll-mt-4"><app-cancelar-datos-card class="block" /></div>
+                  }
                   <app-close-account-card class="block" />
                 </div>
               </div>
