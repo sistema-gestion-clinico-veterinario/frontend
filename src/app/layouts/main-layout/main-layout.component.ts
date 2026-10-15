@@ -7,13 +7,14 @@ import { AuthStore } from '../../store/auth.store';
 import { ChangePasswordModalComponent } from './change-password-modal/change-password-modal.component';
 import { NavbarComponent } from './navbar/navbar.component';
 import { SidebarComponent } from './sidebar/sidebar.component';
+import { GuidedTourOverlayComponent } from '../../shared/components/guided-tour-overlay/guided-tour-overlay.component';
 
 const PASSWORD_MODAL_DISMISSED_KEY = 'pw_modal_dismissed';
 
 @Component({
   selector: 'app-main-layout',
   standalone: true,
-  imports: [RouterOutlet, SidebarComponent, NavbarComponent, ChangePasswordModalComponent],
+  imports: [RouterOutlet, SidebarComponent, NavbarComponent, ChangePasswordModalComponent, GuidedTourOverlayComponent],
   templateUrl: './main-layout.component.html',
   styleUrl: './main-layout.component.scss',
   // Estas hojas son globales por diseño, pero se descargan solo después de
@@ -62,6 +63,11 @@ export class MainLayoutComponent {
 
   closeMobileSidebar() {
     this.mobileSidebarOpen.set(false);
+  }
+
+  @HostListener('window:softvet-tour-close-mobile-sidebar')
+  closeMobileSidebarForTour(): void {
+    this.closeMobileSidebar();
   }
 
   @HostListener('window:resize')

@@ -2,7 +2,7 @@
   display: block;
 }
 
-/* Custom Micro-animations */
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -18,13 +18,13 @@
   animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* Glassmorphism elements */
+
 .backdrop-blur-md {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
 
-/* Custom styles for PrimeNG overrides */
+
 ::ng-deep {
   .p-dialog {
     border-radius: 16px !important;

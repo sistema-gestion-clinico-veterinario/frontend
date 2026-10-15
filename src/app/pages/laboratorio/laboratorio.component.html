@@ -1,3 +1,14 @@
+@if (iaDisponible() === null) {
+  <div class="min-h-screen bg-blue-50 p-8 text-sm font-semibold text-slate-500">Verificando la configuración de la clínica…</div>
+} @else if (!iaDisponible()) {
+  <div class="min-h-screen bg-blue-50 p-6 sm:p-8">
+    <div class="mx-auto max-w-xl rounded-xl border border-slate-200 bg-white p-8 text-center">
+      <i class="pi pi-lock mb-3 text-3xl text-slate-300"></i>
+      <h1 class="text-xl font-extrabold text-slate-800">Funcionalidad no contratada</h1>
+      <p class="mt-2 text-sm text-slate-500">El análisis de laboratorio con inteligencia artificial no está habilitado para esta clínica.</p>
+    </div>
+  </div>
+} @else {
 <div class="p-3 sm:p-4 lg:p-8 min-h-screen bg-blue-50 font-['Barlow']">
 
   <!-- Header -->
@@ -346,3 +357,4 @@
   </div>
 
   <p-toast position="bottom-right"></p-toast>
+}

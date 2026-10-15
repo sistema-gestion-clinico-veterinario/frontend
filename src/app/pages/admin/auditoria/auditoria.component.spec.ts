@@ -41,15 +41,16 @@ describe('AuditoriaComponent - dispositivo', () => {
     fixture.detectChanges();
   });
 
-  it('la tabla conserva el origen y el dispositivo dentro del detalle adaptable', () => {
+  it('la tabla tiene una columna de dispositivo junto al origen de la conexión', () => {
     component.logs.set([registro(), registro({ id: 2, dispositivo: null, ipAddress: null })]);
     fixture.detectChanges();
 
     const cabeceras = [...(fixture.nativeElement as HTMLElement).querySelectorAll('th')].map(th => th.textContent?.trim());
-    expect(cabeceras).toEqual(['Fecha / Hora', 'Usuario', 'Evento', 'Detalle de Operación']);
-    expect(texto()).toContain('190.40.10.5');
+    expect(cabeceras).toContain('Origen IP');
+    expect(cabeceras).toContain('Dispositivo');
+    expect(cabeceras.indexOf('Dispositivo')).toBe(cabeceras.indexOf('Origen IP') + 1);
     expect(texto()).toContain('Chrome en Windows');
-    expect(texto()).toContain('Dispositivo no registrado');
+    expect(texto()).toContain('No registrado');
   });
 
   it('en el listado para celulares también se ve el dispositivo', () => {

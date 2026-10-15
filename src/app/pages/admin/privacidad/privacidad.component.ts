@@ -8,6 +8,7 @@ import { PrivacidadService } from '../../../core/services/privacidad.service';
 import { AvisoVersion, CamposAvisoPrivacidad, VistaPreviaAviso } from '../../../models/privacy/privacidad.model';
 import { AudienciaAvisoPrivacidad } from '../../../types/privacy/audiencia-aviso-privacidad.type';
 import { AuthStore } from '../../../store/auth.store';
+import { CompanyComplianceService } from '../../../core/services/company-compliance.service';
 
 @Component({
   selector: 'app-privacidad',
@@ -21,9 +22,11 @@ export class PrivacidadComponent implements OnInit {
   private readonly service = inject(PrivacidadService);
   private readonly messages = inject(MessageService);
   private readonly authStore = inject(AuthStore);
+  private readonly complianceService = inject(CompanyComplianceService);
 
-
-  readonly puedePublicar = computed(() => this.authStore.activeRolePurpose() === 'COMPANY_ADMIN');
+  gestionAvisoSoftvet = signal<boolean | null>(null);
+  readonly puedePublicar = computed(() => this.authStore.activeRolePurpose() === 'COMPANY_ADMIN'
+    && this.gestionAvisoSoftvet() === true);
 
   cargando = signal(true);
   publicando = signal(false);
@@ -56,12 +59,23 @@ export class PrivacidadComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    if (!this.puedePublicar()) {
-      this.form.disable({ emitEvent: false });
-      this.cargarHistorial();
-      return;
-    }
-    this.cargar();
+    this.complianceService.actualesDeMiClinica().subscribe({
+      next: respuesta => {
+        const gestionada = !!respuesta.data.find(c => c.control === 'AVISO_PRIVACIDAD')?.gestionadoPorSoftvet;
+        this.gestionAvisoSoftvet.set(gestionada);
+        if (!this.puedePublicar()) {
+          this.form.disable({ emitEvent: false });
+          this.cargarHistorial();
+        } else {
+          this.cargar();
+        }
+      },
+      error: () => {
+        this.gestionAvisoSoftvet.set(false);
+        this.form.disable({ emitEvent: false });
+        this.cargarHistorial();
+      }
+    });
   }
 
   private cargarHistorial(): void {

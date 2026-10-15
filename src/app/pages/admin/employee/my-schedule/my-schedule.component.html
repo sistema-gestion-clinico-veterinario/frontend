@@ -1,11 +1,11 @@
 <div class="p-4 md:p-6 flex flex-col gap-6 animate-fade-in bg-slate-50/50 min-h-screen">
 
-  <!-- Encabezado de la vista -->
+
   <div class="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4 relative overflow-hidden">
-    <!-- Adorno sutil de fondo -->
+
     <div class="absolute -right-10 -top-10 w-40 h-40 bg-slate-50 rounded-full blur-3xl opacity-50 pointer-events-none"></div>
 
-    <!-- Título -->
+
     <div class="flex flex-col min-w-0">
       <h1 class="text-lg font-bold text-slate-800 flex items-center gap-2">
         <i class="pi pi-calendar-plus text-blue-500 flex-shrink-0"></i>
@@ -14,10 +14,10 @@
       <p class="text-xs text-slate-500 font-medium mt-0.5">Gestión de horarios y disponibilidad personal</p>
     </div>
 
-    <!-- Controles -->
+
     <div class="flex flex-col sm:flex-row gap-4 items-end relative z-10">
 
-      <!-- Modos de vista -->
+   
       <div class="flex flex-col w-full sm:w-48 md:w-56">
         <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Vista</label>
         <div class="flex bg-slate-50 p-1 rounded-lg border border-slate-200 h-9">
@@ -45,7 +45,7 @@
         </div>
       </div>
 
-      <!-- Navegación de fecha -->
+
       <div class="flex flex-col w-full sm:w-56 md:w-64">
         <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Período</label>
         <div class="flex items-center bg-slate-50 rounded-lg border border-slate-200 h-9 overflow-hidden">
@@ -76,7 +76,7 @@
     </div>
   </div>
 
-  <!-- Resumen de Horas -->
+
   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
     <div class="bg-white border border-slate-200 p-3 rounded-2xl flex items-center gap-3">
       <div class="w-9 h-9 bg-blue-50 rounded-xl flex items-center justify-center text-blue-500 flex-shrink-0">
@@ -109,12 +109,11 @@
     </div>
   </div>
 
-  <!-- Calendario Contenedor -->
+
   <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden">
 
-    <!-- ============ VISTA SEMANA / MES ============ -->
     @if (viewMode !== 'day') {
-      <!-- Cabecera de días -->
+
       <div class="grid grid-cols-7 border-b border-slate-100 bg-slate-50/50">
         @for (i of [0,1,2,3,4,5,6]; track i) {
           <div
@@ -126,14 +125,14 @@
           </div>
         }
       </div>
-      <!-- Grid de celdas -->
+
       <div class="grid grid-cols-7">
         @for (item of calendarDays; track item) {
           <div
             class="border-r border-b border-slate-100 last:border-r-0 relative group hover:bg-slate-50/50 transition-all"
             [ngClass]="{'bg-slate-50/50': item.otherMonth, 'bg-white': !item.otherMonth}"
             [style.min-height]="viewMode === 'month' ? '80px' : '160px'">
-            <!-- Número de día -->
+        
             <div class="flex items-center justify-between px-2 pt-2 pb-1">
               <span
                 class="text-xs font-bold w-6 h-6 flex items-center justify-center rounded-md"
@@ -144,7 +143,7 @@
                 {{ item.day }}
               </span>
             </div>
-            <!-- Lista de turnos Compacta -->
+  
             <div class="px-1.5 pb-2 space-y-1">
               @for (shift of item.shifts; track shift) {
                 <div
@@ -170,7 +169,7 @@
       </div>
     }
 
-    <!-- ============ VISTA DÍA ============ -->
+
     @if (viewMode === 'day') {
       <div class="flex items-center gap-4 px-6 py-4 border-b border-slate-100 bg-white">
         <div class="flex items-center gap-3">
@@ -227,7 +226,7 @@
 
 </div>
 
-<!-- Contenedor Exclusivo de Impresión (Oculto en pantalla, visible al imprimir PDF) -->
+
 <div id="print-area" class="hidden print:block font-sans p-10 text-[#0f172a] bg-white">
   <div class="print-header-container">
     <div class="print-logo-title">

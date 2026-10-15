@@ -12,6 +12,7 @@ import { CitaService } from '../../../core/services/cita.service';
 import { CompanyService } from '../../../core/services/company.service';
 import { AuditLogService } from '../../../core/services/audit-log.service';
 import { HistoriaClinicaPdfService } from '../../../core/services/historia-clinica-pdf.service';
+import { CompanyComplianceService } from '../../../core/services/company-compliance.service';
 import { CompanyDTO } from '../../../models/request/company-dto';
 import { LoadingStore } from '../../../store/loading.store';
 import { AuthStore } from '../../../store/auth.store';
@@ -45,6 +46,7 @@ export class HistoriaClinicaMascotaComponent implements OnInit, OnDestroy {
   private readonly companyService = inject(CompanyService);
   private readonly auditLogService = inject(AuditLogService);
   private readonly historiaClinicaPdfService = inject(HistoriaClinicaPdfService);
+  private readonly complianceService = inject(CompanyComplianceService);
   private readonly msgService   = inject(MessageService);
   private readonly sanitizer    = inject(DomSanitizer);
   readonly loadingStore         = inject(LoadingStore);
@@ -64,6 +66,7 @@ export class HistoriaClinicaMascotaComponent implements OnInit, OnDestroy {
   loadingServicios    = signal(false);
   descargandoHistoriaCompleta = signal(false);
   cargarAsistenteIa = signal(false);
+  iaDisponible = signal(false);
 
   diagnosticosSeguimiento = signal<DiagnosticoResponse[]>([]);
   tratamientosSeguimiento = signal<TratamientoResponse[]>([]);
@@ -270,6 +273,12 @@ export class HistoriaClinicaMascotaComponent implements OnInit, OnDestroy {
   hoy = signal(new Date());
 
   ngOnInit() {
+    this.complianceService.actualesDeMiClinica().subscribe({
+      next: respuesta => this.iaDisponible.set(
+        !!respuesta.data.find(control => control.control === 'USO_IA')?.habilitado
+      ),
+      error: () => this.iaDisponible.set(false)
+    });
     this.route.queryParamMap.subscribe(qp => {
       if (qp.get('returnUrl')) this.returnUrl = qp.get('returnUrl')!;
     });

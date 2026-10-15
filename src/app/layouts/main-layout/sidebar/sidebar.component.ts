@@ -1,5 +1,5 @@
 
-import { Component, inject, input, computed, signal, output } from '@angular/core';
+import { Component, HostListener, OnInit, inject, input, computed, signal, output } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthStore } from '../../../store/auth.store';
 import { MenuItemDTO, MenuStructureDTO } from '../../../models/response/auth-login-response.model';
@@ -7,6 +7,8 @@ import { RouteMapperService } from '../../../core/services/route-mapper.service'
 import { MediaService } from '../../../core/services/media.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { SessionService } from '../../../core/services/session.service';
+import { CompanyComplianceService } from '../../../core/services/company-compliance.service';
+import { GuidedTourService } from '../../../core/services/guided-tour.service';
 import { SkeletonModule } from 'primeng/skeleton';
 import {
   SOFTVET_LOGO_URL,
@@ -28,7 +30,7 @@ interface MenuSection extends MenuStructureDTO {
   imports: [RouterLink, RouterLinkActive, SkeletonModule],
   templateUrl: './sidebar.component.html'
 })
-export class SidebarComponent {
+export class SidebarComponent implements OnInit {
   collapsed = input(false);
   toggleSidebar = output<void>();
   navigate = output<void>();
@@ -39,6 +41,37 @@ export class SidebarComponent {
   private mediaService = inject(MediaService);
   private authService = inject(AuthService);
   private sessionService = inject(SessionService);
+  private complianceService = inject(CompanyComplianceService);
+  readonly guidedTour = inject(GuidedTourService);
+  private iaHabilitada = signal(true);
+
+  ngOnInit(): void {
+    this.guidedTour.initialize();
+    if (this.authStore.activeRolePurpose() === 'PLATFORM_ADMIN') return;
+    this.complianceService.actualesDeMiClinica().subscribe({
+      next: respuesta => this.iaHabilitada.set(
+        !!respuesta.data.find(control => control.control === 'USO_IA')?.habilitado
+      )
+    });
+  }
+
+  startGuide(): void {
+    if (this.collapsed()) {
+      this.toggleSidebar.emit();
+      window.setTimeout(() => this.guidedTour.start(), 240);
+      return;
+    }
+    this.guidedTour.start();
+  }
+
+  @HostListener('window:softvet-tour-reveal-menu', ['$event'])
+  revealTourMenu(event: Event): void {
+    const code = (event as CustomEvent<{ code?: string }>).detail?.code;
+    if (!code) return;
+    const section = this.menuStructure().find(item => item.vistas.some(view => view.codigo === code));
+    if (!section || !this.isGrouped(section)) return;
+    this.expandedSections.update(state => ({ ...state, [this.sectionKey(section)]: true }));
+  }
 
   expandedSections = signal<Record<string, boolean>>({});
   companyLogoUrl = computed(() => this.authStore.selectedEnterprise()?.logoUrl
@@ -105,7 +138,7 @@ export class SidebarComponent {
 
       if (isMenuStructure(item)) {
         const vistasConRuta: MenuItemWithRuta[] = item.vistas
-          .filter(v => v.leer !== false)
+          .filter(v => v.leer !== false && (this.iaHabilitada() || v.codigo !== 'VISTA_LABORATORIO'))
           .flatMap(v => {
             const ruta = this.routeMapper.getRoute(v.codigo);
             return ruta ? [{ ...v, ruta }] : [];
@@ -115,7 +148,7 @@ export class SidebarComponent {
         structures.push({ ...item, vistas: vistasConRuta });
       } else {
         const vistaItem = item as MenuItemDTO;
-        if (vistaItem.leer === false) continue;
+        if (vistaItem.leer === false || (!this.iaHabilitada() && vistaItem.codigo === 'VISTA_LABORATORIO')) continue;
         const ruta = this.routeMapper.getRoute(vistaItem.codigo);
         if (!ruta) continue;
         structures.push({

@@ -252,6 +252,11 @@ export class CompanyComponent implements OnInit {
         command: () => this.viewCompanyDetail(company)
       }
     ];
+    items.push({
+      label: 'Cumplimiento y funcionalidades',
+      icon: 'pi pi-shield',
+      command: () => this.router.navigate(['/admin/company', company.id, 'compliance'])
+    });
     if (canModify) {
       items.push({
         label: 'Editar',
