@@ -1,8 +1,6 @@
 import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter, withInMemoryScrolling, UrlSerializer } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { providePrimeNG } from 'primeng/config';
 import { routes } from './app.routes';
 import { apiInterceptor } from './core/interceptors/api.interceptor';
 import { SlugUrlSerializer } from './core/routing/slug-url-serializer';
@@ -15,18 +13,6 @@ export const appConfig: ApplicationConfig = {
       anchorScrolling: 'enabled'
     })),
     { provide: UrlSerializer, useClass: SlugUrlSerializer },
-    provideHttpClient(withInterceptors([apiInterceptor])),
-    provideAnimationsAsync(),
-    providePrimeNG({
-      theme: {
-        options: {
-          darkModeSelector: 'none',
-          cssLayer: {
-            name: 'primeng',
-            order: 'tailwind-base, primeng, tailwind-utilities'
-          }
-        }
-      }
-    })
+    provideHttpClient(withInterceptors([apiInterceptor]))
   ]
 };

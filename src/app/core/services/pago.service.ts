@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../../models/response/api-response';
 import { PagoRequest } from '../../models/request/pago-request';
@@ -30,12 +30,20 @@ export class PagoService {
     return this.http.get<ApiResponse<Page<PagoListResponse>>>(url);
   }
 
-  listarHistorialPorEmpresa(page: number = 0, size: number = 10, companyId?: number) {
-    let url = `${this.url}/history?page=${page}&size=${size}`;
-    if (companyId != null) {
-      url += `&companyId=${companyId}`;
-    }
-    return this.http.get<ApiResponse<Page<PagoListResponse>>>(url);
+  listarHistorialPorEmpresa(
+    page: number = 0,
+    size: number = 10,
+    companyId?: number,
+    filters: { estado?: string; metodoPago?: string } = {}
+  ) {
+    let params = new HttpParams()
+      .set('page', page)
+      .set('size', size);
+    if (companyId != null) params = params.set('companyId', companyId);
+    if (filters.estado) params = params.set('estado', filters.estado);
+    if (filters.metodoPago) params = params.set('metodoPago', filters.metodoPago);
+
+    return this.http.get<ApiResponse<Page<PagoListResponse>>>(`${this.url}/history`, { params });
   }
 
   getMisPagos(page: number = 0, size: number = 10) {
