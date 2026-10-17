@@ -372,7 +372,7 @@ export class CompanyComponent implements OnInit {
     if (logo) {
       try {
         logoUrl = await new Promise<string>((resolve, reject) => {
-          this.mediaService.upload(logo.file).subscribe({ next: resolve, error: reject });
+          this.mediaService.uploadLogo(logo.file).subscribe({ next: resolve, error: reject });
         });
       } catch (err: any) {
         this.loading = false;
