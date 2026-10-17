@@ -1,7 +1,7 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router, ActivatedRouteSnapshot } from '@angular/router';
 import { AuthStore } from '../../store/auth.store';
-import { resolveDashboardRoute, resolveInitialRoute } from '../../layouts/main-layout/navbar/navbar.component';
+import { resolveDashboardRoute, resolveInitialRoute } from '../routing/initial-route';
 import { map, of, switchMap } from 'rxjs';
 import { AvisoClinicaGate } from '../services/aviso-clinica-gate.service';
 import { SessionService } from '../services/session.service';

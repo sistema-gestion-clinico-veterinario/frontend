@@ -12,7 +12,7 @@ import { AuthStore } from '../../../store/auth.store';
 import { AuthService } from '../../../core/services/auth.service';
 import { Role } from '../../../models/response/permission';
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
-import { resolveInitialRoute } from '../../../layouts/main-layout/navbar/navbar.component';
+import { resolveInitialRoute } from '../../../core/routing/initial-route';
 import { hasMeaningfulText } from '../../../core/utils/input-validation.util';
 import { normalizeText } from '../../../core/utils/normalize-text.util';
 import { SessionService } from '../../../core/services/session.service';

@@ -1,0 +1,143 @@
+<p-toast position="top-right" />
+
+<main class="min-h-screen bg-slate-50 p-4 sm:p-6">
+  <div class="mx-auto max-w-6xl space-y-5">
+    <header>
+      <a routerLink="/historias-clinicas" class="inline-flex items-center gap-2 text-xs font-bold text-[var(--brand-primary)]">
+        <i class="pi pi-arrow-left"></i> Historias clínicas
+      </a>
+      <h1 class="mt-2 text-2xl font-extrabold text-slate-900">Consentimiento informado veterinario</h1>
+      <p class="mt-1 text-sm text-slate-500">
+        Prepare el documento antes del procedimiento. Solo una persona con autorización vigente podrá decidir.
+      </p>
+    </header>
+
+    <section class="rounded-xl border border-slate-200 bg-white p-5" aria-labelledby="titulo-nuevo">
+      <h2 id="titulo-nuevo" class="font-extrabold text-slate-900">Nuevo consentimiento</h2>
+      <p class="mt-1 text-xs text-slate-500">Use los identificadores de la ficha clínica seleccionada. La consulta es opcional.</p>
+
+      <form [formGroup]="form" (ngSubmit)="crear()" class="mt-4 space-y-6" novalidate>
+        <fieldset class="grid gap-3 md:grid-cols-3">
+          <legend class="sr-only">Identificación</legend>
+
+          <div>
+            <label for="mascotaId" class="text-xs font-bold text-slate-700">ID mascota <span class="text-rose-500">*</span></label>
+            <input id="mascotaId" type="number" min="1" formControlName="mascotaId"
+              [class.border-rose-400]="invalido('mascotaId')"
+              class="mt-1 h-10 w-full rounded-lg border border-slate-300 px-3 text-sm outline-none focus:border-[var(--brand-primary)]" />
+            @if (invalido('mascotaId')) { <p class="mt-1 text-[11px] text-rose-600">Indica el ID de la mascota.</p> }
+          </div>
+
+          <div>
+            <label for="apoderadoId" class="text-xs font-bold text-slate-700">ID autorizado <span class="text-rose-500">*</span></label>
+            <input id="apoderadoId" type="number" min="1" formControlName="apoderadoId"
+              [class.border-rose-400]="invalido('apoderadoId')"
+              class="mt-1 h-10 w-full rounded-lg border border-slate-300 px-3 text-sm outline-none focus:border-[var(--brand-primary)]" />
+            @if (invalido('apoderadoId')) { <p class="mt-1 text-[11px] text-rose-600">Indica el ID de la persona autorizada.</p> }
+          </div>
+
+          <div>
+            <label for="consultaId" class="text-xs font-bold text-slate-700">ID consulta <span class="font-normal text-slate-400">(opcional)</span></label>
+            <input id="consultaId" type="number" min="1" formControlName="consultaId"
+              class="mt-1 h-10 w-full rounded-lg border border-slate-300 px-3 text-sm outline-none focus:border-[var(--brand-primary)]" />
+          </div>
+        </fieldset>
+
+        <fieldset class="space-y-3">
+          <legend class="sr-only">Procedimiento</legend>
+
+          <div>
+            <label for="procedimiento" class="text-xs font-bold text-slate-700">Procedimiento <span class="text-rose-500">*</span></label>
+            <input id="procedimiento" type="text" formControlName="procedimiento" [attr.maxlength]="procedimientoMax"
+              [class.border-rose-400]="invalido('procedimiento')"
+              class="mt-1 h-10 w-full rounded-lg border border-slate-300 px-3 text-sm outline-none focus:border-[var(--brand-primary)]" />
+            <div class="mt-1 flex justify-between gap-2 text-[11px]">
+              <span class="text-rose-600">@if (invalido('procedimiento')) { Describe el procedimiento. }</span>
+              <span class="text-slate-400">{{ longitud('procedimiento') }}/{{ procedimientoMax }}</span>
+            </div>
+          </div>
+
+          <div class="grid gap-3 md:grid-cols-2">
+            @for (campo of camposDeTexto; track campo.control) {
+              <div>
+                <label [for]="campo.control" class="text-xs font-bold text-slate-700">{{ campo.etiqueta }} <span class="text-rose-500">*</span></label>
+                <textarea [id]="campo.control" [formControlName]="campo.control" [rows]="campo.filas" [attr.maxlength]="campo.max"
+                  [class.border-rose-400]="invalido(campo.control)"
+                  class="mt-1 w-full rounded-lg border border-slate-300 p-2 text-sm outline-none focus:border-[var(--brand-primary)]"></textarea>
+                <div class="mt-1 flex justify-between gap-2 text-[11px]">
+                  <span class="text-rose-600">@if (invalido(campo.control)) { Este campo es obligatorio. }</span>
+                  <span class="text-slate-400">{{ longitud(campo.control) }}/{{ campo.max }}</span>
+                </div>
+              </div>
+            }
+          </div>
+        </fieldset>
+
+        <fieldset class="flex flex-wrap gap-5 text-sm text-slate-700">
+          <legend class="sr-only">Autorizaciones adicionales</legend>
+          <label class="flex cursor-pointer items-center gap-2">
+            <input type="checkbox" formControlName="autorizacionAnestesia" class="size-4 accent-[var(--brand-primary)]" />
+            Requiere autorización de anestesia
+          </label>
+          <label class="flex cursor-pointer items-center gap-2">
+            <input type="checkbox" formControlName="autorizacionEmergencia" class="size-4 accent-[var(--brand-primary)]" />
+            Autoriza maniobras de emergencia
+          </label>
+        </fieldset>
+
+        <div class="flex justify-end border-t border-slate-100 pt-4">
+          <button type="submit" [disabled]="trabajando()"
+            class="rounded-lg bg-[var(--brand-primary)] px-5 py-2 text-sm font-bold text-white disabled:opacity-50">
+            {{ trabajando() ? 'Enviando…' : 'Enviar para decisión' }}
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <section class="rounded-xl border border-slate-200 bg-white p-5" aria-labelledby="titulo-emitidos">
+      <h2 id="titulo-emitidos" class="font-extrabold text-slate-900">Documentos emitidos</h2>
+
+      @if (cargando()) {
+        <p class="mt-3 text-sm text-slate-500">Cargando documentos…</p>
+      } @else if (error()) {
+        <p class="mt-3 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700" role="alert">
+          {{ error() }}
+          <button type="button" (click)="cargar()" class="ml-2 font-bold underline">Reintentar</button>
+        </p>
+      } @else {
+        @for (c of items(); track c.uuid) {
+          <details class="mt-3 rounded-lg border border-slate-200 p-4">
+            <summary class="flex cursor-pointer flex-wrap items-center gap-2 text-sm font-bold text-slate-800">
+              <span>{{ c.mascota }} · {{ c.procedimiento }}</span>
+              <span class="rounded-full border px-2 py-0.5 text-[11px] font-bold" [ngClass]="clasesDeEstado(c.estado)">
+                {{ etiquetaDeEstado(c.estado) }}
+              </span>
+              <span class="ml-auto text-xs font-normal text-slate-400">{{ c.creadoAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+            </summary>
+
+            <dl class="mt-3 grid gap-x-6 gap-y-1 text-xs text-slate-600 sm:grid-cols-2">
+              <div><dt class="inline font-bold text-slate-700">Autorizado: </dt><dd class="inline">{{ c.titular }}</dd></div>
+              @if (c.decididoAt) {
+                <div><dt class="inline font-bold text-slate-700">Decidido: </dt><dd class="inline">{{ c.decididoAt | date: 'dd/MM/yyyy HH:mm' }}</dd></div>
+              }
+              @if (c.nombreFirmante) {
+                <div><dt class="inline font-bold text-slate-700">Firmante: </dt><dd class="inline">{{ c.nombreFirmante }}{{ c.relacionFirmante ? ' · ' + c.relacionFirmante : '' }}</dd></div>
+              }
+              @if (c.motivoRechazo) {
+                <div class="sm:col-span-2"><dt class="inline font-bold text-slate-700">Motivo del rechazo: </dt><dd class="inline">{{ c.motivoRechazo }}</dd></div>
+              }
+              @if (c.motivoRevocacion) {
+                <div class="sm:col-span-2"><dt class="inline font-bold text-slate-700">Motivo de la revocación: </dt><dd class="inline">{{ c.motivoRevocacion }}</dd></div>
+              }
+            </dl>
+
+            <pre class="mt-3 max-h-96 overflow-y-auto whitespace-pre-wrap rounded bg-slate-50 p-3 font-sans text-xs leading-5 text-slate-700">{{ c.contenido }}</pre>
+            <p class="mt-2 break-all text-[11px] text-slate-400">SHA-256: {{ c.contenidoHash }}</p>
+          </details>
+        } @empty {
+          <p class="mt-3 text-sm text-slate-500">No hay documentos emitidos.</p>
+        }
+      }
+    </section>
+  </div>
+</main>

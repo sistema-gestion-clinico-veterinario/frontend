@@ -1,20 +1,152 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { MessageService } from 'primeng/api';
+import { ToastModule } from 'primeng/toast';
+import { ESTADO_DE_CONSENTIMIENTO } from '../../../core/constants/consentimiento-veterinario.constants';
 import { ConsentimientoVeterinarioService } from '../../../core/services/consentimiento-veterinario.service';
-import { ConsentimientoVeterinario, CrearConsentimientoVeterinario } from '../../../models/privacy/consentimiento-veterinario.model';
+import {
+  ConsentimientoVeterinario,
+  CrearConsentimientoVeterinario,
+  EstadoConsentimientoVeterinario
+} from '../../../models/privacy/consentimiento-veterinario.model';
 
-@Component({ selector: 'app-consentimientos-veterinarios', standalone: true, imports: [CommonModule, FormsModule, RouterLink], template: `
-<main class="min-h-screen bg-slate-50 p-4 sm:p-6"><div class="mx-auto max-w-6xl space-y-5"><header><a routerLink="/historias-clinicas" class="text-sm font-bold text-[var(--brand-primary)]">← Historias clínicas</a><h1 class="mt-2 text-2xl font-extrabold">Consentimiento informado veterinario</h1><p class="text-sm text-slate-600">Prepare el documento antes del procedimiento. Solo una persona con autorización vigente podrá decidir.</p></header>
-@if (error()) { <p class="rounded-lg bg-rose-50 p-3 text-sm text-rose-700">{{ error() }}</p> } @if (mensaje()) { <p class="rounded-lg bg-emerald-50 p-3 text-sm text-emerald-700">{{ mensaje() }}</p> }
-<section class="rounded-xl border border-slate-200 bg-white p-5"><h2 class="font-extrabold">Nuevo consentimiento</h2><p class="mt-1 text-xs text-slate-500">Use los identificadores de la ficha clínica seleccionada. La consulta es opcional.</p><div class="mt-4 grid gap-3 md:grid-cols-3"><label class="text-xs font-bold">ID mascota<input type="number" [(ngModel)]="form.mascotaId" class="mt-1 h-10 w-full rounded-lg border px-3 text-sm font-normal"></label><label class="text-xs font-bold">ID autorizado<input type="number" [(ngModel)]="form.apoderadoId" class="mt-1 h-10 w-full rounded-lg border px-3 text-sm font-normal"></label><label class="text-xs font-bold">ID consulta (opcional)<input type="number" [(ngModel)]="form.consultaId" class="mt-1 h-10 w-full rounded-lg border px-3 text-sm font-normal"></label></div><div class="mt-3 grid gap-3 md:grid-cols-2"><label class="text-xs font-bold">Procedimiento<input [(ngModel)]="form.procedimiento" maxlength="200" class="mt-1 h-10 w-full rounded-lg border px-3 text-sm font-normal"></label><label class="text-xs font-bold">Diagnóstico o indicación<textarea [(ngModel)]="form.diagnosticoIndicacion" rows="3" class="mt-1 w-full rounded-lg border p-2 text-sm font-normal"></textarea></label><label class="text-xs font-bold">Descripción del procedimiento<textarea [(ngModel)]="form.descripcionProcedimiento" rows="4" class="mt-1 w-full rounded-lg border p-2 text-sm font-normal"></textarea></label><label class="text-xs font-bold">Beneficios esperados<textarea [(ngModel)]="form.beneficiosEsperados" rows="4" class="mt-1 w-full rounded-lg border p-2 text-sm font-normal"></textarea></label><label class="text-xs font-bold">Riesgos previsibles<textarea [(ngModel)]="form.riesgosPrevisibles" rows="4" class="mt-1 w-full rounded-lg border p-2 text-sm font-normal"></textarea></label><label class="text-xs font-bold">Alternativas<textarea [(ngModel)]="form.alternativas" rows="4" class="mt-1 w-full rounded-lg border p-2 text-sm font-normal"></textarea></label><label class="text-xs font-bold">Consecuencias de no realizarlo<textarea [(ngModel)]="form.consecuenciasNoRealizar" rows="4" class="mt-1 w-full rounded-lg border p-2 text-sm font-normal"></textarea></label></div><div class="mt-3 flex flex-wrap gap-5 text-sm"><label><input type="checkbox" [(ngModel)]="form.autorizacionAnestesia"> Requiere autorización de anestesia</label><label><input type="checkbox" [(ngModel)]="form.autorizacionEmergencia"> Autoriza maniobras de emergencia</label></div><div class="mt-4 text-right"><button (click)="crear()" [disabled]="trabajando()" class="rounded-lg bg-[var(--brand-primary)] px-5 py-2 text-sm font-bold text-white disabled:opacity-50">Enviar para decisión</button></div></section>
-<section class="rounded-xl border border-slate-200 bg-white p-5"><h2 class="font-extrabold">Documentos emitidos</h2>@for (c of items(); track c.uuid) { <details class="mt-3 rounded-lg border border-slate-200 p-4"><summary class="cursor-pointer text-sm font-bold">{{ c.mascota }} · {{ c.procedimiento }} · {{ c.estado }}</summary><pre class="mt-3 whitespace-pre-wrap rounded bg-slate-50 p-3 font-sans text-xs leading-5">{{ c.contenido }}</pre><p class="mt-2 break-all text-[11px] text-slate-400">SHA-256: {{ c.contenidoHash }}</p></details> } @empty { <p class="mt-3 text-sm text-slate-500">No hay documentos emitidos.</p> }</section>
-</div></main>` })
+interface CampoDeTexto {
+  control: keyof CrearConsentimientoVeterinario;
+  etiqueta: string;
+  max: number;
+  filas: number;
+}
+
+@Component({
+  selector: 'app-consentimientos-veterinarios',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, ToastModule],
+  providers: [MessageService],
+  templateUrl: './consentimientos-veterinarios.component.html'
+})
 export class ConsentimientosVeterinariosComponent implements OnInit {
- private readonly service = inject(ConsentimientoVeterinarioService); readonly items = signal<ConsentimientoVeterinario[]>([]); readonly error = signal(''); readonly mensaje = signal(''); readonly trabajando = signal(false);
- form: CrearConsentimientoVeterinario = { mascotaId: 0, apoderadoId: 0, consultaId: null, procedimiento: '', diagnosticoIndicacion: '', descripcionProcedimiento: '', beneficiosEsperados: '', riesgosPrevisibles: '', alternativas: '', consecuenciasNoRealizar: '', autorizacionAnestesia: false, autorizacionEmergencia: false };
- ngOnInit(): void { this.cargar(); }
- cargar(): void { this.service.listar().subscribe({ next: r => this.items.set(r.data ?? []), error: e => this.error.set(e.error?.message ?? 'No se pudieron cargar los consentimientos.') }); }
- crear(): void { this.trabajando.set(true); this.error.set(''); const request = { ...this.form, consultaId: this.form.consultaId || null }; this.service.crear(request).subscribe({ next: () => { this.trabajando.set(false); this.mensaje.set('Documento emitido y disponible para el autorizado.'); this.cargar(); }, error: e => { this.trabajando.set(false); this.error.set(e.error?.message ?? 'No se pudo emitir el documento.'); } }); }
+  private readonly fb = inject(FormBuilder);
+  private readonly service = inject(ConsentimientoVeterinarioService);
+  private readonly messages = inject(MessageService);
+
+  readonly items = signal<ConsentimientoVeterinario[]>([]);
+  readonly cargando = signal(true);
+  readonly error = signal('');
+  readonly trabajando = signal(false);
+
+  readonly camposDeTexto: CampoDeTexto[] = [
+    { control: 'diagnosticoIndicacion', etiqueta: 'Diagnóstico o indicación', max: 5000, filas: 3 },
+    { control: 'descripcionProcedimiento', etiqueta: 'Descripción del procedimiento', max: 8000, filas: 4 },
+    { control: 'beneficiosEsperados', etiqueta: 'Beneficios esperados', max: 5000, filas: 4 },
+    { control: 'riesgosPrevisibles', etiqueta: 'Riesgos previsibles', max: 8000, filas: 4 },
+    { control: 'alternativas', etiqueta: 'Alternativas', max: 5000, filas: 4 },
+    { control: 'consecuenciasNoRealizar', etiqueta: 'Consecuencias de no realizarlo', max: 5000, filas: 4 }
+  ];
+
+  readonly procedimientoMax = 200;
+
+  readonly form = this.fb.nonNullable.group({
+    mascotaId: [null as number | null, [Validators.required, Validators.min(1)]],
+    apoderadoId: [null as number | null, [Validators.required, Validators.min(1)]],
+    consultaId: [null as number | null, [Validators.min(1)]],
+    procedimiento: ['', [Validators.required, Validators.maxLength(this.procedimientoMax), this.noSoloEspacios]],
+    diagnosticoIndicacion: ['', [Validators.required, Validators.maxLength(5000), this.noSoloEspacios]],
+    descripcionProcedimiento: ['', [Validators.required, Validators.maxLength(8000), this.noSoloEspacios]],
+    beneficiosEsperados: ['', [Validators.required, Validators.maxLength(5000), this.noSoloEspacios]],
+    riesgosPrevisibles: ['', [Validators.required, Validators.maxLength(8000), this.noSoloEspacios]],
+    alternativas: ['', [Validators.required, Validators.maxLength(5000), this.noSoloEspacios]],
+    consecuenciasNoRealizar: ['', [Validators.required, Validators.maxLength(5000), this.noSoloEspacios]],
+    autorizacionAnestesia: [false],
+    autorizacionEmergencia: [false]
+  });
+
+  ngOnInit(): void {
+    this.cargar();
+  }
+
+  cargar(): void {
+    this.cargando.set(true);
+    this.error.set('');
+    this.service.listar().subscribe({
+      next: respuesta => {
+        this.items.set(respuesta.data ?? []);
+        this.cargando.set(false);
+      },
+      error: err => {
+        this.error.set(err.error?.message ?? 'No se pudieron cargar los consentimientos.');
+        this.cargando.set(false);
+      }
+    });
+  }
+
+  crear(): void {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+    if (this.trabajando()) return;
+
+    const valores = this.form.getRawValue();
+    const solicitud: CrearConsentimientoVeterinario = {
+      mascotaId: valores.mascotaId as number,
+      apoderadoId: valores.apoderadoId as number,
+      consultaId: valores.consultaId || null,
+      procedimiento: valores.procedimiento.trim(),
+      diagnosticoIndicacion: valores.diagnosticoIndicacion.trim(),
+      descripcionProcedimiento: valores.descripcionProcedimiento.trim(),
+      beneficiosEsperados: valores.beneficiosEsperados.trim(),
+      riesgosPrevisibles: valores.riesgosPrevisibles.trim(),
+      alternativas: valores.alternativas.trim(),
+      consecuenciasNoRealizar: valores.consecuenciasNoRealizar.trim(),
+      autorizacionAnestesia: valores.autorizacionAnestesia,
+      autorizacionEmergencia: valores.autorizacionEmergencia
+    };
+
+    this.trabajando.set(true);
+    this.service.crear(solicitud).subscribe({
+      next: () => {
+        this.trabajando.set(false);
+        this.form.reset();
+        this.messages.add({
+          severity: 'success',
+          summary: 'Documento emitido',
+          detail: 'Quedó disponible para que el autorizado decida.'
+        });
+        this.cargar();
+      },
+      error: err => {
+        this.trabajando.set(false);
+        this.messages.add({
+          severity: 'error',
+          summary: 'No se pudo emitir el documento',
+          detail: err.error?.message ?? 'Revisa los datos e inténtalo nuevamente.'
+        });
+      }
+    });
+  }
+
+  invalido(control: string): boolean {
+    const campo = this.form.get(control);
+    return !!campo && campo.invalid && campo.touched;
+  }
+
+  longitud(control: string): number {
+    return String(this.form.get(control)?.value ?? '').length;
+  }
+
+  etiquetaDeEstado(estado: EstadoConsentimientoVeterinario): string {
+    return ESTADO_DE_CONSENTIMIENTO[estado]?.etiqueta ?? estado;
+  }
+
+  clasesDeEstado(estado: EstadoConsentimientoVeterinario): string {
+    return ESTADO_DE_CONSENTIMIENTO[estado]?.clases ?? 'border-slate-200 bg-slate-50 text-slate-700';
+  }
+
+  private noSoloEspacios(control: { value: unknown }): { soloEspacios: true } | null {
+    return typeof control.value === 'string' && control.value.length > 0 && !control.value.trim()
+      ? { soloEspacios: true }
+      : null;
+  }
 }

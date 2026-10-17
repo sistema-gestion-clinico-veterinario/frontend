@@ -31,3 +31,5 @@ export class AccountClosedComponent implements OnInit {
     });
   }
 }
+
+

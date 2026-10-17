@@ -18,6 +18,9 @@ class NavbarStub {
   @Output() toggleSidebar = new EventEmitter<void>();
 }
 
+@Component({ selector: 'app-guided-tour-overlay', standalone: true, template: '' })
+class GuidedTourOverlayStub {}
+
 const DISMISSED_KEY = 'pw_modal_dismissed';
 
 describe('MainLayoutComponent — aviso para cambiar la contraseña', () => {
@@ -29,7 +32,7 @@ describe('MainLayoutComponent — aviso para cambiar la contraseña', () => {
       imports: [MainLayoutComponent, HttpClientTestingModule],
       providers: [provideRouter([])]
     }).overrideComponent(MainLayoutComponent, {
-      set: { imports: [RouterOutlet, SidebarStub, NavbarStub, ChangePasswordModalComponent] }
+      set: { imports: [RouterOutlet, SidebarStub, NavbarStub, ChangePasswordModalComponent, GuidedTourOverlayStub] }
     });
     store = TestBed.inject(AuthStore);
     store.logout();

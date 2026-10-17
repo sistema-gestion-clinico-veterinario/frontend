@@ -1,0 +1,108 @@
+<p-toast position="top-right" />
+
+<main class="min-h-screen bg-slate-50 p-4 sm:p-6">
+  <div class="mx-auto max-w-5xl space-y-5">
+    <header>
+      <a routerLink="/profile" class="inline-flex items-center gap-2 text-xs font-bold text-[var(--brand-primary)]">
+        <i class="pi pi-arrow-left"></i> Volver al perfil
+      </a>
+      <h1 class="mt-2 text-2xl font-extrabold text-slate-900">Mis derechos sobre datos personales</h1>
+      <p class="mt-1 text-sm text-slate-500">
+        Solicita acceso, rectificación, oposición o portabilidad y consulta el seguimiento. La cancelación conserva su proceso reforzado de verificación.
+      </p>
+    </header>
+
+    <section class="rounded-xl border border-slate-200 bg-white p-5" aria-labelledby="titulo-nueva">
+      <h2 id="titulo-nueva" class="font-extrabold text-slate-800">Nueva solicitud</h2>
+
+      <form [formGroup]="form" (ngSubmit)="crear()" class="mt-4 space-y-4" novalidate>
+        <div class="grid gap-4 md:grid-cols-2">
+          <div>
+            <label for="tipo" class="text-xs font-bold text-slate-700">Derecho</label>
+            <select id="tipo" formControlName="tipo"
+              class="mt-1 h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none focus:border-[var(--brand-primary)]">
+              @for (opcion of tipos; track opcion.valor) {
+                <option [value]="opcion.valor">{{ opcion.etiqueta }}</option>
+              }
+            </select>
+          </div>
+          <p class="rounded-lg bg-slate-50 p-3 text-xs leading-5 text-slate-600" data-testid="ayuda">{{ ayuda() }}</p>
+        </div>
+
+        <div>
+          <label for="descripcion" class="text-xs font-bold text-slate-700">Detalle de la solicitud <span class="text-rose-500">*</span></label>
+          <textarea id="descripcion" formControlName="descripcion" rows="4" [attr.maxlength]="maximoDelTexto"
+            [class.border-rose-400]="invalido('descripcion')"
+            class="mt-1 w-full rounded-lg border border-slate-300 p-3 text-sm outline-none focus:border-[var(--brand-primary)]"></textarea>
+          <div class="mt-1 flex justify-between gap-2 text-[11px]">
+            <span class="text-rose-600">@if (invalido('descripcion')) { Cuéntanos qué necesitas, con al menos 10 caracteres. }</span>
+            <span class="text-slate-400">{{ longitud('descripcion') }}/{{ maximoDelTexto }}</span>
+          </div>
+        </div>
+
+        @if (pideCorreccion()) {
+          <div>
+            <label for="datoRectificar" class="text-xs font-bold text-slate-700">Dato actual y corrección solicitada <span class="text-rose-500">*</span></label>
+            <textarea id="datoRectificar" formControlName="datoRectificar" rows="3" [attr.maxlength]="maximoDelTexto"
+              [class.border-rose-400]="invalido('datoRectificar')"
+              class="mt-1 w-full rounded-lg border border-slate-300 p-3 text-sm outline-none focus:border-[var(--brand-primary)]"></textarea>
+            <div class="mt-1 flex justify-between gap-2 text-[11px]">
+              <span class="text-rose-600">@if (invalido('datoRectificar')) { Indica el dato y la corrección solicitada. }</span>
+              <span class="text-slate-400">{{ longitud('datoRectificar') }}/{{ maximoDelTexto }}</span>
+            </div>
+          </div>
+        }
+
+        <div class="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-4">
+          <a routerLink="/profile" fragment="cancelacion-datos"
+            class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50">Solicitar cancelación</a>
+          <button type="submit" [disabled]="guardando()"
+            class="rounded-lg bg-[var(--brand-primary)] px-5 py-2 text-sm font-bold text-white disabled:opacity-50">
+            {{ guardando() ? 'Registrando…' : 'Registrar solicitud' }}
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <section class="rounded-xl border border-slate-200 bg-white p-5" aria-labelledby="titulo-seguimiento">
+      <h2 id="titulo-seguimiento" class="font-extrabold text-slate-800">Seguimiento</h2>
+
+      @if (cargando()) {
+        <p class="mt-4 text-sm text-slate-500">Cargando…</p>
+      } @else if (error()) {
+        <p class="mt-4 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700" role="alert">
+          {{ error() }}
+          <button type="button" (click)="cargar()" class="ml-2 font-bold underline">Reintentar</button>
+        </p>
+      } @else {
+        @for (s of solicitudes(); track s.id) {
+          <article class="mt-4 rounded-lg border border-slate-200 p-4">
+            <div class="flex flex-wrap items-start justify-between gap-2">
+              <h3 class="text-sm font-bold text-slate-800">{{ etiquetaDeTipo(s.tipo) }} · solicitud {{ s.id }}</h3>
+              <div class="flex flex-wrap items-center gap-2">
+                @if (s.vencida && s.estado !== 'ATENDIDA' && s.estado !== 'RECHAZADA') {
+                  <span class="rounded-full border border-rose-200 bg-rose-50 px-2.5 py-0.5 text-[11px] font-bold text-rose-700">Plazo vencido</span>
+                }
+                <span class="rounded-full border px-2.5 py-0.5 text-[11px] font-bold" [ngClass]="clasesDeEstado(s.estado)">
+                  {{ etiquetaDeEstado(s.estado) }}
+                </span>
+              </div>
+            </div>
+            <p class="mt-2 text-sm text-slate-600">{{ s.descripcion }}</p>
+            <p class="mt-2 text-xs text-slate-500">
+              Registrada: {{ s.creadaAt | date: 'dd/MM/yyyy HH:mm' }} · Fecha límite operativa: {{ s.fechaLimite | date: 'dd/MM/yyyy' }}
+            </p>
+            @if (s.respuesta) {
+              <p class="mt-3 rounded-lg bg-slate-50 p-3 text-sm text-slate-700"><strong>Respuesta:</strong> {{ s.respuesta }}</p>
+            }
+            @if (s.motivoRechazo) {
+              <p class="mt-3 rounded-lg bg-rose-50 p-3 text-sm text-rose-700"><strong>Fundamento:</strong> {{ s.motivoRechazo }}</p>
+            }
+          </article>
+        } @empty {
+          <p class="mt-4 text-sm text-slate-500">Aún no tienes solicitudes.</p>
+        }
+      }
+    </section>
+  </div>
+</main>

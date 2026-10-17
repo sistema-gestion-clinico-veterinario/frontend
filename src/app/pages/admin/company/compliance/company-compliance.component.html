@@ -1,0 +1,107 @@
+<p-toast position="top-right" />
+
+<main class="min-h-screen bg-slate-50 p-4 sm:p-6">
+  <div class="mx-auto max-w-6xl space-y-5">
+    <header>
+      <a routerLink="/admin/company" class="inline-flex items-center gap-2 text-xs font-bold text-[var(--brand-primary)]">
+        <i class="pi pi-arrow-left"></i> Empresas
+      </a>
+      <h1 class="mt-2 text-2xl font-extrabold text-slate-900">Cumplimiento y funcionalidades</h1>
+      <p class="mt-1 text-sm text-slate-500">
+        {{ empresa() }} · Cada cambio crea una versión inmutable y requiere confirmación de revisión legal.
+      </p>
+    </header>
+
+    @if (cargando()) {
+      <p class="rounded-xl border border-slate-200 bg-white p-5 text-sm text-slate-500">Cargando configuración…</p>
+    } @else if (error()) {
+      <p class="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700" role="alert">
+        {{ error() }}
+        <button type="button" (click)="cargar()" class="ml-2 font-bold underline">Reintentar</button>
+      </p>
+    } @else {
+      @for (c of configuraciones(); track c.control) {
+        @let datos = formulario(c.control);
+        <section class="rounded-xl border border-slate-200 bg-white p-5" [attr.aria-label]="nombre(c.control)">
+          <div class="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h2 class="font-extrabold text-slate-900">{{ nombre(c.control) }}</h2>
+              <p class="mt-1 text-xs text-slate-500">
+                Versión {{ c.version }} · {{ c.configuracionExplicita ? 'Configuración aprobada' : 'Valor predeterminado del sistema' }}
+              </p>
+            </div>
+            <span class="rounded-full border px-3 py-1 text-xs font-bold"
+              [class.border-emerald-200]="c.habilitado" [class.bg-emerald-50]="c.habilitado" [class.text-emerald-700]="c.habilitado"
+              [class.border-slate-200]="!c.habilitado" [class.bg-slate-100]="!c.habilitado" [class.text-slate-500]="!c.habilitado">
+              {{ c.habilitado ? 'Habilitado' : 'No aplica' }}
+            </span>
+          </div>
+
+          <form [formGroup]="datos" (ngSubmit)="guardar(c.control)" class="mt-4 space-y-4" novalidate>
+            <div class="grid gap-4 md:grid-cols-3">
+              <div>
+                <label [for]="'habilitado-' + c.control" class="text-xs font-bold text-slate-700">Disponibilidad</label>
+                <select [id]="'habilitado-' + c.control" formControlName="habilitado"
+                  class="mt-1 h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none focus:border-[var(--brand-primary)]">
+                  <option [ngValue]="true">Habilitado</option>
+                  <option [ngValue]="false">No aplica</option>
+                </select>
+              </div>
+
+              <div>
+                <label [for]="'modo-' + c.control" class="text-xs font-bold text-slate-700">Gestión documental</label>
+                <select [id]="'modo-' + c.control" formControlName="modo"
+                  class="mt-1 h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none focus:border-[var(--brand-primary)] disabled:bg-slate-50 disabled:text-slate-400">
+                  @for (modo of modos; track modo.valor) {
+                    <option [value]="modo.valor" [disabled]="modoNoDisponible(c.control, modo.valor)">{{ modo.etiqueta }}</option>
+                  }
+                </select>
+              </div>
+
+              <label class="flex cursor-pointer items-start gap-2 text-sm text-slate-700 md:mt-6">
+                <input type="checkbox" formControlName="bloqueante" class="mt-1 size-4 accent-[var(--brand-primary)]" />
+                Bloquear solo la función relacionada sin evidencia
+              </label>
+            </div>
+
+            <div>
+              <label [for]="'justificacion-' + c.control" class="text-xs font-bold text-slate-700">Justificación aprobada <span class="text-rose-500">*</span></label>
+              <textarea [id]="'justificacion-' + c.control" formControlName="justificacion" rows="3" maxlength="4000"
+                [class.border-rose-400]="campoInvalido(c.control, 'justificacion')"
+                class="mt-1 w-full rounded-lg border border-slate-300 p-3 text-sm outline-none focus:border-[var(--brand-primary)]"></textarea>
+              <div class="mt-1 flex justify-between gap-2 text-[11px]">
+                <span class="text-rose-600">@if (campoInvalido(c.control, 'justificacion')) { Escribe una justificación de al menos 10 caracteres. }</span>
+                <span class="text-slate-400">{{ longitud(c.control, 'justificacion') }}/4000</span>
+              </div>
+            </div>
+
+            <div>
+              <label [for]="'referencia-' + c.control" class="text-xs font-bold text-slate-700">
+                Contrato, adenda o referencia <span class="font-normal text-slate-400">(opcional)</span>
+              </label>
+              <input [id]="'referencia-' + c.control" type="text" formControlName="referenciaContractual" maxlength="200"
+                class="mt-1 h-10 w-full rounded-lg border border-slate-300 px-3 text-sm outline-none focus:border-[var(--brand-primary)]" />
+            </div>
+
+            <div>
+              <label class="flex cursor-pointer items-start gap-2 text-sm text-slate-700">
+                <input type="checkbox" formControlName="confirmoRevisionLegal" class="mt-1 size-4 accent-[var(--brand-primary)]" />
+                Confirmo que esta combinación fue revisada y aprobada para la clínica.
+              </label>
+              @if (campoInvalido(c.control, 'confirmoRevisionLegal')) {
+                <p class="mt-1 text-[11px] text-rose-600">Debes confirmar la revisión legal para crear una nueva versión.</p>
+              }
+            </div>
+
+            <div class="flex justify-end border-t border-slate-100 pt-4">
+              <button type="submit" [disabled]="guardando() !== null"
+                class="rounded-lg bg-[var(--brand-primary)] px-5 py-2 text-sm font-bold text-white disabled:opacity-50">
+                {{ guardando() === c.control ? 'Guardando…' : 'Crear nueva versión' }}
+              </button>
+            </div>
+          </form>
+        </section>
+      }
+    }
+  </div>
+</main>
