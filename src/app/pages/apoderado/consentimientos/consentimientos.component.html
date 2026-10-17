@@ -1,0 +1,114 @@
+<p-toast position="top-right" />
+
+<main class="min-h-screen bg-slate-50 p-4 sm:p-6">
+  <div class="mx-auto max-w-5xl space-y-5">
+    <header>
+      <a routerLink="/apoderado/dashboard" class="inline-flex items-center gap-2 text-xs font-bold text-[var(--brand-primary)]">
+        <i class="pi pi-arrow-left"></i> Mi portal
+      </a>
+      <h1 class="mt-2 text-2xl font-extrabold text-slate-900">Consentimientos veterinarios</h1>
+      <p class="mt-1 text-sm text-slate-500">Lee toda la información, formula tus preguntas y registra libremente tu decisión.</p>
+    </header>
+
+    @if (cargando()) {
+      <p class="rounded-xl border border-slate-200 bg-white p-5 text-sm text-slate-500">Cargando consentimientos…</p>
+    } @else if (error()) {
+      <p class="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700" role="alert">
+        {{ error() }}
+        <button type="button" (click)="cargar()" class="ml-2 font-bold underline">Reintentar</button>
+      </p>
+    } @else {
+      @for (c of items(); track c.uuid) {
+        <article class="rounded-xl border border-slate-200 bg-white p-5">
+          <div class="flex flex-wrap items-start justify-between gap-2">
+            <div class="min-w-0">
+              <h2 class="font-extrabold text-slate-900">{{ c.procedimiento }}</h2>
+              <p class="mt-0.5 text-xs text-slate-500">{{ c.mascota }} · versión {{ c.version }} · {{ c.creadoAt | date: 'dd/MM/yyyy HH:mm' }}</p>
+            </div>
+            <span class="rounded-full border px-2.5 py-0.5 text-[11px] font-bold" [ngClass]="clasesDeEstado(c.estado)">
+              {{ etiquetaDeEstado(c.estado) }}
+            </span>
+          </div>
+
+          <details class="mt-4">
+            <summary class="cursor-pointer text-sm font-bold text-[var(--brand-primary)]">Leer documento completo</summary>
+            <pre class="mt-3 max-h-[28rem] overflow-y-auto whitespace-pre-wrap rounded-lg bg-slate-50 p-4 font-sans text-sm leading-6 text-slate-700">{{ c.contenido }}</pre>
+            <p class="mt-2 break-all text-[11px] text-slate-400">Huella SHA-256: {{ c.contenidoHash }}</p>
+          </details>
+
+          @let datos = formulario(c.uuid);
+
+          @if (c.estado === 'PENDIENTE') {
+            <form [formGroup]="datos" (ngSubmit)="decidir(c, true)" class="mt-4 space-y-3 rounded-lg border border-slate-200 p-4" novalidate>
+              <div class="grid gap-3 md:grid-cols-2">
+                <div>
+                  <label [for]="'nombre-' + c.uuid" class="text-xs font-bold text-slate-700">Nombre completo <span class="text-rose-500">*</span></label>
+                  <input [id]="'nombre-' + c.uuid" type="text" formControlName="nombre" maxlength="200"
+                    [class.border-rose-400]="campoInvalido(c.uuid, 'nombre')"
+                    class="mt-1 h-10 w-full rounded-lg border border-slate-300 px-3 text-sm outline-none focus:border-[var(--brand-primary)]" />
+                </div>
+                <div>
+                  <label [for]="'documento-' + c.uuid" class="text-xs font-bold text-slate-700">Documento <span class="text-rose-500">*</span></label>
+                  <input [id]="'documento-' + c.uuid" type="text" formControlName="documento" maxlength="40"
+                    [class.border-rose-400]="campoInvalido(c.uuid, 'documento')"
+                    class="mt-1 h-10 w-full rounded-lg border border-slate-300 px-3 text-sm outline-none focus:border-[var(--brand-primary)]" />
+                </div>
+              </div>
+
+              <label class="flex cursor-pointer items-start gap-2 text-sm text-slate-700">
+                <input type="checkbox" formControlName="aclaradas" class="mt-1 size-4 accent-[var(--brand-primary)]" />
+                Confirmo que pude formular preguntas y que recibí explicaciones comprensibles.
+              </label>
+
+              <div>
+                <label [for]="'motivo-' + c.uuid" class="text-xs font-bold text-slate-700">
+                  Motivo si decides rechazar <span class="font-normal text-slate-400">(obligatorio solo al rechazar)</span>
+                </label>
+                <textarea [id]="'motivo-' + c.uuid" formControlName="motivo" rows="2" maxlength="4000"
+                  class="mt-1 w-full rounded-lg border border-slate-300 p-2 text-sm outline-none focus:border-[var(--brand-primary)]"></textarea>
+              </div>
+
+              @if (avisos()[c.uuid]) {
+                <p class="text-xs text-rose-600" role="alert">{{ avisos()[c.uuid] }}</p>
+              }
+
+              <div class="flex flex-wrap justify-end gap-2">
+                <button type="button" (click)="decidir(c, false)" [disabled]="trabajando() !== null"
+                  class="rounded-lg border border-rose-300 px-4 py-2 text-sm font-bold text-rose-700 disabled:opacity-50">Rechazar</button>
+                <button type="submit" [disabled]="trabajando() !== null"
+                  class="rounded-lg bg-[var(--brand-primary)] px-4 py-2 text-sm font-bold text-white disabled:opacity-50">
+                  {{ trabajando() === c.uuid ? 'Registrando…' : 'Aceptar y autorizar' }}
+                </button>
+              </div>
+            </form>
+          }
+
+          @if (c.estado === 'ACEPTADO') {
+            <form [formGroup]="datos" (ngSubmit)="revocar(c)" class="mt-4 space-y-2" novalidate>
+              <label [for]="'revocacion-' + c.uuid" class="text-xs font-bold text-slate-700">Motivo de revocación</label>
+              <textarea [id]="'revocacion-' + c.uuid" formControlName="motivoRevocacion" rows="2" maxlength="4000"
+                [class.border-rose-400]="campoInvalido(c.uuid, 'motivoRevocacion')"
+                class="w-full rounded-lg border border-slate-300 p-2 text-sm outline-none focus:border-[var(--brand-primary)]"></textarea>
+              @if (avisos()[c.uuid]) {
+                <p class="text-xs text-rose-600" role="alert">{{ avisos()[c.uuid] }}</p>
+              }
+              <button type="submit" [disabled]="trabajando() !== null"
+                class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700 disabled:opacity-50">
+                Revocar antes del procedimiento
+              </button>
+            </form>
+          }
+
+          @if (c.motivoRechazo) {
+            <p class="mt-3 rounded-lg bg-rose-50 p-3 text-sm text-rose-700"><strong>Motivo del rechazo:</strong> {{ c.motivoRechazo }}</p>
+          }
+          @if (c.motivoRevocacion) {
+            <p class="mt-3 rounded-lg bg-slate-50 p-3 text-sm text-slate-700"><strong>Motivo de la revocación:</strong> {{ c.motivoRevocacion }}</p>
+          }
+        </article>
+      } @empty {
+        <p class="rounded-xl border border-slate-200 bg-white p-5 text-sm text-slate-500">No tienes consentimientos registrados.</p>
+      }
+    }
+  </div>
+</main>

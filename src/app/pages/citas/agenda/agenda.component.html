@@ -42,7 +42,7 @@
             <i class="pi pi-table text-sm"></i>
             <span class="hidden sm:inline">Semana</span>
           </button>
-          <button (click)="cambiarVista('mes')"
+          <button type="button" data-testid="agenda-view-month" (click)="cambiarVista('mes')"
             [class.bg-white]="vistaActual()==='mes'"
             [class.text-blue-500]="vistaActual()==='mes'"
             [class.shadow-sm]="vistaActual()==='mes'"

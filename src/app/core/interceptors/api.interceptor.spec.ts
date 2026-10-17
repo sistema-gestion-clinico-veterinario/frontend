@@ -145,7 +145,7 @@ describe('apiInterceptor - clínica de la sesión', () => {
     expect(authStore.companyId()).toBe(7);
   });
 
-  it('si la renovación falla porque la sesión estuvo inactiva, lleva al login con el aviso de inactividad', () => {
+  it('si la renovación falla porque la sesión estuvo inactiva, lleva al login sin mostrar ningún aviso', () => {
     spyOn(authStore, 'logout').and.callThrough();
     authService.refreshToken.and.returnValue(throwError(() => new HttpErrorResponse({
       status: 401, error: { success: false, code: 'SESSION_IDLE_TIMEOUT' } })));
@@ -154,10 +154,10 @@ describe('apiInterceptor - clínica de la sesión', () => {
     controller.expectOne(`${environment.apiUrl}/mascotas`).flush({}, { status: 401, statusText: 'Unauthorized' });
 
     expect(authStore.logout).toHaveBeenCalled();
-    expect(router.navigate).toHaveBeenCalledWith(['/login'], { queryParams: { authNotice: 'sesion_inactividad' }, replaceUrl: true });
+    expect(router.navigate).toHaveBeenCalledWith(['/login']);
   });
 
-  it('si la renovación falla por otro motivo, lleva al login sin aviso de inactividad', () => {
+  it('si la renovación falla por otro motivo, lleva al login sin aviso', () => {
     authService.refreshToken.and.returnValue(throwError(() => new HttpErrorResponse({ status: 401, error: { success: false } })));
     http.get(`${environment.apiUrl}/mascotas`).subscribe({ error: () => undefined });
 

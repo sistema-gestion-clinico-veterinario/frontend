@@ -25,23 +25,7 @@
   font-family: 'Barlow';
   src: url('../node_modules/@fontsource/barlow/files/barlow-latin-400-normal.woff2') format('woff2');
   font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Barlow';
-  src: url('../node_modules/@fontsource/barlow/files/barlow-latin-500-normal.woff2') format('woff2');
-  font-style: normal;
-  font-weight: 500;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Barlow';
-  src: url('../node_modules/@fontsource/barlow/files/barlow-latin-600-normal.woff2') format('woff2');
-  font-style: normal;
-  font-weight: 600;
+  font-weight: 400 500;
   font-display: swap;
 }
 
@@ -49,15 +33,7 @@
   font-family: 'Barlow';
   src: url('../node_modules/@fontsource/barlow/files/barlow-latin-700-normal.woff2') format('woff2');
   font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Barlow';
-  src: url('../node_modules/@fontsource/barlow/files/barlow-latin-800-normal.woff2') format('woff2');
-  font-style: normal;
-  font-weight: 800;
+  font-weight: 600 900;
   font-display: swap;
 }
 .cdk-drag-preview {
