@@ -15,7 +15,15 @@ export class MediaService {
   ) {}
 
   upload(file: File): Observable<string> {
-    return from(this.imageOptimizer.optimize(file)).pipe(
+    return this.uploadOptimized(file, this.imageOptimizer.optimize(file));
+  }
+
+  uploadLogo(file: File): Observable<string> {
+    return this.uploadOptimized(file, this.imageOptimizer.optimizeLogo(file));
+  }
+
+  private uploadOptimized(file: File, optimizedFilePromise: Promise<File>): Observable<string> {
+    return from(optimizedFilePromise).pipe(
       switchMap(optimizedFile => {
         const formData = new FormData();
         formData.append('file', optimizedFile);
