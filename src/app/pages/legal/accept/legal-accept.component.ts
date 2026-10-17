@@ -7,7 +7,7 @@ import { LegalService } from '../../../core/services/legal.service';
 import { LegalDocumentDTO } from '../../../models/legal/legal.model';
 import { AuthService } from '../../../core/services/auth.service';
 import { AuthStore } from '../../../store/auth.store';
-import { resolveDashboardRoute } from '../../../layouts/main-layout/navbar/navbar.component';
+import { resolveDashboardRoute } from '../../../core/routing/initial-route';
 
 const LABELS: Record<LegalDocumentDTO['tipo'], string> = {
   TERMINOS_Y_CONDICIONES: 'Términos y Condiciones',

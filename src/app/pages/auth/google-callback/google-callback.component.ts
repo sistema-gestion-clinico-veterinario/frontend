@@ -1,30 +1,16 @@
-
 import { Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SOFTVET_LOGO_URL } from '../../../core/constants/branding.constants';
 import { AuthService, GOOGLE_PENDING_SLUG_KEY } from '../../../core/services/auth.service';
 import { SessionService } from '../../../core/services/session.service';
-import { resolveInitialRoute, resolveDashboardRoute } from '../../../layouts/main-layout/navbar/navbar.component';
+import { resolveInitialRoute, resolveDashboardRoute } from '../../../core/routing/initial-route';
 
 
 @Component({
   selector: 'app-google-callback',
   standalone: true,
   imports: [],
-  template: `
-    <div
-      class="flex min-h-[100dvh] items-center justify-center bg-white"
-      role="status"
-      aria-live="polite"
-      aria-label="Iniciando sesión"
-    >
-      <img
-        [src]="logoUrl"
-        alt="SoftVet"
-        class="loader-pulse h-24 w-24 object-contain"
-      />
-    </div>
-  `
+  templateUrl: './google-callback.component.html'
 })
 export class GoogleCallbackComponent implements OnInit {
   protected readonly logoUrl = SOFTVET_LOGO_URL;
@@ -65,8 +51,6 @@ export class GoogleCallbackComponent implements OnInit {
     const slug = sessionStorage.getItem(GOOGLE_PENDING_SLUG_KEY);
     sessionStorage.removeItem(GOOGLE_PENDING_SLUG_KEY);
     const path = slug ? `/${encodeURIComponent(slug)}/login` : '/login';
-    // La navegación completa permite que el serializador vuelva a resolver el
-    // contexto de empresa antes de pintar el login y evita mostrar la marca global.
     window.location.replace(`${path}?authError=google_fallo`);
   }
 }

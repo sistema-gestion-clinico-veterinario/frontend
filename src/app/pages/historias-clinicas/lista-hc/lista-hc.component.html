@@ -160,7 +160,7 @@
                             </div>
                           }
                         </div>
-                        <button type="button" (click)="verDetalle(hc.numeroHc)"
+                        <button type="button" data-testid="medical-record-open" (click)="verDetalle(hc.numeroHc)"
                           class="w-full sm:w-auto mt-4 flex items-center justify-center gap-2 px-4 h-10 rounded-lg border border-blue-100 bg-blue-50 text-blue-500 text-xs font-bold hover:bg-blue-100 transition-colors sm:ml-auto">
                           <i class="pi pi-folder-open text-xs"></i>
                           Ver historia
@@ -236,7 +236,7 @@
                             </span>
                           </td>
                           <td class="px-5 py-2 text-right">
-                            <button (click)="verDetalle(hc.numeroHc)"
+                            <button type="button" data-testid="medical-record-open" (click)="verDetalle(hc.numeroHc)"
                               class="flex items-center gap-1.5 px-4 h-8 rounded-lg bg-blue-50 text-blue-500 text-xs font-bold hover:bg-blue-100 transition-colors ml-auto">
                               <i class="pi pi-folder-open text-xs"></i>
                               Ver Historia

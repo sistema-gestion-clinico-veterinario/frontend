@@ -1,23 +1,184 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import {
+  AbstractControl,
+  FormBuilder,
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  ValidationErrors,
+  ValidatorFn,
+  Validators
+} from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { MessageService } from 'primeng/api';
+import { ToastModule } from 'primeng/toast';
+import { ESTADO_DE_SOLICITUD, ETIQUETA_DE_DERECHO } from '../../../../core/constants/derechos-datos.constants';
 import { DerechosDatosService } from '../../../../core/services/derechos-datos.service';
-import { EstadoSolicitudDerecho, SolicitudDerechoDatos } from '../../../../models/privacy/derechos-datos.model';
+import {
+  EstadoSolicitudDerecho,
+  SolicitudDerechoDatos,
+  TipoDerechoDatos
+} from '../../../../models/privacy/derechos-datos.model';
 
-@Component({ selector: 'app-derechos-admin', standalone: true, imports: [CommonModule, FormsModule, RouterLink], template: `
-<main class="min-h-screen bg-slate-50 p-4 sm:p-6"><div class="mx-auto max-w-6xl space-y-5">
-<header><a routerLink="/admin/privacidad" class="text-sm font-bold text-[var(--brand-primary)]">← Privacidad</a><h1 class="mt-2 text-2xl font-extrabold">Solicitudes de derechos de datos</h1><p class="text-sm text-slate-600">Acceso, rectificación, oposición y portabilidad. La cancelación se administra en su módulo especializado.</p></header>
-@if (error()) { <p class="rounded-lg bg-rose-50 p-3 text-sm text-rose-700">{{ error() }}</p> }
-@for (s of solicitudes(); track s.id) { <article class="rounded-xl border border-slate-200 bg-white p-5"><div class="flex flex-wrap justify-between gap-2"><div><strong>{{ s.tipo }} · {{ s.titular }}</strong><p class="text-xs text-slate-500">{{ s.correoTitular }} · límite {{ s.fechaLimite | date:'dd/MM/yyyy' }}</p></div><span class="text-xs font-bold" [class.text-rose-600]="s.vencida">{{ s.estado }}{{ s.vencida ? ' · VENCIDA' : '' }}</span></div><p class="mt-3 text-sm text-slate-700">{{ s.descripcion }}</p>@if (s.datoRectificar) { <p class="mt-2 rounded bg-slate-50 p-2 text-sm"><strong>Rectificación:</strong> {{ s.datoRectificar }}</p> }
-@if (s.estado !== 'ATENDIDA' && s.estado !== 'RECHAZADA') { <div class="mt-4 grid gap-3 md:grid-cols-[180px_1fr]"><select [(ngModel)]="estados[s.id]" class="h-10 rounded-lg border border-slate-300 px-2 text-sm"><option value="EN_REVISION">En revisión</option><option value="REQUIERE_INFORMACION">Requiere información</option><option value="ATENDIDA">Atendida</option><option value="RECHAZADA">Rechazada</option></select><textarea [(ngModel)]="textos[s.id]" rows="2" placeholder="Respuesta al titular o fundamento del rechazo" class="rounded-lg border border-slate-300 p-2 text-sm"></textarea></div><div class="mt-2 text-right"><button (click)="resolver(s)" [disabled]="trabajando()" class="rounded-lg bg-[var(--brand-primary)] px-4 py-2 text-sm font-bold text-white disabled:opacity-50">Guardar actuación</button></div> }
-@if (s.respuesta) { <p class="mt-3 rounded bg-emerald-50 p-3 text-sm text-emerald-800"><strong>Respuesta:</strong> {{ s.respuesta }}</p> } @if (s.motivoRechazo) { <p class="mt-3 rounded bg-rose-50 p-3 text-sm text-rose-700"><strong>Fundamento:</strong> {{ s.motivoRechazo }}</p> }
-</article> } @empty { <p class="rounded-xl border bg-white p-5 text-sm text-slate-500">No hay solicitudes.</p> }
-</div></main>` })
+export type EstadoAdministrable = Exclude<EstadoSolicitudDerecho, 'RECIBIDA'>;
+
+type FormularioDeActuacion = FormGroup<{
+  estado: FormControl<EstadoAdministrable>;
+  texto: FormControl<string>;
+}>;
+
+const MINIMO_DEL_TEXTO = 10;
+
+function minimoSinEspacios(minimo: number): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    const valor = typeof control.value === 'string' ? control.value.trim() : '';
+    return control.value && valor.length < minimo ? { minimo: { requerido: minimo, actual: valor.length } } : null;
+  };
+}
+
+@Component({
+  selector: 'app-derechos-admin',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, ToastModule],
+  providers: [MessageService],
+  templateUrl: './derechos-admin.component.html'
+})
 export class DerechosAdminComponent implements OnInit {
- private readonly service = inject(DerechosDatosService); readonly solicitudes = signal<SolicitudDerechoDatos[]>([]); readonly error = signal(''); readonly trabajando = signal(false);
- estados: Record<number, EstadoSolicitudDerecho> = {}; textos: Record<number, string> = {};
- ngOnInit(): void { this.cargar(); }
- cargar(): void { this.service.listar().subscribe({ next: r => { this.solicitudes.set(r.data ?? []); for (const s of r.data ?? []) this.estados[s.id] = s.estado === 'RECIBIDA' ? 'EN_REVISION' : s.estado; }, error: e => this.error.set(e.error?.message ?? 'No se pudo cargar.') }); }
- resolver(s: SolicitudDerechoDatos): void { const estado = this.estados[s.id]; const texto = (this.textos[s.id] ?? '').trim(); this.trabajando.set(true); this.service.actualizar(s.id, estado, estado === 'RECHAZADA' ? null : texto, estado === 'RECHAZADA' ? texto : null).subscribe({ next: () => { this.trabajando.set(false); this.cargar(); }, error: e => { this.trabajando.set(false); this.error.set(e.error?.message ?? 'No se pudo actualizar.'); } }); }
+  private readonly fb = inject(FormBuilder);
+  private readonly service = inject(DerechosDatosService);
+  private readonly messages = inject(MessageService);
+
+  readonly solicitudes = signal<SolicitudDerechoDatos[]>([]);
+  readonly cargando = signal(true);
+  readonly error = signal('');
+  readonly trabajando = signal<number | null>(null);
+
+  readonly opcionesDeEstado: { valor: EstadoAdministrable; etiqueta: string }[] = [
+    { valor: 'EN_REVISION', etiqueta: 'En revisión' },
+    { valor: 'REQUIERE_INFORMACION', etiqueta: 'Requiere información' },
+    { valor: 'ATENDIDA', etiqueta: 'Atendida' },
+    { valor: 'RECHAZADA', etiqueta: 'Rechazada' }
+  ];
+
+  private readonly formularios = new Map<number, FormularioDeActuacion>();
+
+  ngOnInit(): void {
+    this.cargar();
+  }
+
+  cargar(): void {
+    this.cargando.set(true);
+    this.error.set('');
+    this.service.listar().subscribe({
+      next: respuesta => {
+        const solicitudes = respuesta.data ?? [];
+        this.solicitudes.set(solicitudes);
+        this.prepararFormularios(solicitudes);
+        this.cargando.set(false);
+      },
+      error: err => {
+        this.error.set(err.error?.message ?? 'No se pudieron cargar las solicitudes.');
+        this.cargando.set(false);
+      }
+    });
+  }
+
+  formulario(id: number): FormularioDeActuacion {
+    return this.formularios.get(id) ?? this.crearFormulario('EN_REVISION');
+  }
+
+  estaAbierta(solicitud: SolicitudDerechoDatos): boolean {
+    return solicitud.estado !== 'ATENDIDA' && solicitud.estado !== 'RECHAZADA';
+  }
+
+  exigeTexto(estado: EstadoAdministrable): boolean {
+    return estado !== 'EN_REVISION';
+  }
+
+  maximoDelTexto(estado: EstadoAdministrable): number {
+    return estado === 'RECHAZADA' ? 4000 : 8000;
+  }
+
+  etiquetaDelTexto(estado: EstadoAdministrable): string {
+    return estado === 'RECHAZADA' ? 'Fundamento del rechazo' : 'Respuesta al titular';
+  }
+
+  etiquetaDeTipo(tipo: TipoDerechoDatos): string {
+    return ETIQUETA_DE_DERECHO[tipo] ?? tipo;
+  }
+
+  etiquetaDeEstado(estado: EstadoSolicitudDerecho): string {
+    return ESTADO_DE_SOLICITUD[estado]?.etiqueta ?? estado;
+  }
+
+  clasesDeEstado(estado: EstadoSolicitudDerecho): string {
+    return ESTADO_DE_SOLICITUD[estado]?.clases ?? 'border-slate-200 bg-slate-50 text-slate-700';
+  }
+
+  textoInvalido(id: number): boolean {
+    const control = this.formulario(id).controls.texto;
+    return control.invalid && control.touched;
+  }
+
+  resolver(solicitud: SolicitudDerechoDatos): void {
+    const formulario = this.formulario(solicitud.id);
+    if (formulario.invalid) {
+      formulario.markAllAsTouched();
+      return;
+    }
+    if (this.trabajando() !== null) return;
+
+    const { estado, texto } = formulario.getRawValue();
+    const contenido = texto.trim();
+    const rechazo = estado === 'RECHAZADA';
+
+    this.trabajando.set(solicitud.id);
+    this.service.actualizar(solicitud.id, estado, rechazo ? null : contenido || null, rechazo ? contenido : null).subscribe({
+      next: () => {
+        this.trabajando.set(null);
+        this.messages.add({
+          severity: 'success',
+          summary: 'Actuación guardada',
+          detail: `La solicitud quedó en estado «${this.etiquetaDeEstado(estado)}».`
+        });
+        this.cargar();
+      },
+      error: err => {
+        this.trabajando.set(null);
+        this.messages.add({
+          severity: 'error',
+          summary: 'No se pudo guardar',
+          detail: err.error?.message ?? 'Revisa los datos e inténtalo nuevamente.'
+        });
+      }
+    });
+  }
+
+  private prepararFormularios(solicitudes: SolicitudDerechoDatos[]): void {
+    this.formularios.clear();
+    for (const solicitud of solicitudes) {
+      const inicial: EstadoAdministrable = solicitud.estado === 'RECIBIDA' ? 'EN_REVISION' : solicitud.estado;
+      this.formularios.set(solicitud.id, this.crearFormulario(inicial));
+    }
+  }
+
+  private crearFormulario(estado: EstadoAdministrable): FormularioDeActuacion {
+    const formulario: FormularioDeActuacion = this.fb.nonNullable.group({
+      estado: this.fb.nonNullable.control<EstadoAdministrable>(estado),
+      texto: this.fb.nonNullable.control('')
+    });
+    const ajustar = (actual: EstadoAdministrable) => {
+      const texto = formulario.controls.texto;
+      texto.setValidators(
+        this.exigeTexto(actual)
+          ? [Validators.required, minimoSinEspacios(MINIMO_DEL_TEXTO), Validators.maxLength(this.maximoDelTexto(actual))]
+          : [Validators.maxLength(this.maximoDelTexto(actual))]
+      );
+      texto.updateValueAndValidity({ emitEvent: false });
+    };
+    ajustar(estado);
+    formulario.controls.estado.valueChanges.subscribe(ajustar);
+    return formulario;
+  }
 }

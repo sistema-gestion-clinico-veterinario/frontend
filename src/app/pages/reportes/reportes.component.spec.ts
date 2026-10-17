@@ -156,6 +156,38 @@ describe('ReportesComponent', () => {
     reportesReq.flush({ success: true, message: '', data: reporteFixture() } as ApiResponse<ReportesClinicos>);
   });
 
+  it('aplicarFiltros() envía al backend exactamente el periodo, veterinario y especie seleccionados', () => {
+    flushInitialRequests();
+
+    component.periodo = 'personalizado';
+    component.fechaDesde = '2026-10-01';
+    component.fechaHasta = '2026-10-15';
+    component.veterinarioId = 17;
+    component.especie = 'PERRO';
+    component.aplicarFiltros();
+
+    const reportesReq = httpMock.expectOne(req => req.url.includes('/clinical-reports'));
+    expect(reportesReq.request.params.get('fechaDesde')).toBe('2026-10-01');
+    expect(reportesReq.request.params.get('fechaHasta')).toBe('2026-10-15');
+    expect(reportesReq.request.params.get('veterinarioId')).toBe('17');
+    expect(reportesReq.request.params.get('especie')).toBe('PERRO');
+    reportesReq.flush({ success: true, message: '', data: reporteFixture() } as ApiResponse<ReportesClinicos>);
+  });
+
+  it('exportarExcel() entrega al exportador la misma instancia de reporte mostrada en pantalla', async () => {
+    const reporte = reporteFixture({
+      consultasPorTipo: [{ label: 'Control', count: 7 }]
+    });
+    flushInitialRequests(reporte);
+    const exportarExcel = jasmine.createSpy('exportarExcel').and.resolveTo();
+    spyOn<any>(component, 'getExportService').and.resolveTo({ exportarExcel });
+
+    await component.exportarExcel();
+
+    expect(exportarExcel).toHaveBeenCalled();
+    expect(exportarExcel.calls.mostRecent().args[0]).toBe(reporte);
+  });
+
   it('heatmapCount() devuelve 0 cuando no hay datos para ese día/hora', () => {
     flushInitialRequests(reporteFixture({ demandaPorHorario: [{ diaSemana: 2, hora: 9, count: 4 }] }));
 

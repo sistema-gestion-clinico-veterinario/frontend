@@ -10,7 +10,7 @@ import { CompanyService } from '../../../core/services/company.service';
 import { CompanySearchResult } from '../../../models/response/company-public-response';
 import { CompanySlugContext } from '../../../core/services/company-slug-context.service';
 import { AuthStore } from '../../../store/auth.store';
-import { resolveInitialRoute, resolveDashboardRoute } from '../../../layouts/main-layout/navbar/navbar.component';
+import { resolveInitialRoute, resolveDashboardRoute } from '../../../core/routing/initial-route';
 import { SessionService } from '../../../core/services/session.service';
 import { LoadingStore } from '../../../store/loading.store';
 import { SOFTVET_BRAND_COLOR, SOFTVET_LOGO_URL, SOFTVET_NAME } from '../../../core/constants/branding.constants';
@@ -67,12 +67,10 @@ export class LoginComponent implements OnInit {
 
   private static readonly NOTICE_TITLES: Record<string, string> = {
     sesion_otra_clinica: 'Vuelve a iniciar sesión',
-    sesion_inactividad: 'Sesión cerrada por inactividad',
   };
 
   private static readonly NOTICES: Record<string, string> = {
     sesion_otra_clinica: 'Por seguridad, vuelve a iniciar sesión para acceder a esta clínica. Tus sesiones abiertas en otras clínicas permanecerán activas.',
-    sesion_inactividad: 'Cerramos tu sesión por inactividad para proteger los datos de la clínica. Inicia sesión de nuevo para continuar.',
   };
 
   private static readonly GOOGLE_ERROR_MESSAGES: Record<string, string> = {

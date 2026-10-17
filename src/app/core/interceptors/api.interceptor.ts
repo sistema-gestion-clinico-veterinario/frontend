@@ -163,11 +163,7 @@ const handle401Error = (req: HttpRequest<any>, next: HttpHandlerFn, authStore: a
         // El SlugUrlSerializer conoce el slug actual y lo antepone solo en
         // la barra de direcciones.
         authStore.logout();
-        if (err?.error?.code === 'SESSION_IDLE_TIMEOUT') {
-          router.navigate(['/login'], { queryParams: { authNotice: 'sesion_inactividad' }, replaceUrl: true });
-        } else {
-          router.navigate(['/login']);
-        }
+        router.navigate(['/login']);
         return throwError(() => err);
       })
     );

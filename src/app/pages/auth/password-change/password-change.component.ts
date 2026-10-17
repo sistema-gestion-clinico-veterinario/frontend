@@ -7,7 +7,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { strongPasswordValidators } from '../../../core/validators/password-policy.validator';
-import { resolveDashboardRoute } from '../../../layouts/main-layout/navbar/navbar.component';
+import { resolveDashboardRoute } from '../../../core/routing/initial-route';
 
 function passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
   const newPassword = control.get('newPassword')?.value;
