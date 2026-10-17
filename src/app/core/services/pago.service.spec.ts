@@ -51,4 +51,20 @@ describe('PagoService integration', () => {
       },
     });
   });
+
+  it('envía los filtros del historial al backend junto con la paginación', () => {
+    service.listarHistorialPorEmpresa(2, 25, 8, {
+      estado: 'PAID',
+      metodoPago: 'YAPE'
+    }).subscribe();
+
+    const req = httpMock.expectOne((candidate) => candidate.url === `${environment.apiUrl}/payments/history`);
+    expect(req.request.method).toBe('GET');
+    expect(req.request.params.get('page')).toBe('2');
+    expect(req.request.params.get('size')).toBe('25');
+    expect(req.request.params.get('companyId')).toBe('8');
+    expect(req.request.params.get('estado')).toBe('PAID');
+    expect(req.request.params.get('metodoPago')).toBe('YAPE');
+    req.flush({ success: true, message: 'ok', data: { content: [], totalElements: 0 } });
+  });
 });

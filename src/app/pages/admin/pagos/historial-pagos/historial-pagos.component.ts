@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TableModule } from 'primeng/table';
@@ -32,18 +32,8 @@ export class HistorialPagosComponent implements OnInit {
   selectedPago   = signal<PagoListResponse | null>(null);
   showPanel      = signal<boolean>(false);
 
-  // Filtro local por estado de pago
   filtroEstado   = signal<string>('');
   filtroMetodo   = signal<string>('');
-
-  readonly pagosFiltrados = computed(() => {
-    let lista = this.pagos();
-    const estado = this.filtroEstado();
-    const metodo = this.filtroMetodo();
-    if (estado) lista = lista.filter(p => p.estado === estado);
-    if (metodo) lista = lista.filter(p => p.metodoPago === metodo);
-    return lista;
-  });
 
   ngOnInit() {
     this.cargar();
@@ -59,7 +49,15 @@ export class HistorialPagosComponent implements OnInit {
       this.pageSize.set(event.rows);
     }
     this.cargando.set(true);
-    this.pagoService.listarTodos(this.currentPage(), this.pageSize(), this.companyId).subscribe({
+    this.pagoService.listarHistorialPorEmpresa(
+      this.currentPage(),
+      this.pageSize(),
+      this.companyId,
+      {
+        estado: this.filtroEstado() || undefined,
+        metodoPago: this.filtroMetodo() || undefined
+      }
+    ).subscribe({
       next: (res) => {
         this.pagos.set(res.data?.content ?? []);
         this.totalRecords.set((res.data as any)?.page?.totalElements ?? res.data?.totalElements ?? 0);
@@ -85,6 +83,16 @@ export class HistorialPagosComponent implements OnInit {
   onFiltroChange() {
     this.currentPage.set(0);
     this.cargar();
+  }
+
+  onEstadoChange(estado: string) {
+    this.filtroEstado.set(estado);
+    this.onFiltroChange();
+  }
+
+  onMetodoChange(metodo: string) {
+    this.filtroMetodo.set(metodo);
+    this.onFiltroChange();
   }
 
   avatarBadgeClass(estado: string | null, dark = false): string {
@@ -151,8 +159,13 @@ export class HistorialPagosComponent implements OnInit {
   }
 
   metodoPagoLabel(m: string | null): string {
-    if (m === 'YAPE') return 'Yape';
-    if (m === 'EFECTIVO') return 'Efectivo';
-    return m ?? '—';
+    switch (m) {
+      case 'YAPE': return 'Yape';
+      case 'PLIN': return 'Plin';
+      case 'EFECTIVO': return 'Efectivo';
+      case 'TARJETA': return 'Tarjeta';
+      case 'TRANSFERENCIA': return 'Transferencia';
+      default: return m ?? '—';
+    }
   }
 }
