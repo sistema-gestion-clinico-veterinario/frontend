@@ -1,6 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AuditoriaComponent } from './auditoria.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { RealtimeStompService } from '../../../core/services/realtime-stomp.service';
+import { AuthStore } from '../../../store/auth.store';
 
 describe('AuditoriaComponent', () => {
   let component: AuditoriaComponent;
@@ -20,6 +22,33 @@ describe('AuditoriaComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('un administrador de clínica nunca intenta suscribirse al canal global', () => {
+    const authStore = TestBed.inject(AuthStore);
+    const realtime = TestBed.inject(RealtimeStompService);
+    const connect = spyOn(realtime, 'connect');
+    authStore.setAuth({
+      token: 'token', refreshToken: 'refresh', roles: ['ROLE_ADMIN'], activeRolePurpose: 'COMPANY_ADMIN',
+      companyId: null, passwordChanged: true, needsCompanySelection: false, menu: []
+    });
+
+    component.setupWebSocket(undefined);
+
+    expect(connect).not.toHaveBeenCalled();
+  });
+
+  it('usa la empresa seleccionada mientras el identificador de sesión aún se inicializa', () => {
+    const authStore = TestBed.inject(AuthStore);
+    authStore.setAuth({
+      token: 'token', refreshToken: 'refresh', roles: ['ROLE_ADMIN'], activeRolePurpose: 'COMPANY_ADMIN',
+      companyId: null, selectedEnterprise: { establishmentId: 27, name: 'Clínica' },
+      passwordChanged: true, needsCompanySelection: false, menu: []
+    });
+
+    const filters = (component as any).buildActiveFilters();
+
+    expect(filters.companyId).toBe(27);
   });
 });
 

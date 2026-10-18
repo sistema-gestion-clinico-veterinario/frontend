@@ -63,6 +63,16 @@ describe('MainLayoutComponent — aviso para cambiar la contraseña', () => {
     expect(modal()).toBeNull();
   });
 
+  it('se cierra inmediatamente al terminar la sesión', () => {
+    crear(false);
+    expect(modal()).not.toBeNull();
+
+    store.logout();
+    fixture.detectChanges();
+
+    expect(modal()).toBeNull();
+  });
+
   it('no vuelve a aparecer en la sesión del navegador una vez cerrado', () => {
     crear(false);
     fixture.componentInstance.dismissPasswordModal();

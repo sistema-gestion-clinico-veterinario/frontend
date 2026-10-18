@@ -1,7 +1,8 @@
+import { inject, provideEnvironmentInitializer } from '@angular/core';
 import { Routes } from '@angular/router';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { providePrimeNG } from 'primeng/config';
 import Aura from '@primeng/themes/aura';
+import { PrimeNG } from 'primeng/config';
 import { AuthGuard } from './core/guards/auth.guard';
 import { APP_ROUTE_PATHS } from './core/routing/app-routes.constants';
 
@@ -27,7 +28,12 @@ export const AUTHENTICATED_ROUTES: Routes = [
     canActivateChild: [AuthGuard],
     providers: [
       provideAnimationsAsync(),
-      providePrimeNG(AUTHENTICATED_PRIMENG_CONFIG)
+      // `providePrimeNG` usa un inicializador de aplicación y no se ejecuta
+      // al declararlo dentro de una ruta lazy. El inicializador de entorno sí
+      // corre antes de crear el layout y configura la instancia global.
+      provideEnvironmentInitializer(() => {
+        inject(PrimeNG).setConfig(AUTHENTICATED_PRIMENG_CONFIG);
+      })
     ],
     children: [
       {
