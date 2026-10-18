@@ -1,0 +1,120 @@
+<section class="max-w-[1540px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+  <header class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <p class="text-[11px] font-bold tracking-[0.18em] uppercase text-[var(--brand-primary)]">Continuidad operativa</p>
+      <h1 class="mt-1 text-2xl font-bold text-slate-900">Respaldo y recuperación</h1>
+      <p class="mt-1 text-sm text-slate-500">Supervisión de copias cifradas y verificadas. No se muestran archivos ni credenciales.</p>
+    </div>
+    <div class="rounded-xl border border-slate-200 bg-white px-4 py-3 text-right">
+      <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Programación</p>
+      <p class="mt-1 text-sm font-semibold text-slate-700">Todos los días · 2:17 a. m.</p>
+      <p class="text-xs text-slate-400">Hora de Perú</p>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="grid gap-4 md:grid-cols-3" aria-label="Cargando respaldos">
+      @for (_ of [1, 2, 3]; track _) {
+        <div class="h-32 animate-pulse rounded-2xl border border-slate-200 bg-white p-5">
+          <div class="h-3 w-24 rounded bg-slate-100"></div>
+          <div class="mt-5 h-7 w-36 rounded bg-slate-100"></div>
+          <div class="mt-3 h-3 w-48 rounded bg-slate-100"></div>
+        </div>
+      }
+    </div>
+  } @else if (error()) {
+    <div class="rounded-2xl border border-rose-200 bg-rose-50 p-5 text-sm text-rose-700" role="alert">
+      <div class="flex items-center gap-3">
+        <i class="pi pi-exclamation-triangle"></i>
+        <span>{{ error() }}</span>
+        <button type="button" class="ml-auto font-semibold underline" (click)="load(page())">Reintentar</button>
+      </div>
+    </div>
+  } @else if (!latest()) {
+    <div class="rounded-2xl border border-slate-200 bg-white px-6 py-14 text-center">
+      <i class="pi pi-cloud-upload text-3xl text-slate-300"></i>
+      <h2 class="mt-4 font-semibold text-slate-800">Aún no existen reportes operativos</h2>
+      <p class="mx-auto mt-2 max-w-xl text-sm text-slate-500">El historial aparecerá después de ejecutar el workflow con la integración de monitoreo configurada.</p>
+    </div>
+  } @else {
+    @let current = latest()!;
+    <div class="grid gap-4 md:grid-cols-3">
+      <article class="rounded-2xl border border-slate-200 bg-white p-5">
+        <div class="flex items-center justify-between">
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Última ejecución</p>
+          <span class="rounded-full border px-2.5 py-1 text-xs font-semibold" [ngClass]="statusClass(current.status)">{{ statusLabel(current.status) }}</span>
+        </div>
+        <p class="mt-5 text-xl font-bold text-slate-900">{{ current.startedAt | date:'dd/MM/yyyy, h:mm a':'-0500' }}</p>
+        <p class="mt-1 text-xs text-slate-500">Duración: {{ duration(current) }}</p>
+      </article>
+
+      <article class="rounded-2xl border border-slate-200 bg-white p-5">
+        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Punto de recuperación</p>
+        <p class="mt-5 font-mono text-xl font-bold text-slate-900">{{ shortId(current.recoveryPointId) }}</p>
+        <p class="mt-1 text-xs text-slate-500">{{ policyLabel(current.retentionPolicy) }}</p>
+      </article>
+
+      <article class="rounded-2xl border border-slate-200 bg-white p-5">
+        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Verificación</p>
+        <div class="mt-5 flex items-center gap-3">
+          <span class="grid h-9 w-9 place-items-center rounded-full" [ngClass]="current.restorationVerified ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'">
+            <i [class]="current.restorationVerified ? 'pi pi-check' : 'pi pi-clock'"></i>
+          </span>
+          <div>
+            <p class="font-bold text-slate-900">{{ current.restorationVerified ? 'Restauración verificada' : 'Sin verificación confirmada' }}</p>
+            <p class="text-xs text-slate-500">Validación realizada en un destino aislado</p>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+      <div class="border-b border-slate-200 px-5 py-4">
+        <h2 class="font-bold text-slate-900">Componentes de la última ejecución</h2>
+        <p class="mt-1 text-xs text-slate-500">El cierre de acceso confirma que la autorización temporal de red fue retirada.</p>
+      </div>
+      <div class="grid divide-y divide-slate-100 md:grid-cols-3 md:divide-x md:divide-y-0">
+        <div class="flex items-center justify-between p-5"><span class="text-sm text-slate-600">Base de datos</span><span class="rounded-full border px-2.5 py-1 text-xs font-semibold" [ngClass]="statusClass(current.databaseStatus)">{{ componentLabel(current.databaseStatus) }}</span></div>
+        <div class="flex items-center justify-between p-5"><span class="text-sm text-slate-600">Cierre de acceso temporal</span><span class="rounded-full border px-2.5 py-1 text-xs font-semibold" [ngClass]="statusClass(current.restrictionsStatus)">{{ componentLabel(current.restrictionsStatus) }}</span></div>
+        <div class="flex items-center justify-between p-5"><span class="text-sm text-slate-600">Archivos clínicos</span><span class="rounded-full border px-2.5 py-1 text-xs font-semibold" [ngClass]="statusClass(current.storageStatus)">{{ componentLabel(current.storageStatus) }}</span></div>
+      </div>
+    </article>
+
+    <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+      <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+        <div><h2 class="font-bold text-slate-900">Historial de ejecuciones</h2><p class="mt-1 text-xs text-slate-500">{{ total() }} ejecución(es) reportada(s)</p></div>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full min-w-[920px] text-left text-sm">
+          <thead class="bg-slate-50 text-[11px] uppercase tracking-wider text-slate-500">
+            <tr><th class="px-5 py-3">Fecha</th><th class="px-5 py-3">Punto</th><th class="px-5 py-3">Origen</th><th class="px-5 py-3">Retención</th><th class="px-5 py-3">Duración</th><th class="px-5 py-3">Estado</th><th class="px-5 py-3 text-right">Evidencia</th></tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            @for (execution of executions(); track execution.id) {
+              <tr class="text-slate-600 hover:bg-slate-50/70">
+                <td class="px-5 py-4"><span class="font-medium text-slate-800">{{ execution.startedAt | date:'dd/MM/yyyy':'-0500' }}</span><br><span class="text-xs text-slate-400">{{ execution.startedAt | date:'h:mm a':'-0500' }}</span></td>
+                <td class="px-5 py-4 font-mono text-xs">{{ shortId(execution.recoveryPointId) }}</td>
+                <td class="px-5 py-4">{{ execution.triggerType === 'SCHEDULED' ? 'Programado' : 'Manual' }}</td>
+                <td class="px-5 py-4">{{ policyLabel(execution.retentionPolicy) }}</td>
+                <td class="px-5 py-4">{{ duration(execution) }}</td>
+                <td class="px-5 py-4"><span class="rounded-full border px-2.5 py-1 text-xs font-semibold" [ngClass]="statusClass(execution.status)">{{ statusLabel(execution.status) }}</span></td>
+                <td class="px-5 py-4 text-right"><a [href]="execution.workflowUrl" target="_blank" rel="noopener noreferrer" class="font-semibold text-[var(--brand-primary)] hover:underline">Ver ejecución <i class="pi pi-external-link ml-1 text-[10px]"></i></a></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      @if (hasPreviousPage() || hasNextPage()) {
+        <footer class="flex justify-end gap-2 border-t border-slate-200 px-5 py-3">
+          <button type="button" class="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 disabled:opacity-40" [disabled]="!hasPreviousPage()" (click)="load(page() - 1)">Anterior</button>
+          <button type="button" class="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 disabled:opacity-40" [disabled]="!hasNextPage()" (click)="load(page() + 1)">Siguiente</button>
+        </footer>
+      }
+    </article>
+
+    <aside class="rounded-2xl border border-blue-200 bg-blue-50 p-5 text-sm text-blue-800">
+      <p class="font-semibold"><i class="pi pi-shield mr-2"></i>Panel de supervisión</p>
+      <p class="mt-1 text-xs leading-5 text-blue-700">Por seguridad, las restauraciones, descargas y eliminaciones no se ejecutan desde esta pantalla. Deben seguir el procedimiento controlado de recuperación.</p>
+    </aside>
+  }
+</section>
