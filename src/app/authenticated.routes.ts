@@ -1,40 +1,33 @@
 import { Routes } from '@angular/router';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { providePrimeNG } from 'primeng/config';
+import Aura from '@primeng/themes/aura';
 import { AuthGuard } from './core/guards/auth.guard';
 import { APP_ROUTE_PATHS } from './core/routing/app-routes.constants';
 
-
-const loadMainLayout = async () => {
-  const [{ default: Aura }, { usePreset }, { MainLayoutComponent }] = await Promise.all([
-    import('@primeng/themes/aura'),
-    import('@primeng/themes'),
-    import('./layouts/main-layout/main-layout.component')
-  ]);
-
-  usePreset(Aura);
-  return MainLayoutComponent;
+export const AUTHENTICATED_PRIMENG_CONFIG = {
+  theme: {
+    preset: Aura,
+    options: {
+      darkModeSelector: 'none',
+      cssLayer: {
+        name: 'primeng',
+        order: 'tailwind-base, primeng, tailwind-utilities'
+      }
+    }
+  }
 };
 
 export const AUTHENTICATED_ROUTES: Routes = [
   {
     path: '',
-    loadComponent: loadMainLayout,
+    loadComponent: () => import('./layouts/main-layout/main-layout.component')
+      .then((m) => m.MainLayoutComponent),
     canActivate: [AuthGuard],
     canActivateChild: [AuthGuard],
     providers: [
       provideAnimationsAsync(),
-      providePrimeNG({
-        theme: {
-          options: {
-            darkModeSelector: 'none',
-            cssLayer: {
-              name: 'primeng',
-              order: 'tailwind-base, primeng, tailwind-utilities'
-            }
-          }
-        }
-      })
+      providePrimeNG(AUTHENTICATED_PRIMENG_CONFIG)
     ],
     children: [
       {
