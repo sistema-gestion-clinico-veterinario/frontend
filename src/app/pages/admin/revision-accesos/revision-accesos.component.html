@@ -1,208 +1,281 @@
 <p-toast position="top-right" />
 
 <div class="min-h-screen min-w-0 overflow-x-hidden bg-blue-50 p-2 font-['Barlow'] sm:p-4">
-  <div class="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-    <div class="flex items-center gap-3">
-      <i class="pi pi-verified shrink-0 text-3xl text-blue-500"></i>
-      <div>
-        <p class="text-[11px] font-bold uppercase tracking-[.14em] text-blue-500">Seguridad</p>
-        <h1 class="text-xl font-extrabold leading-tight tracking-tight text-slate-900">Revisión de accesos privilegiados</h1>
-        <p class="mt-1 hidden text-sm font-medium text-slate-400 sm:block">
-          Confirma periódicamente quién conserva acceso de administración en tu empresa.
-        </p>
-      </div>
-    </div>
-    <a routerLink="/admin/roles" class="text-xs font-bold text-blue-500 hover:underline">
-      <i class="pi pi-arrow-left mr-1 text-[10px]"></i>Volver a roles
-    </a>
-  </div>
-
-  @if (cargando()) {
-    <div class="space-y-3">
-      <p-skeleton width="100%" height="4rem" borderRadius="0.75rem"></p-skeleton>
-      <p-skeleton width="100%" height="10rem" borderRadius="0.75rem"></p-skeleton>
-    </div>
-  } @else if (error()) {
-    <div class="rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-600">
-      {{ error() }}
-      <button type="button" class="ml-2 font-bold text-blue-500 hover:underline" (click)="cargar()">Reintentar</button>
-    </div>
-  } @else if (overview(); as vista) {
-    <section class="mb-4 flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-start" aria-live="polite">
-      <span class="inline-flex w-fit shrink-0 items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-bold"
-        [class.border-red-200]="vista.overdue" [class.bg-red-50]="vista.overdue" [class.text-red-700]="vista.overdue"
-        [class.border-slate-200]="!vista.overdue" [class.bg-slate-50]="!vista.overdue" [class.text-slate-700]="!vista.overdue">
-        <i class="pi text-[10px]" [class.pi-clock]="vista.overdue" [class.pi-check-circle]="!vista.overdue"></i>
-        {{ vista.overdue ? (vista.lastReview ? 'Vencida' : 'Pendiente') : 'Al día' }}
-      </span>
-      <div class="min-w-0">
-        @if (vista.overdue) {
-          <p class="text-sm font-bold text-slate-900" data-testid="estado-revision">
-            @if (vista.lastReview) { La revisión está vencida. } @else { Aún no se ha registrado ninguna revisión. }
+  <div class="mx-auto max-w-6xl">
+    <div class="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+      <div class="flex items-center gap-3">
+        <i class="pi pi-verified shrink-0 text-3xl text-blue-500"></i>
+        <div>
+          <p class="text-[11px] font-bold uppercase tracking-[.14em] text-blue-500">Seguridad</p>
+          <h1 class="text-xl font-extrabold leading-tight tracking-tight text-slate-900">Revisión de accesos privilegiados</h1>
+          <p class="mt-1 hidden text-sm font-medium text-slate-400 sm:block">
+            Confirma periódicamente quién conserva acceso de administración en tu empresa.
           </p>
-        } @else {
-          <p class="text-sm font-bold text-slate-900" data-testid="estado-revision">La revisión está al día.</p>
-        }
-        <p class="mt-1 text-xs leading-5 text-slate-500">
-          @if (vista.lastReview) {
-            Última revisión: {{ vista.lastReview.performedAt | date: 'dd/MM/yyyy HH:mm' }} por
-            {{ vista.lastReview.performedByEmail || 'una cuenta eliminada' }}
-            ({{ vista.lastReview.keptCount }} mantenidos, {{ vista.lastReview.revokedCount }} retirados).
-          }
-          @if (vista.nextDueAt) { Próxima revisión antes del {{ vista.nextDueAt | date: 'dd/MM/yyyy' }}. }
-          Periodicidad: cada {{ vista.intervalDays }} días.
-        </p>
+        </div>
       </div>
-    </section>
+      <a routerLink="/admin/roles" class="text-xs font-bold text-blue-500 hover:underline">
+        <i class="pi pi-arrow-left mr-1 text-[10px]"></i>Volver a roles
+      </a>
+    </div>
 
-    <section class="mb-4 rounded-xl border border-slate-200 bg-white">
-      <div class="flex flex-col gap-3 border-b border-slate-100 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-        <div class="min-w-0 flex-1">
-          <div class="flex items-center justify-between gap-3 text-xs font-semibold">
-            <span class="uppercase tracking-wider text-slate-400">Accesos por revisar</span>
-            <span class="text-slate-600">{{ decididos() }} de {{ items().length }} decididos</span>
+    @if (cargando()) {
+      <div class="space-y-3">
+        <p-skeleton width="100%" height="7rem" borderRadius="0.75rem"></p-skeleton>
+        <p-skeleton width="100%" height="14rem" borderRadius="0.75rem"></p-skeleton>
+      </div>
+    } @else if (error()) {
+      <div class="rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-600">
+        {{ error() }}
+        <button type="button" class="ml-2 font-bold text-blue-500 hover:underline" (click)="cargar()">Reintentar</button>
+      </div>
+    } @else if (overview(); as vista) {
+      <section class="mb-4 rounded-xl border border-slate-200 bg-white p-4 sm:p-5" aria-live="polite">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div class="min-w-0">
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-bold"
+                [class.border-red-200]="vista.overdue" [class.bg-red-50]="vista.overdue" [class.text-red-700]="vista.overdue"
+                [class.border-emerald-200]="!vista.overdue" [class.bg-emerald-50]="!vista.overdue" [class.text-emerald-700]="!vista.overdue">
+                <i class="pi text-[10px]" [class.pi-clock]="vista.overdue" [class.pi-check-circle]="!vista.overdue"></i>
+                {{ vista.overdue ? (vista.lastReview ? 'Vencida' : 'Pendiente') : 'Al día' }}
+              </span>
+              @if (vista.overdue) {
+                <p class="text-sm font-bold text-slate-900" data-testid="estado-revision">
+                  @if (vista.lastReview) { La revisión está vencida. } @else { Aún no se ha registrado ninguna revisión. }
+                </p>
+              } @else {
+                <p class="text-sm font-bold text-slate-900" data-testid="estado-revision">La revisión está al día.</p>
+              }
+            </div>
+            <p class="mt-2 text-xs leading-5 text-slate-500">
+              @if (vista.lastReview) {
+                Última revisión: {{ vista.lastReview.performedAt | date: 'dd/MM/yyyy HH:mm' }} por
+                {{ vista.lastReview.performedByEmail || 'una cuenta eliminada' }}
+                ({{ vista.lastReview.keptCount }} mantenidos, {{ vista.lastReview.revokedCount }} retirados).
+              }
+              @if (vista.nextDueAt) { Próxima revisión antes del {{ vista.nextDueAt | date: 'dd/MM/yyyy' }}. }
+              Se repite cada {{ vista.intervalDays }} días.
+            </p>
+            <p class="mt-3 max-w-xl text-sm leading-6 text-slate-600">
+              Revisa cada acceso de la lista y decide si la persona debe conservarlo. Al terminar, registra la revisión: quedará guardada como evidencia.
+            </p>
           </div>
-          <div class="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-100" role="progressbar"
+
+          <dl class="grid w-full shrink-0 grid-cols-3 gap-2 text-center lg:w-96" aria-label="Avance de la revisión">
+            <div class="rounded-lg border border-slate-200 px-2 py-3">
+              <dt class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Por decidir</dt>
+              <dd class="mt-1 text-2xl font-extrabold text-slate-900" data-testid="contador-pendientes">{{ pendientes() }}</dd>
+            </div>
+            <div class="rounded-lg border border-emerald-200 bg-emerald-50 px-2 py-3">
+              <dt class="text-[11px] font-semibold uppercase tracking-wide text-emerald-700">Se mantienen</dt>
+              <dd class="mt-1 text-2xl font-extrabold text-emerald-700" data-testid="contador-mantenidos">{{ mantenidos() }}</dd>
+            </div>
+            <div class="rounded-lg border border-rose-200 bg-rose-50 px-2 py-3">
+              <dt class="text-[11px] font-semibold uppercase tracking-wide text-rose-700">Se retiran</dt>
+              <dd class="mt-1 text-2xl font-extrabold text-rose-700" data-testid="contador-retiros">{{ retiros() }}</dd>
+            </div>
+          </dl>
+        </div>
+
+        @if (items().length > 0) {
+          <div class="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-slate-100" role="progressbar"
             [attr.aria-valuenow]="avance()" aria-valuemin="0" aria-valuemax="100" aria-label="Avance de la revisión">
             <div class="h-full rounded-full bg-blue-500" [style.width.%]="avance()"></div>
           </div>
-        </div>
-        @if (puedeRegistrar() && pendientes() > 0) {
-          <button type="button" (click)="mantenerPendientes()"
-            class="shrink-0 rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50">
-            Mantener los {{ pendientes() }} pendientes
-          </button>
         }
-      </div>
+      </section>
 
-      @if (items().length === 0) {
-        <p class="p-4 text-sm text-slate-500">No hay accesos privilegiados vigentes en esta empresa.</p>
-      } @else {
-        <div class="divide-y divide-slate-100">
-          @for (grupo of grupos(); track grupo.usuarioId) {
-            <article class="p-4">
-              <header class="flex items-center gap-3">
-                <span class="flex size-9 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-600" aria-hidden="true">
-                  {{ iniciales(grupo.nombre) }}
-                </span>
-                <div class="min-w-0">
-                  <p class="truncate text-sm font-bold text-slate-900">{{ grupo.nombre }}</p>
-                  <p class="truncate text-xs text-slate-500">{{ grupo.email }}</p>
-                </div>
-                @if (grupo.accesos.length > 1) {
-                  <span class="ml-auto shrink-0 rounded-full border border-slate-200 px-2 py-0.5 text-[11px] font-semibold text-slate-500">
-                    {{ grupo.accesos.length }} roles
+      <section class="mb-4 overflow-hidden rounded-xl border border-slate-200 bg-white">
+        <div class="flex flex-col gap-3 border-b border-slate-100 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <div class="flex items-center gap-1" role="tablist" aria-label="Filtrar accesos">
+            <button type="button" role="tab" [attr.aria-selected]="filtro() === 'TODOS'" (click)="cambiarFiltro('TODOS')"
+              class="rounded-lg px-3 py-1.5 text-xs font-bold"
+              [class.bg-slate-900]="filtro() === 'TODOS'" [class.text-white]="filtro() === 'TODOS'"
+              [class.text-slate-500]="filtro() !== 'TODOS'">
+              Todos ({{ items().length }})
+            </button>
+            <button type="button" role="tab" [attr.aria-selected]="filtro() === 'PENDIENTES'" (click)="cambiarFiltro('PENDIENTES')"
+              class="rounded-lg px-3 py-1.5 text-xs font-bold"
+              [class.bg-slate-900]="filtro() === 'PENDIENTES'" [class.text-white]="filtro() === 'PENDIENTES'"
+              [class.text-slate-500]="filtro() !== 'PENDIENTES'">
+              Por decidir ({{ pendientes() }})
+            </button>
+          </div>
+          @if (puedeRegistrar() && pendientes() > 0) {
+            <button type="button" (click)="mantenerPendientes()"
+              class="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50">
+              Mantener los {{ pendientes() }} pendientes
+            </button>
+          }
+        </div>
+
+        @if (items().length === 0) {
+          <p class="p-5 text-sm text-slate-500">No hay accesos privilegiados vigentes en esta empresa.</p>
+        } @else if (gruposVisibles().length === 0) {
+          <p class="p-5 text-sm text-slate-500">No quedan accesos por decidir. Revisa las observaciones y registra la revisión.</p>
+        } @else {
+          <div class="hidden border-b border-slate-100 bg-slate-50 px-4 py-2 text-[11px] font-semibold uppercase tracking-wide text-slate-400 lg:grid lg:grid-cols-[11rem_1fr_9rem_15rem] lg:gap-4">
+            <span>Acceso</span>
+            <span>Por qué se revisa</span>
+            <span>Actividad</span>
+            <span>Decisión</span>
+          </div>
+
+          <div class="divide-y divide-slate-200">
+            @for (grupo of gruposVisibles(); track grupo.usuarioId) {
+              <article>
+                <header class="flex items-center gap-3 bg-slate-50/60 px-4 py-3">
+                  <span class="flex size-9 shrink-0 items-center justify-center rounded-full bg-slate-200 text-xs font-bold text-slate-700" aria-hidden="true">
+                    {{ iniciales(grupo.nombre) }}
                   </span>
-                }
-              </header>
+                  <div class="min-w-0">
+                    <p class="truncate text-sm font-bold text-slate-900">{{ grupo.nombre }}</p>
+                    <p class="truncate text-xs text-slate-500">{{ grupo.email }}</p>
+                  </div>
+                  @if (grupo.accesos.length > 1) {
+                    <span class="ml-auto shrink-0 rounded-full border border-slate-200 bg-white px-2.5 py-0.5 text-[11px] font-semibold text-slate-600">
+                      {{ grupo.accesos.length }} roles de personal
+                    </span>
+                  }
+                </header>
 
-              <ul class="mt-3 space-y-2">
-                @for (item of grupo.accesos; track item.assignmentId) {
-                  <li class="rounded-lg border border-slate-100 bg-slate-50 p-3"
-                    [class.border-red-200]="decisionDe(item)?.decision === 'REVOKE'"
-                    [class.bg-red-50]="decisionDe(item)?.decision === 'REVOKE'">
-                    <div class="grid gap-3 lg:grid-cols-[1fr_auto] lg:items-center">
-                      <div class="min-w-0">
-                        <p class="text-sm font-bold text-slate-800">{{ rolLegible(item.roleName) }}</p>
-                        <div class="mt-1.5 flex flex-wrap gap-1.5">
-                          @for (motivo of item.reasons; track motivo) {
-                            <span class="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[11px] font-medium text-slate-600">{{ motivo }}</span>
-                          }
-                          <span class="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[11px] font-medium text-slate-500">
-                            @if (item.lastActivity) { Última actividad: {{ item.lastActivity | date: 'dd/MM/yyyy' }} }
-                            @else { Sin actividad registrada }
-                          </span>
+                <ul class="divide-y divide-slate-100">
+                  @for (item of grupo.accesos; track item.assignmentId) {
+                    <li class="px-4 py-3" [class.bg-rose-50]="estadoDeLaDecision(item) === 'REVOKE'">
+                      <div class="grid gap-2 lg:grid-cols-[11rem_1fr_9rem_15rem] lg:items-center lg:gap-4">
+                        <div class="flex items-center gap-2">
+                          <span class="size-2 shrink-0 rounded-full"
+                            [class.bg-slate-300]="estadoDeLaDecision(item) === 'PENDIENTE'"
+                            [class.bg-emerald-500]="estadoDeLaDecision(item) === 'KEEP'"
+                            [class.bg-rose-500]="estadoDeLaDecision(item) === 'REVOKE'"></span>
+                          <p class="text-sm font-bold text-slate-800">{{ rolLegible(item.roleName) }}</p>
                         </div>
+
+                        <ul class="space-y-0.5 text-xs leading-5 text-slate-600">
+                          @for (motivo of motivosDelAcceso(item); track motivo) {
+                            <li>{{ motivo }}</li>
+                          } @empty {
+                            <li class="text-slate-400">Revisión periódica de rutina</li>
+                          }
+                        </ul>
+
+                        <p class="text-xs text-slate-500">
+                          @if (item.lastActivity) { {{ item.lastActivity | date: 'dd/MM/yyyy' }} }
+                          @else { <span class="text-slate-400">Sin actividad</span> }
+                        </p>
+
+                        @if (puedeRegistrar()) {
+                          <div>
+                            <div class="grid grid-cols-2 gap-1.5" role="group"
+                              [attr.aria-label]="'Decisión para ' + grupo.nombre + ' como ' + rolLegible(item.roleName)">
+                              <button type="button" (click)="decidir(item, 'KEEP')"
+                                [attr.aria-pressed]="estadoDeLaDecision(item) === 'KEEP'"
+                                class="inline-flex items-center justify-center gap-1.5 rounded-lg border px-2 py-1.5 text-xs font-bold"
+                                [class.border-emerald-600]="estadoDeLaDecision(item) === 'KEEP'"
+                                [class.bg-emerald-600]="estadoDeLaDecision(item) === 'KEEP'"
+                                [class.text-white]="estadoDeLaDecision(item) === 'KEEP'"
+                                [class.border-slate-200]="estadoDeLaDecision(item) !== 'KEEP'"
+                                [class.bg-white]="estadoDeLaDecision(item) !== 'KEEP'"
+                                [class.text-slate-600]="estadoDeLaDecision(item) !== 'KEEP'">
+                                <i class="pi pi-check text-[10px]"></i>Mantener
+                              </button>
+                              <button type="button" (click)="decidir(item, 'REVOKE')"
+                                [attr.aria-pressed]="estadoDeLaDecision(item) === 'REVOKE'"
+                                class="inline-flex items-center justify-center gap-1.5 rounded-lg border px-2 py-1.5 text-xs font-bold"
+                                [class.border-rose-600]="estadoDeLaDecision(item) === 'REVOKE'"
+                                [class.bg-rose-600]="estadoDeLaDecision(item) === 'REVOKE'"
+                                [class.text-white]="estadoDeLaDecision(item) === 'REVOKE'"
+                                [class.border-slate-200]="estadoDeLaDecision(item) !== 'REVOKE'"
+                                [class.bg-white]="estadoDeLaDecision(item) !== 'REVOKE'"
+                                [class.text-slate-600]="estadoDeLaDecision(item) !== 'REVOKE'">
+                                <i class="pi pi-times text-[10px]"></i>Retirar
+                              </button>
+                            </div>
+                            <p class="mt-1 text-[11px] font-semibold"
+                              [class.text-slate-400]="estadoDeLaDecision(item) === 'PENDIENTE'"
+                              [class.text-emerald-700]="estadoDeLaDecision(item) === 'KEEP'"
+                              [class.text-rose-700]="estadoDeLaDecision(item) === 'REVOKE'">
+                              {{ estadoDeLaDecision(item) === 'PENDIENTE' ? 'Sin decidir' : estadoDeLaDecision(item) === 'KEEP' ? 'Conservará el acceso' : 'Perderá el acceso' }}
+                            </p>
+                          </div>
+                        }
                       </div>
 
-                      @if (puedeRegistrar()) {
-                        <div class="grid w-full grid-cols-2 gap-1 rounded-lg border border-slate-200 bg-white p-1 lg:w-56"
-                          role="group" [attr.aria-label]="'Decisión para ' + grupo.nombre + ' como ' + rolLegible(item.roleName)">
-                          <button type="button" (click)="decidir(item, 'KEEP')"
-                            [class.bg-blue-500]="decisionDe(item)?.decision === 'KEEP'"
-                            [class.text-white]="decisionDe(item)?.decision === 'KEEP'"
-                            [class.text-slate-600]="decisionDe(item)?.decision !== 'KEEP'"
-                            [attr.aria-pressed]="decisionDe(item)?.decision === 'KEEP'"
-                            class="rounded-md px-2 py-1.5 text-xs font-bold">Mantener</button>
-                          <button type="button" (click)="decidir(item, 'REVOKE')"
-                            [class.bg-red-600]="decisionDe(item)?.decision === 'REVOKE'"
-                            [class.text-white]="decisionDe(item)?.decision === 'REVOKE'"
-                            [class.text-slate-600]="decisionDe(item)?.decision !== 'REVOKE'"
-                            [attr.aria-pressed]="decisionDe(item)?.decision === 'REVOKE'"
-                            class="rounded-md px-2 py-1.5 text-xs font-bold">Retirar</button>
+                      @if (puedeRegistrar() && estadoDeLaDecision(item) === 'REVOKE') {
+                        <div class="mt-3">
+                          <label [for]="'motivo-' + item.assignmentId" class="text-xs font-bold text-rose-800">Motivo del retiro (obligatorio)</label>
+                          <input [id]="'motivo-' + item.assignmentId" type="text" maxlength="300"
+                            placeholder="Por ejemplo: cambió de puesto o ya no trabaja en la clínica"
+                            [ngModel]="decisionDe(item)?.comment" (ngModelChange)="motivo(item, $event)"
+                            class="mt-1 w-full rounded-lg border border-rose-200 bg-white px-3 py-2 text-xs text-slate-700 outline-none focus:border-rose-400" />
                         </div>
                       }
-                    </div>
-
-                    @if (puedeRegistrar() && decisionDe(item)?.decision === 'REVOKE') {
-                      <input type="text" maxlength="300" placeholder="Motivo del retiro (obligatorio)"
-                        [ngModel]="decisionDe(item)?.comment" (ngModelChange)="motivo(item, $event)"
-                        [attr.aria-label]="'Motivo del retiro para ' + grupo.nombre"
-                        class="mt-3 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700 outline-none focus:border-red-400" />
-                    }
-                  </li>
-                }
-              </ul>
-            </article>
-          }
-        </div>
-
-        @if (puedeRegistrar()) {
-          <div class="sticky bottom-0 border-t border-slate-200 bg-white p-4">
-            <label for="notas-revision" class="text-xs font-semibold text-slate-500">Observaciones (opcional)</label>
-            <textarea id="notas-revision" rows="2" maxlength="500" [ngModel]="notas()" (ngModelChange)="notas.set($event)"
-              class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 outline-none focus:border-blue-400"></textarea>
-
-            <div class="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <p class="text-xs text-slate-500">
-                @if (pendientes() > 0) { Faltan {{ pendientes() }} acceso(s) por decidir. }
-                @else if (faltanMotivos()) { Indica el motivo de cada retiro. }
-                @else { Todos los accesos tienen una decisión. }
-              </p>
-              @if (confirmando()) {
-                <div class="flex flex-wrap items-center gap-2">
-                  <span class="text-xs font-semibold text-slate-700">Se retirarán {{ retiros() }} acceso(s).</span>
-                  <button type="button" (click)="confirmando.set(false)"
-                    class="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600">Cancelar</button>
-                  <button type="button" (click)="registrar()" [disabled]="enviando()"
-                    class="rounded-lg bg-red-600 px-3 py-2 text-xs font-bold text-white disabled:opacity-50">Confirmar retiro</button>
-                </div>
-              } @else {
-                <button type="button" (click)="solicitarRegistro()" [disabled]="!listo() || enviando()"
-                  class="rounded-lg bg-blue-600 px-4 py-2 text-xs font-bold text-white disabled:opacity-50">
-                  Registrar revisión
-                </button>
-              }
-            </div>
+                    </li>
+                  }
+                </ul>
+              </article>
+            }
           </div>
         }
-      }
-    </section>
+      </section>
 
-    <section class="overflow-hidden rounded-xl border border-slate-200 bg-white">
-      <div class="border-b border-slate-100 px-4 py-3">
-        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Revisiones anteriores</p>
-      </div>
-      @if (historial().length === 0) {
-        <p class="p-4 text-sm text-slate-500">Todavía no hay revisiones registradas.</p>
-      } @else {
-        <ul class="divide-y divide-slate-100">
-          @for (revision of historial(); track revision.id) {
-            <li class="flex flex-col gap-1 p-4 sm:flex-row sm:items-center sm:justify-between">
-              <div class="text-sm text-slate-700">
-                <span class="font-bold">{{ revision.performedAt | date: 'dd/MM/yyyy HH:mm' }}</span>
-                · {{ revision.performedByEmail || 'cuenta eliminada' }}
-                <span class="text-xs text-slate-500">
-                  — {{ revision.reviewedCount }} revisados, {{ revision.keptCount }} mantenidos, {{ revision.revokedCount }} retirados
-                </span>
+      @if (items().length > 0 && puedeRegistrar()) {
+        <section class="mb-4 rounded-xl border border-slate-200 bg-white p-4 sm:p-5" aria-labelledby="titulo-cierre">
+          <h2 id="titulo-cierre" class="text-sm font-extrabold text-slate-900">Cerrar la revisión</h2>
+          <label for="notas-revision" class="mt-3 block text-xs font-semibold text-slate-500">Observaciones (opcional)</label>
+          <textarea id="notas-revision" rows="2" maxlength="500" [ngModel]="notas()" (ngModelChange)="notas.set($event)"
+            placeholder="Cualquier comentario que deba quedar en el registro"
+            class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 outline-none focus:border-blue-400"></textarea>
+
+          <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p class="text-xs text-slate-500" data-testid="mensaje-de-cierre">
+              @if (pendientes() > 0) { Faltan {{ pendientes() }} acceso(s) por decidir. }
+              @else if (faltanMotivos()) { Indica el motivo de cada retiro. }
+              @else { Todos los accesos tienen una decisión. Ya puedes registrar la revisión. }
+            </p>
+            @if (confirmando()) {
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="text-xs font-semibold text-slate-700">Se retirarán {{ retiros() }} acceso(s).</span>
+                <button type="button" (click)="confirmando.set(false)"
+                  class="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600">Cancelar</button>
+                <button type="button" (click)="registrar()" [disabled]="enviando()"
+                  class="rounded-lg bg-red-600 px-3 py-2 text-xs font-bold text-white disabled:opacity-50">Confirmar retiro</button>
               </div>
-              <button type="button" (click)="verDetalle(revision)" class="text-xs font-bold text-blue-500 hover:underline">Ver detalle</button>
-            </li>
-          }
-        </ul>
+            } @else {
+              <button type="button" (click)="solicitarRegistro()" [disabled]="!listo() || enviando()"
+                class="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50">
+                {{ enviando() ? 'Registrando…' : 'Registrar revisión' }}
+              </button>
+            }
+          </div>
+        </section>
       }
-    </section>
-  }
+
+      <section class="overflow-hidden rounded-xl border border-slate-200 bg-white">
+        <div class="border-b border-slate-100 px-4 py-3">
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Revisiones anteriores</p>
+        </div>
+        @if (historial().length === 0) {
+          <p class="p-5 text-sm text-slate-500">Todavía no hay revisiones registradas.</p>
+        } @else {
+          <ul class="divide-y divide-slate-100">
+            @for (revision of historial(); track revision.id) {
+              <li class="flex flex-col gap-1 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                <div class="text-sm text-slate-700">
+                  <span class="font-bold">{{ revision.performedAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+                  · {{ revision.performedByEmail || 'cuenta eliminada' }}
+                  <span class="block text-xs text-slate-500 sm:inline">
+                    — {{ revision.reviewedCount }} revisados, {{ revision.keptCount }} mantenidos, {{ revision.revokedCount }} retirados
+                  </span>
+                </div>
+                <button type="button" (click)="verDetalle(revision)" class="text-left text-xs font-bold text-blue-500 hover:underline sm:text-right">Ver detalle</button>
+              </li>
+            }
+          </ul>
+        }
+      </section>
+    }
+  </div>
 
   @if (detalle(); as info) {
     <div class="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/40 p-4" role="dialog" aria-modal="true" aria-label="Detalle de la revisión">
