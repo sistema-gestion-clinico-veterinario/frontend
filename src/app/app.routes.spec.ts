@@ -1,5 +1,5 @@
 import { routes } from './app.routes';
-import { AUTHENTICATED_ROUTES } from './authenticated.routes';
+import { AUTHENTICATED_PRIMENG_CONFIG, AUTHENTICATED_ROUTES } from './authenticated.routes';
 import { AuthGuard } from './core/guards/auth.guard';
 
 describe('Application routes', () => {
@@ -36,5 +36,10 @@ describe('Application routes', () => {
     expect(authenticatedRoot.canActivate).toContain(AuthGuard);
     expect(authenticatedRoot.canActivateChild).toContain(AuthGuard);
     expect(authenticatedRoot.children?.some((route) => route.path === 'dashboard')).toBeTrue();
+  });
+
+  it('provides a concrete PrimeNG preset before authenticated components render', () => {
+    expect(AUTHENTICATED_PRIMENG_CONFIG.theme.preset).toBeDefined();
+    expect(AUTHENTICATED_PRIMENG_CONFIG.theme.preset).not.toBeNull();
   });
 });
