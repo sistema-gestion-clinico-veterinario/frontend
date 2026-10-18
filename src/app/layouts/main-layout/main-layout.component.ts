@@ -30,7 +30,11 @@ export class MainLayoutComponent {
   mobileSidebarOpen = signal(false);
 
   private readonly passwordModalDismissed = signal(sessionStorage.getItem(PASSWORD_MODAL_DISMISSED_KEY) === '1');
-  readonly showPasswordModal = computed(() => !this.authStore.passwordChanged() && !this.passwordModalDismissed());
+  readonly showPasswordModal = computed(() =>
+    this.authStore.sessionStatus() === 'authenticated'
+    && !this.authStore.passwordChanged()
+    && !this.passwordModalDismissed()
+  );
 
   dismissPasswordModal() {
     sessionStorage.setItem(PASSWORD_MODAL_DISMISSED_KEY, '1');
