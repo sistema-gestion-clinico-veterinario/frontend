@@ -20,6 +20,8 @@ interface Decision {
   comment: string;
 }
 
+export type FiltroDeAccesos = 'TODOS' | 'PENDIENTES';
+
 interface GrupoDePersona {
   usuarioId: number;
   nombre: string;
@@ -76,6 +78,16 @@ export class RevisionAccesosComponent implements OnInit {
       }
     }
     return [...porPersona.values()];
+  });
+  readonly mantenidos = computed(
+    () => this.items().filter(item => this.decisiones()[item.assignmentId]?.decision === 'KEEP').length
+  );
+  readonly filtro = signal<FiltroDeAccesos>('TODOS');
+  readonly gruposVisibles = computed<GrupoDePersona[]>(() => {
+    if (this.filtro() === 'TODOS') return this.grupos();
+    return this.grupos()
+      .map(grupo => ({ ...grupo, accesos: grupo.accesos.filter(acceso => !this.decisiones()[acceso.assignmentId]) }))
+      .filter(grupo => grupo.accesos.length > 0);
   });
   readonly listo = computed(() => this.items().length > 0 && this.pendientes() === 0 && !this.faltanMotivos());
 
@@ -135,6 +147,18 @@ export class RevisionAccesosComponent implements OnInit {
       return siguientes;
     });
     this.confirmando.set(false);
+  }
+
+  cambiarFiltro(filtro: FiltroDeAccesos): void {
+    this.filtro.set(filtro);
+  }
+
+  motivosDelAcceso(item: AccessReviewItem): string[] {
+    return item.reasons.filter(motivo => !/^Tiene \d+ roles? de personal/.test(motivo));
+  }
+
+  estadoDeLaDecision(item: AccessReviewItem): 'PENDIENTE' | 'KEEP' | 'REVOKE' {
+    return this.decisiones()[item.assignmentId]?.decision ?? 'PENDIENTE';
   }
 
   rolLegible(nombre: string): string {

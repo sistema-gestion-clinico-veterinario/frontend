@@ -19,3 +19,17 @@ export interface BackupExecution {
   commitSha: string | null;
   workflowUrl: string;
 }
+
+export type BackupHealth = 'SIN_DATOS' | 'AL_DIA' | 'ATENCION' | 'CRITICO';
+
+export interface BackupSummary {
+  health: BackupHealth;
+  reportingConfigured: boolean;
+  lastExecutionAt: string | null;
+  lastSuccessAt: string | null;
+  lastFailureAt: string | null;
+  successCount30Days: number;
+  problemCount30Days: number;
+  nextScheduledAt: string;
+  maxHoursWithoutSuccess: number;
+}
