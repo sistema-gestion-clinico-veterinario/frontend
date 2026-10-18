@@ -16,6 +16,7 @@ export class RouteMapperService {
 
     VISTA_AUDITORIA_ADMIN: '/admin/auditoria',
     VISTA_AUDITORIA: '/auditoria',
+    VISTA_RESPALDOS: '/admin/respaldos',
 
     VISTA_ROLES: '/admin/roles',
     VISTA_ROLES_ADMIN: '/admin/roles',
@@ -114,6 +115,7 @@ export class RouteMapperService {
     VISTA_REPORTES: 'pi pi-chart-pie',
     VISTA_COMPANY: 'pi pi-building',
     VISTA_AUDITORIA_ADMIN: 'pi pi-list-check',
+    VISTA_RESPALDOS: 'pi pi-cloud-upload',
     VISTA_ROLES: 'pi pi-shield',
     VISTA_VENTANAS: 'pi pi-sitemap',
     VISTA_COMPLEMENTARIO: 'pi pi-database',

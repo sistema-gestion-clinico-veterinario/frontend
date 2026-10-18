@@ -90,6 +90,11 @@ export const AUTHENTICATED_ROUTES: Routes = [
         loadComponent: () => import('./pages/admin/auditoria/auditoria.component').then((m) => m.AuditoriaComponent)
       },
       {
+        path: 'admin/respaldos',
+        data: { ventana: 'VISTA_RESPALDOS', permiso: 'leer', purposes: ['PLATFORM_ADMIN'] },
+        loadComponent: () => import('./pages/admin/backups/backup-monitor.component').then((m) => m.BackupMonitorComponent)
+      },
+      {
         path: 'roles',
         data: { ventana: 'VISTA_ROLES' },
         loadComponent: () => import('./pages/admin/roles/roles.component').then((m) => m.RolesComponent)
