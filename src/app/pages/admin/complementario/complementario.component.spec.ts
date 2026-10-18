@@ -23,4 +23,18 @@ describe('ComplementarioComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('reemplaza el skeleton por el contenido sin renderizarlos simultáneamente', () => {
+    component.cargando.set(true);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('[data-testid="complementario-skeleton"]')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('[data-testid="complementario-content"]')).toBeNull();
+
+    component.cargando.set(false);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('[data-testid="complementario-skeleton"]')).toBeNull();
+    expect(fixture.nativeElement.querySelector('[data-testid="complementario-content"]')).not.toBeNull();
+  });
 });
