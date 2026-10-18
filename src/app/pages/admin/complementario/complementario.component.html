@@ -2,7 +2,7 @@
 
   <!-- Skeleton Loading -->
   @if (cargando() && !requiresCompanySelection) {
-    <div class="animate-fade-in">
+    <div class="animate-fade-in" data-testid="complementario-skeleton">
       <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-10">
         <div class="flex items-center gap-3">
           <p-skeleton shape="circle" size="3rem"></p-skeleton>
@@ -77,6 +77,9 @@
     </div>
   }
 
+  <!-- El contenido reemplaza al skeleton; nunca se renderizan ambos a la vez. -->
+  @if (!cargando() || requiresCompanySelection) {
+  <div data-testid="complementario-content">
   <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-10">
     <div class="flex items-center gap-3">
       <i class="pi pi-cog text-blue-500 text-3xl shrink-0"></i>
@@ -815,6 +818,8 @@
         }
       </ng-container>
     </div>
+  }
+  </div>
   }
 </div>
 

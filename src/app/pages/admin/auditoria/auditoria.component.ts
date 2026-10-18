@@ -138,9 +138,21 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
   }
 
   setupWebSocket(targetCompanyId: number | undefined) {
-    const destination = targetCompanyId
+    const destination = targetCompanyId != null
       ? `/topic/audit-logs/${targetCompanyId}`
-      : '/topic/audit-logs';
+      : this.isSuperAdmin() ? '/topic/audit-logs' : null;
+
+    // El canal global contiene eventos de todas las empresas y solo está
+    // autorizado para administración de plataforma. Si el contexto de una
+    // clínica todavía se está inicializando, esperamos a que esté disponible
+    // en lugar de provocar un SUBSCRIBE inválido y un ciclo de reconexiones.
+    if (destination == null) {
+      this.realtimeConnection?.disconnect();
+      this.realtimeConnection = null;
+      this.lastSubscribedDestination = null;
+      this.realtimeConnected.set(false);
+      return;
+    }
 
     // Evitar reconexiones si ya estamos escuchando o conectando al mismo destino y está activo
     if (this.lastSubscribedDestination === destination && this.realtimeConnection?.isActive()) {
@@ -222,7 +234,9 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
     if (this.isSuperAdmin()) {
       targetCompanyId = this.selectedCompanyId || undefined;
     } else {
-      targetCompanyId = this.authStore.companyId() || undefined;
+      targetCompanyId = this.authStore.companyId()
+        ?? this.authStore.selectedEnterprise()?.establishmentId
+        ?? undefined;
     }
 
     return {
