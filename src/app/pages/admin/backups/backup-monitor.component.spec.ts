@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { BackupMonitorService } from '../../../core/services/backup-monitor.service';
-import { BackupExecution } from '../../../models/backup/backup-execution.model';
+import { BackupExecution, BackupSummary } from '../../../models/backup/backup-execution.model';
 import { BackupMonitorComponent } from './backup-monitor.component';
 
 describe('BackupMonitorComponent', () => {
@@ -27,16 +27,34 @@ describe('BackupMonitorComponent', () => {
     workflowUrl: 'https://github.com/softvet/backend/actions/runs/123'
   };
 
-  beforeEach(async () => {
-    service = jasmine.createSpyObj<BackupMonitorService>('BackupMonitorService', ['list']);
-    service.list.and.returnValue(of({
-      success: true,
-      message: 'ok',
-      data: {
-        content: [execution], totalElements: 1, totalPages: 1, size: 20, number: 0,
-        numberOfElements: 1, first: true, last: true, empty: false
-      }
-    }));
+  const resumen = (parcial: Partial<BackupSummary> = {}): BackupSummary => ({
+    health: 'AL_DIA',
+    reportingConfigured: true,
+    lastExecutionAt: '2026-10-18T07:17:00Z',
+    lastSuccessAt: '2026-10-18T07:20:28Z',
+    lastFailureAt: null,
+    successCount30Days: 28,
+    problemCount30Days: 1,
+    nextScheduledAt: '2026-10-19T07:17:00Z',
+    maxHoursWithoutSuccess: 36,
+    ...parcial
+  });
+
+  const pagina = (contenido: BackupExecution[]) => of({
+    success: true,
+    message: 'ok',
+    data: {
+      content: contenido, totalElements: contenido.length, totalPages: 1, size: 20, number: 0,
+      numberOfElements: contenido.length, first: true, last: true, empty: contenido.length === 0
+    }
+  });
+  const respuesta = <T>(data: T) => of({ success: true, message: 'ok', data });
+  const texto = () => ((fixture.nativeElement as HTMLElement).textContent ?? '').replace(/\s+/g, ' ');
+
+  async function crear(ejecuciones: BackupExecution[] = [execution], datosDelResumen: BackupSummary = resumen()): Promise<void> {
+    service = jasmine.createSpyObj<BackupMonitorService>('BackupMonitorService', ['list', 'summary']);
+    service.list.and.returnValue(pagina(ejecuciones));
+    service.summary.and.returnValue(respuesta(datosDelResumen));
     await TestBed.configureTestingModule({
       imports: [BackupMonitorComponent],
       providers: [{ provide: BackupMonitorService, useValue: service }]
@@ -44,20 +62,119 @@ describe('BackupMonitorComponent', () => {
     fixture = TestBed.createComponent(BackupMonitorComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
+  }
+
+  it('muestra únicamente metadatos operativos del respaldo', async () => {
+    await crear();
+
+    expect(texto()).toContain('Respaldo y recuperación');
+    expect(texto()).toContain('Restauración verificada');
+    expect(texto()).toContain('01fa5bc2');
+    expect(texto()).toContain('Completo');
   });
 
-  it('muestra únicamente metadatos operativos del respaldo', () => {
-    const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
+  it('traduce estados y calcula la duración', async () => {
+    await crear();
 
-    expect(text).toContain('Respaldo y recuperación');
-    expect(text).toContain('Restauración verificada');
-    expect(text).toContain('01fa5bc2');
-    expect(text).toContain('Completo');
-  });
-
-  it('traduce estados y calcula la duración', () => {
     expect(component.componentLabel('SKIPPED')).toBe('No incluido');
     expect(component.policyLabel('p03')).toBe('Mensual · 365 días');
     expect(component.duration(execution)).toBe('3 min 28 s');
+  });
+
+  describe('estado general', () => {
+    it('resume cómo van los respaldos con el último correcto, la próxima ejecución y los últimos 30 días', async () => {
+      await crear();
+
+      expect(texto()).toContain('Respaldos al día');
+      expect(texto()).toContain('28 correctos · 1 con problemas');
+      expect(texto()).toContain('Integración configurada');
+      expect(texto()).toContain('Próxima ejecución programada');
+    });
+
+    it('avisa cuando la situación es crítica', async () => {
+      await crear([execution], resumen({ health: 'CRITICO', lastSuccessAt: '2026-10-10T07:20:00Z' }));
+
+      const banner = (fixture.nativeElement as HTMLElement).querySelector('[data-testid="estado-general"]') as HTMLElement;
+      expect(banner.textContent).toContain('Situación crítica');
+      expect(banner.className).toContain('bg-rose-50');
+    });
+
+    it('indica si la integración de monitoreo no está configurada', async () => {
+      await crear([execution], resumen({ reportingConfigured: false }));
+      expect(texto()).toContain('Integración sin configurar');
+    });
+
+    it('si el resumen no se puede consultar, igual muestra el historial', async () => {
+      service = jasmine.createSpyObj<BackupMonitorService>('BackupMonitorService', ['list', 'summary']);
+      service.list.and.returnValue(pagina([execution]));
+      service.summary.and.returnValue(throwError(() => ({ status: 500 })));
+      await TestBed.configureTestingModule({
+        imports: [BackupMonitorComponent],
+        providers: [{ provide: BackupMonitorService, useValue: service }]
+      }).compileComponents();
+      fixture = TestBed.createComponent(BackupMonitorComponent);
+      fixture.detectChanges();
+
+      expect(texto()).toContain('Historial de ejecuciones');
+      expect(texto()).not.toContain('Respaldos al día');
+    });
+
+    it('describe en palabras la antigüedad del último respaldo', async () => {
+      await crear();
+      const ahora = new Date('2026-10-18T15:00:00Z').getTime();
+
+      expect(component.ago('2026-10-18T14:30:00Z', ahora)).toBe('hace 30 min');
+      expect(component.ago('2026-10-18T10:00:00Z', ahora)).toBe('hace 5 h');
+      expect(component.ago('2026-10-14T15:00:00Z', ahora)).toBe('hace 4 días');
+      expect(component.ago(null)).toBe('sin registro');
+    });
+  });
+
+  describe('sin reportes todavía', () => {
+    it('explica qué debe cumplirse y marca lo que falta en el servidor', async () => {
+      await crear([], resumen({ health: 'SIN_DATOS', reportingConfigured: false, lastExecutionAt: null, lastSuccessAt: null }));
+
+      expect(texto()).toContain('Aún no existen reportes operativos');
+      const pasos = component.pasosDeConfiguracion();
+      expect(pasos.length).toBe(3);
+      expect(pasos[0].estado).toBe('FALTA');
+      expect(pasos[0].detalle).toContain('BACKUP_REPORT_TOKEN');
+      expect(texto()).toContain('BACKUP_REPORT_URL');
+      expect(texto()).toContain('Aún no llega ningún reporte');
+    });
+
+    it('si el servidor ya está configurado, ese paso figura como correcto', async () => {
+      await crear([], resumen({ health: 'SIN_DATOS', reportingConfigured: true }));
+
+      expect(component.pasosDeConfiguracion()[0].estado).toBe('LISTO');
+    });
+  });
+
+  describe('detalle de una ejecución', () => {
+    it('empieza oculto y se abre y se cierra con el botón', async () => {
+      await crear();
+      const root = fixture.nativeElement as HTMLElement;
+      expect(root.querySelector('[data-testid="detalle-de-ejecucion"]')).toBeNull();
+
+      (root.querySelector('tbody button') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      expect(root.querySelector('[data-testid="detalle-de-ejecucion"]')).not.toBeNull();
+      expect(texto()).toContain('N.º 123 · intento 1');
+      expect(texto()).toContain('c423a72');
+      expect(texto()).toContain('01fa5bc2-2188-42cd-9d7f-631dae309327');
+
+      (root.querySelector('tbody button') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      expect(root.querySelector('[data-testid="detalle-de-ejecucion"]')).toBeNull();
+    });
+
+    it('al abrir otra ejecución se cierra la anterior', async () => {
+      await crear([execution, { ...execution, id: 2, runId: '124' }]);
+
+      component.toggle(1);
+      component.toggle(2);
+
+      expect(component.expanded()).toBe(2);
+    });
   });
 });

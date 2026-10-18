@@ -183,4 +183,81 @@ describe('RevisionAccesosComponent', () => {
       expect(component.iniciales('Ana')).toBe('A');
     });
   });
+
+  describe('lista de accesos', () => {
+    const texto = () => ((fixture.nativeElement as HTMLElement).textContent ?? '').replace(/\s+/g, ' ');
+    const contador = (id: string) =>
+      (fixture.nativeElement as HTMLElement).querySelector(`[data-testid="${id}"]`)?.textContent?.trim();
+
+    it('muestra cuántos accesos faltan por decidir, cuántos se mantienen y cuántos se retiran', () => {
+      crear();
+      const [ana, beto] = component.items();
+      expect(contador('contador-pendientes')).toBe('2');
+
+      component.decidir(ana, 'KEEP');
+      component.decidir(beto, 'REVOKE');
+      fixture.detectChanges();
+
+      expect(contador('contador-pendientes')).toBe('0');
+      expect(contador('contador-mantenidos')).toBe('1');
+      expect(contador('contador-retiros')).toBe('1');
+    });
+
+    it('dice con palabras qué pasará con cada acceso', () => {
+      crear();
+      const [ana, beto] = component.items();
+      expect(texto()).toContain('Sin decidir');
+
+      component.decidir(ana, 'KEEP');
+      component.decidir(beto, 'REVOKE');
+      fixture.detectChanges();
+
+      expect(texto()).toContain('Conservará el acceso');
+      expect(texto()).toContain('Perderá el acceso');
+      expect(component.estadoDeLaDecision(ana)).toBe('KEEP');
+    });
+
+    it('el filtro «Por decidir» oculta lo que ya tiene decisión', () => {
+      crear();
+      const [ana] = component.items();
+      component.decidir(ana, 'KEEP');
+
+      component.cambiarFiltro('PENDIENTES');
+      expect(component.gruposVisibles().length).toBe(1);
+      expect(component.gruposVisibles()[0].accesos[0].nombre).toBe('Beto');
+
+      component.cambiarFiltro('TODOS');
+      expect(component.gruposVisibles().length).toBe(2);
+    });
+
+    it('cuando no queda nada por decidir lo explica en lugar de dejar la lista vacía', () => {
+      crear();
+      component.mantenerPendientes();
+      component.cambiarFiltro('PENDIENTES');
+      fixture.detectChanges();
+
+      expect(texto()).toContain('No quedan accesos por decidir');
+    });
+
+    it('no repite en cada rol el aviso de que la persona tiene varios roles', () => {
+      crear();
+      const item = { ...acceso(1, 'Ana'), reasons: ['Administrador de la empresa', 'Tiene 2 roles de personal en la empresa'] };
+
+      expect(component.motivosDelAcceso(item)).toEqual(['Administrador de la empresa']);
+    });
+
+    it('el campo del motivo solo aparece al retirar un acceso', () => {
+      crear();
+      const [ana] = component.items();
+      const root = fixture.nativeElement as HTMLElement;
+
+      component.decidir(ana, 'KEEP');
+      fixture.detectChanges();
+      expect(root.querySelector('input[id^="motivo-"]')).toBeNull();
+
+      component.decidir(ana, 'REVOKE');
+      fixture.detectChanges();
+      expect(root.querySelector('input[id^="motivo-"]')).not.toBeNull();
+    });
+  });
 });

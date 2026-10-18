@@ -12,6 +12,42 @@
     </div>
   </header>
 
+  @if (summary(); as resumen) {
+    <section class="space-y-3" aria-label="Estado general de los respaldos">
+      <div class="flex items-start gap-3 rounded-2xl border px-5 py-4" [ngClass]="healthClass(resumen.health)" role="status" data-testid="estado-general">
+        <i class="mt-0.5 text-lg" [class]="healthIcon(resumen.health)"></i>
+        <div>
+          <p class="font-bold">{{ healthLabel(resumen.health) }}</p>
+          <p class="mt-0.5 text-sm">{{ healthMessage(resumen) }}</p>
+        </div>
+      </div>
+      <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <article class="rounded-2xl border border-slate-200 bg-white p-4">
+          <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Último respaldo correcto</p>
+          <p class="mt-2 text-sm font-bold text-slate-900">{{ resumen.lastSuccessAt ? (resumen.lastSuccessAt | date:'dd/MM/yyyy, h:mm a':'-0500') : 'Sin registro' }}</p>
+          <p class="mt-0.5 text-xs text-slate-500">{{ ago(resumen.lastSuccessAt) }}</p>
+        </article>
+        <article class="rounded-2xl border border-slate-200 bg-white p-4">
+          <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Próxima ejecución programada</p>
+          <p class="mt-2 text-sm font-bold text-slate-900">{{ resumen.nextScheduledAt | date:'dd/MM/yyyy, h:mm a':'-0500' }}</p>
+          <p class="mt-0.5 text-xs text-slate-500">Hora de Perú</p>
+        </article>
+        <article class="rounded-2xl border border-slate-200 bg-white p-4">
+          <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Últimos 30 días</p>
+          <p class="mt-2 text-sm font-bold text-slate-900">{{ resumen.successCount30Days }} correctos · {{ resumen.problemCount30Days }} con problemas</p>
+          <p class="mt-0.5 text-xs text-slate-500">Fallidos o parciales</p>
+        </article>
+        <article class="rounded-2xl border border-slate-200 bg-white p-4">
+          <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Reportes al servidor</p>
+          <p class="mt-2 text-sm font-bold" [class.text-emerald-700]="resumen.reportingConfigured" [class.text-rose-700]="!resumen.reportingConfigured">
+            {{ resumen.reportingConfigured ? 'Integración configurada' : 'Integración sin configurar' }}
+          </p>
+          <p class="mt-0.5 text-xs text-slate-500">{{ resumen.lastExecutionAt ? 'Último reporte ' + ago(resumen.lastExecutionAt) : 'Aún no llega ningún reporte' }}</p>
+        </article>
+      </div>
+    </section>
+  }
+
   @if (loading()) {
     <div class="grid gap-4 md:grid-cols-3" aria-label="Cargando respaldos">
       @for (_ of [1, 2, 3]; track _) {
@@ -31,10 +67,41 @@
       </div>
     </div>
   } @else if (!latest()) {
-    <div class="rounded-2xl border border-slate-200 bg-white px-6 py-14 text-center">
-      <i class="pi pi-cloud-upload text-3xl text-slate-300"></i>
-      <h2 class="mt-4 font-semibold text-slate-800">Aún no existen reportes operativos</h2>
-      <p class="mx-auto mt-2 max-w-xl text-sm text-slate-500">El historial aparecerá después de ejecutar el workflow con la integración de monitoreo configurada.</p>
+    <div class="rounded-2xl border border-slate-200 bg-white px-6 py-8">
+      <div class="text-center">
+        <i class="pi pi-cloud-upload text-3xl text-slate-300"></i>
+        <h2 class="mt-3 font-semibold text-slate-800">Aún no existen reportes operativos</h2>
+        <p class="mx-auto mt-2 max-w-2xl text-sm text-slate-500">
+          Los respaldos se ejecutan en GitHub Actions y le informan a esta pantalla al empezar y al terminar. Todavía no ha llegado ningún reporte; esto es lo que debe cumplirse para que aparezcan:
+        </p>
+      </div>
+      <ol class="mx-auto mt-6 max-w-3xl space-y-3" data-testid="pasos-de-configuracion">
+        @for (paso of pasosDeConfiguracion(); track paso.titulo; let indice = $index) {
+          <li class="flex gap-3 rounded-xl border border-slate-200 p-4">
+            <span class="grid size-7 shrink-0 place-items-center rounded-full text-xs font-bold"
+              [class.bg-emerald-100]="paso.estado === 'LISTO'" [class.text-emerald-700]="paso.estado === 'LISTO'"
+              [class.bg-rose-100]="paso.estado === 'FALTA'" [class.text-rose-700]="paso.estado === 'FALTA'"
+              [class.bg-slate-100]="paso.estado === 'VERIFICAR'" [class.text-slate-600]="paso.estado === 'VERIFICAR'">
+              @if (paso.estado === 'LISTO') { <i class="pi pi-check text-[11px]"></i> } @else { {{ indice + 1 }} }
+            </span>
+            <div class="min-w-0">
+              <p class="text-sm font-semibold text-slate-800">
+                {{ paso.titulo }}
+                <span class="ml-2 text-[11px] font-bold uppercase tracking-wide"
+                  [class.text-emerald-700]="paso.estado === 'LISTO'" [class.text-rose-700]="paso.estado === 'FALTA'" [class.text-slate-400]="paso.estado === 'VERIFICAR'">
+                  {{ paso.estado === 'LISTO' ? 'Correcto' : paso.estado === 'FALTA' ? 'Falta' : 'Por verificar' }}
+                </span>
+              </p>
+              <p class="mt-1 text-xs leading-5 text-slate-500">{{ paso.detalle }}</p>
+            </div>
+          </li>
+        }
+      </ol>
+      @if (summary(); as resumen) {
+        <p class="mt-5 text-center text-xs text-slate-500">
+          Próxima ejecución programada: {{ resumen.nextScheduledAt | date:'dd/MM/yyyy, h:mm a':'-0500' }} (hora de Perú).
+        </p>
+      }
     </div>
   } @else {
     @let current = latest()!;
@@ -87,7 +154,7 @@
       <div class="overflow-x-auto">
         <table class="w-full min-w-[920px] text-left text-sm">
           <thead class="bg-slate-50 text-[11px] uppercase tracking-wider text-slate-500">
-            <tr><th class="px-5 py-3">Fecha</th><th class="px-5 py-3">Punto</th><th class="px-5 py-3">Origen</th><th class="px-5 py-3">Retención</th><th class="px-5 py-3">Duración</th><th class="px-5 py-3">Estado</th><th class="px-5 py-3 text-right">Evidencia</th></tr>
+            <tr><th class="px-5 py-3">Fecha</th><th class="px-5 py-3">Punto</th><th class="px-5 py-3">Origen</th><th class="px-5 py-3">Retención</th><th class="px-5 py-3">Duración</th><th class="px-5 py-3">Estado</th><th class="px-5 py-3 text-right">Detalle</th></tr>
           </thead>
           <tbody class="divide-y divide-slate-100">
             @for (execution of executions(); track execution.id) {
@@ -98,8 +165,31 @@
                 <td class="px-5 py-4">{{ policyLabel(execution.retentionPolicy) }}</td>
                 <td class="px-5 py-4">{{ duration(execution) }}</td>
                 <td class="px-5 py-4"><span class="rounded-full border px-2.5 py-1 text-xs font-semibold" [ngClass]="statusClass(execution.status)">{{ statusLabel(execution.status) }}</span></td>
-                <td class="px-5 py-4 text-right"><a [href]="execution.workflowUrl" target="_blank" rel="noopener noreferrer" class="font-semibold text-[var(--brand-primary)] hover:underline">Ver ejecución <i class="pi pi-external-link ml-1 text-[10px]"></i></a></td>
+                <td class="px-5 py-4 text-right">
+                  <button type="button" class="font-semibold text-[var(--brand-primary)] hover:underline" (click)="toggle(execution.id)"
+                    [attr.aria-expanded]="expanded() === execution.id" [attr.aria-controls]="'detalle-' + execution.id">
+                    {{ expanded() === execution.id ? 'Ocultar' : 'Ver detalle' }}
+                  </button>
+                </td>
               </tr>
+              @if (expanded() === execution.id) {
+                <tr [id]="'detalle-' + execution.id" class="bg-slate-50/70" data-testid="detalle-de-ejecucion">
+                  <td colspan="7" class="px-5 py-4">
+                    <dl class="grid gap-x-8 gap-y-3 text-xs sm:grid-cols-2 lg:grid-cols-4">
+                      <div><dt class="font-semibold uppercase tracking-wider text-slate-400">Base de datos</dt><dd class="mt-1"><span class="rounded-full border px-2.5 py-1 font-semibold" [ngClass]="statusClass(execution.databaseStatus)">{{ componentLabel(execution.databaseStatus) }}</span></dd></div>
+                      <div><dt class="font-semibold uppercase tracking-wider text-slate-400">Cierre de acceso temporal</dt><dd class="mt-1"><span class="rounded-full border px-2.5 py-1 font-semibold" [ngClass]="statusClass(execution.restrictionsStatus)">{{ componentLabel(execution.restrictionsStatus) }}</span></dd></div>
+                      <div><dt class="font-semibold uppercase tracking-wider text-slate-400">Archivos clínicos</dt><dd class="mt-1"><span class="rounded-full border px-2.5 py-1 font-semibold" [ngClass]="statusClass(execution.storageStatus)">{{ componentLabel(execution.storageStatus) }}</span></dd></div>
+                      <div><dt class="font-semibold uppercase tracking-wider text-slate-400">Restauración</dt><dd class="mt-1 text-slate-700">{{ execution.restorationVerified ? 'Verificada en un destino aislado' : 'Sin verificación confirmada' }}</dd></div>
+                      <div><dt class="font-semibold uppercase tracking-wider text-slate-400">Inicio</dt><dd class="mt-1 text-slate-700">{{ execution.startedAt | date:'dd/MM/yyyy, h:mm:ss a':'-0500' }}</dd></div>
+                      <div><dt class="font-semibold uppercase tracking-wider text-slate-400">Fin</dt><dd class="mt-1 text-slate-700">{{ execution.finishedAt ? (execution.finishedAt | date:'dd/MM/yyyy, h:mm:ss a':'-0500') : 'En curso' }}</dd></div>
+                      <div><dt class="font-semibold uppercase tracking-wider text-slate-400">Ejecución en GitHub</dt><dd class="mt-1 text-slate-700">N.º {{ execution.runId }} · intento {{ execution.runAttempt }}</dd></div>
+                      <div><dt class="font-semibold uppercase tracking-wider text-slate-400">Versión del código</dt><dd class="mt-1 font-mono text-slate-700">{{ shortCommit(execution.commitSha) }}</dd></div>
+                      <div class="sm:col-span-2"><dt class="font-semibold uppercase tracking-wider text-slate-400">Punto de recuperación</dt><dd class="mt-1 break-all font-mono text-slate-700">{{ execution.recoveryPointId || 'Pendiente' }}</dd></div>
+                      <div class="sm:col-span-2"><dt class="font-semibold uppercase tracking-wider text-slate-400">Evidencia</dt><dd class="mt-1"><a [href]="execution.workflowUrl" target="_blank" rel="noopener noreferrer" class="font-semibold text-[var(--brand-primary)] hover:underline">Abrir la ejecución en GitHub <i class="pi pi-external-link ml-1 text-[10px]"></i></a></dd></div>
+                    </dl>
+                  </td>
+                </tr>
+              }
             }
           </tbody>
         </table>
