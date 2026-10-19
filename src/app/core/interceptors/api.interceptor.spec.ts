@@ -87,6 +87,17 @@ describe('apiInterceptor - clínica de la sesión', () => {
     req.flush({});
   });
 
+  it('un 401 de un documento legal público no intenta renovar la sesión', () => {
+    let error: HttpErrorResponse | undefined;
+    http.get(`${environment.apiUrl}/public/legal/clinica-a`).subscribe({ error: e => error = e });
+
+    controller.expectOne(`${environment.apiUrl}/public/legal/clinica-a`)
+      .flush({}, { status: 401, statusText: 'Unauthorized' });
+
+    expect(error?.status).toBe(401);
+    expect(authService.refreshToken).not.toHaveBeenCalled();
+  });
+
   it('la cuenta de plataforma, que no tiene clínica, no envía la cabecera', () => {
     authStore.setAuth({ roles: ['ROLE_SUPER'], companyId: null, menu: [] } as any);
 
