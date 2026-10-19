@@ -3,26 +3,26 @@
 <main class="mx-auto min-h-screen max-w-full space-y-4 overflow-x-hidden bg-blue-50">
   <header class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
     <div class="flex items-center gap-3">
-      <span class="grid size-12 shrink-0 place-items-center rounded-xl bg-blue-50 text-blue-500"><i class="pi pi-wallet text-2xl"></i></span>
+      <i class="pi pi-wallet shrink-0 text-2xl text-blue-500"></i>
       <div><h1 class="text-2xl font-extrabold tracking-tight text-slate-900">Caja</h1><p class="mt-0.5 text-sm text-slate-500">Registra pagos de citas y ventas de productos de la clínica.</p></div>
     </div>
     @if (!requiresCompanySelection) {
-      <div class="flex flex-wrap items-center gap-2">
-        <button type="button" (click)="abrirHistorialSesiones()" class="flex h-[50px] items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-xs font-bold text-slate-600 hover:bg-slate-50"><i class="pi pi-history text-blue-500"></i>Historial de caja</button>
+      <div class="grid w-full grid-cols-2 gap-2 lg:flex lg:w-auto lg:flex-wrap lg:items-center">
+        <button type="button" (click)="abrirHistorialSesiones()" class="flex h-11 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-bold text-slate-600 hover:bg-slate-50 lg:h-[50px] lg:rounded-xl lg:px-4"><i class="pi pi-history text-blue-500"></i>Historial</button>
         @if (puedeGestionarPuntos()) {
-          <button type="button" (click)="abrirPuntos()" class="flex h-[50px] items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-xs font-bold text-slate-600 hover:bg-slate-50"><i class="pi pi-desktop text-blue-500"></i>Puntos de cobro</button>
+          <button type="button" (click)="abrirPuntos()" class="flex h-11 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-bold text-slate-600 hover:bg-slate-50 lg:h-[50px] lg:rounded-xl lg:px-4"><i class="pi pi-desktop text-blue-500"></i>Puntos de cobro</button>
         }
         @if (estadoEquipo(); as equipo) {
-          <div class="flex h-[50px] min-w-[158px] items-center gap-3 rounded-xl border px-4" [class]="equipoSinRegistrar() ? 'border-slate-300 bg-slate-50' : 'border-slate-200 bg-white'" [title]="equipo.mensaje"><i class="pi pi-desktop text-slate-400"></i><div><p class="text-[10px] font-semibold text-slate-400">Este equipo</p><p class="text-xs font-bold text-slate-700">{{ equipo.cajaNombre || 'Sin registrar' }}</p></div></div>
+          <div class="hidden h-[50px] min-w-[158px] items-center gap-3 rounded-xl border px-4 xl:flex" [class]="equipoSinRegistrar() ? 'border-slate-300 bg-slate-50' : 'border-slate-200 bg-white'" [title]="equipo.mensaje"><i class="pi pi-desktop text-slate-400"></i><div><p class="text-[10px] font-semibold text-slate-400">Este equipo</p><p class="text-xs font-bold text-slate-700">{{ equipo.cajaNombre || 'Sin registrar' }}</p></div></div>
         }
-        <div class="flex h-[50px] min-w-[158px] items-center gap-3 rounded-xl border border-slate-200 bg-white px-4"><i class="pi pi-calendar text-blue-500"></i><div><p class="text-[10px] font-semibold text-slate-400">Hoy</p><p class="text-xs font-bold text-slate-700">{{ formatFechaActual() }}</p></div></div>
+        <div class="hidden h-[50px] min-w-[158px] items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 xl:flex"><i class="pi pi-calendar text-blue-500"></i><div><p class="text-[10px] font-semibold text-slate-400">Hoy</p><p class="text-xs font-bold text-slate-700">{{ formatFechaActual() }}</p></div></div>
         @if (sesionCaja(); as sesion) {
-          <div class="flex h-[50px] min-w-[188px] items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4">
+          <div class="col-span-2 flex h-[50px] min-w-[188px] items-center justify-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 lg:col-span-1 lg:justify-start">
             <span class="grid size-8 place-items-center rounded-lg bg-white text-emerald-600"><i class="pi pi-lock-open text-sm"></i></span>
             <div><p class="text-[10px] font-bold uppercase tracking-wide text-emerald-600">Caja abierta</p><p class="text-xs font-bold text-slate-700">Efectivo esperado: {{ formatMonto(sesion.efectivoEsperado) }}</p></div>
           </div>
         } @else {
-          <button type="button" (click)="abrirModalSesion('ABRIR')" [disabled]="equipoSinRegistrar()" [title]="equipoSinRegistrar() ? 'Este equipo no está registrado como punto de cobro. Pide a un administrador que lo registre.' : ''" class="flex h-[50px] min-w-[188px] items-center gap-3 rounded-xl bg-blue-500 px-4 text-left text-white transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50">
+          <button type="button" (click)="abrirModalSesion('ABRIR')" [disabled]="equipoSinRegistrar()" [title]="equipoSinRegistrar() ? 'Este equipo no está registrado como punto de cobro. Pide a un administrador que lo registre.' : ''" class="col-span-2 flex h-[50px] min-w-[188px] items-center justify-center gap-3 rounded-xl bg-blue-500 px-4 text-left text-white transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50 lg:col-span-1 lg:justify-start">
             <span class="grid size-8 place-items-center rounded-lg bg-white/15"><i class="pi pi-lock-open text-sm"></i></span>
             <div><p class="text-[10px] font-bold uppercase tracking-wide text-blue-100">Caja cerrada</p><p class="text-sm font-extrabold">Abrir caja</p></div>
           </button>
@@ -37,16 +37,26 @@
 
   @if (!requiresCompanySelection) {
     @if (resumen(); as resumenCaja) {
-      <section class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <section class="hidden grid-cols-2 gap-3 md:grid xl:grid-cols-4">
         <article class="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-4"><span class="grid size-11 shrink-0 place-items-center rounded-full bg-emerald-50 text-emerald-600"><i class="pi pi-calendar"></i></span><div class="min-w-0"><p class="text-xs font-semibold text-slate-500">Ingresos por citas</p><p class="mt-1 truncate text-xl font-extrabold text-slate-900">{{ formatMonto(resumenCaja.ingresosCitas) }}</p></div></article>
         <article class="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-4"><span class="grid size-11 shrink-0 place-items-center rounded-full bg-teal-50 text-teal-600"><i class="pi pi-box"></i></span><div class="min-w-0"><p class="text-xs font-semibold text-slate-500">Ingresos por productos</p><p class="mt-1 truncate text-xl font-extrabold text-slate-900">{{ formatMonto(resumenCaja.ingresosProductos) }}</p></div></article>
         <article class="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-4"><span class="grid size-11 shrink-0 place-items-center rounded-full bg-rose-50 text-rose-500"><i class="pi pi-replay"></i></span><div class="min-w-0"><p class="text-xs font-semibold text-slate-500">Devoluciones</p><p class="mt-1 truncate text-xl font-extrabold text-slate-900">{{ formatMonto(resumenCaja.totalDevoluciones) }}</p></div></article>
         <article class="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-4"><span class="grid size-11 shrink-0 place-items-center rounded-full bg-blue-50 text-blue-500"><i class="pi pi-chart-bar"></i></span><div class="min-w-0"><p class="text-xs font-semibold text-slate-500">Balance del periodo</p><p class="mt-1 truncate text-xl font-extrabold text-slate-900">{{ formatMonto(resumenCaja.saldo) }}</p></div></article>
       </section>
+      <section class="flex items-center justify-between border-y border-slate-200 py-3 md:hidden">
+        <div><p class="text-[10px] font-bold uppercase tracking-wide text-slate-400">Balance del periodo</p><p class="mt-0.5 text-lg font-extrabold text-slate-900">{{ formatMonto(resumenCaja.saldo) }}</p></div>
+        <div class="text-right"><p class="text-[10px] font-bold uppercase tracking-wide text-slate-400">Ventas</p><p class="mt-0.5 text-sm font-bold text-slate-700">{{ formatMonto(resumenCaja.ingresosCitas + resumenCaja.ingresosProductos) }}</p></div>
+      </section>
     }
 
+    <nav class="grid grid-cols-3 rounded-xl border border-slate-200 bg-white p-1 2xl:hidden" aria-label="Pasos de la operación">
+      <button type="button" (click)="mobileStep.set('SELECCION')" class="h-11 rounded-lg text-xs font-bold" [class]="mobileStep() === 'SELECCION' ? 'bg-blue-500 text-white' : 'text-slate-500'"><span class="mr-1.5">1</span>Seleccionar</button>
+      <button type="button" (click)="mobileStep.set('DETALLE')" class="h-11 rounded-lg text-xs font-bold" [class]="mobileStep() === 'DETALLE' ? 'bg-blue-500 text-white' : 'text-slate-500'"><span class="mr-1.5">2</span>Detalle</button>
+      <button type="button" (click)="mostrarCobro()" [disabled]="!cuentaSeleccionada() && carritoVentaRapida().length === 0" class="h-11 rounded-lg text-xs font-bold disabled:opacity-40" [class]="mobileStep() === 'COBRO' ? 'bg-blue-500 text-white' : 'text-slate-500'"><span class="mr-1.5">3</span>Cobrar</button>
+    </nav>
+
     <section class="grid grid-cols-1 items-start gap-4 2xl:grid-cols-[minmax(300px,.92fr)_minmax(540px,1.45fr)_minmax(330px,.88fr)]">
-      <article class="h-fit min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white">
+      <article class="h-fit min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white 2xl:block" [class.hidden]="mobileStep() !== 'SELECCION'">
         <div class="border-b border-slate-200 p-4">
           <h2 class="text-sm font-extrabold text-slate-900">Buscar cliente o mascota</h2>
           <label class="relative mt-3 block"><i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400"></i>
@@ -90,10 +100,10 @@
         </div>
       </article>
 
-      <article class="h-fit min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white">
+      <article class="h-fit min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white 2xl:block" [class.hidden]="mobileStep() !== 'DETALLE'">
         <header class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-5 py-4">
           <div><h2 class="flex items-center gap-2 text-sm font-extrabold text-slate-900"><i class="pi pi-shopping-cart text-blue-500"></i>Detalle de la venta</h2>@if (cuentaSeleccionada(); as cuenta) { <p class="mt-1 text-xs text-slate-500">{{ cuenta.mascotaNombre }} · {{ cuenta.numeroCita }} · {{ cuenta.apoderadoNombre }}</p> } @else { <p class="mt-1 text-xs text-slate-500">Venta directa de productos</p> }</div>
-          <div class="flex gap-2"><button (click)="limpiarOperacion()" class="h-9 rounded-lg border border-blue-200 px-3 text-xs font-bold text-blue-500 hover:bg-blue-50"><i class="pi pi-trash mr-1.5"></i>Limpiar</button><button (click)="seleccionarPanel('PRODUCTOS')" class="h-9 rounded-lg bg-blue-500 px-3 text-xs font-bold text-white hover:bg-blue-600"><i class="pi pi-plus mr-1.5"></i>Agregar producto</button></div>
+          <div class="flex gap-2"><button (click)="limpiarOperacion()" class="h-9 rounded-lg border border-blue-200 px-3 text-xs font-bold text-blue-500 hover:bg-blue-50"><i class="pi pi-trash mr-1.5"></i>Limpiar</button><button (click)="mostrarSeleccion('PRODUCTOS')" class="h-9 rounded-lg bg-blue-500 px-3 text-xs font-bold text-white hover:bg-blue-600"><i class="pi pi-plus mr-1.5"></i>Agregar producto</button></div>
         </header>
         @if (!cuentaSeleccionada()) {
           <div class="border-b border-slate-200 bg-slate-50/50 px-5 py-4">
@@ -165,11 +175,11 @@
         </div>
         @if (cuentaSeleccionada() || carritoVentaRapida().length > 0) {
           @if (carritoRequiereReceta()) { <div class="mx-5 mb-4 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-800"><i class="pi pi-exclamation-triangle mt-0.5"></i><span>Verifica la receta antes de cobrar los productos marcados.</span></div> }
-          <footer class="border-t border-slate-200 bg-slate-50/60 px-5 py-4"><div class="ml-auto max-w-[290px] space-y-2 text-sm"><div class="flex justify-between"><span class="text-slate-500">Subtotal sin IGV</span><span class="font-semibold text-slate-700">{{ formatMonto(subtotalSinIgv()) }}</span></div><div class="flex justify-between"><span class="text-slate-500">IGV incluido (18%)</span><span class="font-semibold text-slate-700">{{ formatMonto(igvIncluido()) }}</span></div><div class="flex justify-between border-t border-slate-200 pt-3"><span class="text-base font-extrabold text-slate-900">Total</span><span class="text-xl font-extrabold text-blue-500">{{ formatMonto(totalOperacion()) }}</span></div></div></footer>
+          <footer class="border-t border-slate-200 bg-slate-50/60 px-5 py-4"><div class="ml-auto max-w-[290px] space-y-2 text-sm"><div class="flex justify-between"><span class="text-slate-500">Subtotal sin IGV</span><span class="font-semibold text-slate-700">{{ formatMonto(subtotalSinIgv()) }}</span></div><div class="flex justify-between"><span class="text-slate-500">IGV incluido (18%)</span><span class="font-semibold text-slate-700">{{ formatMonto(igvIncluido()) }}</span></div><div class="flex justify-between border-t border-slate-200 pt-3"><span class="text-base font-extrabold text-slate-900">Total</span><span class="text-xl font-extrabold text-blue-500">{{ formatMonto(totalOperacion()) }}</span></div><button type="button" (click)="mostrarCobro()" class="mt-3 h-11 w-full rounded-lg bg-blue-500 text-sm font-extrabold text-white 2xl:hidden">Continuar al cobro <i class="pi pi-arrow-right ml-2 text-xs"></i></button></div></footer>
         }
       </article>
 
-      <aside class="h-fit overflow-hidden rounded-xl border border-slate-200 bg-white">
+      <aside class="h-fit overflow-hidden rounded-xl border border-slate-200 bg-white 2xl:block" [class.hidden]="mobileStep() !== 'COBRO'">
         <header class="border-b border-slate-200 px-5 py-4"><h2 class="flex items-center gap-2 text-sm font-extrabold text-slate-900"><i class="pi pi-credit-card text-blue-500"></i>Método de pago</h2></header>
         <div class="p-4">
           <div class="grid grid-cols-2 gap-2">
@@ -202,7 +212,7 @@
       </aside>
     </section>
 
-    <section class="overflow-hidden rounded-xl border border-slate-200 bg-white">
+    <section class="hidden overflow-hidden rounded-xl border border-slate-200 bg-white md:block">
       <header class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-5 py-4"><h2 class="flex items-center gap-2 text-sm font-extrabold text-slate-900"><i class="pi pi-history text-blue-500"></i>Últimos movimientos en caja</h2><div class="flex items-center gap-2"><span class="text-xs text-slate-400">{{ totalRecords() }} registros</span><button (click)="cargar()" class="grid size-8 place-items-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50"><i class="pi pi-refresh text-xs"></i></button></div></header>
       <div class="overflow-x-auto"><table class="w-full min-w-[900px] text-sm">
         <thead class="bg-slate-50"><tr><th class="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-wide text-slate-500">Fecha / Hora</th><th class="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-wide text-slate-500">Concepto</th><th class="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-wide text-slate-500">Descripción</th><th class="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-wide text-slate-500">Método</th><th class="px-5 py-3 text-right text-[10px] font-bold uppercase tracking-wide text-slate-500">Monto</th><th class="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-wide text-slate-500">Usuario</th></tr></thead>

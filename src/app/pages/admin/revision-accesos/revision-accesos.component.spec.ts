@@ -139,6 +139,22 @@ describe('RevisionAccesosComponent', () => {
     expect(servicio.registrar).toHaveBeenCalledTimes(1);
   });
 
+  it('muestra las observaciones opcionales únicamente al finalizar la revisión', () => {
+    crear();
+    component.mantenerPendientes();
+    component.abrirCierre();
+    fixture.detectChanges();
+
+    const root = fixture.nativeElement as HTMLElement;
+    expect(root.textContent).toContain('Finalizar revisión');
+    expect(root.textContent).toContain('Opcional');
+    expect(root.querySelector('#notas-revision')).not.toBeNull();
+
+    component.cerrarCierre();
+    fixture.detectChanges();
+    expect(root.querySelector('#notas-revision')).toBeNull();
+  });
+
   it('no ofrece decisiones a quien solo puede consultar', () => {
     crear(false);
     expect(fixture.nativeElement.textContent).not.toContain('Mantener');

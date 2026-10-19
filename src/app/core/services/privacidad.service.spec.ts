@@ -45,4 +45,14 @@ describe('PrivacidadService - aviso de la clínica', () => {
     expect(historial.request.params.get('audiencia')).toBe('TRABAJADORES_Y_USUARIOS');
     historial.flush({ success: true, message: 'ok', data: [] });
   });
+
+  it('carga el centro legal público completo en una sola petición', () => {
+    service.centroLegalPublico('clinica-patitas', 'PROPIETARIOS_Y_AUTORIZADOS').subscribe();
+
+    const req = httpMock.expectOne(request => request.url === `${environment.apiUrl}/public/legal/clinica-patitas`);
+    expect(req.request.method).toBe('GET');
+    expect(req.request.params.get('audiencia')).toBe('PROPIETARIOS_Y_AUTORIZADOS');
+    expect(req.request.params.has('version')).toBeFalse();
+    req.flush({ success: true, message: 'ok', data: { clinica: 'Patitas', documentos: [] } });
+  });
 });

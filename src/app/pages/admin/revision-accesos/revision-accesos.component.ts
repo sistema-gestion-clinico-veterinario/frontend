@@ -50,6 +50,7 @@ export class RevisionAccesosComponent implements OnInit {
   readonly notas = signal('');
   readonly enviando = signal(false);
   readonly confirmando = signal(false);
+  readonly cerrando = signal(false);
 
   readonly puedeRegistrar = computed(() => this.authStore.hasAccess('VISTA_ROLES', 'modificar'));
   readonly items = computed(() => this.overview()?.items ?? []);
@@ -104,6 +105,7 @@ export class RevisionAccesosComponent implements OnInit {
     this.error.set(null);
     this.decisiones.set({});
     this.confirmando.set(false);
+    this.cerrando.set(false);
     this.service.obtener(this.companyId).subscribe({
       next: response => {
         this.overview.set(response.data);
@@ -157,6 +159,14 @@ export class RevisionAccesosComponent implements OnInit {
     return item.reasons.filter(motivo => !/^Tiene \d+ roles? de personal/.test(motivo));
   }
 
+  motivoHistorico(reasons: string): string {
+    const motivos = reasons
+      .split(';')
+      .map(motivo => motivo.trim())
+      .filter(motivo => motivo && !/^Tiene \d+ roles? de personal/i.test(motivo));
+    return motivos.join(' · ') || 'Revisión periódica';
+  }
+
   estadoDeLaDecision(item: AccessReviewItem): 'PENDIENTE' | 'KEEP' | 'REVOKE' {
     return this.decisiones()[item.assignmentId]?.decision ?? 'PENDIENTE';
   }
@@ -183,6 +193,18 @@ export class RevisionAccesosComponent implements OnInit {
     this.registrar();
   }
 
+  abrirCierre(): void {
+    if (!this.listo()) return;
+    this.confirmando.set(false);
+    this.cerrando.set(true);
+  }
+
+  cerrarCierre(): void {
+    if (this.enviando()) return;
+    this.confirmando.set(false);
+    this.cerrando.set(false);
+  }
+
   registrar(): void {
     if (!this.listo() || this.enviando()) return;
     this.enviando.set(true);
@@ -197,6 +219,7 @@ export class RevisionAccesosComponent implements OnInit {
     this.service.registrar(decisiones, this.notas(), this.companyId).subscribe({
       next: () => {
         this.enviando.set(false);
+        this.cerrando.set(false);
         this.notas.set('');
         this.messageService.add({
           severity: 'success',

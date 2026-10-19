@@ -324,5 +324,16 @@ describe('EmployeeComponent', () => {
       expect(component.esVeterinario()).toBeTrue();
       expect(component.permiteEspecialidades()).toBeTrue();
     });
+
+    it('limita la colegiatura a 15 caracteres', () => {
+      component.employeeForm.get('tiposEmpleado')?.setValue(['Veterinario']);
+      const colegiatura = component.employeeForm.get('numeroColegiatura');
+
+      colegiatura?.setValue('123456789012345');
+      expect(colegiatura?.valid).toBeTrue();
+
+      colegiatura?.setValue('1234567890123456');
+      expect(colegiatura?.errors?.['maxlength']).toBeTruthy();
+    });
   });
 });

@@ -66,21 +66,22 @@ export class LoginComponent implements OnInit {
   private credencialesPendientes: { username: string; password: string } | null = null;
 
   private static readonly NOTICE_TITLES: Record<string, string> = {
-    sesion_otra_clinica: 'Vuelve a iniciar sesión',
+    sesion_actualizada: 'Inicia sesión nuevamente',
   };
 
   private static readonly NOTICES: Record<string, string> = {
-    sesion_otra_clinica: 'Por seguridad, vuelve a iniciar sesión para acceder a esta clínica. Tus sesiones abiertas en otras clínicas permanecerán activas.',
+    sesion_actualizada: 'La información de tu sesión cambió. Por seguridad, inicia sesión nuevamente para continuar.',
   };
 
   private static readonly GOOGLE_ERROR_MESSAGES: Record<string, string> = {
     google_cancelado: 'Inicio de sesión con Google cancelado.',
     google_cuenta_cerrada: 'Tu cuenta está cerrada y ya no se puede reactivar desde aquí. Contacta al administrador de la clínica.',
     google_email_no_verificado: 'Tu cuenta de Google no tiene el correo verificado.',
-    google_sin_acceso_clinica: 'Tu cuenta de Google no está registrada en esta veterinaria. Solicita acceso al administrador de la clínica o continúa con otra cuenta de Google.',
-    google_cuenta_dada_de_baja: 'Tu acceso a esta veterinaria ya no está activo. Si crees que es un error, contacta al administrador de la clínica.',
-    google_cuenta_suspendida: 'Tu acceso a esta veterinaria está suspendido. Contacta al administrador de la clínica.',
-    google_cuenta_no_habilitada: 'Tu cuenta no puede ingresar por ahora. Contacta al administrador de la clínica.',
+    google_acceso_no_disponible: 'No pudimos iniciar sesión con Google. Verifica que estés usando el correo correcto o ingresa con tu usuario y contraseña.',
+    google_sin_acceso_clinica: 'No pudimos iniciar sesión con Google. Verifica que estés usando el correo correcto o ingresa con tu usuario y contraseña.',
+    google_cuenta_dada_de_baja: 'No pudimos iniciar sesión con Google. Verifica que estés usando el correo correcto o ingresa con tu usuario y contraseña.',
+    google_cuenta_suspendida: 'No pudimos iniciar sesión con Google. Verifica que estés usando el correo correcto o ingresa con tu usuario y contraseña.',
+    google_cuenta_no_habilitada: 'No pudimos iniciar sesión con Google. Verifica que estés usando el correo correcto o ingresa con tu usuario y contraseña.',
     google_fallo: 'No se pudo iniciar sesión con Google. Intenta nuevamente.',
   };
 
@@ -365,13 +366,16 @@ export class LoginComponent implements OnInit {
     if (error?.name === 'TimeoutError' || error?.status === 0) {
       return 'No se pudo conectar con el servidor. Intenta nuevamente en unos segundos.';
     }
+    if (error?.status === 401 || error?.status === 403) {
+      return 'Usuario, correo o contraseña incorrectos.';
+    }
 
     const payload = error?.error;
     const serverMessage = typeof payload === 'string'
       ? payload
       : payload?.message || payload?.error;
 
-    return serverMessage || 'Usuario o contraseña incorrectos.';
+    return serverMessage || 'Usuario, correo o contraseña incorrectos.';
   }
 
   private navigateToInitialRoute(): void {
