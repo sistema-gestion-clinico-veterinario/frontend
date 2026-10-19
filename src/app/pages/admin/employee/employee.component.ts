@@ -239,7 +239,7 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     genero: ['MASCULINO', [Validators.required]],
     observaciones: ['', [Validators.maxLength(500), noLeadingTrailingSpaceValidator(), textContentValidator()]],
     fotoUrl: ['', [Validators.maxLength(500), Validators.pattern(/^$|^https?:\/\/[^\s<>]+$/)]],
-    numeroColegiatura: ['', [Validators.maxLength(30), noLeadingTrailingSpaceValidator(), textContentValidator({ requireLetter: false })]],
+    numeroColegiatura: ['', [Validators.maxLength(15), noLeadingTrailingSpaceValidator(), textContentValidator({ requireLetter: false })]],
     especialidades: [[]],
     tiposEmpleado: [[]],
     avisoInformado: [false]
@@ -276,7 +276,7 @@ export class EmployeeComponent implements OnInit, OnDestroy {
         ]);
       } else {
         collegiatura?.setValidators([
-          Validators.maxLength(30),
+          Validators.maxLength(15),
           ...commonValidators
         ]);
       }

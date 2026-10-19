@@ -107,7 +107,7 @@ describe('apiInterceptor - clínica de la sesión', () => {
 
     expect(error.status).toBe(409);
     expect(authStore.logout).toHaveBeenCalled();
-    expect(router.navigateByUrl).toHaveBeenCalledWith('/login?authNotice=sesion_otra_clinica', { replaceUrl: true });
+    expect(router.navigateByUrl).toHaveBeenCalledWith('/login?authNotice=sesion_actualizada', { replaceUrl: true });
   });
 
   it('un 409 de otro tipo no cierra la sesión', () => {
@@ -130,7 +130,7 @@ describe('apiInterceptor - clínica de la sesión', () => {
 
     expect(error.status).toBe(409);
     expect(authStore.logout).toHaveBeenCalled();
-    expect(router.navigateByUrl).toHaveBeenCalledWith('/login?authNotice=sesion_otra_clinica', { replaceUrl: true });
+    expect(router.navigateByUrl).toHaveBeenCalledWith('/login?authNotice=sesion_actualizada', { replaceUrl: true });
   });
 
   it('al renovar una sesión de la misma clínica reintenta la llamada con normalidad', () => {

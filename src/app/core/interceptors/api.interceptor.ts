@@ -108,7 +108,7 @@ export const apiInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, nex
 
 const endForOtherCompanySession = (authStore: any, router: Router): void => {
   authStore.logout();
-  router.navigateByUrl('/login?authNotice=sesion_otra_clinica', { replaceUrl: true });
+  router.navigateByUrl('/login?authNotice=sesion_actualizada', { replaceUrl: true });
 };
 
 const handle401Error = (req: HttpRequest<any>, next: HttpHandlerFn, authStore: any, authService: AuthService, router: Router): Observable<HttpEvent<any>> => {

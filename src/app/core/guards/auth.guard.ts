@@ -31,7 +31,7 @@ export const AuthGuard: CanActivateFn = (route, state) => {
       }
       if (sessionService.sessionConflict()) {
         sessionService.sessionConflict.set(false);
-        return of(router.createUrlTree(['/login'], { queryParams: { authNotice: 'sesion_otra_clinica' } }));
+        return of(router.createUrlTree(['/login'], { queryParams: { authNotice: 'sesion_actualizada' } }));
       }
       return of(router.createUrlTree(['/login']));
     })

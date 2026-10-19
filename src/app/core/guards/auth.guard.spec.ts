@@ -51,7 +51,7 @@ describe('AuthGuard - sesión de otra clínica', () => {
 
     ejecutar().subscribe((resultado) => {
       const router = TestBed.inject(Router);
-      expect(router.serializeUrl(resultado as UrlTree)).toContain('authNotice=sesion_otra_clinica');
+      expect(router.serializeUrl(resultado as UrlTree)).toContain('authNotice=sesion_actualizada');
       expect(conflicto).toBeFalse();
       done();
     });
