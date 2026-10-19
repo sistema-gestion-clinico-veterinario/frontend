@@ -76,7 +76,7 @@ export class SessionService {
   }
   endForOtherCompanySession(): void {
     this.authStore.logout();
-    this.router.navigateByUrl('/login?authNotice=sesion_otra_clinica', { replaceUrl: true });
+    this.router.navigateByUrl('/login?authNotice=sesion_actualizada', { replaceUrl: true });
   }
 
   private syncRoleFromServer(): void {

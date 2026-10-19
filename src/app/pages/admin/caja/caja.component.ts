@@ -94,6 +94,7 @@ export class CajaComponent implements OnInit, OnDestroy {
   pendingTotal = signal(0);
   pendingPage = signal(0);
   panelActivo = signal<'CITAS' | 'PRODUCTOS'>('CITAS');
+  readonly mobileStep = signal<'SELECCION' | 'DETALLE' | 'COBRO'>('SELECCION');
   posSearch = signal('');
   cuentasPos = computed(() => {
     const term = normalizeText(this.posSearch()).toLocaleLowerCase('es-PE');
@@ -221,6 +222,16 @@ export class CajaComponent implements OnInit, OnDestroy {
     this.panelActivo.set(panel);
   }
 
+  mostrarSeleccion(panel: 'CITAS' | 'PRODUCTOS' = this.panelActivo()) {
+    this.panelActivo.set(panel);
+    this.mobileStep.set('SELECCION');
+  }
+
+  mostrarCobro() {
+    if (!this.cuentaSeleccionada() && this.carritoVentaRapida().length === 0) return;
+    this.mobileStep.set('COBRO');
+  }
+
   agregarProductoOperacion(producto: ProductoResponse) {
     if (producto.stock <= 0) {
       this.messageService.add({ severity: 'warn', summary: 'Sin stock', detail: `${producto.nombre} no tiene unidades disponibles.` });
@@ -259,6 +270,7 @@ export class CajaComponent implements OnInit, OnDestroy {
     }
     this.carritoVentaRapida.set(carrito);
     this.prepararPagoVentaLibre();
+    this.mobileStep.set('DETALLE');
   }
 
   productoCompatible(producto: ProductoResponse, especie = this.cuentaSeleccionada()?.especie): boolean {
@@ -307,6 +319,7 @@ export class CajaComponent implements OnInit, OnDestroy {
         this.productoUsoExcepcional.set(null);
         this.justificacionUsoExcepcional = '';
         this.cargarPendientes();
+        this.mobileStep.set('DETALLE');
       },
       error: err => {
         this.savingDetalle.set(false);
@@ -355,6 +368,7 @@ export class CajaComponent implements OnInit, OnDestroy {
     this.clienteSeleccionado = null;
     this.clienteNombreLibre = '';
     this.pagoForm = { metodoPago: 'EFECTIVO', monto: 0, montoRecibido: null };
+    this.mobileStep.set('SELECCION');
   }
 
   registrarOperacion() {
@@ -549,6 +563,7 @@ export class CajaComponent implements OnInit, OnDestroy {
         this.cuentaSeleccionada.set(r.data);
         this.prepararPago(r.data);
         this.nuevoDetalle = { tipo: 'MEDICAMENTO', descripcion: '', cantidad: 1, precioUnitario: 0 };
+        this.mobileStep.set('DETALLE');
       },
       error: err => this.messageService.add({ severity: 'error', summary: 'Error', detail: err?.error?.message ?? 'No se pudo abrir la cuenta.' })
     });

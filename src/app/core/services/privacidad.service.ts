@@ -7,6 +7,7 @@ import {
   AvisoPublico,
   AvisoVersion,
   CamposAvisoPrivacidad,
+  CentroLegalPublico,
   ConsentimientoEstado,
   VistaPreviaAviso
 } from '../../models/privacy/privacidad.model';
@@ -28,6 +29,14 @@ export class PrivacidadService {
     return this.http.get<ApiResponse<AvisoPublico>>(
       `${this.base}/public/privacidad/${encodeURIComponent(slug)}/version/${version}`,
       { params: { audiencia } });
+  }
+
+  centroLegalPublico(slug: string, audiencia: AudienciaAvisoPrivacidad,
+                     version?: number): Observable<ApiResponse<CentroLegalPublico>> {
+    const params: Record<string, string | number> = { audiencia };
+    if (version !== undefined) params['version'] = version;
+    return this.http.get<ApiResponse<CentroLegalPublico>>(
+      `${this.base}/public/legal/${encodeURIComponent(slug)}`, { params });
   }
 
   avisoVigente(audiencia?: AudienciaAvisoPrivacidad): Observable<ApiResponse<AvisoPublico | null>> {

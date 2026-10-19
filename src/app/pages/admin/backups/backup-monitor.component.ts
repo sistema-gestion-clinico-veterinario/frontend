@@ -1,5 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { PaginatorModule } from 'primeng/paginator';
+import { SkeletonModule } from 'primeng/skeleton';
 import { BackupMonitorService } from '../../../core/services/backup-monitor.service';
 import {
   BackupComponentStatus,
@@ -18,7 +20,7 @@ interface PasoDeConfiguracion {
 @Component({
   selector: 'app-backup-monitor',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, PaginatorModule, SkeletonModule],
   templateUrl: './backup-monitor.component.html'
 })
 export class BackupMonitorComponent implements OnInit {
@@ -33,8 +35,6 @@ export class BackupMonitorComponent implements OnInit {
   readonly page = signal(0);
   readonly pageSize = 20;
   readonly latest = computed(() => this.executions()[0] ?? null);
-  readonly hasPreviousPage = computed(() => this.page() > 0);
-  readonly hasNextPage = computed(() => (this.page() + 1) * this.pageSize < this.total());
 
   readonly pasosDeConfiguracion = computed<PasoDeConfiguracion[]>(() => {
     const resumen = this.summary();
@@ -99,11 +99,26 @@ export class BackupMonitorComponent implements OnInit {
     return ({ PENDING: 'Pendiente', SUCCESS: 'Correcto', FAILED: 'Fallido', SKIPPED: 'No incluido' })[status];
   }
 
-  statusClass(status: BackupRunStatus | BackupComponentStatus): string {
-    if (status === 'SUCCESS') return 'bg-emerald-50 text-emerald-700 border-emerald-200';
-    if (status === 'FAILED') return 'bg-rose-50 text-rose-700 border-rose-200';
-    if (status === 'PARTIAL' || status === 'SKIPPED') return 'bg-amber-50 text-amber-700 border-amber-200';
-    return 'bg-blue-50 text-blue-700 border-blue-200';
+  componentesDe(execution: BackupExecution): { nombre: string; estado: BackupComponentStatus }[] {
+    return [
+      { nombre: 'Base de datos', estado: execution.databaseStatus },
+      { nombre: 'Cierre de acceso temporal', estado: execution.restrictionsStatus },
+      { nombre: 'Archivos clínicos', estado: execution.storageStatus }
+    ];
+  }
+
+  chipClass(status: BackupRunStatus | BackupComponentStatus): string {
+    if (status === 'SUCCESS') return 'bg-green-50 text-green-700';
+    if (status === 'FAILED' || status === 'PARTIAL') return 'bg-red-50 text-red-500';
+    if (status === 'SKIPPED') return 'bg-slate-100 text-slate-600';
+    return 'bg-blue-50 text-blue-600';
+  }
+
+  dotClass(status: BackupRunStatus | BackupComponentStatus): string {
+    if (status === 'SUCCESS') return 'bg-green-500';
+    if (status === 'FAILED' || status === 'PARTIAL') return 'bg-red-400';
+    if (status === 'SKIPPED') return 'bg-slate-400';
+    return 'bg-blue-500';
   }
 
   healthLabel(health: BackupHealth): string {
@@ -117,11 +132,19 @@ export class BackupMonitorComponent implements OnInit {
 
   healthClass(health: BackupHealth): string {
     return ({
-      SIN_DATOS: 'border-slate-200 bg-slate-50 text-slate-700',
-      AL_DIA: 'border-emerald-200 bg-emerald-50 text-emerald-800',
-      ATENCION: 'border-slate-300 bg-slate-100 text-slate-800',
-      CRITICO: 'border-rose-200 bg-rose-50 text-rose-800'
+      SIN_DATOS: 'bg-slate-100 text-slate-600',
+      AL_DIA: 'bg-green-50 text-green-700',
+      ATENCION: 'bg-slate-100 text-slate-700',
+      CRITICO: 'bg-red-50 text-red-600'
     })[health];
+  }
+
+  componentIcon(name: string): string {
+    return ({
+      'Base de datos': 'pi pi-database',
+      'Cierre de acceso temporal': 'pi pi-lock',
+      'Archivos clínicos': 'pi pi-folder'
+    } as Record<string, string>)[name] ?? 'pi pi-check-circle';
   }
 
   healthIcon(health: BackupHealth): string {

@@ -27,6 +27,21 @@ export interface AvisoPublico {
   contenido: string;
 }
 
+export interface DocumentoCentroLegal {
+  codigo: 'AVISO_PRIVACIDAD' | 'TERMINOS_Y_CONDICIONES' | 'POLITICA_PRIVACIDAD';
+  titulo: string;
+  version: string;
+  vigenteDesde: string;
+  contenido: string;
+}
+
+export interface CentroLegalPublico {
+  clinica: string;
+  logoUrl: string | null;
+  colorPrimario: string | null;
+  documentos: DocumentoCentroLegal[];
+}
+
 export interface AvisoVersion {
   audiencia: AudienciaAvisoPrivacidad;
   version: number;

@@ -1,18 +1,79 @@
-<main class="mx-auto min-h-screen max-w-3xl px-4 py-8 sm:py-12">
+<main class="min-h-screen bg-slate-50 px-4 py-6 sm:px-6 sm:py-10">
   @if (cargando()) {
-    <p class="text-center text-sm text-slate-500">Cargando el aviso de privacidad…</p>
-  } @else if (aviso(); as a) {
-    <header class="mb-6 flex items-center gap-4 border-b border-slate-200 pb-5" [style.border-color]="a.colorPrimario">
-      @if (a.logoUrl) {
-        <img [src]="a.logoUrl" alt="" class="h-14 w-14 rounded-lg object-contain" />
-      }
-      <div>
-        <h1 class="text-xl font-extrabold text-slate-900">{{ a.clinica }}</h1>
-        <p class="text-sm text-slate-500">Versión {{ a.version }} · vigente desde {{ a.vigenteDesde | date: 'dd/MM/yyyy' }}</p>
+    <div class="mx-auto max-w-6xl animate-pulse">
+      <div class="mb-7 flex items-center gap-4">
+        <div class="h-12 w-12 rounded-lg bg-slate-200"></div>
+        <div class="space-y-2"><div class="h-5 w-56 rounded bg-slate-200"></div><div class="h-3 w-36 rounded bg-slate-200"></div></div>
       </div>
-    </header>
-    <article class="whitespace-pre-line rounded-xl border border-slate-200 bg-white p-5 text-sm leading-6 text-slate-700 sm:p-8">{{ a.contenido }}</article>
+      <div class="grid gap-5 lg:grid-cols-[240px_minmax(0,1fr)]">
+        <div class="h-52 rounded-xl border border-slate-200 bg-white"></div>
+        <div class="h-[34rem] rounded-xl border border-slate-200 bg-white"></div>
+      </div>
+    </div>
+  } @else if (centro(); as c) {
+    <div class="mx-auto max-w-6xl">
+      <header class="mb-7 flex items-center gap-4 border-b border-slate-200 pb-5" [style.border-color]="c.colorPrimario">
+        @if (c.logoUrl) {
+          <img [src]="c.logoUrl" [alt]="'Logo de ' + c.clinica" class="h-12 w-12 rounded-lg object-contain" />
+        }
+        <div class="min-w-0">
+          <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--brand-primary)]">Centro legal</p>
+          <h1 class="truncate text-xl font-extrabold text-slate-900">{{ c.clinica }}</h1>
+          <p class="text-sm text-slate-500">Documentos legales publicados</p>
+        </div>
+      </header>
+
+      <div class="mb-4 lg:hidden">
+        <label for="documento-legal" class="mb-1.5 block text-xs font-semibold text-slate-700">Documento</label>
+        <div class="relative">
+          <select id="documento-legal" [value]="documentoSeleccionado()" (change)="onSeleccionMovil($event)"
+            class="h-11 w-full appearance-none rounded-lg border border-slate-300 bg-white px-3 pr-10 text-sm font-semibold text-slate-700 outline-none focus:border-[var(--brand-primary)] focus:ring-2 focus:ring-[var(--brand-primary)]/15">
+            @for (item of c.documentos; track item.codigo) {
+              <option [value]="item.codigo">{{ item.titulo }}</option>
+            }
+          </select>
+          <i class="pi pi-chevron-down pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400"></i>
+        </div>
+      </div>
+
+      <div class="grid items-start gap-5 lg:grid-cols-[240px_minmax(0,1fr)]">
+        <nav aria-label="Documentos legales" class="hidden rounded-xl border border-slate-200 bg-white p-3 lg:block">
+          <p class="px-3 pb-2 pt-1 text-xs font-bold text-slate-800">Documentos</p>
+          <div class="space-y-1">
+            @for (item of c.documentos; track item.codigo) {
+              <button type="button" (click)="seleccionar(item.codigo)"
+                [class.bg-cyan-50]="item.codigo === documentoSeleccionado()"
+                [class.text-cyan-700]="item.codigo === documentoSeleccionado()"
+                [attr.aria-current]="item.codigo === documentoSeleccionado() ? 'page' : null"
+                class="flex w-full items-start gap-2.5 rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900">
+                <i class="pi mt-0.5 text-xs"
+                  [class.pi-shield]="item.codigo === 'AVISO_PRIVACIDAD'"
+                  [class.pi-file-edit]="item.codigo === 'TERMINOS_Y_CONDICIONES'"
+                  [class.pi-lock]="item.codigo === 'POLITICA_PRIVACIDAD'"></i>
+                <span>{{ item.titulo }}</span>
+              </button>
+            }
+          </div>
+        </nav>
+
+        @if (documento(); as doc) {
+          <section class="overflow-hidden rounded-xl border border-slate-200 bg-white">
+            <header class="flex flex-col gap-3 border-b border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-7">
+              <div>
+                <h2 class="text-lg font-bold text-slate-900">{{ doc.titulo }}</h2>
+                <p class="mt-1 text-xs text-slate-500">Versión {{ doc.version }} · vigente desde {{ doc.vigenteDesde | date: 'dd/MM/yyyy' }}</p>
+              </div>
+              <button type="button" (click)="imprimir()"
+                class="inline-flex h-9 items-center justify-center gap-2 self-start rounded-lg border border-slate-200 px-3 text-xs font-semibold text-slate-600 hover:bg-slate-50 sm:self-auto">
+                <i class="pi pi-print"></i> Imprimir
+              </button>
+            </header>
+            <article class="whitespace-pre-line p-5 text-sm leading-7 text-slate-700 sm:p-7 lg:p-8">{{ doc.contenido }}</article>
+          </section>
+        }
+      </div>
+    </div>
   } @else {
-    <p class="rounded-xl border border-slate-200 bg-slate-50 p-5 text-center text-sm text-slate-600">{{ mensaje() }}</p>
+    <p class="mx-auto max-w-3xl rounded-xl border border-slate-200 bg-white p-5 text-center text-sm text-slate-600">{{ mensaje() }}</p>
   }
 </main>

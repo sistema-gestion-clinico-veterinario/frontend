@@ -216,7 +216,7 @@ describe('LoginComponent - submit validations', () => {
     component.submit();
 
     expect(component.showReactivar).toBeFalse();
-    expect(component.authError).toBe('Credenciales inválidas');
+    expect(component.authError).toBe('Usuario, correo o contraseña incorrectos.');
   });
 
   it('[BB-001] permite iniciar sesion con credenciales validas y redirige al usuario', () => {
@@ -334,17 +334,17 @@ describe('LoginComponent - submit validations', () => {
     expect(loadingStore.isLoading()).toBeFalse();
   }));
 
-  it('[BB-002] rechaza credenciales invalidas y muestra el mensaje del servidor', () => {
+  it('[BB-002] rechaza credenciales invalidas sin mostrar detalles del servidor', () => {
     createLoginInput('username', 'admin.test');
     createLoginInput('password', 'incorrecta');
     authService.login.and.returnValue(throwError(() => ({
       status: 401,
-      error: { message: 'Usuario o contrasena incorrectos.' },
+      error: { message: 'La cuenta existe pero la clave falló.' },
     })));
 
     component.submit();
 
-    expect(component.authError).toBe('Usuario o contrasena incorrectos.');
+    expect(component.authError).toBe('Usuario, correo o contraseña incorrectos.');
   });
 
   it('no llama a AuthService.login cuando no hay slug ni es la ruta de SuperAdmin (aislamiento total entre empresas)', () => {
@@ -448,13 +448,14 @@ describe('LoginComponent - continuar con Google', () => {
 
     expect(mensajes['google_cuenta_suspendida']).toContain('suspendido');
     const avisos = (LoginComponent as any).NOTICES as Record<string, string>;
-    expect(avisos['sesion_otra_clinica']).toContain('vuelve a iniciar sesión');
-    expect(avisos['sesion_otra_clinica']).toContain('permanecerán activas');
+    expect(avisos['sesion_actualizada']).toContain('información de tu sesión cambió');
+    expect(avisos['sesion_actualizada']).not.toContain('otras clínicas');
     expect(avisos['google_cuenta_cerrada']).toBeUndefined();
     expect(mensajes['google_cuenta_cerrada']).toContain('ya no se puede reactivar');
     expect(mensajes['google_cuenta_dada_de_baja']).toContain('ya no está activo');
     expect(mensajes['google_cuenta_no_habilitada']).toContain('no puede ingresar por ahora');
-    expect(mensajes['google_sin_acceso_clinica']).toContain('no está registrada');
+    expect(mensajes['google_sin_acceso_clinica']).not.toContain('registrada');
+    expect(mensajes['google_sin_acceso_clinica']).toContain('No pudimos iniciar sesión');
   });
 
   it('con Google, una cuenta cerrada con su confirmación abre el diálogo de reactivar y no muestra error', () => {
@@ -534,8 +535,8 @@ describe('LoginComponent - continuar con Google', () => {
     component.aplicarMensajesDeLaUrl(null, 'codigo_raro');
     expect(component.authError).toBe('No se pudo iniciar sesión con Google. Intenta nuevamente.');
 
-    component.aplicarMensajesDeLaUrl('sesion_otra_clinica', null);
-    expect(component.noticeTitle).toBe('Vuelve a iniciar sesión');
-    expect(component.authNotice).toContain('vuelve a iniciar sesión');
+    component.aplicarMensajesDeLaUrl('sesion_actualizada', null);
+    expect(component.noticeTitle).toBe('Inicia sesión nuevamente');
+    expect(component.authNotice).toContain('información de tu sesión cambió');
   });
 });
