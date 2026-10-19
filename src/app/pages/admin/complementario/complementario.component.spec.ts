@@ -37,4 +37,16 @@ describe('ComplementarioComponent', () => {
     expect(fixture.nativeElement.querySelector('[data-testid="complementario-skeleton"]')).toBeNull();
     expect(fixture.nativeElement.querySelector('[data-testid="complementario-content"]')).not.toBeNull();
   });
+
+  it('desactiva emergencias al seleccionar un cargo no veterinario', () => {
+    component.tiposEmpleadoCatalogo.set([
+      { id: 1, nombre: 'Veterinario', estado: true, ejerceComoVeterinario: true },
+      { id: 2, nombre: 'Groomer', estado: true, ejerceComoVeterinario: false }
+    ]);
+    component.servicioForm.patchValue({ tipoEmpleadoId: 1, permiteEmergencia: true });
+
+    component.servicioForm.get('tipoEmpleadoId')?.setValue(2);
+
+    expect(component.servicioForm.get('permiteEmergencia')?.value).toBeFalse();
+  });
 });

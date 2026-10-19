@@ -500,7 +500,7 @@ export class CartillaComponent implements OnInit {
 
   guardarReprogramacion(control: ControlPreventivoResponse) {
     const fecha = this.fechaReprogramacion();
-    if (!fecha) return;
+    if (!fecha || this.guardando()) return;
     this.guardando.set(true);
     this.preventivoService.reprogramar(control.id, fecha).subscribe({
       next: () => {
@@ -508,7 +508,7 @@ export class CartillaComponent implements OnInit {
         this.msgService.add({ severity: 'success', summary: 'Control reprogramado', detail: 'Fecha recomendada actualizada' });
         this.recargarMascota();
       },
-      error: (err) => this.msgService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo reprogramar el control' }),
+      error: (err) => { this.guardando.set(false); this.msgService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo reprogramar el control' }); },
       complete: () => this.guardando.set(false)
     });
   }
@@ -519,7 +519,7 @@ export class CartillaComponent implements OnInit {
 
   cancelarControl() {
     const control = this.controlCancelar();
-    if (!control) return;
+    if (!control || this.guardando()) return;
     this.guardando.set(true);
     this.preventivoService.cancelar(control.id).subscribe({
       next: () => {
@@ -527,7 +527,7 @@ export class CartillaComponent implements OnInit {
         this.controlCancelar.set(null);
         this.recargarMascota();
       },
-      error: (err) => this.msgService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo cancelar el control' }),
+      error: (err) => { this.guardando.set(false); this.msgService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo cancelar el control' }); },
       complete: () => this.guardando.set(false)
     });
   }
@@ -540,6 +540,7 @@ export class CartillaComponent implements OnInit {
   }
 
   programarControl() {
+    if (this.guardando()) return;
     const m = this.mascotaSel();
     if (!m) { this.msgService.add({ severity: 'warn', summary: 'Falta mascota', detail: 'Seleccione la mascota' }); return; }
     if (this.progTipo === 'VACUNACION' && !this.progTipoVacunaId) {
@@ -564,12 +565,13 @@ export class CartillaComponent implements OnInit {
         this.progTipoVacunaId = null;
         this.recargarMascota();
       },
-      error: (err) => this.msgService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo programar el control' }),
+      error: (err) => { this.guardando.set(false); this.msgService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo programar el control' }); },
       complete: () => this.guardando.set(false)
     });
   }
 
   guardar() {
+    if (this.guardando()) return;
     const m = this.mascotaSel();
     if (!m) { this.msgService.add({ severity: 'warn', summary: 'Falta mascota', detail: 'Seleccione o registre la mascota' }); return; }
     if (this.modo() === 'VACUNACION' && !this.tipoVacunaId) { this.msgService.add({ severity: 'warn', summary: 'Falta vacuna', detail: 'Seleccione la vacuna' }); return; }
@@ -612,7 +614,7 @@ export class CartillaComponent implements OnInit {
         this.msgService.add({ severity: 'success', summary: 'Aplicación registrada', detail: 'La cuenta fue enviada automáticamente a Caja.' });
         this.recargarMascota();
       },
-      error: (err) => this.msgService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo registrar' }),
+      error: (err) => { this.guardando.set(false); this.msgService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo registrar' }); },
       complete: () => this.guardando.set(false)
     });
   }
