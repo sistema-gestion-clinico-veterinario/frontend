@@ -150,8 +150,14 @@ export class AgendaComponent implements OnInit, OnDestroy {
     this.authStore.dataScope('VISTA_CITAS_AGENDA') === 'COMPANY'
   );
 
+  readonly selectedServiceAllowsEmergency = computed(() => {
+    const servicio = this.serviciosConDetalle().find(s => s.id === this.selectedServicioId());
+    return Boolean(servicio?.permiteEmergencia);
+  });
+
   readonly canBookEmergency = computed(() =>
     this.authStore.hasAccess('VISTA_CITAS_AGENDA', 'escribir')
+      && this.selectedServiceAllowsEmergency()
   );
 
   readonly empresaSinHorario = computed(() => {
@@ -571,11 +577,11 @@ export class AgendaComponent implements OnInit, OnDestroy {
     }
     this.citaForm.get('esEmergencia')?.valueChanges.subscribe((isEmergencia: boolean) => {
       if (isEmergencia) {
-        const now = new Date();
-        const dateStr = this.toDateStr(now);
-        const hours = String(now.getHours()).padStart(2, '0');
-        const mins = String(now.getMinutes()).padStart(2, '0');
-        this.citaForm.patchValue({ fechaCita: dateStr, horaCita: `${hours}:${mins}` });
+        if (!this.canBookEmergency()) {
+          this.citaForm.get('esEmergencia')?.setValue(false, { emitEvent: false });
+          return;
+        }
+        this.setEmergencyDateTime();
         this.availableSlots.set([]);
       } else {
         this.citaForm.patchValue({ horaCita: null });
@@ -848,6 +854,9 @@ export class AgendaComponent implements OnInit, OnDestroy {
   selectServicio(srv: { label: string; value: number } | null) {
     this.citaForm.get('servicioId')?.setValue(srv?.value ?? null);
     this.selectedServicioId.set(srv?.value ?? null);
+    if (!this.selectedServiceAllowsEmergency()) {
+      this.citaForm.get('esEmergencia')?.setValue(false);
+    }
     this.citaForm.patchValue({ controlPreventivoIds: [] });
     this.citaForm.get('veterinarioId')?.setValue(null);
     this.horariosVeterinario.set([]);
@@ -896,11 +905,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
     if (isEditing) return;
 
     if (val.esEmergencia) {
-      const now = new Date();
-      const dateStr = this.toDateStr(now);
-      const hours = String(now.getHours()).padStart(2, '0');
-      const mins = String(now.getMinutes()).padStart(2, '0');
-      this.citaForm.patchValue({ fechaCita: dateStr, horaCita: `${hours}:${mins}` });
+      this.setEmergencyDateTime();
       this.availableSlots.set([]);
       return;
     }
@@ -936,7 +941,20 @@ export class AgendaComponent implements OnInit, OnDestroy {
   }
 
   agendarEmergencia() {
+    if (!this.canBookEmergency()) return;
     this.citaForm.get('esEmergencia')?.setValue(true);
+  }
+
+  private setEmergencyDateTime(): void {
+    // Se reserva en el siguiente margen inmediato. Así la hora sigue siendo futura
+    // al llegar al servidor, incluso si el envío ocurre al cambiar de minuto.
+    const start = new Date();
+    start.setSeconds(0, 0);
+    start.setMinutes(start.getMinutes() + 2);
+    this.citaForm.patchValue({
+      fechaCita: this.toDateStr(start),
+      horaCita: `${String(start.getHours()).padStart(2, '0')}:${String(start.getMinutes()).padStart(2, '0')}`
+    }, { emitEvent: false });
   }
 
   onVeterinarioChange(veterinarioId: number) {
@@ -1265,6 +1283,19 @@ export class AgendaComponent implements OnInit, OnDestroy {
   }
 
   saveCita() {
+    if (this.citaForm.get('esEmergencia')?.value) {
+      if (!this.canBookEmergency()) {
+        this.citaForm.get('esEmergencia')?.setValue(false);
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Servicio no habilitado',
+          detail: 'El servicio seleccionado no admite atención de emergencia.'
+        });
+        return;
+      }
+      this.setEmergencyDateTime();
+    }
+
     const formValue = this.citaForm.value;
     const isEditing = !!formValue.id && !this.isReprogramando();
 

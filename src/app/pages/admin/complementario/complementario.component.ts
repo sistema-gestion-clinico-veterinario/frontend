@@ -255,6 +255,7 @@ export class ComplementarioComponent implements OnInit {
     precio:      [null, [Validators.required, Validators.min(5), Validators.max(5000)]],
     duracionEstimada: [20, [Validators.required, Validators.min(5), Validators.max(240)]],
     disponible:  [true],
+    permiteEmergencia: [false],
     tipoEmpleadoId: [null],
     especialidadId: [null],
     tipoControlPreventivo: ['NO_APLICA']
@@ -299,6 +300,9 @@ export class ComplementarioComponent implements OnInit {
       if (!this.tipoServicioPermiteEspecialidades()) {
         this.servicioForm.get('especialidadId')?.setValue(null, { emitEvent: false });
       }
+      if (!this.tipoServicioEsClinico()) {
+        this.servicioForm.get('permiteEmergencia')?.setValue(false, { emitEvent: false });
+      }
     });
   }
 
@@ -306,6 +310,12 @@ export class ComplementarioComponent implements OnInit {
     const tipoId = Number(this.servicioForm.get('tipoEmpleadoId')?.value);
     return this.tiposEmpleadoActivos().some(tipo =>
       tipo.id === tipoId && tipo.permiteEspecialidades === true);
+  }
+
+  tipoServicioEsClinico(): boolean {
+    const tipoId = Number(this.servicioForm.get('tipoEmpleadoId')?.value);
+    return this.tiposEmpleadoActivos().some(tipo =>
+      tipo.id === tipoId && Boolean(tipo.ejerceComoVeterinario ?? tipo.esVeterinario));
   }
 
   loadAll() {
@@ -541,6 +551,7 @@ export class ComplementarioComponent implements OnInit {
       precio:      item?.precio      ?? null,
       duracionEstimada: item?.duracionEstimada ?? 20,
       disponible:  item?.disponible  ?? true,
+      permiteEmergencia: item?.permiteEmergencia ?? false,
       tipoEmpleadoId: item?.tipoEmpleadoId ?? null,
       especialidadId: item?.especialidadId ?? null,
       tipoControlPreventivo: item?.tipoControlPreventivo ?? 'NO_APLICA'

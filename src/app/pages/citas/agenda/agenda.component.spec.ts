@@ -70,6 +70,38 @@ describe('AgendaComponent', () => {
     });
   });
 
+  describe('emergencias por servicio', () => {
+    beforeEach(() => {
+      spyOn(component.authStore, 'hasAccess').and.returnValue(true);
+      component.serviciosConDetalle.set([
+        { id: 10, nombre: 'Baño y Spa', permiteEmergencia: false },
+        { id: 20, nombre: 'Consulta de emergencia', permiteEmergencia: true }
+      ] as any);
+    });
+
+    it('no habilita emergencia para un servicio de grooming', () => {
+      component.selectedServicioId.set(10);
+
+      expect(component.canBookEmergency()).toBeFalse();
+    });
+
+    it('habilita emergencia para un servicio clínico configurado', () => {
+      component.selectedServicioId.set(20);
+
+      expect(component.canBookEmergency()).toBeTrue();
+    });
+
+    it('genera una hora inmediata que todavía es futura al enviarse', () => {
+      const antes = Date.now();
+
+      (component as any).setEmergencyDateTime();
+
+      const fecha = component.citaForm.get('fechaCita')?.value;
+      const hora = component.citaForm.get('horaCita')?.value;
+      expect(new Date(`${fecha}T${hora}:00`).getTime()).toBeGreaterThan(antes + 60_000);
+    });
+  });
+
   describe('carga eficiente de catálogos', () => {
     it('carga dueños y mascotas al abrir el formulario y reutiliza el resultado', () => {
       const apoderados = TestBed.inject(ApoderadoService);
