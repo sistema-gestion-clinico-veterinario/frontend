@@ -67,8 +67,9 @@ describe('BackupMonitorComponent', () => {
   it('muestra únicamente metadatos operativos del respaldo', async () => {
     await crear();
 
-    expect(texto()).toContain('Respaldo y recuperación');
-    expect(texto()).toContain('Restauración verificada');
+    expect(texto()).toContain('Monitoreo de respaldos');
+    expect(texto()).toContain('Prueba de recuperación');
+    expect(texto()).toContain('Verificada');
     expect(texto()).toContain('01fa5bc2');
     expect(texto()).toContain('Completo');
   });
@@ -82,26 +83,26 @@ describe('BackupMonitorComponent', () => {
   });
 
   describe('estado general', () => {
-    it('resume cómo van los respaldos con el último correcto, la próxima ejecución y los últimos 30 días', async () => {
+    it('resume cómo van los respaldos con el último correcto, la próxima ejecución y el total de los últimos 30 días', async () => {
       await crear();
 
-      expect(texto()).toContain('Respaldos al día');
-      expect(texto()).toContain('28 correctos · 1 con problemas');
-      expect(texto()).toContain('Integración configurada');
-      expect(texto()).toContain('Próxima ejecución programada');
+      expect(texto()).not.toContain('Respaldos al día');
+      expect(texto()).toContain('Ejecuciones (30 días)');
+      expect(texto()).toContain('29');
+      expect(texto()).toContain('Siguiente ejecución');
     });
 
     it('avisa cuando la situación es crítica', async () => {
       await crear([execution], resumen({ health: 'CRITICO', lastSuccessAt: '2026-10-10T07:20:00Z' }));
 
-      const banner = (fixture.nativeElement as HTMLElement).querySelector('[data-testid="estado-general"]') as HTMLElement;
-      expect(banner.textContent).toContain('Situación crítica');
-      expect(banner.className).toContain('bg-rose-50');
+      const problemas = (fixture.nativeElement as HTMLElement).querySelector('[data-testid="problemas-30-dias"]') as HTMLElement;
+      expect(problemas.textContent).toContain('1');
+      expect(problemas.querySelector('.text-red-600')).not.toBeNull();
     });
 
-    it('indica si la integración de monitoreo no está configurada', async () => {
+    it('mantiene disponible el estado de la integración para diagnóstico', async () => {
       await crear([execution], resumen({ reportingConfigured: false }));
-      expect(texto()).toContain('Integración sin configurar');
+      expect(component.pasosDeConfiguracion()[0].estado).toBe('FALTA');
     });
 
     it('si el resumen no se puede consultar, igual muestra el historial', async () => {
@@ -115,7 +116,7 @@ describe('BackupMonitorComponent', () => {
       fixture = TestBed.createComponent(BackupMonitorComponent);
       fixture.detectChanges();
 
-      expect(texto()).toContain('Historial de ejecuciones');
+      expect(texto()).toContain('Ejecuciones reportadas');
       expect(texto()).not.toContain('Respaldos al día');
     });
 
@@ -140,13 +141,42 @@ describe('BackupMonitorComponent', () => {
       expect(pasos[0].estado).toBe('FALTA');
       expect(pasos[0].detalle).toContain('BACKUP_REPORT_TOKEN');
       expect(texto()).toContain('BACKUP_REPORT_URL');
-      expect(texto()).toContain('Aún no llega ningún reporte');
+      expect(texto()).toContain('Todavía no ha llegado ningún reporte');
     });
 
     it('si el servidor ya está configurado, ese paso figura como correcto', async () => {
       await crear([], resumen({ health: 'SIN_DATOS', reportingConfigured: true }));
 
       expect(component.pasosDeConfiguracion()[0].estado).toBe('LISTO');
+    });
+  });
+
+  describe('presentación estándar', () => {
+    it('usa los mismos colores de estado que el resto del sistema', async () => {
+      await crear();
+
+      expect(component.chipClass('SUCCESS')).toBe('bg-green-50 text-green-700');
+      expect(component.chipClass('FAILED')).toBe('bg-red-50 text-red-500');
+      expect(component.chipClass('PARTIAL')).toBe('bg-red-50 text-red-500');
+      expect(component.chipClass('SKIPPED')).toBe('bg-slate-100 text-slate-600');
+      expect(component.chipClass('IN_PROGRESS')).toBe('bg-blue-50 text-blue-600');
+      expect(component.dotClass('SUCCESS')).toBe('bg-green-500');
+    });
+
+    it('lista los tres componentes de cada ejecución', async () => {
+      await crear();
+
+      expect(component.componentesDe(execution).map(c => c.nombre))
+        .toEqual(['Base de datos', 'Cierre de acceso temporal', 'Archivos clínicos']);
+    });
+
+    it('solo muestra la paginación cuando hay más ejecuciones que una página', async () => {
+      await crear();
+      expect((fixture.nativeElement as HTMLElement).querySelector('p-paginator')).toBeNull();
+
+      component.total.set(45);
+      fixture.detectChanges();
+      expect((fixture.nativeElement as HTMLElement).querySelector('p-paginator')).not.toBeNull();
     });
   });
 
