@@ -10,6 +10,8 @@ import { ApoderadoRequest } from '../../models/request/apoderado-request';
 import { UserProfileDTO } from '../../models/response/user-profile-dto';
 import { CitaResponse } from '../../models/response/cita-response';
 import { SKIP_GLOBAL_LOADING } from '../interceptors/api.interceptor';
+import { MascotaRequest } from '../../models/request/mascota-request';
+import { MascotaResponse } from '../../models/response/mascota-response';
 
 @Injectable({
   providedIn: 'root'
@@ -36,6 +38,11 @@ export class ApoderadoService {
 
   registrar(data: ApoderadoRequest) {
     return this.http.post<ApiResponse<UserProfileDTO>>(this.apiUrl, data);
+  }
+
+  registrarConPrimeraMascota(cliente: ApoderadoRequest, mascota: Omit<MascotaRequest, 'apoderadoId'>) {
+    return this.http.post<ApiResponse<{ cliente: UserProfileDTO; mascota: MascotaResponse }>>(
+      `${this.apiUrl}/onboarding`, { cliente, mascota });
   }
 
   actualizar(id: number, data: ApoderadoRequest) {

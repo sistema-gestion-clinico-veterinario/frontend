@@ -10,6 +10,7 @@ describe('GuidedTourService', () => {
   const storageKey = 'softvet:onboarding:inicio-softvet:v1:u25:c3:r7';
   const purpose = signal('CUSTOM');
   const menu = signal<MenuItemDTO[]>([]);
+  const availableRoles = signal<{ id: number; name: string }[]>([]);
   let service: GuidedTourService;
 
   const view = (codigo: string): MenuItemDTO => ({
@@ -28,6 +29,7 @@ describe('GuidedTourService', () => {
     localStorage.removeItem(storageKey);
     purpose.set('CUSTOM');
     menu.set([]);
+    availableRoles.set([]);
     TestBed.configureTestingModule({
       providers: [
         GuidedTourService,
@@ -39,7 +41,8 @@ describe('GuidedTourService', () => {
             activeRoleId: () => 7,
             companyId: () => 3,
             token: () => 'header.eyJ1c2VySWQiOjI1LCJzdWIiOiJhbmFAZXhhbXBsZS5jb20ifQ.signature',
-            menu
+            menu,
+            availableRoles
           }
         },
         {
@@ -68,6 +71,20 @@ describe('GuidedTourService', () => {
 
     expect(steps.some(step => step.id === 'appointment-create')).toBeFalse();
     expect(steps.some(step => step.id === 'appointment-modal')).toBeFalse();
+  });
+
+  it('incluye el cambio de rol solo cuando la persona tiene varios roles disponibles', () => {
+    availableRoles.set([{ id: 7, name: 'ADMIN' }]);
+    expect(buildSteps().some(step => step.id === 'active-role-selector')).toBeFalse();
+
+    availableRoles.set([
+      { id: 7, name: 'ADMIN' },
+      { id: 8, name: 'VETERINARIO' }
+    ]);
+
+    const step = buildSteps().find(item => item.id === 'active-role-selector');
+    expect(step?.selector).toBe('[data-tour="active-role-selector"]');
+    expect(step?.title).toBe('Cambiar de rol');
   });
 
   it('no vuelve a ofrecer automáticamente una guía ya descartada en este navegador', () => {

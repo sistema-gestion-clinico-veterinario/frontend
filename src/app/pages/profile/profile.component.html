@@ -170,8 +170,8 @@
           }
         </div>
       </div>
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-100 p-6">
+      <div class="grid grid-cols-1 items-start gap-6 lg:grid-cols-3">
+        <div class="self-start lg:col-span-2 bg-white rounded-2xl border border-slate-100 p-6">
           @if (!editMode()) {
             <h2 class="text-base font-semibold text-slate-700 mb-4 flex items-center gap-2">
               <i class="pi pi-user text-blue-500"></i> Información personal
@@ -335,104 +335,137 @@
                     </div>
                   }
                   <!-- Horario de trabajo — día actual -->
-                  @if (profile()?.empleado && horariosResumen.length) {
-                    <div
-                      class="bg-white rounded-2xl border border-slate-100 p-5">
-                      <div class="mb-4 flex flex-col items-stretch justify-between gap-3 sm:flex-row sm:items-center">
-                        <h3 class="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                          <i class="pi pi-clock text-blue-500"></i> Horario de hoy
-                        </h3>
+                  @if (profile()?.empleado) {
+                    <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+                      <div class="flex items-center justify-between gap-3 border-b border-slate-200 bg-slate-50/50 px-4 py-4 sm:px-5">
+                        <div class="min-w-0">
+                          <h3 class="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-slate-800">
+                            <i class="pi pi-clock text-blue-500"></i> Mi turno de hoy
+                          </h3>
+                          <p class="mt-0.5 text-[10px] font-medium text-slate-400">Horario de trabajo configurado</p>
+                        </div>
                         <button (click)="mostrarHorario.set(true)"
-                          class="inline-flex items-center justify-center gap-1.5 rounded-lg bg-blue-50 border border-blue-500/10 px-3 py-2 text-[11px] font-bold text-blue-500 hover:bg-blue-500 hover:text-white transition-colors">
-                          <i class="pi pi-calendar text-[10px]"></i> Ver horario completo
+                          class="inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-lg border border-blue-500/10 bg-blue-50 px-2.5 text-[10px] font-bold text-blue-500 transition-colors hover:bg-blue-500 hover:text-white">
+                          <i class="pi pi-calendar text-[10px]"></i>
+                          <span class="hidden sm:inline">Ver horario</span>
                         </button>
                       </div>
-                      <div class="flex items-center gap-2 mb-3">
-                        <span class="w-8 h-8 rounded-lg bg-blue-500 text-white flex items-center justify-center text-xs font-bold">
-                          {{ diaDeHoy.label | slice:0:2 }}
+
+                      <div class="p-4 text-center sm:p-6">
+                        <span class="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-500">
+                          <i class="pi pi-calendar text-2xl"></i>
                         </span>
-                        <span class="text-sm font-extrabold text-slate-800">{{ diaDeHoy.label }}</span>
+                        @if (turnosHoy.length) {
+                          <p class="text-sm font-black text-slate-800">
+                            {{ turnosHoy.length > 1 ? 'Turnos asignados' : 'Horario asignado' }}
+                          </p>
+                          <div class="mt-1 flex flex-col items-center gap-1">
+                            @for (turno of turnosHoy; track turno) {
+                              <p class="text-xl font-black text-blue-500">{{ turno }}</p>
+                            }
+                          </div>
+                          <p class="mt-2 text-[10px] font-medium text-slate-400">{{ diaDeHoy.label }}</p>
+                        } @else if (horariosResumen.length) {
+                          <p class="text-sm font-black text-slate-800">Día libre</p>
+                          <p class="mt-1 text-xl font-black text-slate-300">No labora</p>
+                        } @else {
+                          <p class="text-sm font-black text-slate-800">Horario no asignado</p>
+                          <p class="mt-1 text-xl font-black text-slate-300">No asignado</p>
+                        }
                       </div>
-                      @if (diaDeHoy.bloques.length) {
-                        <div class="space-y-3">
-                          @for (b of diaDeHoy.bloques; track b) {
-                            <div class="space-y-2">
-                              <div class="flex items-start gap-3 rounded-xl border border-slate-100 bg-slate-50/70 p-3 sm:items-center">
-                                <span class="w-9 h-9 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0">
-                                  <i class="pi pi-clock text-sm text-blue-500"></i>
-                                </span>
-                                <div class="min-w-0 text-sm font-bold text-slate-800">{{ b.horaInicio }} – {{ b.horaFin }}
-                                  <div class="mt-1 flex items-start gap-1.5 text-[11px] font-semibold text-slate-400">
-                                    <i class="pi pi-calendar text-[10px] text-blue-500/60"></i>
-                                    {{ b.rangoFechas }}
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          }
-                        </div>
-                      } @else {
-                        <div class="flex items-center gap-2 text-xs text-slate-300 italic py-2">
-                          <i class="pi pi-minus-circle"></i> Sin horario programado hoy
-                        </div>
-                      }
                     </div>
                   }
                   <!-- Modal: Horario completo -->
                   <p-dialog [(visible)]="mostrarHorario" [modal]="true" [draggable]="false" [resizable]="false"
                     [style]="{ width: '900px', maxWidth: 'calc(100vw - 16px)' }" header="Horario semanal">
-                    <div class="mb-4 flex items-center justify-start gap-2 text-xs font-medium text-slate-500 sm:justify-end">
-                      <i class="pi pi-calendar text-blue-500"></i>
-                      {{ fechaInicioSemana() }} – {{ fechaFinSemana() }}
-                    </div>
-                    <div class="space-y-3 sm:hidden">
-                      @for (d of semanaCompleta; track d) {
-                        <article class="rounded-xl border border-slate-200 p-3">
-                          <div class="flex items-center justify-between gap-3"><h4 class="text-xs font-bold uppercase tracking-wide text-slate-700">{{ d.label }}</h4><span class="text-[10px] font-semibold" [ngClass]="d.bloques.length ? 'text-blue-500' : 'text-slate-400'">{{ d.bloques.length ? d.bloques.length + ' bloque(s)' : 'Sin horario' }}</span></div>
-                          @if (d.bloques.length) {
-                            <div class="mt-3 space-y-2">@for (b of d.bloques; track b) {
-                              <div class="flex items-start gap-2 rounded-lg bg-slate-50 px-3 py-2"><i class="pi pi-clock mt-0.5 text-xs text-blue-500"></i><div class="min-w-0"><p class="text-xs font-bold text-slate-800">{{ b.horaInicio }} – {{ b.horaFin }}</p><p class="mt-0.5 break-words text-[10px] text-slate-500">{{ b.rangoFechas }}</p></div></div>
-                            }</div>
-                          }
-                        </article>
-                      }
-                    </div>
-                    <div class="hidden overflow-x-auto sm:block">
-                      <table class="w-full border border-slate-200 rounded-xl overflow-hidden text-center text-xs border-collapse">
-                        <thead>
-                          <tr class="bg-slate-50">
-                            <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider border border-slate-200 whitespace-nowrap">Horas / Días</th>
-                            @for (d of semanaCompleta; track d) {
-                              <th
-                                class="px-3 py-2.5 text-[11px] font-bold uppercase tracking-wider border border-slate-200"
-                                [ngClass]="d.bloques.length ? 'text-blue-500 bg-blue-50' : 'text-slate-300 bg-slate-50'">
-                                {{ d.label | slice:0:3 }}
-                              </th>
+                    @if (!horariosResumen.length) {
+                      <div class="flex min-h-48 flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50 px-6 py-10 text-center" role="status">
+                        <span class="flex h-11 w-11 items-center justify-center rounded-full bg-slate-100 text-slate-400">
+                          <i class="pi pi-calendar-times text-lg"></i>
+                        </span>
+                        <p class="mt-3 text-sm font-bold text-slate-700">No asignado</p>
+                        <p class="mt-1 text-xs text-slate-400">Este empleado todavía no tiene un horario de trabajo asignado.</p>
+                      </div>
+                    } @else {
+                      <div class="mb-4 flex items-center justify-start gap-2 text-xs font-medium text-slate-500 sm:justify-end">
+                        <i class="pi pi-calendar text-blue-500"></i>
+                        {{ fechaInicioSemana() }} – {{ fechaFinSemana() }}
+                      </div>
+                      <div class="space-y-3 sm:hidden">
+                        @for (d of semanaCompleta; track d) {
+                          <article class="rounded-xl border border-slate-200 p-3">
+                            <div class="flex items-center justify-between gap-3"><h4 class="text-xs font-bold uppercase tracking-wide text-slate-700">{{ d.label }}</h4><span class="text-[10px] font-semibold" [ngClass]="d.bloques.length ? 'text-blue-500' : 'text-slate-400'">{{ d.bloques.length ? d.bloques.length + ' bloque(s)' : 'No asignado' }}</span></div>
+                            @if (d.bloques.length) {
+                              <div class="mt-3 space-y-2">@for (b of d.bloques; track b) {
+                                <div class="flex items-start gap-2 rounded-lg bg-slate-50 px-3 py-2"><i class="pi pi-clock mt-0.5 text-xs text-blue-500"></i><div class="min-w-0"><p class="text-xs font-bold text-slate-800">{{ b.horaInicio }} – {{ b.horaFin }}</p><p class="mt-0.5 break-words text-[10px] text-slate-500">{{ b.rangoFechas }}</p></div></div>
+                              }</div>
                             }
-                          </tr>
-                        </thead>
-                        <tbody>
-                          @for (fila of gridHorario; track fila) {
-                            <tr class="hover:bg-slate-50/50 transition-colors">
-                              <td class="px-4 py-1.5 text-left whitespace-nowrap border border-slate-200">
-                                <span class="text-[11px] font-bold text-slate-500">{{ fila.hora }}</span>
-                              </td>
-                              @for (cubierto of fila.dias; track cubierto) {
-                                <td class="px-2 py-1.5 border border-slate-200">
-                                  <span class="block h-6 rounded"
-                                  [ngClass]="cubierto ? 'bg-blue-500' : 'bg-slate-100'"></span>
-                                </td>
+                          </article>
+                        }
+                      </div>
+                      <div class="hidden overflow-x-auto sm:block">
+                        <table class="w-full border border-slate-200 rounded-xl overflow-hidden text-center text-xs border-collapse">
+                          <thead>
+                            <tr class="bg-slate-50">
+                              <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider border border-slate-200 whitespace-nowrap">Horas / Días</th>
+                              @for (d of semanaCompleta; track d) {
+                                <th
+                                  class="px-3 py-2.5 text-[11px] font-bold uppercase tracking-wider border border-slate-200"
+                                  [ngClass]="d.bloques.length ? 'text-blue-500 bg-blue-50' : 'text-slate-300 bg-slate-50'">
+                                  {{ d.label | slice:0:3 }}
+                                </th>
                               }
                             </tr>
-                          }
-                        </tbody>
-                      </table>
-                    </div>
+                          </thead>
+                          <tbody>
+                            @for (fila of gridHorario; track fila) {
+                              <tr class="hover:bg-slate-50/50 transition-colors">
+                                <td class="px-4 py-1.5 text-left whitespace-nowrap border border-slate-200">
+                                  <span class="text-[11px] font-bold text-slate-500">{{ fila.hora }}</span>
+                                </td>
+                                @for (cubierto of fila.dias; track cubierto) {
+                                  <td class="px-2 py-1.5 border border-slate-200">
+                                    <span class="block h-6 rounded"
+                                    [ngClass]="cubierto ? 'bg-blue-500' : 'bg-slate-100'"></span>
+                                  </td>
+                                }
+                              </tr>
+                            }
+                          </tbody>
+                        </table>
+                      </div>
+                    }
                     <ng-template pTemplate="footer">
                       <button (click)="mostrarHorario.set(false)"
                       class="h-10 w-full rounded-lg bg-blue-500 px-4 text-xs font-bold text-white transition-colors hover:bg-blue-600 sm:w-auto">Cerrar</button>
                     </ng-template>
                   </p-dialog>
+                  <!-- Appearance preference -->
+                  <div class="bg-white rounded-2xl border border-slate-100 p-4">
+                    <div class="mb-3 flex items-center justify-between gap-3">
+                      <h3 class="flex items-center gap-2 text-sm font-semibold text-slate-700">
+                        <i class="pi pi-palette text-slate-400"></i> Apariencia
+                      </h3>
+                      <span class="text-[10px] font-medium text-slate-400">En este dispositivo</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-1 rounded-xl border border-slate-200 bg-slate-50 p-1" role="radiogroup" aria-label="Tema de la interfaz">
+                      @for (option of themeOptions; track option.value) {
+                        <button type="button"
+                          role="radio"
+                          [attr.aria-checked]="theme.preference() === option.value"
+                          [attr.aria-label]="option.label + '. ' + option.description"
+                          [title]="option.description"
+                          (click)="theme.setPreference(option.value)"
+                          [class]="theme.preference() === option.value
+                            ? 'bg-white text-blue-600 ring-1 ring-slate-200'
+                            : 'text-slate-500 hover:bg-white/60 hover:text-slate-700'"
+                          class="flex h-9 min-w-0 items-center justify-center gap-1.5 rounded-lg px-2 text-xs font-semibold transition-colors">
+                          <i [class]="option.icon" class="shrink-0 text-xs"></i>
+                          <span class="truncate">{{ option.label }}</span>
+                        </button>
+                      }
+                    </div>
+                  </div>
                   <!-- Account info -->
                   <div class="bg-white rounded-2xl border border-slate-100 p-6">
                     <h3 class="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2">

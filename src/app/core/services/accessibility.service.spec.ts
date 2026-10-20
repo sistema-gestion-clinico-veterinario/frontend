@@ -100,6 +100,17 @@ describe('AccessibilityService', () => {
     expect(document.documentElement.classList.contains('a11y-contrast-high')).toBeTrue();
   });
 
+  it('activa la escala tipografica sin modificar el tamano raiz del documento', () => {
+    service.stepTextSize();
+
+    expect(document.documentElement.classList.contains('a11y-text-scaled')).toBeTrue();
+    expect(document.documentElement.style.getPropertyValue('--a11y-text-scale')).toBe('1.2');
+    expect(document.documentElement.style.fontSize).toBe('');
+
+    service.resetAll();
+    expect(document.documentElement.classList.contains('a11y-text-scaled')).toBeFalse();
+  });
+
   it('resetAll vuelve todos los ajustes a los valores por defecto', () => {
     service.toggle('stopAnimations');
     service.stepContrast();

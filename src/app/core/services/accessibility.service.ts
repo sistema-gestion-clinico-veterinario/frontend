@@ -168,6 +168,7 @@ export class AccessibilityService {
     root.classList.toggle('a11y-text-align-center', settings.textAlign === 'center');
     root.classList.toggle('a11y-text-align-right', settings.textAlign === 'right');
     root.classList.toggle('a11y-text-align-justify', settings.textAlign === 'justify');
+    root.classList.toggle('a11y-text-scaled', settings.textSize > TEXT_SIZE_MIN);
     root.classList.toggle('a11y-letter-spacing-active', settings.letterSpacing > 0);
     root.classList.toggle('a11y-line-height-active', settings.lineHeight > 0);
 
