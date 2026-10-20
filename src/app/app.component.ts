@@ -9,6 +9,7 @@ import { environment } from '../environments/environment';
 import { SOFTVET_FAVICON_URL, SOFTVET_NAME } from './core/constants/branding.constants';
 import { BrandThemeService } from './core/services/brand-theme.service';
 import { SessionService } from './core/services/session.service';
+import { ThemeService } from './core/services/theme.service';
 
 @Component({
   selector: 'app-root',
@@ -22,6 +23,7 @@ export class AppComponent {
   private readonly titleService = inject(Title);
   private readonly brandTheme = inject(BrandThemeService);
   private readonly sessionService = inject(SessionService);
+  private readonly themeService = inject(ThemeService);
   private readonly defaultFavicon = SOFTVET_FAVICON_URL;
 
   constructor() {

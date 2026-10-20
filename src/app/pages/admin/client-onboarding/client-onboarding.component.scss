@@ -1,0 +1,120 @@
+:host {
+  display: block;
+}
+
+.field {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.field > span {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: rgb(51 65 85);
+}
+
+.field em {
+  font-style: normal;
+  font-weight: 500;
+  color: rgb(148 163 184);
+}
+
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  border: 1px solid rgb(203 213 225);
+  border-radius: 0.5rem;
+  background: white;
+  padding: 0.625rem 0.75rem;
+  font-size: 0.875rem;
+  color: rgb(30 41 59);
+  outline: none;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  border-color: var(--brand-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-primary) 12%, transparent);
+}
+
+.field input.ng-invalid.ng-touched,
+.field select.ng-invalid.ng-touched,
+.field textarea.ng-invalid.ng-touched {
+  border-color: rgb(251 113 133);
+}
+
+.field small {
+  font-size: 0.6875rem;
+  color: rgb(225 29 72);
+}
+
+.choice {
+  display: inline-flex;
+  cursor: pointer;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid rgb(226 232 240);
+  border-radius: 0.5rem;
+  background: white;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgb(71 85 105);
+}
+
+.choice input {
+  accent-color: var(--brand-primary);
+}
+
+.primary-button,
+.secondary-button {
+  display: inline-flex;
+  min-height: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.5rem;
+  padding: 0.625rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  transition: background-color 120ms ease, border-color 120ms ease;
+}
+
+.primary-button {
+  border: 1px solid var(--brand-primary);
+  background: var(--brand-primary);
+  color: white;
+}
+
+.primary-button:hover:not(:disabled) {
+  background: var(--brand-hover);
+  border-color: var(--brand-hover);
+}
+
+.primary-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.secondary-button {
+  border: 1px solid rgb(203 213 225);
+  background: white;
+  color: rgb(71 85 105);
+}
+
+.secondary-button:hover {
+  border-color: rgb(148 163 184);
+  color: rgb(30 41 59);
+}
+
+@media (max-width: 639px) {
+  .primary-button,
+  .secondary-button {
+    width: 100%;
+  }
+}
