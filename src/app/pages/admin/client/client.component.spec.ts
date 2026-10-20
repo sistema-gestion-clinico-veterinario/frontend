@@ -3,6 +3,7 @@ import { ClientComponent } from './client.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { MessageService } from 'primeng/api';
 import { of, throwError } from 'rxjs';
+import { provideRouter, Router } from '@angular/router';
 
 describe('ClientComponent', () => {
   let component: ClientComponent;
@@ -11,7 +12,7 @@ describe('ClientComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ClientComponent, HttpClientTestingModule],
-      providers: [MessageService]
+      providers: [MessageService, provideRouter([])]
     })
     .compileComponents();
 
@@ -22,6 +23,16 @@ describe('ClientComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('abre el alta guiada en una página en lugar del modal', () => {
+    const router = TestBed.inject(Router);
+    const navigate = spyOn(router, 'navigate').and.resolveTo(true);
+
+    component.openNew();
+
+    expect(navigate).toHaveBeenCalledWith(['/clientes/nuevo']);
+    expect(component.displayModal()).toBeFalse();
   });
 
   describe('suspender, dar de baja y reactivar', () => {

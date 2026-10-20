@@ -392,6 +392,86 @@
   --a11y-line-height: 1.4;
 }
 
+/* Tema de interfaz. La preferencia se gestiona fuera del menú de accesibilidad. */
+html.theme-dark {
+  color-scheme: dark;
+  background: #020617;
+}
+
+html.theme-dark body,
+html.theme-dark app-root {
+  background-color: #020617;
+  color: #e2e8f0;
+}
+
+html.theme-dark .bg-white { background-color: #0f172a !important; }
+html.theme-dark .bg-blue-50,
+html.theme-dark .bg-slate-50 { background-color: #020617 !important; }
+html.theme-dark .bg-blue-100 { background-color: rgb(var(--brand-950)) !important; }
+html.theme-dark .bg-slate-100 { background-color: #1e293b !important; }
+html.theme-dark .bg-slate-200 { background-color: #334155 !important; }
+html.theme-dark [class~="bg-blue-100/70"] { background-color: rgb(var(--brand-950) / 0.7) !important; }
+html.theme-dark [class~="bg-slate-50/70"],
+html.theme-dark [class~="bg-slate-50/50"] { background-color: rgb(30 41 59 / 0.72) !important; }
+html.theme-dark [class~="bg-blue-500/10"] { background-color: rgb(var(--brand-500) / 0.16) !important; }
+html.theme-dark [class~="bg-white/60"] { background-color: rgb(30 41 59 / 0.65) !important; }
+
+html.theme-dark .text-blue-500,
+html.theme-dark .text-blue-600,
+html.theme-dark .text-blue-700,
+html.theme-dark .text-blue-800,
+html.theme-dark .text-blue-900 { color: rgb(var(--brand-300)) !important; }
+html.theme-dark .border-blue-50,
+html.theme-dark .border-blue-100 { border-color: rgb(var(--brand-900)) !important; }
+html.theme-dark .border-blue-200 { border-color: rgb(var(--brand-800)) !important; }
+
+html.theme-dark .text-slate-950,
+html.theme-dark .text-slate-900 { color: #f8fafc !important; }
+html.theme-dark .text-slate-800 { color: #f1f5f9 !important; }
+html.theme-dark .text-slate-700 { color: #e2e8f0 !important; }
+html.theme-dark .text-slate-600 { color: #cbd5e1 !important; }
+html.theme-dark .text-slate-500,
+html.theme-dark .text-slate-400 { color: #94a3b8 !important; }
+html.theme-dark .text-slate-300 { color: #cbd5e1 !important; }
+
+html.theme-dark .border-slate-50,
+html.theme-dark .border-slate-100 { border-color: #1e293b !important; }
+html.theme-dark .border-slate-200 { border-color: #334155 !important; }
+html.theme-dark .border-slate-300 { border-color: #475569 !important; }
+html.theme-dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]) { border-color: #1e293b !important; }
+html.theme-dark .divide-slate-200 > :not([hidden]) ~ :not([hidden]) { border-color: #334155 !important; }
+
+html.theme-dark :where(.bg-green-50, .bg-emerald-50) { background-color: #052e16 !important; }
+html.theme-dark :where(.text-green-600, .text-green-700, .text-emerald-600, .text-emerald-700) { color: #4ade80 !important; }
+html.theme-dark :where(.border-green-100, .border-green-200, .border-emerald-100, .border-emerald-200) { border-color: #166534 !important; }
+html.theme-dark :where(.bg-red-50, .bg-rose-50) { background-color: #450a0a !important; }
+html.theme-dark :where(.text-red-600, .text-red-700, .text-rose-600, .text-rose-700) { color: #fda4af !important; }
+html.theme-dark :where(.border-red-100, .border-red-200, .border-rose-100, .border-rose-200) { border-color: #881337 !important; }
+html.theme-dark .bg-amber-50 { background-color: #451a03 !important; }
+html.theme-dark :where(.text-amber-600, .text-amber-700, .text-amber-800, .text-amber-900) { color: #fcd34d !important; }
+html.theme-dark :where(.border-amber-100, .border-amber-200, .border-amber-300) { border-color: #92400e !important; }
+html.theme-dark :where(.bg-indigo-50, .bg-violet-50, .bg-purple-50, .bg-pink-50) { background-color: #2e1065 !important; }
+html.theme-dark :where(.text-indigo-600, .text-indigo-700, .text-violet-600, .text-violet-700, .text-purple-600, .text-purple-700) { color: #c4b5fd !important; }
+html.theme-dark .bg-teal-50 { background-color: #042f2e !important; }
+html.theme-dark .text-teal-700 { color: #5eead4 !important; }
+
+html.theme-dark :where(input, textarea, select) {
+  background-color: #0f172a;
+  border-color: #475569;
+  color: #f1f5f9;
+}
+
+html.theme-dark :where(input, textarea)::placeholder { color: #64748b; }
+html.theme-dark [class~="hover:bg-slate-50"]:hover,
+html.theme-dark [class~="hover:bg-slate-100"]:hover { background-color: #1e293b !important; }
+html.theme-dark [class~="hover:bg-blue-50"]:hover { background-color: rgb(var(--brand-950)) !important; }
+
+html.theme-dark :where(.p-dialog, .p-popover, .p-select-overlay, .p-datepicker, .p-menu) {
+  background: #0f172a !important;
+  border-color: #334155 !important;
+  color: #e2e8f0 !important;
+}
+
 html {
   filter: saturate(var(--a11y-saturate)) brightness(var(--a11y-brightness));
 }
@@ -416,8 +496,46 @@ html.a11y-contrast-inverted.a11y-grayscale {
   filter: saturate(var(--a11y-saturate)) brightness(var(--a11y-brightness)) invert(100%) hue-rotate(180deg) grayscale(100%);
 }
 
-html {
-  font-size: calc(16px * var(--a11y-text-scale));
+/*
+ * La escala de texto no debe cambiar el font-size de <html>: Tailwind usa rem
+ * tambien para anchos, paddings y espacios, por lo que hacerlo equivale a
+ * aplicar zoom a toda la interfaz. Estas reglas amplian solo tipografia.
+ */
+html.a11y-text-scaled body {
+  font-size: calc(15px * var(--a11y-text-scale));
+}
+
+html.a11y-text-scaled .text-xs { font-size: calc(0.75rem * var(--a11y-text-scale)) !important; }
+html.a11y-text-scaled .text-sm { font-size: calc(0.875rem * var(--a11y-text-scale)) !important; }
+html.a11y-text-scaled .text-base { font-size: calc(1rem * var(--a11y-text-scale)) !important; }
+html.a11y-text-scaled .text-lg { font-size: calc(1.125rem * var(--a11y-text-scale)) !important; }
+html.a11y-text-scaled .text-xl { font-size: calc(1.25rem * var(--a11y-text-scale)) !important; }
+html.a11y-text-scaled .text-2xl { font-size: calc(1.5rem * var(--a11y-text-scale)) !important; }
+html.a11y-text-scaled .text-3xl { font-size: calc(1.875rem * var(--a11y-text-scale)) !important; }
+html.a11y-text-scaled .text-4xl { font-size: calc(2.25rem * var(--a11y-text-scale)) !important; }
+html.a11y-text-scaled .text-5xl { font-size: calc(3rem * var(--a11y-text-scale)) !important; }
+html.a11y-text-scaled .text-6xl { font-size: calc(3.75rem * var(--a11y-text-scale)) !important; }
+
+html.a11y-text-scaled [class~="text-[7px]"] { font-size: calc(7px * var(--a11y-text-scale)) !important; }
+html.a11y-text-scaled [class~="text-[8px]"] { font-size: calc(8px * var(--a11y-text-scale)) !important; }
+html.a11y-text-scaled [class~="text-[8.5px]"] { font-size: calc(8.5px * var(--a11y-text-scale)) !important; }
+html.a11y-text-scaled [class~="text-[9px]"] { font-size: calc(9px * var(--a11y-text-scale)) !important; }
+html.a11y-text-scaled [class~="text-[10px]"] { font-size: calc(10px * var(--a11y-text-scale)) !important; }
+html.a11y-text-scaled [class~="text-[11px]"] { font-size: calc(11px * var(--a11y-text-scale)) !important; }
+html.a11y-text-scaled [class~="text-[11.5px]"] { font-size: calc(11.5px * var(--a11y-text-scale)) !important; }
+html.a11y-text-scaled [class~="text-[12px]"] { font-size: calc(12px * var(--a11y-text-scale)) !important; }
+html.a11y-text-scaled [class~="text-[13px]"] { font-size: calc(13px * var(--a11y-text-scale)) !important; }
+html.a11y-text-scaled [class~="text-[14px]"] { font-size: calc(14px * var(--a11y-text-scale)) !important; }
+html.a11y-text-scaled [class~="text-[15px]"] { font-size: calc(15px * var(--a11y-text-scale)) !important; }
+html.a11y-text-scaled [class~="text-[22px]"] { font-size: calc(22px * var(--a11y-text-scale)) !important; }
+html.a11y-text-scaled [class~="text-[26px]"] { font-size: calc(26px * var(--a11y-text-scale)) !important; }
+html.a11y-text-scaled [class~="text-[0.90rem]"] { font-size: calc(0.9rem * var(--a11y-text-scale)) !important; }
+html.a11y-text-scaled [class~="text-[1.1rem]"] { font-size: calc(1.1rem * var(--a11y-text-scale)) !important; }
+html.a11y-text-scaled [class~="text-[2.25rem]"] { font-size: calc(2.25rem * var(--a11y-text-scale)) !important; }
+html.a11y-text-scaled [class~="text-[3.2rem]"] { font-size: calc(3.2rem * var(--a11y-text-scale)) !important; }
+
+html.a11y-text-scaled :where(input, textarea, select, button) {
+  font-size: calc(15px * var(--a11y-text-scale));
 }
 
 html.a11y-letter-spacing-active * {

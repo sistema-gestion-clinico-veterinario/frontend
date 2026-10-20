@@ -247,6 +247,16 @@ export class GuidedTourService {
       }
     ];
 
+    if (this.authStore.availableRoles().length > 1) {
+      steps.push({
+        id: 'active-role-selector',
+        title: 'Cambiar de rol',
+        description: 'Tienes más de un rol asignado. Usa esta opción para cambiar tu rol activo; el menú y los permisos se actualizarán según tu selección.',
+        selector: '[data-tour="active-role-selector"]',
+        preferredPosition: 'bottom'
+      });
+    }
+
     if (purpose === 'PLATFORM_ADMIN') {
       const companiesRoute = this.routeMapper.getRoute('VISTA_COMPANY') ?? '/admin/company';
       steps.push(

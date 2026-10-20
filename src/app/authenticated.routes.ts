@@ -140,9 +140,19 @@ export const AUTHENTICATED_ROUTES: Routes = [
         loadComponent: () => import('./pages/admin/employee/employee.component').then((m) => m.EmployeeComponent)
       },
       {
+        path: 'clientes/nuevo',
+        data: { ventana: 'VISTA_CLIENTES', permiso: 'escribir' },
+        loadComponent: () => import('./pages/admin/client-onboarding/client-onboarding.component').then((m) => m.ClientOnboardingComponent)
+      },
+      {
         path: 'clientes',
         data: { ventana: 'VISTA_CLIENTES' },
         loadComponent: () => import('./pages/admin/client/client.component').then((m) => m.ClientComponent)
+      },
+      {
+        path: 'admin/clientes/nuevo',
+        data: { ventana: 'VISTA_CLIENTES', permiso: 'escribir' },
+        loadComponent: () => import('./pages/admin/client-onboarding/client-onboarding.component').then((m) => m.ClientOnboardingComponent)
       },
       {
         path: 'admin/clientes',

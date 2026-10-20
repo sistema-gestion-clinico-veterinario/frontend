@@ -30,6 +30,7 @@ import {
 } from '../../core/constants/privacidad.constants';
 import { AvisoPublico, ConsentimientoEstado } from '../../models/privacy/privacidad.model';
 import { CompanyComplianceService } from '../../core/services/company-compliance.service';
+import { ThemePreference, ThemeService } from '../../core/services/theme.service';
 
 interface HorarioResumen {
   diaSemana: string;
@@ -68,6 +69,18 @@ export class ProfileComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly sanitizer = inject(DomSanitizer);
   readonly loadingStore = inject(LoadingStore);
+  readonly theme = inject(ThemeService);
+
+  readonly themeOptions: ReadonlyArray<{
+    value: ThemePreference;
+    label: string;
+    description: string;
+    icon: string;
+  }> = [
+    { value: 'light', label: 'Claro', description: 'Fondo claro', icon: 'pi pi-sun' },
+    { value: 'dark', label: 'Oscuro', description: 'Reduce el brillo', icon: 'pi pi-moon' },
+    { value: 'system', label: 'Sistema', description: 'Usa tu dispositivo', icon: 'pi pi-desktop' }
+  ];
 
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
@@ -459,6 +472,29 @@ export class ProfileComponent implements OnInit, OnDestroy {
     const nombres = ['DOMINGO', 'LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO'];
     const dia = nombres[new Date().getDay()];
     return this.semanaCompleta.find(d => d.diaSemana === dia) ?? { diaSemana: dia, label: this.formatDiaSemana(dia), bloques: [] };
+  }
+
+  get turnosHoy(): string[] {
+    const ahora = new Date();
+    const fechaHoy = `${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2, '0')}-${String(ahora.getDate()).padStart(2, '0')}`;
+    const dias = ['DOMINGO', 'LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO'];
+    const diaHoy = dias[ahora.getDay()];
+
+    const turnos = (this.profile()?.horarios ?? [])
+      .filter(horario => horario.activo !== false)
+      .filter(horario => {
+        const fecha = horario.fecha ? String(horario.fecha).substring(0, 10) : null;
+        return fecha ? fecha === fechaHoy : horario.diaSemana === diaHoy;
+      })
+      .sort((a, b) => (a.horaInicio ?? '').localeCompare(b.horaInicio ?? ''))
+      .map(horario => {
+        const inicio = this.formatHora(horario.horaInicio);
+        const fin = this.formatHora(horario.horaFin);
+        return inicio && fin ? `${inicio} – ${fin}` : '';
+      })
+      .filter((turno): turno is string => turno.length > 0);
+
+    return Array.from(new Set(turnos));
   }
 
   get matrizHorario(): { horaSlot: string; dias: (HorarioResumen | null)[] }[] {

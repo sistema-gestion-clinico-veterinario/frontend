@@ -35,6 +35,7 @@ import { PrivacidadService } from '../../../core/services/privacidad.service';
 import { CompanyComplianceService } from '../../../core/services/company-compliance.service';
 import { FINALIDAD_RECORDATORIOS as RECORDATORIOS, FINALIDAD_USO_IA as USO_IA } from '../../../core/constants/privacidad.constants';
 import { AvisoPublico, ConsentimientoEstado } from '../../../models/privacy/privacidad.model';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-client',
@@ -73,6 +74,7 @@ export class ClientComponent implements OnInit {
   readonly authStore = inject(AuthStore);
   readonly loadingStore = inject(LoadingStore);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly router = inject(Router);
 
   emailChangeTarget = signal<ApoderadoListResponse | null>(null);
   clients = signal<ApoderadoListResponse[]>([]);
@@ -415,19 +417,7 @@ export class ClientComponent implements OnInit {
 
 
   openNew() {
-    const defaultRole = this.clientRoles().find(role => role.purpose === 'CLIENT_PORTAL')
-      ?? this.clientRoles()[0];
-    this.clientForm.reset({
-      tipoDocumento: 'DNI',
-      genero: 'MASCULINO',
-      companyId: this.activeCompanyId,
-      roleIds: defaultRole ? [defaultRole.id] : [],
-      avisoInformado: false,
-      consentimientoRecordatorios: null
-    });
-    this.setPrivacyValidators(true);
-    this.isEdit.set(false);
-    this.displayModal.set(true);
+    this.router.navigate(['/clientes/nuevo']);
   }
 
   loadClientRoles(companyId: number) {
