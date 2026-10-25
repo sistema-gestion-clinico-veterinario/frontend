@@ -326,52 +326,53 @@
 }
 
 @if (!cargando() || clients().length > 0) {
-  <div class="p-3 sm:p-4 flex flex-col gap-5 sm:gap-8 animate-fade-in">
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
-      <div class="flex items-center gap-3">
-        <i class="pi pi-address-book text-blue-500 text-3xl shrink-0"></i>
-        <div>
-          <p class="text-[11px] font-bold uppercase tracking-[.14em] text-blue-500">Admin</p>
-          <h1 class="text-xl font-extrabold leading-tight tracking-tight text-slate-900">Gestión de Clientes</h1>
-          <p class="mt-1 text-sm text-slate-400 font-medium hidden sm:block">Administra los propietarios de mascotas y sus datos de contacto</p>
+  <div class="min-h-screen animate-fade-in bg-blue-50 p-4 font-['Barlow'] sm:p-6 lg:p-4">
+    <div class="mb-5 sm:mb-8">
+      <div class="mb-1.5 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <i class="pi pi-address-book shrink-0 text-3xl text-blue-500"></i>
+          <div>
+            <p class="text-[11px] font-bold uppercase tracking-[.14em] text-blue-500">Propietarios</p>
+            <h1 class="text-xl font-extrabold leading-tight tracking-tight text-slate-900">Gestión de Clientes</h1>
+            <p class="mt-1 hidden text-sm font-medium text-slate-400 sm:block">Administra los propietarios y sus datos de contacto</p>
+          </div>
+        </div>
+        <div class="flex shrink-0 items-center gap-2.5 sm:gap-3">
+          <ng-container *appHasPermission="'VISTA_CLIENTES:escribir'">
+            @if (activeCompanyId) {
+              <button (click)="openNew()"
+                class="flex h-9 items-center gap-1.5 rounded-lg bg-blue-500 px-3 text-sm font-medium text-white sm:h-10 sm:px-5">
+                <i class="pi pi-plus text-xs"></i><span class="hidden sm:inline">Registrar cliente</span>
+              </button>
+            }
+          </ng-container>
         </div>
       </div>
-      <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
-        <ng-container *appHasPermission="'VISTA_CLIENTES:escribir'">
-          @if (activeCompanyId) {
-            <button (click)="openNew()"
-              class="w-full sm:w-auto flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium px-5 h-10 rounded-lg transition-colors">
-              <i class="pi pi-plus text-xs"></i>
-              Registrar cliente
-            </button>
-          }
-        </ng-container>
-      </div>
     </div>
-    <div class="bg-white border border-slate-200 rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row gap-3">
+    <div class="mb-5 flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:flex-row">
       <div class="relative flex-1">
-        <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-300 text-sm pointer-events-none"></i>
+        <i class="pi pi-search pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-slate-300"></i>
         <input type="text" placeholder="Buscar por nombre o apellido..."
           appInputFilter="letters" [appInputFilterMaxLength]="80" maxlength="80"
           [ngModel]="searchNombre()" (ngModelChange)="onClientNameFilterInput($event)"
           (keyup.enter)="onSearchChange()"
-          class="w-full h-10 pl-9 pr-3 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" />
+          class="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-9 pr-4 text-sm font-medium text-slate-700 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none" />
       </div>
-      <div class="relative flex-1 sm:max-w-xs">
-        <i class="pi pi-id-card absolute left-3 top-1/2 -translate-y-1/2 text-slate-300 text-sm pointer-events-none"></i>
+      <div class="relative sm:w-64">
+        <i class="pi pi-id-card pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-slate-300"></i>
         <input type="text" placeholder="Documento de identidad..." appInputFilter="alphanumeric" [appInputFilterMaxLength]="9" maxlength="9"
           [ngModel]="searchDocumento()" (ngModelChange)="onClientDocumentFilterInput($event)"
           (keyup.enter)="onSearchChange()"
-          class="w-full h-10 pl-9 pr-3 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" />
+          class="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-9 pr-4 text-sm font-medium text-slate-700 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none" />
       </div>
       <button type="button" (click)="onSearchChange()"
-        class="shrink-0 flex items-center justify-center gap-1.5 px-4 h-10 rounded-lg bg-blue-500 text-white text-sm font-medium hover:bg-blue-600 transition-colors">
+        class="flex h-11 w-full shrink-0 items-center justify-center gap-2 rounded-xl bg-blue-500 px-5 text-sm font-medium text-white transition-colors hover:bg-blue-600 sm:w-auto">
         <i class="pi pi-search text-xs"></i>
-        <span class="hidden sm:inline">Buscar</span>
+        <span>Buscar</span>
       </button>
       @if (searchNombre() || searchDocumento()) {
         <button type="button" (click)="clearSearch()"
-          class="shrink-0 flex items-center justify-center gap-1.5 px-3 h-10 rounded-lg border border-slate-200 text-slate-500 text-sm font-medium hover:bg-slate-50 transition-colors">
+          class="flex h-11 w-full shrink-0 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm font-medium text-slate-500 transition-colors hover:bg-slate-100 sm:w-auto">
           <i class="pi pi-times text-xs"></i> Limpiar
         </button>
       }
@@ -395,9 +396,14 @@
                 <div class="min-w-0 flex-1">
                   <div class="flex items-start justify-between gap-2">
                     <div class="min-w-0">
-                      <p (click)="viewClientDetail(client)" class="font-extrabold text-slate-800 hover:text-blue-500 cursor-pointer transition-all duration-200 truncate">
-                        {{ client.nombre }} {{ client.apellido }}
-                      </p>
+                      @if (canClientAction('leer')) {
+                        <button type="button" (click)="viewClientDetail(client)"
+                          class="block max-w-full truncate text-left font-extrabold text-slate-800 transition hover:text-blue-500">
+                          {{ client.nombre }} {{ client.apellido }}
+                        </button>
+                      } @else {
+                        <p class="truncate font-extrabold text-slate-800">{{ client.nombre }} {{ client.apellido }}</p>
+                      }
                       <p class="text-xs text-slate-400 truncate mt-0.5">{{ client.email }}</p>
                     </div>
                     <span [class]="statusChipClass(client)"
@@ -412,11 +418,11 @@
                   <div class="grid grid-cols-2 gap-2 mt-3 text-xs">
                     <div class="rounded-lg bg-slate-50 px-3 py-2">
                       <span class="block text-[10px] font-bold text-slate-400 uppercase">Teléfono</span>
-                      <span class="font-bold text-slate-700">{{ client.telefono }}</span>
+                      <span class="block truncate font-bold text-slate-700">{{ client.telefono || 'Sin teléfono' }}</span>
                     </div>
-                    <div class="rounded-lg bg-slate-50 px-3 py-2 col-span-2">
+                    <div class="rounded-lg bg-slate-50 px-3 py-2">
                       <span class="block text-[10px] font-bold text-slate-400 uppercase">Documento</span>
-                      <span class="font-bold text-slate-700">{{ client.tipoDocumento }}: {{ client.numeroDocumento }}</span>
+                      <span class="block truncate font-bold text-slate-700">{{ client.tipoDocumento }}: {{ client.numeroDocumento }}</span>
                     </div>
                   </div>
                   <div class="flex items-center justify-end mt-3 pt-3 border-t border-slate-100">
@@ -436,80 +442,86 @@
         </div>
       }
     </div>
-    <!-- Desktop Table -->
-    <div class="hidden lg:block bg-white border border-slate-200 rounded-xl overflow-hidden">
-      <div class="overflow-x-auto">
-        <p-table [value]="clients()" [lazy]="true" [lazyLoadOnInit]="false" (onLazyLoad)="loadClients($event)" [paginator]="true" [rows]="10"
-          [totalRecords]="totalRecords()" [rowHover]="true"
-          styleClass="p-datatable-borderless">
-          <ng-template pTemplate="header">
-            <tr class="border-b border-slate-100">
-              <th class="text-left px-6 py-2 text-xs font-medium text-slate-400 uppercase tracking-wider">Cliente</th>
-              <th class="text-left px-6 py-2 text-xs font-medium text-slate-400 uppercase tracking-wider">Contacto</th>
-              <th class="text-left px-6 py-2 text-xs font-medium text-slate-400 uppercase tracking-wider">Documento</th>
-              <th class="text-left px-6 py-2 text-xs font-medium text-slate-400 uppercase tracking-wider">Estado</th>
-              <th class="px-6 py-2 w-20"></th>
-            </tr>
-          </ng-template>
-          <ng-template pTemplate="body" let-client>
-            <tr class="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors">
-              <td class="px-6 py-2">
-                <div class="flex items-center gap-2.5">
-                  <div class="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600 font-bold text-sm overflow-hidden flex-shrink-0">
-                    <span>{{ client.nombre.charAt(0) }}</span>
-                  </div>
-                  <div>
-                    <p (click)="viewClientDetail(client)" class="text-sm font-semibold text-slate-800 hover:text-blue-500 cursor-pointer transition-all duration-200 leading-tight">
-                      {{ client.nombre }} {{ client.apellido }}
-                    </p>
-                    <p class="text-xs text-slate-400 leading-tight">Cliente registrado</p>
-                  </div>
-                </div>
-              </td>
-              <td class="px-6 py-2">
-                <p class="text-sm text-slate-700 leading-tight">{{ client.email }}</p>
-                <p class="text-xs text-slate-400 leading-tight">{{ client.telefono }}</p>
-              </td>
-              <td class="px-6 py-2">
-                <span class="px-2 py-0.5 rounded text-[10px] bg-slate-100 text-slate-500 font-bold uppercase tracking-wider">
-                  {{ client.tipoDocumento }}: {{ client.numeroDocumento }}
-                </span>
-              </td>
-              <td class="px-6 py-2">
-                <span [class]="statusChipClass(client)"
-                  class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium">
-                  <span [class]="statusDotClass(client)" class="w-1.5 h-1.5 rounded-full"></span>
-                  {{ statusLabel(client) }}
-                </span>
-                @if (client.cuentaPendiente) {
-                  <span class="ml-2 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-500">Pendiente de activar</span>
-                }
-              </td>
-              <td class="px-6 py-2 text-right">
-                <div class="flex items-center justify-end">
-                  <p-menu #clientMenu [model]="clientActionItems(client)" [popup]="true" appendTo="body"></p-menu>
-                  @if (clientActionItems(client).length > 0) {
-                    <button type="button" (click)="clientMenu.toggle($event)"
-                      aria-label="Abrir acciones"
-                      class="w-8 h-8 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-blue-500 hover:bg-blue-50 transition-all active:scale-95">
-                      <i class="pi pi-ellipsis-h text-sm"></i>
-                    </button>
-                  }
-                </div>
-              </td>
-            </tr>
-          </ng-template>
-          <ng-template pTemplate="emptymessage">
-            <tr>
-              <td colspan="5" class="py-20 text-center">
-                <i class="pi pi-id-card text-3xl text-slate-200 block mb-3"></i>
-                <p class="text-sm text-slate-400 font-medium">No se encontraron clientes registrados</p>
-              </td>
-            </tr>
-          </ng-template>
-        </p-table>
+    @if (clients().length === 0) {
+      <div class="mb-6 hidden rounded-xl border border-slate-200 bg-white px-6 py-16 text-center lg:block">
+        <i class="pi pi-id-card mb-3 block text-3xl text-slate-200"></i>
+        <p class="mb-1 text-sm font-bold text-slate-400">No se encontraron clientes</p>
+        <p class="text-xs text-slate-300">Prueba ajustando los filtros o registra un nuevo cliente.</p>
       </div>
-    </div>
+    }
+    @if (clients().length > 0) {
+      <div class="mb-6 hidden overflow-hidden rounded-xl border border-slate-200 bg-white lg:block">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="border-b border-slate-200 bg-slate-50">
+              <tr>
+                <th class="px-4 py-2 text-left text-[11px] font-bold uppercase tracking-wider text-slate-500">Cliente</th>
+                <th class="px-4 py-2 text-left text-[11px] font-bold uppercase tracking-wider text-slate-500">Contacto</th>
+                <th class="px-4 py-2 text-left text-[11px] font-bold uppercase tracking-wider text-slate-500">Documento</th>
+                <th class="px-4 py-2 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500">Estado</th>
+                <th class="px-4 py-2 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500">Acciones</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              @for (client of clients(); track client) {
+                <tr class="transition-colors hover:bg-slate-50/50">
+                  <td class="px-4 py-2">
+                    <div class="flex min-w-0 items-center gap-2.5">
+                      <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-sm font-bold text-emerald-600">{{ client.nombre.charAt(0) }}</div>
+                      <div class="min-w-0">
+                        @if (canClientAction('leer')) {
+                          <button type="button" (click)="viewClientDetail(client)"
+                            class="block max-w-[220px] truncate text-left font-bold text-slate-800 transition hover:text-blue-500">
+                            {{ client.nombre }} {{ client.apellido }}
+                          </button>
+                        } @else {
+                          <span class="block max-w-[220px] truncate font-bold text-slate-800">{{ client.nombre }} {{ client.apellido }}</span>
+                        }
+                        <span class="block text-xs text-slate-400">Propietario registrado</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-4 py-2">
+                    <span class="block max-w-[280px] truncate font-medium text-slate-600" [title]="client.email">{{ client.email }}</span>
+                    <span class="block text-xs text-slate-400">{{ client.telefono || 'Sin teléfono' }}</span>
+                  </td>
+                  <td class="px-4 py-2">
+                    <span class="rounded bg-slate-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-600">{{ client.tipoDocumento }}: {{ client.numeroDocumento }}</span>
+                  </td>
+                  <td class="px-4 py-2 text-center">
+                    <span [class]="statusChipClass(client)" class="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
+                      <span [class]="statusDotClass(client)" class="h-1.5 w-1.5 rounded-full"></span>{{ statusLabel(client) }}
+                    </span>
+                    @if (client.cuentaPendiente) { <span class="mt-1 block text-[10px] font-semibold text-amber-600">Acceso pendiente</span> }
+                  </td>
+                  <td class="px-4 py-2 text-center">
+                    <p-menu #clientMenu [model]="clientActionItems(client)" [popup]="true" appendTo="body"></p-menu>
+                    @if (clientActionItems(client).length > 0) {
+                      <button type="button" (click)="clientMenu.toggle($event)" aria-label="Abrir acciones"
+                        class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-blue-50 hover:text-blue-500 active:scale-95">
+                        <i class="pi pi-ellipsis-h text-xs"></i>
+                      </button>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+    @if (totalRecords() > 0) {
+      <div class="overflow-hidden rounded-xl border border-slate-200 bg-white">
+        <div class="flex flex-col gap-1 border-b border-slate-100 px-3 py-3 text-center sm:hidden">
+          <span class="text-[11px] font-black uppercase tracking-wider text-slate-400">Paginación</span>
+          <span class="text-xs font-bold text-slate-700">{{ totalRecords() }} {{ totalRecords() === 1 ? 'registro' : 'registros' }}</span>
+        </div>
+        <p-paginator [rows]="pageSize" [totalRecords]="totalRecords()" [first]="currentPage * pageSize"
+          [showCurrentPageReport]="false" [showFirstLastIcon]="true" (onPageChange)="onClientPageChange($event)"
+          styleClass="!border-none !bg-transparent !py-3"></p-paginator>
+      </div>
+    }
   </div>
 }
 

@@ -33,8 +33,9 @@ export class BackupMonitorComponent implements OnInit {
   readonly expanded = signal<number | null>(null);
   readonly total = signal(0);
   readonly page = signal(0);
-  readonly pageSize = 20;
-  readonly latest = computed(() => this.executions()[0] ?? null);
+  readonly pageSize = 10;
+  private readonly latestReported = signal<BackupExecution | null>(null);
+  readonly latest = computed(() => this.latestReported() ?? this.executions()[0] ?? null);
 
   readonly pasosDeConfiguracion = computed<PasoDeConfiguracion[]>(() => {
     const resumen = this.summary();
@@ -74,7 +75,9 @@ export class BackupMonitorComponent implements OnInit {
     });
     this.service.list(page, this.pageSize).subscribe({
       next: response => {
-        this.executions.set(response.data.content ?? []);
+        const content = response.data.content ?? [];
+        this.executions.set(content);
+        if (page === 0) this.latestReported.set(content[0] ?? null);
         this.total.set(response.data.totalElements ?? response.data.page?.totalElements ?? 0);
         this.page.set(page);
         this.expanded.set(null);

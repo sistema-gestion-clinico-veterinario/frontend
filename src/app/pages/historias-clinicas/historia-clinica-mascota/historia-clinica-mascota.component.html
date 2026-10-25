@@ -1,37 +1,41 @@
-<div class="p-4 sm:p-6 lg:p-4 min-h-screen bg-blue-50 font-['Barlow']">
+<div class="min-h-screen bg-blue-50 p-3 font-['Barlow'] sm:p-6 lg:p-4">
 
-  <div class="mb-6 flex items-center justify-between gap-3 flex-wrap">
-    <div class="flex items-center gap-3 min-w-0">
+  <div class="mb-4 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:items-center sm:justify-between">
+    <div class="flex min-w-0 items-center gap-3">
       <button (click)="volver()"
         class="w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-400 hover:text-blue-500 hover:border-blue-500 shrink-0">
         <i class="pi pi-arrow-left text-sm"></i>
       </button>
       <div class="min-w-0">
-        <h1 class="text-2xl font-extrabold text-slate-900 leading-tight truncate">Historia Clínica</h1>
+        <p class="text-[10px] font-extrabold uppercase tracking-widest text-blue-500 sm:text-xs">Historia clínica</p>
         @if (hc()) {
-          <p class="text-sm text-slate-400 font-medium mt-0.5 truncate">
-            {{ hc()!.mascotaNombre }} · {{ hc()!.numeroHc }}
-          </p>
+          <h1 class="mt-0.5 truncate text-xl font-extrabold leading-tight text-slate-900 sm:text-2xl">
+            {{ hc()!.mascotaNombre }}
+            <span class="ml-1 text-sm font-bold text-slate-400 sm:text-base">· {{ hc()!.numeroHc }}</span>
+          </h1>
+        } @else {
+          <h1 class="truncate text-xl font-extrabold leading-tight text-slate-900 sm:text-2xl">Historia clínica</h1>
         }
       </div>
     </div>
     @if (hc()) {
-      <div class="flex items-center gap-2">
+      <div class="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:items-center">
         <button type="button" (click)="descargarHistoriaCompleta()" [disabled]="descargandoHistoriaCompleta()"
-          class="flex items-center gap-2 px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-600 text-xs font-bold hover:border-blue-500 hover:text-blue-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+          class="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-600 transition-all hover:border-blue-500 hover:text-blue-500 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto">
           @if (descargandoHistoriaCompleta()) {
             <i class="pi pi-spin pi-spinner text-xs"></i>
           } @else {
             <i class="pi pi-file-pdf text-xs"></i>
           }
-          Descargar historia clínica
+          <span class="sm:hidden">Descargar historia</span>
+          <span class="hidden sm:inline">Descargar historia clínica</span>
         </button>
         @if (iaDisponible()) {
           @defer (when cargarAsistenteIa()) {
             <app-diagnostico-ia [hc]="hc()!" [openInitially]="true"></app-diagnostico-ia>
           } @placeholder {
             <button type="button" (click)="cargarAsistenteIa.set(true)"
-              class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-500 text-white text-xs font-extrabold hover:bg-blue-600 active:scale-95 transition-all duration-150">
+              class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue-500 px-3 py-2 text-xs font-extrabold text-white transition-all duration-150 hover:bg-blue-600 active:scale-95 sm:w-auto sm:px-4">
               <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round"
                   d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23-.693L5 14.5m14.8.8l1.402 1.402c1.232 1.232.65 3.318-1.067 3.611A48.309 48.309 0 0112 21c-2.773 0-5.491-.235-8.135-.687-1.718-.293-2.3-2.379-1.067-3.61L5 14.5" />
@@ -56,33 +60,33 @@
   }
 
   @if (hc()) {
-    <div class="bg-white border border-slate-200 rounded-xl p-5 mb-5 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4">
-      <div>
+    <div class="mb-3 grid grid-cols-4 gap-x-3 gap-y-3 rounded-xl border border-slate-200 bg-white p-3.5 sm:mb-5 sm:gap-x-4 sm:p-5 lg:grid-cols-6">
+      <div class="min-w-0">
         <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-0.5">Especie</p>
         <p class="text-sm font-bold text-slate-700">{{ hc()!.especie || '—' }}</p>
       </div>
-      <div>
+      <div class="min-w-0">
         <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-0.5">Raza</p>
         <p class="text-sm font-bold text-slate-700">{{ hc()!.raza || '—' }}</p>
       </div>
-      <div>
+      <div class="min-w-0">
         <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-0.5">Sexo</p>
         <p class="text-sm font-bold text-slate-700">{{ hc()!.sexo || '—' }}</p>
       </div>
-      <div>
+      <div class="min-w-0">
         <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-0.5">Edad</p>
         <p class="text-sm font-bold text-slate-700">{{ edadTexto(hc()!.edadAproximadaMeses) }}</p>
       </div>
-      <div>
+      <div class="col-span-2 min-w-0 lg:col-span-1">
         <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-0.5">Propietario</p>
-        <p class="text-sm font-bold text-slate-700">{{ hc()!.propietarioNombre || '—' }}</p>
+        <p class="truncate text-sm font-bold text-slate-700">{{ hc()!.propietarioNombre || '—' }}</p>
       </div>
-      <div>
+      <div class="col-span-2 min-w-0 lg:col-span-1">
         <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-0.5">Teléfono</p>
         <p class="text-sm font-bold text-slate-700">{{ hc()!.propietarioTelefono || '—' }}</p>
       </div>
     </div>
-    <div class="bg-white border border-slate-200 rounded-xl p-5 mb-5">
+    <div class="mb-3 rounded-xl border border-slate-200 bg-white p-3.5 sm:mb-5 sm:p-5">
       <div class="flex items-center justify-between gap-3 mb-3">
         <div class="flex items-center gap-2">
           <i class="pi pi-heart-fill text-sm text-slate-400"></i>
@@ -95,8 +99,11 @@
           </button>
         }
       </div>
+      <div [class]="!antecedentesExpandidos() && !editandoAntecedentes()
+        ? 'relative max-h-32 overflow-hidden sm:max-h-none sm:overflow-visible'
+        : ''">
       @if (!editandoAntecedentes()) {
-        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 gap-3 min-[520px]:grid-cols-2 lg:grid-cols-3 lg:gap-4">
           <div>
             <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Enfermedades previas</p>
             <p class="text-sm text-slate-700">{{ hc()!.enfermedades || '—' }}</p>
@@ -163,53 +170,82 @@
           </div>
         </div>
       }
+      </div>
+      @if (!editandoAntecedentes()) {
+        <button type="button" (click)="antecedentesExpandidos.set(!antecedentesExpandidos())"
+          class="mt-3 flex w-full items-center justify-center gap-1.5 border-t border-slate-100 pt-3 text-xs font-bold text-blue-500 sm:hidden">
+          {{ antecedentesExpandidos() ? 'Mostrar menos' : 'Ver todos los antecedentes' }}
+          <i [class]="antecedentesExpandidos() ? 'pi pi-chevron-up text-[9px]' : 'pi pi-chevron-down text-[9px]'"></i>
+        </button>
+      }
     </div>
-    <div class="mb-6 overflow-x-auto border-b border-slate-200 flex justify-end">
-      <nav class="flex min-w-max items-center gap-7 px-1 font-['Barlow']" aria-label="Secciones de la historia de la mascota">
+    <div class="mb-4 overflow-x-auto border-b border-slate-200 sm:mb-6">
+      <nav class="flex min-w-max items-center justify-start gap-1 font-['Barlow'] sm:gap-5" aria-label="Secciones de la historia de la mascota">
         <button type="button" (click)="seleccionarSeccion('consultas')"
         [class]="seccionActiva() === 'consultas'
-          ? 'flex items-center gap-2 border-b-2 border-blue-500 px-1 py-3.5 text-blue-500'
-          : 'flex items-center gap-2 border-b-2 border-transparent px-1 py-3.5 text-slate-500 hover:text-slate-800'">
+          ? 'flex items-center gap-1.5 border-b-2 border-blue-500 px-2 py-3 text-blue-500'
+          : 'flex items-center gap-1.5 border-b-2 border-transparent px-2 py-3 text-slate-500 hover:text-slate-800'">
           <i class="pi pi-file-edit text-sm"></i>
-          <strong class="text-base font-bold">Consultas</strong>
+          <strong class="text-sm font-bold sm:text-base">Consultas</strong>
           <span class="grid min-w-6 place-items-center rounded-full bg-slate-100 px-1.5 py-0.5 text-xs font-bold text-slate-600">{{ hc()!.consultas.length }}</span>
+        </button>
+        <button type="button" (click)="seleccionarSeccion('recetas')"
+        [class]="seccionActiva() === 'recetas'
+          ? 'flex items-center gap-1.5 border-b-2 border-blue-500 px-2 py-3 text-blue-500'
+          : 'flex items-center gap-1.5 border-b-2 border-transparent px-2 py-3 text-slate-500 hover:text-slate-800'">
+          <i class="pi pi-file text-sm"></i>
+          <strong class="text-sm font-bold sm:text-base">Recetas</strong>
+          <span class="grid min-w-6 place-items-center rounded-full bg-slate-100 px-1.5 py-0.5 text-xs font-bold text-slate-600">{{ recetasMascota().length }}</span>
         </button>
         <button type="button" (click)="seleccionarSeccion('servicios')"
         [class]="seccionActiva() === 'servicios'
-          ? 'flex items-center gap-2 border-b-2 border-blue-500 px-1 py-3.5 text-blue-500'
-          : 'flex items-center gap-2 border-b-2 border-transparent px-1 py-3.5 text-slate-500 hover:text-slate-800'">
+          ? 'flex items-center gap-1.5 border-b-2 border-blue-500 px-2 py-3 text-blue-500'
+          : 'flex items-center gap-1.5 border-b-2 border-transparent px-2 py-3 text-slate-500 hover:text-slate-800'">
           <i class="pi pi-scissors text-sm"></i>
-          <strong class="text-base font-bold">Servicios</strong>
-          <span class="grid min-w-6 place-items-center rounded-full bg-slate-100 px-1.5 py-0.5 text-xs font-bold text-slate-600">{{ serviciosNoMedicos().length }}</span>
+          <strong class="text-sm font-bold sm:text-base">Servicios</strong>
+          <span class="grid min-h-5 min-w-6 place-items-center rounded-full bg-slate-100 px-1.5 py-0.5 text-xs font-bold text-slate-600">
+            @if (loadingServicios() && !serviciosCargados()) {
+              <i class="pi pi-spin pi-spinner text-[9px]"></i>
+            } @else {
+              {{ serviciosNoMedicos().length }}
+            }
+          </span>
         </button>
         <button type="button" (click)="seleccionarSeccion('preventivos')"
         [class]="seccionActiva() === 'preventivos'
-          ? 'flex items-center gap-2 border-b-2 border-blue-500 px-1 py-3.5 text-blue-500'
-          : 'flex items-center gap-2 border-b-2 border-transparent px-1 py-3.5 text-slate-500 hover:text-slate-800'">
+          ? 'flex items-center gap-1.5 border-b-2 border-blue-500 px-2 py-3 text-blue-500'
+          : 'flex items-center gap-1.5 border-b-2 border-transparent px-2 py-3 text-slate-500 hover:text-slate-800'">
           <i class="pi pi-shield text-sm"></i>
-          <strong class="text-base font-bold">Preventivos</strong>
+          <strong class="text-sm font-bold sm:text-base">Preventivos</strong>
           <span class="grid min-w-6 place-items-center rounded-full bg-slate-100 px-1.5 py-0.5 text-xs font-bold text-slate-600">{{ hc()!.controlesPreventivos?.length || 0 }}</span>
         </button>
         <button type="button" (click)="seleccionarSeccion('seguimiento')"
         [class]="seccionActiva() === 'seguimiento'
-          ? 'flex items-center gap-2 border-b-2 border-blue-500 px-1 py-3.5 text-blue-500'
-          : 'flex items-center gap-2 border-b-2 border-transparent px-1 py-3.5 text-slate-500 hover:text-slate-800'">
+          ? 'flex items-center gap-1.5 border-b-2 border-blue-500 px-2 py-3 text-blue-500'
+          : 'flex items-center gap-1.5 border-b-2 border-transparent px-2 py-3 text-slate-500 hover:text-slate-800'">
           <i class="pi pi-heart-fill text-sm"></i>
-          <strong class="text-base font-bold">Seguimiento</strong>
+          <strong class="text-sm font-bold sm:text-base">Seguimiento</strong>
+          <span class="grid min-w-6 place-items-center rounded-full bg-slate-100 px-1.5 py-0.5 text-xs font-bold text-slate-600">
+            {{ diagnosticosSeguimiento().length + tratamientosSeguimiento().length }}
+          </span>
         </button>
       </nav>
     </div>
     @if (seccionActiva() === 'consultas') {
-      <div class="flex flex-col lg:flex-row gap-5">
-        <div class="w-full lg:w-80 xl:w-96 shrink-0">
+      <div class="flex flex-col gap-4 xl:flex-row xl:gap-5">
+        <div class="w-full shrink-0 xl:w-80 2xl:w-96">
           <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-            <div class="px-4 py-3 border-b border-slate-100">
-              <p class="text-xs font-extrabold text-slate-500 uppercase tracking-widest">
-                Consultas
-                <span class="ml-1 bg-slate-100 text-slate-500 rounded-full px-2 py-0.5 text-[10px]">
-                  {{ hc()!.consultas.length }}
-                </span>
-              </p>
+            <div class="flex items-center justify-between gap-3 border-b border-slate-100 px-4 py-3">
+              <div>
+                <p class="text-xs font-extrabold uppercase tracking-widest text-slate-500">
+                  Consultas
+                  <span class="ml-1 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] text-slate-500">
+                    {{ hc()!.consultas.length }}
+                  </span>
+                </p>
+                <p class="mt-1 text-[10px] text-slate-400 xl:hidden">Desliza y selecciona una atención</p>
+              </div>
+              <i class="pi pi-arrow-right text-xs text-slate-300 xl:hidden"></i>
             </div>
             @if (hc()!.consultas.length === 0) {
               <div class="py-12 text-center px-4">
@@ -217,14 +253,14 @@
                 <p class="text-xs text-slate-400 font-medium">Sin consultas registradas</p>
               </div>
             }
-            <div class="divide-y divide-slate-100 max-h-[600px] overflow-y-auto">
+            <div class="flex snap-x snap-mandatory scroll-px-2 gap-2 overflow-x-auto p-2 xl:block xl:max-h-[600px] xl:divide-y xl:divide-slate-100 xl:overflow-y-auto xl:p-0">
               @for (consulta of hc()!.consultas; track consulta) {
                 <button
                   (click)="seleccionarConsulta(consulta)"
               [class]="consultaActiva()?.id === consulta.id
-                ? 'w-full text-left px-4 py-3.5 bg-blue-50 border-l-2 border-blue-500'
-                : 'w-full text-left px-4 py-3.5 hover:bg-slate-50 border-l-2 border-transparent'">
-                  <p class="text-xs font-extrabold text-slate-800 leading-snug line-clamp-2">
+                ? 'w-[68vw] max-w-[250px] shrink-0 snap-start rounded-lg border border-blue-500 bg-blue-50 p-2.5 text-left xl:w-full xl:max-w-none xl:rounded-none xl:border-0 xl:border-l-2 xl:border-blue-500 xl:px-4 xl:py-3.5'
+                : 'w-[68vw] max-w-[250px] shrink-0 snap-start rounded-lg border border-slate-200 bg-white p-2.5 text-left hover:border-slate-300 hover:bg-slate-50 xl:w-full xl:max-w-none xl:rounded-none xl:border-0 xl:border-l-2 xl:border-transparent xl:px-4 xl:py-3.5'">
+                  <p class="line-clamp-1 text-xs font-extrabold leading-snug text-slate-800 xl:line-clamp-2">
                     {{ consulta.motivoConsulta }}
                   </p>
                   <div class="flex items-center gap-2 mt-1.5 flex-wrap">
@@ -270,9 +306,9 @@
         <div class="flex-1 min-w-0">
           <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
             @if (consultaActiva()) {
-              <div class="px-5 py-4 border-b border-slate-100">
-                <div class="flex items-start justify-between gap-3">
-                  <div>
+              <div class="border-b border-slate-100 px-4 py-4 sm:px-5">
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div class="min-w-0">
                     <p class="text-base font-extrabold text-slate-900 leading-snug">
                       {{ consultaActiva()!.motivoConsulta }}
                     </p>
@@ -283,7 +319,7 @@
                       }
                     </p>
                   </div>
-                  <div class="flex items-center gap-2 shrink-0">
+                  <div class="flex shrink-0 items-center justify-between gap-2 sm:justify-end">
                     <span class="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-slate-100 text-slate-500 uppercase tracking-wide">
                       {{ tipoConsultaLabel(consultaActiva()!.tipoConsulta) }}
                     </span>
@@ -301,14 +337,15 @@
             @if (!consultaActiva()) {
               <div
                 class="py-20 text-center px-6">
-                <i class="pi pi-arrow-left text-2xl text-slate-200 block mb-3"></i>
+                <i class="pi pi-arrow-up text-2xl text-slate-200 block mb-3 xl:hidden"></i>
+                <i class="pi pi-arrow-left text-2xl text-slate-200 mb-3 hidden xl:block"></i>
                 <p class="text-xs text-slate-400 font-medium">Selecciona una consulta para ver su detalle</p>
               </div>
             }
   
             @if (consultaActiva()) {
-              <div class="max-h-[75vh] overflow-y-auto divide-y divide-slate-100">
-                <div class="p-5 flex flex-col gap-5">
+              <div class="divide-y divide-slate-100 overflow-y-auto xl:max-h-[75vh]">
+                <div class="flex flex-col gap-5 p-4 sm:p-5">
                   <div>
                     <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-3">Signos vitales</p>
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -419,7 +456,7 @@
                     </div>
                   }
                 </div>
-                <div class="p-5 grid grid-cols-1 lg:grid-cols-2 gap-5">
+                <div class="grid grid-cols-1 gap-5 p-4 sm:p-5 lg:grid-cols-2">
                   <div>
                     <div class="flex items-center gap-2 mb-3">
                       <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Recetas</p>
@@ -455,7 +492,7 @@
                               </span>
                             }
                           </div>
-                          <div class="grid grid-cols-3 gap-3 mb-3">
+                          <div class="mb-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
                             <div>
                               <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Dosis</p>
                               <p class="text-xs font-bold text-slate-700">{{ p.dosis }}</p>
@@ -504,7 +541,7 @@
                         <p class="text-xs font-medium">Sin archivos adjuntos en esta consulta</p>
                       </div>
                     }
-                    <div class="divide-y divide-slate-100 -mx-5">
+                    <div class="-mx-4 divide-y divide-slate-100 sm:-mx-5">
                       @for (a of consultaActiva()!.archivos; track a) {
                         <button
                           type="button"
@@ -553,9 +590,62 @@
         </div>
       </div>
     }
+    @if (seccionActiva() === 'recetas') {
+      <section class="overflow-hidden rounded-xl border border-slate-200 bg-white">
+        <header class="flex flex-col gap-1 border-b border-slate-100 px-4 py-3.5 sm:px-5">
+          <h2 class="text-sm font-extrabold text-slate-800">Recetas de {{ hc()!.mascotaNombre }}</h2>
+          <p class="text-xs text-slate-500">{{ recetasMascota().length }} {{ recetasMascota().length === 1 ? 'receta registrada' : 'recetas registradas' }} en todas sus consultas</p>
+        </header>
+        @if (recetasMascota().length === 0) {
+          <div class="px-4 py-14 text-center">
+            <i class="pi pi-file text-3xl text-slate-200 block mb-3"></i>
+            <p class="text-sm font-medium text-slate-400">Esta mascota todavía no tiene recetas.</p>
+          </div>
+        }
+        <div class="grid grid-cols-1 gap-3 p-4 sm:p-5 lg:grid-cols-2 2xl:grid-cols-3">
+          @for (item of recetasMascota(); track item.receta.id) {
+            <article class="flex min-w-0 flex-col rounded-xl border border-slate-200 p-4">
+              <div class="mb-3 flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <p class="break-words text-sm font-extrabold text-slate-800">{{ item.receta.medicamento }}</p>
+                  @if (item.receta.principioActivo) {
+                    <p class="mt-0.5 break-words text-xs text-slate-400">{{ item.receta.principioActivo }}</p>
+                  }
+                </div>
+                <span class="inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase"
+                  [class]="recetaVigente(item.receta.fechaFin) ? 'bg-green-50 text-green-700' : 'bg-slate-100 text-slate-500'">
+                  <span class="size-1.5 rounded-full" [class]="recetaVigente(item.receta.fechaFin) ? 'bg-green-500' : 'bg-slate-400'"></span>
+                  {{ recetaVigente(item.receta.fechaFin) ? 'Vigente' : 'Finalizada' }}
+                </span>
+              </div>
+              <div class="mb-3 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
+                <div><p class="mb-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">Dosis</p><p class="break-words text-xs font-bold text-slate-700">{{ item.receta.dosis || '—' }}</p></div>
+                <div><p class="mb-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">Frecuencia</p><p class="break-words text-xs font-bold text-slate-700">{{ item.receta.frecuencia || '—' }}</p></div>
+                <div><p class="mb-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">Duración</p><p class="text-xs font-bold text-slate-700">{{ item.receta.duracionDias ? item.receta.duracionDias + ' días' : '—' }}</p></div>
+                <div><p class="mb-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">Vía</p><p class="break-words text-xs font-bold text-slate-700">{{ item.receta.viaAdministracion || '—' }}</p></div>
+              </div>
+              @if (item.receta.instrucciones) {
+                <p class="mb-3 rounded-lg bg-slate-50 px-3 py-2 text-xs leading-relaxed text-slate-500">{{ item.receta.instrucciones }}</p>
+              }
+              <div class="mt-auto flex flex-col gap-2 border-t border-slate-100 pt-3 sm:flex-row sm:items-center sm:justify-between">
+                <p class="min-w-0 text-[10px] text-slate-400">
+                  Inicio {{ formatFecha(item.receta.fechaInicio) }}@if (item.receta.fechaFin) {<span> · Fin {{ formatFecha(item.receta.fechaFin) }}</span>}
+                  <span class="block truncate">{{ item.consulta.motivoConsulta }}@if (item.consulta.veterinarioNombre) {<span> · {{ item.consulta.veterinarioNombre }}</span>}</span>
+                </p>
+                <button type="button" (click)="verConsultaDeReceta(item.consulta)"
+                  class="inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-lg border border-slate-200 px-3 text-xs font-bold text-slate-600 transition-colors hover:border-blue-500 hover:text-blue-500">
+                  <i class="pi pi-external-link text-[10px]"></i> Ver consulta
+                </button>
+              </div>
+            </article>
+          }
+        </div>
+      </section>
+    }
+
     @if (seccionActiva() === 'servicios') {
       <section class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-        <header class="px-5 py-4 border-b border-slate-100 flex items-center justify-between gap-4">
+        <header class="flex items-center justify-between gap-4 border-b border-slate-100 px-4 py-4 sm:px-5">
           <div>
             <h2 class="text-sm font-extrabold text-slate-800">Historial de servicios</h2>
             <p class="text-xs text-slate-400 mt-0.5">Servicios no clínicos de la mascota</p>
@@ -578,7 +668,7 @@
         }
         @if (!loadingServicios() && serviciosNoMedicos().length > 0) {
           <div>
-            <div class="hidden lg:grid lg:grid-cols-[minmax(240px,1fr)_minmax(190px,.7fr)_minmax(240px,1fr)_150px] gap-6 px-5 py-2.5 bg-slate-50 border-b border-slate-100 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+            <div class="hidden xl:grid xl:grid-cols-[minmax(240px,1fr)_minmax(190px,.7fr)_minmax(240px,1fr)_150px] gap-6 px-5 py-2.5 bg-slate-50 border-b border-slate-100 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
               <span>Servicio</span>
               <span>Atendido por</span>
               <span>Observaciones</span>
@@ -587,22 +677,22 @@
             <div class="divide-y divide-slate-100">
               @for (s of serviciosNoMedicos(); track s) {
                 <article
-                  class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[minmax(240px,1fr)_minmax(190px,.7fr)_minmax(240px,1fr)_150px] gap-4 lg:gap-6 px-5 py-4 hover:bg-slate-50/60 transition-colors">
+                  class="grid grid-cols-1 gap-3 px-4 py-4 transition-colors hover:bg-slate-50/60 sm:grid-cols-2 sm:gap-4 sm:px-5 xl:grid-cols-[minmax(240px,1fr)_minmax(190px,.7fr)_minmax(240px,1fr)_150px] xl:gap-6">
                   <div class="min-w-0">
                     <h3 class="text-sm font-extrabold text-slate-800 truncate">{{ s.servicioNombre || s.motivoCita || 'Servicio' }}</h3>
                     <p class="text-xs text-slate-400 mt-1">{{ formatFechaHora(s.fechaHoraInicio) }}</p>
                   </div>
                   <div>
-                    <p class="lg:hidden text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">Atendido por</p>
+                    <p class="xl:hidden text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">Atendido por</p>
                     <p class="text-xs font-semibold text-slate-600">{{ s.veterinarioNombre || 'No asignado' }}</p>
                   </div>
                   <div>
-                    <p class="lg:hidden text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">Observaciones</p>
+                    <p class="xl:hidden text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">Observaciones</p>
                     <p [class]="s.notas ? 'text-xs text-slate-600 line-clamp-2' : 'text-xs text-slate-400 italic'">
                       {{ s.notas || 'Sin observaciones registradas' }}
                     </p>
                   </div>
-                  <div class="flex items-center sm:justify-end gap-3 lg:flex-col lg:items-end lg:gap-2">
+                  <div class="flex items-center justify-between gap-3 sm:justify-end xl:flex-col xl:items-end xl:gap-2">
                     <span [class]="'text-[10px] font-bold px-2.5 py-1 rounded-full uppercase whitespace-nowrap ' + estadoCitaBadge(s.estado)">
                       {{ estadoCitaLabel(s.estado) }}
                     </span>
@@ -619,7 +709,7 @@
     }
     @if (seccionActiva() === 'preventivos') {
       <section class="flex flex-col gap-4">
-        <div class="grid grid-cols-1 items-start gap-5 lg:grid-cols-[380px_1fr]">
+        <div class="grid grid-cols-1 items-start gap-4 xl:grid-cols-[380px_1fr] xl:gap-5">
      
           <div class="bg-white border border-slate-200 rounded-xl overflow-hidden h-fit">
             <div class="flex items-center gap-3 border-b border-slate-200 px-5 py-3">
@@ -696,7 +786,7 @@
           </div>
    
           <div class="bg-white border border-slate-200 rounded-xl overflow-hidden h-fit">
-            <header class="px-5 py-4 border-b border-slate-100 flex items-center justify-between gap-3 flex-wrap">
+            <header class="flex flex-col gap-3 border-b border-slate-100 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
               <div class="flex items-center gap-3">
                 <i class="pi pi-clock text-base text-blue-500"></i>
                 <div>
@@ -705,24 +795,24 @@
                 </div>
               </div>
               @if (canModify()) {
-                <div class="flex items-center gap-2">
+                <div class="grid w-full grid-cols-1 gap-2 min-[430px]:grid-cols-2 sm:flex sm:w-auto sm:items-center">
                   <button type="button" (click)="irARegistrarControl('VACUNACION')"
-                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500 text-white text-[10px] font-bold hover:bg-blue-600 transition-all">
+                    class="flex items-center justify-center gap-1.5 rounded-lg bg-blue-500 px-3 py-2 text-[10px] font-bold text-white transition-all hover:bg-blue-600">
                     <i class="pi pi-plus text-[9px]"></i> Registrar vacuna
                   </button>
                   <button type="button" (click)="irARegistrarControl('DESPARASITACION')"
-                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-[10px] font-bold hover:bg-emerald-700 transition-all">
+                    class="flex items-center justify-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-2 text-[10px] font-bold text-white transition-all hover:bg-emerald-700">
                     <i class="pi pi-plus text-[9px]"></i> Registrar desparasitación
                   </button>
                 </div>
               }
             </header>
-            <div class="grid grid-cols-3 border-b border-slate-200 bg-slate-50">
-              <div class="border-r border-slate-200 px-4 py-3">
+            <div class="grid grid-cols-1 border-b border-slate-200 bg-slate-50 min-[430px]:grid-cols-3">
+              <div class="border-b border-slate-200 px-4 py-3 min-[430px]:border-b-0 min-[430px]:border-r">
                 <p class="text-[9px] font-extrabold uppercase tracking-wide text-slate-400">Vacunas pendientes</p>
                 <p class="mt-1 text-lg font-extrabold text-blue-700">{{ controlesVacunacion().length }}</p>
               </div>
-              <div class="border-r border-slate-200 px-4 py-3">
+              <div class="border-b border-slate-200 px-4 py-3 min-[430px]:border-b-0 min-[430px]:border-r">
                 <p class="text-[9px] font-extrabold uppercase tracking-wide text-slate-400">Desparasitaciones</p>
                 <p class="mt-1 text-lg font-extrabold text-emerald-700">{{ controlesDesparasitacion().length }}</p>
               </div>
@@ -794,7 +884,7 @@
         </div>
       
         <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-          <header class="px-5 py-4 border-b border-slate-100 flex items-center gap-3">
+          <header class="flex items-center gap-3 border-b border-slate-100 px-4 py-4 sm:px-5">
             <i class="pi pi-list text-base text-violet-600"></i>
             <div>
               <h2 class="text-sm font-extrabold text-slate-800">Historial completo de controles</h2>
@@ -802,14 +892,14 @@
             </div>
           </header>
           @if (todosLosControles().length) {
-            <div class="flex flex-col gap-3 px-5 py-3 border-b border-slate-100 sm:flex-row sm:items-center">
+            <div class="flex flex-col gap-3 border-b border-slate-100 px-4 py-3 sm:flex-row sm:items-center sm:px-5">
               <div class="relative flex-1">
                 <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-[11px] text-slate-400"></i>
                 <input type="text" [ngModel]="historialBusqueda()" (ngModelChange)="historialBusqueda.set($event)"
                   placeholder="Buscar por nombre..."
                   class="w-full rounded-lg border border-slate-200 bg-slate-50 pl-8 pr-3 py-1.5 text-xs text-slate-700 outline-none focus:border-blue-500 focus:bg-white" />
               </div>
-              <div class="flex items-center gap-1.5 shrink-0">
+              <div class="flex max-w-full shrink-0 items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
                 <button type="button" (click)="historialFiltroTipo.set('TODOS')"
                   [class]="historialFiltroTipo() === 'TODOS' ? 'bg-blue-500 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'"
                 class="rounded-full px-3 py-1 text-[10px] font-extrabold uppercase transition-colors">Todos</button>
@@ -823,7 +913,29 @@
             </div>
           }
           @if (todosLosControles().length) {
-            <div class="overflow-x-auto">
+            <div class="divide-y divide-slate-100 md:hidden">
+              @for (c of historialFiltrado(); track c) {
+                <article class="p-4">
+                  <div class="flex items-start justify-between gap-3">
+                    <div class="min-w-0">
+                      <p class="text-sm font-bold text-slate-800">{{ c.nombreControl }}</p>
+                      <p class="mt-1 text-xs text-slate-500">
+                        {{ tipoConsultaLabel(c.tipo) }} · {{ formatFecha(c.fechaRecomendada) }}
+                      </p>
+                    </div>
+                    <span [class]="'shrink-0 rounded-full px-2 py-0.5 text-[9px] font-extrabold uppercase ' + estadoControlBadge(c.estado)">
+                      {{ estadoControlLabel(c.estado) }}
+                    </span>
+                  </div>
+                </article>
+              }
+              @if (!historialFiltrado().length) {
+                <p class="py-8 text-center text-xs text-slate-400">
+                  Sin resultados para "{{ historialBusqueda() }}".
+                </p>
+              }
+            </div>
+            <div class="hidden overflow-x-auto md:block">
               <table class="w-full min-w-[520px] text-left text-xs">
                 <thead>
                   <tr class="text-[10px] font-extrabold uppercase tracking-wider text-white bg-blue-500">
@@ -863,8 +975,8 @@
         <div class="grid grid-cols-1 gap-5 xl:grid-cols-2">
        
           <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-            <header class="px-5 py-4 border-b border-slate-100 flex items-center justify-between gap-3">
-              <div class="flex items-center gap-3 min-w-0">
+            <header class="flex flex-col gap-3 border-b border-slate-100 px-4 py-4 min-[430px]:flex-row min-[430px]:items-center min-[430px]:justify-between sm:px-5">
+              <div class="flex min-w-0 items-center gap-3">
                 <i class="pi pi-shield text-base text-blue-600"></i>
                 <div class="min-w-0">
                   <h2 class="text-sm font-extrabold text-slate-800">Cartilla de Vacunación</h2>
@@ -873,11 +985,11 @@
               </div>
               <button type="button" (click)="descargarCartilla('vacunacion')" [disabled]="!vacunas().length"
                 [title]="vacunas().length ? '' : 'Aún no hay vacunas registradas para esta mascota'"
-                class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500 text-white text-[10px] font-bold hover:bg-blue-600 transition-all disabled:opacity-40 disabled:cursor-not-allowed shrink-0">
+                class="flex w-full shrink-0 items-center justify-center gap-1.5 rounded-lg bg-blue-500 px-3 py-2 text-[10px] font-bold text-white transition-all hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-40 min-[430px]:w-auto">
                 <i class="pi pi-download text-[9px]"></i> Descargar
               </button>
             </header>
-            <div class="px-5 py-3 bg-slate-50/70 border-b border-slate-100 grid grid-cols-2 gap-x-4 gap-y-2">
+            <div class="grid grid-cols-1 gap-x-4 gap-y-2 border-b border-slate-100 bg-slate-50/70 px-4 py-3 min-[430px]:grid-cols-2 sm:px-5">
               <div>
                 <p class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest">Mascota</p>
                 <p class="text-xs font-bold text-slate-700 truncate">{{ hc()!.mascotaNombre }}</p>
@@ -896,7 +1008,31 @@
               </div>
             </div>
             @if (vacunas().length) {
-              <div class="overflow-x-auto">
+              <div class="divide-y divide-slate-100 md:hidden">
+                @for (v of vacunas(); track v) {
+                  <article class="p-4">
+                    <div class="flex items-start justify-between gap-3">
+                      <p class="min-w-0 text-sm font-bold text-slate-800">{{ v.nombreControl }}</p>
+                      <span class="shrink-0 text-xs font-semibold text-slate-500">{{ formatFecha(v.fechaAplicacion) }}</span>
+                    </div>
+                    <dl class="mt-3 grid grid-cols-2 gap-x-4 gap-y-3 text-xs">
+                      <div>
+                        <dt class="text-[9px] font-extrabold uppercase tracking-wider text-slate-400">Próxima</dt>
+                        <dd class="mt-0.5 font-semibold text-slate-600">{{ v.fechaProximaAplicacion ? formatFecha(v.fechaProximaAplicacion) : '—' }}</dd>
+                      </div>
+                      <div>
+                        <dt class="text-[9px] font-extrabold uppercase tracking-wider text-slate-400">Periodicidad</dt>
+                        <dd class="mt-0.5 font-semibold text-slate-600">{{ v.periodicidadMeses ? v.periodicidadMeses + ' meses' : '—' }}</dd>
+                      </div>
+                      <div class="col-span-2">
+                        <dt class="text-[9px] font-extrabold uppercase tracking-wider text-slate-400">Veterinario</dt>
+                        <dd class="mt-0.5 font-semibold text-slate-600">{{ v.veterinarioNombre || '—' }}</dd>
+                      </div>
+                    </dl>
+                  </article>
+                }
+              </div>
+              <div class="hidden overflow-x-auto md:block">
                 <table class="w-full min-w-[560px] text-left text-xs">
                   <thead>
                     <tr class="text-[10px] font-extrabold uppercase tracking-wider text-white bg-blue-500">
@@ -942,8 +1078,8 @@
           </div>
         
           <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-            <header class="px-5 py-4 border-b border-slate-100 flex items-center justify-between gap-3">
-              <div class="flex items-center gap-3 min-w-0">
+            <header class="flex flex-col gap-3 border-b border-slate-100 px-4 py-4 min-[430px]:flex-row min-[430px]:items-center min-[430px]:justify-between sm:px-5">
+              <div class="flex min-w-0 items-center gap-3">
                 <i class="pi pi-briefcase text-base text-emerald-600"></i>
                 <div class="min-w-0">
                   <h2 class="text-sm font-extrabold text-slate-800">Cartilla de Desparasitación</h2>
@@ -952,11 +1088,11 @@
               </div>
               <button type="button" (click)="descargarCartilla('desparasitacion')" [disabled]="!desparasitaciones().length"
                 [title]="desparasitaciones().length ? '' : 'Aún no hay desparasitaciones registradas para esta mascota'"
-                class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500 text-white text-[10px] font-bold hover:bg-blue-600 transition-all disabled:opacity-40 disabled:cursor-not-allowed shrink-0">
+                class="flex w-full shrink-0 items-center justify-center gap-1.5 rounded-lg bg-blue-500 px-3 py-2 text-[10px] font-bold text-white transition-all hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-40 min-[430px]:w-auto">
                 <i class="pi pi-download text-[9px]"></i> Descargar
               </button>
             </header>
-            <div class="px-5 py-3 bg-slate-50/70 border-b border-slate-100 grid grid-cols-2 gap-x-4 gap-y-2">
+            <div class="grid grid-cols-1 gap-x-4 gap-y-2 border-b border-slate-100 bg-slate-50/70 px-4 py-3 min-[430px]:grid-cols-2 sm:px-5">
               <div>
                 <p class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest">Mascota</p>
                 <p class="text-xs font-bold text-slate-700 truncate">{{ hc()!.mascotaNombre }}</p>
@@ -975,7 +1111,31 @@
               </div>
             </div>
             @if (desparasitaciones().length) {
-              <div class="overflow-x-auto">
+              <div class="divide-y divide-slate-100 md:hidden">
+                @for (d of desparasitaciones(); track d) {
+                  <article class="p-4">
+                    <div class="flex items-start justify-between gap-3">
+                      <p class="min-w-0 text-sm font-bold text-slate-800">{{ d.nombreControl }}</p>
+                      <span class="shrink-0 text-xs font-semibold text-slate-500">{{ formatFecha(d.fechaAplicacion) }}</span>
+                    </div>
+                    <dl class="mt-3 grid grid-cols-2 gap-x-4 gap-y-3 text-xs">
+                      <div>
+                        <dt class="text-[9px] font-extrabold uppercase tracking-wider text-slate-400">Próxima</dt>
+                        <dd class="mt-0.5 font-semibold text-slate-600">{{ d.fechaProximaAplicacion ? formatFecha(d.fechaProximaAplicacion) : '—' }}</dd>
+                      </div>
+                      <div>
+                        <dt class="text-[9px] font-extrabold uppercase tracking-wider text-slate-400">Periodicidad</dt>
+                        <dd class="mt-0.5 font-semibold text-slate-600">{{ d.periodicidadMeses ? d.periodicidadMeses + ' meses' : '—' }}</dd>
+                      </div>
+                      <div class="col-span-2">
+                        <dt class="text-[9px] font-extrabold uppercase tracking-wider text-slate-400">Veterinario</dt>
+                        <dd class="mt-0.5 font-semibold text-slate-600">{{ d.veterinarioNombre || '—' }}</dd>
+                      </div>
+                    </dl>
+                  </article>
+                }
+              </div>
+              <div class="hidden overflow-x-auto md:block">
                 <table class="w-full min-w-[560px] text-left text-xs">
                   <thead>
                     <tr class="text-[10px] font-extrabold uppercase tracking-wider text-white bg-blue-500">
@@ -1023,22 +1183,27 @@
       </section>
     }
     @if (seccionActiva() === 'seguimiento') {
-      <section class="flex flex-col gap-5">
+      <section class="grid grid-cols-1 items-start gap-4 xl:grid-cols-2 xl:gap-5">
         <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-          <div class="flex items-center gap-3 border-b border-slate-200 px-5 py-3">
-            <i class="pi pi-heart-fill text-base text-blue-500"></i>
-            <div class="min-w-0">
-              <h2 class="text-sm font-extrabold text-slate-900">Diagnósticos</h2>
-              <p class="mt-0.5 text-[11px] text-slate-500">Historial completo, sin importar en qué consulta se originaron</p>
+          <div class="flex items-center justify-between gap-3 border-b border-slate-200 px-4 py-3 sm:px-5">
+            <div class="flex min-w-0 items-center gap-3">
+              <i class="pi pi-heart-fill text-base text-blue-500"></i>
+              <div class="min-w-0">
+                <h2 class="text-sm font-extrabold text-slate-900">Diagnósticos</h2>
+                <p class="mt-0.5 text-[11px] text-slate-500">Evolución de los diagnósticos registrados</p>
+              </div>
             </div>
+            <span class="grid min-w-7 shrink-0 place-items-center rounded-full bg-blue-50 px-2 py-1 text-[10px] font-extrabold text-blue-600">
+              {{ diagnosticosSeguimiento().length }}
+            </span>
           </div>
-          <div class="p-4">
+          <div class="p-3 sm:p-4">
             @if (diagnosticosSeguimiento().length > 0) {
-              <div class="flex flex-col gap-3">
+              <div class="grid grid-cols-1 gap-2.5 md:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
                 @for (d of diagnosticosSeguimiento(); track d) {
                   <div
-                    class="border border-slate-100 rounded-xl p-4 bg-white">
-                    <div class="flex items-start justify-between gap-3 mb-2">
+                    class="rounded-xl border border-slate-200 bg-white p-3">
+                    <div class="mb-2 flex flex-col gap-2 min-[430px]:flex-row min-[430px]:items-start min-[430px]:justify-between">
                       <div class="flex-1">
                         <p class="text-sm font-bold text-slate-900">{{ d.nombre }}</p>
                         <p class="text-[11px] text-slate-400 mt-0.5">
@@ -1058,18 +1223,18 @@
                           </p>
                         }
                       </div>
-                      <span class="px-2 py-0.5 rounded-md bg-blue-50 text-blue-500 text-[10px] font-bold border border-blue-100 uppercase whitespace-nowrap">{{ d.tipo }}</span>
+                      <span class="w-fit whitespace-nowrap rounded-md border border-blue-100 bg-blue-50 px-2 py-0.5 text-[10px] font-bold uppercase text-blue-500">{{ d.tipo }}</span>
                     </div>
                     @if (d.descripcion) {
                       <p class="text-xs text-slate-600 mb-3">{{ d.descripcion }}</p>
                     }
-                    <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                    <div class="mt-3 flex flex-col gap-2 border-t border-slate-100 pt-2.5 min-[430px]:flex-row min-[430px]:items-center min-[430px]:justify-between">
                       <label class="text-[10px] font-bold text-slate-500">Estado:</label>
                       <select
                         [disabled]="!canModify() || cambiandoEstadoId() === d.id"
                         [ngModel]="d.estado"
                         (ngModelChange)="cambiarEstadoDiagnosticoSeguimiento(d, $event)"
-                        class="rounded-lg border border-slate-200 px-2 py-1 text-[11px] font-bold text-slate-700 outline-none focus:border-blue-500 disabled:opacity-60">
+                        class="w-full rounded-lg border border-slate-200 px-2 py-1.5 text-[11px] font-bold text-slate-700 outline-none focus:border-blue-500 disabled:opacity-60 min-[430px]:w-auto">
                         <option value="ACTIVO">Activo</option>
                         <option value="RESUELTO">Resuelto</option>
                         <option value="CRONICO">Crónico</option>
@@ -1086,19 +1251,24 @@
           </div>
         </div>
         <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-          <div class="flex items-center gap-3 border-b border-slate-200 px-5 py-3">
-            <i class="pi pi-shield text-base text-blue-500"></i>
-            <div class="min-w-0">
-              <h2 class="text-sm font-extrabold text-slate-900">Tratamientos</h2>
-              <p class="mt-0.5 text-[11px] text-slate-500">Protocolos y tratamientos, con o sin fecha de fin definida</p>
+          <div class="flex items-center justify-between gap-3 border-b border-slate-200 px-4 py-3 sm:px-5">
+            <div class="flex min-w-0 items-center gap-3">
+              <i class="pi pi-shield text-base text-blue-500"></i>
+              <div class="min-w-0">
+                <h2 class="text-sm font-extrabold text-slate-900">Tratamientos</h2>
+                <p class="mt-0.5 text-[11px] text-slate-500">Protocolos indicados y su estado actual</p>
+              </div>
             </div>
+            <span class="grid min-w-7 shrink-0 place-items-center rounded-full bg-blue-50 px-2 py-1 text-[10px] font-extrabold text-blue-600">
+              {{ tratamientosSeguimiento().length }}
+            </span>
           </div>
-          <div class="p-4">
+          <div class="p-3 sm:p-4">
             @if (tratamientosSeguimiento().length > 0) {
-              <div class="flex flex-col gap-3">
+              <div class="grid grid-cols-1 gap-2.5 md:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
                 @for (t of tratamientosSeguimiento(); track t) {
                   <div
-                    class="border border-slate-100 rounded-xl p-4 bg-white">
+                    class="rounded-xl border border-slate-200 bg-white p-3">
                     <div class="flex items-start justify-between gap-3 mb-2">
                       <p class="text-sm font-bold text-slate-900 flex-1">{{ t.nombre }}</p>
                     </div>
@@ -1113,13 +1283,13 @@
                   @if (t.descripcion) {
                     <p class="text-xs text-slate-600 mb-3">{{ t.descripcion }}</p>
                   }
-                  <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                  <div class="mt-3 flex flex-col gap-2 border-t border-slate-100 pt-2.5 min-[430px]:flex-row min-[430px]:items-center min-[430px]:justify-between">
                     <label class="text-[10px] font-bold text-slate-500">Estado:</label>
                     <select
                       [disabled]="!canModify() || cambiandoEstadoId() === t.id"
                       [ngModel]="t.estado"
                       (ngModelChange)="cambiarEstadoTratamientoSeguimiento(t, $event)"
-                      class="rounded-lg border border-slate-200 px-2 py-1 text-[11px] font-bold text-slate-700 outline-none focus:border-blue-500 disabled:opacity-60">
+                      class="w-full rounded-lg border border-slate-200 px-2 py-1.5 text-[11px] font-bold text-slate-700 outline-none focus:border-blue-500 disabled:opacity-60 min-[430px]:w-auto">
                       <option value="PENDIENTE">Pendiente</option>
                       <option value="ACTIVO">Activo</option>
                       <option value="EN_CURSO">En curso</option>

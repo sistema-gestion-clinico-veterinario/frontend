@@ -111,6 +111,18 @@ export class CartillaComponent implements OnInit {
     return this.tiposDesparasitante().find((d) => d.id === this.tipoDesparasitanteId)?.precio ?? null;
   });
 
+  readonly sinCatalogo = computed(() => {
+    if (this.cargandoCtrl() || !this.mascotaSel()) return false;
+    return this.modo() === 'VACUNACION' ? this.tiposVacuna().length === 0 : this.tiposDesparasitante().length === 0;
+  });
+
+  readonly mensajeSinCatalogo = computed(() => {
+    const especie = (this.mascotaSel()?.especie ?? 'esta especie').toLowerCase();
+    return this.modo() === 'VACUNACION'
+      ? `No hay vacunas registradas para ${especie}. Registre una en Configuración Complementaria, pestaña Vacunas.`
+      : `No hay desparasitantes registrados para ${especie}. Registre uno en Configuración Complementaria, pestaña Desparasitantes.`;
+  });
+
   // Control preventivo seleccionado para aplicar
   controlActivo = signal<ControlPreventivoResponse | null>(null);
 

@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, inject, signal, computed } from '@angular/core';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, forkJoin } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -60,10 +60,11 @@ export class HistoriaClinicaMascotaComponent implements OnInit, OnDestroy {
   hc                  = signal<HistoriaClinicaDetalle | null>(null);
   consultaActiva      = signal<ConsultaResumen | null>(null);
   miniaturas          = signal<Map<number, string>>(new Map());
-  seccionActiva       = signal<'consultas' | 'servicios' | 'preventivos' | 'seguimiento'>('consultas');
+  seccionActiva       = signal<'consultas' | 'recetas' | 'servicios' | 'preventivos' | 'seguimiento'>('consultas');
   noTieneHc           = signal<boolean>(false);
   serviciosNoMedicos  = signal<CitaResponse[]>([]);
   loadingServicios    = signal(false);
+  serviciosCargados   = signal(false);
   descargandoHistoriaCompleta = signal(false);
   cargarAsistenteIa = signal(false);
   iaDisponible = signal(false);
@@ -71,9 +72,11 @@ export class HistoriaClinicaMascotaComponent implements OnInit, OnDestroy {
   diagnosticosSeguimiento = signal<DiagnosticoResponse[]>([]);
   tratamientosSeguimiento = signal<TratamientoResponse[]>([]);
   loadingSeguimiento      = signal(false);
+  seguimientoCargado      = signal(false);
   cambiandoEstadoId       = signal<number | null>(null);
 
   editandoAntecedentes = signal(false);
+  antecedentesExpandidos = signal(false);
   guardandoAntecedentes = signal(false);
   antecedentesForm = {
     enfermedades: '',
@@ -87,6 +90,19 @@ export class HistoriaClinicaMascotaComponent implements OnInit, OnDestroy {
     (this.hc()?.aplicacionesPreventivas ?? []).filter(a => a.tipo === 'VACUNACION'));
   readonly desparasitaciones = computed(() =>
     (this.hc()?.aplicacionesPreventivas ?? []).filter(a => a.tipo === 'DESPARASITACION'));
+
+  readonly recetasMascota = computed(() => (this.hc()?.consultas ?? [])
+    .flatMap(consulta => (consulta.prescripciones ?? []).map(receta => ({ receta, consulta })))
+    .sort((a, b) => (b.receta.fechaInicio ?? '').localeCompare(a.receta.fechaInicio ?? '') || b.receta.id - a.receta.id));
+
+  recetaVigente(fechaFin?: string): boolean {
+    return !!fechaFin && fechaFin >= new Date().toLocaleDateString('en-CA', { timeZone: 'America/Lima' });
+  }
+
+  verConsultaDeReceta(consulta: ConsultaResumen) {
+    this.consultaActiva.set(consulta);
+    this.seleccionarSeccion('consultas');
+  }
 
   calendarioMes = signal(new Date().getMonth());
   calendarioAnio = signal(new Date().getFullYear());
@@ -289,12 +305,19 @@ export class HistoriaClinicaMascotaComponent implements OnInit, OnDestroy {
   }
 
   cargarHistoria(numeroHc: string) {
+    this.serviciosNoMedicos.set([]);
+    this.serviciosCargados.set(false);
+    this.diagnosticosSeguimiento.set([]);
+    this.tratamientosSeguimiento.set([]);
+    this.seguimientoCargado.set(false);
     this.loadingStore.show();
     this.hcService.getPorNumeroHc(numeroHc).subscribe({
       next: (res) => {
         this.mascotaId = res.data.mascotaId;
         this.hc.set(res.data);
         this.enfocarProximoControl(res.data);
+        this.cargarServicios();
+        this.cargarSeguimiento();
         if (res.data.consultas.length > 0) {
           this.consultaActiva.set(res.data.consultas[0]);
           this.cargarMiniaturas(res.data.consultas[0]);
@@ -382,26 +405,28 @@ export class HistoriaClinicaMascotaComponent implements OnInit, OnDestroy {
     }
   }
 
-  seleccionarSeccion(seccion: 'consultas' | 'servicios' | 'preventivos' | 'seguimiento') {
+  seleccionarSeccion(seccion: 'consultas' | 'recetas' | 'servicios' | 'preventivos' | 'seguimiento') {
     this.seccionActiva.set(seccion);
-    if (seccion === 'servicios' && this.mascotaId && this.serviciosNoMedicos().length === 0) {
+    if (seccion === 'servicios' && this.mascotaId && !this.serviciosCargados() && !this.loadingServicios()) {
       this.cargarServicios();
     }
     if (seccion === 'seguimiento' && this.mascotaId
-        && this.diagnosticosSeguimiento().length === 0 && this.tratamientosSeguimiento().length === 0) {
+        && !this.seguimientoCargado() && !this.loadingSeguimiento()) {
       this.cargarSeguimiento();
     }
   }
 
   cargarSeguimiento() {
+    if (!this.mascotaId || this.loadingSeguimiento()) return;
     this.loadingSeguimiento.set(true);
-    this.hcService.listarDiagnosticosPorMascota(this.mascotaId).subscribe({
-      next: (res) => this.diagnosticosSeguimiento.set(res.data ?? []),
-      error: () => {}
-    });
-    this.hcService.listarTratamientosPorMascota(this.mascotaId).subscribe({
-      next: (res) => {
-        this.tratamientosSeguimiento.set(res.data ?? []);
+    forkJoin({
+      diagnosticos: this.hcService.listarDiagnosticosPorMascota(this.mascotaId),
+      tratamientos: this.hcService.listarTratamientosPorMascota(this.mascotaId)
+    }).subscribe({
+      next: ({ diagnosticos, tratamientos }) => {
+        this.diagnosticosSeguimiento.set(diagnosticos.data ?? []);
+        this.tratamientosSeguimiento.set(tratamientos.data ?? []);
+        this.seguimientoCargado.set(true);
         this.loadingSeguimiento.set(false);
       },
       error: () => this.loadingSeguimiento.set(false)
@@ -441,10 +466,12 @@ export class HistoriaClinicaMascotaComponent implements OnInit, OnDestroy {
   }
 
   cargarServicios() {
+    if (!this.mascotaId || this.loadingServicios()) return;
     this.loadingServicios.set(true);
     this.citaService.getServiciosNoMedicos(this.mascotaId).subscribe({
       next: (res) => {
         this.serviciosNoMedicos.set(res.data ?? []);
+        this.serviciosCargados.set(true);
         this.loadingServicios.set(false);
       },
       error: () => this.loadingServicios.set(false)

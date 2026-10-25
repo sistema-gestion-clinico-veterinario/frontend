@@ -158,7 +158,7 @@
             </div>
           }
           @if (mascotasLista().length > 0) {
-            <div class="hidden overflow-x-auto md:block">
+            <div class="hidden overflow-x-auto lg:block">
               <table class="w-full text-left text-sm">
                 <thead class="bg-slate-50 border-b border-slate-200">
                   <tr>
@@ -316,7 +316,7 @@
                 <p class="px-4 py-10 text-center text-sm text-slate-500">Todavía no hay aplicaciones registradas.</p>
               }
             </div>
-            <div class="hidden overflow-x-auto md:block">
+            <div class="hidden overflow-x-auto lg:block">
               <table class="w-full min-w-[760px] text-left">
                 <thead class="border-b border-slate-200 bg-slate-50/70"><tr><th class="px-5 py-2 text-[10px] font-bold uppercase tracking-wide text-slate-500">Aplicación</th><th class="px-4 py-2 text-[10px] font-bold uppercase tracking-wide text-slate-500">Producto</th><th class="px-4 py-2 text-[10px] font-bold uppercase tracking-wide text-slate-500">Responsable</th><th class="px-4 py-2 text-[10px] font-bold uppercase tracking-wide text-slate-500">Lote / dosis</th><th class="px-5 py-2 text-[10px] font-bold uppercase tracking-wide text-slate-500">Próxima aplicación</th><th class="px-5 py-2 text-right text-[10px] font-bold uppercase tracking-wide text-slate-500">Acciones</th></tr></thead>
                 <tbody class="divide-y divide-slate-100">
@@ -370,12 +370,18 @@
             }
             <label class="block"><span class="mb-1.5 block text-xs font-bold text-slate-700">{{ modo() === 'VACUNACION' ? 'Vacuna' : 'Desparasitante' }} *</span>
             @if (modo() === 'VACUNACION') {
-              <p-select [(ngModel)]="tipoVacunaId" (ngModelChange)="actualizarIntervaloSugerido($event)" [options]="tiposVacuna()" optionLabel="nombre" optionValue="id" placeholder="Seleccionar del catálogo" styleClass="control-select" />
+              <p-select [(ngModel)]="tipoVacunaId" [disabled]="sinCatalogo()" (ngModelChange)="actualizarIntervaloSugerido($event)" [options]="tiposVacuna()" optionLabel="nombre" optionValue="id" placeholder="Seleccionar del catálogo" styleClass="control-select" />
             }
             @if (modo() === 'DESPARASITACION') {
-              <p-select [(ngModel)]="tipoDesparasitanteId" (ngModelChange)="actualizarIntervaloSugerido($event)" [options]="tiposDesparasitante()" optionLabel="nombre" optionValue="id" placeholder="Seleccionar del catálogo" styleClass="control-select" />
+              <p-select [(ngModel)]="tipoDesparasitanteId" [disabled]="sinCatalogo()" (ngModelChange)="actualizarIntervaloSugerido($event)" [options]="tiposDesparasitante()" optionLabel="nombre" optionValue="id" placeholder="Seleccionar del catálogo" styleClass="control-select" />
             }
           </label>
+          @if (sinCatalogo()) {
+            <div role="status" class="flex items-start gap-2.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-xs font-medium text-slate-600">
+              <i class="pi pi-info-circle mt-0.5 text-blue-500"></i>
+              <span>{{ mensajeSinCatalogo() }}</span>
+            </div>
+          }
           <label class="block"><span class="mb-1.5 block text-xs font-bold text-slate-700">Fecha de aplicación *</span><input type="date" [(ngModel)]="fechaAplicacion" [max]="fechaHoyLima" class="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15" /></label>
           @if (serviciosModo().length > 1) {
             <label class="block"><span class="mb-1.5 block text-xs font-bold text-slate-700">Servicio a cobrar *</span>
@@ -408,7 +414,7 @@
           }
         </div>
         <footer class="border-t border-slate-200 p-4">
-          <button type="button" (click)="guardar()" [disabled]="guardando()" class="flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-blue-500 text-sm font-bold text-white transition-colors hover:bg-blue-600 disabled:opacity-50"><i [class]="guardando() ? 'pi pi-spin pi-spinner' : 'pi pi-check-circle'"></i>{{ guardando() ? 'Registrando...' : 'Confirmar aplicación' }}</button>
+          <button type="button" (click)="guardar()" [disabled]="guardando() || sinCatalogo()" class="flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-blue-500 text-sm font-bold text-white transition-colors hover:bg-blue-600 disabled:opacity-50"><i [class]="guardando() ? 'pi pi-spin pi-spinner' : 'pi pi-check-circle'"></i>{{ guardando() ? 'Registrando...' : 'Confirmar aplicación' }}</button>
           <p class="mt-2 text-center text-[10px] text-slate-500">Al confirmar, la cuenta aparecerá automáticamente en Caja.</p>
         </footer>
       </aside>
