@@ -1,7 +1,8 @@
 export const APP_ROUTE_PATHS = {
   PROFILE: 'profile',
   CLINIC_PRIVACY_NOTICE: 'aviso-clinica',
-  LEGAL_ACCEPTANCE: 'legal/accept'
+  LEGAL_ACCEPTANCE: 'legal/accept',
+  BACKUP_MONITOR: 'admin/respaldos'
 } as const;
 
 export const toAbsoluteRoute = (path: string): string => `/${path}`;

@@ -167,7 +167,7 @@
                   <button type="button" (click)="openNotification(notification)"
                     class="flex w-full items-start gap-3 px-4 py-3 text-left hover:bg-slate-50">
                     <span class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--brand-primary)_10%,white)] text-[var(--brand-primary)]">
-                      <i class="pi" [ngClass]="notification.id === 'terminos' ? 'pi-file-edit' : notification.id === 'ia' ? 'pi-sparkles' : 'pi-shield'"></i>
+                      <i class="pi" [ngClass]="notification.id.startsWith('respaldo-') ? 'pi-exclamation-triangle' : notification.id === 'terminos' ? 'pi-file-edit' : notification.id === 'ia' ? 'pi-sparkles' : 'pi-shield'"></i>
                     </span>
                     <span class="min-w-0 flex-1">
                       <span class="block text-xs font-bold text-slate-800">{{ notification.titulo }}</span>

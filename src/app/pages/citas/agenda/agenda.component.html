@@ -647,16 +647,6 @@
         }
       }
 
-                                @if (displayDeleteModal() && selectedCitaToDelete(); as cita) {
-                                  @defer (when displayDeleteModal()) {
-                                    <app-delete-appointment-dialog
-                                      [cita]="cita"
-                                      [processing]="loadingStore.isLoading()"
-                                      (closed)="displayDeleteModal.set(false)"
-                                      (confirmed)="confirmarEliminar()" />
-                                  }
-                                }
-
                                 @if (displayCajaModal() && citaParaPago(); as cita) {
                                   @defer (when displayCajaModal()) {
                                     <app-payment-dialog
@@ -697,8 +687,7 @@
                                               (consultationStarted)="iniciarCita($event)"
                                               (consultationContinued)="continuarConsulta($event)"
                                               (consultationViewed)="continuarConsulta($event, true)"
-                                              (appointmentCancelled)="cancelarCita($event)"
-                                              (appointmentDeleted)="eliminarCita($event)" />
+                                              (appointmentCancelled)="cancelarCita($event)" />
                                           }
                                         }
                                         <p-toast position="bottom-right"></p-toast>

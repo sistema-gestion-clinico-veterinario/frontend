@@ -442,28 +442,30 @@
                   </p-dialog>
                   <!-- Appearance preference -->
                   <div class="bg-white rounded-2xl border border-slate-100 p-4">
-                    <div class="mb-3 flex items-center justify-between gap-3">
-                      <h3 class="flex items-center gap-2 text-sm font-semibold text-slate-700">
-                        <i class="pi pi-palette text-slate-400"></i> Apariencia
-                      </h3>
-                      <span class="text-[10px] font-medium text-slate-400">En este dispositivo</span>
-                    </div>
-                    <div class="grid grid-cols-3 gap-1 rounded-xl border border-slate-200 bg-slate-50 p-1" role="radiogroup" aria-label="Tema de la interfaz">
-                      @for (option of themeOptions; track option.value) {
-                        <button type="button"
-                          role="radio"
-                          [attr.aria-checked]="theme.preference() === option.value"
-                          [attr.aria-label]="option.label + '. ' + option.description"
-                          [title]="option.description"
-                          (click)="theme.setPreference(option.value)"
-                          [class]="theme.preference() === option.value
-                            ? 'bg-white text-blue-600 ring-1 ring-slate-200'
-                            : 'text-slate-500 hover:bg-white/60 hover:text-slate-700'"
-                          class="flex h-9 min-w-0 items-center justify-center gap-1.5 rounded-lg px-2 text-xs font-semibold transition-colors">
-                          <i [class]="option.icon" class="shrink-0 text-xs"></i>
-                          <span class="truncate">{{ option.label }}</span>
-                        </button>
-                      }
+                    <div class="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
+                      <div>
+                        <h3 class="flex items-center gap-2 text-sm font-semibold text-slate-700">
+                          <i class="pi pi-palette text-slate-400"></i> Apariencia
+                        </h3>
+                        <p class="mt-0.5 text-[10px] font-medium text-slate-400">Preferencia para este dispositivo</p>
+                      </div>
+                      <div class="inline-flex w-fit max-w-full gap-1 overflow-x-auto rounded-lg border border-slate-200 bg-slate-50 p-1" role="radiogroup" aria-label="Tema de la interfaz">
+                        @for (option of themeOptions; track option.value) {
+                          <button type="button"
+                            role="radio"
+                            [attr.aria-checked]="theme.preference() === option.value"
+                            [attr.aria-label]="option.label + '. ' + option.description"
+                            [title]="option.description"
+                            (click)="theme.setPreference(option.value)"
+                            [class]="theme.preference() === option.value
+                              ? 'bg-cyan-600 text-white shadow-sm'
+                              : 'text-slate-500 hover:bg-white/60 hover:text-slate-700'"
+                            class="flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-md px-3 text-xs font-semibold transition-colors">
+                            <i [class]="option.icon" class="shrink-0 text-xs"></i>
+                            <span>{{ option.label }}</span>
+                          </button>
+                        }
+                      </div>
                     </div>
                   </div>
                   <!-- Account info -->

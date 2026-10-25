@@ -56,7 +56,6 @@ import { PrivacidadService } from '../../../core/services/privacidad.service';
 import { AvisoPublico } from '../../../models/privacy/privacidad.model';
 import { AgendaFullCalendarComponent } from './agenda-full-calendar/agenda-full-calendar.component';
 import { CitaDetailPanelComponent } from './cita-detail-panel/cita-detail-panel.component';
-import { DeleteAppointmentDialogComponent } from './delete-appointment-dialog/delete-appointment-dialog.component';
 import { PaymentDialogComponent } from './payment-dialog/payment-dialog.component';
 import { AppointmentFormPanelComponent } from './appointment-form-panel/appointment-form-panel.component';
 import type { AppointmentFormContext } from './appointment-form-panel/appointment-form-context';
@@ -101,7 +100,6 @@ interface HorarioResumen {
     SugerenciasControlComponent,
     AgendaFullCalendarComponent,
     CitaDetailPanelComponent,
-    DeleteAppointmentDialogComponent,
     PaymentDialogComponent,
     AppointmentFormPanelComponent
   ],
@@ -209,7 +207,6 @@ export class AgendaComponent implements OnInit, OnDestroy {
   });
   displayModal     = signal<boolean>(false);
   displayCancelModal = signal<boolean>(false);
-  displayDeleteModal = signal<boolean>(false);
   displayDetalleCita = signal<boolean>(false);
   citaDetalle        = signal<CitaResponse | null>(null);
   displayCajaModal   = signal<boolean>(false);
@@ -226,7 +223,6 @@ export class AgendaComponent implements OnInit, OnDestroy {
   cancelMotivo     = signal<string>('');
   cancelMotivoAttempted = signal<boolean>(false);
   selectedCita     = signal<CitaResponse | null>(null);
-  selectedCitaToDelete = signal<CitaResponse | null>(null);
   isReprogramando  = signal<boolean>(false);
   originalCitaEdit = signal<CitaResponse | null>(null);
   isEditing = computed(() => !!this.citaForm?.get('id')?.value && !this.isReprogramando());
@@ -1439,7 +1435,6 @@ export class AgendaComponent implements OnInit, OnDestroy {
     if (cached) return cached;
 
     const canModifyCita = this.authStore.hasAccess('VISTA_CITAS_AGENDA', 'modificar');
-    const canDeleteCita = this.authStore.hasAccess('VISTA_CITAS_AGENDA', 'eliminar');
     const items: MenuItem[] = [
       {
         label: 'Ver detalle',
@@ -1489,10 +1484,6 @@ export class AgendaComponent implements OnInit, OnDestroy {
 
     if (this.canMarkNoShow(cita) && canModifyCita) {
       items.push({ label: 'No asistió', icon: 'pi pi-user-minus', command: () => this.marcarNoAsistio(cita) });
-    }
-
-    if (cita.estado === 'CANCELADA' && canDeleteCita) {
-      items.push({ label: 'Eliminar', icon: 'pi pi-trash', command: () => this.eliminarCita(cita) });
     }
 
     this.citaActionItemsCache.set(cita, items);
@@ -1652,43 +1643,6 @@ export class AgendaComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: err?.error?.message || 'No se pudo registrar la devolución.' });
-      }
-    });
-  }
-
-  eliminarCita(cita: CitaResponse) {
-    this.displayDetalleCita.set(false);
-    if (cita.estado !== EstadoCita.CANCELADA) {
-      this.messageService.add({ 
-        severity: 'warn', 
-        summary: 'Aviso', 
-        detail: 'Solo se pueden eliminar citas previamente canceladas' 
-      });
-      return;
-    }
-
-    this.selectedCitaToDelete.set(cita);
-    this.displayDeleteModal.set(true);
-  }
-
-  confirmarEliminar() {
-    const cita = this.selectedCitaToDelete();
-    if (!cita) return;
-
-    this.citaService.eliminarCita(cita.id).subscribe({
-      next: () => {
-        this.suppressSseToast = true;
-        this.messageService.add({ severity: 'success', summary: 'Listo', detail: 'Cita eliminada correctamente' });
-        this.displayDeleteModal.set(false);
-        this.loadCitas();
-        if (this.vistaActual() !== 'lista') this.loadCitasCalendario();
-      },
-      error: (err) => {
-        this.messageService.add({ 
-          severity: 'error', 
-          summary: 'Error', 
-          detail: err.error?.message || 'No se pudo eliminar la cita' 
-        });
       }
     });
   }

@@ -25,5 +25,4 @@ export class CitaDetailPanelComponent {
   readonly consultationContinued = output<CitaResponse>();
   readonly consultationViewed = output<CitaResponse>();
   readonly appointmentCancelled = output<CitaResponse>();
-  readonly appointmentDeleted = output<CitaResponse>();
 }

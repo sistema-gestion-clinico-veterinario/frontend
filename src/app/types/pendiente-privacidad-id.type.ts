@@ -1,1 +1,1 @@
-export type PendientePrivacidadId = 'aviso' | 'terminos' | 'ia';
+export type PendientePrivacidadId = 'aviso' | 'terminos' | 'ia' | `respaldo-${number}`;

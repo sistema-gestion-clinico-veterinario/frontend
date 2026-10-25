@@ -1,142 +1,172 @@
-<main class="mx-auto w-full max-w-6xl p-3 sm:p-5 lg:p-7">
-  <header class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-    <div class="flex items-start gap-3">
-      <button type="button" (click)="goToClients()" aria-label="Volver a clientes"
-        class="mt-0.5 grid size-9 shrink-0 place-items-center rounded-lg border border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:text-slate-700">
-        <i class="pi pi-arrow-left text-sm"></i>
-      </button>
-      <div>
-        <p class="text-[11px] font-bold uppercase tracking-[.14em] text-[var(--brand-primary)]">Alta guiada</p>
-        <h1 class="mt-0.5 text-xl font-extrabold tracking-tight text-slate-900 sm:text-2xl">Nuevo cliente y primera mascota</h1>
-        <p class="mt-1 max-w-2xl text-sm leading-5 text-slate-500">Completa el vínculo antes de habilitar el acceso al portal.</p>
-      </div>
+<main class="mx-auto w-full max-w-7xl p-4 sm:p-6 lg:p-8">
+  <header class="mb-6 flex items-start gap-3">
+    <button type="button" (click)="goToClients()" aria-label="Volver a clientes"
+      class="mt-0.5 grid size-9 shrink-0 place-items-center rounded-lg border border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:text-slate-700">
+      <i class="pi pi-arrow-left text-sm"></i>
+    </button>
+    <div>
+      <p class="text-[11px] font-bold uppercase tracking-[.14em] text-[var(--brand-primary)]">Alta guiada</p>
+      <h1 class="mt-0.5 text-xl font-extrabold tracking-tight text-slate-900 sm:text-2xl">Nuevo cliente y primera mascota</h1>
+      <p class="mt-1 max-w-2xl text-sm leading-5 text-slate-500">Registra al responsable y vincula su primera mascota antes de habilitar el portal.</p>
     </div>
   </header>
 
-  <nav aria-label="Progreso del registro" class="mb-6 grid grid-cols-3 overflow-hidden rounded-xl border border-slate-200 bg-white">
-    @for (item of [{n: 1, label: 'Responsable'}, {n: 2, label: 'Mascota'}, {n: 3, label: 'Acceso'}]; track item.n) {
-      <div class="flex min-w-0 items-center gap-2 border-r border-slate-200 px-3 py-3 last:border-r-0 sm:px-5"
-        [class.bg-cyan-50]="step() === item.n">
-        <span class="grid size-7 shrink-0 place-items-center rounded-full text-xs font-extrabold"
-          [ngClass]="step() > item.n ? 'bg-emerald-100 text-emerald-700' : step() === item.n ? 'bg-[var(--brand-primary)] text-white' : 'bg-slate-100 text-slate-400'">
-          @if (step() > item.n) { <i class="pi pi-check text-[10px]"></i> } @else { {{ item.n }} }
-        </span>
-        <span class="hidden truncate text-xs font-bold sm:block" [class.text-slate-800]="step() === item.n" [class.text-slate-400]="step() !== item.n">{{ item.label }}</span>
+  <div class="grid items-start gap-5 lg:grid-cols-[250px_minmax(0,1fr)] lg:gap-6">
+    <aside class="hidden rounded-xl border border-slate-200 bg-white p-4 lg:sticky lg:top-5 lg:block" aria-label="Progreso del registro">
+      <p class="mb-3 text-[11px] font-extrabold uppercase tracking-wide text-slate-400">Progreso del registro</p>
+      <ol class="space-y-1">
+        @for (item of [{n: 1, label: 'Responsable', detail: 'Identidad y contacto'}, {n: 2, label: 'Primera mascota', detail: 'Datos de la mascota'}, {n: 3, label: 'Acceso', detail: 'Confirmación del alta'}]; track item.n) {
+          <li class="flex items-start gap-3 rounded-lg px-2 py-3" [class.bg-cyan-50]="step() === item.n" [attr.aria-current]="step() === item.n ? 'step' : null">
+            <span class="grid size-7 shrink-0 place-items-center rounded-full text-xs font-extrabold"
+              [ngClass]="step() > item.n ? 'bg-emerald-100 text-emerald-700' : step() === item.n ? 'bg-[var(--brand-primary)] text-white' : 'bg-slate-100 text-slate-400'">
+              @if (step() > item.n) { <i class="pi pi-check text-[10px]"></i> } @else { {{ item.n }} }
+            </span>
+            <span class="min-w-0"><strong class="block text-sm" [class.text-slate-900]="step() === item.n" [class.text-slate-500]="step() !== item.n">{{ item.label }}</strong><small class="mt-0.5 block text-xs font-normal text-slate-400">{{ item.detail }}</small></span>
+          </li>
+        }
+      </ol>
+      <div class="mt-4 border-t border-slate-100 pt-4">
+        @if (step() === 1) {
+          <p class="text-xs leading-5 text-slate-500">La cuenta todavía no será creada y no se enviará ningún correo.</p>
+        } @else if (step() === 2) {
+          <p class="text-xs font-bold text-slate-700">{{ clientName() }}</p>
+          <p class="mt-1 break-all text-xs leading-5 text-slate-500">{{ clientEmail() }}</p>
+        } @else {
+          <p class="text-xs leading-5 text-emerald-700">El cliente, la mascota y el acceso quedaron vinculados.</p>
+        }
       </div>
-    }
-  </nav>
+    </aside>
 
-  @if (errorMessage()) {
-    <div role="alert" class="mb-5 flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-      <i class="pi pi-exclamation-circle mt-0.5"></i><span>{{ errorMessage() }}</span>
-    </div>
-  }
+    <section class="min-w-0">
+      <nav aria-label="Progreso del registro" class="mb-5 lg:hidden">
+        <div class="flex items-center justify-between gap-4">
+          <div class="min-w-0">
+            <p class="text-[11px] font-extrabold uppercase tracking-wide text-[var(--brand-primary)]">Paso {{ step() }} de 3</p>
+            <p class="mt-0.5 truncate text-sm font-bold text-slate-800">
+              @if (step() === 1) { Datos del responsable }
+              @else if (step() === 2) { Primera mascota }
+              @else { Acceso completado }
+            </p>
+          </div>
+          <div class="flex shrink-0 gap-1.5" aria-hidden="true">
+            @for (item of [1, 2, 3]; track item) {
+              <span class="h-1.5 w-9 rounded-full" [ngClass]="step() >= item ? 'bg-[var(--brand-primary)]' : 'bg-slate-200'"></span>
+            }
+          </div>
+        </div>
+      </nav>
 
-  @if (step() === 1) {
-    <form [formGroup]="clientForm" (ngSubmit)="submitClient()" class="overflow-hidden rounded-xl border border-slate-200 bg-white">
-      <div class="border-b border-slate-200 px-4 py-4 sm:px-6">
-        <h2 class="text-base font-extrabold text-slate-900">1. Datos del responsable</h2>
-        <p class="mt-1 text-sm text-slate-500">La invitación todavía no se enviará. Primero debemos vincular su mascota.</p>
-      </div>
-      <div class="grid gap-5 p-4 sm:grid-cols-2 sm:p-6">
-        <label class="field"><span>Nombres *</span><input formControlName="nombre" maxlength="80" autocomplete="given-name" /></label>
-        <label class="field"><span>Apellidos *</span><input formControlName="apellido" maxlength="80" autocomplete="family-name" /></label>
-        <label class="field"><span>Tipo de documento *</span>
-          <select formControlName="tipoDocumento"><option value="DNI">DNI</option><option value="CARNET_EXTRANJERIA">Carnet de extranjería</option><option value="PASAPORTE">Pasaporte</option></select>
-        </label>
-        <label class="field"><span>Número de documento *</span><input formControlName="numeroDocumento" (input)="sanitizeDocument($event)" maxlength="9" autocomplete="off" />
-          @if (fieldInvalid('client', 'numeroDocumento')) { <small>El documento no corresponde al tipo seleccionado.</small> }
-        </label>
-        <label class="field"><span>Género *</span><select formControlName="genero"><option value="MASCULINO">Masculino</option><option value="FEMENINO">Femenino</option></select></label>
-        <label class="field"><span>Teléfono *</span><input formControlName="telefono" maxlength="9" inputmode="numeric" autocomplete="tel" /></label>
-        <label class="field"><span>Correo electrónico *</span><input formControlName="email" maxlength="100" type="email" autocomplete="email" placeholder="nombre@correo.com" /></label>
-        <label class="field"><span>Usuario *</span><input formControlName="username" maxlength="50" autocomplete="off" placeholder="Ejemplo: juan.perez" /></label>
-        <label class="field sm:col-span-2"><span>Dirección *</span><input formControlName="direccion" maxlength="200" autocomplete="street-address" /></label>
-        <label class="field sm:col-span-2"><span>Referencias <em>opcional</em></span><textarea formControlName="referencias" maxlength="500" rows="2"></textarea></label>
+      @if (errorMessage()) {
+        <div role="alert" class="mb-5 flex items-start gap-3 text-sm text-rose-700">
+          <i class="pi pi-exclamation-circle mt-0.5"></i><span>{{ errorMessage() }}</span>
+        </div>
+      }
 
-        <section class="sm:col-span-2 rounded-xl border border-slate-200 bg-slate-50 p-4">
-          <div class="flex items-start gap-3">
-            <i class="pi pi-shield mt-0.5 text-[var(--brand-primary)]"></i>
-            <div class="min-w-0 flex-1">
-              <h3 class="text-sm font-bold text-slate-800">Aviso de privacidad</h3>
-              <p class="mt-1 text-xs leading-5 text-slate-500">Antes de registrar sus datos, informa al cliente cómo serán utilizados.</p>
-              @if (aviso(); as currentNotice) {
-                <details class="mt-3 rounded-lg border border-slate-200 bg-white px-3 py-2">
-                  <summary class="cursor-pointer text-xs font-bold text-[var(--brand-primary)]">Leer aviso vigente · versión {{ currentNotice.version }}</summary>
-                  <div class="mt-3 max-h-48 overflow-y-auto whitespace-pre-line text-xs leading-5 text-slate-600">{{ currentNotice.contenido }}</div>
-                </details>
-              }
-              <label class="mt-4 flex cursor-pointer items-start gap-3 text-sm text-slate-700">
-                <input type="checkbox" formControlName="avisoInformado" class="mt-0.5 size-4 accent-[var(--brand-primary)]" />
-                <span>Confirmo que la persona fue informada del aviso de privacidad vigente.</span>
-              </label>
-              <div class="mt-4 border-t border-slate-200 pt-4">
-                <p class="text-xs font-bold text-slate-700">Recordatorios preventivos por correo <span class="font-normal text-slate-400">(opcional)</span></p>
-                <div class="mt-2 flex flex-wrap gap-2">
-                  <label class="choice"><input type="radio" formControlName="consentimientoRecordatorios" [value]="true" /> Sí, autoriza</label>
-                  <label class="choice"><input type="radio" formControlName="consentimientoRecordatorios" [value]="false" /> No autoriza</label>
-                  <label class="choice"><input type="radio" formControlName="consentimientoRecordatorios" [value]="null" /> Decidir después</label>
+      @if (step() === 1) {
+        <form [formGroup]="clientForm" (ngSubmit)="submitClient()" class="space-y-5">
+          <section class="rounded-xl border border-slate-200 bg-white">
+            <div class="border-b border-slate-200 px-5 py-4 sm:px-6">
+              <h2 class="text-base font-extrabold text-slate-900">Datos del responsable</h2>
+              <p class="mt-1 text-sm text-slate-500">Información de la persona responsable de la mascota.</p>
+            </div>
+
+            <div class="space-y-7 p-5 sm:p-6">
+              <fieldset>
+                <legend class="mb-4 text-xs font-extrabold uppercase tracking-wide text-slate-500">Identificación</legend>
+                <div class="grid gap-5 sm:grid-cols-2">
+                  <label class="field"><span>Nombres *</span><input formControlName="nombre" maxlength="80" autocomplete="given-name" /></label>
+                  <label class="field"><span>Apellidos *</span><input formControlName="apellido" maxlength="80" autocomplete="family-name" /></label>
+                  <label class="field"><span>Tipo de documento *</span><select formControlName="tipoDocumento"><option value="DNI">DNI</option><option value="CARNET_EXTRANJERIA">Carnet de extranjería</option><option value="PASAPORTE">Pasaporte</option></select></label>
+                  <label class="field"><span>Número de documento *</span><input formControlName="numeroDocumento" (input)="sanitizeDocument($event)" maxlength="9" autocomplete="off" />@if (fieldInvalid('client', 'numeroDocumento')) { <small>El documento no corresponde al tipo seleccionado.</small> }</label>
+                  <label class="field"><span>Género *</span><select formControlName="genero"><option value="MASCULINO">Masculino</option><option value="FEMENINO">Femenino</option></select></label>
+                </div>
+              </fieldset>
+
+              <div class="border-t border-slate-100"></div>
+
+              <fieldset>
+                <legend class="mb-4 text-xs font-extrabold uppercase tracking-wide text-slate-500">Contacto y acceso</legend>
+                <div class="grid gap-5 sm:grid-cols-2">
+                  <label class="field"><span>Teléfono *</span><input formControlName="telefono" maxlength="9" inputmode="numeric" autocomplete="tel" /></label>
+                  <label class="field"><span>Correo electrónico *</span><input formControlName="email" maxlength="100" type="email" autocomplete="email" placeholder="nombre@correo.com" /></label>
+                  <label class="field"><span>Usuario *</span><input formControlName="username" maxlength="50" autocomplete="off" placeholder="Ejemplo: juan.perez" /></label>
+                  <label class="field sm:col-span-2"><span>Dirección *</span><input formControlName="direccion" maxlength="200" autocomplete="street-address" /></label>
+                  <label class="field sm:col-span-2"><span>Referencias <em>opcional</em></span><textarea formControlName="referencias" maxlength="500" rows="2"></textarea></label>
+                </div>
+              </fieldset>
+            </div>
+          </section>
+
+          <section class="rounded-xl border border-slate-200 bg-white p-5 sm:p-6">
+            <div class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(300px,.9fr)]">
+              <div>
+                <div class="flex items-center gap-2"><i class="pi pi-shield text-[var(--brand-primary)]"></i><h2 class="text-sm font-extrabold text-slate-900">Privacidad y comunicaciones</h2></div>
+                <p class="mt-2 text-xs leading-5 text-slate-500">Informa a la persona cómo se utilizarán sus datos antes de continuar.</p>
+                @if (aviso(); as currentNotice) {
+                  <details class="mt-3 border-t border-slate-100 pt-3">
+                    <summary class="cursor-pointer text-xs font-bold text-[var(--brand-primary)]">Leer aviso vigente · versión {{ currentNotice.version }}</summary>
+                    <div class="mt-3 max-h-48 overflow-y-auto whitespace-pre-line text-xs leading-5 text-slate-600">{{ currentNotice.contenido }}</div>
+                  </details>
+                }
+              </div>
+              <div class="space-y-5 xl:border-l xl:border-slate-100 xl:pl-6">
+                <label class="flex cursor-pointer items-start gap-3 text-sm leading-5 text-slate-700">
+                  <input type="checkbox" formControlName="avisoInformado" class="mt-0.5 size-4 shrink-0 accent-[var(--brand-primary)]" />
+                  <span>Confirmo que la persona fue informada del aviso de privacidad vigente.</span>
+                </label>
+                <div>
+                  <p class="text-xs font-bold text-slate-700">Recordatorios preventivos por correo <span class="font-normal text-slate-400">(opcional)</span></p>
+                  <div class="mt-2 flex flex-wrap gap-2">
+                    <label class="choice"><input type="radio" formControlName="consentimientoRecordatorios" [value]="true" /> Sí, autoriza</label>
+                    <label class="choice"><input type="radio" formControlName="consentimientoRecordatorios" [value]="false" /> No autoriza</label>
+                    <label class="choice"><input type="radio" formControlName="consentimientoRecordatorios" [value]="null" /> Decidir después</label>
+                  </div>
                 </div>
               </div>
             </div>
+          </section>
+
+          <div class="flex flex-col gap-2 sm:items-end">
+            <button type="submit" [disabled]="saving()" class="primary-button">@if (saving()) { <i class="pi pi-spin pi-spinner"></i> } @else { <i class="pi pi-arrow-right"></i> } Continuar a mascota</button>
+            <p class="text-xs text-slate-500">El acceso permanecerá pendiente hasta registrar la primera mascota.</p>
           </div>
+        </form>
+      }
+
+      @if (step() === 2) {
+        <form [formGroup]="petForm" (ngSubmit)="submitPet()" class="space-y-5">
+          <section class="rounded-xl border border-slate-200 bg-white">
+            <div class="border-b border-slate-200 px-5 py-4 sm:px-6">
+              <h2 class="text-base font-extrabold text-slate-900">Primera mascota</h2>
+              <p class="mt-1 text-sm text-slate-500">Quedará vinculada a {{ clientName() }} como responsable principal.</p>
+            </div>
+            <div class="grid gap-5 p-5 sm:grid-cols-2 sm:p-6">
+              <label class="field sm:col-span-2"><span>Nombre de la mascota *</span><input formControlName="nombreCompleto" maxlength="80" autocomplete="off" /></label>
+              <label class="field"><span>Especie *</span><select formControlName="especie"><option value="" disabled>Selecciona</option><option value="PERRO">Perro</option><option value="GATO">Gato</option><option value="AVE">Ave</option><option value="REPTIL">Reptil</option><option value="ROEDOR">Roedor</option><option value="OTRO">Otro</option></select></label>
+              @if (petForm.controls.especie.value === 'OTRO') { <label class="field"><span>Especie *</span><input formControlName="otraEspecie" maxlength="60" placeholder="Indica la especie" /></label> }
+              <label class="field"><span>Raza *</span><select formControlName="razaId"><option [ngValue]="null" disabled>{{ loadingBreeds() ? 'Cargando...' : 'Selecciona' }}</option>@for (breed of breeds(); track breed.value) { <option [ngValue]="breed.value">{{ breed.label }}</option> }</select></label>
+              <label class="field"><span>Sexo *</span><select formControlName="sexo"><option value="" disabled>Selecciona</option><option value="MACHO">Macho</option><option value="HEMBRA">Hembra</option></select></label>
+              <label class="field"><span>Fecha de nacimiento *</span><input formControlName="fechaNacimiento" type="date" [max]="today" /></label>
+              <label class="field"><span>Color o manto <em>opcional</em></span><input formControlName="color" maxlength="50" /></label>
+              <label class="field"><span>Peso en kg <em>opcional</em></span><input formControlName="peso" type="number" min="0.01" max="120" step="0.01" /></label>
+            </div>
+          </section>
+          <div class="flex flex-col-reverse gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <button type="button" (click)="backToClient()" [disabled]="saving()" class="secondary-button"><i class="pi pi-arrow-left"></i>Corregir responsable</button>
+            <div class="flex flex-col gap-2 sm:items-end"><button type="submit" [disabled]="saving()" class="primary-button">@if (saving()) { <i class="pi pi-spin pi-spinner"></i> } @else { <i class="pi pi-check"></i> } Registrar cliente y mascota</button><p class="max-w-xl text-xs text-slate-500">Al finalizar se guardarán ambos registros y se procesarán los correos para {{ clientEmail() }}.</p></div>
+          </div>
+        </form>
+      }
+
+      @if (step() === 3) {
+        <section class="rounded-xl border border-slate-200 bg-white px-5 py-10 text-center sm:px-10 sm:py-14">
+          <div class="mx-auto grid size-14 place-items-center rounded-full bg-emerald-100 text-emerald-600"><i class="pi pi-check text-xl"></i></div>
+          <p class="mt-5 text-[11px] font-bold uppercase tracking-[.14em] text-emerald-600">Registro completado</p>
+          <h2 class="mt-2 text-2xl font-extrabold text-slate-900">Cliente y mascota vinculados</h2>
+          <p class="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-500">{{ clientName() }} quedó registrado como responsable de {{ petName() }}. La invitación para activar el portal fue procesada para <strong class="text-slate-700">{{ clientEmail() }}</strong>.</p>
+          <div class="mt-7 flex flex-col justify-center gap-3 sm:flex-row"><button type="button" (click)="goToClients()" class="secondary-button">Ver clientes</button><button type="button" (click)="startAnother()" class="primary-button"><i class="pi pi-plus"></i>Registrar otro cliente</button></div>
         </section>
-      </div>
-      <footer class="flex flex-col-reverse gap-3 border-t border-slate-200 bg-slate-50 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-        <p class="text-xs text-slate-500"><i class="pi pi-info-circle mr-1"></i>El acceso quedará pendiente hasta registrar la primera mascota.</p>
-        <button type="submit" [disabled]="saving()" class="primary-button">
-          @if (saving()) { <i class="pi pi-spin pi-spinner"></i> } @else { <i class="pi pi-arrow-right"></i> }
-          Continuar a mascota
-        </button>
-      </footer>
-    </form>
-  }
-
-  @if (step() === 2) {
-    <section class="mb-5 flex items-start gap-3 rounded-xl border border-cyan-200 bg-cyan-50 px-4 py-3">
-      <i class="pi pi-info-circle mt-0.5 text-cyan-700"></i>
-      <div><p class="text-sm font-bold text-cyan-900">Datos del responsable listos</p><p class="mt-0.5 text-xs text-cyan-800">Todavía no se creó el usuario ni se envió ningún correo. El alta se confirmará junto con la primera mascota.</p></div>
+      }
     </section>
-    <form [formGroup]="petForm" (ngSubmit)="submitPet()" class="overflow-hidden rounded-xl border border-slate-200 bg-white">
-      <div class="border-b border-slate-200 px-4 py-4 sm:px-6">
-        <h2 class="text-base font-extrabold text-slate-900">2. Primera mascota</h2>
-        <p class="mt-1 text-sm text-slate-500">Esta mascota quedará vinculada a {{ clientName() }} como responsable principal.</p>
-      </div>
-      <div class="grid gap-5 p-4 sm:grid-cols-2 sm:p-6">
-        <label class="field sm:col-span-2"><span>Nombre de la mascota *</span><input formControlName="nombreCompleto" maxlength="80" autocomplete="off" /></label>
-        <label class="field"><span>Especie *</span><select formControlName="especie"><option value="" disabled>Selecciona</option><option value="PERRO">Perro</option><option value="GATO">Gato</option><option value="AVE">Ave</option><option value="REPTIL">Reptil</option><option value="ROEDOR">Roedor</option><option value="OTRO">Otro</option></select></label>
-        @if (petForm.controls.especie.value === 'OTRO') {
-          <label class="field"><span>Especie *</span><input formControlName="otraEspecie" maxlength="60" placeholder="Indica la especie" /></label>
-        }
-        <label class="field"><span>Raza *</span><select formControlName="razaId"><option [ngValue]="null" disabled>{{ loadingBreeds() ? 'Cargando...' : 'Selecciona' }}</option>@for (breed of breeds(); track breed.value) { <option [ngValue]="breed.value">{{ breed.label }}</option> }</select></label>
-        <label class="field"><span>Sexo *</span><select formControlName="sexo"><option value="" disabled>Selecciona</option><option value="MACHO">Macho</option><option value="HEMBRA">Hembra</option></select></label>
-        <label class="field"><span>Fecha de nacimiento *</span><input formControlName="fechaNacimiento" type="date" [max]="today" /></label>
-        <label class="field"><span>Color o manto <em>opcional</em></span><input formControlName="color" maxlength="50" /></label>
-        <label class="field"><span>Peso en kg <em>opcional</em></span><input formControlName="peso" type="number" min="0.01" max="120" step="0.01" /></label>
-      </div>
-      <footer class="flex flex-col gap-3 border-t border-slate-200 bg-slate-50 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-        <button type="button" (click)="backToClient()" [disabled]="saving()" class="secondary-button"><i class="pi pi-arrow-left"></i>Corregir responsable</button>
-        <div class="flex flex-col gap-3 sm:items-end">
-          <p class="text-xs text-slate-500">Al finalizar se guardarán ambos registros y se procesarán los correos para {{ clientEmail() }}.</p>
-          <button type="submit" [disabled]="saving()" class="primary-button">
-            @if (saving()) { <i class="pi pi-spin pi-spinner"></i> } @else { <i class="pi pi-check"></i> }
-            Registrar cliente y mascota
-          </button>
-        </div>
-      </footer>
-    </form>
-  }
-
-  @if (step() === 3) {
-    <section class="rounded-xl border border-slate-200 bg-white px-5 py-10 text-center sm:px-10 sm:py-14">
-      <div class="mx-auto grid size-14 place-items-center rounded-full bg-emerald-100 text-emerald-600"><i class="pi pi-check text-xl"></i></div>
-      <p class="mt-5 text-[11px] font-bold uppercase tracking-[.14em] text-emerald-600">Registro completado</p>
-      <h2 class="mt-2 text-2xl font-extrabold text-slate-900">Cliente y mascota vinculados</h2>
-      <p class="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-500">{{ clientName() }} quedó registrado como responsable de {{ petName() }}. La invitación para activar el portal fue procesada para <strong class="text-slate-700">{{ clientEmail() }}</strong>.</p>
-      <div class="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
-        <button type="button" (click)="goToClients()" class="secondary-button">Ver clientes</button>
-        <button type="button" (click)="startAnother()" class="primary-button"><i class="pi pi-plus"></i>Registrar otro cliente</button>
-      </div>
-    </section>
-  }
+  </div>
 </main>

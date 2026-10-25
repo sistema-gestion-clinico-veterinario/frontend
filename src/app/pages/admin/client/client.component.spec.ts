@@ -211,54 +211,15 @@ describe('ClientComponent', () => {
       });
     });
 
-    describe('eliminar', () => {
-      let eliminar: jasmine.Spy;
-
-      beforeEach(() => {
-        eliminar = spyOn((component as any).apoderadoService, 'eliminar').and.returnValue(of(resultado()));
-      });
-
-      it('explica que eliminar es una baja que conserva los registros', () => {
-        component.deleteClient(persona(true));
-
-        expect(component.confirmDialog()?.message).toContain('Se le dará de baja');
-        expect(component.confirmDialog()?.message).toContain('sus registros se conservan');
-      });
-
-      it('confirmar elimina por la ruta de administradores y avisa que quedó dado de baja', () => {
-        component.deleteClient(persona(true));
-        component.confirmAction();
-
-        expect(eliminar).toHaveBeenCalledWith(7);
-        expect(toast).toHaveBeenCalledWith(jasmine.objectContaining({ detail: 'Dado de baja correctamente' }));
-      });
-
-      it('si tiene citas vigentes abre el diálogo para resolverlas y reintenta la baja con el mismo motivo', () => {
-        eliminar.and.returnValue(throwError(() => ({ error: { message: 'No se puede desactivar un cliente con citas programadas vigentes' } })));
-        component.deleteClient(persona(true));
-        component.confirmAction();
-
-        expect(component.conflictDialogVisible()).toBeTrue();
-
-        cambiarEstado.and.returnValue(of(resultado()));
-        component.onConflictsResolved();
-
-        expect(cambiarEstado.calls.mostRecent().args).toEqual([7, false, { tipo: 'BAJA', reason: 'Eliminado por el administrador' }]);
-      });
-    });
-
     describe('menú de acciones', () => {
       const etiquetas = (cliente: any) => component.clientActionItems(cliente).map(item => item.label);
 
       beforeEach(() => spyOn((component as any).authStore, 'hasAccess').and.returnValue(true));
 
-      it('"Eliminar" solo lo ve un administrador', () => {
-        spyOn((component as any).authStore, 'isAdmin').and.returnValue(false);
+      it('no ofrece eliminar porque la salida del cliente se gestiona mediante la baja', () => {
         expect(etiquetas(persona(true))).not.toContain('Eliminar');
-
-        (component as any).authStore.isAdmin.and.returnValue(true);
-        const otro = persona(true);
-        expect(etiquetas(otro)).toContain('Eliminar');
+        expect(etiquetas(persona(false, 'SUSPENSION'))).not.toContain('Eliminar');
+        expect(etiquetas(persona(false, 'BAJA'))).not.toContain('Eliminar');
       });
 
       it('una persona activa se suspende o se da de baja', () => {
@@ -304,11 +265,16 @@ describe('ClientComponent', () => {
       spyOn((component as any).messageService, 'add');
 
       component.decidirIaCliente(true);
-      expect(decidir).toHaveBeenCalledWith(7, 'USO_IA_CLINICA', true);
+      expect(decidir).toHaveBeenCalledWith(7, 'USO_IA_CLINICA', true, undefined);
       expect(component.estadoIaCliente()).toBe('OTORGADO');
 
       component.decidirIaCliente(false);
-      expect(decidir).toHaveBeenCalledWith(7, 'USO_IA_CLINICA', false);
+      expect(decidir).toHaveBeenCalledWith(
+        7,
+        'USO_IA_CLINICA',
+        false,
+        'Revocación solicitada presencialmente por el cliente'
+      );
       expect(component.estadoIaCliente()).toBe('RETIRADO');
     });
 

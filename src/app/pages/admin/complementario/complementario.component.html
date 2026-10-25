@@ -1,4 +1,4 @@
-<div class="p-3 sm:p-4 lg:p-8 min-h-screen bg-blue-50 font-['Barlow']">
+<div class="complementario-page p-3 sm:p-4 lg:p-8 min-h-screen bg-blue-50 font-['Barlow']">
 
   <!-- Skeleton Loading -->
   @if (cargando() && !requiresCompanySelection) {
@@ -181,10 +181,12 @@
                             class="p-2 rounded-lg text-slate-400 hover:text-blue-500 hover:bg-blue-50 transition-all active:scale-90">
                             <i class="pi pi-pencil text-sm"></i>
                           </button>
-                          <button *appHasPermission="'VISTA_COMPLEMENTARIO:eliminar'" (click)="openConfirm('Eliminar especialidad', '¿Está seguro de eliminar la especialidad «' + item.nombre + '»?', 'eliminar-especialidad', item)"
-                            class="p-2 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all active:scale-90">
-                            <i class="pi pi-trash text-sm"></i>
-                          </button>
+                          @if (item.eliminable) {
+                            <button *appHasPermission="'VISTA_COMPLEMENTARIO:eliminar'" (click)="openConfirm('Eliminar especialidad', 'La especialidad «' + item.nombre + '» no está asignada a empleados. ¿Deseas eliminarla permanentemente?', 'eliminar-especialidad', item)"
+                              class="p-2 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all active:scale-90" title="Eliminar permanentemente">
+                              <i class="pi pi-trash text-sm"></i>
+                            </button>
+                          }
                         </div>
                       </td>
                     </tr>
@@ -221,10 +223,12 @@
                         class="p-2 rounded-lg text-slate-400 hover:text-blue-500 hover:bg-blue-50 transition-all active:scale-90">
                         <i class="pi pi-pencil text-sm"></i>
                       </button>
-                      <button *appHasPermission="'VISTA_COMPLEMENTARIO:eliminar'" (click)="openConfirm('Eliminar especialidad', '¿Está seguro de eliminar la especialidad «' + item.nombre + '»?', 'eliminar-especialidad', item)"
-                        class="p-2 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all active:scale-90">
-                        <i class="pi pi-trash text-sm"></i>
-                      </button>
+                      @if (item.eliminable) {
+                        <button *appHasPermission="'VISTA_COMPLEMENTARIO:eliminar'" (click)="openConfirm('Eliminar especialidad', 'La especialidad «' + item.nombre + '» no está asignada a empleados. ¿Deseas eliminarla permanentemente?', 'eliminar-especialidad', item)"
+                          class="p-2 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all active:scale-90" title="Eliminar permanentemente">
+                          <i class="pi pi-trash text-sm"></i>
+                        </button>
+                      }
                     </div>
                   </div>
                 }
@@ -317,10 +321,6 @@
                             class="p-2 rounded-lg text-slate-400 hover:text-blue-500 hover:bg-blue-50 transition-all active:scale-90">
                             <i class="pi pi-pencil text-sm"></i>
                           </button>
-                          <button *appHasPermission="'VISTA_COMPLEMENTARIO:eliminar'" (click)="openConfirm('Eliminar tipo de empleado', '¿Está seguro de eliminar el tipo de empleado «' + item.nombre + '»?', 'eliminar-tipo-empleado', item)"
-                            class="p-2 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all active:scale-90">
-                            <i class="pi pi-trash text-sm"></i>
-                          </button>
                         </div>
                       </td>
                     </tr>
@@ -376,10 +376,6 @@
                       <button *appHasPermission="'VISTA_COMPLEMENTARIO:modificar'" (click)="openTipoModal(item)"
                         class="p-2 rounded-lg text-slate-400 hover:text-blue-500 hover:bg-blue-50 transition-all active:scale-90">
                         <i class="pi pi-pencil text-sm"></i>
-                      </button>
-                      <button *appHasPermission="'VISTA_COMPLEMENTARIO:eliminar'" (click)="openConfirm('Eliminar tipo de empleado', '¿Está seguro de eliminar el tipo de empleado «' + item.nombre + '»?', 'eliminar-tipo-empleado', item)"
-                        class="p-2 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all active:scale-90">
-                        <i class="pi pi-trash text-sm"></i>
                       </button>
                     </div>
                   </div>
@@ -476,10 +472,6 @@
                             class="p-2 rounded-lg text-slate-400 hover:text-blue-500 hover:bg-blue-50 transition-all active:scale-90">
                             <i class="pi pi-pencil text-sm"></i>
                           </button>
-                          <button *appHasPermission="'VISTA_COMPLEMENTARIO:eliminar'" (click)="openConfirm('Eliminar servicio', '¿Está seguro de eliminar el servicio «' + item.nombre + '»?', 'eliminar-servicio', item)"
-                            class="p-2 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all active:scale-90">
-                            <i class="pi pi-trash text-sm"></i>
-                          </button>
                         </div>
                       </td>
                     </tr>
@@ -540,10 +532,6 @@
                       <button *appHasPermission="'VISTA_COMPLEMENTARIO:modificar'" (click)="openServicioModal(item)"
                         class="p-2 rounded-lg text-slate-400 hover:text-blue-500 hover:bg-blue-50 transition-all active:scale-90">
                         <i class="pi pi-pencil text-sm"></i>
-                      </button>
-                      <button *appHasPermission="'VISTA_COMPLEMENTARIO:eliminar'" (click)="openConfirm('Eliminar servicio', '¿Está seguro de eliminar el servicio «' + item.nombre + '»?', 'eliminar-servicio', item)"
-                        class="p-2 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all active:scale-90">
-                        <i class="pi pi-trash text-sm"></i>
                       </button>
                     </div>
                   </div>
@@ -620,10 +608,6 @@
                             class="w-8 h-8 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-blue-500 hover:bg-blue-50 transition-all active:scale-95">
                             <i class="pi pi-pencil text-sm"></i>
                           </button>
-                          <button *appHasPermission="'VISTA_COMPLEMENTARIO:eliminar'" (click)="confirmarEliminarVacuna(item)"
-                            class="w-8 h-8 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all active:scale-95">
-                            <i class="pi pi-trash text-sm"></i>
-                          </button>
                         </div>
                       </td>
                     </tr>
@@ -667,10 +651,6 @@
                       <button *appHasPermission="'VISTA_COMPLEMENTARIO:modificar'" (click)="openVacunaModal(item)"
                         class="w-8 h-8 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-blue-500 hover:bg-blue-50 transition-all active:scale-95">
                         <i class="pi pi-pencil text-sm"></i>
-                      </button>
-                      <button *appHasPermission="'VISTA_COMPLEMENTARIO:eliminar'" (click)="confirmarEliminarVacuna(item)"
-                        class="w-8 h-8 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all active:scale-95">
-                        <i class="pi pi-trash text-sm"></i>
                       </button>
                     </div>
                   </div>
@@ -743,10 +723,6 @@
                             class="w-8 h-8 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-blue-500 hover:bg-blue-50 transition-all active:scale-95">
                             <i class="pi pi-pencil text-sm"></i>
                           </button>
-                          <button *appHasPermission="'VISTA_COMPLEMENTARIO:eliminar'" (click)="confirmarEliminarDesparasitante(item)"
-                            class="w-8 h-8 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all active:scale-95">
-                            <i class="pi pi-trash text-sm"></i>
-                          </button>
                         </div>
                       </td>
                     </tr>
@@ -791,10 +767,6 @@
                         class="w-8 h-8 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-blue-500 hover:bg-blue-50 transition-all active:scale-95">
                         <i class="pi pi-pencil text-sm"></i>
                       </button>
-                      <button *appHasPermission="'VISTA_COMPLEMENTARIO:eliminar'" (click)="confirmarEliminarDesparasitante(item)"
-                        class="w-8 h-8 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all active:scale-95">
-                        <i class="pi pi-trash text-sm"></i>
-                      </button>
                     </div>
                   </div>
                 }
@@ -826,75 +798,101 @@
 <!-- Modal: Vacuna -->
 @if (showVacunaModal()) {
   <div class="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/50 backdrop-blur-sm">
-    <div class="bg-white w-full max-w-lg rounded-t-2xl sm:rounded-lg  flex flex-col max-h-[95dvh]">
-      <div class="px-4 sm:px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50 rounded-t-lg">
-        <h2 class="text-base sm:text-lg font-bold text-slate-800">{{ editingVacuna() ? 'Modificar Vacuna' : 'Registrar vacuna en el catálogo' }}</h2>
-        <button (click)="showVacunaModal.set(false)" class="text-slate-400 hover:text-slate-600 transition-colors p-2"><i class="pi pi-times"></i></button>
+    <div class="bg-white w-full max-w-2xl rounded-t-2xl sm:rounded-xl shadow-2xl flex flex-col max-h-[95dvh] overflow-hidden">
+      <div class="px-5 sm:px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-white">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-10 h-10 rounded-xl bg-cyan-50 text-cyan-600 flex items-center justify-center shrink-0">
+            <i class="pi pi-shield text-base"></i>
+          </div>
+          <div class="min-w-0">
+            <h2 class="text-base font-bold text-slate-800 truncate">{{ editingVacuna() ? 'Editar vacuna' : 'Nueva vacuna' }}</h2>
+            <p class="text-xs text-slate-500 mt-0.5">Configura la vacuna para utilizarla en controles y cobros.</p>
+          </div>
+        </div>
+        <button type="button" (click)="showVacunaModal.set(false)" aria-label="Cerrar formulario"
+          class="w-9 h-9 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors flex items-center justify-center shrink-0">
+          <i class="pi pi-times"></i>
+        </button>
       </div>
-      <div class="flex-1 overflow-y-auto p-4 sm:p-6">
-        <form [formGroup]="vacunaForm" (ngSubmit)="confirmarGuardarVacuna()" class="space-y-4">
-          <div class="flex flex-col gap-1">
-            <label class="text-xs font-semibold text-slate-700 ml-0.5">Nombre comercial <span class="text-rose-500">*</span></label>
-            <input type="text" formControlName="nombre" maxlength="100" placeholder="Ej: Nobivac Puppy DP"
-              class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
-          </div>
-          <div class="flex flex-col gap-1">
-            <label class="text-xs font-semibold text-slate-700 ml-0.5">Especie <span class="text-rose-500">*</span></label>
-            <select formControlName="especie" class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all">
-              <option value="">Seleccionar</option>
-              <option value="PERRO">Perro</option>
-              <option value="GATO">Gato</option>
-              <option value="AVE">Ave</option>
-              <option value="REPTIL">Reptil</option>
-              <option value="ROEDOR">Roedor</option>
-              <option value="EXOTICO">Exótico</option>
-              <option value="OTRO">Otro</option>
-            </select>
-          </div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div class="flex flex-col gap-1">
-              <label class="text-xs font-semibold text-slate-700 ml-0.5">Periodicidad sugerida (meses)</label>
-              <input type="number" formControlName="periodicidadMesesSugerida" min="1" max="120" class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+      <form [formGroup]="vacunaForm" (ngSubmit)="confirmarGuardarVacuna()" class="flex flex-col min-h-0 flex-1">
+        <div class="flex-1 overflow-y-auto px-5 sm:px-6 py-5 space-y-6">
+          <section aria-labelledby="datos-vacuna" class="space-y-4">
+            <div class="flex items-center gap-2">
+              <div>
+                <h3 id="datos-vacuna" class="text-sm font-bold text-slate-800">Datos de la vacuna</h3>
+                <p class="text-[11px] text-slate-500">Información para identificarla en el catálogo.</p>
+              </div>
             </div>
-            <div class="flex flex-col gap-1">
-              <label class="text-xs font-semibold text-slate-700 ml-0.5">Precio para Caja <span class="text-rose-500">*</span></label>
-              <input type="number" formControlName="precio" min="1" step="0.01" class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-semibold text-slate-700">Nombre comercial <span class="text-rose-500">*</span></label>
+                <input type="text" formControlName="nombre" maxlength="100" placeholder="Ej: Nobivac Puppy DP"
+                  [ngClass]="vacunaForm.get('nombre')?.invalid && vacunaForm.get('nombre')?.touched ? 'border-rose-400' : 'border-slate-300'"
+                  class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-cyan-500/15 focus:border-cyan-500 outline-none h-10 transition-all" />
+              </div>
+              <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-semibold text-slate-700">Especie <span class="text-rose-500">*</span></label>
+                <div class="relative">
+                  <select formControlName="especie"
+                    [ngClass]="vacunaForm.get('especie')?.invalid && vacunaForm.get('especie')?.touched ? 'border-rose-400' : 'border-slate-300'"
+                    class="w-full px-3 py-2 pr-9 border rounded-lg text-sm focus:ring-2 focus:ring-cyan-500/15 focus:border-cyan-500 outline-none h-10 bg-white appearance-none transition-all">
+                    <option value="">Selecciona una especie</option>
+                    <option value="PERRO">Perro</option><option value="GATO">Gato</option><option value="AVE">Ave</option>
+                    <option value="REPTIL">Reptil</option><option value="ROEDOR">Roedor</option><option value="EXOTICO">Exótico</option><option value="OTRO">Otro</option>
+                  </select>
+                  <i class="pi pi-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 pointer-events-none"></i>
+                </div>
+              </div>
             </div>
-          </div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div class="flex flex-col gap-1">
-              <label class="text-xs font-semibold text-slate-700 ml-0.5">Lote</label>
-              <input type="text" formControlName="lote" maxlength="80" placeholder="Ej: NV2026A001"
-                class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-semibold text-slate-700">Precio para caja <span class="text-rose-500">*</span></label>
+                <div class="relative"><span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-slate-500">S/</span>
+                  <input type="number" formControlName="precio" min="1" step="0.01" placeholder="0.00"
+                    [ngClass]="vacunaForm.get('precio')?.invalid && vacunaForm.get('precio')?.touched ? 'border-rose-400' : 'border-slate-300'"
+                    class="w-full pl-10 pr-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-cyan-500/15 focus:border-cyan-500 outline-none h-10 transition-all" />
+                </div>
+              </div>
+              <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-semibold text-slate-700">Periodicidad sugerida <span class="font-normal text-slate-400">(opcional)</span></label>
+                <div class="relative">
+                  <input type="number" formControlName="periodicidadMesesSugerida" min="1" max="120" placeholder="12"
+                    class="w-full px-3 pr-16 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-cyan-500/15 focus:border-cyan-500 outline-none h-10 transition-all" />
+                  <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">meses</span>
+                </div>
+              </div>
             </div>
-            <div class="flex flex-col gap-1">
-              <label class="text-xs font-semibold text-slate-700 ml-0.5">Vencimiento</label>
-              <input type="date" formControlName="fechaVencimientoProducto"
-                class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+          </section>
+
+          <section aria-labelledby="control-vacuna" class="space-y-4 pt-5 border-t border-slate-200">
+            <div class="flex items-center gap-2">
+              <div><h3 id="control-vacuna" class="text-sm font-bold text-slate-800">Control del producto</h3><p class="text-[11px] text-slate-500">Datos opcionales para controlar el lote y vencimiento.</p></div>
             </div>
-          </div>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div class="flex flex-col gap-1">
-              <label class="text-xs font-semibold text-slate-700 ml-0.5">Dosis</label>
-              <input type="number" formControlName="dosis" min="0" step="0.1" class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="flex flex-col gap-1.5"><label class="text-xs font-semibold text-slate-700">Lote</label><input type="text" formControlName="lote" maxlength="80" placeholder="Ej: NV2026A001" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-cyan-500/15 focus:border-cyan-500 outline-none h-10 transition-all" /></div>
+              <div class="flex flex-col gap-1.5"><label class="text-xs font-semibold text-slate-700">Fecha de vencimiento</label><input type="date" formControlName="fechaVencimientoProducto" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-cyan-500/15 focus:border-cyan-500 outline-none h-10 transition-all" /></div>
             </div>
-            <div class="flex flex-col gap-1">
-              <label class="text-xs font-semibold text-slate-700 ml-0.5">Unidad</label>
-              <input type="text" formControlName="unidadDosis" maxlength="30" placeholder="Ej: mL"
-                class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+          </section>
+
+          <section aria-labelledby="administracion-vacuna" class="space-y-4 pt-5 border-t border-slate-200">
+            <div class="flex items-center gap-2">
+              <div><h3 id="administracion-vacuna" class="text-sm font-bold text-slate-800">Administración</h3><p class="text-[11px] text-slate-500">Indicación habitual que acompañará el registro.</p></div>
             </div>
-            <div class="flex flex-col gap-1">
-              <label class="text-xs font-semibold text-slate-700 ml-0.5">Vía de administración</label>
-              <input type="text" formControlName="viaAdministracion" maxlength="50" placeholder="Ej: Subcutánea"
-                class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div class="flex flex-col gap-1.5"><label class="text-xs font-semibold text-slate-700">Dosis</label><input type="number" formControlName="dosis" min="0" step="0.1" placeholder="0.0" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-cyan-500/15 focus:border-cyan-500 outline-none h-10 transition-all" /></div>
+              <div class="flex flex-col gap-1.5"><label class="text-xs font-semibold text-slate-700">Unidad</label><input type="text" formControlName="unidadDosis" maxlength="30" placeholder="Ej: mL" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-cyan-500/15 focus:border-cyan-500 outline-none h-10 transition-all" /></div>
+              <div class="flex flex-col gap-1.5"><label class="text-xs font-semibold text-slate-700">Vía</label><input type="text" formControlName="viaAdministracion" maxlength="50" placeholder="Ej: Subcutánea" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-cyan-500/15 focus:border-cyan-500 outline-none h-10 transition-all" /></div>
             </div>
-          </div>
-          <div class="flex flex-col sm:flex-row sm:justify-end gap-3 pt-5 border-t border-slate-200">
-            <button type="button" (click)="showVacunaModal.set(false)" class="px-5 py-2.5 text-sm font-semibold text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded transition-all">Descartar cambios</button>
-            <button type="submit" [disabled]="loadingStore.isLoading()" class="px-8 py-2.5 text-sm font-bold text-white bg-blue-500 hover:bg-blue-600 rounded disabled:opacity-50 transition-all">{{ editingVacuna() ? 'Guardar Cambios' : 'Confirmar Registro' }}</button>
-          </div>
-        </form>
-      </div>
+          </section>
+        </div>
+        <div class="px-5 sm:px-6 py-4 border-t border-slate-200 bg-white flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2 sm:gap-3 shrink-0">
+          <button type="button" (click)="showVacunaModal.set(false)" class="w-full sm:w-auto px-5 h-10 text-sm font-semibold text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-all">Cancelar</button>
+          <button type="submit" [disabled]="loadingStore.isLoading()" class="w-full sm:w-auto px-6 h-10 text-sm font-bold text-white bg-cyan-600 hover:bg-cyan-700 rounded-lg shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2">
+            @if (loadingStore.isLoading()) { <i class="pi pi-spin pi-spinner text-xs"></i> } @else { <i class="pi pi-check text-xs"></i> }
+            {{ loadingStore.isLoading() ? 'Guardando...' : (editingVacuna() ? 'Guardar cambios' : 'Registrar vacuna') }}
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 }
@@ -902,75 +900,62 @@
 <!-- Modal: Desparasitante -->
 @if (showDesparasitanteModal()) {
   <div class="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/50 backdrop-blur-sm">
-    <div class="bg-white w-full max-w-lg rounded-t-2xl sm:rounded-lg shadow-2xl flex flex-col max-h-[95dvh]">
-      <div class="px-4 sm:px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50 rounded-t-lg">
-        <h2 class="text-base sm:text-lg font-bold text-slate-800">{{ editingDesparasitante() ? 'Modificar Desparasitante' : 'Registrar desparasitante en el catálogo' }}</h2>
-        <button (click)="showDesparasitanteModal.set(false)" class="text-slate-400 hover:text-slate-600 transition-colors p-2"><i class="pi pi-times"></i></button>
+    <div class="bg-white w-full max-w-2xl rounded-t-2xl sm:rounded-xl shadow-2xl flex flex-col max-h-[95dvh] overflow-hidden">
+      <div class="px-5 sm:px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-white">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-10 h-10 rounded-xl bg-cyan-50 text-cyan-600 flex items-center justify-center shrink-0"><i class="pi pi-box text-base"></i></div>
+          <div class="min-w-0">
+            <h2 class="text-base font-bold text-slate-800 truncate">{{ editingDesparasitante() ? 'Editar desparasitante' : 'Nuevo desparasitante' }}</h2>
+            <p class="text-xs text-slate-500 mt-0.5">Configura el producto para utilizarlo en controles y cobros.</p>
+          </div>
+        </div>
+        <button type="button" (click)="showDesparasitanteModal.set(false)" aria-label="Cerrar formulario"
+          class="w-9 h-9 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors flex items-center justify-center shrink-0"><i class="pi pi-times"></i></button>
       </div>
-      <div class="flex-1 overflow-y-auto p-4 sm:p-6">
-        <form [formGroup]="desparasitanteForm" (ngSubmit)="confirmarGuardarDesparasitante()" class="space-y-4">
-          <div class="flex flex-col gap-1">
-            <label class="text-xs font-semibold text-slate-700 ml-0.5">Nombre comercial <span class="text-rose-500">*</span></label>
-            <input type="text" formControlName="nombre" maxlength="100" placeholder="Ej: Ivermectina"
-              class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
-          </div>
-          <div class="flex flex-col gap-1">
-            <label class="text-xs font-semibold text-slate-700 ml-0.5">Especie <span class="text-rose-500">*</span></label>
-            <select formControlName="especie" class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all">
-              <option value="">Seleccionar</option>
-              <option value="PERRO">Perro</option>
-              <option value="GATO">Gato</option>
-              <option value="AVE">Ave</option>
-              <option value="REPTIL">Reptil</option>
-              <option value="ROEDOR">Roedor</option>
-              <option value="EXOTICO">Exótico</option>
-              <option value="OTRO">Otro</option>
-            </select>
-          </div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div class="flex flex-col gap-1">
-              <label class="text-xs font-semibold text-slate-700 ml-0.5">Periodicidad sugerida (meses)</label>
-              <input type="number" formControlName="periodicidadMesesSugerida" min="1" max="120" class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+      <form [formGroup]="desparasitanteForm" (ngSubmit)="confirmarGuardarDesparasitante()" class="flex flex-col min-h-0 flex-1">
+        <div class="flex-1 overflow-y-auto px-5 sm:px-6 py-5 space-y-6">
+          <section aria-labelledby="datos-desparasitante" class="space-y-4">
+            <div><h3 id="datos-desparasitante" class="text-sm font-bold text-slate-800">Datos del producto</h3><p class="text-[11px] text-slate-500">Información para identificarlo en el catálogo.</p></div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="flex flex-col gap-1.5"><label class="text-xs font-semibold text-slate-700">Nombre comercial <span class="text-rose-500">*</span></label><input type="text" formControlName="nombre" maxlength="100" placeholder="Ej: Ivermectina" [ngClass]="desparasitanteForm.get('nombre')?.invalid && desparasitanteForm.get('nombre')?.touched ? 'border-rose-400' : 'border-slate-300'" class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-cyan-500/15 focus:border-cyan-500 outline-none h-10 transition-all" /></div>
+              <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-semibold text-slate-700">Especie <span class="text-rose-500">*</span></label>
+                <div class="relative"><select formControlName="especie" [ngClass]="desparasitanteForm.get('especie')?.invalid && desparasitanteForm.get('especie')?.touched ? 'border-rose-400' : 'border-slate-300'" class="w-full px-3 py-2 pr-9 border rounded-lg text-sm focus:ring-2 focus:ring-cyan-500/15 focus:border-cyan-500 outline-none h-10 bg-white appearance-none transition-all">
+                  <option value="">Selecciona una especie</option><option value="PERRO">Perro</option><option value="GATO">Gato</option><option value="AVE">Ave</option><option value="REPTIL">Reptil</option><option value="ROEDOR">Roedor</option><option value="EXOTICO">Exótico</option><option value="OTRO">Otro</option>
+                </select><i class="pi pi-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 pointer-events-none"></i></div>
+              </div>
             </div>
-            <div class="flex flex-col gap-1">
-              <label class="text-xs font-semibold text-slate-700 ml-0.5">Precio para Caja <span class="text-rose-500">*</span></label>
-              <input type="number" formControlName="precio" min="1" step="0.01" class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="flex flex-col gap-1.5"><label class="text-xs font-semibold text-slate-700">Precio para caja <span class="text-rose-500">*</span></label><div class="relative"><span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-slate-500">S/</span><input type="number" formControlName="precio" min="1" step="0.01" placeholder="0.00" [ngClass]="desparasitanteForm.get('precio')?.invalid && desparasitanteForm.get('precio')?.touched ? 'border-rose-400' : 'border-slate-300'" class="w-full pl-10 pr-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-cyan-500/15 focus:border-cyan-500 outline-none h-10 transition-all" /></div></div>
+              <div class="flex flex-col gap-1.5"><label class="text-xs font-semibold text-slate-700">Periodicidad sugerida <span class="font-normal text-slate-400">(opcional)</span></label><div class="relative"><input type="number" formControlName="periodicidadMesesSugerida" min="1" max="120" placeholder="3" class="w-full px-3 pr-16 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-cyan-500/15 focus:border-cyan-500 outline-none h-10 transition-all" /><span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">meses</span></div></div>
             </div>
-          </div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div class="flex flex-col gap-1">
-              <label class="text-xs font-semibold text-slate-700 ml-0.5">Lote</label>
-              <input type="text" formControlName="lote" maxlength="80" placeholder="Ej: NV2026A001"
-                class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+          </section>
+
+          <section aria-labelledby="control-desparasitante" class="space-y-4 pt-5 border-t border-slate-200">
+            <div><h3 id="control-desparasitante" class="text-sm font-bold text-slate-800">Control del producto</h3><p class="text-[11px] text-slate-500">Datos opcionales para controlar el lote y vencimiento.</p></div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="flex flex-col gap-1.5"><label class="text-xs font-semibold text-slate-700">Lote</label><input type="text" formControlName="lote" maxlength="80" placeholder="Ej: DP2026A001" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-cyan-500/15 focus:border-cyan-500 outline-none h-10 transition-all" /></div>
+              <div class="flex flex-col gap-1.5"><label class="text-xs font-semibold text-slate-700">Fecha de vencimiento</label><input type="date" formControlName="fechaVencimientoProducto" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-cyan-500/15 focus:border-cyan-500 outline-none h-10 transition-all" /></div>
             </div>
-            <div class="flex flex-col gap-1">
-              <label class="text-xs font-semibold text-slate-700 ml-0.5">Vencimiento</label>
-              <input type="date" formControlName="fechaVencimientoProducto"
-                class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+          </section>
+
+          <section aria-labelledby="administracion-desparasitante" class="space-y-4 pt-5 border-t border-slate-200">
+            <div><h3 id="administracion-desparasitante" class="text-sm font-bold text-slate-800">Administración</h3><p class="text-[11px] text-slate-500">Indicación habitual que acompañará el registro.</p></div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div class="flex flex-col gap-1.5"><label class="text-xs font-semibold text-slate-700">Dosis</label><input type="number" formControlName="dosis" min="0" step="0.1" placeholder="0.0" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-cyan-500/15 focus:border-cyan-500 outline-none h-10 transition-all" /></div>
+              <div class="flex flex-col gap-1.5"><label class="text-xs font-semibold text-slate-700">Unidad</label><input type="text" formControlName="unidadDosis" maxlength="30" placeholder="Ej: mL" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-cyan-500/15 focus:border-cyan-500 outline-none h-10 transition-all" /></div>
+              <div class="flex flex-col gap-1.5"><label class="text-xs font-semibold text-slate-700">Vía</label><input type="text" formControlName="viaAdministracion" maxlength="50" placeholder="Ej: Oral" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-cyan-500/15 focus:border-cyan-500 outline-none h-10 transition-all" /></div>
             </div>
-          </div>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div class="flex flex-col gap-1">
-              <label class="text-xs font-semibold text-slate-700 ml-0.5">Dosis</label>
-              <input type="number" formControlName="dosis" min="0" step="0.1" class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
-            </div>
-            <div class="flex flex-col gap-1">
-              <label class="text-xs font-semibold text-slate-700 ml-0.5">Unidad</label>
-              <input type="text" formControlName="unidadDosis" maxlength="30" placeholder="Ej: mL"
-                class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
-            </div>
-            <div class="flex flex-col gap-1">
-              <label class="text-xs font-semibold text-slate-700 ml-0.5">Vía de administración</label>
-              <input type="text" formControlName="viaAdministracion" maxlength="50" placeholder="Ej: Subcutánea"
-                class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
-            </div>
-          </div>
-          <div class="flex flex-col sm:flex-row sm:justify-end gap-3 pt-5 border-t border-slate-200">
-            <button type="button" (click)="showDesparasitanteModal.set(false)" class="px-5 py-2.5 text-sm font-semibold text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded transition-all">Descartar cambios</button>
-            <button type="submit" [disabled]="loadingStore.isLoading()" class="px-8 py-2.5 text-sm font-bold text-white bg-blue-500 hover:bg-blue-600 rounded disabled:opacity-50 transition-all">{{ editingDesparasitante() ? 'Guardar Cambios' : 'Confirmar Registro' }}</button>
-          </div>
-        </form>
-      </div>
+          </section>
+        </div>
+        <div class="px-5 sm:px-6 py-4 border-t border-slate-200 bg-white flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2 sm:gap-3 shrink-0">
+          <button type="button" (click)="showDesparasitanteModal.set(false)" class="w-full sm:w-auto px-5 h-10 text-sm font-semibold text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-all">Cancelar</button>
+          <button type="submit" [disabled]="loadingStore.isLoading()" class="w-full sm:w-auto px-6 h-10 text-sm font-bold text-white bg-cyan-600 hover:bg-cyan-700 rounded-lg shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2">
+            @if (loadingStore.isLoading()) { <i class="pi pi-spin pi-spinner text-xs"></i> } @else { <i class="pi pi-check text-xs"></i> }
+            {{ loadingStore.isLoading() ? 'Guardando...' : (editingDesparasitante() ? 'Guardar cambios' : 'Registrar desparasitante') }}
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 }
@@ -978,46 +963,67 @@
 <!-- Modal: Especialidad -->
 @if (showEspModal()) {
   <div class="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/50 backdrop-blur-sm">
-    <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-lg shadow-2xl flex flex-col max-h-[95dvh]">
-      <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50 rounded-t-lg">
-        <h2 class="text-lg font-bold text-slate-800">{{ editingEsp() ? 'Modificar Especialidad' : 'Nueva Especialidad' }}</h2>
-        <button (click)="showEspModal.set(false)" class="text-slate-400 hover:text-slate-600 transition-colors p-2">
+    <div class="bg-white w-full max-w-xl rounded-t-2xl sm:rounded-xl shadow-2xl flex flex-col max-h-[95dvh] overflow-hidden">
+      <div class="px-5 sm:px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-white">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-10 h-10 rounded-xl bg-cyan-50 text-cyan-600 flex items-center justify-center shrink-0"><i class="pi pi-star text-base"></i></div>
+          <div class="min-w-0">
+            <h2 class="text-base font-bold text-slate-800 truncate">{{ editingEsp() ? 'Editar especialidad' : 'Nueva especialidad' }}</h2>
+            <p class="text-xs text-slate-500 mt-0.5">Define una especialidad que podrá asignarse al personal.</p>
+          </div>
+        </div>
+        <button type="button" (click)="showEspModal.set(false)" aria-label="Cerrar formulario"
+          class="w-9 h-9 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors flex items-center justify-center shrink-0">
           <i class="pi pi-times"></i>
         </button>
       </div>
-      <div class="flex-1 overflow-y-auto p-6">
-        <form [formGroup]="espForm" (ngSubmit)="confirmarGuardarEspecialidad()" class="space-y-5">
-          <div class="flex flex-col gap-1">
-            <label class="text-xs font-semibold text-slate-700 ml-0.5">Denominación <span class="text-rose-500">*</span></label>
-            <input type="text" formControlName="nombre" maxlength="100" placeholder="Ej: Cirugía General"
-              class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+      <form [formGroup]="espForm" (ngSubmit)="confirmarGuardarEspecialidad()" class="flex flex-col min-h-0 flex-1">
+        <div class="flex-1 overflow-y-auto px-5 sm:px-6 py-5 space-y-5">
+          <div class="flex items-center gap-2">
+            <div><h3 class="text-sm font-bold text-slate-800">Información de la especialidad</h3><p class="text-[11px] text-slate-500">Usa un nombre breve y una descripción clara.</p></div>
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs font-semibold text-slate-700">Nombre <span class="text-rose-500">*</span></label>
+            <input type="text" formControlName="nombre" maxlength="100" placeholder="Ej: Cirugía veterinaria"
+              [ngClass]="espForm.get('nombre')?.invalid && espForm.get('nombre')?.touched ? 'border-rose-400' : 'border-slate-300'"
+              class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-cyan-500/15 focus:border-cyan-500 outline-none h-10 transition-all" />
+            @if (espForm.get('nombre')?.touched && espForm.get('nombre')?.errors?.['required']) {
+              <p class="text-[11px] text-rose-500">El nombre de la especialidad es obligatorio</p>
+            }
+            @if (espForm.get('nombre')?.touched && espForm.get('nombre')?.errors?.['minlength']) {
+              <p class="text-[11px] text-rose-500">Ingresa al menos 2 caracteres</p>
+            }
             @if (espForm.get('nombre')?.touched && espForm.get('nombre')?.errors?.['leadingTrailingSpace']) {
-              <p class="text-[11px] text-rose-500 ml-0.5">No debe tener espacios al inicio o al final</p>
+              <p class="text-[11px] text-rose-500">No debe tener espacios al inicio o al final</p>
             }
             @if (espForm.get('nombre')?.touched && espForm.get('nombre')?.errors?.['lettersOnly']) {
-              <p class="text-[11px] text-rose-500 ml-0.5">Solo se permiten letras</p>
+              <p class="text-[11px] text-rose-500">Solo se permiten letras</p>
             }
           </div>
-          <div class="flex flex-col gap-1">
-            <label class="text-xs font-semibold text-slate-700 ml-0.5">Descripción Operativa</label>
-            <textarea formControlName="descripcion" rows="3" maxlength="500" placeholder="Detalle las competencias de esta especialidad..."
-            class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none resize-none transition-all"></textarea>
+          <div class="flex flex-col gap-1.5">
+            <div class="flex items-center justify-between gap-3">
+              <label class="text-xs font-semibold text-slate-700">Descripción <span class="font-normal text-slate-400">(opcional)</span></label>
+              <span class="text-[10px] text-slate-400">Máximo 500 caracteres</span>
+            </div>
+            <textarea formControlName="descripcion" rows="4" maxlength="500" placeholder="Describe el ámbito de atención de esta especialidad"
+              [ngClass]="espForm.get('descripcion')?.invalid && espForm.get('descripcion')?.touched ? 'border-rose-400' : 'border-slate-300'"
+              class="w-full px-3 py-2.5 border rounded-lg text-sm focus:ring-2 focus:ring-cyan-500/15 focus:border-cyan-500 outline-none resize-none transition-all"></textarea>
             @if (espForm.get('descripcion')?.touched && espForm.get('descripcion')?.errors?.['leadingTrailingSpace']) {
-              <p class="text-[11px] text-rose-500 ml-0.5">No debe tener espacios al inicio o al final</p>
+              <p class="text-[11px] text-rose-500">No debe tener espacios al inicio o al final</p>
+            }
+            @if (espForm.get('descripcion')?.touched && espForm.get('descripcion')?.errors?.['textContent']) {
+              <p class="text-[11px] text-rose-500">Ingresa una descripción válida</p>
             }
           </div>
-          <div class="flex flex-col sm:flex-row sm:justify-end gap-3 pt-6 border-t border-slate-200">
-            <button type="button" (click)="showEspModal.set(false)"
-              class="px-5 py-2.5 text-sm font-semibold text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded transition-all">
-              Descartar cambios
-            </button>
-            <button type="submit" [disabled]="loadingStore.isLoading()"
-              class="px-8 py-2.5 text-sm font-bold text-white bg-blue-500 hover:bg-blue-600 rounded shadow-sm disabled:opacity-50 transition-all">
-              {{ editingEsp() ? 'Actualizar' : 'Confirmar Registro' }}
-            </button>
-          </div>
-        </form>
-      </div>
+        </div>
+        <div class="px-5 sm:px-6 py-4 border-t border-slate-200 bg-white flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2 sm:gap-3 shrink-0">
+          <button type="button" (click)="showEspModal.set(false)" class="w-full sm:w-auto px-5 h-10 text-sm font-semibold text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-all">Cancelar</button>
+          <button type="submit" [disabled]="loadingStore.isLoading()" class="w-full sm:w-auto px-6 h-10 text-sm font-bold text-white bg-cyan-600 hover:bg-cyan-700 rounded-lg shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2">
+            @if (loadingStore.isLoading()) { <i class="pi pi-spin pi-spinner text-xs"></i> } @else { <i class="pi pi-check text-xs"></i> }
+            {{ loadingStore.isLoading() ? 'Guardando...' : (editingEsp() ? 'Guardar cambios' : 'Crear especialidad') }}
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 }
@@ -1025,62 +1031,121 @@
 <!-- Modal: Tipo de Empleado -->
 @if (showTipoModal()) {
   <div class="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/50 backdrop-blur-sm">
-    <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-lg shadow-2xl flex flex-col max-h-[95dvh]">
-      <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50 rounded-t-lg">
-        <h2 class="text-lg font-bold text-slate-800">{{ editingTipo() ? 'Modificar Tipo de Empleado' : 'Nuevo Tipo de Empleado' }}</h2>
-        <button (click)="showTipoModal.set(false)" class="text-slate-400 hover:text-slate-600 transition-colors p-2">
+    <div class="bg-white w-full max-w-xl rounded-t-2xl sm:rounded-xl shadow-2xl flex flex-col max-h-[95dvh] overflow-hidden">
+      <div class="px-5 sm:px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-white">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-10 h-10 rounded-xl bg-cyan-50 text-cyan-600 flex items-center justify-center shrink-0">
+            <i class="pi pi-users text-base"></i>
+          </div>
+          <div class="min-w-0">
+            <h2 class="text-base font-bold text-slate-800 truncate">{{ editingTipo() ? 'Editar tipo de empleado' : 'Nuevo tipo de empleado' }}</h2>
+            <p class="text-xs text-slate-500 mt-0.5">Define el cargo y las funciones que podrá realizar.</p>
+          </div>
+        </div>
+        <button type="button" (click)="showTipoModal.set(false)" aria-label="Cerrar formulario"
+          class="w-9 h-9 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors flex items-center justify-center shrink-0">
           <i class="pi pi-times"></i>
         </button>
       </div>
-      <div class="flex-1 overflow-y-auto p-6">
-        <form [formGroup]="tipoForm" (ngSubmit)="confirmarGuardarTipoEmpleado()" class="space-y-5">
-          <div class="flex flex-col gap-1">
-            <label class="text-xs font-semibold text-slate-700 ml-0.5">Denominación <span class="text-rose-500">*</span></label>
-            <input type="text" formControlName="nombre" maxlength="100" placeholder="Ej: Veterinario Clínico"
-              class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+      <form [formGroup]="tipoForm" (ngSubmit)="confirmarGuardarTipoEmpleado()" class="flex flex-col min-h-0 flex-1">
+        <div class="flex-1 overflow-y-auto px-5 sm:px-6 py-5 space-y-6">
+          <section aria-labelledby="informacion-cargo" class="space-y-4">
+            <div class="flex items-center gap-2">
+              <div>
+                <h3 id="informacion-cargo" class="text-sm font-bold text-slate-800">Información del cargo</h3>
+                <p class="text-[11px] text-slate-500">Utiliza un nombre que el personal pueda reconocer fácilmente.</p>
+              </div>
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <label class="text-xs font-semibold text-slate-700">Nombre del cargo <span class="text-rose-500">*</span></label>
+              <input type="text" formControlName="nombre" maxlength="100" placeholder="Ej: Médico veterinario"
+                [ngClass]="tipoForm.get('nombre')?.invalid && tipoForm.get('nombre')?.touched ? 'border-rose-400' : 'border-slate-300'"
+                class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-cyan-500/15 focus:border-cyan-500 outline-none h-10 transition-all" />
+              @if (tipoForm.get('nombre')?.touched && tipoForm.get('nombre')?.errors?.['required']) {
+                <p class="text-[11px] text-rose-500">El nombre del cargo es obligatorio</p>
+              }
+              @if (tipoForm.get('nombre')?.touched && tipoForm.get('nombre')?.errors?.['minlength']) {
+                <p class="text-[11px] text-rose-500">Ingresa al menos 2 caracteres</p>
+              }
             @if (tipoForm.get('nombre')?.touched && tipoForm.get('nombre')?.errors?.['leadingTrailingSpace']) {
-              <p class="text-[11px] text-rose-500 ml-0.5">No debe tener espacios al inicio o al final</p>
+                <p class="text-[11px] text-rose-500">No debe tener espacios al inicio o al final</p>
             }
             @if (tipoForm.get('nombre')?.touched && tipoForm.get('nombre')?.errors?.['lettersOnly']) {
-              <p class="text-[11px] text-rose-500 ml-0.5">Solo se permiten letras</p>
+                <p class="text-[11px] text-rose-500">Solo se permiten letras</p>
             }
-          </div>
-          <div class="flex flex-col gap-1">
-            <label class="text-xs font-semibold text-slate-700 ml-0.5">Descripción</label>
-            <textarea formControlName="descripcion" rows="3" maxlength="500" placeholder="Descripción del tipo de empleado..."
-            class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none resize-none transition-all"></textarea>
-            @if (tipoForm.get('descripcion')?.touched && tipoForm.get('descripcion')?.errors?.['leadingTrailingSpace']) {
-              <p class="text-[11px] text-rose-500 ml-0.5">No debe tener espacios al inicio o al final</p>
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <div class="flex items-center justify-between gap-3">
+                <label class="text-xs font-semibold text-slate-700">Descripción <span class="font-normal text-slate-400">(opcional)</span></label>
+                <span class="text-[10px] text-slate-400">Máximo 500 caracteres</span>
+              </div>
+              <textarea formControlName="descripcion" rows="3" maxlength="500"
+                placeholder="Describe las responsabilidades principales de este cargo"
+                [ngClass]="tipoForm.get('descripcion')?.invalid && tipoForm.get('descripcion')?.touched ? 'border-rose-400' : 'border-slate-300'"
+                class="w-full px-3 py-2.5 border rounded-lg text-sm focus:ring-2 focus:ring-cyan-500/15 focus:border-cyan-500 outline-none resize-none transition-all"></textarea>
+              @if (tipoForm.get('descripcion')?.touched && tipoForm.get('descripcion')?.errors?.['leadingTrailingSpace']) {
+                <p class="text-[11px] text-rose-500">No debe tener espacios al inicio o al final</p>
+              }
+              @if (tipoForm.get('descripcion')?.touched && tipoForm.get('descripcion')?.errors?.['textContent']) {
+                <p class="text-[11px] text-rose-500">Ingresa una descripción válida</p>
+              }
+            </div>
+          </section>
+
+          <section aria-labelledby="capacidades-cargo" class="space-y-4 pt-5 border-t border-slate-200">
+            <div class="flex items-center gap-2">
+              <div>
+                <h3 id="capacidades-cargo" class="text-sm font-bold text-slate-800">Funciones del cargo</h3>
+                <p class="text-[11px] text-slate-500">Activa solamente las funciones que correspondan.</p>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <label for="chkVet"
+                class="flex items-start gap-3 p-3.5 bg-white border rounded-xl cursor-pointer transition-colors"
+                [ngClass]="tipoForm.get('esVeterinario')?.value ? 'border-cyan-400 ring-2 ring-cyan-500/10' : 'border-slate-200 hover:border-cyan-300'">
+                <input type="checkbox" formControlName="esVeterinario" id="chkVet"
+                  class="w-4 h-4 text-cyan-600 border-slate-300 rounded mt-0.5 focus:ring-cyan-500">
+                <span>
+                  <span class="flex items-center gap-1.5 text-sm font-semibold text-slate-700">
+                    <i class="pi pi-heart text-xs text-cyan-600"></i>
+                    Atención veterinaria
+                  </span>
+                  <span class="mt-1 block text-[10px] leading-4 text-slate-500">Solicita colegiatura y habilita las funciones clínicas.</span>
+                </span>
+              </label>
+              <label for="chkEsp"
+                class="flex items-start gap-3 p-3.5 bg-white border rounded-xl cursor-pointer transition-colors"
+                [ngClass]="tipoForm.get('permiteEspecialidades')?.value ? 'border-cyan-400 ring-2 ring-cyan-500/10' : 'border-slate-200 hover:border-cyan-300'">
+                <input type="checkbox" formControlName="permiteEspecialidades" id="chkEsp"
+                  class="w-4 h-4 text-cyan-600 border-slate-300 rounded mt-0.5 focus:ring-cyan-500">
+                <span>
+                  <span class="flex items-center gap-1.5 text-sm font-semibold text-slate-700">
+                    <i class="pi pi-star text-xs text-cyan-600"></i>
+                    Admite especialidades
+                  </span>
+                  <span class="mt-1 block text-[10px] leading-4 text-slate-500">Permite asignar una o más especialidades al empleado.</span>
+                </span>
+              </label>
+            </div>
+          </section>
+        </div>
+
+        <div class="px-5 sm:px-6 py-4 border-t border-slate-200 bg-white flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2 sm:gap-3 shrink-0">
+          <button type="button" (click)="showTipoModal.set(false)"
+            class="w-full sm:w-auto px-5 h-10 text-sm font-semibold text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-all">
+            Cancelar
+          </button>
+          <button type="submit" [disabled]="loadingStore.isLoading()"
+            class="w-full sm:w-auto px-6 h-10 text-sm font-bold text-white bg-cyan-600 hover:bg-cyan-700 rounded-lg shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2">
+            @if (loadingStore.isLoading()) {
+              <i class="pi pi-spin pi-spinner text-xs"></i>
+            } @else {
+              <i class="pi pi-check text-xs"></i>
             }
-          </div>
-          <div class="flex items-start gap-3 p-3 bg-slate-50 border border-slate-200 rounded">
-            <input type="checkbox" formControlName="permiteEspecialidades" id="chkEsp"
-              class="w-4 h-4 text-blue-600 border-slate-300 rounded mt-0.5 focus:ring-blue-500">
-            <label for="chkEsp" class="cursor-pointer">
-              <span class="block text-sm font-bold text-slate-700 leading-none">Permite Especialidades</span>
-              <span class="mt-1 block text-xs text-slate-500">Permite asignar especialidades a las personas que tengan este tipo de empleado.</span>
-            </label>
-          </div>
-          <div class="flex items-start gap-3 p-3 bg-slate-50 border border-slate-200 rounded">
-            <input type="checkbox" formControlName="esVeterinario" id="chkVet"
-              class="w-4 h-4 text-blue-600 border-slate-300 rounded mt-0.5 focus:ring-blue-500">
-            <label for="chkVet" class="cursor-pointer">
-              <span class="block text-sm font-bold text-slate-700 leading-none">Ejerce como veterinario</span>
-              <span class="mt-1 block text-xs text-slate-500">Exige colegiatura y habilita el flujo clínico, sin depender del nombre que la empresa asigne al cargo.</span>
-            </label>
-          </div>
-          <div class="flex flex-col sm:flex-row sm:justify-end gap-3 pt-6 border-t border-slate-200">
-            <button type="button" (click)="showTipoModal.set(false)"
-              class="px-5 py-2.5 text-sm font-semibold text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded transition-all">
-              Descartar cambios
-            </button>
-            <button type="submit" [disabled]="loadingStore.isLoading()"
-              class="px-8 py-2.5 text-sm font-bold text-white bg-blue-500 hover:bg-blue-600 rounded shadow-sm disabled:opacity-50 transition-all">
-              {{ editingTipo() ? 'Actualizar' : 'Confirmar Registro' }}
-            </button>
-          </div>
-        </form>
-      </div>
+            {{ loadingStore.isLoading() ? 'Guardando...' : (editingTipo() ? 'Guardar cambios' : 'Crear tipo de empleado') }}
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 }
@@ -1088,20 +1153,37 @@
 <!-- Modal: Servicio -->
 @if (showServicioModal()) {
   <div class="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/50 backdrop-blur-sm">
-    <div class="bg-white w-full max-w-lg rounded-t-2xl sm:rounded-lg shadow-2xl flex flex-col max-h-[95dvh]">
-      <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50 rounded-t-lg">
-        <h2 class="text-lg font-bold text-slate-800">{{ editingServicio() ? 'Modificar Servicio' : 'Nuevo Servicio Clínico' }}</h2>
-        <button (click)="showServicioModal.set(false)" class="text-slate-400 hover:text-slate-600 transition-colors p-2">
+    <div class="bg-white w-full max-w-2xl rounded-t-2xl sm:rounded-xl shadow-2xl flex flex-col max-h-[95dvh] overflow-hidden">
+      <div class="px-5 sm:px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-white">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-10 h-10 rounded-xl bg-cyan-50 text-cyan-600 flex items-center justify-center shrink-0">
+            <i class="pi pi-briefcase text-base"></i>
+          </div>
+          <div class="min-w-0">
+            <h2 class="text-base font-bold text-slate-800 truncate">{{ editingServicio() ? 'Editar servicio' : 'Nuevo servicio' }}</h2>
+            <p class="text-xs text-slate-500 mt-0.5">Configura el servicio, quién puede atenderlo y su disponibilidad.</p>
+          </div>
+        </div>
+        <button type="button" (click)="showServicioModal.set(false)"
+          aria-label="Cerrar formulario"
+          class="w-9 h-9 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors flex items-center justify-center shrink-0">
           <i class="pi pi-times"></i>
         </button>
       </div>
-      <div class="flex-1 overflow-y-auto p-6">
-        <form [formGroup]="servicioForm" (ngSubmit)="confirmarGuardarServicio()" class="space-y-5">
-          <div class="flex flex-col gap-1">
-            <label class="text-xs font-semibold text-slate-700 ml-0.5">Nombre del Servicio <span class="text-rose-500">*</span></label>
+      <form [formGroup]="servicioForm" (ngSubmit)="confirmarGuardarServicio()" class="flex flex-col min-h-0 flex-1">
+        <div class="flex-1 overflow-y-auto px-5 sm:px-6 py-5 space-y-6">
+          <section aria-labelledby="datos-servicio" class="space-y-4">
+            <div class="flex items-center gap-2">
+              <div>
+                <h3 id="datos-servicio" class="text-sm font-bold text-slate-800">Datos del servicio</h3>
+                <p class="text-[11px] text-slate-500">Información que verá el personal al programar una cita.</p>
+              </div>
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <label class="text-xs font-semibold text-slate-700">Nombre del servicio <span class="text-rose-500">*</span></label>
             <input type="text" formControlName="nombre" maxlength="80" placeholder="Ej: Profilaxis Dental"
               [ngClass]="servicioForm.get('nombre')?.invalid && servicioForm.get('nombre')?.touched ? 'border-rose-400' : 'border-slate-300'"
-              class="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+                class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-cyan-500/15 focus:border-cyan-500 outline-none h-10 transition-all" />
             @if (servicioForm.get('nombre')?.touched && servicioForm.get('nombre')?.errors?.['required']) {
               <p class="text-[11px] text-rose-500 ml-0.5">El nombre del servicio es requerido</p>
             }
@@ -1117,12 +1199,15 @@
             @if (servicioForm.get('nombre')?.touched && servicioForm.get('nombre')?.errors?.['lettersOnly']) {
               <p class="text-[11px] text-rose-500 ml-0.5">Solo se permiten letras</p>
             }
-          </div>
-          <div class="flex flex-col gap-1">
-            <label class="text-xs font-semibold text-slate-700 ml-0.5">Descripción del Procedimiento <span class="text-rose-500">*</span></label>
-            <textarea formControlName="descripcion" rows="3" maxlength="300" placeholder="Detalle las actividades incluidas en este servicio..."
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <div class="flex items-center justify-between gap-3">
+                <label class="text-xs font-semibold text-slate-700">Descripción <span class="text-rose-500">*</span></label>
+                <span class="text-[10px] text-slate-400">Máximo 300 caracteres</span>
+              </div>
+              <textarea formControlName="descripcion" rows="3" maxlength="300" placeholder="Describe brevemente qué incluye el servicio"
               [ngClass]="servicioForm.get('descripcion')?.invalid && servicioForm.get('descripcion')?.touched ? 'border-rose-400' : 'border-slate-300'"
-            class="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none resize-none transition-all"></textarea>
+                class="w-full px-3 py-2.5 border rounded-lg text-sm focus:ring-2 focus:ring-cyan-500/15 focus:border-cyan-500 outline-none resize-none transition-all"></textarea>
             @if (servicioForm.get('descripcion')?.touched && servicioForm.get('descripcion')?.errors?.['required']) {
               <p class="text-[11px] text-rose-500 ml-0.5">La descripción del servicio es requerida</p>
             }
@@ -1135,13 +1220,16 @@
             @if (servicioForm.get('descripcion')?.touched && servicioForm.get('descripcion')?.errors?.['textContent']) {
               <p class="text-[11px] text-rose-500 ml-0.5">Ingrese una descripción válida, sin exceso de símbolos o puntuación</p>
             }
-          </div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div class="flex flex-col gap-1">
-              <label class="text-xs font-semibold text-slate-700 ml-0.5">Precio Base (S/) <span class="text-rose-500">*</span></label>
-              <input type="number" step="0.01" formControlName="precio" placeholder="5.00" min="5"
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-semibold text-slate-700">Precio base <span class="text-rose-500">*</span></label>
+                <div class="relative">
+                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-slate-500">S/</span>
+                  <input type="number" step="0.01" formControlName="precio" placeholder="0.00" min="5"
                 [ngClass]="servicioForm.get('precio')?.invalid && servicioForm.get('precio')?.touched ? 'border-rose-400' : 'border-slate-300'"
-                class="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+                    class="w-full pl-10 pr-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-cyan-500/15 focus:border-cyan-500 outline-none h-10 transition-all" />
+                </div>
               @if (servicioForm.get('precio')?.invalid && servicioForm.get('precio')?.touched) {
                 <p class="text-[11px] text-rose-500 ml-0.5">
                   @if (servicioForm.get('precio')?.errors?.['required']) {
@@ -1155,12 +1243,15 @@
                   }
                 </p>
               }
-            </div>
-            <div class="flex flex-col gap-1">
-              <label class="text-xs font-semibold text-slate-700 ml-0.5">Duración Estimada (min) <span class="text-rose-500">*</span></label>
-              <input type="number" formControlName="duracionEstimada" placeholder="30" min="5"
+              </div>
+              <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-semibold text-slate-700">Duración estimada <span class="text-rose-500">*</span></label>
+                <div class="relative">
+                  <input type="number" formControlName="duracionEstimada" placeholder="30" min="5"
                 [ngClass]="servicioForm.get('duracionEstimada')?.invalid && servicioForm.get('duracionEstimada')?.touched ? 'border-rose-400' : 'border-slate-300'"
-                class="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 transition-all" />
+                    class="w-full px-3 pr-16 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-cyan-500/15 focus:border-cyan-500 outline-none h-10 transition-all" />
+                  <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">minutos</span>
+                </div>
               @if (servicioForm.get('duracionEstimada')?.invalid && servicioForm.get('duracionEstimada')?.touched) {
                 <p class="text-[11px] text-rose-500 ml-0.5">
                   @if (servicioForm.get('duracionEstimada')?.errors?.['required']) {
@@ -1174,80 +1265,108 @@
                   }
                 </p>
               }
+              </div>
             </div>
-          </div>
-          <div class="flex flex-col gap-1">
-            <label class="text-xs font-semibold text-slate-700 ml-0.5">Control preventivo relacionado</label>
-            <div class="relative">
-              <select formControlName="tipoControlPreventivo"
-                class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 bg-white transition-all appearance-none font-bold text-slate-700">
-                <option value="NO_APLICA">No aplica</option>
-                <option value="VACUNACION">Vacunacion</option>
-                <option value="DESPARASITACION">Desparasitacion</option>
-              </select>
-              <i class="pi pi-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 pointer-events-none"></i>
+          </section>
+
+          <section aria-labelledby="asignacion-servicio" class="space-y-4 pt-5 border-t border-slate-200">
+            <div class="flex items-center gap-2">
+              <div>
+                <h3 id="asignacion-servicio" class="text-sm font-bold text-slate-800">Asignación y seguimiento</h3>
+                <p class="text-[11px] text-slate-500">Define qué personal puede brindar el servicio.</p>
+              </div>
             </div>
-            <p class="text-[10px] text-slate-400 mt-0.5">Permite vincular la cita con el control exacto de la mascota.</p>
-          </div>
-          <div class="flex flex-col gap-1">
-            <label class="text-xs font-semibold text-slate-700 ml-0.5">Cargo / Tipo de Empleado Requerido</label>
-            <div class="relative">
-              <select formControlName="tipoEmpleadoId"
-                class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 bg-white transition-all appearance-none font-bold text-slate-700">
-                <option [value]="null">Cualquier cargo (Servicio General)</option>
-                @for (t of tiposEmpleadoActivos(); track t) {
-                  <option [value]="t.id">{{ t.nombre }}</option>
-                }
-              </select>
-              <i class="pi pi-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 pointer-events-none"></i>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="flex flex-col gap-1.5 sm:col-span-2">
+                <label class="text-xs font-semibold text-slate-700">Cargo requerido</label>
+                <div class="relative">
+                  <select formControlName="tipoEmpleadoId"
+                    class="w-full px-3 py-2 pr-9 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-cyan-500/15 focus:border-cyan-500 outline-none h-10 bg-white transition-all appearance-none text-slate-700">
+                    <option [value]="null">Cualquier cargo</option>
+                    @for (t of tiposEmpleadoActivos(); track t) {
+                      <option [value]="t.id">{{ t.nombre }}</option>
+                    }
+                  </select>
+                  <i class="pi pi-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 pointer-events-none"></i>
+                </div>
+                <p class="text-[10px] text-slate-400">La agenda mostrará únicamente al personal compatible.</p>
+              </div>
+              <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-semibold text-slate-700">Especialidad <span class="font-normal text-slate-400">(opcional)</span></label>
+                <div class="relative">
+                  <select formControlName="especialidadId" [disabled]="!tipoServicioPermiteEspecialidades()"
+                    class="w-full px-3 py-2 pr-9 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-cyan-500/15 focus:border-cyan-500 outline-none h-10 bg-white transition-all appearance-none text-slate-700 disabled:bg-slate-100 disabled:text-slate-400">
+                    <option [ngValue]="null">Sin especialidad específica</option>
+                    @for (especialidad of especialidadesActivas(); track especialidad.id) {
+                      <option [ngValue]="especialidad.id">{{ especialidad.nombre }}</option>
+                    }
+                  </select>
+                  <i class="pi pi-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 pointer-events-none"></i>
+                </div>
+              </div>
+              <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-semibold text-slate-700">Control preventivo</label>
+                <div class="relative">
+                  <select formControlName="tipoControlPreventivo"
+                    class="w-full px-3 py-2 pr-9 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-cyan-500/15 focus:border-cyan-500 outline-none h-10 bg-white transition-all appearance-none text-slate-700">
+                    <option value="NO_APLICA">No aplica</option>
+                    <option value="VACUNACION">Vacunación</option>
+                    <option value="DESPARASITACION">Desparasitación</option>
+                  </select>
+                  <i class="pi pi-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 pointer-events-none"></i>
+                </div>
+              </div>
             </div>
-            <p class="text-[10px] text-slate-400 mt-0.5">Sincroniza la agenda para que solo este tipo de profesional pueda ser reservado para este servicio.</p>
-          </div>
-          <div class="flex flex-col gap-1">
-            <label class="text-xs font-semibold text-slate-700 ml-0.5">Especialidad requerida <span class="font-normal text-slate-400">(opcional)</span></label>
-            <div class="relative">
-              <select formControlName="especialidadId" [disabled]="!tipoServicioPermiteEspecialidades()"
-                class="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none h-10 bg-white transition-all appearance-none font-bold text-slate-700 disabled:bg-slate-100 disabled:text-slate-400">
-                <option [ngValue]="null">No requiere una especialidad específica</option>
-                @for (especialidad of especialidadesActivas(); track especialidad.id) {
-                  <option [ngValue]="especialidad.id">{{ especialidad.nombre }}</option>
-                }
-              </select>
-              <i class="pi pi-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 pointer-events-none"></i>
+          </section>
+
+          <section aria-labelledby="agenda-servicio" class="space-y-4 pt-5 border-t border-slate-200">
+            <div class="flex items-center gap-2">
+              <div>
+                <h3 id="agenda-servicio" class="text-sm font-bold text-slate-800">Configuración de agenda</h3>
+                <p class="text-[11px] text-slate-500">Controla cómo podrá reservarse este servicio.</p>
+              </div>
             </div>
-            <p class="text-[10px] text-slate-400 mt-0.5">
-              Selecciona primero un tipo de empleado que permita especialidades.
-            </p>
-          </div>
-          <div class="flex items-start gap-3 p-3 bg-slate-50 border border-slate-200 rounded">
-            <input type="checkbox" formControlName="disponible" id="chkDisp"
-              class="w-4 h-4 text-blue-600 border-slate-300 rounded mt-0.5 focus:ring-blue-500">
-            <label for="chkDisp" class="text-sm font-bold text-slate-700 leading-none cursor-pointer">Disponibilidad en Agenda</label>
-          </div>
-          <div class="flex items-start gap-3 p-3 border rounded"
-            [ngClass]="tipoServicioEsClinico() ? 'bg-rose-50 border-rose-100' : 'bg-slate-50 border-slate-200'">
-            <input type="checkbox" formControlName="permiteEmergencia" id="chkEmergenciaServicio"
-              [attr.disabled]="tipoServicioEsClinico() ? null : true"
-              class="w-4 h-4 text-rose-600 border-slate-300 rounded mt-0.5 focus:ring-rose-500 disabled:opacity-40">
-            <label for="chkEmergenciaServicio" class="cursor-pointer">
-              <span class="block text-sm font-bold text-slate-700 leading-none">Permite atención de emergencia</span>
-              <span class="block text-[10px] text-slate-400 mt-1">
-                {{ tipoServicioEsClinico() ? 'Habilita citas inmediatas fuera del horario regular.' : 'Solo está disponible para servicios asignados a un cargo veterinario.' }}
-              </span>
-            </label>
-          </div>
-          <div class="flex flex-col sm:flex-row sm:justify-end gap-3 pt-6 border-t border-slate-200">
-            <button type="button" (click)="showServicioModal.set(false)"
-              class="px-5 py-2.5 text-sm font-semibold text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded transition-all">
-              Descartar cambios
-            </button>
-            <button type="submit" [disabled]="loadingStore.isLoading()"
-              class="px-8 py-2.5 text-sm font-bold text-white bg-blue-500 hover:bg-blue-600 rounded shadow-sm disabled:opacity-50 transition-all">
-              {{ editingServicio() ? 'Guardar Cambios' : 'Confirmar Registro' }}
-            </button>
-          </div>
-        </form>
-      </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <label for="chkDisp" class="flex items-start gap-3 p-3.5 bg-white border border-slate-200 rounded-xl cursor-pointer hover:border-cyan-300 transition-colors">
+                <input type="checkbox" formControlName="disponible" id="chkDisp"
+                  class="w-4 h-4 text-cyan-600 border-slate-300 rounded mt-0.5 focus:ring-cyan-500">
+                <span>
+                  <span class="block text-sm font-semibold text-slate-700">Visible en la agenda</span>
+                  <span class="block text-[10px] leading-4 text-slate-400 mt-0.5">Permite seleccionar este servicio al crear una cita.</span>
+                </span>
+              </label>
+              <label for="chkEmergenciaServicio" class="flex items-start gap-3 p-3.5 border rounded-xl transition-colors"
+                [ngClass]="tipoServicioEsClinico() ? 'bg-white border-slate-200 cursor-pointer hover:border-rose-300' : 'bg-slate-50 border-slate-200 cursor-not-allowed opacity-70'">
+                <input type="checkbox" formControlName="permiteEmergencia" id="chkEmergenciaServicio"
+                  [attr.disabled]="tipoServicioEsClinico() ? null : true"
+                  class="w-4 h-4 text-rose-600 border-slate-300 rounded mt-0.5 focus:ring-rose-500 disabled:opacity-40">
+                <span>
+                  <span class="block text-sm font-semibold text-slate-700">Atención de emergencia</span>
+                  <span class="block text-[10px] leading-4 text-slate-400 mt-0.5">
+                    {{ tipoServicioEsClinico() ? 'Permite citas inmediatas fuera del horario regular.' : 'Requiere seleccionar un cargo veterinario.' }}
+                  </span>
+                </span>
+              </label>
+            </div>
+          </section>
+        </div>
+
+        <div class="px-5 sm:px-6 py-4 border-t border-slate-200 bg-white flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2 sm:gap-3 shrink-0">
+          <button type="button" (click)="showServicioModal.set(false)"
+            class="w-full sm:w-auto px-5 h-10 text-sm font-semibold text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-all">
+            Cancelar
+          </button>
+          <button type="submit" [disabled]="loadingStore.isLoading()"
+            class="w-full sm:w-auto px-6 h-10 text-sm font-bold text-white bg-cyan-600 hover:bg-cyan-700 rounded-lg shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2">
+            @if (loadingStore.isLoading()) {
+              <i class="pi pi-spin pi-spinner text-xs"></i>
+            } @else {
+              <i class="pi pi-check text-xs"></i>
+            }
+            {{ loadingStore.isLoading() ? 'Guardando...' : (editingServicio() ? 'Guardar cambios' : 'Crear servicio') }}
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 }
