@@ -7,11 +7,12 @@ import { AvisoClinicaGate } from '../../../core/services/aviso-clinica-gate.serv
 import { AuthStore } from '../../../store/auth.store';
 import { resolveInitialRoute } from '../../../core/routing/initial-route';
 import { SessionService } from '../../../core/services/session.service';
+import { DocumentoLegalComponent } from '../../../shared/components/documento-legal/documento-legal.component';
 
 @Component({
   selector: 'app-aviso-clinica',
   standalone: true,
-  imports: [DatePipe],
+  imports: [DatePipe, DocumentoLegalComponent],
   templateUrl: './aviso-clinica.component.html'
 })
 export class AvisoClinicaComponent implements OnInit {

@@ -15,6 +15,10 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/legal/aviso-publico/aviso-publico.component').then((m) => m.AvisoPublicoComponent)
   },
   {
+    path: 'acceso-denegado',
+    loadComponent: () => import('./pages/errors/forbidden/forbidden.component').then((m) => m.ForbiddenComponent)
+  },
+  {
     path: 'cuenta-cerrada',
     loadComponent: () => import('./pages/auth/account-closed/account-closed.component').then((m) => m.AccountClosedComponent)
   },
@@ -50,5 +54,8 @@ export const routes: Routes = [
     path: '',
     loadChildren: () => import('./authenticated.routes').then((m) => m.AUTHENTICATED_ROUTES)
   },
-  { path: '**', redirectTo: 'login' }
+  {
+    path: '**',
+    loadComponent: () => import('./pages/errors/not-found/not-found.component').then((m) => m.NotFoundComponent)
+  }
 ];
