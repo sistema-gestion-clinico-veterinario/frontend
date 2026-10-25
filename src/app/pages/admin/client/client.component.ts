@@ -208,14 +208,6 @@ export class ClientComponent implements OnInit {
       }
     }
 
-    if (this.canClientAction('eliminar') && this.authStore.isAdmin()) {
-      items.push({
-        label: 'Eliminar',
-        icon: 'pi pi-trash',
-        command: () => this.deleteClient(client)
-      });
-    }
-
     this.clientActionItemsCache.set(client, items);
     return items;
   }
@@ -765,34 +757,4 @@ export class ClientComponent implements OnInit {
   statusLabel = personStatusLabel;
   statusChipClass = personStatusChipClass;
   statusDotClass = personStatusDotClass;
-  deleteClient(client: ApoderadoListResponse) {
-    this.openConfirm(
-      'Eliminar cliente',
-      `¿Eliminar a ${client.nombre} ${client.apellido}? Se le dará de baja: deja de operar en la clínica y sus registros se conservan. Podrás reactivarlo si vuelve.`,
-      () => {
-        this.loadingStore.show();
-        this.apoderadoService.eliminar(client.id).subscribe({
-          next: (res) => {
-            this.messageService.add({ severity: 'success', summary: 'Éxito', detail: STATUS_ACTION_TEXT['BAJA'].success });
-            const mascotas = describePetOutcome(res.data);
-            if (mascotas) {
-              this.messageService.add({ severity: mascotas.severity, summary: 'Mascotas del cliente', detail: mascotas.detail, life: 12000 });
-            }
-            this.loadClients();
-            this.loadingStore.hide();
-          },
-          error: (err) => {
-            const message = err.error?.message || 'No se pudo eliminar al cliente';
-            if (message.includes('citas programadas vigentes')) {
-              this.pendingStatus = { action: 'BAJA', reason: 'Eliminado por el administrador' };
-              this.conflictClient.set(client);
-              this.conflictDialogVisible.set(true);
-            }
-            this.messageService.add({ severity: 'error', summary: 'Error', detail: message });
-            this.loadingStore.hide();
-          }
-        });
-      }
-    );
-  }
 }

@@ -6,9 +6,12 @@ import { PendientesPrivacidadService } from './pendientes-privacidad.service';
 import { PrivacidadService } from './privacidad.service';
 import { ConsentimientoEstado } from '../../models/privacy/privacidad.model';
 import { AuthStore } from '../../store/auth.store';
+import { BackupMonitorService } from './backup-monitor.service';
+import { BackupExecution } from '../../models/backup/backup-execution.model';
 
 describe('PendientesPrivacidadService', () => {
   let privacidad: jasmine.SpyObj<PrivacidadService>;
+  let respaldos: jasmine.SpyObj<BackupMonitorService>;
   let eventos: Subject<unknown>;
   let companyId: ReturnType<typeof signal<number | null>>;
   let rolId: ReturnType<typeof signal<number | null>>;
@@ -24,6 +27,19 @@ describe('PendientesPrivacidadService', () => {
     ...parcial
   });
   const responde = (e: ConsentimientoEstado) => of({ success: true, message: 'ok', data: e });
+  const ejecucionRespaldo = (parcial: Partial<BackupExecution> = {}): BackupExecution => ({
+    id: 22, runId: 'run-22', runAttempt: 1, recoveryPointId: 'rp-22', retentionPolicy: 'p01',
+    triggerType: 'SCHEDULED', status: 'FAILED', databaseStatus: 'SUCCESS', restrictionsStatus: 'SUCCESS',
+    storageStatus: 'FAILED', restorationVerified: true, startedAt: new Date().toISOString(),
+    finishedAt: new Date().toISOString(), commitSha: 'abc', workflowUrl: 'https://github.test/run/22',
+    ...parcial
+  });
+  const paginaRespaldos = (content: BackupExecution[] = []) => of({
+    success: true, message: 'ok', data: {
+      content, totalElements: content.length, totalPages: 1, size: 50, number: 0,
+      numberOfElements: content.length, first: true, last: true, empty: content.length === 0
+    }
+  });
 
   function crear(): PendientesPrivacidadService {
     const servicio = TestBed.inject(PendientesPrivacidadService);
@@ -35,6 +51,8 @@ describe('PendientesPrivacidadService', () => {
     sessionStorage.clear();
     privacidad = jasmine.createSpyObj<PrivacidadService>('PrivacidadService', ['miEstado']);
     privacidad.miEstado.and.returnValue(responde(estado()));
+    respaldos = jasmine.createSpyObj<BackupMonitorService>('BackupMonitorService', ['list']);
+    respaldos.list.and.returnValue(paginaRespaldos());
     eventos = new Subject();
     companyId = signal<number | null>(1);
     rolId = signal<number | null>(3);
@@ -44,6 +62,7 @@ describe('PendientesPrivacidadService', () => {
     TestBed.configureTestingModule({
       providers: [
         { provide: PrivacidadService, useValue: privacidad },
+        { provide: BackupMonitorService, useValue: respaldos },
         { provide: Router, useValue: { events: eventos.asObservable() } },
         { provide: AuthStore, useValue: {
           companyId, activeRoleId: rolId, activeRolePurpose: proposito,
@@ -91,10 +110,10 @@ describe('PendientesPrivacidadService', () => {
     const servicio = crear();
 
     expect(servicio.pendientes()).toEqual([jasmine.objectContaining({ id: 'terminos', ruta: '/legal/accept', opcional: false })]);
-    expect(servicio.pendientes()[0].detalle).toContain('Se actualizaron estos documentos');
+    expect(servicio.pendientes()[0].detalle).toContain('actualizó');
 
     vencidos.set(true);
-    expect(servicio.pendientes()[0].detalle).toContain('ha vencido');
+    expect(servicio.pendientes()[0].detalle).toContain('venció');
 
     terminos.set(false);
     expect(servicio.pendientes()).toEqual([]);
@@ -113,6 +132,7 @@ describe('PendientesPrivacidadService', () => {
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({ providers: [
         { provide: PrivacidadService, useValue: privacidad },
+        { provide: BackupMonitorService, useValue: respaldos },
         { provide: Router, useValue: { events: eventos.asObservable() } },
         { provide: AuthStore, useValue: { companyId, activeRoleId: rolId, activeRolePurpose: proposito, needsLegalAcceptance: terminos, legalAcceptanceOverdue: vencidos } },
       ] });
@@ -126,6 +146,38 @@ describe('PendientesPrivacidadService', () => {
     privacidad.miEstado.and.returnValue(responde(estado({}, 'SIN_REGISTRO')));
 
     expect(crear().pendientes()).toEqual([]);
+  });
+
+  it('solo el administrador de plataforma recibe alertas de respaldos con problemas', () => {
+    companyId.set(null);
+    proposito.set('PLATFORM_ADMIN');
+    respaldos.list.and.returnValue(paginaRespaldos([
+      ejecucionRespaldo({ id: 20 }),
+      ejecucionRespaldo({ id: 22, status: 'PARTIAL', databaseStatus: 'FAILED', storageStatus: 'SKIPPED' })
+    ]));
+
+    const servicio = crear();
+
+    expect(privacidad.miEstado).not.toHaveBeenCalled();
+    expect(respaldos.list).toHaveBeenCalledOnceWith(0, 50);
+    expect(servicio.pendientes()).toEqual([
+      jasmine.objectContaining({
+        id: 'respaldo-20', titulo: 'Respaldo fallido', ruta: '/admin/respaldos', opcional: false,
+        detalle: jasmine.stringMatching(/Falló: Archivos clínicos$/)
+      }),
+      jasmine.objectContaining({
+        id: 'respaldo-22', titulo: 'Respaldo parcial', ruta: '/admin/respaldos', opcional: false,
+        detalle: jasmine.stringMatching(/Falló: Base de datos$/)
+      })
+    ]);
+  });
+
+  it('un rol de clínica nunca consulta el resumen operativo de respaldos', () => {
+    proposito.set('COMPANY_ADMIN');
+
+    crear();
+
+    expect(respaldos.list).not.toHaveBeenCalled();
   });
 
   it('lo opcional se puede dejar para más tarde durante la sesión, y lo obligatorio no', () => {

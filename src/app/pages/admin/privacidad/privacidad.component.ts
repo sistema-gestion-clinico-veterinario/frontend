@@ -31,10 +31,10 @@ export class PrivacidadComponent implements OnInit {
   cargando = signal(true);
   publicando = signal(false);
   vistaPrevia = signal<VistaPreviaAviso | null>(null);
-  modoVistaPrevia = signal<'ver' | 'publicar'>('ver');
   cargandoVistaPrevia = signal(false);
   historial = signal<AvisoVersion[]>([]);
   vigente = signal<AvisoVersion | null>(null);
+  versionConsultada = signal<AvisoVersion | null>(null);
   audiencia = signal<AudienciaAvisoPrivacidad>('PROPIETARIOS_Y_AUTORIZADOS');
   readonly audienciaPropietarios: AudienciaAvisoPrivacidad = 'PROPIETARIOS_Y_AUTORIZADOS';
   readonly audienciaTrabajadores: AudienciaAvisoPrivacidad = 'TRABAJADORES_Y_USUARIOS';
@@ -54,8 +54,7 @@ export class PrivacidadComponent implements OnInit {
     datosFacultativos: [''],
     destinatarios: ['', Validators.required],
     transferencias: ['', [Validators.required, Validators.maxLength(500)]],
-    plazoConservacion: ['', [Validators.required, Validators.maxLength(300)]],
-    confirmoRevisionLegal: [false, Validators.requiredTrue]
+    plazoConservacion: ['', [Validators.required, Validators.maxLength(300)]]
   });
 
   ngOnInit(): void {
@@ -120,15 +119,9 @@ export class PrivacidadComponent implements OnInit {
     this.audiencia.set(audiencia);
     this.historial.set([]);
     this.vigente.set(null);
-    this.form.controls.confirmoRevisionLegal.setValue(false);
     if (this.puedePublicar()) this.cargar();
     else this.cargarHistorial();
   }
-
-  verVistaPrevia(): void {
-    this.abrirVistaPrevia('ver');
-  }
-
 
   solicitarPublicacion(): void {
     if (!this.puedePublicar()) {
@@ -137,15 +130,29 @@ export class PrivacidadComponent implements OnInit {
     }
     if (this.form.invalid) {
       this.form.markAllAsTouched();
-      this.messages.add({ severity: 'warn', summary: 'Revisa el aviso', detail: 'Completa los campos y confirma la revisión legal.' });
+      this.messages.add({ severity: 'warn', summary: 'Faltan datos por completar', detail: 'Revisa los campos obligatorios antes de continuar.' });
       return;
     }
-    this.abrirVistaPrevia('publicar');
+    this.abrirConfirmacion();
   }
 
   cerrarVistaPrevia(): void {
     if (this.publicando()) return;
     this.vistaPrevia.set(null);
+  }
+
+  abrirVersion(version: AvisoVersion): void {
+    this.versionConsultada.set(version);
+  }
+
+  cerrarVersion(): void {
+    this.versionConsultada.set(null);
+  }
+
+  responsableVisible(version: AvisoVersion): string {
+    const responsable = version.creadoPor?.trim();
+    if (!responsable) return 'Usuario no registrado';
+    return responsable.includes('@') ? 'Administrador de la clínica' : responsable;
   }
 
   confirmarPublicacion(): void {
@@ -154,12 +161,11 @@ export class PrivacidadComponent implements OnInit {
     this.publicar();
   }
 
-  private abrirVistaPrevia(modo: 'ver' | 'publicar'): void {
+  private abrirConfirmacion(): void {
     if (!this.puedePublicar() || this.cargandoVistaPrevia()) return;
     this.cargandoVistaPrevia.set(true);
     this.service.vistaPrevia(this.armarCampos(), this.audiencia()).subscribe({
       next: ({ data }) => {
-        this.modoVistaPrevia.set(modo);
         this.vistaPrevia.set(data);
         this.cargandoVistaPrevia.set(false);
       },
@@ -190,13 +196,13 @@ export class PrivacidadComponent implements OnInit {
 
   private publicar(): void {
     const campos = this.armarCampos();
-    const confirmo = this.form.getRawValue().confirmoRevisionLegal;
     this.publicando.set(true);
-    this.service.publicar(campos, confirmo, this.audiencia()).subscribe({
+    // El clic explícito en «Confirmar y publicar» constituye la confirmación
+    // de revisión legal que el backend registra junto con la nueva versión.
+    this.service.publicar(campos, true, this.audiencia()).subscribe({
       next: ({ data }) => {
         this.vistaPrevia.set(null);
         this.vigente.set(data);
-        this.form.controls.confirmoRevisionLegal.setValue(false);
         this.messages.add({ severity: 'success', summary: 'Aviso publicado', detail: `La versión ${data.version} ya está vigente.` });
         this.publicando.set(false);
         this.cargar();
@@ -216,8 +222,7 @@ export class PrivacidadComponent implements OnInit {
       finalidades: (campos.finalidades ?? []).join('\n'),
       datosObligatorios: (campos.datosObligatorios ?? []).join('\n'),
       datosFacultativos: (campos.datosFacultativos ?? []).join('\n'),
-      destinatarios: (campos.destinatarios ?? []).join('\n'),
-      confirmoRevisionLegal: false
+      destinatarios: (campos.destinatarios ?? []).join('\n')
     });
   }
 

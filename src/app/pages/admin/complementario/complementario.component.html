@@ -181,10 +181,12 @@
                             class="p-2 rounded-lg text-slate-400 hover:text-blue-500 hover:bg-blue-50 transition-all active:scale-90">
                             <i class="pi pi-pencil text-sm"></i>
                           </button>
-                          <button *appHasPermission="'VISTA_COMPLEMENTARIO:eliminar'" (click)="openConfirm('Eliminar especialidad', '¿Está seguro de eliminar la especialidad «' + item.nombre + '»?', 'eliminar-especialidad', item)"
-                            class="p-2 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all active:scale-90">
-                            <i class="pi pi-trash text-sm"></i>
-                          </button>
+                          @if (item.eliminable) {
+                            <button *appHasPermission="'VISTA_COMPLEMENTARIO:eliminar'" (click)="openConfirm('Eliminar especialidad', 'La especialidad «' + item.nombre + '» no está asignada a empleados. ¿Deseas eliminarla permanentemente?', 'eliminar-especialidad', item)"
+                              class="p-2 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all active:scale-90" title="Eliminar permanentemente">
+                              <i class="pi pi-trash text-sm"></i>
+                            </button>
+                          }
                         </div>
                       </td>
                     </tr>
@@ -221,10 +223,12 @@
                         class="p-2 rounded-lg text-slate-400 hover:text-blue-500 hover:bg-blue-50 transition-all active:scale-90">
                         <i class="pi pi-pencil text-sm"></i>
                       </button>
-                      <button *appHasPermission="'VISTA_COMPLEMENTARIO:eliminar'" (click)="openConfirm('Eliminar especialidad', '¿Está seguro de eliminar la especialidad «' + item.nombre + '»?', 'eliminar-especialidad', item)"
-                        class="p-2 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all active:scale-90">
-                        <i class="pi pi-trash text-sm"></i>
-                      </button>
+                      @if (item.eliminable) {
+                        <button *appHasPermission="'VISTA_COMPLEMENTARIO:eliminar'" (click)="openConfirm('Eliminar especialidad', 'La especialidad «' + item.nombre + '» no está asignada a empleados. ¿Deseas eliminarla permanentemente?', 'eliminar-especialidad', item)"
+                          class="p-2 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all active:scale-90" title="Eliminar permanentemente">
+                          <i class="pi pi-trash text-sm"></i>
+                        </button>
+                      }
                     </div>
                   </div>
                 }
@@ -317,10 +321,6 @@
                             class="p-2 rounded-lg text-slate-400 hover:text-blue-500 hover:bg-blue-50 transition-all active:scale-90">
                             <i class="pi pi-pencil text-sm"></i>
                           </button>
-                          <button *appHasPermission="'VISTA_COMPLEMENTARIO:eliminar'" (click)="openConfirm('Eliminar tipo de empleado', '¿Está seguro de eliminar el tipo de empleado «' + item.nombre + '»?', 'eliminar-tipo-empleado', item)"
-                            class="p-2 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all active:scale-90">
-                            <i class="pi pi-trash text-sm"></i>
-                          </button>
                         </div>
                       </td>
                     </tr>
@@ -376,10 +376,6 @@
                       <button *appHasPermission="'VISTA_COMPLEMENTARIO:modificar'" (click)="openTipoModal(item)"
                         class="p-2 rounded-lg text-slate-400 hover:text-blue-500 hover:bg-blue-50 transition-all active:scale-90">
                         <i class="pi pi-pencil text-sm"></i>
-                      </button>
-                      <button *appHasPermission="'VISTA_COMPLEMENTARIO:eliminar'" (click)="openConfirm('Eliminar tipo de empleado', '¿Está seguro de eliminar el tipo de empleado «' + item.nombre + '»?', 'eliminar-tipo-empleado', item)"
-                        class="p-2 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all active:scale-90">
-                        <i class="pi pi-trash text-sm"></i>
                       </button>
                     </div>
                   </div>
@@ -476,10 +472,6 @@
                             class="p-2 rounded-lg text-slate-400 hover:text-blue-500 hover:bg-blue-50 transition-all active:scale-90">
                             <i class="pi pi-pencil text-sm"></i>
                           </button>
-                          <button *appHasPermission="'VISTA_COMPLEMENTARIO:eliminar'" (click)="openConfirm('Eliminar servicio', '¿Está seguro de eliminar el servicio «' + item.nombre + '»?', 'eliminar-servicio', item)"
-                            class="p-2 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all active:scale-90">
-                            <i class="pi pi-trash text-sm"></i>
-                          </button>
                         </div>
                       </td>
                     </tr>
@@ -540,10 +532,6 @@
                       <button *appHasPermission="'VISTA_COMPLEMENTARIO:modificar'" (click)="openServicioModal(item)"
                         class="p-2 rounded-lg text-slate-400 hover:text-blue-500 hover:bg-blue-50 transition-all active:scale-90">
                         <i class="pi pi-pencil text-sm"></i>
-                      </button>
-                      <button *appHasPermission="'VISTA_COMPLEMENTARIO:eliminar'" (click)="openConfirm('Eliminar servicio', '¿Está seguro de eliminar el servicio «' + item.nombre + '»?', 'eliminar-servicio', item)"
-                        class="p-2 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all active:scale-90">
-                        <i class="pi pi-trash text-sm"></i>
                       </button>
                     </div>
                   </div>
@@ -620,10 +608,6 @@
                             class="w-8 h-8 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-blue-500 hover:bg-blue-50 transition-all active:scale-95">
                             <i class="pi pi-pencil text-sm"></i>
                           </button>
-                          <button *appHasPermission="'VISTA_COMPLEMENTARIO:eliminar'" (click)="confirmarEliminarVacuna(item)"
-                            class="w-8 h-8 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all active:scale-95">
-                            <i class="pi pi-trash text-sm"></i>
-                          </button>
                         </div>
                       </td>
                     </tr>
@@ -667,10 +651,6 @@
                       <button *appHasPermission="'VISTA_COMPLEMENTARIO:modificar'" (click)="openVacunaModal(item)"
                         class="w-8 h-8 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-blue-500 hover:bg-blue-50 transition-all active:scale-95">
                         <i class="pi pi-pencil text-sm"></i>
-                      </button>
-                      <button *appHasPermission="'VISTA_COMPLEMENTARIO:eliminar'" (click)="confirmarEliminarVacuna(item)"
-                        class="w-8 h-8 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all active:scale-95">
-                        <i class="pi pi-trash text-sm"></i>
                       </button>
                     </div>
                   </div>
@@ -743,10 +723,6 @@
                             class="w-8 h-8 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-blue-500 hover:bg-blue-50 transition-all active:scale-95">
                             <i class="pi pi-pencil text-sm"></i>
                           </button>
-                          <button *appHasPermission="'VISTA_COMPLEMENTARIO:eliminar'" (click)="confirmarEliminarDesparasitante(item)"
-                            class="w-8 h-8 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all active:scale-95">
-                            <i class="pi pi-trash text-sm"></i>
-                          </button>
                         </div>
                       </td>
                     </tr>
@@ -790,10 +766,6 @@
                       <button *appHasPermission="'VISTA_COMPLEMENTARIO:modificar'" (click)="openDesparasitanteModal(item)"
                         class="w-8 h-8 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-blue-500 hover:bg-blue-50 transition-all active:scale-95">
                         <i class="pi pi-pencil text-sm"></i>
-                      </button>
-                      <button *appHasPermission="'VISTA_COMPLEMENTARIO:eliminar'" (click)="confirmarEliminarDesparasitante(item)"
-                        class="w-8 h-8 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all active:scale-95">
-                        <i class="pi pi-trash text-sm"></i>
                       </button>
                     </div>
                   </div>
