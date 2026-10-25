@@ -24,10 +24,12 @@ import { textContentValidator } from '../../../../core/validators/text-content.v
 import { HasPermissionDirective } from '../../../../core/directives/has-permission.directive';
 import { ESPECIES_OPCIONES, EspecieMascota, TipoAplicacionProducto, TipoControlStock } from '../../../../models/request/producto-request';
 
+import { MotivoRecursoNoDisponible, RecursoNoDisponibleComponent, motivoDeError } from '../../../../shared/components/recurso-no-disponible/recurso-no-disponible.component';
+
 @Component({
   selector: 'app-producto-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, ToastModule, SkeletonModule, HasPermissionDirective],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, ToastModule, SkeletonModule, HasPermissionDirective, RecursoNoDisponibleComponent],
   providers: [MessageService],
   templateUrl: './producto-form.component.html',
   styleUrl: './producto-form.component.scss'
@@ -153,6 +155,12 @@ export class ProductoFormComponent implements OnInit {
     this.productoForm.get('especies')?.markAsTouched();
   }
 
+  errorCarga = signal<MotivoRecursoNoDisponible | null>(null);
+
+  recargar() {
+    window.location.reload();
+  }
+
   ngOnInit() {
     const skuParam = this.route.snapshot.paramMap.get('sku');
     this.productoSku.set(skuParam);
@@ -229,9 +237,9 @@ export class ProductoFormComponent implements OnInit {
           }
           this.cargando.set(false);
         },
-        error: () => {
+        error: (err) => {
           this.cargando.set(false);
-          this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cargar el producto' });
+          this.errorCarga.set(motivoDeError(err));
         }
       });
     } else {

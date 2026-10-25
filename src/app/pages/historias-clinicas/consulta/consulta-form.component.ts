@@ -36,10 +36,13 @@ import { ControlPreventivoService } from '../../../core/services/control-prevent
 import { AplicacionPreventivaResponse, ControlPreventivoResponse, TipoControlPreventivo, TipoVacunaResponse } from '../../../models/response/control-preventivo-response';
 
 
+import { MotivoRecursoNoDisponible, RecursoNoDisponibleComponent, motivoDeError } from '../../../shared/components/recurso-no-disponible/recurso-no-disponible.component';
+
 @Component({
   selector: 'app-consulta-form',
   standalone: true,
   imports: [
+    RecursoNoDisponibleComponent,
     CommonModule,
     ReactiveFormsModule,
     ToastModule,
@@ -434,7 +437,10 @@ export class ConsultaFormComponent implements OnInit {
     };
   }
 
+  errorCarga = signal<MotivoRecursoNoDisponible | null>(null);
+
   loadConsulta() {
+    this.errorCarga.set(null);
     this.loadingStore.show();
     this.hcService.getConsulta(this.consultaId).subscribe({
       next: (res) => {
@@ -478,8 +484,8 @@ export class ConsultaFormComponent implements OnInit {
         this.syncingForm = false;
         this.loadingStore.hide();
       },
-      error: () => {
-        this.msgService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cargar la consulta' });
+      error: (err) => {
+        this.errorCarga.set(motivoDeError(err));
         this.loadingStore.hide();
       }
     });

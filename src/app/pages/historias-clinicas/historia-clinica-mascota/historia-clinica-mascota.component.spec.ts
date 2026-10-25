@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HistoriaClinicaMascotaComponent } from './historia-clinica-mascota.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ActivatedRoute } from '@angular/router';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 
 describe('HistoriaClinicaMascotaComponent', () => {
   let component: HistoriaClinicaMascotaComponent;
@@ -51,5 +51,33 @@ describe('HistoriaClinicaMascotaComponent', () => {
     expect(component.recetaVigente(undefined)).toBeFalse();
     expect(component.recetaVigente('2000-01-01')).toBeFalse();
     expect(component.recetaVigente('2999-01-01')).toBeTrue();
+  });
+
+  describe('cuando la historia no se puede abrir', () => {
+    function fallar(status: number) {
+      spyOn((component as any).hcService, 'getPorNumeroHc').and.returnValue(throwError(() => ({ status })));
+      component.cargarHistoria('HC-000001');
+    }
+
+    it('una historia que no existe o es de otra clínica se muestra como no encontrada', () => {
+      fallar(404);
+      expect(component.errorCarga()).toBe('NO_ENCONTRADO');
+      expect(component.hc()).toBeNull();
+    });
+
+    it('una historia de la clínica que el rol no puede ver se muestra como sin acceso', () => {
+      fallar(403);
+      expect(component.errorCarga()).toBe('SIN_PERMISO');
+    });
+
+    it('un fallo del servidor ofrece reintentar y se limpia al cargar de nuevo', () => {
+      fallar(500);
+      expect(component.errorCarga()).toBe('FALLO');
+      component.cargarHistoria('HC-000001');
+      expect(component.errorCarga()).toBe('FALLO');
+      (component as any).hcService.getPorNumeroHc.and.returnValue(of({ data: { consultas: [], mascotaId: 1 } }));
+      component.cargarHistoria('HC-000001');
+      expect(component.errorCarga()).toBeNull();
+    });
   });
 });

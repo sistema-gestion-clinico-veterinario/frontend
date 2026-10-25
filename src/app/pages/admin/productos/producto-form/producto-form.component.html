@@ -18,7 +18,7 @@
           {{ modoDetalle ? 'Consulta la información general, el inventario y la trazabilidad del producto.' : (productoId ? 'Modifica la información del producto y mantén actualizado el inventario.' : 'Ingresa la información del producto para registrarlo en el catálogo de la clínica.') }}
         </p>
       </div>
-      @if (modoDetalle) {
+      @if (modoDetalle && !errorCarga()) {
         <button *appHasPermission="'VISTA_PRODUCTOS:modificar'" type="button" (click)="editarDesdeDetalle()"
           class="ml-auto inline-flex h-10 items-center gap-2 rounded-lg bg-blue-500 px-4 text-sm font-bold text-white transition-colors hover:bg-blue-600">
           <i class="pi pi-pencil text-xs"></i>Editar producto
@@ -48,7 +48,12 @@
     </div>
   }
 
-  @if (!cargando()) {
+  @if (errorCarga(); as motivo) {
+    <app-recurso-no-disponible [motivo]="motivo" nombre="producto"
+      etiquetaVolver="Volver a productos" (volver)="cancelar()" (reintentar)="recargar()" />
+  }
+
+  @if (!cargando() && !errorCarga()) {
     <div>
       @if (productoId) {
         <div class="mb-4 overflow-x-auto border-b border-slate-200">

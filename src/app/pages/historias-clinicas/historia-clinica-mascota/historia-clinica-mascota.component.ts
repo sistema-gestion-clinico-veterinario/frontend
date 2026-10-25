@@ -31,10 +31,12 @@ import { TratamientoResponse } from '../../../models/response/tratamiento-respon
 import { EstadoTratamiento } from '../../../models/request/tratamiento-request';
 import { formatearFechaClinica } from '../../../shared/utils/fecha-clinica.util';
 
+import { MotivoRecursoNoDisponible, RecursoNoDisponibleComponent, motivoDeError } from '../../../shared/components/recurso-no-disponible/recurso-no-disponible.component';
+
 @Component({
   selector: 'app-historia-clinica-mascota',
   standalone: true,
-  imports: [CommonModule, FormsModule, ToastModule, ArchivoModalsComponent, DiagnosticoIaComponent],
+  imports: [CommonModule, FormsModule, ToastModule, ArchivoModalsComponent, DiagnosticoIaComponent, RecursoNoDisponibleComponent],
   providers: [MessageService],
   templateUrl: './historia-clinica-mascota.component.html'
 })
@@ -61,7 +63,7 @@ export class HistoriaClinicaMascotaComponent implements OnInit, OnDestroy {
   consultaActiva      = signal<ConsultaResumen | null>(null);
   miniaturas          = signal<Map<number, string>>(new Map());
   seccionActiva       = signal<'consultas' | 'recetas' | 'servicios' | 'preventivos' | 'seguimiento'>('consultas');
-  noTieneHc           = signal<boolean>(false);
+  errorCarga          = signal<MotivoRecursoNoDisponible | null>(null);
   serviciosNoMedicos  = signal<CitaResponse[]>([]);
   loadingServicios    = signal(false);
   serviciosCargados   = signal(false);
@@ -305,6 +307,7 @@ export class HistoriaClinicaMascotaComponent implements OnInit, OnDestroy {
   }
 
   cargarHistoria(numeroHc: string) {
+    this.errorCarga.set(null);
     this.serviciosNoMedicos.set([]);
     this.serviciosCargados.set(false);
     this.diagnosticosSeguimiento.set([]);
@@ -326,11 +329,8 @@ export class HistoriaClinicaMascotaComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.loadingStore.hide();
-        if (err.status === 404) {
-          this.noTieneHc.set(true);
-        } else {
-          this.msgService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cargar la historia clínica' });
-        }
+        this.hc.set(null);
+        this.errorCarga.set(motivoDeError(err));
       }
     });
   }
