@@ -236,11 +236,6 @@
                                 <i class="pi w-4 text-center text-xs" [ngClass]="item.activo ? 'pi-eye-slash text-amber-600' : 'pi-check-circle text-emerald-600'"></i>
                                 <span>{{ item.activo ? 'Desactivar' : 'Activar' }}</span>
                               </button>
-                              <div *appHasPermission="'VISTA_PRODUCTOS:eliminar'" class="mx-3 my-1 border-t border-slate-100"></div>
-                              <button *appHasPermission="'VISTA_PRODUCTOS:eliminar'" type="button" (click)="openConfirm('Eliminar producto', '¿Está seguro de eliminar el producto «' + item.nombre + '»?', 'eliminar', item, 'danger', 'Eliminar')" class="flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-xs font-semibold text-rose-600 hover:bg-rose-50">
-                                <i class="pi pi-trash w-4 text-center text-xs"></i>
-                                <span>Eliminar</span>
-                              </button>
                             </div>
                           }
                         }

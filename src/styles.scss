@@ -395,21 +395,36 @@
 /* Tema de interfaz. La preferencia se gestiona fuera del menú de accesibilidad. */
 html.theme-dark {
   color-scheme: dark;
-  background: #020617;
+  background: #08111f;
+  --p-content-background: #0f1a2c;
+  --p-content-color: #dbe7f5;
+  --p-surface-0: #0f1a2c;
+  --p-surface-50: #111f33;
+  --p-surface-100: #16243a;
+  --p-surface-200: #243248;
+  --p-surface-300: #33445c;
+  --p-surface-400: #64748b;
+  --p-surface-500: #91a4bd;
+  --p-surface-600: #b8c6d9;
+  --p-surface-700: #dbe7f5;
+  --p-surface-800: #edf4fc;
+  --p-surface-900: #f8fafc;
 }
 
 html.theme-dark body,
 html.theme-dark app-root {
-  background-color: #020617;
+  background-color: #08111f;
   color: #e2e8f0;
 }
 
-html.theme-dark .bg-white { background-color: #0f172a !important; }
-html.theme-dark .bg-blue-50,
-html.theme-dark .bg-slate-50 { background-color: #020617 !important; }
+html.theme-dark .bg-white { background-color: #0f1a2c !important; }
+html.theme-dark .bg-blue-50 { background-color: #08111f !important; }
+html.theme-dark .bg-slate-50,
+html.theme-dark .bg-gray-50 { background-color: #111f33 !important; }
 html.theme-dark .bg-blue-100 { background-color: rgb(var(--brand-950)) !important; }
 html.theme-dark .bg-slate-100 { background-color: #1e293b !important; }
 html.theme-dark .bg-slate-200 { background-color: #334155 !important; }
+html.theme-dark .bg-cyan-50 { background-color: rgb(8 145 178 / 0.14) !important; }
 html.theme-dark [class~="bg-blue-100/70"] { background-color: rgb(var(--brand-950) / 0.7) !important; }
 html.theme-dark [class~="bg-slate-50/70"],
 html.theme-dark [class~="bg-slate-50/50"] { background-color: rgb(30 41 59 / 0.72) !important; }
@@ -421,6 +436,8 @@ html.theme-dark .text-blue-600,
 html.theme-dark .text-blue-700,
 html.theme-dark .text-blue-800,
 html.theme-dark .text-blue-900 { color: rgb(var(--brand-300)) !important; }
+html.theme-dark .text-cyan-600,
+html.theme-dark .text-cyan-700 { color: #67e8f9 !important; }
 html.theme-dark .border-blue-50,
 html.theme-dark .border-blue-100 { border-color: rgb(var(--brand-900)) !important; }
 html.theme-dark .border-blue-200 { border-color: rgb(var(--brand-800)) !important; }
@@ -429,6 +446,7 @@ html.theme-dark .text-slate-950,
 html.theme-dark .text-slate-900 { color: #f8fafc !important; }
 html.theme-dark .text-slate-800 { color: #f1f5f9 !important; }
 html.theme-dark .text-slate-700 { color: #e2e8f0 !important; }
+html.theme-dark .text-gray-700 { color: #e2e8f0 !important; }
 html.theme-dark .text-slate-600 { color: #cbd5e1 !important; }
 html.theme-dark .text-slate-500,
 html.theme-dark .text-slate-400 { color: #94a3b8 !important; }
@@ -438,6 +456,10 @@ html.theme-dark .border-slate-50,
 html.theme-dark .border-slate-100 { border-color: #1e293b !important; }
 html.theme-dark .border-slate-200 { border-color: #334155 !important; }
 html.theme-dark .border-slate-300 { border-color: #475569 !important; }
+html.theme-dark .border-gray-200 { border-color: #334155 !important; }
+html.theme-dark .border-cyan-300,
+html.theme-dark .border-cyan-400,
+html.theme-dark .border-cyan-500 { border-color: #0891b2 !important; }
 html.theme-dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]) { border-color: #1e293b !important; }
 html.theme-dark .divide-slate-200 > :not([hidden]) ~ :not([hidden]) { border-color: #334155 !important; }
 
@@ -456,9 +478,9 @@ html.theme-dark .bg-teal-50 { background-color: #042f2e !important; }
 html.theme-dark .text-teal-700 { color: #5eead4 !important; }
 
 html.theme-dark :where(input, textarea, select) {
-  background-color: #0f172a;
-  border-color: #475569;
-  color: #f1f5f9;
+  background-color: #0b1526;
+  border-color: #33445c;
+  color: #e5edf8;
 }
 
 html.theme-dark :where(input, textarea)::placeholder { color: #64748b; }
@@ -467,9 +489,112 @@ html.theme-dark [class~="hover:bg-slate-100"]:hover { background-color: #1e293b 
 html.theme-dark [class~="hover:bg-blue-50"]:hover { background-color: rgb(var(--brand-950)) !important; }
 
 html.theme-dark :where(.p-dialog, .p-popover, .p-select-overlay, .p-datepicker, .p-menu) {
-  background: #0f172a !important;
-  border-color: #334155 !important;
+  background: #0f1a2c !important;
+  border-color: #33445c !important;
   color: #e2e8f0 !important;
+}
+
+/* Componentes PrimeNG: sus superficies no siempre heredan las utilidades de
+   Tailwind, por eso el tema se completa aquí para toda la aplicación. */
+html.theme-dark :where(.p-datatable, .p-datatable-wrapper, .p-datatable-table) {
+  background: transparent !important;
+  color: #dbe7f5 !important;
+}
+
+html.theme-dark .p-datatable-thead > tr > th {
+  background: #111f33 !important;
+  border-color: #2b3a50 !important;
+  color: #91a4bd !important;
+}
+
+html.theme-dark .p-datatable-tbody > tr {
+  background: #0f1a2c !important;
+  color: #dbe7f5 !important;
+}
+
+html.theme-dark .p-datatable-tbody > tr > td {
+  background: transparent !important;
+  border-color: #243248 !important;
+  color: inherit !important;
+}
+
+html.theme-dark .p-datatable-tbody > tr:hover,
+html.theme-dark .p-datatable-tbody > tr.p-datatable-row-selected {
+  background: #16243a !important;
+}
+
+html.theme-dark .p-datatable-tbody > tr:hover > td {
+  background: transparent !important;
+}
+
+html.theme-dark .p-paginator {
+  background: #0f1a2c !important;
+  border-color: #243248 !important;
+  color: #91a4bd !important;
+}
+
+html.theme-dark .p-paginator button {
+  background: transparent !important;
+  color: #91a4bd !important;
+}
+
+html.theme-dark .p-paginator button:not(:disabled):hover {
+  background: #1c2b42 !important;
+  color: #e5edf8 !important;
+}
+
+html.theme-dark .p-paginator :where(.p-paginator-page.p-highlight, .p-paginator-page.p-paginator-page-selected) {
+  background: rgb(8 145 178 / 0.2) !important;
+  color: #67e8f9 !important;
+}
+
+html.theme-dark .p-paginator button:disabled {
+  color: #42526a !important;
+  opacity: 0.65;
+}
+
+html.theme-dark :where(.p-select, .p-multiselect, .p-inputtext, .p-textarea) {
+  background: #0b1526 !important;
+  border-color: #33445c !important;
+  color: #e5edf8 !important;
+}
+
+html.theme-dark :where(.p-select-label, .p-multiselect-label, .p-select-dropdown, .p-multiselect-dropdown) {
+  color: #dbe7f5 !important;
+}
+
+html.theme-dark :where(.p-select-option, .p-multiselect-option, .p-menu-item-content, .p-datepicker-day) {
+  color: #cbd8e8 !important;
+}
+
+html.theme-dark :where(.p-select-option, .p-multiselect-option, .p-menu-item-content):hover,
+html.theme-dark :where(.p-select-option.p-focus, .p-multiselect-option.p-focus, .p-datepicker-day:hover) {
+  background: #1c2b42 !important;
+  color: #f8fafc !important;
+}
+
+html.theme-dark :where(.p-select-option-selected, .p-multiselect-option-selected, .p-datepicker-day-selected) {
+  background: rgb(8 145 178 / 0.2) !important;
+  color: #67e8f9 !important;
+}
+
+html.theme-dark :where(.p-dialog-header, .p-dialog-content, .p-dialog-footer, .p-drawer, .p-drawer-header, .p-drawer-content) {
+  background: #0f1a2c !important;
+  border-color: #243248 !important;
+  color: #dbe7f5 !important;
+}
+
+html.theme-dark :where(.p-skeleton) {
+  background: #1b2a40 !important;
+}
+
+html.theme-dark .p-skeleton::after {
+  background: linear-gradient(90deg, transparent, rgb(71 85 105 / 0.24), transparent) !important;
+}
+
+html.theme-dark :where(.p-toast-message, .p-confirmdialog, .p-tooltip-text) {
+  border-color: #33445c !important;
+  color: #e5edf8 !important;
 }
 
 html {

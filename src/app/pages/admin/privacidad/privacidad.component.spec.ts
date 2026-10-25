@@ -5,6 +5,7 @@ import { PrivacidadComponent } from './privacidad.component';
 import { PrivacidadService } from '../../../core/services/privacidad.service';
 import { AvisoVersion, CamposAvisoPrivacidad, VistaPreviaAviso } from '../../../models/privacy/privacidad.model';
 import { AuthStore } from '../../../store/auth.store';
+import { CompanyComplianceService } from '../../../core/services/company-compliance.service';
 
 describe('PrivacidadComponent', () => {
   let fixture: ComponentFixture<PrivacidadComponent>;
@@ -41,6 +42,9 @@ describe('PrivacidadComponent', () => {
         provideRouter([]),
         { provide: PrivacidadService, useValue: servicio },
         { provide: AuthStore, useValue: { activeRolePurpose: () => proposito, hasAccess: () => true } },
+        { provide: CompanyComplianceService, useValue: { actualesDeMiClinica: () => respuesta([
+          { control: 'AVISO_PRIVACIDAD', gestionadoPorSoftvet: true }
+        ]) } },
       ],
     }).compileComponents();
     fixture = TestBed.createComponent(PrivacidadComponent);
@@ -51,46 +55,53 @@ describe('PrivacidadComponent', () => {
   describe('administrador de la clínica', () => {
     beforeEach(async () => crear('COMPANY_ADMIN'));
 
-    it('ve el formulario, la vista previa y la constancia de quién publicó cada versión', () => {
+    it('ve el maestro de secciones, el formulario y el historial como tabla', () => {
       expect(servicio.plantilla).toHaveBeenCalled();
       expect(html().querySelector('form')).not.toBeNull();
-      expect(texto()).toContain('Vista previa');
-      expect(texto()).toContain('Publicado por felipe@patitas.test');
-      expect(texto()).toContain('Dispositivo: Chrome en Windows');
-      expect(texto()).toContain('IP 190.40.10.5');
+      expect(texto()).toContain('Revisar y publicar');
+      expect(texto()).not.toContain('Vista previa');
+      expect(texto()).toContain('Gestión de datos');
+      expect(texto()).toContain('Derechos de datos');
+      expect(html().querySelector('table')).not.toBeNull();
+      expect(texto()).toContain('Administrador de la clínica');
+
+      component.abrirVersion(version());
+      fixture.detectChanges();
+
+      expect(texto()).not.toContain('felipe@patitas.test');
+      expect(texto()).not.toContain('Dispositivo:');
+      expect(texto()).not.toContain('IP 190.40.10.5');
     });
 
     it('las versiones anteriores a la constancia dicen que no está registrada, sin inventar datos', async () => {
       TestBed.resetTestingModule();
       await crear('COMPANY_ADMIN', [version({ creadoPor: null, creadoDispositivo: null, creadoIp: null })]);
+      component.abrirVersion(version({ creadoPor: null, creadoDispositivo: null, creadoIp: null }));
+      fixture.detectChanges();
 
-      expect(texto()).toContain('Publicado por usuario no registrado');
-      expect(texto()).toContain('Dispositivo: no registrado');
+      expect(texto()).toContain('Usuario no registrado');
+      expect(texto()).not.toContain('Dispositivo:');
       expect(texto()).not.toContain('· IP');
     });
 
-    it('la vista previa muestra el texto sin publicar nada, aunque falten datos', () => {
+    it('no abre la revisión final ni publica si faltan datos obligatorios', () => {
       component.form.patchValue({ razonSocial: '' });
-
-      component.verVistaPrevia();
-      fixture.detectChanges();
-
-      expect(servicio.vistaPrevia).toHaveBeenCalledTimes(1);
-      expect(servicio.publicar).not.toHaveBeenCalled();
-      expect(html().querySelector('[role="dialog"]')?.textContent).toContain('Todavía no se ha publicado nada');
-      expect(texto()).toContain('Quién trata sus datos');
-      expect(html().querySelector('[role="dialog"] button:last-child')?.textContent).toContain('Cerrar');
-    });
-
-    it('publicar abre primero la vista previa y solo se publica al confirmarla', () => {
-      component.form.controls.confirmoRevisionLegal.setValue(true);
 
       component.solicitarPublicacion();
       fixture.detectChanges();
 
+      expect(servicio.vistaPrevia).not.toHaveBeenCalled();
       expect(servicio.publicar).not.toHaveBeenCalled();
-      expect(html().querySelector('[role="dialog"]')?.textContent).toContain('se publicará como la versión 2');
-      expect(html().querySelector('[role="dialog"]')?.textContent).toContain('quién lo publicó, cuándo y desde qué dispositivo');
+      expect(html().querySelector('[role="dialog"]')).toBeNull();
+    });
+
+    it('publicar abre primero la vista previa y solo se publica al confirmarla', () => {
+      component.solicitarPublicacion();
+      fixture.detectChanges();
+
+      expect(servicio.publicar).not.toHaveBeenCalled();
+      expect(html().querySelector('[role="dialog"]')?.textContent).toContain('como la versión 2');
+      expect(html().querySelector('[role="dialog"]')?.textContent).toContain('se registrará quién la publicó, cuándo y desde qué dispositivo');
 
       component.confirmarPublicacion();
 
@@ -100,17 +111,7 @@ describe('PrivacidadComponent', () => {
       expect(servicio.publicar.calls.mostRecent().args[2]).toBe('PROPIETARIOS_Y_AUTORIZADOS');
     });
 
-    it('si falta la confirmación de la revisión legal no se abre ni se publica', () => {
-      component.form.controls.confirmoRevisionLegal.setValue(false);
-
-      component.solicitarPublicacion();
-
-      expect(servicio.vistaPrevia).not.toHaveBeenCalled();
-      expect(servicio.publicar).not.toHaveBeenCalled();
-    });
-
     it('con observaciones pendientes o sin cambios, el botón de confirmar está bloqueado y no se publica', () => {
-      component.form.controls.confirmoRevisionLegal.setValue(true);
       servicio.vistaPrevia.and.returnValue(respuesta(previa({ observaciones: ['Falta el RUC'] })));
       component.solicitarPublicacion();
       fixture.detectChanges();
@@ -131,7 +132,7 @@ describe('PrivacidadComponent', () => {
 
     it('seguir editando cierra la vista previa y conserva lo escrito', () => {
       component.form.patchValue({ domicilio: 'Jr. Cusco 456' });
-      component.verVistaPrevia();
+      component.solicitarPublicacion();
       fixture.detectChanges();
 
       component.cerrarVistaPrevia();
@@ -144,7 +145,7 @@ describe('PrivacidadComponent', () => {
     it('si no se pudo generar la vista previa, avisa y no abre nada', () => {
       servicio.vistaPrevia.and.returnValue(throwError(() => ({ error: { message: 'Sin permiso' } })));
 
-      component.verVistaPrevia();
+      component.solicitarPublicacion();
       fixture.detectChanges();
 
       expect(component.vistaPrevia()).toBeNull();
@@ -152,7 +153,6 @@ describe('PrivacidadComponent', () => {
     });
 
     it('al publicar se cierra la vista previa y se actualiza el historial', () => {
-      component.form.controls.confirmoRevisionLegal.setValue(true);
       component.solicitarPublicacion();
 
       component.confirmarPublicacion();
@@ -171,7 +171,7 @@ describe('PrivacidadComponent', () => {
     });
 
     it('el diseño es plano: sin sombras, transiciones ni amarillo de alerta', () => {
-      component.verVistaPrevia();
+      component.solicitarPublicacion();
       fixture.detectChanges();
 
       expect(html().innerHTML).not.toMatch(/shadow|transition|amber|yellow/);
@@ -185,13 +185,13 @@ describe('PrivacidadComponent', () => {
       expect(servicio.plantilla).not.toHaveBeenCalled();
       expect(servicio.historial).toHaveBeenCalled();
       expect(html().querySelector('form')).toBeNull();
-      expect(texto()).toContain('Solo el administrador de la clínica puede redactar y publicar el aviso de privacidad');
-      expect(texto()).toContain('Publicado por felipe@patitas.test');
+      expect(texto()).toContain('Solo el administrador de la clínica puede redactar y publicar este aviso');
+      expect(html().querySelector('table')).not.toBeNull();
+      expect(texto()).toContain('Administrador de la clínica');
       expect(texto()).not.toContain('Publicar nueva versión');
     });
 
     it('aunque se fuerce desde el código, no se genera vista previa ni se publica', () => {
-      component.verVistaPrevia();
       component.solicitarPublicacion();
 
       expect(servicio.vistaPrevia).not.toHaveBeenCalled();

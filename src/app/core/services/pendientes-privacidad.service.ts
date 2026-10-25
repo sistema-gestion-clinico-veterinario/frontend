@@ -8,24 +8,41 @@ import { ConsentimientoEstado } from '../../models/privacy/privacidad.model';
 import { PendientePrivacidad } from '../../models/ui/pendiente-privacidad.model';
 import { AuthStore } from '../../store/auth.store';
 import { PrivacidadService } from './privacidad.service';
+import { BackupMonitorService } from './backup-monitor.service';
+import { BackupExecution } from '../../models/backup/backup-execution.model';
 
 const CLAVE_DESCARTADOS = 'pendientes_privacidad_descartados';
 
 @Injectable({ providedIn: 'root' })
 export class PendientesPrivacidadService {
   private readonly privacidad = inject(PrivacidadService);
+  private readonly respaldos = inject(BackupMonitorService);
   private readonly authStore = inject(AuthStore);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
 
   private readonly estado = signal<ConsentimientoEstado | null>(null);
+  private readonly ejecucionesRespaldos = signal<readonly BackupExecution[]>([]);
   private readonly descartados = signal<readonly string[]>([]);
   private readonly consultas = new Subject<void>();
+  private readonly consultasRespaldos = new Subject<void>();
   private urlAnterior = '';
 
   readonly pendientes = computed<PendientePrivacidad[]>(() => {
     const estado = this.estado();
     const lista: PendientePrivacidad[] = [];
+
+    if (this.authStore.activeRolePurpose() === 'PLATFORM_ADMIN') {
+      for (const ejecucion of this.ejecucionesRespaldos()) {
+        lista.push({
+          id: `respaldo-${ejecucion.id}`,
+          titulo: ejecucion.status === 'PARTIAL' ? 'Respaldo parcial' : 'Respaldo fallido',
+          detalle: this.detalleRespaldo(ejecucion),
+          ruta: toAbsoluteRoute(APP_ROUTE_PATHS.BACKUP_MONITOR),
+          opcional: false
+        });
+      }
+    }
 
     if (estado?.avisoPublicado && !estado.vistaPorLaPersona) {
       const actualizado = estado.informadaVersion != null && estado.avisoVersion != null
@@ -76,13 +93,29 @@ export class PendientesPrivacidadService {
       takeUntilDestroyed(this.destroyRef)
     ).subscribe(({ data }) => this.estado.set(data));
 
-    effect(() => {
+    this.consultasRespaldos.pipe(
+      switchMap(() => this.respaldos.list(0, 50).pipe(catchError(() => EMPTY))),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(({ data }) => {
+      const desde = Date.now() - 30 * 24 * 60 * 60 * 1000;
+      this.ejecucionesRespaldos.set((data?.content ?? []).filter(ejecucion =>
+        (ejecucion.status === 'FAILED' || ejecucion.status === 'PARTIAL')
+        && new Date(ejecucion.startedAt).getTime() >= desde));
+    });
+
+    effect((onCleanup) => {
       const clave = this.clave();
+      const esAdministradorPlataforma = this.authStore.activeRolePurpose() === 'PLATFORM_ADMIN';
       untracked(() => {
         this.estado.set(null);
+        this.ejecucionesRespaldos.set([]);
         this.descartados.set(this.leerDescartados(clave));
         this.refrescar();
       });
+      if (esAdministradorPlataforma) {
+        const intervalo = window.setInterval(() => this.refrescar(), 5 * 60 * 1000);
+        onCleanup(() => window.clearInterval(intervalo));
+      }
     });
 
     this.router.events.pipe(
@@ -97,11 +130,32 @@ export class PendientesPrivacidadService {
   }
 
   refrescar(): void {
+    if (this.authStore.activeRolePurpose() === 'PLATFORM_ADMIN') {
+      this.estado.set(null);
+      this.consultasRespaldos.next();
+      return;
+    }
+    this.ejecucionesRespaldos.set([]);
     if (!this.authStore.companyId()) {
       this.estado.set(null);
       return;
     }
     this.consultas.next();
+  }
+
+  private detalleRespaldo(ejecucion: BackupExecution): string {
+    const fecha = new Intl.DateTimeFormat('es-PE', {
+      dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Lima'
+    }).format(new Date(ejecucion.startedAt));
+    const componentes = [
+      ['Base de datos', ejecucion.databaseStatus],
+      ['Cierre de acceso temporal', ejecucion.restrictionsStatus],
+      ['Archivos clínicos', ejecucion.storageStatus]
+    ] as const;
+    const fallidos = componentes.filter(([, estado]) => estado === 'FAILED').map(([nombre]) => nombre);
+    const partes = [fecha];
+    if (fallidos.length) partes.push(`Falló: ${fallidos.join(', ')}`);
+    return partes.join(' · ');
   }
 
   descartar(id: PendientePrivacidad['id']): void {

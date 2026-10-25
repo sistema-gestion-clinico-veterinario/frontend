@@ -83,13 +83,14 @@ describe('BackupMonitorComponent', () => {
   });
 
   describe('estado general', () => {
-    it('resume cómo van los respaldos con el último correcto, la próxima ejecución y el total de los últimos 30 días', async () => {
+    it('resume las ejecuciones, el último respaldo correcto y los problemas de los últimos 30 días', async () => {
       await crear();
 
       expect(texto()).not.toContain('Respaldos al día');
       expect(texto()).toContain('Ejecuciones (30 días)');
       expect(texto()).toContain('29');
-      expect(texto()).toContain('Siguiente ejecución');
+      expect(texto()).not.toContain('Siguiente ejecución');
+      expect(texto()).not.toContain('Próxima ejecución programada');
     });
 
     it('avisa cuando la situación es crítica', async () => {
