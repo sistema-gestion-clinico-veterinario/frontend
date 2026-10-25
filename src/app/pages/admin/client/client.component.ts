@@ -11,6 +11,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { ToastModule } from 'primeng/toast';
 import { MenuModule } from 'primeng/menu';
 import { SkeletonModule } from 'primeng/skeleton';
+import { PaginatorModule } from 'primeng/paginator';
 import { MenuItem, MessageService } from 'primeng/api';
 import { ApoderadoService } from '../../../core/services/apoderado.service';
 import { MascotaService } from '../../../core/services/mascota.service';
@@ -51,6 +52,7 @@ import { Router } from '@angular/router';
     ToastModule,
     MenuModule,
     SkeletonModule,
+    PaginatorModule,
     HasPermissionDirective,
     InputFilterDirective,
     ConflictingAppointmentsDialogComponent,
@@ -100,7 +102,8 @@ export class ClientComponent implements OnInit {
 
   searchNombre = signal('');
   searchDocumento = signal('');
-  private pageSize = 10;
+  currentPage = 0;
+  readonly pageSize = 10;
   private readonly searchTrigger = new Subject<void>();
   private hasSearched = false;
   private readonly nameFilterPattern = /^[A-Za-zÁÉÍÓÚáéíóúÑñÜü]+(?: [A-Za-zÁÉÍÓÚáéíóúÑñÜü]+)*$/;
@@ -291,13 +294,13 @@ export class ClientComponent implements OnInit {
       this.loadClientRoles(companyId);
       this.clientForm.get('companyId')?.setValue(companyId);
     }
-    this.loadClients({ first: 0, rows: this.pageSize });
+    this.loadClients(0);
     this.loadAvisoPrivacidad();
 
     this.searchTrigger.pipe(
       debounceTime(400),
       takeUntilDestroyed(this.destroyRef)
-    ).subscribe(() => this.loadClients({ first: 0, rows: this.pageSize }));
+    ).subscribe(() => this.loadClients(0));
 
     this.clientForm.get('tipoDocumento')?.valueChanges.subscribe(tipo => {
       const doc = this.clientForm.get('numeroDocumento');
@@ -336,17 +339,16 @@ export class ClientComponent implements OnInit {
     this.searchDocumento.set(this.sanitizeDocumentFilter(value));
   }
 
-  loadClients(event: any = { first: 0, rows: this.pageSize }) {
+  loadClients(page: number = 0) {
     const companyId = this.activeCompanyId;
     const isFirstLoad = this.clients().length === 0;
     if (isFirstLoad) this.cargando.set(true);
-    this.pageSize = event.rows;
-    const page = Math.floor(event.first / event.rows);
+    this.currentPage = page;
 
     const nombre = this.normalizeNameFilter(this.searchNombre()) || undefined;
     const numeroDocumento = this.searchDocumento().trim().toUpperCase() || undefined;
 
-    this.apoderadoService.listar(companyId ?? undefined, nombre, numeroDocumento, page, event.rows).pipe(
+    this.apoderadoService.listar(companyId ?? undefined, nombre, numeroDocumento, page, this.pageSize).pipe(
       finalize(() => this.cargando.set(false))
     ).subscribe({
       next: (res) => {
@@ -357,6 +359,10 @@ export class ClientComponent implements OnInit {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar los propietarios' });
       }
     });
+  }
+
+  onClientPageChange(event: any): void {
+    this.loadClients(Number(event.page) || 0);
   }
 
   private normalizeAndValidateFilters(): boolean {

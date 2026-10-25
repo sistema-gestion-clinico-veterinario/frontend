@@ -43,7 +43,22 @@ export class ListaHcComponent implements OnInit {
   searchPropietario    = '';
   searchFechaDesde     = '';
   searchFechaHasta     = '';
+  filtersOpen          = false;
   filterError           = signal<string | null>(null);
+
+  hasActiveFilters(): boolean {
+    return !!(
+      this.searchNumeroHc ||
+      this.searchNombrePaciente.trim() ||
+      this.searchPropietario.trim() ||
+      this.searchFechaDesde ||
+      this.searchFechaHasta
+    );
+  }
+
+  dateFilterCount(): number {
+    return Number(!!this.searchFechaDesde) + Number(!!this.searchFechaHasta);
+  }
 
   ngOnInit() {
     this.cargarHistorias();
@@ -114,6 +129,7 @@ export class ListaHcComponent implements OnInit {
     this.searchPropietario    = '';
     this.searchFechaDesde     = '';
     this.searchFechaHasta     = '';
+    this.filtersOpen          = false;
     this.filterError.set(null);
     this.cargarHistorias(0);
   }

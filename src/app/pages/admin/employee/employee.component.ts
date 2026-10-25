@@ -10,6 +10,7 @@ import { MultiSelectModule } from 'primeng/multiselect';
 import { ToastModule } from 'primeng/toast';
 import { MenuModule } from 'primeng/menu';
 import { SkeletonModule } from 'primeng/skeleton';
+import { PaginatorModule } from 'primeng/paginator';
 import { MenuItem, MessageService } from 'primeng/api';
 import { EmpleadoService } from '../../../core/services/empleado.service';
 import { MediaService } from '../../../core/services/media.service';
@@ -49,6 +50,7 @@ import { Role } from '../../../models/response/permission';
     ToastModule,
     MenuModule,
     SkeletonModule,
+    PaginatorModule,
     HasPermissionDirective,
     InputFilterDirective,
     ConflictingAppointmentsDialogComponent,
@@ -92,6 +94,10 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   especialidadesList = signal<any[]>([]);
   tiposEmpleadoList = signal<any[]>([]);
   totalRecords = signal<number>(0);
+  employeeSearch = signal<string>('');
+  appliedEmployeeSearch = signal<string>('');
+  currentPage = 0;
+  readonly pageSize = 10;
   openDropdown = signal<string | null>(null);
   searchFilter = signal<string>('');
   displayDetailModal = signal<boolean>(false);
@@ -258,6 +264,8 @@ export class EmployeeComponent implements OnInit, OnDestroy {
       this.employeeForm.get('companyId')?.setValue(companyId);
     }
     this.loadAvisoPrivacidad();
+    const page = Number(this.route.snapshot.queryParamMap.get('page'));
+    this.loadEmployees(Number.isInteger(page) && page > 0 ? page : 0);
     if (this.registroAdministradorInicial()) {
       this.openNew();
     }
@@ -329,13 +337,13 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     return 'El DNI debe tener exactamente 8 dígitos';
   }
 
-  loadEmployees(event: any = { first: 0, rows: 10 }) {
+  loadEmployees(page: number = 0) {
     const companyId = this.activeCompanyId ?? undefined;
     const isFirstLoad = this.employees().length === 0;
     if (isFirstLoad) this.cargando.set(true);
-    const page = event.first / event.rows;
+    this.currentPage = page;
 
-    this.empleadoService.listar(companyId, undefined, page, event.rows).subscribe({
+    this.empleadoService.listar(companyId, this.appliedEmployeeSearch() || undefined, page, this.pageSize).subscribe({
       next: (res) => {
         this.employees.set(res.data.content);
         this.totalRecords.set(res.data?.page?.totalElements ?? res.data?.totalElements ?? 0);
@@ -346,6 +354,41 @@ export class EmployeeComponent implements OnInit, OnDestroy {
         this.cargando.set(false);
       }
     });
+  }
+
+  onEmployeeSearchInput(event: Event): void {
+    this.employeeSearch.set((event.target as HTMLInputElement).value);
+  }
+
+  searchEmployees(): void {
+    this.appliedEmployeeSearch.set(this.employeeSearch().trim());
+    this.goToEmployeePage(0);
+  }
+
+  clearEmployeeSearch(): void {
+    this.employeeSearch.set('');
+    if (!this.appliedEmployeeSearch()) return;
+    this.appliedEmployeeSearch.set('');
+    this.goToEmployeePage(0);
+  }
+
+  onEmployeePageChange(event: any): void {
+    this.goToEmployeePage(Number(event.page) || 0);
+  }
+
+  private goToEmployeePage(page: number): void {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { page: page > 0 ? page : null },
+      queryParamsHandling: 'merge',
+      replaceUrl: true
+    });
+    this.loadEmployees(page);
+  }
+
+  additionalAssignmentsCount(employee: EmpleadoListResponse): number {
+    return Math.max(0, (employee.tiposEmpleado?.length ?? 0) - 1)
+      + Math.max(0, (employee.especialidades?.length ?? 0) - 1);
   }
 
 
@@ -435,7 +478,7 @@ export class EmployeeComponent implements OnInit, OnDestroy {
 
     if (this.canEmployeeAction('leer')) {
       items.push({
-        label: 'Ver Detalles',
+        label: 'Ver detalles',
         icon: 'pi pi-eye',
         command: () => this.viewEmployeeDetail(employee)
       });

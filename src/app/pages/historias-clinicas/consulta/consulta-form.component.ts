@@ -6,7 +6,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ToastModule } from 'primeng/toast';
 import { ButtonModule } from 'primeng/button';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { TimelineModule } from 'primeng/timeline';
 import { CardModule } from 'primeng/card';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { DrawerModule } from 'primeng/drawer';
@@ -46,7 +45,6 @@ import { AplicacionPreventivaResponse, ControlPreventivoResponse, TipoControlPre
     ToastModule,
     ButtonModule,
     ConfirmDialogModule,
-    TimelineModule,
     CardModule,
     DrawerModule,
     BadgeModule,
