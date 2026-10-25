@@ -144,3 +144,55 @@ describe('AuthGuard - sesión de otra clínica', () => {
     });
   });
 });
+
+describe('AuthGuard - acceso a pantallas sin permiso', () => {
+  function ejecutar(store: Record<string, unknown>, route: Partial<ActivatedRouteSnapshot>) {
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([]),
+        { provide: SessionService, useValue: { initialize: () => of(true), sessionConflict: Object.assign(() => false, { set: () => {} }) } },
+        { provide: CompanySlugContext, useValue: { slug: () => null } },
+        { provide: AvisoClinicaGate, useValue: { debeMostrarse: () => of(false) } },
+        {
+          provide: AuthStore,
+          useValue: { menu: () => [{ ruta: 'apoderado/dashboard' }], activeRoleId: () => 1, activeRolePurpose: () => 'CLIENT_PORTAL', logout: () => {}, ...store }
+        }
+      ]
+    });
+    return TestBed.runInInjectionContext(() =>
+      AuthGuard(route as ActivatedRouteSnapshot, { url: '/x' } as RouterStateSnapshot)) as Observable<boolean | UrlTree>;
+  }
+  const serializar = (r: boolean | UrlTree) => TestBed.inject(Router).serializeUrl(r as UrlTree);
+
+  it('una ruta que su rol no puede ver lleva a la página de acceso denegado', (done) => {
+    ejecutar({ hasRouteAccess: () => false, hasAccess: () => true },
+      { data: {}, pathFromRoot: [{ routeConfig: { path: 'caja' } }] as never }).subscribe((resultado) => {
+      expect(serializar(resultado)).toBe('/acceso-denegado');
+      done();
+    });
+  });
+
+  it('una ventana sin el permiso requerido lleva a la página de acceso denegado', (done) => {
+    ejecutar({ hasRouteAccess: () => true, hasAccess: () => false },
+      { data: { ventana: 'VISTA_CAJA', permiso: 'leer' }, pathFromRoot: [] }).subscribe((resultado) => {
+      expect(serializar(resultado)).toBe('/acceso-denegado');
+      done();
+    });
+  });
+
+  it('una pantalla reservada a otro tipo de rol lleva a la página de acceso denegado', (done) => {
+    ejecutar({ hasRouteAccess: () => true, hasAccess: () => true },
+      { data: { purposes: ['PLATFORM_ADMIN'] }, pathFromRoot: [] }).subscribe((resultado) => {
+      expect(serializar(resultado)).toBe('/acceso-denegado');
+      done();
+    });
+  });
+
+  it('con permiso deja pasar', (done) => {
+    ejecutar({ hasRouteAccess: () => true, hasAccess: () => true },
+      { data: {}, pathFromRoot: [{ routeConfig: { path: 'mascotas' } }] as never }).subscribe((resultado) => {
+      expect(resultado).toBeTrue();
+      done();
+    });
+  });
+});

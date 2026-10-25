@@ -11,6 +11,7 @@ import { normalizeText } from '../../../core/utils/normalize-text.util';
 import { lowercaseEmailValidator } from '../../../core/validators/lowercase-email.validator';
 import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
 import { textContentValidator } from '../../../core/validators/text-content.validator';
+import { RazaRequest } from '../../../models/request/raza-request';
 import { AvisoPublico } from '../../../models/privacy/privacidad.model';
 import { AuthStore } from '../../../store/auth.store';
 
@@ -39,6 +40,18 @@ export class ClientOnboardingComponent implements OnInit {
   readonly breeds = signal<{ label: string; value: number }[]>([]);
   readonly loadingBreeds = signal(false);
   readonly today = new Date().toISOString().slice(0, 10);
+  readonly breedModalOpen = signal(false);
+  readonly savingBreed = signal(false);
+  readonly breedError = signal('');
+
+  private readonly pesoRangos: Record<string, { min: number; max: number }> = {
+    PERRO: { min: 0.5, max: 120 },
+    GATO: { min: 0.3, max: 20 },
+    AVE: { min: 0.02, max: 5 },
+    REPTIL: { min: 0.01, max: 100 },
+    ROEDOR: { min: 0.02, max: 10 },
+    OTRO: { min: 0.01, max: 120 }
+  };
 
   readonly canCreatePet = computed(() => this.authStore.hasAccess('VISTA_MASCOTAS', 'escribir'));
 
@@ -65,7 +78,12 @@ export class ClientOnboardingComponent implements OnInit {
     sexo: ['', Validators.required],
     fechaNacimiento: ['', [Validators.required, this.notFutureDate]],
     color: ['', [Validators.maxLength(50), Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]*$/), noLeadingTrailingSpaceValidator()]],
-    peso: [null as number | null, [Validators.min(0.01), Validators.max(120)]]
+    peso: ['', [this.pesoValidator.bind(this)]]
+  });
+
+  readonly breedForm = this.fb.group({
+    nombre: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100), Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/), noLeadingTrailingSpaceValidator()]],
+    descripcion: ['', [Validators.maxLength(300), noLeadingTrailingSpaceValidator(), textContentValidator()]]
   });
 
   ngOnInit(): void {
@@ -85,6 +103,7 @@ export class ClientOnboardingComponent implements OnInit {
         : [Validators.maxLength(60)]);
       if (especie !== 'OTRO') otherSpecies.setValue('');
       otherSpecies.updateValueAndValidity({ emitEvent: false });
+      this.petForm.controls.peso.updateValueAndValidity({ emitEvent: false });
       this.loadBreeds(especie ?? '');
     });
   }
@@ -153,7 +172,7 @@ export class ClientOnboardingComponent implements OnInit {
         sexo: value.sexo!,
         fechaNacimiento: value.fechaNacimiento!,
         color: normalizeText(value.color) || undefined,
-        peso: value.peso ?? undefined
+        peso: value.peso ? Number(value.peso) : undefined
     }).pipe(finalize(() => this.saving.set(false))).subscribe({
       next: ({ data }) => {
         this.clientName.set(`${data.cliente.nombre} ${data.cliente.apellido}`.trim());
@@ -196,6 +215,108 @@ export class ClientOnboardingComponent implements OnInit {
       ? this.clientForm.get(field)
       : this.petForm.get(field);
     return !!control && control.invalid && (control.touched || control.dirty);
+  }
+
+  petError(field: string): string {
+    const errors = this.petForm.get(field)?.errors;
+    if (!errors) return '';
+    if (errors['required']) {
+      const mensajes: Record<string, string> = {
+        nombreCompleto: 'Ingresa el nombre de la mascota.',
+        especie: 'Selecciona la especie.',
+        otraEspecie: 'Indica la especie.',
+        razaId: 'Selecciona una raza o crea una nueva.',
+        sexo: 'Selecciona el sexo.',
+        fechaNacimiento: 'Indica la fecha de nacimiento.'
+      };
+      return mensajes[field] ?? 'Este campo es obligatorio.';
+    }
+    if (errors['minlength']) return `Mínimo ${errors['minlength'].requiredLength} caracteres.`;
+    if (errors['maxlength']) return `Máximo ${errors['maxlength'].requiredLength} caracteres.`;
+    if (errors['pattern']) return 'Usa solo letras y espacios.';
+    if (errors['leadingTrailingSpace']) return 'No debe tener espacios al inicio o al final.';
+    if (errors['futureDate']) return 'La fecha no puede ser futura.';
+    if (errors['pesoFormato']) return 'Escribe un número positivo con hasta 2 decimales.';
+    if (errors['pesoRango']) return `El peso debe estar entre ${errors['pesoRango'].min} y ${errors['pesoRango'].max} kg para esta especie.`;
+    return 'Valor inválido.';
+  }
+
+  sanitizePeso(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const limpio = input.value.replace(',', '.').replace(/[^0-9.]/g, '');
+    const [entero, ...resto] = limpio.split('.');
+    const decimales = resto.join('').slice(0, 2);
+    const valor = resto.length ? `${entero.slice(0, 3)}.${decimales}` : entero.slice(0, 3);
+    if (valor !== input.value) input.value = valor;
+    this.petForm.controls.peso.setValue(valor);
+  }
+
+  breedFieldError(field: 'nombre' | 'descripcion'): string {
+    const errors = this.breedForm.get(field)?.errors;
+    if (!errors) return '';
+    if (errors['required']) return 'Este campo es obligatorio.';
+    if (errors['minlength']) return `Mínimo ${errors['minlength'].requiredLength} caracteres.`;
+    if (errors['maxlength']) return `Máximo ${errors['maxlength'].requiredLength} caracteres.`;
+    if (errors['pattern']) return 'Usa solo letras y espacios; sin números ni símbolos.';
+    if (errors['leadingTrailingSpace']) return 'No debe tener espacios al inicio o al final.';
+    if (errors['textContent']) return 'Debe contener texto real.';
+    return 'Valor inválido.';
+  }
+
+  breedFieldInvalid(field: 'nombre' | 'descripcion'): boolean {
+    const control = this.breedForm.get(field);
+    return !!control && control.invalid && (control.touched || control.dirty);
+  }
+
+  openBreedModal(): void {
+    if (!this.petForm.controls.especie.value) {
+      this.petForm.controls.especie.markAsTouched();
+      return;
+    }
+    this.breedForm.reset({ nombre: '', descripcion: '' });
+    this.breedError.set('');
+    this.breedModalOpen.set(true);
+  }
+
+  closeBreedModal(): void {
+    if (!this.savingBreed()) this.breedModalOpen.set(false);
+  }
+
+  saveBreed(): void {
+    const especie = this.petForm.controls.especie.value;
+    const companyId = this.activeCompanyId;
+    if (this.breedForm.invalid || !especie || !companyId) {
+      this.breedForm.markAllAsTouched();
+      return;
+    }
+    const value = this.breedForm.getRawValue();
+    const request: RazaRequest = {
+      nombre: normalizeText(value.nombre),
+      descripcion: normalizeText(value.descripcion) || undefined,
+      especie
+    };
+    this.savingBreed.set(true);
+    this.breedError.set('');
+    this.razaService.crear(request, companyId).pipe(
+      finalize(() => this.savingBreed.set(false))
+    ).subscribe({
+      next: ({ data }) => {
+        this.breeds.update(list => [{ label: data.nombre, value: data.id }, ...list.filter(item => item.value !== data.id)]);
+        this.petForm.controls.razaId.setValue(data.id);
+        this.petForm.controls.razaId.markAsTouched();
+        this.breedModalOpen.set(false);
+      },
+      error: err => this.breedError.set(err?.error?.message ?? 'No se pudo crear la raza.')
+    });
+  }
+
+  private pesoValidator(control: AbstractControl): ValidationErrors | null {
+    const raw = String(control.value ?? '').trim();
+    if (!raw) return null;
+    if (!/^\d{1,3}(\.\d{1,2})?$/.test(raw)) return { pesoFormato: true };
+    const rango = this.pesoRangos[this.petForm?.controls.especie.value ?? ''] ?? this.pesoRangos['OTRO'];
+    const peso = Number(raw);
+    return peso >= rango.min && peso <= rango.max ? null : { pesoRango: rango };
   }
 
   private loadBreeds(especie: string): void {

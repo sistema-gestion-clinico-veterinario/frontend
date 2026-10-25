@@ -12,6 +12,7 @@ describe('Application routes', () => {
       'admin/login',
       'login',
       'privacidad',
+      'acceso-denegado',
       'cuenta-cerrada',
       'reactivate-account',
       'forgot-password',
@@ -19,7 +20,8 @@ describe('Application routes', () => {
       'confirm-email-change',
       'auth/google/callback',
       'auth/verify',
-      'auth/verify/:token'
+      'auth/verify/:token',
+      '**'
     ]);
   });
 

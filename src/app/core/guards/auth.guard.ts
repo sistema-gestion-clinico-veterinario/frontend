@@ -1,7 +1,6 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router, ActivatedRouteSnapshot } from '@angular/router';
 import { AuthStore } from '../../store/auth.store';
-import { resolveDashboardRoute, resolveInitialRoute } from '../routing/initial-route';
 import { map, of, switchMap } from 'rxjs';
 import { AvisoClinicaGate } from '../services/aviso-clinica-gate.service';
 import { SessionService } from '../services/session.service';
@@ -39,6 +38,7 @@ export const AuthGuard: CanActivateFn = (route, state) => {
 };
 
 const RUTAS_SIN_AVISO = ['/aviso-clinica', '/password-change'];
+const RUTA_ACCESO_DENEGADO = '/acceso-denegado';
 
 function estaExentaDelAviso(url: string | undefined): boolean {
   const completa = pathnameOf(url ?? '');
@@ -63,7 +63,7 @@ function validateAccess(route: ActivatedRouteSnapshot, authStore: any, router: R
   // Dynamic route pattern access check
   const pattern = getRoutePattern(route);
   if (pattern && !isPurposeDashboardRoute(pattern, authStore.activeRolePurpose()) && !authStore.hasRouteAccess(pattern)) {
-    return router.createUrlTree([resolveInitialRoute(authStore.menu() ?? [], authStore.activeRolePurpose())]);
+    return router.createUrlTree([RUTA_ACCESO_DENEGADO]);
   }
 
   // Fallback checks (legacy or explicit data parameters)
@@ -71,13 +71,13 @@ function validateAccess(route: ActivatedRouteSnapshot, authStore: any, router: R
   if (requiredVentana) {
     const requiredPermission = (route.data?.['permiso'] ?? 'leer') as 'leer' | 'escribir' | 'modificar' | 'eliminar';
     if (!authStore.hasAccess(requiredVentana, requiredPermission)) {
-      return router.createUrlTree([resolveInitialRoute(authStore.menu() ?? [], authStore.activeRolePurpose())]);
+      return router.createUrlTree([RUTA_ACCESO_DENEGADO]);
     }
   }
 
   const requiredPurposes = route.data?.['purposes'] as string[] | undefined;
   if (requiredPurposes?.length && !requiredPurposes.includes(authStore.activeRolePurpose())) {
-    return router.createUrlTree([resolveDashboardRoute(authStore.activeRolePurpose())]);
+    return router.createUrlTree([RUTA_ACCESO_DENEGADO]);
   }
 
   return true;

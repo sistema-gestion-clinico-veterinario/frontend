@@ -1,7 +1,7 @@
 <p-toast position="top-right" />
 
-<div class="min-h-screen bg-blue-50 p-6">
-  <div class="max-w-full mx-auto space-y-6">
+<div class="min-h-screen bg-blue-50 p-4 sm:p-6">
+  <div class="mx-auto max-w-6xl space-y-5 sm:space-y-6">
 
     <!-- Skeleton loading -->
     @if (cargando()) {
@@ -94,7 +94,7 @@
 
     <!-- Profile content -->
     @if (!cargando()) {
-      <div class="bg-white rounded-2xl border border-slate-100 p-6">
+      <section class="rounded-xl border border-slate-200 bg-white p-5 sm:p-6">
         <div class="flex flex-col sm:flex-row items-center sm:items-start gap-5">
           <div class="relative shrink-0 group">
             <input #fileInput type="file" accept="image/*" class="hidden" (change)="onFileSelected($event)" />
@@ -114,7 +114,7 @@
             @if (editMode() && !uploadingPhoto()) {
               <div
                 (click)="triggerFileInput()"
-                class="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                class="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer">
                 <i class="pi pi-camera text-white text-xl"></i>
               </div>
             }
@@ -141,7 +141,7 @@
             </h1>
             <p class="text-slate-500 text-sm mt-0.5">{{ profile()?.email }}</p>
             <div class="flex flex-wrap justify-center sm:justify-start gap-2 mt-3">
-              <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
+              <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/10 text-[var(--brand-primary)]">
                 {{ roleLabel }}
               </span>
               @if (profile()?.companyName) {
@@ -161,20 +161,21 @@
           @if (canModifyProfile) {
             <div class="shrink-0">
               <button (click)="toggleEdit()"
-                [class]="editMode() ? 'bg-slate-100 text-slate-600 hover:bg-slate-200' : 'bg-blue-500 text-white hover:bg-blue-600'"
-                class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors duration-150">
+                [class]="editMode() ? 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50' : 'border border-blue-500 bg-blue-500 text-white hover:bg-blue-600'"
+                class="inline-flex h-10 items-center gap-2 rounded-lg px-4 text-sm font-semibold">
                 <i [class]="editMode() ? 'pi pi-times' : 'pi pi-pencil'"></i>
                 {{ editMode() ? 'Cancelar' : 'Editar perfil' }}
               </button>
             </div>
           }
         </div>
-      </div>
-      <div class="grid grid-cols-1 items-start gap-6 lg:grid-cols-3">
-        <div class="self-start lg:col-span-2 bg-white rounded-2xl border border-slate-100 p-6">
+      </section>
+      <div class="grid grid-cols-1 items-start gap-5 sm:gap-6 lg:grid-cols-3">
+        <div class="min-w-0 space-y-5 sm:space-y-6 lg:col-span-2">
+        <section class="min-w-0 rounded-xl border border-slate-200 bg-white p-5 sm:p-6">
           @if (!editMode()) {
-            <h2 class="text-base font-semibold text-slate-700 mb-4 flex items-center gap-2">
-              <i class="pi pi-user text-blue-500"></i> Información personal
+            <h2 class="mb-5 flex items-center gap-2.5 text-sm font-extrabold text-slate-900">
+              <span class="grid size-7 place-items-center rounded-lg bg-blue-500/10 text-[var(--brand-primary)]"><i class="pi pi-user text-xs"></i></span> Información personal
             </h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
@@ -214,8 +215,8 @@
             </div>
           }
           @if (editMode()) {
-            <h2 class="text-base font-semibold text-slate-700 mb-4 flex items-center gap-2">
-              <i class="pi pi-pencil text-blue-500"></i> Editar información
+            <h2 class="mb-5 flex items-center gap-2.5 text-sm font-extrabold text-slate-900">
+              <span class="grid size-7 place-items-center rounded-lg bg-blue-500/10 text-[var(--brand-primary)]"><i class="pi pi-pencil text-xs"></i></span> Editar información
             </h2>
             <form [formGroup]="form" (ngSubmit)="save()" class="space-y-4">
               <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Datos obligatorios</p>
@@ -297,13 +298,135 @@
                       </div>
                     </form>
                   }
-                </div>
-                <!-- Right: Additional info -->
-                <div class="space-y-5">
+                </section>
+                  @if (avisoPrivacidad(); as aviso) {
+                    <section id="privacidad" class="scroll-mt-4 rounded-xl border border-slate-200 bg-white">
+                      <header class="flex items-start gap-3 border-b border-slate-100 px-5 py-4 sm:px-6">
+                        <span class="grid size-9 shrink-0 place-items-center rounded-lg bg-blue-500/10 text-[var(--brand-primary)]"><i class="pi pi-lock"></i></span>
+                        <div class="min-w-0">
+                          <h3 class="text-sm font-extrabold text-slate-900">Privacidad de tus datos</h3>
+                          <p class="mt-0.5 text-xs leading-5 text-slate-500">Aviso de privacidad de {{ aviso.clinica }} · versión {{ aviso.version }} · vigente desde el {{ aviso.vigenteDesde | date:'dd/MM/yyyy' }}</p>
+                        </div>
+                      </header>
+                      <div class="divide-y divide-slate-100 px-5 sm:px-6">
+                        <div class="py-4">
+                          <details class="rounded-lg border border-slate-200">
+                            <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-xs font-bold text-[var(--brand-primary)]">
+                              <span><i class="pi pi-book mr-2"></i>Leer aviso completo</span>
+                              <i class="pi pi-chevron-down text-[10px]"></i>
+                            </summary>
+                            <div class="max-h-[30rem] overflow-y-auto border-t border-slate-200 bg-slate-50 p-3">
+                              <app-documento-legal [contenido]="aviso.contenido" [compacto]="true" [mostrarIndice]="false" />
+                            </div>
+                          </details>
+                        </div>
+
+                        @if (estadoPrivacidad(); as estado) {
+                          <div class="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
+                            <div class="min-w-0">
+                              <p class="text-xs font-bold text-slate-800">Constancia de lectura</p>
+                              <p class="mt-0.5 text-xs leading-5 text-slate-500">Queda registrado que revisaste la versión vigente del aviso.</p>
+                            </div>
+                            @if (estado.informada && estado.informadaVersion === aviso.version) {
+                              <span class="inline-flex w-fit shrink-0 items-center gap-1.5 rounded-full bg-green-50 px-2.5 py-1 text-xs font-semibold text-green-700">
+                                <span class="size-1.5 rounded-full bg-green-500"></span> Registrada
+                              </span>
+                            } @else {
+                              <button type="button" (click)="registrarLecturaAviso()" [disabled]="actualizandoPrivacidad()"
+                                class="h-9 shrink-0 rounded-lg border border-[var(--brand-primary)] px-4 text-xs font-bold text-[var(--brand-primary)] disabled:opacity-50">
+                                Confirmar lectura
+                              </button>
+                            }
+                          </div>
+
+                          @if (recordatoriosDisponibles()) {
+                            <div class="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
+                              <div class="min-w-0">
+                                <p class="text-xs font-bold text-slate-800">Recordatorios preventivos por correo</p>
+                                <p class="mt-0.5 text-xs leading-5 text-slate-500">Son opcionales. Solo los recibirás si los autorizas y puedes retirar tu autorización cuando quieras.</p>
+                              </div>
+                              <div class="inline-flex w-full shrink-0 gap-1 rounded-lg border border-slate-200 bg-slate-50 p-1 sm:w-auto">
+                                <button type="button" (click)="decidirRecordatorios(true)" [disabled]="actualizandoPrivacidad()"
+                                  [class]="estadoRecordatorios() === 'OTORGADO' ? 'bg-[var(--brand-primary)] text-white' : 'text-slate-600 hover:bg-white'"
+                                  class="h-8 flex-1 rounded-md px-3 text-xs font-semibold disabled:opacity-50 sm:flex-none">Quiero recibirlos</button>
+                                <button type="button" (click)="decidirRecordatorios(false)" [disabled]="actualizandoPrivacidad()"
+                                  [class]="estadoRecordatorios() === 'RETIRADO' ? 'bg-slate-700 text-white' : 'text-slate-600 hover:bg-white'"
+                                  class="h-8 flex-1 rounded-md px-3 text-xs font-semibold disabled:opacity-50 sm:flex-none">No autorizo / revocar</button>
+                              </div>
+                            </div>
+                          }
+
+                          @if (iaDisponible()) {
+                            <div class="flex flex-col gap-3 py-4 sm:flex-row sm:items-start sm:justify-between">
+                              <div class="min-w-0">
+                                <p class="text-xs font-bold text-slate-800">Inteligencia artificial en la atención de tus mascotas</p>
+                                <p class="mt-0.5 text-xs leading-5 text-slate-500">
+                                  Es opcional. Con tu autorización, la clínica podrá enviar los datos clínicos de tus mascotas (historia clínica,
+                                  estudios de laboratorio y radiografías) a un servicio de inteligencia artificial que apoya al médico veterinario
+                                  en su interpretación. Sin tu autorización no se utilizará, y la atención de tus mascotas no cambia.
+                                  Puedes retirarla en cualquier momento.
+                                </p>
+                                <p class="mt-2 text-xs font-semibold" [class]="estadoIa() === 'OTORGADO' ? 'text-green-700' : 'text-slate-500'">
+                                  {{ estadoIa() === 'OTORGADO' ? 'Autorizada' : estadoIa() === 'RETIRADO' ? 'Autorización retirada' : 'Sin autorización' }}
+                                </p>
+                              </div>
+                              <div class="inline-flex w-full shrink-0 gap-1 rounded-lg border border-slate-200 bg-slate-50 p-1 sm:w-auto">
+                                <button type="button" (click)="decidirIa(true)" [disabled]="actualizandoPrivacidad() || estadoIa() === 'OTORGADO'"
+                                  [class]="estadoIa() === 'OTORGADO' ? 'bg-[var(--brand-primary)] text-white' : 'text-slate-600 hover:bg-white'"
+                                  class="h-8 flex-1 rounded-md px-4 text-xs font-semibold disabled:opacity-60 sm:flex-none">Autorizo</button>
+                                <button type="button" (click)="decidirIa(false)" [disabled]="actualizandoPrivacidad() || estadoIa() !== 'OTORGADO'"
+                                  [class]="estadoIa() !== 'OTORGADO' ? 'bg-slate-700 text-white' : 'text-slate-600 hover:bg-white'"
+                                  class="h-8 flex-1 rounded-md px-4 text-xs font-semibold disabled:opacity-60 sm:flex-none">No autorizo</button>
+                              </div>
+                            </div>
+                          }
+                        }
+
+                        @if (derechosDatosDisponibles()) {
+                          <div class="py-4">
+                            <a routerLink="/privacidad/derechos"
+                              class="flex items-center justify-between gap-3 rounded-lg border border-slate-200 px-4 py-3 text-xs font-semibold text-slate-700 hover:bg-slate-50">
+                              <span><i class="pi pi-id-card mr-2 text-[var(--brand-primary)]"></i>Ejercer y consultar mis derechos sobre datos</span>
+                              <i class="pi pi-arrow-right text-slate-400"></i>
+                            </a>
+                          </div>
+                        }
+                      </div>
+                    </section>
+                  }
+                  <!-- Constancias legales -->
+                  <section class="rounded-xl border border-slate-200 bg-white p-5 sm:p-6">
+                    <h3 class="mb-3 flex items-center gap-2.5 text-sm font-extrabold text-slate-900">
+                      <span class="grid size-7 place-items-center rounded-lg bg-slate-100 text-slate-500"><i class="pi pi-file text-xs"></i></span> Documentos legales revisados
+                    </h3>
+                    @if (legalAcceptances().length === 0) {
+                      <p class="rounded-lg bg-slate-50 px-4 py-6 text-center text-xs text-slate-400">Aún no hay constancias registradas.</p>
+                    } @else {
+                      <ul class="divide-y divide-slate-100">
+                        @for (aceptacion of legalAcceptances(); track aceptacion.tipo + aceptacion.version) {
+                          <li class="flex items-start gap-3 py-3 text-xs leading-5">
+                            <span class="mt-0.5 grid size-7 shrink-0 place-items-center rounded-full bg-green-50 text-green-600"><i class="pi pi-check text-[10px]"></i></span>
+                            <div class="min-w-0">
+                              <p class="font-bold text-slate-700">{{ legalLabel(aceptacion.tipo) }} <span class="font-medium text-slate-400">· versión {{ aceptacion.version }}</span></p>
+                              <p class="text-slate-500">
+                                {{ aceptacion.tipoConstancia === 'CONSTANCIA_LECTURA' || aceptacion.tipo === 'POLITICA_PRIVACIDAD' ? 'Lectura registrada' : 'Aceptación registrada' }}
+                                · {{ aceptacion.fechaAceptacion | date:'dd/MM/yyyy HH:mm' }}
+                              </p>
+                              @if (!aceptacion.textoRecuperable) {
+                                <p class="text-slate-400">Constancia anterior al registro del texto exacto.</p>
+                              }
+                            </div>
+                          </li>
+                        }
+                      </ul>
+                    }
+                  </section>
+        </div>
+        <div class="min-w-0 space-y-5 sm:space-y-6">
                   <!-- Especialidades (empleados) -->
                   @if (profile()?.empleado && profile()?.especialidades?.length) {
                     <div
-                      class="bg-white rounded-2xl border border-slate-100 p-5">
+                      class="rounded-xl border border-slate-200 bg-white p-5">
                       <h3 class="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
                         <i class="pi pi-star text-amber-500"></i> Especialidades
                       </h3>
@@ -320,7 +443,7 @@
                   <!-- Tipos de empleado -->
                   @if (profile()?.empleado && profile()?.tiposEmpleado?.length) {
                     <div
-                      class="bg-white rounded-2xl border border-slate-100 p-5">
+                      class="rounded-xl border border-slate-200 bg-white p-5">
                       <h3 class="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
                         <i class="pi pi-briefcase text-indigo-500"></i> Tipo de empleado
                       </h3>
@@ -336,7 +459,7 @@
                   }
                   <!-- Horario de trabajo — día actual -->
                   @if (profile()?.empleado) {
-                    <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+                    <div class="overflow-hidden rounded-xl border border-slate-200 bg-white">
                       <div class="flex items-center justify-between gap-3 border-b border-slate-200 bg-slate-50/50 px-4 py-4 sm:px-5">
                         <div class="min-w-0">
                           <h3 class="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-slate-800">
@@ -440,8 +563,41 @@
                       class="h-10 w-full rounded-lg bg-blue-500 px-4 text-xs font-bold text-white transition-colors hover:bg-blue-600 sm:w-auto">Cerrar</button>
                     </ng-template>
                   </p-dialog>
+                  <!-- Cuenta -->
+                  <section class="rounded-xl border border-slate-200 bg-white p-5">
+                    <h3 class="mb-3 flex items-center gap-2.5 text-sm font-extrabold text-slate-900">
+                      <span class="grid size-7 place-items-center rounded-lg bg-slate-100 text-slate-500"><i class="pi pi-shield text-xs"></i></span> Cuenta
+                    </h3>
+                    <dl class="divide-y divide-slate-100 text-xs">
+                      <div class="flex items-center justify-between gap-3 py-2.5">
+                        <dt class="text-slate-400">Estado</dt>
+                        <dd>
+                          <span [class]="profile()?.activo ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'"
+                            class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-semibold">
+                            <span [class]="profile()?.activo ? 'bg-green-500' : 'bg-red-400'" class="size-1.5 rounded-full"></span>
+                            {{ profile()?.activo ? 'Activo' : 'Inactivo' }}
+                          </span>
+                        </dd>
+                      </div>
+                      <div class="flex items-center justify-between gap-3 py-2.5">
+                        <dt class="shrink-0 text-slate-400">Correo de acceso</dt>
+                        <dd class="min-w-0 truncate font-semibold text-slate-700" [title]="profile()?.email ?? ''">{{ profile()?.email }}</dd>
+                      </div>
+                      @if (profile()?.dni) {
+                        <div class="flex items-center justify-between gap-3 py-2.5">
+                          <dt class="text-slate-400">Documento</dt>
+                          <dd class="font-semibold text-slate-700">{{ profile()?.dni }}</dd>
+                        </div>
+                      }
+                    </dl>
+                    <button type="button" (click)="openEmailChange()"
+                      class="mt-3 flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-slate-200 text-xs font-semibold text-blue-500 hover:bg-blue-50">
+                      <i class="pi pi-envelope"></i>
+                      Cambiar correo de acceso
+                    </button>
+                  </section>
                   <!-- Appearance preference -->
-                  <div class="bg-white rounded-2xl border border-slate-100 p-4">
+                  <div class="rounded-xl border border-slate-200 bg-white p-4">
                     <div class="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
                       <div>
                         <h3 class="flex items-center gap-2 text-sm font-semibold text-slate-700">
@@ -458,9 +614,9 @@
                             [title]="option.description"
                             (click)="theme.setPreference(option.value)"
                             [class]="theme.preference() === option.value
-                              ? 'bg-cyan-600 text-white shadow-sm'
+                              ? 'bg-blue-500 text-white'
                               : 'text-slate-500 hover:bg-white/60 hover:text-slate-700'"
-                            class="flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-md px-3 text-xs font-semibold transition-colors">
+                            class="flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-md px-3 text-xs font-semibold">
                             <i [class]="option.icon" class="shrink-0 text-xs"></i>
                             <span>{{ option.label }}</span>
                           </button>
@@ -468,141 +624,12 @@
                       </div>
                     </div>
                   </div>
-                  <!-- Account info -->
-                  <div class="bg-white rounded-2xl border border-slate-100 p-6">
-                    <h3 class="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2">
-                      <i class="pi pi-shield text-slate-400"></i> Cuenta
-                    </h3>
-                    <div class="space-y-3.5">
-                      <div class="flex justify-between items-center">
-                        <span class="text-xs text-slate-400">Estado</span>
-                        <span [class]="profile()?.activo ? 'text-green-600 bg-green-50' : 'text-red-500 bg-red-50'"
-                          class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold">
-                          <span [class]="profile()?.activo ? 'bg-green-500' : 'bg-red-400'" class="w-1.5 h-1.5 rounded-full"></span>
-                          {{ profile()?.activo ? 'Activo' : 'Inactivo' }}
-                        </span>
-                      </div>
-                      <button type="button" (click)="openEmailChange()"
-                        class="flex h-9 w-full items-center justify-center gap-2 rounded-lg border border-slate-200 text-xs font-semibold text-blue-500 transition-colors hover:bg-blue-50">
-                        <i class="pi pi-envelope"></i>
-                        Cambiar correo de acceso
-                      </button>
-                      <div class="flex justify-between items-center">
-                        <span class="text-xs text-slate-400">Email</span>
-                        <span class="text-xs text-slate-600 font-medium truncate max-w-[140px]" [title]="profile()?.email ?? ''">
-                          {{ profile()?.email }}
-                        </span>
-                      </div>
-                      @if (profile()?.dni) {
-                        <div class="flex justify-between items-center">
-                          <span class="text-xs text-slate-400">DNI</span>
-                          <span class="text-xs text-slate-600 font-medium">{{ profile()?.dni }}</span>
-                        </div>
-                      }
-                    </div>
-                  </div>
-                  <!-- Constancias legales -->
-                  <div class="bg-white rounded-2xl border border-slate-100 p-6">
-                    <h3 class="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2">
-                      <i class="pi pi-file text-slate-400"></i> Documentos legales revisados
-                    </h3>
-                    @if (legalAcceptances().length === 0) {
-                      <p class="text-xs text-slate-400">Aún no hay constancias registradas.</p>
-                    }
-                    <ul class="space-y-4">
-                      @for (aceptacion of legalAcceptances(); track aceptacion.tipo + aceptacion.version) {
-                        <li class="text-xs leading-5">
-                          <p class="font-medium text-slate-600">{{ legalLabel(aceptacion.tipo) }} · versión {{ aceptacion.version }}</p>
-                          <p class="mt-0.5 font-medium text-slate-500">
-                            {{ aceptacion.tipoConstancia === 'CONSTANCIA_LECTURA' || aceptacion.tipo === 'POLITICA_PRIVACIDAD' ? 'Lectura registrada' : 'Aceptación registrada' }}
-                          </p>
-                          <p class="mt-0.5 text-slate-400">{{ aceptacion.fechaAceptacion | date:'dd/MM/yyyy HH:mm' }}</p>
-                          @if (!aceptacion.textoRecuperable) {
-                            <p class="mt-0.5 text-slate-400">Constancia anterior al registro del texto exacto.</p>
-                          }
-                        </li>
-                      }
-                    </ul>
-                  </div>
-                  @if (avisoPrivacidad(); as aviso) {
-                    <div id="privacidad" class="scroll-mt-4 bg-white rounded-2xl border border-slate-100 p-6">
-                      <h3 class="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
-                        <i class="pi pi-lock text-slate-400"></i> Privacidad de tus datos
-                      </h3>
-                      <p class="text-xs leading-5 text-slate-500">
-                        Aviso de privacidad de {{ aviso.clinica }}, vigente desde el {{ aviso.vigenteDesde | date:'dd/MM/yyyy' }}.
-                      </p>
-                      <details class="mt-3 rounded-lg border border-slate-200 p-3">
-                        <summary class="cursor-pointer text-xs font-semibold text-[var(--brand-primary)]">Leer aviso completo</summary>
-                        <pre class="mt-3 max-h-64 overflow-auto whitespace-pre-wrap font-sans text-xs leading-5 text-slate-600">{{ aviso.contenido }}</pre>
-                      </details>
-
-                      @if (estadoPrivacidad(); as estado) {
-                        <div class="mt-4 space-y-3">
-                          <div class="flex items-center justify-between gap-3">
-                            <span class="text-xs text-slate-500">Constancia de lectura</span>
-                            @if (estado.informada && estado.informadaVersion === aviso.version) {
-                              <span class="text-xs font-semibold text-emerald-600">Registrada</span>
-                            } @else {
-                              <button type="button" (click)="registrarLecturaAviso()" [disabled]="actualizandoPrivacidad()"
-                                class="rounded-lg border border-[var(--brand-primary)] px-3 py-1.5 text-xs font-semibold text-[var(--brand-primary)] disabled:opacity-50">
-                                Confirmar lectura
-                              </button>
-                            }
-                          </div>
-                          @if (recordatoriosDisponibles()) {
-                          <div class="border-t border-slate-100 pt-3">
-                            <p class="text-xs font-semibold text-slate-600">Recordatorios preventivos por correo</p>
-                            <p class="mt-1 text-xs leading-5 text-slate-400">Son opcionales. Solo los recibirás si los autorizas y puedes retirar tu autorización cuando quieras.</p>
-                            <div class="mt-3 grid grid-cols-2 gap-2">
-                              <button type="button" (click)="decidirRecordatorios(true)" [disabled]="actualizandoPrivacidad()"
-                                [class]="estadoRecordatorios() === 'OTORGADO' ? 'border-[var(--brand-primary)] bg-[var(--brand-primary)] text-white' : 'border-slate-200 bg-white text-slate-600'"
-                                class="rounded-lg border px-3 py-2 text-xs font-semibold disabled:opacity-50">Quiero recibirlos</button>
-                              <button type="button" (click)="decidirRecordatorios(false)" [disabled]="actualizandoPrivacidad()"
-                                [class]="estadoRecordatorios() === 'RETIRADO' ? 'border-slate-500 bg-slate-100 text-slate-800' : 'border-slate-200 bg-white text-slate-600'"
-                                class="rounded-lg border px-3 py-2 text-xs font-semibold disabled:opacity-50">No autorizo / revocar</button>
-                            </div>
-                          </div>
-                          }
-                          @if (iaDisponible()) {
-                          <div class="border-t border-slate-100 pt-3">
-                            <p class="text-xs font-semibold text-slate-600">Inteligencia artificial en la atención de tus mascotas</p>
-                            <p class="mt-1 text-xs leading-5 text-slate-400">
-                              Es opcional. Con tu autorización, la clínica podrá enviar los datos clínicos de tus mascotas (historia clínica,
-                              estudios de laboratorio y radiografías) a un servicio de inteligencia artificial que apoya al médico veterinario
-                              en su interpretación. Sin tu autorización no se utilizará, y la atención de tus mascotas no cambia.
-                              Puedes retirarla en cualquier momento.
-                            </p>
-                            <p class="mt-2 text-xs font-semibold" [class]="estadoIa() === 'OTORGADO' ? 'text-emerald-600' : 'text-slate-500'">
-                              {{ estadoIa() === 'OTORGADO' ? 'Autorizada' : estadoIa() === 'RETIRADO' ? 'Autorización retirada' : 'Sin autorización' }}
-                            </p>
-                            <div class="mt-3 grid grid-cols-2 gap-2">
-                              <button type="button" (click)="decidirIa(true)" [disabled]="actualizandoPrivacidad() || estadoIa() === 'OTORGADO'"
-                                [class]="estadoIa() === 'OTORGADO' ? 'border-[var(--brand-primary)] bg-[var(--brand-primary)] text-white' : 'border-slate-200 bg-white text-slate-600'"
-                                class="rounded-lg border px-3 py-2 text-xs font-semibold disabled:opacity-60">Autorizo</button>
-                              <button type="button" (click)="decidirIa(false)" [disabled]="actualizandoPrivacidad() || estadoIa() !== 'OTORGADO'"
-                                [class]="estadoIa() !== 'OTORGADO' ? 'border-slate-500 bg-slate-100 text-slate-800' : 'border-slate-200 bg-white text-slate-600'"
-                                class="rounded-lg border px-3 py-2 text-xs font-semibold disabled:opacity-60">No autorizo</button>
-                            </div>
-                          </div>
-                          }
-                        </div>
-                      }
-                      @if (derechosDatosDisponibles()) {
-                      <a routerLink="/privacidad/derechos"
-                        class="mt-4 flex items-center justify-between rounded-lg border border-slate-200 px-4 py-3 text-xs font-semibold text-slate-700 hover:bg-slate-50">
-                        <span><i class="pi pi-id-card mr-2 text-[var(--brand-primary)]"></i>Ejercer y consultar mis derechos sobre datos</span>
-                        <i class="pi pi-arrow-right text-slate-400"></i>
-                      </a>
-                      }
-                    </div>
-                  }
                   @if (derechosDatosDisponibles()) {
                     <div id="cancelacion-datos" class="scroll-mt-4"><app-cancelar-datos-card class="block" /></div>
                   }
                   <app-close-account-card class="block" />
-                </div>
-              </div>
+        </div>
+      </div>
             }
           </div>
         </div>
