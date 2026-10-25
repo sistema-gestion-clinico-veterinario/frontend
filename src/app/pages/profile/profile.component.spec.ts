@@ -83,11 +83,11 @@ describe('ProfileComponent', () => {
         of({ success: true, message: 'ok', data: estado('RETIRADO') }));
 
       component.decidirIa(true);
-      expect(decidir).toHaveBeenCalledWith('USO_IA_CLINICA', true);
+      expect(decidir).toHaveBeenCalledWith('USO_IA_CLINICA', true, undefined);
       expect(component.estadoIa()).toBe('OTORGADO');
 
       component.decidirIa(false);
-      expect(decidir).toHaveBeenCalledWith('USO_IA_CLINICA', false);
+      expect(decidir).toHaveBeenCalledWith('USO_IA_CLINICA', false, jasmine.stringContaining('Revocación'));
       expect(component.estadoIa()).toBe('RETIRADO');
     });
 

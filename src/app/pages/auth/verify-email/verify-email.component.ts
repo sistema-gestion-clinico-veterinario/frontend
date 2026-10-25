@@ -9,9 +9,6 @@ import { lowercaseEmailValidator } from '../../../core/validators/lowercase-emai
 import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
 import { strongPasswordValidators } from '../../../core/validators/password-policy.validator';
 import { SOFTVET_BRAND_COLOR, SOFTVET_LOGO_URL, SOFTVET_NAME } from '../../../core/constants/branding.constants';
-import { PrivacidadService } from '../../../core/services/privacidad.service';
-import { AvisoPublico } from '../../../models/privacy/privacidad.model';
-import { AudienciaAvisoPrivacidad } from '../../../types/privacy/audiencia-aviso-privacidad.type';
 
 const DEFAULT_BRAND_COLOR = SOFTVET_BRAND_COLOR;
 const DEFAULT_LOGO_URL = SOFTVET_LOGO_URL;
@@ -39,13 +36,9 @@ export class VerifyEmailComponent implements OnInit {
   private readonly companyService = inject(CompanyService);
   private readonly slugContext = inject(CompanySlugContext);
   private readonly fb = inject(FormBuilder);
-  private readonly privacidadService = inject(PrivacidadService);
 
 
   slug: string | null = this.slugContext.slug();
-  audiencia: AudienciaAvisoPrivacidad = this.route.snapshot.queryParamMap?.get('audiencia') === 'TRABAJADORES_Y_USUARIOS'
-    ? 'TRABAJADORES_Y_USUARIOS'
-    : 'PROPIETARIOS_Y_AUTORIZADOS';
   companyName = DEFAULT_COMPANY_NAME;
   logoUrl: string | null = null;
   colorPrimario = DEFAULT_BRAND_COLOR;
@@ -58,7 +51,6 @@ export class VerifyEmailComponent implements OnInit {
   startingGoogle = false;
   emailEnmascarado = signal('');
   reenvioPorEnlaceFallido = signal(false);
-  avisoPrivacidad = signal<AvisoPublico | null>(null);
 
   ngOnInit() {
     if (this.slug) {
@@ -72,10 +64,6 @@ export class VerifyEmailComponent implements OnInit {
           this.brandNotFound = true;
           this.logoUrl = DEFAULT_LOGO_URL;
         }
-      });
-      this.privacidadService.avisoPublico(this.slug, this.audiencia).subscribe({
-        next: ({ data }) => this.avisoPrivacidad.set(data),
-        error: () => this.avisoPrivacidad.set(null)
       });
     } else {
       this.logoUrl = DEFAULT_LOGO_URL;

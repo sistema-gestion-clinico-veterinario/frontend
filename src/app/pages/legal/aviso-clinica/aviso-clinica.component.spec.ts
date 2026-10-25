@@ -20,7 +20,8 @@ describe('AvisoClinicaComponent', () => {
     vigenteDesde: '2026-10-05T10:00:00', contenido: '1. Quién trata sus datos'
   };
   const texto = () => (fixture.nativeElement as HTMLElement).textContent ?? '';
-  const boton = () => (fixture.nativeElement as HTMLElement).querySelector('button') as HTMLButtonElement;
+  const boton = () => Array.from((fixture.nativeElement as HTMLElement).querySelectorAll('button'))
+    .find(b => (b.textContent ?? '').includes('Entendido, continuar') || (b.textContent ?? '').includes('Guardando')) as HTMLButtonElement;
 
   function crear(avisoVigente: any): void {
     privacidad = jasmine.createSpyObj<PrivacidadService>('PrivacidadService', ['avisoVigente', 'leiElAviso']);
@@ -45,7 +46,7 @@ describe('AvisoClinicaComponent', () => {
     crear(of({ success: true, message: '', data: aviso }));
 
     expect(texto()).toContain('Aviso de privacidad de Clínica Patitas');
-    expect(texto()).toContain('1. Quién trata sus datos');
+    expect(texto()).toContain('Quién trata sus datos');
     expect((fixture.nativeElement as HTMLElement).querySelector('input[type="checkbox"]')).toBeNull();
     expect(boton().textContent).toContain('Entendido, continuar');
   });

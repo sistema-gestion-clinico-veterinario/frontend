@@ -23,6 +23,7 @@ import { LegalAcceptanceDTO } from '../../models/legal/legal.model';
 import { PendientesPrivacidadService } from '../../core/services/pendientes-privacidad.service';
 import { CloseAccountCardComponent } from './close-account/close-account-card.component';
 import { CancelarDatosCardComponent } from './cancelar-datos/cancelar-datos-card.component';
+import { DocumentoLegalComponent } from '../../shared/components/documento-legal/documento-legal.component';
 import { PrivacidadService } from '../../core/services/privacidad.service';
 import {
   FINALIDAD_RECORDATORIOS as RECORDATORIOS,
@@ -51,7 +52,7 @@ const DIAS_SEMANA_ORDEN = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, ToastModule, DialogModule, SkeletonModule, InputFilterDirective, CloseAccountCardComponent, CancelarDatosCardComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, ToastModule, DialogModule, SkeletonModule, InputFilterDirective, CloseAccountCardComponent, CancelarDatosCardComponent, DocumentoLegalComponent],
   providers: [MessageService],
   templateUrl: './profile.component.html'
 })
