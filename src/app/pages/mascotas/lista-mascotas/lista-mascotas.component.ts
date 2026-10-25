@@ -66,7 +66,7 @@ export class ListaMascotasComponent implements OnInit {
   filterActivo:  boolean | null  = null;
   filtersOpen       = false;
   currentPage       = 0;
-  readonly pageSize = 12;
+  readonly pageSize = 10;
   private readonly nameFilterPattern = /^[A-Za-zÁÉÍÓÚáéíóúÑñÜü]+(?: [A-Za-zÁÉÍÓÚáéíóúÑñÜü]+)*$/;
 
   readonly especieOpciones = [

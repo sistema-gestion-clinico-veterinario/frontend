@@ -59,4 +59,21 @@ describe('CartillaComponent', () => {
 
     expect(component.guardando()).toBeFalse();
   });
+
+  it('avisa cuando la especie no tiene vacunas ni desparasitantes en el catálogo', () => {
+    const component = prepararAplicacion();
+    component.mascotaSel.set({ id: 20, especie: 'GATO' } as any);
+
+    component.tiposVacuna.set([]);
+    expect(component.sinCatalogo()).toBeTrue();
+    expect(component.mensajeSinCatalogo()).toContain('No hay vacunas registradas para gato');
+
+    component.cambiarModo('DESPARASITACION');
+    component.tiposDesparasitante.set([]);
+    expect(component.sinCatalogo()).toBeTrue();
+    expect(component.mensajeSinCatalogo()).toContain('No hay desparasitantes registrados para gato');
+
+    component.tiposDesparasitante.set([{ id: 1, nombre: 'Drontal' } as any]);
+    expect(component.sinCatalogo()).toBeFalse();
+  });
 });

@@ -5,7 +5,7 @@ export type ThemePreference = 'light' | 'dark' | 'system';
 export type ResolvedTheme = 'light' | 'dark';
 
 const STORAGE_KEY = 'softvet_theme_preference';
-const DEFAULT_THEME: ThemePreference = 'system';
+const DEFAULT_THEME: ThemePreference = 'light';
 
 function loadPreference(): ThemePreference {
   if (typeof window === 'undefined') return DEFAULT_THEME;

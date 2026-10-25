@@ -45,6 +45,32 @@ export class ListaRecetasComponent implements OnInit {
   numeroHc = '';
   fechaDesde = '';
   fechaHasta = '';
+  filtersOpen = false;
+
+  hasActiveFilters(): boolean {
+    return !!(
+      this.searchQuery.trim() ||
+      this.nombreMascota.trim() ||
+      this.numeroMicrochip.trim() ||
+      this.numeroDocumentoApoderado.trim() ||
+      this.numeroDocumentoEmpleado.trim() ||
+      this.numeroHc.trim() ||
+      this.fechaDesde ||
+      this.fechaHasta
+    );
+  }
+
+  advancedFilterCount(): number {
+    return [
+      this.nombreMascota,
+      this.numeroMicrochip,
+      this.numeroDocumentoApoderado,
+      this.numeroDocumentoEmpleado,
+      this.numeroHc,
+      this.fechaDesde,
+      this.fechaHasta
+    ].filter(value => value.trim()).length;
+  }
 
   ngOnInit() {
     this.cargarRecetas();
@@ -112,6 +138,7 @@ export class ListaRecetasComponent implements OnInit {
     this.numeroHc = '';
     this.fechaDesde = '';
     this.fechaHasta = '';
+    this.filtersOpen = false;
     this.cargarRecetas(0);
   }
 

@@ -36,8 +36,8 @@ describe('ThemeService', () => {
     document.documentElement.style.removeProperty('color-scheme');
   });
 
-  it('usa el tema del sistema como preferencia inicial', () => {
-    expect(service.preference()).toBe('system');
+  it('usa el tema claro como preferencia inicial', () => {
+    expect(service.preference()).toBe('light');
     expect(service.resolvedTheme()).toBe('light');
     expect(document.documentElement.classList.contains('theme-light')).toBeTrue();
   });

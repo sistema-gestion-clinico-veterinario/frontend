@@ -44,7 +44,7 @@ describe('BackupMonitorComponent', () => {
     success: true,
     message: 'ok',
     data: {
-      content: contenido, totalElements: contenido.length, totalPages: 1, size: 20, number: 0,
+      content: contenido, totalElements: contenido.length, totalPages: 1, size: 10, number: 0,
       numberOfElements: contenido.length, first: true, last: true, empty: contenido.length === 0
     }
   });
@@ -171,12 +171,10 @@ describe('BackupMonitorComponent', () => {
         .toEqual(['Base de datos', 'Cierre de acceso temporal', 'Archivos clínicos']);
     });
 
-    it('solo muestra la paginación cuando hay más ejecuciones que una página', async () => {
+    it('usa el paginador estándar de diez registros', async () => {
       await crear();
-      expect((fixture.nativeElement as HTMLElement).querySelector('p-paginator')).toBeNull();
-
-      component.total.set(45);
-      fixture.detectChanges();
+      expect(component.pageSize).toBe(10);
+      expect(service.list).toHaveBeenCalledWith(0, 10);
       expect((fixture.nativeElement as HTMLElement).querySelector('p-paginator')).not.toBeNull();
     });
   });
