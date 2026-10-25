@@ -1,0 +1,19 @@
+<section role="alert" class="rounded-xl border border-slate-200 bg-white px-6 py-16 text-center sm:py-20">
+  <div class="mx-auto mb-4 grid size-14 place-items-center rounded-2xl bg-slate-100 text-slate-400">
+    <i [class]="contenido().icono + ' text-2xl'"></i>
+  </div>
+  <h2 class="text-base font-extrabold text-slate-900 sm:text-lg">{{ contenido().titulo }}</h2>
+  <p class="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">{{ contenido().detalle }}</p>
+  <div class="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+    <button type="button" (click)="volver.emit()"
+      class="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-5 text-sm font-bold text-slate-600 hover:bg-slate-50">
+      <i class="pi pi-arrow-left text-xs"></i> {{ etiquetaVolver() }}
+    </button>
+    @if (motivo() === 'FALLO') {
+      <button type="button" (click)="reintentar.emit()"
+        class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-blue-500 px-5 text-sm font-bold text-white hover:bg-blue-600">
+        <i class="pi pi-refresh text-xs"></i> Reintentar
+      </button>
+    }
+  </div>
+</section>

@@ -28,6 +28,7 @@
       </div>
     </div>
 
+    @if (consulta()) {
     <div class="flex items-center gap-2">
       @if (isCerrada()) {
         <span
@@ -54,7 +55,13 @@
         </span>
       }
     </div>
+    }
   </div>
+
+  @if (errorCarga(); as motivo) {
+    <app-recurso-no-disponible [motivo]="motivo" nombre="consulta" [femenino]="true"
+      (volver)="volver()" (reintentar)="loadConsulta()" />
+  }
 
   @if (consulta()) {
     <div

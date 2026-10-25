@@ -48,15 +48,9 @@
     }
   </div>
 
-  @if (noTieneHc()) {
-    <div
-      class="bg-white border border-slate-200 rounded-xl py-20 text-center px-6">
-      <div class="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
-        <i class="pi pi-file text-2xl text-slate-300"></i>
-      </div>
-      <p class="text-sm font-bold text-slate-500 mb-1">Esta mascota no tiene historia clínica</p>
-      <p class="text-xs text-slate-400">Debe crearse desde el módulo de consultas.</p>
-    </div>
+  @if (errorCarga(); as motivo) {
+    <app-recurso-no-disponible [motivo]="motivo" nombre="historia clínica" [femenino]="true"
+      (volver)="volver()" (reintentar)="cargarHistoria(numeroHc)" />
   }
 
   @if (hc()) {

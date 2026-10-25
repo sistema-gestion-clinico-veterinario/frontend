@@ -4,7 +4,7 @@ import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { AuthStore } from '../../../store/auth.store';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { MenuItemDTO } from '../../../models/response/auth-login-response.model';
 import { HistoriaClinicaService } from '../../../core/services/historia-clinica.service';
 
@@ -98,4 +98,22 @@ describe('ConsultaFormComponent – permission computed signals', () => {
 
     expect(updateSpy).not.toHaveBeenCalled();
   }));
+
+  it('si la consulta no se puede abrir, indica el motivo en lugar de dejar la pantalla vacía', () => {
+    const hcService = TestBed.inject(HistoriaClinicaService);
+    const getConsulta = spyOn(hcService, 'getConsulta');
+
+    getConsulta.and.returnValue(throwError(() => ({ status: 404 })));
+    component.loadConsulta();
+    expect(component.errorCarga()).toBe('NO_ENCONTRADO');
+    expect(component.consulta()).toBeNull();
+
+    getConsulta.and.returnValue(throwError(() => ({ status: 403 })));
+    component.loadConsulta();
+    expect(component.errorCarga()).toBe('SIN_PERMISO');
+
+    getConsulta.and.returnValue(throwError(() => ({ status: 500 })));
+    component.loadConsulta();
+    expect(component.errorCarga()).toBe('FALLO');
+  });
 });
