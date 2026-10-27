@@ -12,8 +12,21 @@
         @if (puedeGestionarPuntos()) {
           <button type="button" (click)="abrirPuntos()" class="flex h-11 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-bold text-slate-600 hover:bg-slate-50 lg:h-[50px] lg:rounded-xl lg:px-4"><i class="pi pi-desktop text-blue-500"></i>Puntos de cobro</button>
         }
-        @if (estadoEquipo(); as equipo) {
-          <div class="hidden h-[50px] min-w-[158px] items-center gap-3 rounded-xl border px-4 xl:flex" [class]="equipoSinRegistrar() ? 'border-slate-300 bg-slate-50' : 'border-slate-200 bg-white'" [title]="equipo.mensaje"><i class="pi pi-desktop text-slate-400"></i><div><p class="text-[10px] font-semibold text-slate-400">Este equipo</p><p class="text-xs font-bold text-slate-700">{{ equipo.cajaNombre || 'Sin registrar' }}</p></div></div>
+        @if (estadoEquipoLoading()) {
+          <div class="hidden h-[50px] min-w-[158px] items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 xl:flex">
+            <i class="pi pi-spin pi-spinner text-blue-500"></i>
+            <div><p class="text-[10px] font-semibold text-slate-400">Este equipo</p><p class="text-xs font-bold text-slate-700">Verificando...</p></div>
+          </div>
+        } @else if (estadoEquipoError()) {
+          <div class="hidden h-[50px] min-w-[158px] items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 xl:flex">
+            <i class="pi pi-exclamation-triangle text-amber-600"></i>
+            <div><p class="text-[10px] font-semibold text-amber-600">Este equipo</p><p class="text-xs font-bold text-slate-700">No verificado</p></div>
+          </div>
+        } @else if (estadoEquipo(); as equipo) {
+          <div class="hidden h-[50px] min-w-[158px] items-center gap-3 rounded-xl border px-4 xl:flex" [class]="equipoSinRegistrar() ? 'border-amber-200 bg-amber-50' : 'border-slate-200 bg-white'">
+            <i class="pi pi-desktop" [class]="equipoSinRegistrar() ? 'text-amber-600' : 'text-blue-500'"></i>
+            <div class="min-w-0"><p class="text-[10px] font-semibold" [class]="equipoSinRegistrar() ? 'text-amber-600' : 'text-slate-400'">Este equipo</p><p class="max-w-[150px] truncate text-xs font-bold text-slate-700">{{ equipo.equipoNombre || equipo.cajaNombre || 'Sin registrar' }}</p>@if (equipo.equipoNombre && equipo.cajaNombre) { <p class="max-w-[150px] truncate text-[10px] text-slate-400">{{ equipo.cajaNombre }}</p> }</div>
+          </div>
         }
         <div class="hidden h-[50px] min-w-[158px] items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 xl:flex"><i class="pi pi-calendar text-blue-500"></i><div><p class="text-[10px] font-semibold text-slate-400">Hoy</p><p class="text-xs font-bold text-slate-700">{{ formatFechaActual() }}</p></div></div>
         @if (sesionCaja(); as sesion) {
@@ -21,8 +34,30 @@
             <span class="grid size-8 place-items-center rounded-lg bg-white text-emerald-600"><i class="pi pi-lock-open text-sm"></i></span>
             <div><p class="text-[10px] font-bold uppercase tracking-wide text-emerald-600">Caja abierta</p><p class="text-xs font-bold text-slate-700">Efectivo esperado: {{ formatMonto(sesion.efectivoEsperado) }}</p></div>
           </div>
+        } @else if (estadoEquipoLoading()) {
+          <div class="col-span-2 flex h-[50px] min-w-[188px] items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-4 lg:col-span-1 lg:justify-start">
+            <span class="grid size-8 place-items-center rounded-lg bg-blue-50 text-blue-500"><i class="pi pi-spin pi-spinner text-sm"></i></span>
+            <div><p class="text-[10px] font-bold uppercase tracking-wide text-slate-400">Caja</p><p class="text-sm font-extrabold text-slate-700">Verificando equipo...</p></div>
+          </div>
+        } @else if (estadoEquipoError()) {
+          <button type="button" (click)="cargarEstadoEquipo()" class="col-span-2 flex h-[50px] min-w-[188px] items-center justify-center gap-3 rounded-xl border border-amber-300 bg-amber-50 px-4 text-left transition-colors hover:bg-amber-100 lg:col-span-1 lg:justify-start">
+            <span class="grid size-8 place-items-center rounded-lg bg-white text-amber-600"><i class="pi pi-refresh text-sm"></i></span>
+            <div><p class="text-[10px] font-bold uppercase tracking-wide text-amber-600">No se pudo verificar</p><p class="text-sm font-extrabold text-slate-800">Reintentar</p></div>
+          </button>
+        } @else if (equipoSinRegistrar()) {
+          @if (puedeGestionarPuntos()) {
+            <button type="button" (click)="abrirPuntos()" class="col-span-2 flex h-[50px] min-w-[188px] items-center justify-center gap-3 rounded-xl border border-amber-300 bg-amber-50 px-4 text-left transition-colors hover:bg-amber-100 lg:col-span-1 lg:justify-start">
+              <span class="grid size-8 place-items-center rounded-lg bg-white text-amber-600"><i class="pi pi-desktop text-sm"></i></span>
+              <div><p class="text-[10px] font-bold uppercase tracking-wide text-amber-600">Configuración requerida</p><p class="text-sm font-extrabold text-slate-800">Registrar este equipo</p></div>
+            </button>
+          } @else {
+            <div class="col-span-2 flex min-h-[50px] min-w-[188px] items-center justify-center gap-3 rounded-xl border border-amber-300 bg-amber-50 px-4 py-2 lg:col-span-1 lg:justify-start">
+              <span class="grid size-8 shrink-0 place-items-center rounded-lg bg-white text-amber-600"><i class="pi pi-lock text-sm"></i></span>
+              <div><p class="text-[10px] font-bold uppercase tracking-wide text-amber-600">Equipo sin registrar</p><p class="max-w-[220px] text-xs font-bold leading-4 text-slate-700">Solicita el registro a un administrador</p></div>
+            </div>
+          }
         } @else {
-          <button type="button" (click)="abrirModalSesion('ABRIR')" [disabled]="equipoSinRegistrar()" [title]="equipoSinRegistrar() ? 'Este equipo no está registrado como punto de cobro. Pide a un administrador que lo registre.' : ''" class="col-span-2 flex h-[50px] min-w-[188px] items-center justify-center gap-3 rounded-xl bg-blue-500 px-4 text-left text-white transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50 lg:col-span-1 lg:justify-start">
+          <button type="button" (click)="abrirModalSesion('ABRIR')" class="col-span-2 flex h-[50px] min-w-[188px] items-center justify-center gap-3 rounded-xl bg-blue-500 px-4 text-left text-white transition-colors hover:bg-blue-600 lg:col-span-1 lg:justify-start">
             <span class="grid size-8 place-items-center rounded-lg bg-white/15"><i class="pi pi-lock-open text-sm"></i></span>
             <div><p class="text-[10px] font-bold uppercase tracking-wide text-blue-100">Caja cerrada</p><p class="text-sm font-extrabold">Abrir caja</p></div>
           </button>
@@ -322,14 +357,14 @@
                 <button type="button" (click)="empezarARenombrar(punto)" class="text-xs font-semibold text-blue-600 hover:underline">Cambiar nombre</button>
               }
             </div>
-            <p class="mt-1 text-xs text-slate-500">
-              @if (punto.vinculada) { Equipo registrado: {{ punto.dispositivoInfo || 'sin descripción' }}. } @else { Sin equipo registrado. }
-              @if (punto.sesionAbierta) { Caja abierta por {{ punto.abiertaPorNombre || 'otra persona' }}. } @else { Caja cerrada. }
-            </p>
+            <div class="mt-3 grid gap-2 rounded-lg bg-slate-50 px-3 py-2 sm:grid-cols-2">
+              <div class="flex min-w-0 items-start gap-2"><i class="pi pi-desktop mt-0.5 text-xs text-blue-500"></i><div class="min-w-0"><p class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Equipo físico</p><p class="truncate text-xs font-bold text-slate-700">{{ punto.dispositivoNombre || 'Sin equipo registrado' }}</p>@if (punto.dispositivoInfo) { <p class="truncate text-[10px] text-slate-400">{{ punto.dispositivoInfo }}</p> }</div></div>
+              <div class="flex min-w-0 items-start gap-2"><i class="pi mt-0.5 text-xs" [class]="punto.sesionAbierta ? 'pi-lock-open text-emerald-600' : 'pi-lock text-slate-400'"></i><div class="min-w-0"><p class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Estado de caja</p><p class="truncate text-xs font-bold text-slate-700">{{ punto.sesionAbierta ? 'Abierta por ' + (punto.abiertaPorNombre || 'otra persona') : 'Cerrada' }}</p></div></div>
+            </div>
             @if (puedeGestionarPuntos()) {
               <div class="mt-3 flex flex-wrap gap-2">
                 @if (punto.activa) {
-                  <button type="button" (click)="vincularPunto(punto)" [disabled]="trabajandoPuntos() || punto.sesionAbierta" class="h-8 rounded-lg border border-slate-300 px-3 text-xs font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50">{{ punto.esEsteEquipo ? 'Volver a registrar este equipo' : 'Usar este equipo aquí' }}</button>
+                  <button type="button" (click)="prepararVinculacion(punto)" [disabled]="trabajandoPuntos() || punto.sesionAbierta" class="h-8 rounded-lg border border-slate-300 px-3 text-xs font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50">{{ punto.esEsteEquipo ? 'Renombrar este equipo' : punto.vinculada ? 'Reemplazar equipo' : 'Registrar este equipo aquí' }}</button>
                 }
                 @if (punto.vinculada) {
                   <button type="button" (click)="desvincularPunto(punto)" [disabled]="trabajandoPuntos() || punto.sesionAbierta" class="h-8 rounded-lg border border-slate-300 px-3 text-xs font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50">Quitar equipo</button>
@@ -350,6 +385,23 @@
           <p class="text-xs text-slate-500">Solo un administrador puede crear puntos de cobro o registrar equipos.</p>
         }
       </div>
+    </div>
+  </div>
+}
+
+@if (puntoAVincular(); as punto) {
+  <div class="fixed inset-0 z-[220] flex items-end justify-center bg-slate-950/50 sm:items-center sm:p-4" (click)="cancelarVinculacion()">
+    <div class="w-full max-w-md overflow-hidden rounded-t-2xl border border-slate-200 bg-white sm:rounded-2xl" (click)="$event.stopPropagation()">
+      <div class="flex items-start justify-between gap-4 border-b border-slate-200 px-5 py-4">
+        <div class="flex items-start gap-3"><span class="grid size-10 shrink-0 place-items-center rounded-xl bg-blue-50 text-blue-600"><i class="pi pi-desktop"></i></span><div><h2 class="font-bold text-slate-900">Identificar este equipo</h2><p class="mt-0.5 text-xs leading-5 text-slate-500">Se vinculará al punto de cobro <strong>{{ punto.nombre }}</strong>.</p></div></div>
+        <button type="button" (click)="cancelarVinculacion()" [disabled]="trabajandoPuntos()" aria-label="Cerrar" class="grid size-8 shrink-0 place-items-center rounded-lg text-slate-400 hover:bg-slate-100 disabled:opacity-40"><i class="pi pi-times"></i></button>
+      </div>
+      <div class="space-y-4 px-5 py-5">
+        @if (punto.vinculada && !punto.esEsteEquipo) { <div class="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs leading-5 text-amber-900"><i class="pi pi-exclamation-triangle mt-0.5"></i><p>Este punto está asociado a <strong>{{ punto.dispositivoNombre || 'otro equipo' }}</strong>. Al continuar, ese equipo perderá el acceso a esta caja.</p></div> }
+        <label class="block"><span class="text-xs font-bold text-slate-700">Nombre del equipo <span class="text-rose-500">*</span></span><input [(ngModel)]="nombreEquipo" maxlength="80" autofocus placeholder="Ej.: PC Recepción 01" class="mt-1.5 h-11 w-full rounded-lg border border-slate-300 px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" /><span class="mt-1.5 block text-[11px] leading-4 text-slate-500">Usa el nombre visible en una etiqueta del equipo para reconocerlo fácilmente.</span></label>
+        <div class="flex items-start gap-2 text-xs leading-5 text-slate-500"><i class="pi pi-shield mt-0.5 text-blue-500"></i><p>La asociación se protege con un identificador seguro. No se utiliza la dirección MAC ni se expone el token.</p></div>
+      </div>
+      <div class="flex justify-end gap-2 border-t border-slate-200 bg-slate-50 px-5 py-4"><button type="button" (click)="cancelarVinculacion()" [disabled]="trabajandoPuntos()" class="h-10 rounded-lg border border-slate-300 px-4 text-sm font-semibold text-slate-600 disabled:opacity-40">Cancelar</button><button type="button" (click)="vincularPunto()" [disabled]="trabajandoPuntos()" class="h-10 rounded-lg bg-blue-500 px-4 text-sm font-bold text-white hover:bg-blue-600 disabled:opacity-50">{{ trabajandoPuntos() ? 'Registrando...' : 'Registrar equipo' }}</button></div>
     </div>
   </div>
 }

@@ -94,7 +94,7 @@ export class PendientesPrivacidadService {
     ).subscribe(({ data }) => this.estado.set(data));
 
     this.consultasRespaldos.pipe(
-      switchMap(() => this.respaldos.list(0, 50).pipe(catchError(() => EMPTY))),
+      switchMap(() => this.respaldos.list(0, 50, true).pipe(catchError(() => EMPTY))),
       takeUntilDestroyed(this.destroyRef)
     ).subscribe(({ data }) => {
       const desde = Date.now() - 30 * 24 * 60 * 60 * 1000;

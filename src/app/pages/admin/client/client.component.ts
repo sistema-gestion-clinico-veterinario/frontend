@@ -469,6 +469,23 @@ export class ClientComponent implements OnInit {
     });
   }
 
+  editSelectedClient(): void {
+    const id = this.selectedClientId();
+    const client = this.clients().find(item => item.id === id);
+    if (!client || !this.canClientAction('modificar')) return;
+    this.displayDetailModal.set(false);
+    this.editClient(client);
+  }
+
+  viewClientPet(pet: MascotaResponse): void {
+    const currentUrl = this.router.url.split('?')[0];
+    const basePath = currentUrl.startsWith('/admin/') ? '/admin/mascotas'
+      : currentUrl.startsWith('/empleado/') ? '/empleado/mascotas'
+      : '/mascotas';
+    this.displayDetailModal.set(false);
+    this.router.navigate([basePath, 'detalle', pet.uuid]);
+  }
+
   estadoRecordatoriosCliente(): 'OTORGADO' | 'RETIRADO' | 'SIN_REGISTRO' {
     return this.estadoPrivacidadCliente()?.finalidades.find(f => f.codigo === RECORDATORIOS)?.estado ?? 'SIN_REGISTRO';
   }

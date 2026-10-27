@@ -1,0 +1,332 @@
+<main class="min-h-screen bg-blue-50 p-3 sm:p-5 lg:p-6">
+  <div class="w-full space-y-4 sm:space-y-5">
+    <button type="button" (click)="volver()"
+      class="inline-flex h-9 w-fit items-center gap-2 rounded-lg px-2 text-xs font-bold text-slate-500 transition-colors hover:bg-white hover:text-[var(--brand-primary)]">
+      <i class="pi pi-arrow-left"></i> Volver a mascotas
+    </button>
+
+    @if (cargando()) {
+      <section class="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5">
+        <div class="animate-pulse space-y-4">
+          <div class="h-28 rounded-xl bg-slate-100"></div>
+          <div class="grid gap-4 lg:grid-cols-3">
+            <div class="h-72 rounded-xl bg-slate-100 lg:col-span-2"></div>
+            <div class="h-72 rounded-xl bg-slate-100"></div>
+          </div>
+        </div>
+      </section>
+    } @else if (errorCarga()) {
+      <section class="flex min-h-72 flex-col items-center justify-center rounded-2xl border border-slate-200 bg-white p-8 text-center">
+        <span class="grid size-14 place-items-center rounded-2xl bg-rose-50 text-rose-500"><i class="pi pi-exclamation-circle text-xl"></i></span>
+        <h2 class="mt-4 text-base font-bold text-slate-800">No se pudo cargar la mascota</h2>
+        <p class="mt-1 max-w-md text-sm text-slate-500">El registro no existe, no está disponible o no pertenece a la veterinaria seleccionada.</p>
+        <button type="button" (click)="volver()" class="mt-5 h-10 rounded-lg bg-blue-500 px-5 text-sm font-bold text-white">Volver al mantenedor</button>
+      </section>
+    } @else if (mascota(); as pet) {
+      <div class="grid items-start gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(20rem,1fr)]">
+      <div class="min-w-0 space-y-4">
+      <section class="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 sm:p-5">
+        <div class="absolute -right-10 -top-12 size-48 rounded-full bg-blue-50/80"></div>
+        <div class="relative flex flex-col gap-4 sm:flex-row sm:items-center">
+          <div class="flex h-36 w-full shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-blue-50 text-4xl font-black text-blue-600 sm:h-36 sm:w-44">
+            @if (pet.fotoUrl) {
+              <img [src]="mediaService.resolveUrl(pet.fotoUrl)" [alt]="'Foto de ' + pet.nombreCompleto" class="h-full w-full object-cover" />
+            } @else {
+              <span>{{ inicial(pet.nombreCompleto) }}</span>
+            }
+          </div>
+          <div class="min-w-0 flex-1">
+            <div class="flex flex-wrap items-center gap-2">
+              <h2 class="truncate text-2xl font-black text-slate-900 sm:text-3xl">{{ pet.nombreCompleto }}</h2>
+              <i [class]="pet.sexo === 'MACHO' ? 'pi pi-mars text-blue-500' : 'pi pi-venus text-pink-500'" class="text-lg"></i>
+            </div>
+            <p class="mt-1 text-sm font-medium text-slate-500">
+              {{ pet.razaNombre || pet.raza || 'Raza no registrada' }} · {{ calcularEdad(pet.fechaNacimiento) }}
+              @if (pet.peso != null) { · {{ pet.peso }} kg }
+            </p>
+            <div class="mt-3 flex flex-wrap items-center gap-2">
+              <span [class]="pet.activo ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-600'"
+                class="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold">
+                <span [class]="pet.activo ? 'bg-emerald-500' : 'bg-rose-500'" class="size-1.5 rounded-full"></span>
+                {{ pet.activo ? 'Activo' : 'Inactivo' }}
+              </span>
+              @if (historia()?.numeroHc) {
+                <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">{{ historia()?.numeroHc }}</span>
+              }
+            </div>
+            <div class="mt-4 inline-flex max-w-full items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-500">
+              <span class="grid size-7 shrink-0 place-items-center rounded-full bg-blue-50 text-blue-500"><i class="pi pi-user"></i></span>
+              <div class="min-w-0"><span class="block text-[9px] font-bold uppercase tracking-wider text-slate-400">Propietario principal</span><span class="block truncate font-bold text-slate-700">{{ pet.apoderadoNombreCompleto }}</span></div>
+            </div>
+          </div>
+          @if (canModify()) {
+            <button type="button" (click)="editar()" class="inline-flex h-10 w-full shrink-0 items-center justify-center gap-2 rounded-lg bg-blue-500 px-4 text-sm font-bold text-white hover:bg-blue-600 sm:w-auto">
+              <i class="pi pi-pencil"></i> Editar mascota
+            </button>
+          }
+        </div>
+      </section>
+      <nav class="flex min-h-14 overflow-x-auto rounded-xl border border-slate-200 bg-white px-2 shadow-sm lg:[&>button]:flex-1 lg:[&>button]:justify-center" aria-label="Secciones de la mascota">
+        <button type="button" (click)="seleccionarSeccion('historial')" [class]="seccionActiva() === 'historial' ? 'border-[var(--brand-primary)] text-[var(--brand-primary)]' : 'border-transparent text-slate-500 hover:text-slate-700'" class="inline-flex h-14 shrink-0 items-center gap-2 border-b-[3px] px-4 text-xs font-bold"><i class="pi pi-file-edit text-base"></i> Historial clínico</button>
+        <button type="button" (click)="seleccionarSeccion('preventivos')" [class]="seccionActiva() === 'preventivos' ? 'border-[var(--brand-primary)] text-[var(--brand-primary)]' : 'border-transparent text-slate-500 hover:text-slate-700'" class="inline-flex h-14 shrink-0 items-center gap-2 border-b-[3px] px-4 text-xs font-bold"><i class="pi pi-calendar text-base"></i> Preventivos</button>
+        <button type="button" (click)="seleccionarSeccion('vacunas')" [class]="seccionActiva() === 'vacunas' ? 'border-[var(--brand-primary)] text-[var(--brand-primary)]' : 'border-transparent text-slate-500 hover:text-slate-700'" class="inline-flex h-14 shrink-0 items-center gap-2 border-b-[3px] px-4 text-xs font-bold"><i class="pi pi-shield text-base"></i> Vacunas</button>
+        <button type="button" (click)="seleccionarSeccion('recetas')" [class]="seccionActiva() === 'recetas' ? 'border-[var(--brand-primary)] text-[var(--brand-primary)]' : 'border-transparent text-slate-500 hover:text-slate-700'" class="inline-flex h-14 shrink-0 items-center gap-2 border-b-[3px] px-4 text-xs font-bold"><i class="pi pi-file-edit text-base"></i> Recetas</button>
+        <button type="button" (click)="seleccionarSeccion('documentos')" [class]="seccionActiva() === 'documentos' ? 'border-[var(--brand-primary)] text-[var(--brand-primary)]' : 'border-transparent text-slate-500 hover:text-slate-700'" class="inline-flex h-14 shrink-0 items-center gap-2 border-b-[3px] px-4 text-xs font-bold"><i class="pi pi-file text-base"></i> Documentos</button>
+        <button type="button" (click)="seleccionarSeccion('datos')" [class]="seccionActiva() === 'datos' ? 'border-[var(--brand-primary)] text-[var(--brand-primary)]' : 'border-transparent text-slate-500 hover:text-slate-700'" class="inline-flex h-14 shrink-0 items-center gap-2 border-b-[3px] px-4 text-xs font-bold"><i class="pi pi-paw text-base"></i> Datos del paciente</button>
+      </nav>
+      @if (seccionActiva() === 'historial') {
+          <section id="historial" class="scroll-mt-4 rounded-2xl border border-slate-200 bg-white p-4 sm:p-5">
+            <div class="flex items-center justify-between gap-3">
+              <div><h3 class="text-base font-black text-slate-900">Última consulta</h3><p class="mt-0.5 text-xs text-slate-500">Atención clínica más reciente registrada</p></div>
+              @if (canViewHistory() && historia()) { <button type="button" (click)="verHistoria()" class="shrink-0 text-xs font-bold text-[var(--brand-primary)]">Ver historia completa</button> }
+            </div>
+            @if (ultimaConsulta(); as consulta) {
+              <button type="button" (click)="abrirConsulta(consulta.id)" [disabled]="!canViewHistory()"
+                class="mt-4 grid w-full gap-3 rounded-xl border border-slate-200 p-4 text-left transition-colors hover:border-blue-200 hover:bg-blue-50/30 disabled:cursor-default sm:grid-cols-[auto_minmax(0,1fr)_minmax(12rem,0.8fr)_auto] sm:items-center">
+                <span class="grid size-10 place-items-center rounded-xl bg-blue-50 text-blue-500"><i class="pi pi-calendar"></i></span>
+                <span class="min-w-0"><span class="block text-sm font-black text-slate-800">{{ consulta.fechaConsulta | date:'dd MMM yyyy · HH:mm' }}</span><span class="mt-0.5 block truncate text-xs text-slate-500">{{ textoLegible(consulta.tipoConsulta) }} · {{ consulta.veterinarioNombre || 'Profesional no registrado' }}</span></span>
+                <span class="min-w-0 border-slate-200 sm:border-l sm:pl-4"><span class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Motivo</span><span class="mt-0.5 block truncate text-xs font-semibold text-slate-700">{{ consulta.motivoConsulta || 'Sin motivo registrado' }}</span></span>
+                @if (canViewHistory()) { <i class="pi pi-angle-right text-slate-400"></i> }
+              </button>
+            } @else {
+              <div class="mt-4 rounded-xl bg-slate-50 px-4 py-8 text-center"><i class="pi pi-folder-open text-xl text-slate-300"></i><p class="mt-2 text-sm font-bold text-slate-600">Sin consultas registradas</p><p class="mt-1 text-xs text-slate-400">La mascota todavía no cuenta con atenciones clínicas.</p></div>
+            }
+          </section>
+
+          <section class="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5">
+            <div class="flex items-center justify-between gap-3"><div><h3 class="text-base font-black text-slate-900">Historial de consultas</h3><p class="mt-0.5 text-xs text-slate-500">Últimas atenciones del paciente</p></div><span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-500">{{ historia()?.consultas?.length || 0 }}</span></div>
+            @if (consultasRecientes().length) {
+              <div class="mt-4 divide-y divide-slate-100">
+                @for (consulta of consultasRecientes(); track consulta.id) {
+                  <button type="button" (click)="abrirConsulta(consulta.id)" [disabled]="!canViewHistory()" class="grid w-full grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1 py-3 text-left sm:grid-cols-[auto_7.5rem_minmax(0,1fr)_auto] sm:items-center">
+                    <span [class]="consultaIconClass(consulta.tipoConsulta, consulta.motivoConsulta)" class="row-span-2 grid size-9 shrink-0 place-items-center rounded-full sm:row-span-1"><i [class]="consultaIcon(consulta.tipoConsulta, consulta.motivoConsulta)" class="text-sm"></i></span>
+                    <span class="text-xs font-bold text-slate-600">{{ consulta.fechaConsulta | date:'dd MMM yyyy' }}</span>
+                    <span class="min-w-0"><span class="block truncate text-sm font-bold text-slate-800">{{ consulta.motivoConsulta || textoLegible(consulta.tipoConsulta) }}</span><span class="mt-0.5 block truncate text-xs text-slate-400">{{ consulta.veterinarioNombre || 'Profesional no registrado' }}@if (consulta.pesoEnConsulta != null) { · {{ consulta.pesoEnConsulta }} kg }</span></span>
+                    <span class="col-start-2 inline-flex items-center gap-2 text-xs sm:col-start-auto"><span class="rounded-full bg-emerald-50 px-2.5 py-1 font-semibold text-emerald-700">{{ textoLegible(consulta.estado || 'Registrada') }}</span>@if (canViewHistory()) { <i class="pi pi-angle-right text-slate-300"></i> }</span>
+                  </button>
+                }
+              </div>
+            } @else { <p class="mt-4 rounded-xl bg-slate-50 px-4 py-6 text-center text-xs text-slate-400">No hay información clínica disponible.</p> }
+          </section>
+
+          @if (notaClinica(); as nota) {
+            <section class="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5">
+              <h3 class="flex items-center gap-2.5 text-sm font-black text-slate-900"><span class="grid size-8 place-items-center rounded-xl bg-cyan-50 text-cyan-600"><i class="pi pi-clipboard"></i></span> Nota clínica reciente</h3>
+              <div class="mt-3 grid gap-3 rounded-xl border border-slate-100 bg-slate-50/60 p-4 sm:grid-cols-[minmax(0,1fr)_auto]">
+                <p class="text-xs leading-5 text-slate-600">{{ nota }}</p>
+                <div class="border-slate-200 text-[11px] text-slate-400 sm:border-l sm:pl-4"><p>{{ ultimaConsulta()!.fechaConsulta | date:'dd MMM yyyy' }}</p><p class="mt-0.5 font-semibold text-slate-500">{{ ultimaConsulta()!.veterinarioNombre || 'Profesional no registrado' }}</p></div>
+              </div>
+            </section>
+          }
+          }
+
+          @if (seccionActiva() === 'preventivos') {
+            <section class="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5">
+              <div class="flex items-center justify-between gap-3">
+                <div><h3 class="text-base font-black text-slate-900">Controles preventivos</h3><p class="mt-0.5 text-xs text-slate-500">Vacunaciones y desparasitaciones programadas para el paciente</p></div>
+                <span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-500">{{ controlesPreventivos().length }}</span>
+              </div>
+              @if (controlesPreventivos().length) {
+                <div class="mt-4 divide-y divide-slate-100">
+                  @for (control of controlesPreventivos(); track control.id) {
+                    <div class="grid gap-2 py-3 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center">
+                      <span [class]="control.tipo === 'VACUNACION' ? 'bg-emerald-50 text-emerald-600' : 'bg-cyan-50 text-cyan-600'" class="grid size-9 place-items-center rounded-full"><i [class]="control.tipo === 'VACUNACION' ? 'pi pi-shield' : 'pi pi-heart'"></i></span>
+                      <div class="min-w-0"><p class="truncate text-sm font-bold text-slate-800">{{ control.nombreControl }}</p><p class="mt-0.5 text-xs text-slate-400">{{ textoLegible(control.tipo) }} · {{ control.fechaRecomendada | date:'dd MMM yyyy' }}</p></div>
+                      <span class="w-fit rounded-full bg-amber-50 px-2.5 py-1 text-[10px] font-bold text-amber-700">{{ textoLegible(control.estado) }}</span>
+                    </div>
+                  }
+                </div>
+              } @else {
+                <div class="mt-4 rounded-xl bg-slate-50 px-4 py-8 text-center"><i class="pi pi-calendar text-xl text-slate-300"></i><p class="mt-2 text-sm font-bold text-slate-600">Sin controles preventivos</p><p class="mt-1 text-xs text-slate-400">No existen controles programados para esta mascota.</p></div>
+              }
+            </section>
+          }
+
+          @if (seccionActiva() === 'vacunas') {
+            <section class="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5">
+              <div class="flex items-center justify-between gap-3">
+                <div><h3 class="text-base font-black text-slate-900">Vacunas</h3><p class="mt-0.5 text-xs text-slate-500">Aplicaciones registradas y próximas dosis</p></div>
+                <span class="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700">{{ vacunas().length }} aplicadas</span>
+              </div>
+              @if (vacunas().length) {
+                <div class="mt-4 divide-y divide-slate-100">
+                  @for (vacuna of vacunas(); track vacuna.id) {
+                    <div class="grid gap-2 py-3 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center">
+                      <span class="grid size-9 place-items-center rounded-full bg-emerald-50 text-emerald-600"><i class="pi pi-shield"></i></span>
+                      <div class="min-w-0"><p class="truncate text-sm font-bold text-slate-800">{{ vacuna.nombreControl }}</p><p class="mt-0.5 text-xs text-slate-400">{{ vacuna.fechaAplicacion | date:'dd MMM yyyy' }} · {{ vacuna.veterinarioNombre || 'Profesional no registrado' }}</p></div>
+                      <span class="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold text-emerald-700">Aplicada</span>
+                    </div>
+                  }
+                </div>
+              } @else {
+                <p class="mt-4 rounded-xl bg-slate-50 px-4 py-8 text-center text-xs text-slate-400">No hay vacunas aplicadas registradas.</p>
+              }
+              @if (vacunasPendientes().length) {
+                <div class="mt-5 border-t border-slate-100 pt-4"><h4 class="text-xs font-black uppercase tracking-wider text-slate-500">Próximas dosis</h4>
+                  <div class="mt-2 grid gap-2 sm:grid-cols-2">
+                    @for (vacuna of vacunasPendientes(); track vacuna.id) {
+                      <div class="rounded-xl border border-amber-100 bg-amber-50/50 p-3"><p class="text-xs font-bold text-slate-700">{{ vacuna.nombreControl }}</p><p class="mt-1 text-[11px] text-amber-700">{{ vacuna.fechaRecomendada | date:'dd MMM yyyy' }} · {{ textoLegible(vacuna.estado) }}</p></div>
+                    }
+                  </div>
+                </div>
+              }
+            </section>
+          }
+
+          @if (seccionActiva() === 'recetas') {
+            <section class="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5">
+              <div class="flex items-center justify-between gap-3">
+                <div><h3 class="text-base font-black text-slate-900">Recetas médicas</h3><p class="mt-0.5 text-xs text-slate-500">Prescripciones emitidas durante sus consultas</p></div>
+                <span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-500">{{ recetas().length }}</span>
+              </div>
+              @if (recetas().length) {
+                <div class="mt-4 divide-y divide-slate-100">
+                  @for (item of recetas(); track item.receta.id) {
+                    <button type="button" (click)="abrirConsulta(item.consulta.id)" [disabled]="!canViewHistory()" class="grid w-full gap-2 py-3 text-left sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center">
+                      <span class="grid size-9 place-items-center rounded-full bg-violet-50 text-violet-600"><i class="pi pi-file-edit"></i></span>
+                      <span class="min-w-0"><span class="block truncate text-sm font-bold text-slate-800">{{ item.receta.medicamento }}</span><span class="mt-0.5 block text-xs text-slate-400">{{ item.receta.dosis }} · {{ item.receta.frecuencia }}@if (item.receta.viaAdministracion) { · {{ textoLegible(item.receta.viaAdministracion) }} }</span></span>
+                      <span class="inline-flex items-center gap-2 text-[11px] font-semibold text-slate-500">{{ item.receta.fechaInicio | date:'dd MMM yyyy' }}@if (canViewHistory()) { <i class="pi pi-angle-right text-slate-300"></i> }</span>
+                    </button>
+                  }
+                </div>
+              } @else {
+                <div class="mt-4 rounded-xl bg-slate-50 px-4 py-8 text-center"><i class="pi pi-file-edit text-xl text-slate-300"></i><p class="mt-2 text-sm font-bold text-slate-600">Sin recetas registradas</p><p class="mt-1 text-xs text-slate-400">Las prescripciones emitidas aparecerán aquí.</p></div>
+              }
+            </section>
+          }
+
+          @if (seccionActiva() === 'documentos') {
+            <section class="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5">
+              <div class="flex items-center justify-between gap-3">
+                <div><h3 class="text-base font-black text-slate-900">Documentos clínicos</h3><p class="mt-0.5 text-xs text-slate-500">Hemogramas, radiografías, ecografías, imágenes y otros archivos</p></div>
+                <span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-500">{{ documentos().length }}</span>
+              </div>
+              @if (documentos().length) {
+                <div class="mt-4 grid gap-3 sm:grid-cols-2">
+                  @for (item of documentos(); track item.archivo.id) {
+                    <button type="button" (click)="abrirConsulta(item.consulta.id)" [disabled]="!canViewHistory()" class="flex min-w-0 items-start gap-3 rounded-xl border border-slate-200 p-3 text-left transition-colors hover:border-blue-200 hover:bg-blue-50/30">
+                      <span class="grid size-10 shrink-0 place-items-center rounded-xl bg-blue-50 text-blue-600"><i [class]="archivoIcon(item.archivo.tipo)"></i></span>
+                      <span class="min-w-0 flex-1"><span class="block truncate text-sm font-bold text-slate-800">{{ item.archivo.nombre }}</span><span class="mt-0.5 block text-xs text-slate-400">{{ textoLegible(item.archivo.tipo) }} · {{ item.archivo.fechaCarga | date:'dd MMM yyyy' }}</span>@if (item.archivo.descripcion) { <span class="mt-1 line-clamp-2 block text-[11px] text-slate-500">{{ item.archivo.descripcion }}</span> }</span>
+                      @if (canViewHistory()) { <i class="pi pi-angle-right mt-1 text-slate-300"></i> }
+                    </button>
+                  }
+                </div>
+              } @else {
+                <div class="mt-4 rounded-xl bg-slate-50 px-4 py-8 text-center"><i class="pi pi-folder-open text-xl text-slate-300"></i><p class="mt-2 text-sm font-bold text-slate-600">Sin documentos clínicos</p><p class="mt-1 text-xs text-slate-400">Los archivos registrados en las consultas aparecerán aquí.</p></div>
+              }
+            </section>
+          }
+
+          @if (seccionActiva() === 'datos') {
+            <section class="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5">
+              <h3 class="text-base font-black text-slate-900">Información vinculada</h3>
+              <p class="mt-0.5 text-xs text-slate-500">Datos administrativos y clínicos asociados al paciente</p>
+              <dl class="mt-4 grid gap-3 sm:grid-cols-2">
+                <div class="rounded-xl bg-slate-50 p-3"><dt class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Propietario principal</dt><dd class="mt-1 text-sm font-bold text-slate-700">{{ pet.apoderadoNombreCompleto }}</dd></div>
+                <div class="rounded-xl bg-slate-50 p-3"><dt class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Historia clínica</dt><dd class="mt-1 text-sm font-bold text-slate-700">{{ historia()?.numeroHc || 'No registrada' }}</dd></div>
+                <div class="rounded-xl bg-slate-50 p-3"><dt class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Estado del paciente</dt><dd class="mt-1 text-sm font-bold text-slate-700">{{ pet.activo ? 'Activo' : 'Inactivo' }}</dd></div>
+                <div class="rounded-xl bg-slate-50 p-3"><dt class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Última atención</dt><dd class="mt-1 text-sm font-bold text-slate-700">@if (ultimaConsulta(); as consulta) { {{ consulta.fechaConsulta | date:'dd MMM yyyy' }} } @else { Sin atenciones }</dd></div>
+              </dl>
+            </section>
+          }
+
+        </div>
+
+        <aside class="min-w-0 space-y-4">
+          <section id="datos" class="scroll-mt-4 rounded-2xl border border-slate-200 bg-white p-4 sm:p-5">
+            <h3 class="mb-5 flex items-center gap-2.5 text-sm font-black text-slate-900">
+              <span class="grid size-9 place-items-center rounded-full bg-cyan-50 text-[var(--brand-primary)]">
+                <svg viewBox="0 0 24 24" class="size-5" fill="currentColor" aria-hidden="true"><circle cx="7" cy="7" r="2"/><circle cx="12" cy="5" r="2"/><circle cx="17" cy="7" r="2"/><circle cx="5" cy="11.5" r="1.75"/><circle cx="19" cy="11.5" r="1.75"/><path d="M12 10.5c-3 0-5.5 2.7-5.5 5.2 0 2 1.5 3.3 3.4 3.3.9 0 1.4-.35 2.1-.35s1.2.35 2.1.35c1.9 0 3.4-1.3 3.4-3.3 0-2.5-2.5-5.2-5.5-5.2Z"/></svg>
+              </span>
+              Datos de la mascota
+            </h3>
+            <dl class="space-y-3.5 text-xs">
+              <div class="flex items-center gap-3">
+                <span class="grid size-8 shrink-0 place-items-center rounded-full bg-sky-50 text-slate-400">
+                  <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="7" cy="7" r="1.7"/><circle cx="12" cy="5.5" r="1.7"/><circle cx="17" cy="7" r="1.7"/><path d="M7.5 16c0-2.4 2-5 4.5-5s4.5 2.6 4.5 5c0 1.7-1.2 2.7-2.8 2.7-.7 0-1.1-.3-1.7-.3s-1 .3-1.7.3c-1.6 0-2.8-1-2.8-2.7Z"/></svg>
+                </span>
+                <div class="min-w-0"><dt class="text-slate-400">Especie</dt><dd class="mt-0.5 font-bold text-slate-700">{{ especieLabel(pet.especie) }}</dd></div>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="grid size-8 shrink-0 place-items-center rounded-full bg-sky-50 text-slate-400">
+                  <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 7-3-2v6a7 7 0 0 0 14 0V5l-3 2"/><path d="M9 11h.01M15 11h.01M10 15c1.2.9 2.8.9 4 0"/></svg>
+                </span>
+                <div class="min-w-0"><dt class="text-slate-400">Raza</dt><dd class="mt-0.5 font-bold text-slate-700">{{ pet.razaNombre || pet.raza || 'No registrada' }}</dd></div>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="grid size-8 shrink-0 place-items-center rounded-full bg-sky-50 text-slate-400">
+                  @if (pet.sexo === 'MACHO') {
+                    <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="15" r="5"/><path d="m13 11 6-6M14 5h5v5"/></svg>
+                  } @else {
+                    <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="9" r="5"/><path d="M12 14v7M9 18h6"/></svg>
+                  }
+                </span>
+                <div class="min-w-0"><dt class="text-slate-400">Sexo</dt><dd class="mt-0.5 font-bold text-slate-700">{{ sexoLabel(pet.sexo) }}</dd></div>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="grid size-8 shrink-0 place-items-center rounded-full bg-sky-50 text-slate-400">
+                  <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5.5" width="16" height="14" rx="2"/><path d="M8 3.5v4M16 3.5v4M4 10h16"/></svg>
+                </span>
+                <div class="min-w-0"><dt class="text-slate-400">Fecha de nacimiento</dt><dd class="mt-0.5 font-bold text-slate-700">{{ pet.fechaNacimiento ? (pet.fechaNacimiento | date:'dd/MM/yyyy') : 'No registrada' }} @if (pet.fechaNacimiento) { <span class="font-medium text-slate-500">({{ calcularEdad(pet.fechaNacimiento) }})</span> }</dd></div>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="grid size-8 shrink-0 place-items-center rounded-full bg-sky-50 text-slate-400">
+                  <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18h1.5a1.8 1.8 0 0 0 0-3.6H12a1.8 1.8 0 0 1 0-3.6h3.3A5.7 5.7 0 0 0 21 8.1C21 5.3 17 3 12 3Z"/><circle cx="7.5" cy="9" r=".8" fill="currentColor" stroke="none"/><circle cx="10.5" cy="6.8" r=".8" fill="currentColor" stroke="none"/><circle cx="14.5" cy="6.8" r=".8" fill="currentColor" stroke="none"/></svg>
+                </span>
+                <div class="min-w-0"><dt class="text-slate-400">Color o manto</dt><dd class="mt-0.5 font-bold text-slate-700">{{ pet.color || 'No registrado' }}</dd></div>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="grid size-8 shrink-0 place-items-center rounded-full bg-sky-50 text-slate-400">
+                  <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 20h12M8 20l-2-9h12l-2 9"/><path d="M9 11a3 3 0 0 1 6 0M12 8v3l2-1"/></svg>
+                </span>
+                <div class="min-w-0"><dt class="text-slate-400">Peso registrado</dt><dd class="mt-0.5 font-bold text-slate-700">{{ pet.peso != null ? pet.peso + ' kg' : 'No registrado' }}</dd></div>
+              </div>
+            </dl>
+          </section>
+
+          <section id="preventivos" class="scroll-mt-4 rounded-2xl border border-slate-200 bg-white p-4 sm:p-5">
+            <div class="flex items-center justify-between gap-3">
+              <h3 class="flex items-center gap-2.5 text-sm font-black text-slate-900"><span class="grid size-8 place-items-center rounded-xl bg-amber-50 text-amber-600"><i class="pi pi-calendar"></i></span> Próximos controles</h3>
+              <button type="button" (click)="seleccionarSeccion('preventivos')" class="text-[11px] font-bold text-[var(--brand-primary)]">Ver todos</button>
+            </div>
+            @if (controlesPendientes().length) {
+              <ul class="mt-3 divide-y divide-slate-100">
+                @for (item of controlesPendientes(); track item.id) {
+                  <li class="flex items-start justify-between gap-3 py-2.5">
+                    <div class="min-w-0"><p class="truncate text-xs font-bold text-slate-700">{{ item.nombreControl }}</p><p class="mt-0.5 text-[11px] text-slate-400">{{ item.fechaRecomendada | date:'dd MMM yyyy' }}</p></div>
+                    <span class="rounded-full bg-amber-50 px-2 py-1 text-[10px] font-bold text-amber-700">{{ textoLegible(item.estado) }}</span>
+                  </li>
+                }
+              </ul>
+            } @else { <p class="mt-3 text-xs text-slate-400">No hay controles próximos.</p> }
+          </section>
+
+          <section class="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5">
+            <div class="flex items-center justify-between gap-3">
+              <h3 class="flex items-center gap-2.5 text-sm font-black text-slate-900"><span class="grid size-8 place-items-center rounded-xl bg-emerald-50 text-emerald-600"><i class="pi pi-shield"></i></span> Últimas aplicaciones</h3>
+              <button type="button" (click)="seleccionarSeccion('vacunas')" class="text-[11px] font-bold text-[var(--brand-primary)]">Ver vacunas</button>
+            </div>
+            @if (aplicacionesRecientes().length) {
+              <ul class="mt-3 divide-y divide-slate-100">
+                @for (item of aplicacionesRecientes(); track item.id) {
+                  <li class="flex items-start justify-between gap-3 py-2.5">
+                    <div class="min-w-0"><p class="truncate text-xs font-bold text-slate-700">{{ item.nombreControl }}</p><p class="mt-0.5 text-[11px] text-slate-400">{{ item.fechaAplicacion | date:'dd MMM yyyy' }}</p></div>
+                    <span class="rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-700">Aplicado</span>
+                  </li>
+                }
+              </ul>
+            } @else { <p class="mt-3 text-xs text-slate-400">Sin aplicaciones registradas.</p> }
+          </section>
+
+          <section class="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5">
+            <h3 class="text-sm font-black text-slate-900">Accesos rápidos</h3>
+            <div class="mt-4 space-y-2">
+              @if (canModify()) { <button type="button" (click)="editar()" class="flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-blue-500 px-4 text-xs font-bold text-white"><i class="pi pi-pencil"></i> Editar mascota</button> }
+              @if (canViewHistory() && historia()) { <button type="button" (click)="verHistoria()" class="flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-blue-500 px-4 text-xs font-bold text-blue-600"><i class="pi pi-file-edit"></i> Ver historia completa</button> }
+            </div>
+          </section>
+        </aside>
+      </div>
+    }
+  </div>
+</main>

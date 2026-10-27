@@ -40,7 +40,7 @@ describe('CajaComponent', () => {
 
   describe('puntos de cobro', () => {
     const punto = (parcial: Partial<PuntoCobro> = {}): PuntoCobro => ({
-      id: 1, nombre: 'Mostrador 1', activa: true, vinculada: false, dispositivoInfo: null, vinculadaAt: null,
+      id: 1, nombre: 'Mostrador 1', activa: true, vinculada: false, dispositivoNombre: null, dispositivoInfo: null, vinculadaAt: null,
       ultimoUsoAt: null, esEsteEquipo: false, sesionAbierta: false, abiertaPorNombre: null, ...parcial
     });
     let cajaService: any;
@@ -82,28 +82,60 @@ describe('CajaComponent', () => {
     });
 
     it('muestra qué punto de cobro es este equipo', () => {
-      component.estadoEquipo.set({ modo: 'DISPOSITIVO', cajaNombre: 'Mostrador 2', mensaje: 'Este equipo es el punto de cobro «Mostrador 2».' });
+      component.estadoEquipo.set({ modo: 'DISPOSITIVO', cajaNombre: 'Mostrador 2', equipoNombre: 'PC Recepción 02', mensaje: 'Equipo registrado.' });
       fixture.detectChanges();
 
       expect(texto()).toContain('Este equipo');
+      expect(texto()).toContain('PC Recepción 02');
       expect(texto()).toContain('Mostrador 2');
       expect(component.equipoSinRegistrar()).toBeFalse();
     });
 
-    it('un equipo sin registrar no puede abrir caja y se le explica por qué', () => {
-      component.estadoEquipo.set({ modo: 'NO_REGISTRADO', cajaNombre: null, mensaje: 'Este equipo no está registrado como punto de cobro.' });
+    it('un administrador con equipo sin registrar recibe la acción correcta y no puede abrir caja', () => {
+      component.estadoEquipo.set({ modo: 'NO_REGISTRADO', cajaNombre: null, equipoNombre: null, mensaje: 'Este equipo no está registrado como punto de cobro.' });
+      component.estadoEquipoLoading.set(false);
+      component.estadoEquipoError.set(false);
       component.sesionCaja.set(null);
       fixture.detectChanges();
 
       const abrir = Array.from(fixture.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>)
-        .find(boton => boton.textContent?.includes('Abrir caja'))!;
-      expect(abrir.disabled).toBeTrue();
-      expect(abrir.title).toContain('no está registrado');
+        .find(boton => boton.textContent?.includes('Abrir caja'));
+      const registrar = Array.from(fixture.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>)
+        .find(boton => boton.textContent?.includes('Registrar este equipo'));
+      expect(abrir).toBeUndefined();
+      expect(registrar).toBeDefined();
       expect(texto()).toContain('Sin registrar');
+
+      component.abrirModalSesion('ABRIR');
+      expect(component.showSesionModal()).toBeNull();
+      expect(aviso).toHaveBeenCalled();
+    });
+
+    it('el personal con equipo sin registrar ve que debe solicitarlo a un administrador', () => {
+      (component as any).authStore.setAuth({ roles: ['ROLE_VETERINARIO'], companyId: 7, activeRolePurpose: 'CUSTOM', menu: [] } as any);
+      component.estadoEquipo.set({ modo: 'NO_REGISTRADO', cajaNombre: null, equipoNombre: null, mensaje: 'Este equipo no está registrado como punto de cobro.' });
+      component.estadoEquipoLoading.set(false);
+      component.estadoEquipoError.set(false);
+      component.sesionCaja.set(null);
+      fixture.detectChanges();
+
+      expect(texto()).toContain('Solicita el registro a un administrador');
+      expect(texto()).not.toContain('Registrar este equipo');
+    });
+
+    it('no permite abrir caja mientras verifica el equipo', () => {
+      component.estadoEquipo.set(null);
+      component.estadoEquipoLoading.set(true);
+      component.estadoEquipoError.set(false);
+      component.sesionCaja.set(null);
+      fixture.detectChanges();
+
+      expect(texto()).toContain('Verificando equipo...');
+      expect(texto()).not.toContain('Abrir caja');
     });
 
     it('carga el estado de este equipo al pedirlo', () => {
-      spyOn(cajaService, 'esteEquipo').and.returnValue(of({ success: true, message: 'ok', data: { modo: 'SENCILLO', cajaNombre: 'Caja principal', mensaje: 'x' } }));
+      spyOn(cajaService, 'esteEquipo').and.returnValue(of({ success: true, message: 'ok', data: { modo: 'SENCILLO', cajaNombre: 'Caja principal', equipoNombre: null, mensaje: 'x' } }));
 
       component.cargarEstadoEquipo();
 
@@ -113,7 +145,7 @@ describe('CajaComponent', () => {
 
     it('lista los puntos de cobro con su equipo y quién tiene la caja abierta', () => {
       spyOn(cajaService, 'puntosCobro').and.returnValue(of({ success: true, message: 'ok', data: [
-        punto({ vinculada: true, dispositivoInfo: 'Chrome en Windows', esEsteEquipo: true }),
+        punto({ vinculada: true, dispositivoNombre: 'PC Recepción 01', dispositivoInfo: 'Chrome en Windows', esEsteEquipo: true }),
         punto({ id: 2, nombre: 'Mostrador 2', sesionAbierta: true, abiertaPorNombre: 'Luis Gómez' })
       ] }));
 
@@ -121,7 +153,8 @@ describe('CajaComponent', () => {
       fixture.detectChanges();
 
       expect(texto()).toContain('Chrome en Windows');
-      expect(texto()).toContain('Caja abierta por Luis Gómez');
+      expect(texto()).toContain('PC Recepción 01');
+      expect(texto()).toContain('Abierta por Luis Gómez');
       expect(texto()).toContain('Mostrador 2');
     });
 
@@ -152,16 +185,20 @@ describe('CajaComponent', () => {
       spyOn(component, 'cargarPuntos');
       const estado = spyOn(component, 'cargarEstadoEquipo');
 
-      component.vincularPunto(punto());
+      component.prepararVinculacion(punto());
+      component.nombreEquipo = '  PC   Recepción 01 ';
+      component.vincularPunto();
 
-      expect(vincular).toHaveBeenCalledWith(1, 7);
+      expect(vincular).toHaveBeenCalledWith(1, 7, 'PC Recepción 01');
       expect(estado).toHaveBeenCalled();
     });
 
     it('si el servidor rechaza la operación muestra su motivo', () => {
       spyOn(cajaService, 'vincularPuntoCobro').and.returnValue(throwError(() => ({ error: { message: 'Cierra la caja de este punto de cobro antes de cambiar su equipo' } })));
 
-      component.vincularPunto(punto());
+      component.prepararVinculacion(punto());
+      component.nombreEquipo = 'PC Recepción 01';
+      component.vincularPunto();
 
       expect(aviso.calls.mostRecent().args[0].detail).toContain('Cierra la caja');
       expect(component.trabajandoPuntos()).toBeFalse();

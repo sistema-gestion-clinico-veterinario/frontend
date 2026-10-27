@@ -54,7 +54,8 @@ const DIAS_SEMANA_ORDEN = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterLink, ToastModule, DialogModule, SkeletonModule, InputFilterDirective, CloseAccountCardComponent, CancelarDatosCardComponent, DocumentoLegalComponent],
   providers: [MessageService],
-  templateUrl: './profile.component.html'
+  templateUrl: './profile.component.html',
+  styleUrls: ['./profile.component.scss']
 })
 export class ProfileComponent implements OnInit, OnDestroy {
   private readonly fb = inject(FormBuilder);

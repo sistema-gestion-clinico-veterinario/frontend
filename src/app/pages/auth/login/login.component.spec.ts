@@ -193,7 +193,7 @@ describe('LoginComponent - submit validations', () => {
     expect(authService.login).toHaveBeenCalledTimes(1);
   });
 
-  it('si la clínica gestiona el acceso, muestra su mensaje y cierra el diálogo', () => {
+  it('si la clínica rechaza la reactivación, no revela el estado de la cuenta y cierra el diálogo', () => {
     createLoginInput('username', 'ana');
     createLoginInput('password', 'secret123');
     authService.login.and.returnValues(cuentaCerrada409(), throwError(() => ({
@@ -205,7 +205,7 @@ describe('LoginComponent - submit validations', () => {
 
     expect(component.showReactivar).toBeFalse();
     expect(component.reactivando).toBeFalse();
-    expect(component.authError).toContain('lo gestiona el administrador');
+    expect(component.authError).toBe('Usuario, correo o contraseña incorrectos.');
   });
 
   it('una contraseña incorrecta sigue dando el error genérico, sin revelar nada', () => {
@@ -443,17 +443,18 @@ describe('LoginComponent - continuar con Google', () => {
     expect(component.startingGoogle).toBeFalse();
   });
 
-  it('explica con claridad cada motivo por el que Google no deja entrar', () => {
+  it('no revela por Google si una cuenta existe, está suspendida o fue dada de baja', () => {
     const mensajes = (LoginComponent as any).GOOGLE_ERROR_MESSAGES as Record<string, string>;
+    const mensajeGenerico = 'No pudimos iniciar sesión con Google. Verifica que estés usando el correo correcto o ingresa con tu usuario y contraseña.';
 
-    expect(mensajes['google_cuenta_suspendida']).toContain('suspendido');
+    expect(mensajes['google_cuenta_suspendida']).toBe(mensajeGenerico);
     const avisos = (LoginComponent as any).NOTICES as Record<string, string>;
     expect(avisos['sesion_actualizada']).toContain('información de tu sesión cambió');
     expect(avisos['sesion_actualizada']).not.toContain('otras clínicas');
     expect(avisos['google_cuenta_cerrada']).toBeUndefined();
     expect(mensajes['google_cuenta_cerrada']).toContain('ya no se puede reactivar');
-    expect(mensajes['google_cuenta_dada_de_baja']).toContain('ya no está activo');
-    expect(mensajes['google_cuenta_no_habilitada']).toContain('no puede ingresar por ahora');
+    expect(mensajes['google_cuenta_dada_de_baja']).toBe(mensajeGenerico);
+    expect(mensajes['google_cuenta_no_habilitada']).toBe(mensajeGenerico);
     expect(mensajes['google_sin_acceso_clinica']).not.toContain('registrada');
     expect(mensajes['google_sin_acceso_clinica']).toContain('No pudimos iniciar sesión');
   });
@@ -497,7 +498,7 @@ describe('LoginComponent - continuar con Google', () => {
     expect(authService.reactivateWithGoogle).not.toHaveBeenCalledWith('ticket-1');
   });
 
-  it('si Google ya no acepta la confirmación, avisa y cierra el diálogo', () => {
+  it('si Google ya no acepta la confirmación, usa el error genérico y cierra el diálogo', () => {
     authService.reactivateWithGoogle.and.returnValue(throwError(() => ({
       status: 401, error: { message: 'La confirmación de Google expiró. Vuelve a continuar con Google.' }
     })));
@@ -507,7 +508,7 @@ describe('LoginComponent - continuar con Google', () => {
 
     expect(component.showReactivar).toBeFalse();
     expect(component.reactivando).toBeFalse();
-    expect(component.authError).toContain('expiró');
+    expect(component.authError).toBe('Usuario, correo o contraseña incorrectos.');
   });
 
   it('un error de verdad no abre el diálogo de avisos', () => {
@@ -524,10 +525,10 @@ describe('LoginComponent - continuar con Google', () => {
     expect(component.authNotice).toBe('');
   });
 
-  it('los demás motivos de Google siguen siendo errores', () => {
+  it('los demás motivos de Google siguen siendo errores sin revelar el estado de la cuenta', () => {
     component.aplicarMensajesDeLaUrl(null, 'google_cuenta_suspendida');
 
-    expect(component.authError).toContain('suspendido');
+    expect(component.authError).toBe('No pudimos iniciar sesión con Google. Verifica que estés usando el correo correcto o ingresa con tu usuario y contraseña.');
     expect(component.authNotice).toBe('');
   });
 

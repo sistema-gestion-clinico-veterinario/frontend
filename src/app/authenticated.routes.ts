@@ -168,6 +168,10 @@ export const AUTHENTICATED_ROUTES: Routes = [
             loadComponent: () => import('./pages/mascotas/lista-mascotas/lista-mascotas.component').then((m) => m.ListaMascotasComponent)
           },
           {
+            path: 'detalle/:uuid',
+            loadComponent: () => import('./pages/mascotas/detalle-mascota/detalle-mascota.component').then((m) => m.DetalleMascotaComponent)
+          },
+          {
             path: 'form',
             loadComponent: () => import('./pages/mascotas/mascota-form/mascota-form.component').then((m) => m.MascotaFormComponent)
           },
@@ -186,6 +190,10 @@ export const AUTHENTICATED_ROUTES: Routes = [
             loadComponent: () => import('./pages/mascotas/lista-mascotas/lista-mascotas.component').then((m) => m.ListaMascotasComponent)
           },
           {
+            path: 'detalle/:uuid',
+            loadComponent: () => import('./pages/mascotas/detalle-mascota/detalle-mascota.component').then((m) => m.DetalleMascotaComponent)
+          },
+          {
             path: 'form',
             loadComponent: () => import('./pages/mascotas/mascota-form/mascota-form.component').then((m) => m.MascotaFormComponent)
           },
@@ -202,6 +210,10 @@ export const AUTHENTICATED_ROUTES: Routes = [
           {
             path: '',
             loadComponent: () => import('./pages/mascotas/lista-mascotas/lista-mascotas.component').then((m) => m.ListaMascotasComponent)
+          },
+          {
+            path: 'detalle/:uuid',
+            loadComponent: () => import('./pages/mascotas/detalle-mascota/detalle-mascota.component').then((m) => m.DetalleMascotaComponent)
           },
           {
             path: 'form',

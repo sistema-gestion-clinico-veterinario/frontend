@@ -26,24 +26,22 @@ export class RecursoNoDisponibleComponent {
   private readonly articulo = computed(() => `${this.femenino() ? 'la' : 'el'} ${this.nombre()}`);
 
   readonly contenido = computed(() => {
+    const buscala = this.femenino() ? 'búscala' : 'búscalo';
     switch (this.motivo()) {
       case 'NO_ENCONTRADO':
         return {
-          icono: 'pi pi-search',
           titulo: `No encontramos ${this.demostrativo()}`,
-          detalle: `El enlace no es válido o ${this.demostrativo()} no pertenece a tu clínica. Vuelve a la lista y búscal${this.femenino() ? 'a' : 'o'} desde ahí.`
+          detalle: `Puede que el enlace esté incompleto o que ${this.demostrativo()} ya no esté disponible para tu clínica. Vuelve a la lista y ${buscala} desde ahí.`
         };
       case 'SIN_PERMISO':
         return {
-          icono: 'pi pi-lock',
-          titulo: `No tienes acceso a ${this.demostrativo()}`,
-          detalle: 'Tu rol no permite ver este contenido. Si lo necesitas, pide acceso al administrador de tu clínica.'
+          titulo: `No tienes permiso para ver ${this.demostrativo()}`,
+          detalle: 'Tu rol actual no puede abrir este contenido. Si lo necesitas para tu trabajo, solicita acceso al administrador de tu clínica.'
         };
       default:
         return {
-          icono: 'pi pi-exclamation-triangle',
-          titulo: `No se pudo cargar ${this.articulo()}`,
-          detalle: 'Hubo un problema al conectar con el servidor. Inténtalo de nuevo en unos segundos.'
+          titulo: `No pudimos cargar ${this.articulo()}`,
+          detalle: 'Algo salió mal de nuestro lado o se interrumpió tu conexión. Revisa tu internet e inténtalo de nuevo. Si el problema continúa, avisa al administrador de tu clínica.'
         };
     }
   });

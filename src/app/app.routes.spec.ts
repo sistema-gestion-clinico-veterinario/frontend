@@ -9,6 +9,7 @@ describe('Application routes', () => {
       .map((route) => route.path);
 
     expect(publicPaths).toEqual([
+      '',
       'admin/login',
       'login',
       'privacidad',

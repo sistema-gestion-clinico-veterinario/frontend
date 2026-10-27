@@ -73,9 +73,9 @@ export class CajaService {
       { companyId, nombre, ...(activa === undefined ? {} : { activa }) });
   }
 
-  vincularPuntoCobro(id: number, companyId: number) {
+  vincularPuntoCobro(id: number, companyId: number, nombreEquipo: string) {
     const params = new HttpParams().set('companyId', companyId);
-    return this.http.post<ApiResponse<PuntoCobro>>(`${this.apiUrl}/puntos/${id}/vincular`, {}, { params });
+    return this.http.post<ApiResponse<PuntoCobro>>(`${this.apiUrl}/puntos/${id}/vincular`, { nombreEquipo }, { params });
   }
 
   desvincularPuntoCobro(id: number, companyId: number) {

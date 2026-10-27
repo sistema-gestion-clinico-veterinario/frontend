@@ -159,7 +159,7 @@ describe('PendientesPrivacidadService', () => {
     const servicio = crear();
 
     expect(privacidad.miEstado).not.toHaveBeenCalled();
-    expect(respaldos.list).toHaveBeenCalledOnceWith(0, 50);
+    expect(respaldos.list).toHaveBeenCalledOnceWith(0, 50, true);
     expect(servicio.pendientes()).toEqual([
       jasmine.objectContaining({
         id: 'respaldo-20', titulo: 'Respaldo fallido', ruta: '/admin/respaldos', opcional: false,
