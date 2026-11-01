@@ -7,4 +7,5 @@ export interface PendientePrivacidad {
   ruta: string;
   fragmento?: string;
   opcional: boolean;
+  descartable?: boolean;
 }

@@ -33,7 +33,7 @@ describe('RecursoNoDisponibleComponent', () => {
 
   it('sin permiso indica pedir acceso al administrador y no ofrece reintentar', () => {
     const f = crear('SIN_PERMISO', 'consulta', true);
-    expect(texto(f)).toContain('No tienes acceso a esta consulta');
+    expect(texto(f)).toContain('No tienes permiso para ver esta consulta');
     expect(texto(f)).toContain('administrador de tu clínica');
     expect(texto(f)).not.toContain('Reintentar');
   });
@@ -43,12 +43,22 @@ describe('RecursoNoDisponibleComponent', () => {
     let volvio = 0, reintento = 0;
     f.componentInstance.volver.subscribe(() => volvio++);
     f.componentInstance.reintentar.subscribe(() => reintento++);
-    expect(texto(f)).toContain('No se pudo cargar el producto');
+    expect(texto(f)).toContain('No pudimos cargar el producto');
 
     const botones = (f.nativeElement as HTMLElement).querySelectorAll('button');
     expect(botones.length).toBe(2);
     botones[0].click();
     botones[1].click();
     expect([volvio, reintento]).toEqual([1, 1]);
+  });
+
+  it('muestra un ícono grande distinto para cada situación, sin recuadro de fondo', () => {
+    const iconos = (['NO_ENCONTRADO', 'SIN_PERMISO', 'FALLO'] as const)
+      .map(motivo => (crear(motivo).nativeElement as HTMLElement).querySelector('svg')!);
+    iconos.forEach(svg => {
+      expect(svg.classList.contains('size-20')).toBeTrue();
+      expect(svg.parentElement!.className).not.toContain('bg-');
+    });
+    expect(new Set(iconos.map(svg => svg.innerHTML)).size).toBe(3);
   });
 });

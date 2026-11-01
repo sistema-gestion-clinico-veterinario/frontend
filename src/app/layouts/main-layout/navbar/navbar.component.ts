@@ -249,7 +249,8 @@ export class NavbarComponent implements OnInit {
     this.router.navigate([notification.ruta], { fragment: notification.fragmento });
   }
 
-  dismissNotification(notification: PendientePrivacidad, event: MouseEvent): void {
+  dismissNotification(notification: PendientePrivacidad, event: Event): void {
+    event.preventDefault();
     event.stopPropagation();
     this.pendientesService.descartar(notification.id);
   }

@@ -159,17 +159,33 @@ describe('PendientesPrivacidadService', () => {
     const servicio = crear();
 
     expect(privacidad.miEstado).not.toHaveBeenCalled();
-    expect(respaldos.list).toHaveBeenCalledOnceWith(0, 50);
+    expect(respaldos.list).toHaveBeenCalledOnceWith(0, 50, true);
     expect(servicio.pendientes()).toEqual([
       jasmine.objectContaining({
         id: 'respaldo-20', titulo: 'Respaldo fallido', ruta: '/admin/respaldos', opcional: false,
+        descartable: true,
         detalle: jasmine.stringMatching(/Falló: Archivos clínicos$/)
       }),
       jasmine.objectContaining({
         id: 'respaldo-22', titulo: 'Respaldo parcial', ruta: '/admin/respaldos', opcional: false,
+        descartable: true,
         detalle: jasmine.stringMatching(/Falló: Base de datos$/)
       })
     ]);
+  });
+
+  it('permite revisar una alerta de respaldo sin eliminar la ejecución', () => {
+    companyId.set(null);
+    proposito.set('PLATFORM_ADMIN');
+    respaldos.list.and.returnValue(paginaRespaldos([ejecucionRespaldo({ id: 20 })]));
+    const servicio = crear();
+
+    expect(servicio.pendientes().map(p => p.id)).toEqual(['respaldo-20']);
+
+    servicio.descartar('respaldo-20');
+
+    expect(servicio.pendientes()).toEqual([]);
+    expect(sessionStorage.getItem('pendientes_privacidad_descartados:null:3')).toBe('["respaldo-20"]');
   });
 
   it('un rol de clínica nunca consulta el resumen operativo de respaldos', () => {

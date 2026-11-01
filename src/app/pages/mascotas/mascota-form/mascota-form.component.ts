@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule, FormBuilder, FormControl, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { ToastModule } from 'primeng/toast';
@@ -24,6 +24,15 @@ import { MascotaRelacionRequest, TipoRelacionMascota } from '../../../models/req
 import { MascotaRelacionResponse, TipoRelacionMascotaResponse } from '../../../models/response/mascota-relacion-response';
 import { PrivacidadService } from '../../../core/services/privacidad.service';
 import { AvisoPublico } from '../../../models/privacy/privacidad.model';
+import { HistoriaClinicaService } from '../../../core/services/historia-clinica.service';
+import { Subscription, catchError, debounceTime, distinctUntilChanged, of, switchMap } from 'rxjs';
+
+interface ApoderadoOption {
+  label: string;
+  value: number;
+  documento?: string;
+  email?: string;
+}
 
 @Component({
   selector: 'app-mascota-form',
@@ -48,6 +57,7 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
   private readonly apoderadoService = inject(ApoderadoService);
   private readonly razaService      = inject(RazaService);
   private readonly privacidadService = inject(PrivacidadService);
+  private readonly historiaClinicaService = inject(HistoriaClinicaService);
   readonly mediaService     = inject(MediaService);
   private readonly messageService   = inject(MessageService);
   private readonly router           = inject(Router);
@@ -70,7 +80,17 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
   mascotaUuid = signal<string | null>(null);
   returnPage = 0;
   returnUrl: string | null = null;
-  apoderados = signal<{ label: string; value: number }[]>([]);
+  apoderados = signal<ApoderadoOption[]>([]);
+  apoderadoSearchControl = new FormControl('', { nonNullable: true });
+  apoderadoResultados = signal<ApoderadoOption[]>([]);
+  apoderadoDropdownOpen = signal(false);
+  buscandoApoderados = signal(false);
+  private apoderadoSearchSubscription?: Subscription;
+  relacionApoderadoSearchControl = new FormControl('', { nonNullable: true });
+  relacionApoderadoResultados = signal<ApoderadoOption[]>([]);
+  relacionApoderadoDropdownOpen = signal(false);
+  buscandoRelacionApoderados = signal(false);
+  private relacionApoderadoSearchSubscription?: Subscription;
   razas      = signal<{ label: string; value: number }[]>([]);
   razaFilterText    = signal<string>('');
   razaDropdownOpen  = signal<boolean>(false);
@@ -90,6 +110,7 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
   ncAvisoInformado = signal(false);
   ncConsentimientoRecordatorios = signal<boolean | null>(null);
   avisoPrivacidad = signal<AvisoPublico | null>(null);
+  displayAvisoModal = signal(false);
   ncSubmitted = signal(false);
   ncTouched = signal<Record<string, boolean>>({});
   previewUrl          = signal<string | null>(null);
@@ -99,6 +120,7 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
   isDragging          = signal<boolean>(false);
   zoomModalOpen       = signal<boolean>(false);
   relaciones = signal<MascotaRelacionResponse[]>([]);
+  seccionFormulario = signal<'general' | 'propietario'>('general');
   relacionesLoading = signal(false);
   displayRelacionModal = signal(false);
   savingRelacion = signal(false);
@@ -171,6 +193,8 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.setupApoderadoSearch();
+    this.setupRelacionApoderadoSearch();
     this.privacidadService.avisoVigente('PROPIETARIOS_Y_AUTORIZADOS').subscribe({
       next: ({ data }) => this.avisoPrivacidad.set(data ?? null),
       error: () => this.avisoPrivacidad.set(null)
@@ -184,7 +208,6 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
     const uuid = this.route.snapshot.paramMap.get('uuid');
     if (uuid) {
       this.isEdit.set(true);
-      this.loadApoderados();
       this.loadRazas();
       const state = this.router.getCurrentNavigation()?.extras.state as MascotaResponse | undefined;
       if (state) {
@@ -203,7 +226,6 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
         });
       }
     } else {
-      this.loadApoderados();
       this.loadRazas();
     }
     this.mascotaForm.get('especie')?.valueChanges.subscribe(() => {
@@ -229,6 +251,12 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
       fotoUrl:         m.fotoUrl ?? '',
       apoderadoId:     m.apoderadoId,
     });
+    const propietarioActual: ApoderadoOption = {
+      label: m.apoderadoNombreCompleto,
+      value: m.apoderadoId
+    };
+    this.apoderados.set([propietarioActual]);
+    this.apoderadoSearchControl.setValue(propietarioActual.label, { emitEvent: false });
     if (m.razaNombre) this.razaFilterText.set(m.razaNombre);
     this.photoError.set(false);
     this.previewUrl.set(this.mediaService.resolveUrl(m.fotoUrl));
@@ -261,6 +289,9 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
 
   abrirNuevaRelacion() {
     this.editingRelacion.set(null);
+    this.relacionApoderadoSearchControl.setValue('', { emitEvent: false });
+    this.relacionApoderadoResultados.set([]);
+    this.relacionApoderadoDropdownOpen.set(false);
     this.relacionForm.reset({
       apoderadoId: null,
       tipoRelacion: 'REPRESENTANTE_AUTORIZADO',
@@ -292,6 +323,7 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
       observaciones: relacion.observaciones ?? ''
     });
     this.relacionForm.get('apoderadoId')?.disable({ emitEvent: false });
+    this.relacionApoderadoSearchControl.setValue(relacion.personaNombre, { emitEvent: false });
     this.aplicarReglasRelacion(relacion.tipoRelacion);
     this.displayRelacionModal.set(true);
   }
@@ -400,6 +432,67 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
     this.router.navigate(['/mascotas'], {
       queryParams: { page: this.returnPage > 0 ? this.returnPage : null }
     });
+  }
+
+  irASeccionFormulario(id: 'informacion-paciente' | 'informacion-propietario'): void {
+    const seccion = id === 'informacion-paciente' ? 'general' : 'propietario';
+    if (seccion === 'propietario' && this.tieneErroresGenerales()) {
+      this.mostrarErroresDeSeccion('general');
+      return;
+    }
+    this.seccionFormulario.set(seccion);
+    if (seccion === 'propietario' && !this.isEdit() && !this.mascotaForm.get('apoderadoId')?.value) {
+      this.showNuevoCliente.set(true);
+    }
+    queueMicrotask(() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  }
+
+  enfocarResponsable(): void {
+    this.seccionFormulario.set('propietario');
+    queueMicrotask(() => {
+      const input = document.getElementById('responsable-search') as HTMLInputElement | null;
+      input?.focus();
+      input?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  }
+
+  abrirSeccionClinica(seccion: 'historial' | 'documentos'): void {
+    const uuid = this.mascotaUuid();
+    const mascotaId = this.editingId();
+    if (!uuid || !mascotaId || !this.isEdit()) return;
+
+    const currentUrl = this.router.url;
+    if (seccion === 'documentos') {
+      const basePath = currentUrl.startsWith('/admin/mascotas')
+        ? '/admin/mascotas'
+        : currentUrl.startsWith('/empleado/mascotas')
+          ? '/empleado/mascotas'
+          : '/mascotas';
+      this.router.navigate([basePath, 'detalle', uuid], { queryParams: { tab: 'documentos', returnPage: this.returnPage || null } });
+      return;
+    }
+
+    const historyBasePath = currentUrl.startsWith('/admin/')
+      ? '/admin/historias-clinicas'
+      : currentUrl.startsWith('/empleado/')
+        ? '/empleado/historias-clinicas'
+        : '/historias-clinicas';
+    this.historiaClinicaService.getPorMascota(mascotaId).subscribe({
+      next: ({ data }) => this.router.navigate([historyBasePath, 'mascota', data.numeroHc], {
+        queryParams: { returnUrl: currentUrl.split('?')[0] }
+      }),
+      error: () => this.messageService.add({ severity: 'error', summary: 'Historia clínica no disponible', detail: 'No se pudo abrir la historia clínica de esta mascota.' })
+    });
+  }
+
+  propietarioSeleccionadoLabel(): string {
+    const id = Number(this.mascotaForm.get('apoderadoId')?.value);
+    return this.apoderados().find(item => item.value === id)?.label ?? 'Sin seleccionar';
+  }
+
+  razaSeleccionadaLabel(): string {
+    const id = Number(this.mascotaForm.get('razaId')?.value);
+    return this.razas().find(item => item.value === id)?.label ?? 'Sin seleccionar';
   }
 
   private dateYearsAgo(years: number): string {
@@ -607,6 +700,8 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.apoderadoSearchSubscription?.unsubscribe();
+    this.relacionApoderadoSearchSubscription?.unsubscribe();
     if (this.previewUrl() && this.previewUrl()!.startsWith('blob:')) {
       URL.revokeObjectURL(this.previewUrl()!);
     }
@@ -774,6 +869,14 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
     }
   }
 
+  cerrarNuevoCliente(): void {
+    if (this.savingCliente()) return;
+    this.showNuevoCliente.set(false);
+    this.ncSubmitted.set(false);
+    this.ncTouched.set({});
+    queueMicrotask(() => document.getElementById('responsable-search')?.focus());
+  }
+
   crearCliente() {
     this.ncSubmitted.set(true);
     const campos = ['nombre', 'apellido', 'numeroDocumento', 'telefono', 'correo', 'direccion', 'referencias'];
@@ -828,6 +931,8 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
         const nuevo = { label: `${nombre} ${apellido}`, value: apoderadoId };
         this.apoderados.update(list => [nuevo, ...list]);
         this.mascotaForm.patchValue({ apoderadoId });
+        if (this.isEdit()) this.mascotaForm.get('apoderadoId')?.markAsDirty();
+        this.apoderadoSearchControl.setValue(nuevo.label, { emitEvent: false });
         this.showNuevoCliente.set(false);
         this.savingCliente.set(false);
         this.messageService.add({ severity: 'success', summary: 'Cliente creado', detail: `${nombre} ${apellido} registrado correctamente.` });
@@ -857,9 +962,148 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
     });
   }
 
+  private setupApoderadoSearch(): void {
+    this.apoderadoSearchSubscription = this.apoderadoSearchControl.valueChanges.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      switchMap(value => {
+        const query = value.trim();
+        const seleccionado = this.apoderados().find(
+          item => item.value === Number(this.mascotaForm.get('apoderadoId')?.value)
+        );
+        if (seleccionado?.label === query) {
+          this.apoderadoResultados.set([]);
+          this.buscandoApoderados.set(false);
+          return of(null);
+        }
+
+        this.mascotaForm.get('apoderadoId')?.setValue(null);
+        if (query.length < 2 || !this.activeCompanyId) {
+          this.apoderadoResultados.set([]);
+          this.buscandoApoderados.set(false);
+          return of(null);
+        }
+
+        this.buscandoApoderados.set(true);
+        const soloDigitos = /^\d+$/.test(query);
+        return this.apoderadoService.listar(
+          this.activeCompanyId,
+          soloDigitos ? undefined : query,
+          soloDigitos ? query : undefined,
+          0,
+          8,
+          true
+        ).pipe(catchError(() => of(null)));
+      })
+    ).subscribe(response => {
+      this.buscandoApoderados.set(false);
+      const resultados = response?.data.content.map(c => ({
+        label: `${c.nombre} ${c.apellido}`,
+        value: c.id,
+        documento: `${c.tipoDocumento}: ${c.numeroDocumento}`,
+        email: c.email
+      })) ?? [];
+      this.apoderadoResultados.set(resultados);
+      const query = this.apoderadoSearchControl.value.trim();
+      const seleccionado = this.apoderados().find(
+        item => item.value === Number(this.mascotaForm.get('apoderadoId')?.value)
+      );
+      this.apoderadoDropdownOpen.set(query.length >= 2 && seleccionado?.label !== query);
+    });
+  }
+
+  abrirResultadosApoderados(): void {
+    const query = this.apoderadoSearchControl.value.trim();
+    const seleccionado = this.apoderados().find(
+      item => item.value === Number(this.mascotaForm.get('apoderadoId')?.value)
+    );
+    if (query.length >= 2 && seleccionado?.label !== query) {
+      this.apoderadoDropdownOpen.set(true);
+    }
+  }
+
+  cerrarResultadosApoderados(): void {
+    window.setTimeout(() => this.apoderadoDropdownOpen.set(false), 120);
+  }
+
+  seleccionarApoderado(option: ApoderadoOption): void {
+    this.apoderados.update(items => [option, ...items.filter(item => item.value !== option.value)]);
+    this.mascotaForm.get('apoderadoId')?.setValue(option.value);
+    this.mascotaForm.get('apoderadoId')?.markAsDirty();
+    this.mascotaForm.get('apoderadoId')?.markAsTouched();
+    this.apoderadoSearchControl.setValue(option.label, { emitEvent: false });
+    this.apoderadoResultados.set([]);
+    this.apoderadoDropdownOpen.set(false);
+  }
+
+  private setupRelacionApoderadoSearch(): void {
+    this.relacionApoderadoSearchSubscription = this.relacionApoderadoSearchControl.valueChanges.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      switchMap(value => {
+        const query = value.trim();
+        if (this.editingRelacion()) return of(null);
+
+        this.relacionForm.get('apoderadoId')?.setValue(null);
+        if (query.length < 2 || !this.activeCompanyId) {
+          this.relacionApoderadoResultados.set([]);
+          this.buscandoRelacionApoderados.set(false);
+          return of(null);
+        }
+
+        this.buscandoRelacionApoderados.set(true);
+        const soloDigitos = /^\d+$/.test(query);
+        return this.apoderadoService.listar(
+          this.activeCompanyId,
+          soloDigitos ? undefined : query,
+          soloDigitos ? query : undefined,
+          0,
+          8,
+          true
+        ).pipe(catchError(() => of(null)));
+      })
+    ).subscribe(response => {
+      this.buscandoRelacionApoderados.set(false);
+      const vinculados = new Set(
+        this.relaciones()
+          .filter(relacion => relacion.activo || relacion.porEmpezar)
+          .map(relacion => relacion.apoderadoId)
+      );
+      const resultados = response?.data.content
+        .filter(persona => !vinculados.has(persona.id))
+        .map(persona => ({
+          label: `${persona.nombre} ${persona.apellido}`,
+          value: persona.id,
+          documento: `${persona.tipoDocumento}: ${persona.numeroDocumento}`,
+          email: persona.email
+        })) ?? [];
+      this.relacionApoderadoResultados.set(resultados);
+      this.relacionApoderadoDropdownOpen.set(this.relacionApoderadoSearchControl.value.trim().length >= 2);
+    });
+  }
+
+  abrirResultadosRelacionApoderados(): void {
+    if (!this.editingRelacion() && this.relacionApoderadoSearchControl.value.trim().length >= 2) {
+      this.relacionApoderadoDropdownOpen.set(true);
+    }
+  }
+
+  cerrarResultadosRelacionApoderados(): void {
+    window.setTimeout(() => this.relacionApoderadoDropdownOpen.set(false), 120);
+  }
+
+  seleccionarRelacionApoderado(option: ApoderadoOption): void {
+    this.relacionForm.get('apoderadoId')?.setValue(option.value);
+    this.relacionForm.get('apoderadoId')?.markAsTouched();
+    this.relacionApoderadoSearchControl.setValue(option.label, { emitEvent: false });
+    this.relacionApoderadoResultados.set([]);
+    this.relacionApoderadoDropdownOpen.set(false);
+  }
+
   saveMascota() {
     if (this.mascotaForm.invalid) {
-      this.mascotaForm.markAllAsTouched();
+      const seccionConError = this.tieneErroresGenerales() ? 'general' : 'propietario';
+      this.mostrarErroresDeSeccion(seccionConError);
       return;
     }
 
@@ -924,6 +1168,42 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
     } else {
       doSave();
     }
+  }
+
+  private tieneErroresGenerales(): boolean {
+    return ['nombre', 'especie', 'razaId', 'sexo', 'fechaNacimiento', 'peso', 'color', 'fotoUrl']
+      .some(nombre => this.mascotaForm.get(nombre)?.invalid);
+  }
+
+  private mostrarErroresDeSeccion(seccion: 'general' | 'propietario'): void {
+    const controles = seccion === 'general'
+      ? ['nombre', 'especie', 'razaId', 'sexo', 'fechaNacimiento', 'peso', 'color', 'fotoUrl']
+      : ['apoderadoId'];
+
+    controles.forEach(nombre => this.mascotaForm.get(nombre)?.markAsTouched());
+    this.seccionFormulario.set(seccion);
+    if (seccion === 'propietario') this.showNuevoCliente.set(false);
+
+    this.messageService.add({
+      severity: 'warn',
+      summary: seccion === 'general' ? 'Revisa los datos del paciente' : 'Selecciona un propietario',
+      detail: seccion === 'general'
+        ? 'Completa o corrige los campos marcados antes de continuar.'
+        : 'Busca y selecciona a la persona responsable del paciente.'
+    });
+
+    window.setTimeout(() => {
+      const primerControl = controles.find(nombre => this.mascotaForm.get(nombre)?.invalid);
+      if (!primerControl) return;
+      const selector = primerControl === 'razaId'
+        ? '#raza-search'
+        : primerControl === 'apoderadoId'
+          ? '#responsable-search'
+          : `[formControlName="${primerControl}"]`;
+      const elemento = document.querySelector<HTMLElement>(selector);
+      elemento?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      elemento?.focus();
+    }, 0);
   }
 
   especieLabel(especie: string): string {

@@ -58,6 +58,14 @@ export class ApoderadoService {
     return this.http.post<ApiResponse<void>>(`${this.apiUrl}/${id}/resend-invitation`, {});
   }
 
+  requestPasswordReset(userId: number, email: string, companyId?: number | null) {
+    return this.http.post<ApiResponse<void>>(`${environment.apiUrl}/admin/users/reset-password`, {
+      userId,
+      email,
+      companyId: companyId ?? null
+    });
+  }
+
   citasConflictivas(id: number) {
     return this.http.get<ApiResponse<CitaResponse[]>>(`${this.apiUrl}/${id}/conflicting-appointments`);
   }

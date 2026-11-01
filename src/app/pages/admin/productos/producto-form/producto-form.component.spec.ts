@@ -51,7 +51,7 @@ describe('ProductoFormComponent - producto que no se puede abrir', () => {
   it('sin permiso lo indica y un fallo del servidor permite reintentar', () => {
     const sinPermiso = crear(throwError(() => ({ status: 403 })));
     expect(sinPermiso.componentInstance.errorCarga()).toBe('SIN_PERMISO');
-    expect((sinPermiso.nativeElement as HTMLElement).textContent).toContain('No tienes acceso a este producto');
+    expect((sinPermiso.nativeElement as HTMLElement).textContent).toContain('No tienes permiso para ver este producto');
 
     TestBed.resetTestingModule();
     const fallo = crear(throwError(() => ({ status: 500 })));
