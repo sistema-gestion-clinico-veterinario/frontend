@@ -484,12 +484,14 @@ export class EmployeeComponent implements OnInit, OnDestroy {
       });
     }
 
-    items.push({
-      label: 'Restablecer contraseña',
-      icon: 'pi pi-lock',
-      disabled: !employee.activo,
-      command: () => this.openPasswordResetModal(employee)
-    });
+    if (this.authStore.hasAccess('VISTA_GESTION_CREDENCIALES', 'modificar')
+        && employee.activo && employee.userId && !employee.cuentaPendiente) {
+      items.push({
+        label: 'Restablecer contraseña',
+        icon: 'pi pi-lock',
+        command: () => this.openPasswordResetModal(employee)
+      });
+    }
 
     if (this.authStore.hasAccess('VISTA_GESTION_CREDENCIALES', 'modificar') && employee.activo && employee.userId) {
       items.push({

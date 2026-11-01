@@ -173,10 +173,13 @@
                       <span class="block text-xs font-bold text-slate-800">{{ notification.titulo }}</span>
                       <span class="mt-0.5 block text-[11px] leading-4 text-slate-500">{{ notification.detalle }}</span>
                     </span>
-                    @if (notification.opcional) {
+                    @if (notification.opcional || notification.descartable) {
                       <span role="button" tabindex="0" (click)="dismissNotification(notification, $event)"
+                        (keydown.enter)="dismissNotification(notification, $event)"
+                        (keydown.space)="dismissNotification(notification, $event)"
                         class="flex h-6 w-6 shrink-0 items-center justify-center rounded text-slate-400 hover:bg-slate-100 hover:text-slate-600"
-                        title="Decidir más tarde" aria-label="Decidir más tarde">
+                        [title]="notification.descartable ? 'Marcar como revisada' : 'Decidir más tarde'"
+                        [attr.aria-label]="notification.descartable ? 'Marcar como revisada' : 'Decidir más tarde'">
                         <i class="pi pi-times text-[10px]"></i>
                       </span>
                     }

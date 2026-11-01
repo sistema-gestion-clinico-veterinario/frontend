@@ -238,6 +238,59 @@ describe('ClientComponent', () => {
         expect(items).not.toContain('Suspender');
         expect(items).not.toContain('Dar de baja');
       });
+
+      it('ofrece restablecer la contraseña cuando el apoderado tiene una cuenta activa', () => {
+        const client = { ...persona(true), userId: 15, email: 'cliente@example.test', cuentaPendiente: false };
+
+        expect(etiquetas(client)).toContain('Restablecer contraseña');
+      });
+
+      it('no ofrece restablecer la contraseña mientras la cuenta espera activación', () => {
+        const client = { ...persona(true), userId: 15, email: 'cliente@example.test', cuentaPendiente: true };
+
+        expect(etiquetas(client)).not.toContain('Restablecer contraseña');
+      });
+    });
+  });
+
+  describe('restablecer acceso del apoderado', () => {
+    let solicitar: jasmine.Spy;
+    let aviso: jasmine.Spy;
+
+    beforeEach(() => {
+      solicitar = spyOn((component as any).apoderadoService, 'requestPasswordReset').and.returnValue(of({ success: true }));
+      aviso = spyOn((component as any).messageService, 'add');
+      component.selectedClientForReset.set({
+        id: 8,
+        userId: 21,
+        nombre: 'María',
+        apellido: 'Rojas',
+        email: 'maria@example.test',
+        activo: true
+      } as any);
+      component.showPasswordResetModal.set(true);
+    });
+
+    it('envía la empresa seleccionada junto con la cuenta del apoderado', () => {
+      spyOnProperty(component, 'activeCompanyId', 'get').and.returnValue(4);
+
+      component.submitPasswordReset();
+
+      expect(solicitar).toHaveBeenCalledWith(21, 'maria@example.test', 4);
+      expect(component.showPasswordResetModal()).toBeFalse();
+      expect(aviso).toHaveBeenCalledWith(jasmine.objectContaining({ severity: 'success' }));
+    });
+
+    it('mantiene abierto el diálogo cuando el servidor rechaza la solicitud', () => {
+      solicitar.and.returnValue(throwError(() => ({ error: { message: 'La cuenta todavía no está habilitada' } })));
+
+      component.submitPasswordReset();
+
+      expect(component.showPasswordResetModal()).toBeTrue();
+      expect(aviso).toHaveBeenCalledWith(jasmine.objectContaining({
+        severity: 'error',
+        detail: 'La cuenta todavía no está habilitada'
+      }));
     });
   });
 

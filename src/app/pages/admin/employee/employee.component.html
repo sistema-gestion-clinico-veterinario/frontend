@@ -930,47 +930,57 @@
 
 
 @if (showPasswordResetModal()) {
-  <div class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm font-['Barlow']">
-    <div class="bg-white w-full max-w-md rounded-2xl border border-slate-200 flex flex-col overflow-hidden">
-
-      <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+  <div class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm font-['Barlow']"
+    (click)="!requestingPasswordReset() && showPasswordResetModal.set(false)">
+    <section class="w-full max-w-md overflow-hidden rounded-2xl border border-slate-200 bg-white"
+      role="dialog" aria-modal="true" aria-labelledby="employee-password-reset-title" (click)="$event.stopPropagation()">
+      <header class="flex items-center justify-between border-b border-slate-100 px-6 py-5">
         <div class="flex items-center gap-3">
-          <div class="w-9 h-9 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center">
+          <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
             <i class="pi pi-lock text-base"></i>
           </div>
-          <h2 class="text-sm font-bold text-slate-800">Restablecer acceso</h2>
+          <div>
+            <h2 id="employee-password-reset-title" class="text-base font-bold text-slate-800">Restablecer acceso</h2>
+            <p class="mt-0.5 text-xs text-slate-500">
+              {{ selectedEmployeeForReset()?.nombre }} {{ selectedEmployeeForReset()?.apellido }}
+            </p>
+          </div>
         </div>
         <button (click)="showPasswordResetModal.set(false)"
-          class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
-          title="Cerrar modal">
+          [disabled]="requestingPasswordReset()"
+          class="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 disabled:opacity-50"
+          aria-label="Cerrar">
           <i class="pi pi-times text-xs"></i>
         </button>
-      </div>
-      <div class="p-6 space-y-4">
-        <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-600 leading-relaxed">
-          Vas a ayudar a recuperar el acceso de
-          <span class="text-slate-800 font-bold block mt-0.5 uppercase">{{ selectedEmployeeForReset()?.nombre }} {{ selectedEmployeeForReset()?.apellido }}</span>
-        </div>
-        <p class="text-xs leading-5 text-slate-600">
-          Le enviaremos un correo con un enlace para que cree una nueva contraseña. Tú no la verás ni la elegirás.
-          El enlace solo se puede usar una vez y vence pronto. Cuando lo use, se cerrarán sus sesiones abiertas.
+      </header>
+
+      <div class="space-y-4 px-6 py-5">
+        <p class="text-sm leading-6 text-slate-600">
+          Enviaremos un enlace a
+          <strong class="font-semibold text-slate-800">{{ selectedEmployeeForReset()?.email }}</strong>
+          para que la persona cree una nueva contraseña.
         </p>
-        <div class="flex gap-3 pt-2">
-          <button type="button" (click)="showPasswordResetModal.set(false)"
-            [disabled]="requestingPasswordReset()"
-            class="flex-1 py-2.5 border border-slate-200 rounded-lg text-sm font-semibold text-slate-500 hover:bg-slate-50 transition-colors">
-            Cancelar
-          </button>
-          <button type="button" (click)="submitPasswordReset()" [disabled]="requestingPasswordReset()"
-            class="flex-1 bg-blue-500 hover:bg-blue-600 disabled:opacity-60 text-white font-semibold py-2.5 rounded-lg text-sm transition-colors flex items-center justify-center gap-2 cursor-pointer">
-            @if (requestingPasswordReset()) {
-              <i class="pi pi-spin pi-spinner text-xs"></i>
-            }
-            {{ requestingPasswordReset() ? 'Enviando...' : 'Enviar enlace' }}
-          </button>
-        </div>
+        <p class="text-xs leading-5 text-slate-500">
+          Tú no podrás ver ni elegir la contraseña. El enlace será temporal y de un solo uso. Cuando se utilice,
+          se cerrarán las sesiones abiertas de esta cuenta.
+        </p>
       </div>
-    </div>
+
+      <footer class="flex justify-end gap-3 border-t border-slate-100 px-6 py-4">
+        <button type="button" (click)="showPasswordResetModal.set(false)"
+          [disabled]="requestingPasswordReset()"
+          class="rounded-lg px-4 py-2.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 disabled:opacity-50">
+          Cancelar
+        </button>
+        <button type="button" (click)="submitPasswordReset()" [disabled]="requestingPasswordReset()"
+          class="flex min-w-36 items-center justify-center gap-2 rounded-lg bg-blue-500 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-600 disabled:opacity-60">
+          @if (requestingPasswordReset()) {
+            <i class="pi pi-spin pi-spinner text-xs"></i>
+          }
+          {{ requestingPasswordReset() ? 'Enviando...' : 'Enviar enlace' }}
+        </button>
+      </footer>
+    </section>
   </div>
 }
 

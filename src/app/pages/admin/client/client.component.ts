@@ -79,6 +79,9 @@ export class ClientComponent implements OnInit {
   private readonly router = inject(Router);
 
   emailChangeTarget = signal<ApoderadoListResponse | null>(null);
+  selectedClientForReset = signal<ApoderadoListResponse | null>(null);
+  showPasswordResetModal = signal(false);
+  requestingPasswordReset = signal(false);
   clients = signal<ApoderadoListResponse[]>([]);
   cargando = signal<boolean>(true);
   displayModal = signal<boolean>(false);
@@ -176,6 +179,15 @@ export class ClientComponent implements OnInit {
         label: 'Ver Detalles',
         icon: 'pi pi-eye',
         command: () => this.viewClientDetail(client)
+      });
+    }
+
+    if (this.authStore.hasAccess('VISTA_GESTION_CREDENCIALES', 'modificar')
+        && client.activo && client.userId && !client.cuentaPendiente) {
+      items.push({
+        label: 'Restablecer contraseña',
+        icon: 'pi pi-lock',
+        command: () => this.openPasswordResetModal(client)
       });
     }
 
@@ -738,6 +750,51 @@ export class ClientComponent implements OnInit {
         });
       }
     );
+  }
+
+  openPasswordResetModal(client: ApoderadoListResponse) {
+    this.selectedClientForReset.set(client);
+    this.showPasswordResetModal.set(true);
+  }
+
+  closePasswordResetModal() {
+    if (this.requestingPasswordReset()) return;
+    this.showPasswordResetModal.set(false);
+    this.selectedClientForReset.set(null);
+  }
+
+  submitPasswordReset() {
+    const client = this.selectedClientForReset();
+    if (!client?.userId) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'No se pudo continuar',
+        detail: 'El apoderado todavía no tiene una cuenta activa en el sistema.'
+      });
+      return;
+    }
+
+    this.requestingPasswordReset.set(true);
+    this.apoderadoService.requestPasswordReset(client.userId, client.email, this.activeCompanyId)
+      .pipe(finalize(() => this.requestingPasswordReset.set(false)))
+      .subscribe({
+        next: () => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Enlace en camino',
+            detail: `Estamos enviando a ${client.nombre} un correo para que cree su nueva contraseña. Si no le llega en unos minutos, revisa que su correo esté bien escrito e inténtalo de nuevo.`
+          });
+          this.showPasswordResetModal.set(false);
+          this.selectedClientForReset.set(null);
+        },
+        error: (err) => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'No se pudo enviar',
+            detail: err.error?.message || 'No se pudo enviar el enlace. Inténtalo de nuevo.'
+          });
+        }
+      });
   }
 
   changeStatus(client: ApoderadoListResponse, action: PersonStatusAction) {
