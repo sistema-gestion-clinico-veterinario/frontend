@@ -1,1 +1,39 @@
 
+:host {
+  display: block;
+}
+
+.profile-hero {
+  position: relative;
+}
+
+.profile-hero::before {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: 0.25rem;
+  background: var(--brand-primary);
+  content: '';
+}
+
+.profile-data-grid > div {
+  min-width: 0;
+  padding-block: 0.75rem;
+  border-bottom: 1px solid rgb(226 232 240 / 0.75);
+}
+
+.profile-data-grid p:last-child {
+  overflow-wrap: anywhere;
+}
+
+@media (min-width: 640px) {
+  .profile-data-grid > div:nth-last-child(-n + 2) {
+    border-bottom: 0;
+  }
+}
+
+@media (max-width: 639px) {
+  .profile-data-grid > div:last-child {
+    border-bottom: 0;
+  }
+}

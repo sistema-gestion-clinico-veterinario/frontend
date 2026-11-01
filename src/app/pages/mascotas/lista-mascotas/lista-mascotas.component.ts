@@ -9,15 +9,13 @@ import { ToastModule } from 'primeng/toast';
 import { MenuModule } from 'primeng/menu';
 import { SkeletonModule } from 'primeng/skeleton';
 import { MenuItem, MessageService } from 'primeng/api';
-import { forkJoin, firstValueFrom } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 
 import { MascotaService } from '../../../core/services/mascota.service';
-import { ApoderadoService } from '../../../core/services/apoderado.service';
 import { MediaService } from '../../../core/services/media.service';
 import { CompanyService } from '../../../core/services/company.service';
 import { HistoriaClinicaService } from '../../../core/services/historia-clinica.service';
 import { MascotaResponse } from '../../../models/response/mascota-response';
-import { ApoderadoRequest } from '../../../models/request/apoderado-request';
 import { LoadingStore } from '../../../store/loading.store';
 import { AuthStore } from '../../../store/auth.store';
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
@@ -46,7 +44,6 @@ import { InputFilterDirective } from '../../../core/directives/input-filter.dire
 export class ListaMascotasComponent implements OnInit {
   private readonly mascotaActionItemsCache = new WeakMap<MascotaResponse, MenuItem[]>();
   private readonly mascotaService   = inject(MascotaService);
-  private readonly apoderadoService = inject(ApoderadoService);
   readonly mediaService     = inject(MediaService);
   private readonly companyService   = inject(CompanyService);
   private readonly messageService   = inject(MessageService);
@@ -85,9 +82,6 @@ export class ListaMascotasComponent implements OnInit {
 
   displayMotivoModal  = signal<boolean>(false);
   pendingDeactivation = signal<MascotaResponse | null>(null);
-  displayDetailModal = signal<boolean>(false);
-  selectedPetDetail = signal<MascotaResponse | null>(null);
-  selectedOwnerDetail = signal<ApoderadoRequest | null>(null);
 
   readonly motivoBajaOpciones = [
     { label: 'Fallecimiento',        value: 'FALLECIMIENTO' },
@@ -104,22 +98,16 @@ export class ListaMascotasComponent implements OnInit {
   }
 
   viewPetDetail(mascota: MascotaResponse) {
-    this.loadingStore.show();
-    forkJoin({
-      pet: this.mascotaService.obtenerPorId(mascota.id),
-      owner: this.apoderadoService.getById(mascota.apoderadoId)
-    }).subscribe({
-      next: (res) => {
-        this.selectedPetDetail.set(res.pet.data);
-        this.selectedOwnerDetail.set(res.owner.data);
-        this.displayDetailModal.set(true);
-        this.loadingStore.hide();
-      },
-      error: () => {
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cargar la información de la mascota' });
-        this.loadingStore.hide();
-      }
+    this.router.navigate([this.mascotasBasePath(), 'detalle', mascota.uuid], {
+      queryParams: { returnPage: this.currentPage > 0 ? this.currentPage : null }
     });
+  }
+
+  private mascotasBasePath(): string {
+    const url = this.router.url.split('?')[0];
+    if (url.startsWith('/admin/mascotas')) return '/admin/mascotas';
+    if (url.startsWith('/empleado/mascotas')) return '/empleado/mascotas';
+    return '/mascotas';
   }
 
   mascotaActionItems(mascota: MascotaResponse): MenuItem[] {

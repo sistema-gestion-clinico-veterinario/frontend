@@ -90,6 +90,14 @@ export class LoginComponent implements OnInit {
     this.isAdminRoute = this.router.url.startsWith('/admin/login');
     this.slug = this.isAdminRoute ? null : this.slugContext.slug();
 
+    // `/login` se conserva para enlaces antiguos, pero el acceso público para
+    // localizar una clínica vive en `/`. Las rutas `/{slug}/login` mantienen
+    // el formulario de credenciales porque el contexto ya contiene el slug.
+    if (!this.isAdminRoute && !this.slug && this.router.url.split(/[?#]/, 1)[0] === '/login') {
+      this.router.navigate(['/'], { queryParamsHandling: 'preserve', replaceUrl: true });
+      return;
+    }
+
     this.aplicarMensajesDeLaUrl(
       this.route.snapshot.queryParamMap.get('authNotice'),
       this.route.snapshot.queryParamMap.get('authError'),

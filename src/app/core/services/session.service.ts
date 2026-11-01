@@ -1,4 +1,4 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, OnDestroy, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, catchError, finalize, map, of, retry, shareReplay, tap, timeout } from 'rxjs';
 import { AuthLoginData } from '../../models/response/auth-login-response.model';
@@ -9,7 +9,7 @@ import { CompanySlugContext } from './company-slug-context.service';
 import { NavigationService } from './navigation.service';
 
 @Injectable({ providedIn: 'root' })
-export class SessionService {
+export class SessionService implements OnDestroy {
   private readonly authService = inject(AuthService);
   private readonly authStore = inject(AuthStore);
   private readonly navigationService = inject(NavigationService);
@@ -22,6 +22,12 @@ export class SessionService {
 
   readonly logoutError = signal<string | null>(null);
   readonly sessionConflict = signal(false);
+
+  ngOnDestroy(): void {
+    if (!this.authChannel) return;
+    this.authChannel.onmessage = null;
+    this.authChannel.close();
+  }
 
   logout(): void {
     if (this.closingSession) return;

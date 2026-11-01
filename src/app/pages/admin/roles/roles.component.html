@@ -298,17 +298,25 @@
                 </div>
                 <!-- Matriz de permisos de ventana -->
                 <div>
-                  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
-                    <div class="flex flex-col sm:flex-row sm:items-center gap-3">
-                      <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Permisos por funcionalidad</p>
-                      @if (isSuperAdmin()) {
-                        <a [routerLink]="['/admin/ventanas']" class="text-xs text-blue-500 font-bold hover:underline flex items-center gap-1">
-                          <i class="pi pi-cog text-[10px]"></i>Administrar navegación global
-                        </a>
-                      }
-                    </div>
+                  <div class="mb-3">
+                    <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div>
+                        <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+                          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Permisos por funcionalidad</p>
+                          @if (isSuperAdmin()) {
+                            <a [routerLink]="['/admin/ventanas']" class="text-xs text-blue-500 font-bold hover:underline flex items-center gap-1">
+                              <i class="pi pi-cog text-[10px]"></i>Administrar navegación global
+                            </a>
+                          }
+                        </div>
+                        @if (editsBaseRoleForAllCompanies(selectedRole())) {
+                          <p class="mt-1.5 max-w-3xl text-xs leading-5 text-slate-500">
+                            Este rol base se comparte entre todas las empresas. Los cambios en sus permisos se aplicarán globalmente y quedarán registrados en la auditoría.
+                          </p>
+                        }
+                      </div>
                     @if (permisosModificados()) {
-                      <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                      <div class="flex gap-2 sm:shrink-0">
                         <button (click)="discardPermisos()"
                           class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors">
                           Descartar
@@ -322,11 +330,7 @@
                         </button>
                       </div>
                     }
-                    @if (editsBaseRoleForAllCompanies(selectedRole())) {
-                      <p class="w-full rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs leading-5 text-slate-600">
-                        Este es un rol base compartido por todas las empresas. Los cambios de permisos se aplican a todas ellas y quedan registrados en la auditoría.
-                      </p>
-                    }
+                    </div>
                     @if (!selectedRole()?.activo) {
                       <div class="mt-2">
                         <p class="text-xs text-rose-600 font-semibold flex items-center gap-1">

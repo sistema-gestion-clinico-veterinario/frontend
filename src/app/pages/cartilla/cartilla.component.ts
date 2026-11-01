@@ -267,6 +267,7 @@ export class CartillaComponent implements OnInit {
         this.mascotasLista.set([]);
         this.totalPaginas = 0;
         this.totalRegistros = 0;
+        this.cargando.set(false);
       },
       complete: () => {
         this.cargando.set(false);
@@ -309,7 +310,7 @@ export class CartillaComponent implements OnInit {
     this.buscando.set(true);
     this.mascotaService.listar(this.companyId, q, undefined, 0, 20, true, true).subscribe({
       next: (res) => this.resultados.set((res.data?.content ?? [])),
-      error: () => this.resultados.set([]),
+      error: () => { this.resultados.set([]); this.buscando.set(false); },
       complete: () => this.buscando.set(false)
     });
   }
@@ -325,7 +326,7 @@ export class CartillaComponent implements OnInit {
         const yaSeleccionado = this.mascotaSel();
         this.mascotaSugerencias.set(yaSeleccionado ? [yaSeleccionado, ...lista.filter(m => m.id !== yaSeleccionado.id)] : lista);
       },
-      error: () => this.mascotaSugerencias.set([]),
+      error: () => { this.mascotaSugerencias.set([]); this.buscando.set(false); },
       complete: () => this.buscando.set(false)
     });
   }
@@ -416,7 +417,10 @@ export class CartillaComponent implements OnInit {
         this.matriz.set(data.aplicaciones ?? []);
         this.controlReprogramandoId.set(null);
       },
-      error: () => this.msgService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cargar la cartilla' }),
+      error: () => {
+        this.cargandoCtrl.set(false);
+        this.msgService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cargar la cartilla' });
+      },
       complete: () => this.cargandoCtrl.set(false)
     });
   }
@@ -442,7 +446,10 @@ export class CartillaComponent implements OnInit {
         this.controles.set(res.data ?? []);
         this.controlReprogramandoId.set(null);
       },
-      error: () => this.msgService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar los controles preventivos' }),
+      error: () => {
+        this.cargandoCtrl.set(false);
+        this.msgService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar los controles preventivos' });
+      },
       complete: () => this.cargandoCtrl.set(false)
     });
   }

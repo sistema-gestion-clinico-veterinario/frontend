@@ -34,12 +34,15 @@ export class PendientesPrivacidadService {
 
     if (this.authStore.activeRolePurpose() === 'PLATFORM_ADMIN') {
       for (const ejecucion of this.ejecucionesRespaldos()) {
+        const id: PendientePrivacidad['id'] = `respaldo-${ejecucion.id}`;
+        if (this.descartados().includes(id)) continue;
         lista.push({
-          id: `respaldo-${ejecucion.id}`,
+          id,
           titulo: ejecucion.status === 'PARTIAL' ? 'Respaldo parcial' : 'Respaldo fallido',
           detalle: this.detalleRespaldo(ejecucion),
           ruta: toAbsoluteRoute(APP_ROUTE_PATHS.BACKUP_MONITOR),
-          opcional: false
+          opcional: false,
+          descartable: true
         });
       }
     }
@@ -94,7 +97,7 @@ export class PendientesPrivacidadService {
     ).subscribe(({ data }) => this.estado.set(data));
 
     this.consultasRespaldos.pipe(
-      switchMap(() => this.respaldos.list(0, 50).pipe(catchError(() => EMPTY))),
+      switchMap(() => this.respaldos.list(0, 50, true).pipe(catchError(() => EMPTY))),
       takeUntilDestroyed(this.destroyRef)
     ).subscribe(({ data }) => {
       const desde = Date.now() - 30 * 24 * 60 * 60 * 1000;
@@ -160,7 +163,7 @@ export class PendientesPrivacidadService {
 
   descartar(id: PendientePrivacidad['id']): void {
     const pendiente = this.pendientes().find(p => p.id === id);
-    if (!pendiente?.opcional) return;
+    if (!pendiente || (!pendiente.opcional && !pendiente.descartable)) return;
     const lista = [...this.descartados(), id];
     this.descartados.set(lista);
     try {

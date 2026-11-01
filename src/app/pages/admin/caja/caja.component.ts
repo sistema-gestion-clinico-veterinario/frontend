@@ -64,16 +64,23 @@ export class CajaComponent implements OnInit, OnDestroy {
   savingSesion = signal(false);
   showHistorialSesiones = signal(false);
   estadoEquipo = signal<EstadoEquipo | null>(null);
+  estadoEquipoLoading = signal(false);
+  estadoEquipoError = signal(false);
   puntos = signal<PuntoCobro[]>([]);
   showPuntos = signal(false);
   trabajandoPuntos = signal(false);
   editandoPuntoId = signal<number | null>(null);
+  puntoAVincular = signal<PuntoCobro | null>(null);
   sesionAjenaId = signal<number | null>(null);
   nuevoPuntoNombre = '';
   nombreEditado = '';
+  nombreEquipo = '';
   readonly puedeGestionarPuntos = computed(() =>
     this.authStore.isSuperAdmin() || this.authStore.activeRolePurpose() === 'COMPANY_ADMIN');
   readonly equipoSinRegistrar = computed(() => this.estadoEquipo()?.modo === 'NO_REGISTRADO');
+  readonly equipoListoParaOperar = computed(() =>
+    !this.estadoEquipoLoading() && !this.estadoEquipoError()
+      && !!this.estadoEquipo() && this.estadoEquipo()?.modo !== 'NO_REGISTRADO');
   historialSesiones = signal<SesionCajaResponse[]>([]);
   historialSesionesLoading = signal(false);
   historialSesionesPage = signal(0);
@@ -733,9 +740,19 @@ export class CajaComponent implements OnInit, OnDestroy {
 
   cargarEstadoEquipo() {
     if (!this.companyId) return;
+    this.estadoEquipoLoading.set(true);
+    this.estadoEquipoError.set(false);
     this.cajaService.esteEquipo(this.companyId).subscribe({
-      next: r => this.estadoEquipo.set(r.data ?? null),
-      error: () => this.estadoEquipo.set(null)
+      next: r => {
+        this.estadoEquipo.set(r.data ?? null);
+        this.estadoEquipoError.set(!r.data);
+        this.estadoEquipoLoading.set(false);
+      },
+      error: () => {
+        this.estadoEquipo.set(null);
+        this.estadoEquipoError.set(true);
+        this.estadoEquipoLoading.set(false);
+      }
     });
   }
 
@@ -812,11 +829,33 @@ export class CajaComponent implements OnInit, OnDestroy {
     });
   }
 
-  vincularPunto(punto: PuntoCobro) {
+  prepararVinculacion(punto: PuntoCobro) {
     if (!this.puedeGestionarPuntos()) return;
+    this.nombreEquipo = punto.dispositivoNombre || `PC ${punto.nombre}`;
+    this.puntoAVincular.set(punto);
+  }
+
+  cancelarVinculacion() {
+    if (this.trabajandoPuntos()) return;
+    this.puntoAVincular.set(null);
+    this.nombreEquipo = '';
+  }
+
+  vincularPunto() {
+    const punto = this.puntoAVincular();
+    if (!punto || !this.puedeGestionarPuntos()) return;
+    const nombre = normalizeText(this.nombreEquipo);
+    if (nombre.length < 2) {
+      this.messageService.add({ severity: 'warn', summary: 'Identifica el equipo', detail: 'Escribe un nombre de al menos 2 caracteres.' });
+      return;
+    }
     this.trabajandoPuntos.set(true);
-    this.cajaService.vincularPuntoCobro(punto.id, this.companyId).subscribe({
-      next: () => this.despuesDeCambiarPuntos('Este equipo quedó registrado'),
+    this.cajaService.vincularPuntoCobro(punto.id, this.companyId, nombre).subscribe({
+      next: () => {
+        this.puntoAVincular.set(null);
+        this.nombreEquipo = '';
+        this.despuesDeCambiarPuntos('Este equipo quedó registrado');
+      },
       error: err => this.falloPuntos(err)
     });
   }
@@ -876,6 +915,16 @@ export class CajaComponent implements OnInit, OnDestroy {
   }
 
   abrirModalSesion(tipo: 'ABRIR' | 'ARQUEO' | 'CERRAR') {
+    if (tipo === 'ABRIR' && !this.equipoListoParaOperar()) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Equipo no disponible',
+        detail: this.estadoEquipoError()
+          ? 'No se pudo verificar este equipo. Reintenta antes de abrir la caja.'
+          : 'Registra este equipo en un punto de cobro antes de abrir la caja.'
+      });
+      return;
+    }
     this.sesionAjenaId.set(null);
     this.sesionForm = {
       monto: tipo === 'ABRIR' ? 0 : Number(this.sesionCaja()?.efectivoEsperado ?? 0),

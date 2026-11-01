@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testin
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { of, throwError } from 'rxjs';
 import { LaboratorioComponent } from './laboratorio.component';
+import { CompanyComplianceService } from '../../core/services/company-compliance.service';
 import { MascotaService } from '../../core/services/mascota.service';
 import { LaboratorioIaService } from '../../core/services/laboratorio-ia.service';
 import { IaAutorizacionService } from '../../core/services/ia-autorizacion.service';
@@ -24,12 +25,15 @@ describe('LaboratorioComponent', () => {
     mascotas = jasmine.createSpyObj<MascotaService>('MascotaService', ['listar']);
     autorizaciones = jasmine.createSpyObj<IaAutorizacionService>('IaAutorizacionService', ['autorizacion']);
     laboratorio = jasmine.createSpyObj<LaboratorioIaService>('LaboratorioIaService', ['analizar']);
+    const compliance = jasmine.createSpyObj<CompanyComplianceService>('CompanyComplianceService', ['actualesDeMiClinica']);
+    compliance.actualesDeMiClinica.and.returnValue(of({ data: [{ control: 'USO_IA', habilitado: true }] } as any));
     await TestBed.configureTestingModule({
       imports: [LaboratorioComponent, HttpClientTestingModule],
       providers: [
         { provide: MascotaService, useValue: mascotas },
         { provide: IaAutorizacionService, useValue: autorizaciones },
         { provide: LaboratorioIaService, useValue: laboratorio },
+        { provide: CompanyComplianceService, useValue: compliance },
       ],
     })
     .overrideComponent(LaboratorioComponent, { set: { template: '' } })
@@ -146,11 +150,14 @@ describe('LaboratorioComponent - pantalla', () => {
     .find(b => /Analizar laboratorio/.test(b.textContent ?? '')) as HTMLButtonElement | undefined;
 
   beforeEach(async () => {
+    const compliance = jasmine.createSpyObj<CompanyComplianceService>('CompanyComplianceService', ['actualesDeMiClinica']);
+    compliance.actualesDeMiClinica.and.returnValue(of({ data: [{ control: 'USO_IA', habilitado: true }] } as any));
     await TestBed.configureTestingModule({
       imports: [LaboratorioComponent, HttpClientTestingModule],
       providers: [
         { provide: MascotaService, useValue: jasmine.createSpyObj('MascotaService', ['listar']) },
         { provide: IaAutorizacionService, useValue: jasmine.createSpyObj('IaAutorizacionService', ['autorizacion']) },
+        { provide: CompanyComplianceService, useValue: compliance },
       ],
     }).compileComponents();
     fixture = TestBed.createComponent(LaboratorioComponent);
