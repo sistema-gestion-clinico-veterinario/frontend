@@ -23,9 +23,10 @@ describe('CompanyComplianceComponent', () => {
   });
 
   function crear(lista: ConfiguracionCumplimiento[] = [configuracion()]): void {
-    servicio = jasmine.createSpyObj<CompanyComplianceService>('CompanyComplianceService', ['actuales', 'configurar']);
+    servicio = jasmine.createSpyObj<CompanyComplianceService>('CompanyComplianceService', ['actuales', 'configurar', 'solicitudesPendientes', 'resolverSolicitud']);
     servicio.actuales.and.returnValue(respuesta(lista));
     servicio.configurar.and.returnValue(respuesta(configuracion()));
+    servicio.solicitudesPendientes.and.returnValue(respuesta([]));
     const empresas = jasmine.createSpyObj<CompanyService>('CompanyService', ['getById']);
     empresas.getById.and.returnValue(respuesta({ name: 'Clínica Patitas' }) as never);
 

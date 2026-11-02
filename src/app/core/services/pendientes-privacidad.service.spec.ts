@@ -8,10 +8,12 @@ import { ConsentimientoEstado } from '../../models/privacy/privacidad.model';
 import { AuthStore } from '../../store/auth.store';
 import { BackupMonitorService } from './backup-monitor.service';
 import { BackupExecution } from '../../models/backup/backup-execution.model';
+import { CompanyComplianceService } from './company-compliance.service';
 
 describe('PendientesPrivacidadService', () => {
   let privacidad: jasmine.SpyObj<PrivacidadService>;
   let respaldos: jasmine.SpyObj<BackupMonitorService>;
+  let cumplimiento: jasmine.SpyObj<CompanyComplianceService>;
   let eventos: Subject<unknown>;
   let companyId: ReturnType<typeof signal<number | null>>;
   let rolId: ReturnType<typeof signal<number | null>>;
@@ -53,6 +55,15 @@ describe('PendientesPrivacidadService', () => {
     privacidad.miEstado.and.returnValue(responde(estado()));
     respaldos = jasmine.createSpyObj<BackupMonitorService>('BackupMonitorService', ['list']);
     respaldos.list.and.returnValue(paginaRespaldos());
+    cumplimiento = jasmine.createSpyObj<CompanyComplianceService>('CompanyComplianceService', [
+      'bandejaGlobal', 'notificacionesDeMiClinica', 'marcarDecisionVista'
+    ]);
+    cumplimiento.bandejaGlobal.and.returnValue(of({ success: true, message: 'ok', data: {
+      content: [], totalElements: 0, totalPages: 0, size: 100, number: 0,
+      numberOfElements: 0, first: true, last: true, empty: true
+    }}));
+    cumplimiento.notificacionesDeMiClinica.and.returnValue(of({ success: true, message: 'ok', data: [] }));
+    cumplimiento.marcarDecisionVista.and.returnValue(of({ success: true, message: 'ok', data: undefined }));
     eventos = new Subject();
     companyId = signal<number | null>(1);
     rolId = signal<number | null>(3);
@@ -63,10 +74,12 @@ describe('PendientesPrivacidadService', () => {
       providers: [
         { provide: PrivacidadService, useValue: privacidad },
         { provide: BackupMonitorService, useValue: respaldos },
+        { provide: CompanyComplianceService, useValue: cumplimiento },
         { provide: Router, useValue: { events: eventos.asObservable() } },
         { provide: AuthStore, useValue: {
           companyId, activeRoleId: rolId, activeRolePurpose: proposito,
-          needsLegalAcceptance: terminos, legalAcceptanceOverdue: vencidos
+          needsLegalAcceptance: terminos, legalAcceptanceOverdue: vencidos,
+          isSuperAdmin: () => proposito() === 'PLATFORM_ADMIN'
         } },
       ],
     });
@@ -133,8 +146,9 @@ describe('PendientesPrivacidadService', () => {
       TestBed.configureTestingModule({ providers: [
         { provide: PrivacidadService, useValue: privacidad },
         { provide: BackupMonitorService, useValue: respaldos },
+        { provide: CompanyComplianceService, useValue: cumplimiento },
         { provide: Router, useValue: { events: eventos.asObservable() } },
-        { provide: AuthStore, useValue: { companyId, activeRoleId: rolId, activeRolePurpose: proposito, needsLegalAcceptance: terminos, legalAcceptanceOverdue: vencidos } },
+        { provide: AuthStore, useValue: { companyId, activeRoleId: rolId, activeRolePurpose: proposito, needsLegalAcceptance: terminos, legalAcceptanceOverdue: vencidos, isSuperAdmin: () => proposito() === 'PLATFORM_ADMIN' } },
       ] });
 
       expect(crear().pendientes()).toEqual([]);

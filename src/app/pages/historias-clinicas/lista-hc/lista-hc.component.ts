@@ -36,7 +36,8 @@ export class ListaHcComponent implements OnInit {
     void this.router.navigate(['/consentimientos-veterinarios']);
   }
   currentPage  = 0;
-  readonly pageSize = 10;
+  pageSize = 10;
+  readonly pageSizeOptions = [10, 20, 50, 100];
 
   searchNumeroHc       = '';
   searchNombrePaciente = '';
@@ -109,7 +110,12 @@ export class ListaHcComponent implements OnInit {
   }
 
   onFilterChange() { this.cargarHistorias(0); }
-  onPageChange(e: any) { this.cargarHistorias(e.page); }
+  onPageChange(e: any) {
+    const nextSize = Number(e.rows) || 10;
+    const nextPage = nextSize === this.pageSize ? Number(e.page) || 0 : 0;
+    this.pageSize = nextSize;
+    this.cargarHistorias(nextPage);
+  }
 
   onNumeroHcInput(event: Event) {
     const input = event.target as HTMLInputElement;

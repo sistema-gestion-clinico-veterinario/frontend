@@ -148,13 +148,15 @@
               </tbody>
             </table>
           </div>
-          @if (categoriasTotal() > pageSize) {
+          @if (categoriasTotal() > 0) {
             <div class="border-t border-slate-100 px-4">
               <p-paginator
                 [rows]="pageSize"
+                [rowsPerPageOptions]="pageSizeOptions"
                 [totalRecords]="categoriasTotal()"
                 [first]="categoriasPage() * pageSize"
-                [showCurrentPageReport]="false"
+                [showCurrentPageReport]="true"
+                currentPageReportTemplate="{first}–{last} de {totalRecords}"
                 (onPageChange)="onCategoriasPageChange($event)"
                 styleClass="!border-none !bg-transparent !py-3"
               ></p-paginator>
@@ -221,13 +223,15 @@
               </tbody>
             </table>
           </div>
-          @if (unidadesTotal() > pageSize) {
+          @if (unidadesTotal() > 0) {
             <div class="border-t border-slate-100 px-4">
               <p-paginator
                 [rows]="pageSize"
+                [rowsPerPageOptions]="pageSizeOptions"
                 [totalRecords]="unidadesTotal()"
                 [first]="unidadesPage() * pageSize"
-                [showCurrentPageReport]="false"
+                [showCurrentPageReport]="true"
+                currentPageReportTemplate="{first}–{last} de {totalRecords}"
                 (onPageChange)="onUnidadesPageChange($event)"
                 styleClass="!border-none !bg-transparent !py-3"
               ></p-paginator>
@@ -284,8 +288,8 @@
               </tbody>
             </table>
           </div>
-          @if (marcasTotal() > pageSize) {
-            <div class="border-t border-slate-100 px-4"><p-paginator [rows]="pageSize" [totalRecords]="marcasTotal()" [first]="marcasPage() * pageSize" [showCurrentPageReport]="false" (onPageChange)="onMarcasPageChange($event)" styleClass="!border-none !bg-transparent !py-3"></p-paginator></div>
+          @if (marcasTotal() > 0) {
+            <div class="border-t border-slate-100 px-4"><p-paginator [rows]="pageSize" [rowsPerPageOptions]="pageSizeOptions" [totalRecords]="marcasTotal()" [first]="marcasPage() * pageSize" [showCurrentPageReport]="true" currentPageReportTemplate="{first}–{last} de {totalRecords}" (onPageChange)="onMarcasPageChange($event)" styleClass="!border-none !bg-transparent !py-3"></p-paginator></div>
           }
         </div>
       }

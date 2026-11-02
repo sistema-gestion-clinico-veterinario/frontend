@@ -18,3 +18,35 @@ export interface ConfiguracionCumplimiento {
 
 export type EstadoCumplimientoClinica = Pick<ConfiguracionCumplimiento,
   'control' | 'habilitado' | 'modo' | 'bloqueante' | 'gestionadoPorSoftvet'>;
+
+export interface DetalleCumplimientoClinica extends EstadoCumplimientoClinica {
+  version: number;
+  justificacion: string;
+  referenciaContractual: string | null;
+  configuradaPor: string;
+  configuracionExplicita: boolean;
+}
+
+export type EstadoSolicitudCambioCumplimiento = 'PENDIENTE' | 'EN_REVISION' | 'APROBADA' | 'RECHAZADA';
+
+export interface SolicitudCambioCumplimiento {
+  id: number;
+  companyId: number;
+  empresa: string;
+  control: ControlCumplimiento;
+  habilitadoSolicitado: boolean;
+  modoSolicitado: ModoGestionCumplimiento;
+  bloqueanteSolicitado: boolean;
+  motivo: string;
+  evidenciaReferencia: string | null;
+  vigenteDesdeSolicitada: string | null;
+  estado: EstadoSolicitudCambioCumplimiento;
+  solicitadaPor: string;
+  solicitadaAt: string;
+  resueltaPor: string | null;
+  resueltaAt: string | null;
+  comentarioResolucion: string | null;
+  revisionPor: string | null;
+  revisionAt: string | null;
+  vistaClinicaAt: string | null;
+}

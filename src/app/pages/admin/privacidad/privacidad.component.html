@@ -23,6 +23,7 @@
         @if (puedePublicar()) {
           <div class="mx-3 my-2 border-t border-slate-100"></div>
           <p class="px-3 pb-2 pt-2 text-[11px] font-extrabold uppercase tracking-wide text-slate-400">Gestión de datos</p>
+          <a routerLink="/admin/privacidad/configuracion" class="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-[var(--brand-primary)]"><i class="pi pi-shield"></i> Cumplimiento y privacidad</a>
           <a routerLink="/admin/privacidad/derechos" class="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-[var(--brand-primary)]"><i class="pi pi-id-card"></i> Derechos de datos</a>
           <a routerLink="/admin/privacidad/solicitudes" class="flex items-start gap-3 rounded-lg px-3 py-3 text-sm font-bold leading-5 text-slate-600 hover:bg-slate-50 hover:text-[var(--brand-primary)]"><i class="pi pi-eraser mt-0.5"></i> Solicitudes de cancelación</a>
         }

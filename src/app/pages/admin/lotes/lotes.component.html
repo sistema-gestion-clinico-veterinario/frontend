@@ -171,13 +171,15 @@
           </div>
         }
 
-        @if (lotesTotal() > pageSize) {
+        @if (lotesTotal() > 0) {
           <div class="border-t border-slate-100 px-4">
             <p-paginator
               [rows]="pageSize"
+              [rowsPerPageOptions]="pageSizeOptions"
               [totalRecords]="lotesTotal()"
               [first]="lotesPage() * pageSize"
-              [showCurrentPageReport]="false"
+              [showCurrentPageReport]="true"
+              currentPageReportTemplate="{first}–{last} de {totalRecords}"
               (onPageChange)="onPageChange($event)"
               styleClass="!border-none !bg-transparent !py-3"
             ></p-paginator>

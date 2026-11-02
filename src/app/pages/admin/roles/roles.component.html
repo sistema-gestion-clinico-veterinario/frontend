@@ -186,6 +186,13 @@
                   <p class="text-xs text-slate-400 mt-0.5">{{ selectedRole()!.name }}</p>
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
+                  @if (canDuplicateRole(selectedRole())) {
+                    <button *appHasPermission="'VISTA_ROLES:escribir'"
+                      (click)="openDuplicateModal(selectedRole()!)"
+                      class="min-w-0 flex-1 px-3 py-2 text-xs font-semibold rounded-lg border border-blue-200 text-blue-600 hover:bg-blue-50 transition-colors sm:flex-none sm:py-1.5">
+                      <i class="pi pi-copy mr-1"></i>Duplicar
+                    </button>
+                  }
                   @if (canRenameRole(selectedRole()) && !isEditingName()) {
                     <button *appHasPermission="'VISTA_ROLES:modificar'"
                       (click)="startEditName()"
@@ -536,6 +543,76 @@
         </button>
       </div>
     </div>
+  </div>
+}
+
+<!-- Modal duplicar rol -->
+@if (showDuplicateModal() && roleToDuplicate()) {
+  <div class="fixed inset-0 z-50 flex items-end justify-center bg-black/30 p-0 backdrop-blur-sm sm:items-center sm:p-4">
+    <section role="dialog" aria-modal="true" aria-labelledby="duplicate-role-title"
+      class="max-h-[92dvh] w-full max-w-md overflow-y-auto rounded-t-2xl border border-slate-200 bg-white sm:mx-4 sm:rounded-2xl">
+      <header class="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-4 sm:px-6">
+        <div class="flex min-w-0 items-start gap-3">
+          <span class="flex size-9 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+            <i class="pi pi-copy"></i>
+          </span>
+          <div class="min-w-0">
+            <h3 id="duplicate-role-title" class="text-base font-bold text-slate-900">Duplicar rol</h3>
+            <p class="mt-1 text-sm leading-5 text-slate-500">
+              Usa “{{ roleLabel(roleToDuplicate()!.name) }}” como punto de partida.
+            </p>
+          </div>
+        </div>
+        <button type="button" (click)="closeDuplicateModal()" [disabled]="duplicatingRole()"
+          aria-label="Cerrar" class="flex size-9 shrink-0 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 disabled:opacity-50">
+          <i class="pi pi-times"></i>
+        </button>
+      </header>
+
+      <div class="space-y-5 px-5 py-5 sm:px-6">
+        <p class="text-sm leading-6 text-slate-600">
+          Se copiarán el ámbito y todos los permisos. Después podrás ajustar únicamente los accesos especiales que necesites.
+        </p>
+
+        <div>
+          <label for="duplicate-role-name" class="mb-1.5 block text-sm font-semibold text-slate-700">Nombre del nuevo rol <span class="text-rose-500">*</span></label>
+          <input id="duplicate-role-name" [ngModel]="duplicateRoleName()" (ngModelChange)="duplicateRoleName.set($event)"
+            [disabled]="duplicatingRole()" autocomplete="off"
+            class="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:bg-slate-50"
+            placeholder="Ej.: Veterinario encargado" />
+          <p class="mt-1.5 text-xs text-slate-400">Elige un nombre que explique por qué este rol tiene accesos diferentes.</p>
+        </div>
+
+        <div>
+          <label for="duplicate-role-description" class="mb-1.5 block text-sm font-semibold text-slate-700">Descripción <span class="font-normal text-slate-400">(opcional)</span></label>
+          <textarea id="duplicate-role-description" rows="3" maxlength="250"
+            [ngModel]="duplicateRoleDesc()" (ngModelChange)="duplicateRoleDesc.set($event)"
+            [disabled]="duplicatingRole()"
+            class="w-full resize-none rounded-xl border border-slate-200 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:bg-slate-50"
+            placeholder="Ej.: Responsable de supervisar las atenciones clínicas"></textarea>
+          <p class="mt-1 text-right text-xs text-slate-400">{{ duplicateRoleDesc().length }}/250</p>
+        </div>
+
+        <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 border-t border-slate-100 pt-4 text-sm">
+          <dt class="text-slate-400">Ámbito</dt>
+          <dd class="font-semibold text-slate-700">{{ roleToDuplicate()!.scope === 'CLIENT' ? 'Clientes / apoderados' : 'Personal de la empresa' }}</dd>
+          <dt class="text-slate-400">Personas asignadas</dt>
+          <dd class="flex items-center gap-1.5 font-semibold text-slate-700"><i class="pi pi-check text-emerald-500"></i>No se copiarán</dd>
+        </dl>
+      </div>
+
+      <footer class="grid grid-cols-2 gap-3 border-t border-slate-100 px-5 py-4 sm:flex sm:justify-end sm:px-6">
+        <button type="button" (click)="closeDuplicateModal()" [disabled]="duplicatingRole()"
+          class="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50 disabled:opacity-50">
+          Cancelar
+        </button>
+        <button type="button" (click)="duplicateRole()" [disabled]="duplicatingRole()"
+          class="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-60">
+          <i [class.pi-spin]="duplicatingRole()" [class.pi-spinner]="duplicatingRole()" [class.pi-copy]="!duplicatingRole()" class="pi"></i>
+          {{ duplicatingRole() ? 'Creando…' : 'Crear duplicado' }}
+        </button>
+      </footer>
+    </section>
   </div>
 }
 

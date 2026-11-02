@@ -65,7 +65,8 @@ export class LotesComponent implements OnInit {
   lotes           = signal<LoteResponse[]>([]);
   lotesTotal      = signal(0);
   lotesPage       = signal(0);
-  readonly pageSize = 15;
+  pageSize = 10;
+  readonly pageSizeOptions = [10, 20, 50, 100];
 
   productos       = signal<ProductoResponse[]>([]);
   searchQuery     = signal('');
@@ -130,7 +131,10 @@ export class LotesComponent implements OnInit {
   }
 
   onPageChange(event: any) {
-    this.loadLotes(Number(event.page) || 0);
+    const nextSize = Number(event.rows) || 10;
+    const nextPage = nextSize === this.pageSize ? Number(event.page) || 0 : 0;
+    this.pageSize = nextSize;
+    this.loadLotes(nextPage);
   }
 
   loteVencido(fecha?: string): boolean {

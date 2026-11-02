@@ -10,6 +10,8 @@ import { AuthStore } from '../../store/auth.store';
 import { PrivacidadService } from './privacidad.service';
 import { BackupMonitorService } from './backup-monitor.service';
 import { BackupExecution } from '../../models/backup/backup-execution.model';
+import { CompanyComplianceService } from './company-compliance.service';
+import { SolicitudCambioCumplimiento } from '../../models/privacy/company-compliance.model';
 
 const CLAVE_DESCARTADOS = 'pendientes_privacidad_descartados';
 
@@ -17,22 +19,27 @@ const CLAVE_DESCARTADOS = 'pendientes_privacidad_descartados';
 export class PendientesPrivacidadService {
   private readonly privacidad = inject(PrivacidadService);
   private readonly respaldos = inject(BackupMonitorService);
+  private readonly cumplimiento = inject(CompanyComplianceService);
   private readonly authStore = inject(AuthStore);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
 
   private readonly estado = signal<ConsentimientoEstado | null>(null);
   private readonly ejecucionesRespaldos = signal<readonly BackupExecution[]>([]);
+  private readonly solicitudesPlataforma = signal<readonly SolicitudCambioCumplimiento[]>([]);
+  private readonly decisionesClinica = signal<readonly SolicitudCambioCumplimiento[]>([]);
   private readonly descartados = signal<readonly string[]>([]);
   private readonly consultas = new Subject<void>();
   private readonly consultasRespaldos = new Subject<void>();
+  private readonly consultasSolicitudes = new Subject<void>();
+  private readonly consultasDecisiones = new Subject<void>();
   private urlAnterior = '';
 
   readonly pendientes = computed<PendientePrivacidad[]>(() => {
     const estado = this.estado();
     const lista: PendientePrivacidad[] = [];
 
-    if (this.authStore.activeRolePurpose() === 'PLATFORM_ADMIN') {
+    if (this.authStore.isSuperAdmin()) {
       for (const ejecucion of this.ejecucionesRespaldos()) {
         const id: PendientePrivacidad['id'] = `respaldo-${ejecucion.id}`;
         if (this.descartados().includes(id)) continue;
@@ -41,6 +48,28 @@ export class PendientesPrivacidadService {
           titulo: ejecucion.status === 'PARTIAL' ? 'Respaldo parcial' : 'Respaldo fallido',
           detalle: this.detalleRespaldo(ejecucion),
           ruta: toAbsoluteRoute(APP_ROUTE_PATHS.BACKUP_MONITOR),
+          opcional: false,
+          descartable: true
+        });
+      }
+      for (const solicitud of this.solicitudesPlataforma()) {
+        lista.push({
+          id: `cumplimiento-${solicitud.id}`,
+          titulo: solicitud.estado === 'EN_REVISION' ? 'Solicitud en revisión' : 'Nueva solicitud de cumplimiento',
+          detalle: `${solicitud.empresa} · ${this.nombreControl(solicitud.control)}`,
+          ruta: toAbsoluteRoute(APP_ROUTE_PATHS.COMPLIANCE_REQUESTS),
+          opcional: false
+        });
+      }
+    }
+
+    if (this.authStore.activeRolePurpose() === 'COMPANY_ADMIN') {
+      for (const solicitud of this.decisionesClinica()) {
+        lista.push({
+          id: `cumplimiento-${solicitud.id}`,
+          titulo: solicitud.estado === 'APROBADA' ? 'Cambio aprobado' : 'Cambio rechazado',
+          detalle: `${this.nombreControl(solicitud.control)} · ${solicitud.comentarioResolucion ?? 'Revisa la decisión.'}`,
+          ruta: toAbsoluteRoute(APP_ROUTE_PATHS.CLINIC_COMPLIANCE),
           opcional: false,
           descartable: true
         });
@@ -106,12 +135,25 @@ export class PendientesPrivacidadService {
         && new Date(ejecucion.startedAt).getTime() >= desde));
     });
 
+    this.consultasSolicitudes.pipe(
+      switchMap(() => this.cumplimiento.bandejaGlobal({ page: 0, size: 100 }).pipe(catchError(() => EMPTY))),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(({ data }) => this.solicitudesPlataforma.set(
+      (data?.content ?? []).filter(s => s.estado === 'PENDIENTE' || s.estado === 'EN_REVISION')));
+
+    this.consultasDecisiones.pipe(
+      switchMap(() => this.cumplimiento.notificacionesDeMiClinica().pipe(catchError(() => EMPTY))),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(({ data }) => this.decisionesClinica.set(data ?? []));
+
     effect((onCleanup) => {
       const clave = this.clave();
-      const esAdministradorPlataforma = this.authStore.activeRolePurpose() === 'PLATFORM_ADMIN';
+      const esAdministradorPlataforma = this.authStore.isSuperAdmin();
       untracked(() => {
         this.estado.set(null);
         this.ejecucionesRespaldos.set([]);
+        this.solicitudesPlataforma.set([]);
+        this.decisionesClinica.set([]);
         this.descartados.set(this.leerDescartados(clave));
         this.refrescar();
       });
@@ -133,17 +175,20 @@ export class PendientesPrivacidadService {
   }
 
   refrescar(): void {
-    if (this.authStore.activeRolePurpose() === 'PLATFORM_ADMIN') {
+    if (this.authStore.isSuperAdmin()) {
       this.estado.set(null);
       this.consultasRespaldos.next();
+      this.consultasSolicitudes.next();
       return;
     }
     this.ejecucionesRespaldos.set([]);
+    this.solicitudesPlataforma.set([]);
     if (!this.authStore.companyId()) {
       this.estado.set(null);
       return;
     }
     this.consultas.next();
+    if (this.authStore.activeRolePurpose() === 'COMPANY_ADMIN') this.consultasDecisiones.next();
   }
 
   private detalleRespaldo(ejecucion: BackupExecution): string {
@@ -164,11 +209,29 @@ export class PendientesPrivacidadService {
   descartar(id: PendientePrivacidad['id']): void {
     const pendiente = this.pendientes().find(p => p.id === id);
     if (!pendiente || (!pendiente.opcional && !pendiente.descartable)) return;
+    if (id.startsWith('cumplimiento-')) {
+      const solicitudId = Number(id.replace('cumplimiento-', ''));
+      if (Number.isFinite(solicitudId)) {
+        this.cumplimiento.marcarDecisionVista(solicitudId).subscribe({
+          next: () => this.decisionesClinica.update(lista => lista.filter(s => s.id !== solicitudId))
+        });
+      }
+      return;
+    }
     const lista = [...this.descartados(), id];
     this.descartados.set(lista);
     try {
       sessionStorage.setItem(`${CLAVE_DESCARTADOS}:${this.clave()}`, JSON.stringify(lista));
     } catch {}
+  }
+
+  private nombreControl(control: SolicitudCambioCumplimiento['control']): string {
+    const nombres: Record<SolicitudCambioCumplimiento['control'], string> = {
+      AVISO_PRIVACIDAD: 'Aviso de privacidad', DERECHOS_DATOS: 'Derechos de datos',
+      USO_IA: 'Uso de IA', RECORDATORIOS_CORREO: 'Recordatorios por correo',
+      CONSENTIMIENTO_VETERINARIO: 'Consentimiento veterinario'
+    };
+    return nombres[control];
   }
 
   private clave(): string {

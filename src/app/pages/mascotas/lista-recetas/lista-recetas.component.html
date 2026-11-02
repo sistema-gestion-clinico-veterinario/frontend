@@ -135,7 +135,8 @@
             <span class="text-xs font-bold text-slate-700">{{ totalRecords() }} {{ totalRecords() === 1 ? 'registro' : 'registros' }}</span>
           </div>
           <p-paginator [rows]="pageSize" [totalRecords]="totalRecords()" [first]="currentPage * pageSize"
-            (onPageChange)="onPageChange($event)" [showCurrentPageReport]="false" [showFirstLastIcon]="true"
+            [rowsPerPageOptions]="pageSizeOptions" (onPageChange)="onPageChange($event)" [showCurrentPageReport]="true"
+            currentPageReportTemplate="{first}–{last} de {totalRecords}" [showFirstLastIcon]="true"
             styleClass="!border-none !bg-transparent !py-3"></p-paginator>
         </div>
       }

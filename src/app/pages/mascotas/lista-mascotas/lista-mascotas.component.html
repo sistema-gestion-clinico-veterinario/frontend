@@ -307,9 +307,11 @@
             </div>
             <p-paginator
               [rows]="pageSize"
+              [rowsPerPageOptions]="pageSizeOptions"
               [totalRecords]="totalRecords()"
               [first]="currentPage * pageSize"
-              [showCurrentPageReport]="false"
+              [showCurrentPageReport]="true"
+              currentPageReportTemplate="{first}–{last} de {totalRecords}"
               [showFirstLastIcon]="true"
               (onPageChange)="onPageChange($event)"
               styleClass="!border-none !bg-transparent !py-3"
