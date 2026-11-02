@@ -63,7 +63,7 @@ import { Router } from '@angular/router';
   styleUrl: './client.component.scss'
 })
 export class ClientComponent implements OnInit {
-  private readonly clientActionItemsCache = new WeakMap<ApoderadoListResponse, MenuItem[]>();
+  private readonly clientActionItemsCache = new WeakMap<ApoderadoListResponse, { key: string; items: MenuItem[] }>();
   private readonly fb = inject(FormBuilder);
   private readonly apoderadoService = inject(ApoderadoService);
   private readonly mascotaService = inject(MascotaService);
@@ -106,7 +106,8 @@ export class ClientComponent implements OnInit {
   searchNombre = signal('');
   searchDocumento = signal('');
   currentPage = 0;
-  readonly pageSize = 10;
+  pageSize = 10;
+  readonly pageSizeOptions = [10, 20, 50, 100];
   private readonly searchTrigger = new Subject<void>();
   private hasSearched = false;
   private readonly nameFilterPattern = /^[A-Za-zÁÉÍÓÚáéíóúÑñÜü]+(?: [A-Za-zÁÉÍÓÚáéíóúÑñÜü]+)*$/;
@@ -169,12 +170,25 @@ export class ClientComponent implements OnInit {
   }
 
   clientActionItems(client: ApoderadoListResponse): MenuItem[] {
+    const canReadClients = this.canClientAction('leer');
+    const canUpdateClients = this.canClientAction('modificar');
+    const canManageCredentials = this.authStore.hasAccess('VISTA_GESTION_CREDENCIALES', 'modificar');
+    const cacheKey = [
+      canReadClients,
+      canUpdateClients,
+      canManageCredentials,
+      client.activo,
+      client.userId ?? '',
+      client.cuentaPendiente ?? false,
+      client.puedeReenviarInvitacion ?? false,
+      client.tipoInactividad ?? ''
+    ].join('|');
     const cached = this.clientActionItemsCache.get(client);
-    if (cached) return cached;
+    if (cached?.key === cacheKey) return cached.items;
 
     const items: MenuItem[] = [];
 
-    if (this.canClientAction('leer')) {
+    if (canReadClients) {
       items.push({
         label: 'Ver Detalles',
         icon: 'pi pi-eye',
@@ -182,8 +196,7 @@ export class ClientComponent implements OnInit {
       });
     }
 
-    if (this.authStore.hasAccess('VISTA_GESTION_CREDENCIALES', 'modificar')
-        && client.activo && client.userId && !client.cuentaPendiente) {
+    if (canManageCredentials && client.activo && client.userId && !client.cuentaPendiente) {
       items.push({
         label: 'Restablecer contraseña',
         icon: 'pi pi-lock',
@@ -191,7 +204,7 @@ export class ClientComponent implements OnInit {
       });
     }
 
-    if (this.authStore.hasAccess('VISTA_GESTION_CREDENCIALES', 'modificar') && client.activo && client.userId) {
+    if (canManageCredentials && client.activo && client.userId) {
       items.push({
         label: client.cuentaPendiente ? 'Corregir correo' : 'Cambiar correo de acceso',
         icon: 'pi pi-at',
@@ -199,7 +212,7 @@ export class ClientComponent implements OnInit {
       });
     }
 
-    if (this.canClientAction('modificar') && client.puedeReenviarInvitacion) {
+    if (canUpdateClients && client.puedeReenviarInvitacion) {
       items.push({
         label: 'Reenviar invitación',
         icon: 'pi pi-send',
@@ -207,7 +220,7 @@ export class ClientComponent implements OnInit {
       });
     }
 
-    if (this.canClientAction('modificar')) {
+    if (canUpdateClients) {
       items.push({
         label: 'Editar',
         icon: 'pi pi-pencil',
@@ -223,7 +236,7 @@ export class ClientComponent implements OnInit {
       }
     }
 
-    this.clientActionItemsCache.set(client, items);
+    this.clientActionItemsCache.set(client, { key: cacheKey, items });
     return items;
   }
 
@@ -374,7 +387,10 @@ export class ClientComponent implements OnInit {
   }
 
   onClientPageChange(event: any): void {
-    this.loadClients(Number(event.page) || 0);
+    const nextSize = Number(event.rows) || 10;
+    const nextPage = nextSize === this.pageSize ? Number(event.page) || 0 : 0;
+    this.pageSize = nextSize;
+    this.loadClients(nextPage);
   }
 
   private normalizeAndValidateFilters(): boolean {

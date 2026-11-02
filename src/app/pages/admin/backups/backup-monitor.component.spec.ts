@@ -174,8 +174,19 @@ describe('BackupMonitorComponent', () => {
     it('usa el paginador estándar de diez registros', async () => {
       await crear();
       expect(component.pageSize).toBe(10);
+      expect(component.pageSizeOptions).toEqual([10, 20, 50, 100]);
       expect(service.list).toHaveBeenCalledWith(0, 10);
       expect((fixture.nativeElement as HTMLElement).querySelector('p-paginator')).not.toBeNull();
+    });
+
+    it('vuelve a la primera página cuando cambia la cantidad de registros', async () => {
+      await crear();
+      service.list.calls.reset();
+
+      component.onPageChange({ page: 2, rows: 50 });
+
+      expect(component.pageSize).toBe(50);
+      expect(service.list).toHaveBeenCalledWith(0, 50);
     });
   });
 

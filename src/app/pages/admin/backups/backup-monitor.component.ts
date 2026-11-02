@@ -33,7 +33,8 @@ export class BackupMonitorComponent implements OnInit {
   readonly expanded = signal<number | null>(null);
   readonly total = signal(0);
   readonly page = signal(0);
-  readonly pageSize = 10;
+  pageSize = 10;
+  readonly pageSizeOptions = [10, 20, 50, 100];
   private readonly latestReported = signal<BackupExecution | null>(null);
   readonly latest = computed(() => this.latestReported() ?? this.executions()[0] ?? null);
 
@@ -88,6 +89,13 @@ export class BackupMonitorComponent implements OnInit {
         this.loading.set(false);
       }
     });
+  }
+
+  onPageChange(event: any): void {
+    const nextSize = Number(event.rows) || 10;
+    const nextPage = nextSize === this.pageSize ? Number(event.page) || 0 : 0;
+    this.pageSize = nextSize;
+    this.load(nextPage);
   }
 
   toggle(id: number): void {

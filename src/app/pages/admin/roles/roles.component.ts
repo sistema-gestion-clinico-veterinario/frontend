@@ -61,6 +61,11 @@ export class RolesComponent implements OnInit {
   permisosModificados = signal<boolean>(false);
   loadingPermisos     = signal<boolean>(false);
   showCreateModal     = signal<boolean>(false);
+  showDuplicateModal  = signal<boolean>(false);
+  roleToDuplicate     = signal<Role | null>(null);
+  duplicateRoleName   = signal<string>('');
+  duplicateRoleDesc   = signal<string>('');
+  duplicatingRole     = signal<boolean>(false);
   newRoleName         = signal<string>('');
   newRoleDesc         = signal<string>('');
   newRoleScope        = signal<'STAFF' | 'CLIENT'>('STAFF');
@@ -263,6 +268,10 @@ export class RolesComponent implements OnInit {
     return this.canEditRole(role);
   }
 
+  canDuplicateRole(role: Role | null): boolean {
+    return !!role?.companyId && this.authStore.hasAccess('VISTA_ROLES', 'escribir');
+  }
+
   canEditBaseRolePermissions(role: Role | null): boolean {
     return !!role && this.isSuperAdmin() && this.hasModifyAccess()
       && (role.systemManaged || role.protectedRole)
@@ -394,6 +403,109 @@ export class RolesComponent implements OnInit {
 
   closeCreateModal() {
     this.showCreateModal.set(false);
+  }
+
+  openDuplicateModal(role: Role) {
+    if (!this.canDuplicateRole(role)) return;
+    this.roleToDuplicate.set(role);
+    this.duplicateRoleName.set(this.suggestDuplicateRoleName(role));
+    this.duplicateRoleDesc.set(role.descripcion ?? '');
+    this.showDuplicateModal.set(true);
+  }
+
+  private suggestDuplicateRoleName(role: Role): string {
+    const sourceLabel = this.roleLabel(role.name).slice(0, 42).trim();
+    const baseName = `${sourceLabel} PERSONALIZADO`;
+    const existingNames = new Set(
+      this.companyRoles().map(item => this.roleLabel(item.name).toUpperCase())
+    );
+    if (!existingNames.has(baseName)) return baseName;
+
+    const alphabeticSuffix = (value: number): string => {
+      let result = '';
+      for (let current = value; current > 0; current = Math.floor((current - 1) / 26)) {
+        result = String.fromCharCode(65 + ((current - 1) % 26)) + result;
+      }
+      return result;
+    };
+    let suffixIndex = 1;
+    let suffix = alphabeticSuffix(suffixIndex);
+    while (existingNames.has(`${baseName} ${suffix}`)) {
+      suffix = alphabeticSuffix(++suffixIndex);
+    }
+    return `${baseName} ${suffix}`;
+  }
+
+  closeDuplicateModal() {
+    if (this.duplicatingRole()) return;
+    this.showDuplicateModal.set(false);
+    this.roleToDuplicate.set(null);
+    this.duplicateRoleName.set('');
+    this.duplicateRoleDesc.set('');
+  }
+
+  duplicateRole() {
+    const source = this.roleToDuplicate();
+    if (!source || this.duplicatingRole()) return;
+
+    let formattedName = this.duplicateRoleName().trim().toUpperCase();
+    if (!formattedName.startsWith('ROLE_')) formattedName = 'ROLE_' + formattedName;
+    formattedName = formattedName.replace(/\s+/g, '_');
+    if (!this.isValidRoleName(formattedName)) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Revisa el nombre',
+        detail: 'Escribe un nombre de al menos 2 letras. Puedes usar espacios y guion bajo.'
+      });
+      return;
+    }
+    if (this.companyRoles().some(role => role.name.toUpperCase() === formattedName)) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Ese nombre ya existe',
+        detail: 'Usa un nombre distinto para identificar el nuevo rol.'
+      });
+      return;
+    }
+
+    const descripcion = normalizeText(this.duplicateRoleDesc());
+    if (descripcion.length > 250 || (descripcion && !hasMeaningfulText(descripcion))) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Revisa la descripción',
+        detail: descripcion.length > 250
+          ? 'La descripción no debe superar 250 caracteres.'
+          : 'La descripción debe contener texto válido.'
+      });
+      return;
+    }
+
+    this.duplicatingRole.set(true);
+    this.roleService.duplicar(source.id, {
+      name: formattedName,
+      descripcion: descripcion || undefined
+    }).subscribe({
+      next: ({ data }) => {
+        this.companyRoles.update(roles => [...roles, data]);
+        this.showDuplicateModal.set(false);
+        this.roleToDuplicate.set(null);
+        this.duplicatingRole.set(false);
+        this.selectRole(data);
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Rol duplicado',
+          detail: 'Revisa sus permisos y asigna el nuevo rol únicamente a las personas que correspondan.'
+        });
+      },
+      error: (err) => {
+        this.duplicatingRole.set(false);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'No se pudo duplicar',
+          detail: err.error?.message || 'Inténtalo nuevamente.'
+        });
+      }
+    });
   }
 
   createRole() {

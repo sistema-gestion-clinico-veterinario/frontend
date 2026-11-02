@@ -250,6 +250,20 @@ describe('ClientComponent', () => {
 
         expect(etiquetas(client)).not.toContain('Restablecer contraseña');
       });
+
+      it('actualiza las acciones si el rol activo obtiene Gestión de credenciales', () => {
+        const hasAccess = (component as any).authStore.hasAccess as jasmine.Spy;
+        let canManageCredentials = false;
+        hasAccess.and.callFake((vista: string) =>
+          vista === 'VISTA_GESTION_CREDENCIALES' ? canManageCredentials : true);
+        const client = { ...persona(true), userId: 15, email: 'cliente@example.test', cuentaPendiente: false };
+
+        expect(etiquetas(client)).not.toContain('Restablecer contraseña');
+
+        canManageCredentials = true;
+
+        expect(etiquetas(client)).toContain('Restablecer contraseña');
+      });
     });
   });
 

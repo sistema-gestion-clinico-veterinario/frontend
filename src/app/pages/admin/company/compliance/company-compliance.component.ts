@@ -9,7 +9,8 @@ import { CompanyService } from '../../../../core/services/company.service';
 import {
   ConfiguracionCumplimiento,
   ControlCumplimiento,
-  ModoGestionCumplimiento
+  ModoGestionCumplimiento,
+  SolicitudCambioCumplimiento
 } from '../../../../models/privacy/company-compliance.model';
 
 const MINIMO_DE_LA_JUSTIFICACION = 10;
@@ -48,6 +49,14 @@ export class CompanyComplianceComponent implements OnInit {
   readonly cargando = signal(true);
   readonly error = signal('');
   readonly guardando = signal<ControlCumplimiento | null>(null);
+  readonly solicitudes = signal<SolicitudCambioCumplimiento[]>([]);
+  readonly solicitudRevisada = signal<SolicitudCambioCumplimiento | null>(null);
+  readonly resolviendo = signal(false);
+
+  readonly resolucionForm = this.fb.nonNullable.group({
+    comentario: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(2000)]],
+    confirmoRevisionLegal: [false]
+  });
 
   readonly modos: { valor: ModoGestionCumplimiento; etiqueta: string }[] = [
     { valor: 'SOFTVET', etiqueta: 'Gestionado en SoftVet' },
@@ -62,6 +71,70 @@ export class CompanyComplianceComponent implements OnInit {
     this.companyId = Number(this.route.snapshot.paramMap.get('id'));
     this.companies.getById(this.companyId).subscribe(respuesta => this.empresa.set(respuesta.data.name));
     this.cargar();
+    this.cargarSolicitudes();
+  }
+
+  cargarSolicitudes(): void {
+    this.service.solicitudesPendientes(this.companyId).subscribe({
+      next: respuesta => this.solicitudes.set(respuesta.data ?? []),
+      error: () => this.solicitudes.set([])
+    });
+  }
+
+  revisarSolicitud(solicitud: SolicitudCambioCumplimiento): void {
+    if (solicitud.estado === 'PENDIENTE') {
+      this.resolviendo.set(true);
+      this.service.iniciarRevision(solicitud.id).subscribe({
+        next: respuesta => {
+          this.resolviendo.set(false);
+          this.cargarSolicitudes();
+          this.abrirRevision(respuesta.data);
+        },
+        error: err => {
+          this.resolviendo.set(false);
+          this.messages.add({ severity: 'error', summary: 'No se pudo iniciar la revisión', detail: err.error?.message ?? 'Inténtalo nuevamente.' });
+        }
+      });
+      return;
+    }
+    this.abrirRevision(solicitud);
+  }
+
+  private abrirRevision(solicitud: SolicitudCambioCumplimiento): void {
+    this.solicitudRevisada.set(solicitud);
+    this.resolucionForm.reset({ comentario: '', confirmoRevisionLegal: false });
+  }
+
+  cerrarRevision(): void {
+    if (!this.resolviendo()) this.solicitudRevisada.set(null);
+  }
+
+  resolverSolicitud(aprobar: boolean): void {
+    const solicitud = this.solicitudRevisada();
+    if (!solicitud || this.resolviendo()) return;
+    if (this.resolucionForm.controls.comentario.invalid
+        || (aprobar && !this.resolucionForm.controls.confirmoRevisionLegal.value)) {
+      this.resolucionForm.markAllAsTouched();
+      return;
+    }
+    this.resolviendo.set(true);
+    this.service.resolverSolicitud(solicitud.id, {
+      aprobar,
+      comentario: this.resolucionForm.controls.comentario.value.trim(),
+      confirmoRevisionLegal: aprobar && this.resolucionForm.controls.confirmoRevisionLegal.value
+    }).subscribe({
+      next: () => {
+        this.resolviendo.set(false);
+        this.solicitudRevisada.set(null);
+        this.messages.add({ severity: 'success', summary: aprobar ? 'Solicitud aprobada' : 'Solicitud rechazada', detail: 'La decisión quedó registrada en la auditoría.' });
+        this.cargarSolicitudes();
+        if (aprobar) this.cargar();
+      },
+      error: err => {
+        this.resolviendo.set(false);
+        this.messages.add({ severity: 'error', summary: 'No se pudo resolver', detail: err.error?.message ?? 'Inténtalo nuevamente.' });
+      }
+    });
   }
 
   cargar(): void {

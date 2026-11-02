@@ -44,6 +44,7 @@ describe('SidebarComponent - navegación permitida', () => {
             menu,
             activeRoleId,
             activeRolePurpose: () => 'CUSTOM',
+            isSuperAdmin: () => false,
             nombreCompleto: () => 'Ana Torres',
             activeRoleName: () => 'ROLE_VETERINARIO',
             selectedEnterprise: () => null,

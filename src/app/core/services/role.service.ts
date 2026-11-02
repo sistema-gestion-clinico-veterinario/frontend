@@ -30,6 +30,10 @@ export class RoleService {
     return this.http.post<ApiResponse<Role>>(this.apiUrl, data);
   }
 
+  duplicar(id: number, data: { name: string; descripcion?: string }) {
+    return this.http.post<ApiResponse<Role>>(`${this.apiUrl}/${id}/duplicate`, data);
+  }
+
   actualizar(id: number, data: { name: string; descripcion?: string; companyId?: number; scope?: 'PLATFORM' | 'STAFF' | 'CLIENT' }) {
     return this.http.put<ApiResponse<Role>>(`${this.apiUrl}/${id}`, data);
   }

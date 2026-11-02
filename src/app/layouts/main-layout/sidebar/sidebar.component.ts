@@ -1,5 +1,6 @@
 
-import { Component, HostListener, OnInit, inject, input, computed, signal, output } from '@angular/core';
+import { Component, DestroyRef, HostListener, OnInit, inject, input, computed, signal, output } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthStore } from '../../../store/auth.store';
 import { MenuItemDTO, MenuStructureDTO } from '../../../models/response/auth-login-response.model';
@@ -10,6 +11,7 @@ import { SessionService } from '../../../core/services/session.service';
 import { CompanyComplianceService } from '../../../core/services/company-compliance.service';
 import { GuidedTourService } from '../../../core/services/guided-tour.service';
 import { SkeletonModule } from 'primeng/skeleton';
+import { EMPTY, catchError, switchMap, timer } from 'rxjs';
 import {
   SOFTVET_LOGO_URL,
   SOFTVET_SIDEBAR_NAME,
@@ -42,12 +44,21 @@ export class SidebarComponent implements OnInit {
   private authService = inject(AuthService);
   private sessionService = inject(SessionService);
   private complianceService = inject(CompanyComplianceService);
+  private destroyRef = inject(DestroyRef);
   readonly guidedTour = inject(GuidedTourService);
   private iaHabilitada = signal(true);
+  readonly solicitudesCumplimientoActivas = signal(0);
+  readonly esAdministradorPlataforma = computed(() => this.authStore.isSuperAdmin());
 
   ngOnInit(): void {
     this.guidedTour.initialize();
-    if (this.authStore.activeRolePurpose() === 'PLATFORM_ADMIN') return;
+    if (this.authStore.isSuperAdmin()) {
+      timer(0, 5 * 60 * 1000).pipe(
+        switchMap(() => this.complianceService.contarSolicitudesActivas().pipe(catchError(() => EMPTY))),
+        takeUntilDestroyed(this.destroyRef)
+      ).subscribe(respuesta => this.solicitudesCumplimientoActivas.set(respuesta.data ?? 0));
+      return;
+    }
     this.complianceService.actualesDeMiClinica().subscribe({
       next: respuesta => this.iaHabilitada.set(
         !!respuesta.data.find(control => control.control === 'USO_IA')?.habilitado

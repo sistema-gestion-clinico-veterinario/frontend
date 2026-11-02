@@ -60,7 +60,7 @@ import { Role } from '../../../models/response/permission';
   templateUrl: './employee.component.html'
 })
 export class EmployeeComponent implements OnInit, OnDestroy {
-  private readonly employeeActionItemsCache = new WeakMap<EmpleadoListResponse, MenuItem[]>();
+  private readonly employeeActionItemsCache = new WeakMap<EmpleadoListResponse, { key: string; items: MenuItem[] }>();
   private readonly fb = inject(FormBuilder);
   private readonly empleadoService = inject(EmpleadoService);
   private readonly mediaService = inject(MediaService);
@@ -97,7 +97,8 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   employeeSearch = signal<string>('');
   appliedEmployeeSearch = signal<string>('');
   currentPage = 0;
-  readonly pageSize = 10;
+  pageSize = 10;
+  readonly pageSizeOptions = [10, 20, 50, 100];
   openDropdown = signal<string | null>(null);
   searchFilter = signal<string>('');
   displayDetailModal = signal<boolean>(false);
@@ -373,7 +374,10 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   }
 
   onEmployeePageChange(event: any): void {
-    this.goToEmployeePage(Number(event.page) || 0);
+    const nextSize = Number(event.rows) || 10;
+    const nextPage = nextSize === this.pageSize ? Number(event.page) || 0 : 0;
+    this.pageSize = nextSize;
+    this.goToEmployeePage(nextPage);
   }
 
   private goToEmployeePage(page: number): void {
@@ -471,12 +475,24 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   }
 
   employeeActionItems(employee: EmpleadoListResponse): MenuItem[] {
+    const canReadEmployees = this.canEmployeeAction('leer');
+    const canUpdateEmployees = this.canEmployeeAction('modificar');
+    const canManageCredentials = this.authStore.hasAccess('VISTA_GESTION_CREDENCIALES', 'modificar');
+    const cacheKey = [
+      canReadEmployees,
+      canUpdateEmployees,
+      canManageCredentials,
+      employee.activo,
+      employee.userId ?? '',
+      employee.cuentaPendiente ?? false,
+      employee.tipoInactividad ?? ''
+    ].join('|');
     const cached = this.employeeActionItemsCache.get(employee);
-    if (cached) return cached;
+    if (cached?.key === cacheKey) return cached.items;
 
     const items: MenuItem[] = [];
 
-    if (this.canEmployeeAction('leer')) {
+    if (canReadEmployees) {
       items.push({
         label: 'Ver detalles',
         icon: 'pi pi-eye',
@@ -484,8 +500,7 @@ export class EmployeeComponent implements OnInit, OnDestroy {
       });
     }
 
-    if (this.authStore.hasAccess('VISTA_GESTION_CREDENCIALES', 'modificar')
-        && employee.activo && employee.userId && !employee.cuentaPendiente) {
+    if (canManageCredentials && employee.activo && employee.userId && !employee.cuentaPendiente) {
       items.push({
         label: 'Restablecer contraseña',
         icon: 'pi pi-lock',
@@ -493,7 +508,7 @@ export class EmployeeComponent implements OnInit, OnDestroy {
       });
     }
 
-    if (this.authStore.hasAccess('VISTA_GESTION_CREDENCIALES', 'modificar') && employee.activo && employee.userId) {
+    if (canManageCredentials && employee.activo && employee.userId) {
       items.push({
         label: employee.cuentaPendiente ? 'Corregir correo' : 'Cambiar correo de acceso',
         icon: 'pi pi-at',
@@ -501,7 +516,7 @@ export class EmployeeComponent implements OnInit, OnDestroy {
       });
     }
 
-    if (this.canEmployeeAction('modificar') && employee.cuentaPendiente) {
+    if (canUpdateEmployees && employee.cuentaPendiente) {
       items.push({
         label: 'Reenviar invitación',
         icon: 'pi pi-send',
@@ -509,7 +524,7 @@ export class EmployeeComponent implements OnInit, OnDestroy {
       });
     }
 
-    if (this.canEmployeeAction('modificar')) {
+    if (canUpdateEmployees) {
       items.push({
         label: 'Editar',
         icon: 'pi pi-pencil',
@@ -525,7 +540,7 @@ export class EmployeeComponent implements OnInit, OnDestroy {
       }
     }
 
-    this.employeeActionItemsCache.set(employee, items);
+    this.employeeActionItemsCache.set(employee, { key: cacheKey, items });
     return items;
   }
 

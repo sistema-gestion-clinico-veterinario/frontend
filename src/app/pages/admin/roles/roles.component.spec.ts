@@ -3,6 +3,7 @@ import { RolesComponent } from './roles.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { MessageService } from 'primeng/api';
 import { provideRouter } from '@angular/router';
+import { of } from 'rxjs';
 
 describe('RolesComponent', () => {
   let component: RolesComponent;
@@ -66,6 +67,56 @@ describe('RolesComponent', () => {
       conSesion(true, true);
       expect(component.canRenameRole(rol({}))).toBeFalse();
       expect(component.canToggleRole(rol({}))).toBeFalse();
+    });
+  });
+
+  describe('duplicación de roles de empresa', () => {
+    const role = (changes: Record<string, unknown> = {}) => ({
+      id: 10, name: 'ROLE_VETERINARIO', descripcion: 'Atención clínica', activo: true,
+      companyId: 7, scope: 'STAFF', purpose: 'CUSTOM', systemManaged: false,
+      protectedRole: false, permissionVersion: 0, ambitoEditable: true, ...changes
+    }) as any;
+
+    beforeEach(() => {
+      spyOn((component as any).authStore, 'hasAccess').and.returnValue(true);
+    });
+
+    it('solo permite duplicar roles pertenecientes a una empresa', () => {
+      expect(component.canDuplicateRole(role())).toBeTrue();
+      expect(component.canDuplicateRole(role({ companyId: null }))).toBeFalse();
+    });
+
+    it('sugiere un nombre comprensible y evita repetir uno existente', () => {
+      component.companyRoles.set([
+        role(),
+        role({ id: 11, name: 'ROLE_VETERINARIO_PERSONALIZADO' })
+      ]);
+
+      component.openDuplicateModal(role());
+
+      expect(component.showDuplicateModal()).toBeTrue();
+      expect(component.duplicateRoleName()).toBe('VETERINARIO PERSONALIZADO A');
+      expect(component.duplicateRoleDesc()).toBe('Atención clínica');
+    });
+
+    it('crea el duplicado, lo incorpora a la lista y lo selecciona', () => {
+      const source = role();
+      const duplicate = role({ id: 12, name: 'ROLE_VETERINARIO_ENCARGADO' });
+      component.companyRoles.set([source]);
+      component.openDuplicateModal(source);
+      component.duplicateRoleName.set('Veterinario encargado');
+      spyOn((component as any).roleService, 'duplicar').and.returnValue(of({ data: duplicate }));
+      const selectSpy = spyOn(component, 'selectRole');
+
+      component.duplicateRole();
+
+      expect((component as any).roleService.duplicar).toHaveBeenCalledWith(10, {
+        name: 'ROLE_VETERINARIO_ENCARGADO',
+        descripcion: 'Atención clínica'
+      });
+      expect(component.companyRoles()).toContain(duplicate);
+      expect(selectSpy).toHaveBeenCalledWith(duplicate);
+      expect(component.showDuplicateModal()).toBeFalse();
     });
   });
 });

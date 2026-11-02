@@ -246,7 +246,8 @@ export class ComplementarioComponent implements OnInit {
   servicios           = signal<ServicioResponse[]>([]);
   serviciosTotal      = signal(0);
   serviciosPage       = signal(0);
-  readonly pageSize   = 8;
+  pageSize            = 10;
+  readonly pageSizeOptions = [10, 20, 50, 100];
   showServicioModal   = signal(false);
   editingServicio     = signal<ServicioResponse | null>(null);
   servicioForm: FormGroup = this.fb.group({
@@ -616,23 +617,38 @@ export class ComplementarioComponent implements OnInit {
   }
 
   onEspecialidadesPageChange(event: any) {
-    this.loadEspecialidades(Number(event.page) || 0);
+    const nextSize = Number(event.rows) || 10;
+    const nextPage = nextSize === this.pageSize ? Number(event.page) || 0 : 0;
+    this.pageSize = nextSize;
+    this.loadEspecialidades(nextPage);
   }
 
   onTiposEmpleadoPageChange(event: any) {
-    this.loadTiposEmpleado(Number(event.page) || 0);
+    const nextSize = Number(event.rows) || 10;
+    const nextPage = nextSize === this.pageSize ? Number(event.page) || 0 : 0;
+    this.pageSize = nextSize;
+    this.loadTiposEmpleado(nextPage);
   }
 
   onServiciosPageChange(event: any) {
-    this.loadServicios(Number(event.page) || 0);
+    const nextSize = Number(event.rows) || 10;
+    const nextPage = nextSize === this.pageSize ? Number(event.page) || 0 : 0;
+    this.pageSize = nextSize;
+    this.loadServicios(nextPage);
   }
 
   onVacunasPageChange(event: any) {
-    this.loadVacunas(Number(event.page) || 0);
+    const nextSize = Number(event.rows) || 10;
+    const nextPage = nextSize === this.pageSize ? Number(event.page) || 0 : 0;
+    this.pageSize = nextSize;
+    this.loadVacunas(nextPage);
   }
 
   onDesparasitantesPageChange(event: any) {
-    this.loadDesparasitantes(Number(event.page) || 0);
+    const nextSize = Number(event.rows) || 10;
+    const nextPage = nextSize === this.pageSize ? Number(event.page) || 0 : 0;
+    this.pageSize = nextSize;
+    this.loadDesparasitantes(nextPage);
   }
 
   private saveVacuna(item: any) {

@@ -36,7 +36,8 @@ export class ListaRecetasComponent implements OnInit {
   selectedReceta = signal<PrescripcionResponse | null>(null);
   totalRecords = signal(0);
   currentPage = 0;
-  readonly pageSize = 10;
+  pageSize = 10;
+  readonly pageSizeOptions = [10, 20, 50, 100];
   searchQuery = '';
   nombreMascota = '';
   numeroMicrochip = '';
@@ -126,7 +127,10 @@ export class ListaRecetasComponent implements OnInit {
   }
 
   onPageChange(event: any) {
-    this.cargarRecetas(event.page);
+    const nextSize = Number(event.rows) || 10;
+    const nextPage = nextSize === this.pageSize ? Number(event.page) || 0 : 0;
+    this.pageSize = nextSize;
+    this.cargarRecetas(nextPage);
   }
 
   resetFiltros() {
