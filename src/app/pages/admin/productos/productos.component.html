@@ -247,13 +247,15 @@
             </div>
           }
 
-          @if (productosTotal() > pageSize) {
+          @if (productosTotal() > 0) {
             <div class="bg-white border border-slate-200 rounded-lg mt-4 px-2">
               <p-paginator
                 [rows]="pageSize"
+                [rowsPerPageOptions]="pageSizeOptions"
                 [totalRecords]="productosTotal()"
                 [first]="productosPage() * pageSize"
-                [showCurrentPageReport]="false"
+                [showCurrentPageReport]="true"
+                currentPageReportTemplate="{first}–{last} de {totalRecords}"
                 (onPageChange)="onPageChange($event)"
                 styleClass="!border-none !bg-transparent !py-3"
               ></p-paginator>

@@ -65,6 +65,11 @@ export const AUTHENTICATED_ROUTES: Routes = [
         loadComponent: () => import('./pages/admin/company/compliance/company-compliance.component').then((m) => m.CompanyComplianceComponent)
       },
       {
+        path: 'admin/solicitudes-cumplimiento',
+        data: { ventana: 'VISTA_COMPANY', permiso: 'leer', purposes: ['PLATFORM_ADMIN'] },
+        loadComponent: () => import('./pages/admin/compliance-requests/compliance-requests.component').then((m) => m.ComplianceRequestsComponent)
+      },
+      {
         path: 'admin/privacidad',
         data: { ventana: 'VISTA_COMPANY', permiso: 'leer' },
         loadComponent: () => import('./pages/admin/privacidad/privacidad.component').then((m) => m.PrivacidadComponent)
@@ -78,6 +83,11 @@ export const AUTHENTICATED_ROUTES: Routes = [
         path: 'admin/privacidad/derechos',
         data: { ventana: 'VISTA_COMPANY', permiso: 'leer' },
         loadComponent: () => import('./pages/admin/privacidad/derechos/derechos-admin.component').then((m) => m.DerechosAdminComponent)
+      },
+      {
+        path: 'admin/privacidad/configuracion',
+        data: { ventana: 'VISTA_COMPANY', permiso: 'leer', purposes: ['COMPANY_ADMIN'] },
+        loadComponent: () => import('./pages/admin/privacidad/configuracion/cumplimiento-clinica.component').then((m) => m.CumplimientoClinicaComponent)
       },
       {
         path: 'auditoria',

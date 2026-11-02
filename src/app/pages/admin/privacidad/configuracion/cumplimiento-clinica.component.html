@@ -1,0 +1,97 @@
+<p-toast position="bottom-right" />
+
+<main class="min-h-screen bg-slate-50 p-4 sm:p-6">
+  <div class="mx-auto max-w-7xl space-y-5">
+    <header>
+      <a routerLink="/admin/privacidad" class="inline-flex items-center gap-2 text-xs font-bold text-[var(--brand-primary)]">
+        <i class="pi pi-arrow-left"></i> Privacidad
+      </a>
+      <div class="mt-2 flex items-start gap-3">
+        <span class="inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-cyan-50 text-[var(--brand-primary)]"><i class="pi pi-shield"></i></span>
+        <div>
+          <h1 class="text-2xl font-extrabold text-slate-900">Cumplimiento y privacidad</h1>
+          <p class="mt-1 text-sm text-slate-500">Consulta qué documentos y controles aplican a la clínica y cómo se conserva su evidencia.</p>
+        </div>
+      </div>
+    </header>
+
+    @if (cargando()) {
+      <p class="py-12 text-center text-sm text-slate-500"><i class="pi pi-spin pi-spinner mr-2"></i>Cargando configuración…</p>
+    } @else {
+      <section class="overflow-hidden rounded-xl border border-slate-200 bg-white">
+        <div class="border-b border-slate-200 px-5 py-4">
+          <h2 class="text-base font-extrabold text-slate-900">Documentos de SoftVet</h2>
+          <p class="mt-1 text-xs text-slate-500">Son globales y no pueden desactivarse desde una clínica.</p>
+        </div>
+        <div class="divide-y divide-slate-100">
+          @for (documento of documentosGlobales(); track documento.id) {
+            <div class="grid gap-3 px-5 py-4 sm:grid-cols-[minmax(0,1fr)_120px_150px] sm:items-center">
+              <div class="flex min-w-0 items-start gap-3">
+                <i [class]="documento.tipo === 'TERMINOS_Y_CONDICIONES' ? 'pi pi-file-check mt-1 text-[var(--brand-primary)]' : 'pi pi-lock mt-1 text-[var(--brand-primary)]'"></i>
+                <div><p class="font-bold text-slate-800">{{ documento.tipo === 'TERMINOS_Y_CONDICIONES' ? 'Términos y Condiciones de SoftVet' : 'Política de Privacidad de SoftVet' }}</p><p class="mt-0.5 text-xs text-slate-500">{{ documento.tipo === 'TERMINOS_Y_CONDICIONES' ? 'Requiere aceptación de la persona usuaria.' : 'Documento informativo con constancia de lectura.' }}</p></div>
+              </div>
+              <span class="text-sm font-semibold text-slate-600">Versión {{ documento.version }}</span>
+              <span class="inline-flex w-fit items-center gap-1.5 text-xs font-bold text-emerald-700"><span class="size-2 rounded-full bg-emerald-500"></span>Vigente</span>
+            </div>
+          } @empty {
+            <p class="px-5 py-6 text-sm text-slate-500">No se pudieron consultar los documentos globales.</p>
+          }
+        </div>
+      </section>
+
+      <section class="overflow-hidden rounded-xl border border-slate-200 bg-white">
+        <div class="border-b border-slate-200 px-5 py-4">
+          <h2 class="text-base font-extrabold text-slate-900">Controles de la clínica</h2>
+          <p class="mt-1 text-xs text-slate-500">La empresa puede solicitar un cambio; la aprobación corresponde al administrador de plataforma.</p>
+        </div>
+        <div class="divide-y divide-slate-100">
+          @for (configuracion of configuraciones(); track configuracion.control) {
+            @let pendiente = solicitudPendiente(configuracion.control);
+            <article class="grid gap-4 px-5 py-4 lg:grid-cols-[minmax(280px,1.5fr)_170px_150px_150px] lg:items-center">
+              <div class="flex min-w-0 items-start gap-3">
+                <span class="inline-flex size-9 shrink-0 items-center justify-center rounded-lg bg-slate-50 text-[var(--brand-primary)]"><i [class]="presentacion(configuracion.control).icono"></i></span>
+                <div>
+                  <h3 class="font-bold text-slate-800">{{ presentacion(configuracion.control).nombre }}</h3>
+                  <p class="mt-0.5 text-xs leading-5 text-slate-500">{{ presentacion(configuracion.control).descripcion }}</p>
+                  <p class="mt-1 text-[11px] font-semibold text-slate-400">{{ presentacion(configuracion.control).caracter }}</p>
+                </div>
+              </div>
+              <div><p class="text-[10px] font-bold uppercase tracking-wide text-slate-400">Gestión</p><p class="mt-1 text-sm font-semibold text-slate-700">{{ modoVisible(configuracion.modo) }}</p></div>
+              <div><p class="text-[10px] font-bold uppercase tracking-wide text-slate-400">Estado</p><span [class]="configuracion.habilitado ? 'mt-1 inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700' : 'mt-1 inline-flex items-center gap-1.5 text-xs font-bold text-slate-500'"><span [class]="configuracion.habilitado ? 'size-2 rounded-full bg-emerald-500' : 'size-2 rounded-full bg-slate-300'"></span>{{ estadoVisible(configuracion) }}</span></div>
+              <div class="lg:text-right">
+                @if (pendiente) {
+                  <span class="inline-flex items-center gap-2 text-xs font-bold text-amber-700"><i class="pi pi-clock"></i>{{ pendiente.estado === 'EN_REVISION' ? 'En revisión' : 'Solicitud pendiente' }}</span>
+                } @else {
+                  <button type="button" (click)="abrirSolicitud(configuracion)" class="rounded-lg border border-slate-300 px-3 py-2 text-xs font-bold text-slate-700 hover:border-[var(--brand-primary)] hover:text-[var(--brand-primary)]">Solicitar cambio</button>
+                }
+              </div>
+            </article>
+          }
+        </div>
+      </section>
+
+      @if (solicitudes().length) {
+        <section class="overflow-hidden rounded-xl border border-slate-200 bg-white">
+          <div class="border-b border-slate-200 px-5 py-4"><h2 class="text-base font-extrabold text-slate-900">Solicitudes realizadas</h2></div>
+          <div class="overflow-x-auto"><table class="w-full min-w-[820px] text-left text-sm"><thead class="bg-slate-50 text-[11px] uppercase tracking-wide text-slate-500"><tr><th class="px-5 py-3">Control</th><th class="px-5 py-3">Cambio solicitado</th><th class="px-5 py-3">Vigencia</th><th class="px-5 py-3">Estado</th><th class="px-5 py-3">Respuesta</th></tr></thead><tbody class="divide-y divide-slate-100">@for (solicitud of solicitudes(); track solicitud.id) {<tr><td class="px-5 py-3 font-semibold text-slate-800">{{ presentacion(solicitud.control).nombre }}</td><td class="px-5 py-3 text-slate-600">{{ modoVisible(solicitud.modoSolicitado) }}<span class="mt-1 block text-xs text-slate-400">{{ solicitud.evidenciaReferencia || 'Sin evidencia externa' }}</span></td><td class="px-5 py-3 text-slate-500">{{ solicitud.vigenteDesdeSolicitada ? (solicitud.vigenteDesdeSolicitada | date:'dd/MM/yyyy HH:mm') : 'Al aprobar' }}</td><td class="px-5 py-3"><span [class]="solicitud.estado === 'APROBADA' ? 'font-bold text-emerald-700' : solicitud.estado === 'RECHAZADA' ? 'font-bold text-rose-600' : 'font-bold text-amber-700'">{{ solicitud.estado === 'PENDIENTE' ? 'Pendiente' : solicitud.estado === 'EN_REVISION' ? 'En revisión' : solicitud.estado === 'APROBADA' ? 'Aprobada' : 'Rechazada' }}</span></td><td class="max-w-72 px-5 py-3 text-slate-500">{{ solicitud.comentarioResolucion || '—' }}</td></tr>}</tbody></table></div>
+        </section>
+      }
+    }
+  </div>
+</main>
+
+@if (controlSeleccionado(); as configuracion) {
+  <div class="fixed inset-0 z-[110] flex items-center justify-center bg-slate-900/50 p-4" (click)="cerrarSolicitud()" (keydown.escape)="cerrarSolicitud()">
+    <form [formGroup]="form" (ngSubmit)="enviarSolicitud()" role="dialog" aria-modal="true" aria-labelledby="solicitud-titulo" class="w-full max-w-lg rounded-2xl bg-white p-5 sm:p-6" (click)="$event.stopPropagation()">
+      <div class="flex items-start justify-between gap-4"><div><h2 id="solicitud-titulo" class="text-lg font-extrabold text-slate-900">Solicitar cambio</h2><p class="mt-1 text-sm text-slate-500">{{ presentacion(configuracion.control).nombre }}</p></div><button type="button" (click)="cerrarSolicitud()" aria-label="Cerrar" class="inline-flex size-9 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100"><i class="pi pi-times"></i></button></div>
+      <label class="mt-5 block text-xs font-bold text-slate-700">Modalidad solicitada<select formControlName="modo" class="mt-1 h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none focus:border-[var(--brand-primary)]">@for (modo of modos; track modo.valor) {<option [value]="modo.valor">{{ modo.etiqueta }}</option>}</select></label>
+      @if (form.controls.modo.value === 'SOFTVET') {<label class="mt-4 flex items-start gap-2 text-sm text-slate-700"><input type="checkbox" formControlName="bloqueante" class="mt-0.5 size-4 accent-[var(--brand-primary)]" />Bloquear solamente la función relacionada cuando falte la evidencia requerida.</label>}
+      <label class="mt-4 block text-xs font-bold text-slate-700">Motivo del cambio<textarea formControlName="motivo" rows="4" maxlength="2000" class="mt-1 w-full rounded-lg border border-slate-300 p-3 text-sm outline-none focus:border-[var(--brand-primary)]" placeholder="Explica por qué la clínica necesita este cambio."></textarea></label>
+      @if (form.controls.motivo.touched && form.controls.motivo.invalid) {<p class="mt-1 text-xs text-rose-600">Escribe un motivo de al menos 10 caracteres.</p>}
+      <label class="mt-4 block text-xs font-bold text-slate-700">Contrato, documento o enlace <span class="font-normal text-slate-400">{{ form.controls.modo.value === 'EXTERNO' ? '(obligatorio)' : '(opcional)' }}</span><input formControlName="evidenciaReferencia" maxlength="200" class="mt-1 h-11 w-full rounded-lg border border-slate-300 px-3 text-sm outline-none focus:border-[var(--brand-primary)]" placeholder="Ej.: Contrato LEG-2026-018 o https://…" /></label>
+      <label class="mt-4 block text-xs font-bold text-slate-700">Aplicar desde <span class="font-normal text-slate-400">(opcional)</span><input type="datetime-local" formControlName="vigenteDesde" class="mt-1 h-11 w-full rounded-lg border border-slate-300 px-3 text-sm outline-none focus:border-[var(--brand-primary)]" /></label>
+      <p class="mt-4 text-xs leading-5 text-slate-500">Enviar la solicitud no cambia la configuración. El administrador de plataforma deberá revisarla y la decisión quedará registrada.</p>
+      <div class="mt-5 flex justify-end gap-2"><button type="button" (click)="cerrarSolicitud()" class="rounded-lg bg-slate-100 px-4 py-2.5 text-sm font-bold text-slate-700">Cancelar</button><button type="submit" [disabled]="enviando()" class="rounded-lg bg-[var(--brand-primary)] px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50">{{ enviando() ? 'Enviando…' : 'Enviar solicitud' }}</button></div>
+    </form>
+  </div>
+}

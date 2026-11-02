@@ -131,7 +131,8 @@ export class CategoriasProductoComponent implements OnInit {
     descripcion: ['', [Validators.maxLength(300)]]
   });
 
-  readonly pageSize = 10;
+  pageSize = 10;
+  readonly pageSizeOptions = [10, 20, 50, 100];
 
   confirmDialog = signal<ConfirmContext<CategoriaProductoResponse | UnidadMedidaResponse | MarcaProductoResponse> | null>(null);
 
@@ -165,7 +166,10 @@ export class CategoriasProductoComponent implements OnInit {
   }
 
   onCategoriasPageChange(event: any) {
-    this.loadCategorias(Number(event.page) || 0);
+    const nextSize = Number(event.rows) || 10;
+    const nextPage = nextSize === this.pageSize ? Number(event.page) || 0 : 0;
+    this.pageSize = nextSize;
+    this.loadCategorias(nextPage);
   }
 
   openCategoriaModal(item?: CategoriaProductoResponse) {
@@ -250,7 +254,10 @@ export class CategoriasProductoComponent implements OnInit {
   }
 
   onUnidadesPageChange(event: any) {
-    this.loadUnidades(Number(event.page) || 0);
+    const nextSize = Number(event.rows) || 10;
+    const nextPage = nextSize === this.pageSize ? Number(event.page) || 0 : 0;
+    this.pageSize = nextSize;
+    this.loadUnidades(nextPage);
   }
 
   onSearchChange(value: string) {
@@ -306,7 +313,10 @@ export class CategoriasProductoComponent implements OnInit {
   }
 
   onMarcasPageChange(event: any) {
-    this.loadMarcas(Number(event.page) || 0);
+    const nextSize = Number(event.rows) || 10;
+    const nextPage = nextSize === this.pageSize ? Number(event.page) || 0 : 0;
+    this.pageSize = nextSize;
+    this.loadMarcas(nextPage);
   }
 
   openMarcaModal(item?: MarcaProductoResponse) {

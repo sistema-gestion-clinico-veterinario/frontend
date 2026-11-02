@@ -72,7 +72,8 @@ export class ProductosComponent implements OnInit {
   productos         = signal<ProductoResponse[]>([]);
   productosTotal    = signal(0);
   productosPage     = signal(0);
-  readonly pageSize = 12;
+  pageSize = 10;
+  readonly pageSizeOptions = [10, 20, 50, 100];
 
   categorias        = signal<CategoriaProductoResponse[]>([]);
   categoriaConteos  = signal<CategoriaConteoResponse[]>([]);
@@ -139,7 +140,10 @@ export class ProductosComponent implements OnInit {
   }
 
   onPageChange(event: any) {
-    this.loadProductos(Number(event.page) || 0);
+    const nextSize = Number(event.rows) || 10;
+    const nextPage = nextSize === this.pageSize ? Number(event.page) || 0 : 0;
+    this.pageSize = nextSize;
+    this.loadProductos(nextPage);
   }
 
   loadCategorias() {

@@ -63,7 +63,8 @@ export class ListaMascotasComponent implements OnInit {
   filterActivo:  boolean | null  = null;
   filtersOpen       = false;
   currentPage       = 0;
-  readonly pageSize = 10;
+  pageSize = 10;
+  readonly pageSizeOptions = [10, 20, 50, 100];
   private readonly nameFilterPattern = /^[A-Za-zÁÉÍÓÚáéíóúÑñÜü]+(?: [A-Za-zÁÉÍÓÚáéíóúÑñÜü]+)*$/;
 
   readonly especieOpciones = [
@@ -210,7 +211,9 @@ export class ListaMascotasComponent implements OnInit {
   }
 
   onPageChange(e: any) {
-    const page = Number(e.page) || 0;
+    const nextSize = Number(e.rows) || 10;
+    const page = nextSize === this.pageSize ? Number(e.page) || 0 : 0;
+    this.pageSize = nextSize;
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: { page: page > 0 ? page : null },

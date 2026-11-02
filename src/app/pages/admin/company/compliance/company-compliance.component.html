@@ -12,6 +12,24 @@
       </p>
     </header>
 
+    @if (solicitudes().length) {
+      <section class="overflow-hidden rounded-xl border border-amber-200 bg-white">
+        <div class="flex items-center justify-between gap-3 border-b border-amber-100 px-5 py-4">
+          <div><h2 class="font-extrabold text-slate-900">Solicitudes pendientes</h2><p class="mt-1 text-xs text-slate-500">La clínica solicita cambiar cómo se gestiona un control.</p></div>
+          <span class="inline-flex size-7 items-center justify-center rounded-full bg-amber-100 text-xs font-extrabold text-amber-700">{{ solicitudes().length }}</span>
+        </div>
+        <div class="divide-y divide-slate-100">
+          @for (solicitud of solicitudes(); track solicitud.id) {
+            <div class="grid gap-3 px-5 py-4 md:grid-cols-[minmax(0,1fr)_180px_120px] md:items-center">
+              <div><p class="font-bold text-slate-800">{{ nombre(solicitud.control) }}</p><p class="mt-1 line-clamp-2 text-xs leading-5 text-slate-500">{{ solicitud.motivo }}</p></div>
+              <div><p class="text-[10px] font-bold uppercase tracking-wide text-slate-400">Cambio solicitado</p><p class="mt-1 text-sm font-semibold text-slate-700">{{ solicitud.modoSolicitado === 'SOFTVET' ? 'Gestionado en SoftVet' : solicitud.modoSolicitado === 'EXTERNO' ? 'Gestionado externamente' : 'No aplica' }}</p></div>
+              <button type="button" (click)="revisarSolicitud(solicitud)" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700 hover:border-[var(--brand-primary)] hover:text-[var(--brand-primary)]">Revisar</button>
+            </div>
+          }
+        </div>
+      </section>
+    }
+
     @if (cargando()) {
       <p class="rounded-xl border border-slate-200 bg-white p-5 text-sm text-slate-500">Cargando configuración…</p>
     } @else if (error()) {
@@ -105,3 +123,16 @@
     }
   </div>
 </main>
+
+@if (solicitudRevisada(); as solicitud) {
+  <div class="fixed inset-0 z-[110] flex items-center justify-center bg-slate-900/50 p-4" (click)="cerrarRevision()" (keydown.escape)="cerrarRevision()">
+    <form [formGroup]="resolucionForm" role="dialog" aria-modal="true" aria-labelledby="revision-titulo" class="w-full max-w-lg rounded-2xl bg-white p-5 sm:p-6" (click)="$event.stopPropagation()">
+      <div class="flex items-start justify-between gap-4"><div><h2 id="revision-titulo" class="text-lg font-extrabold text-slate-900">Revisar solicitud</h2><p class="mt-1 text-sm text-slate-500">{{ nombre(solicitud.control) }}</p></div><button type="button" (click)="cerrarRevision()" aria-label="Cerrar" class="inline-flex size-9 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100"><i class="pi pi-times"></i></button></div>
+      <dl class="mt-5 grid gap-3 rounded-xl bg-slate-50 p-4 text-sm sm:grid-cols-2"><div><dt class="text-xs font-bold text-slate-400">Solicita</dt><dd class="mt-1 font-semibold text-slate-700">{{ solicitud.solicitadaPor }}</dd></div><div><dt class="text-xs font-bold text-slate-400">Modalidad</dt><dd class="mt-1 font-semibold text-slate-700">{{ solicitud.modoSolicitado === 'SOFTVET' ? 'Gestionado en SoftVet' : solicitud.modoSolicitado === 'EXTERNO' ? 'Gestionado externamente' : 'No aplica' }}</dd></div><div class="sm:col-span-2"><dt class="text-xs font-bold text-slate-400">Motivo</dt><dd class="mt-1 leading-6 text-slate-700">{{ solicitud.motivo }}</dd></div></dl>
+      <label class="mt-4 block text-xs font-bold text-slate-700">Comentario de la decisión<textarea formControlName="comentario" rows="4" maxlength="2000" class="mt-1 w-full rounded-lg border border-slate-300 p-3 text-sm outline-none focus:border-[var(--brand-primary)]" placeholder="Explica por qué se aprueba o rechaza."></textarea></label>
+      @if (resolucionForm.controls.comentario.touched && resolucionForm.controls.comentario.invalid) {<p class="mt-1 text-xs text-rose-600">Escribe un comentario de al menos 5 caracteres.</p>}
+      <label class="mt-4 flex items-start gap-2 text-sm text-slate-700"><input type="checkbox" formControlName="confirmoRevisionLegal" class="mt-0.5 size-4 accent-[var(--brand-primary)]" />Confirmo la revisión legal necesaria para aprobar y crear una nueva versión.</label>
+      <div class="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end"><button type="button" (click)="resolverSolicitud(false)" [disabled]="resolviendo()" class="rounded-lg bg-slate-100 px-4 py-2.5 text-sm font-bold text-slate-700 disabled:opacity-50">Rechazar</button><button type="button" (click)="resolverSolicitud(true)" [disabled]="resolviendo()" class="rounded-lg bg-[var(--brand-primary)] px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50">{{ resolviendo() ? 'Procesando…' : 'Aprobar y aplicar' }}</button></div>
+    </form>
+  </div>
+}
