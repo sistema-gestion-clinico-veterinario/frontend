@@ -61,12 +61,12 @@ export const AUTHENTICATED_ROUTES: Routes = [
       },
       {
         path: 'admin/company/:id/compliance',
-        data: { ventana: 'VISTA_COMPANY', permiso: 'leer', purposes: ['PLATFORM_ADMIN'] },
+        data: { purposes: ['PLATFORM_ADMIN'], purposeOnly: true },
         loadComponent: () => import('./pages/admin/company/compliance/company-compliance.component').then((m) => m.CompanyComplianceComponent)
       },
       {
         path: 'admin/solicitudes-cumplimiento',
-        data: { ventana: 'VISTA_COMPANY', permiso: 'leer', purposes: ['PLATFORM_ADMIN'] },
+        data: { purposes: ['PLATFORM_ADMIN'], purposeOnly: true },
         loadComponent: () => import('./pages/admin/compliance-requests/compliance-requests.component').then((m) => m.ComplianceRequestsComponent)
       },
       {

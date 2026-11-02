@@ -32,7 +32,9 @@ describe('PendientesPrivacidadService', () => {
   const ejecucionRespaldo = (parcial: Partial<BackupExecution> = {}): BackupExecution => ({
     id: 22, runId: 'run-22', runAttempt: 1, recoveryPointId: 'rp-22', retentionPolicy: 'p01',
     triggerType: 'SCHEDULED', status: 'FAILED', databaseStatus: 'SUCCESS', restrictionsStatus: 'SUCCESS',
-    storageStatus: 'FAILED', restorationVerified: true, startedAt: new Date().toISOString(),
+    storageStatus: 'FAILED', protectedSizeBytes: 1024, protectedFileCount: 3,
+    compressionAlgorithm: 'gzip', encryptionAlgorithm: 'OpenPGP', databaseRestoreVerified: true,
+    databaseRestoreDurationSeconds: 12, startedAt: new Date().toISOString(),
     finishedAt: new Date().toISOString(), commitSha: 'abc', workflowUrl: 'https://github.test/run/22',
     ...parcial
   });
