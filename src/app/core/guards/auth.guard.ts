@@ -60,6 +60,19 @@ function validateAccess(route: ActivatedRouteSnapshot, authStore: any, router: R
     return router.createUrlTree(['/login']);
   }
 
+  const requiredPurposes = route.data?.['purposes'] as string[] | undefined;
+  if (requiredPurposes?.length && !requiredPurposes.includes(authStore.activeRolePurpose())) {
+    return router.createUrlTree([RUTA_ACCESO_DENEGADO]);
+  }
+
+  // Algunas herramientas globales de plataforma no forman parte del menú
+  // configurable de una empresa. En ellas el propósito del rol es la fuente
+  // de autorización y evita exigir una ventana empresarial inexistente.
+  const purposeOnly = route.data?.['purposeOnly'] === true;
+  if (purposeOnly && requiredPurposes?.length) {
+    return true;
+  }
+
   // Dynamic route pattern access check
   const pattern = getRoutePattern(route);
   if (pattern && !isPurposeDashboardRoute(pattern, authStore.activeRolePurpose()) && !authStore.hasRouteAccess(pattern)) {
@@ -73,11 +86,6 @@ function validateAccess(route: ActivatedRouteSnapshot, authStore: any, router: R
     if (!authStore.hasAccess(requiredVentana, requiredPermission)) {
       return router.createUrlTree([RUTA_ACCESO_DENEGADO]);
     }
-  }
-
-  const requiredPurposes = route.data?.['purposes'] as string[] | undefined;
-  if (requiredPurposes?.length && !requiredPurposes.includes(authStore.activeRolePurpose())) {
-    return router.createUrlTree([RUTA_ACCESO_DENEGADO]);
   }
 
   return true;

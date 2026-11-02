@@ -20,7 +20,12 @@ describe('BackupMonitorComponent', () => {
     databaseStatus: 'SUCCESS',
     restrictionsStatus: 'SUCCESS',
     storageStatus: 'SUCCESS',
-    restorationVerified: true,
+    protectedSizeBytes: 1048576,
+    protectedFileCount: 12,
+    compressionAlgorithm: 'PostgreSQL custom nivel 9 y gzip',
+    encryptionAlgorithm: 'OpenPGP',
+    databaseRestoreVerified: true,
+    databaseRestoreDurationSeconds: 42,
     startedAt: '2026-10-18T07:17:00Z',
     finishedAt: '2026-10-18T07:20:28Z',
     commitSha: 'c423a72000000000000000000000000000000000',
@@ -37,6 +42,12 @@ describe('BackupMonitorComponent', () => {
     problemCount30Days: 1,
     nextScheduledAt: '2026-10-19T07:17:00Z',
     maxHoursWithoutSuccess: 36,
+    rpoTargetHours: 24,
+    rpoObservedMinutes: 463,
+    rpoCompliant: true,
+    rtoTargetMinutes: 240,
+    latestDatabaseRestoreDurationSeconds: 42,
+    integralRecoveryTestAvailable: false,
     ...parcial
   });
 
@@ -68,8 +79,8 @@ describe('BackupMonitorComponent', () => {
     await crear();
 
     expect(texto()).toContain('Monitoreo de respaldos');
-    expect(texto()).toContain('Prueba de recuperación');
-    expect(texto()).toContain('Verificada');
+    expect(texto()).toContain('RTO integral');
+    expect(texto()).toContain('Pendiente de prueba');
     expect(texto()).toContain('01fa5bc2');
     expect(texto()).toContain('Completo');
   });

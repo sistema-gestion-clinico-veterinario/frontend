@@ -13,7 +13,12 @@ export interface BackupExecution {
   databaseStatus: BackupComponentStatus;
   restrictionsStatus: BackupComponentStatus;
   storageStatus: BackupComponentStatus;
-  restorationVerified: boolean;
+  protectedSizeBytes: number;
+  protectedFileCount: number;
+  compressionAlgorithm: string | null;
+  encryptionAlgorithm: string | null;
+  databaseRestoreVerified: boolean;
+  databaseRestoreDurationSeconds: number | null;
   startedAt: string;
   finishedAt: string | null;
   commitSha: string | null;
@@ -32,4 +37,10 @@ export interface BackupSummary {
   problemCount30Days: number;
   nextScheduledAt: string;
   maxHoursWithoutSuccess: number;
+  rpoTargetHours: number;
+  rpoObservedMinutes: number | null;
+  rpoCompliant: boolean | null;
+  rtoTargetMinutes: number;
+  latestDatabaseRestoreDurationSeconds: number | null;
+  integralRecoveryTestAvailable: boolean;
 }

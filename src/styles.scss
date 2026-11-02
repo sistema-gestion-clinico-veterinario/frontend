@@ -301,14 +301,27 @@
    datos; tamaño, espaciado y estados visuales se controlan globalmente. */
 .p-paginator {
   display: flex !important;
-  min-height: 2.75rem;
+  min-height: 3.25rem;
   width: 100%;
   align-items: center;
   justify-content: center;
-  gap: 0.125rem !important;
-  padding: 0.375rem 0.5rem !important;
+  gap: 0.25rem !important;
+  padding: 0.5rem 0.75rem !important;
   border: 0 !important;
   background: transparent !important;
+  color: #475569;
+}
+
+.p-paginator .p-paginator-current {
+  flex: 0 0 auto;
+  margin-right: 0.5rem;
+  padding-right: 0.75rem;
+  border-right: 1px solid #e2e8f0;
+  color: #64748b;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 2rem;
+  white-space: nowrap;
 }
 
 .p-paginator .p-paginator-pages {
@@ -324,18 +337,18 @@
   .p-paginator-next,
   .p-paginator-last
 ) {
-  width: 2rem !important;
-  min-width: 2rem !important;
-  height: 2rem !important;
-  min-height: 2rem !important;
+  width: 2.125rem !important;
+  min-width: 2.125rem !important;
+  height: 2.125rem !important;
+  min-height: 2.125rem !important;
   margin: 0 !important;
   padding: 0 !important;
-  border: 0 !important;
-  border-radius: 0.5rem !important;
+  border: 1px solid transparent !important;
+  border-radius: 0.625rem !important;
   background: transparent !important;
   color: #64748b !important;
-  font-size: 0.75rem !important;
-  transition: background-color 150ms ease, color 150ms ease;
+  font-size: 0.78rem !important;
+  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
 }
 
 .p-paginator :where(
@@ -345,7 +358,8 @@
   .p-paginator-next,
   .p-paginator-last
 ):not(:disabled):hover {
-  background: #f1f5f9 !important;
+  border-color: #dbe4ee !important;
+  background: #f8fafc !important;
   color: rgb(var(--brand-600)) !important;
 }
 
@@ -354,13 +368,63 @@
   .p-paginator-page.p-paginator-page-selected
 ) {
   background: rgb(var(--brand-600)) !important;
+  border-color: rgb(var(--brand-600)) !important;
   color: #fff !important;
   font-weight: 700 !important;
+  box-shadow: 0 0.125rem 0.375rem rgb(var(--brand-600) / 0.2);
 }
 
 .p-paginator button:disabled {
   color: #cbd5e1 !important;
   opacity: 0.55;
+}
+
+/* Selector compacto y explícito: evita mostrar un número y una flecha sueltos. */
+.p-paginator .p-paginator-rpp-dropdown {
+  display: inline-flex !important;
+  flex: 0 0 auto;
+  min-width: 6.75rem;
+  height: 2.25rem;
+  align-items: center;
+  margin-left: 0.625rem;
+  overflow: hidden;
+  border: 1px solid #dbe4ee !important;
+  border-radius: 0.625rem !important;
+  background: #fff !important;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+}
+
+.p-paginator .p-paginator-rpp-dropdown::before {
+  content: 'Filas';
+  flex: 0 0 auto;
+  padding-left: 0.625rem;
+  color: #94a3b8;
+  font-size: 0.7rem;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+.p-paginator .p-paginator-rpp-dropdown .p-select-label {
+  min-width: 2rem;
+  padding: 0.45rem 0.25rem 0.45rem 0.45rem !important;
+  color: #334155 !important;
+  font-size: 0.78rem !important;
+  font-weight: 700;
+  text-align: right;
+}
+
+.p-paginator .p-paginator-rpp-dropdown .p-select-dropdown {
+  width: 1.75rem;
+  color: #64748b;
+}
+
+.p-paginator .p-paginator-rpp-dropdown:not(.p-disabled):hover {
+  border-color: rgb(var(--brand-500) / 0.65) !important;
+}
+
+.p-paginator .p-paginator-rpp-dropdown.p-focus {
+  border-color: rgb(var(--brand-600)) !important;
+  box-shadow: 0 0 0 0.1875rem rgb(var(--brand-500) / 0.12) !important;
 }
 
 @media (max-width: 640px) {
@@ -408,11 +472,12 @@
 
 
   .p-paginator {
-    min-height: 2.5rem;
+    min-height: 3rem;
     max-width: 100%;
     flex-wrap: nowrap !important;
     overflow-x: auto;
-    padding: 0.25rem !important;
+    justify-content: center;
+    padding: 0.375rem 0.5rem !important;
     scrollbar-width: none;
   }
 
@@ -428,6 +493,11 @@
   .p-paginator .p-paginator-last,
   .p-paginator .p-paginator-current {
     display: none !important;
+  }
+
+  .p-paginator .p-paginator-rpp-dropdown {
+    min-width: 6.25rem;
+    margin-left: 0.375rem;
   }
 }
 
@@ -599,6 +669,26 @@ html.theme-dark .p-paginator :where(.p-paginator-page.p-highlight, .p-paginator-
 html.theme-dark .p-paginator button:disabled {
   color: #42526a !important;
   opacity: 0.65;
+}
+
+html.theme-dark .p-paginator .p-paginator-current {
+  border-color: #2b3a50;
+  color: #91a4bd;
+}
+
+html.theme-dark .p-paginator .p-paginator-rpp-dropdown {
+  border-color: #33445c !important;
+  background: #0b1526 !important;
+  box-shadow: none;
+}
+
+html.theme-dark .p-paginator .p-paginator-rpp-dropdown::before {
+  color: #71839b;
+}
+
+html.theme-dark .p-paginator .p-paginator-rpp-dropdown .p-select-label,
+html.theme-dark .p-paginator .p-paginator-rpp-dropdown .p-select-dropdown {
+  color: #dbe7f5 !important;
 }
 
 html.theme-dark :where(.p-select, .p-multiselect, .p-inputtext, .p-textarea) {
@@ -796,10 +886,4 @@ html.a11y-cursor-xlarge * {
   background: rgba(0, 0, 0, 0.6);
   pointer-events: none;
   z-index: 2147483000;
-}
-
-@media (max-width: 480px) {
-  .p-paginator .p-paginator-rpp-dropdown {
-    display: none !important;
-  }
 }
