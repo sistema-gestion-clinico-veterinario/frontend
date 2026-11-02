@@ -19,7 +19,7 @@
 
   @if (summary(); as resumen) {
     <div class="mb-6" aria-label="Estado general de los respaldos">
-      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <div class="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-none">
           <i class="pi pi-database shrink-0 text-2xl text-blue-500"></i>
           <div><p class="text-xs font-semibold text-slate-500">Ejecuciones (30 días)</p><p class="text-xl font-extrabold text-slate-900">{{ resumen.successCount30Days + resumen.problemCount30Days }}</p></div>
@@ -31,6 +31,14 @@
         <div class="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-none" data-testid="problemas-30-dias">
           <i class="pi pi-exclamation-triangle shrink-0 text-2xl text-blue-500"></i>
           <div><p class="text-xs font-semibold text-slate-500">Con problemas (30 días)</p><p class="text-xl font-extrabold" [class.text-slate-900]="resumen.problemCount30Days === 0" [class.text-red-600]="resumen.problemCount30Days > 0">{{ resumen.problemCount30Days }}</p></div>
+        </div>
+        <div class="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-none">
+          <i class="pi pi-history shrink-0 text-2xl text-blue-500"></i>
+          <div class="min-w-0">
+            <p class="text-xs font-semibold text-slate-500">RPO observado</p>
+            <p class="text-base font-extrabold" [class.text-green-700]="resumen.rpoCompliant === true" [class.text-red-600]="resumen.rpoCompliant === false" [class.text-slate-900]="resumen.rpoCompliant === null">{{ rpoValue(resumen) }}</p>
+            <p class="text-[11px] text-slate-400">Objetivo: máximo {{ resumen.rpoTargetHours }} h</p>
+          </div>
         </div>
       </div>
     </div>
@@ -101,8 +109,8 @@
             </div>
           }
           <div class="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2.5 shadow-none">
-            <span class="flex items-center gap-2 font-semibold text-slate-600"><i class="pi pi-shield text-blue-500"></i>Recuperación</span>
-            <span class="font-semibold" [class.text-green-700]="execution.restorationVerified" [class.text-slate-500]="!execution.restorationVerified">{{ execution.restorationVerified ? 'Verificada' : 'Pendiente' }}</span>
+            <span class="flex items-center gap-2 font-semibold text-slate-600"><i class="pi pi-shield text-blue-500"></i>Restauración de BD</span>
+            <span class="font-semibold" [class.text-green-700]="execution.databaseRestoreVerified" [class.text-slate-500]="!execution.databaseRestoreVerified">{{ execution.databaseRestoreVerified ? elapsed(execution.databaseRestoreDurationSeconds) : 'No verificada' }}</span>
           </div>
         </div>
 
@@ -111,6 +119,10 @@
           <div><dt class="font-semibold text-slate-400">Fin</dt><dd class="mt-1 text-slate-700">{{ execution.finishedAt ? (execution.finishedAt | date:'dd/MM/yyyy, h:mm:ss a':'-0500') : 'En curso' }}</dd></div>
           <div><dt class="font-semibold text-slate-400">Ejecución</dt><dd class="mt-1 text-slate-700">N.º {{ execution.runId }} · intento {{ execution.runAttempt }}</dd></div>
           <div><dt class="font-semibold text-slate-400">Versión</dt><dd class="mt-1 font-mono text-slate-700">{{ shortCommit(execution.commitSha) }}</dd></div>
+          <div><dt class="font-semibold text-slate-400">Tamaño protegido</dt><dd class="mt-1 text-slate-700">{{ bytes(execution.protectedSizeBytes) }}</dd></div>
+          <div><dt class="font-semibold text-slate-400">Archivos incluidos</dt><dd class="mt-1 text-slate-700">{{ execution.protectedFileCount || 'No aplica / sin medición' }}</dd></div>
+          <div><dt class="font-semibold text-slate-400">Compresión</dt><dd class="mt-1 text-slate-700">{{ execution.compressionAlgorithm || 'Sin medición' }}</dd></div>
+          <div><dt class="font-semibold text-slate-400">Cifrado</dt><dd class="mt-1 text-slate-700">{{ execution.encryptionAlgorithm || 'Sin medición' }}</dd></div>
           <div class="sm:col-span-2"><dt class="font-semibold text-slate-400">Punto de recuperación</dt><dd class="mt-1 break-all font-mono text-slate-700">{{ execution.recoveryPointId || 'Pendiente' }}</dd></div>
           <div class="sm:col-span-2"><dt class="font-semibold text-slate-400">Evidencia</dt><dd class="mt-1"><a [href]="execution.workflowUrl" target="_blank" rel="noopener noreferrer" class="font-semibold text-cyan-600 hover:underline">Abrir en GitHub <i class="pi pi-external-link ml-1 text-[10px]"></i></a></dd></div>
         </dl>
@@ -240,7 +252,11 @@
         <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-none">
           <div class="flex items-center gap-3">
             <i class="pi pi-shield shrink-0 text-2xl text-blue-500"></i>
-            <div><p class="text-xs font-semibold text-slate-400">Prueba de recuperación</p><p class="font-extrabold text-slate-900">{{ current.restorationVerified ? 'Verificada' : 'Sin confirmar' }}</p></div>
+            <div>
+              <p class="text-xs font-semibold text-slate-400">RTO integral</p>
+              <p class="font-extrabold text-slate-900">{{ summary()?.integralRecoveryTestAvailable ? 'Medido' : 'Pendiente de prueba' }}</p>
+              <p class="mt-1 text-xs text-slate-500">Objetivo: {{ summary()?.rtoTargetMinutes }} min. La verificación de BD tomó {{ elapsed(summary()?.latestDatabaseRestoreDurationSeconds) }}; aún falta probar archivos.</p>
+            </div>
           </div>
         </div>
 

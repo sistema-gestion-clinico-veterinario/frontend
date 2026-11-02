@@ -120,14 +120,16 @@ export class BackupMonitorComponent implements OnInit {
 
   chipClass(status: BackupRunStatus | BackupComponentStatus): string {
     if (status === 'SUCCESS') return 'bg-green-50 text-green-700';
-    if (status === 'FAILED' || status === 'PARTIAL') return 'bg-red-50 text-red-500';
+    if (status === 'FAILED') return 'bg-red-50 text-red-600';
+    if (status === 'PARTIAL') return 'bg-amber-50 text-amber-700';
     if (status === 'SKIPPED') return 'bg-slate-100 text-slate-600';
     return 'bg-blue-50 text-blue-600';
   }
 
   dotClass(status: BackupRunStatus | BackupComponentStatus): string {
     if (status === 'SUCCESS') return 'bg-green-500';
-    if (status === 'FAILED' || status === 'PARTIAL') return 'bg-red-400';
+    if (status === 'FAILED') return 'bg-red-500';
+    if (status === 'PARTIAL') return 'bg-amber-500';
     if (status === 'SKIPPED') return 'bg-slate-400';
     return 'bg-blue-500';
   }
@@ -207,6 +209,28 @@ export class BackupMonitorComponent implements OnInit {
     const minutes = Math.floor(seconds / 60);
     const remainder = seconds % 60;
     return minutes > 0 ? `${minutes} min ${remainder} s` : `${remainder} s`;
+  }
+
+  bytes(value: number | null | undefined): string {
+    if (value === null || value === undefined || value <= 0) return 'Sin medición';
+    const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const index = Math.min(Math.floor(Math.log(value) / Math.log(1024)), units.length - 1);
+    const amount = value / Math.pow(1024, index);
+    return `${amount.toLocaleString('es-PE', { maximumFractionDigits: index === 0 ? 0 : 2 })} ${units[index]}`;
+  }
+
+  elapsed(seconds: number | null | undefined): string {
+    if (seconds === null || seconds === undefined) return 'Sin medición';
+    if (seconds < 60) return `${seconds} s`;
+    return `${Math.floor(seconds / 60)} min ${seconds % 60} s`;
+  }
+
+  rpoValue(summary: BackupSummary): string {
+    if (summary.rpoObservedMinutes === null) return 'Sin medición';
+    if (summary.rpoObservedMinutes < 60) return `${summary.rpoObservedMinutes} min`;
+    const hours = Math.floor(summary.rpoObservedMinutes / 60);
+    const minutes = summary.rpoObservedMinutes % 60;
+    return minutes ? `${hours} h ${minutes} min` : `${hours} h`;
   }
 
   shortId(value: string | null): string {

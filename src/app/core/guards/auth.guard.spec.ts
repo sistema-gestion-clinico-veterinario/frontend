@@ -188,6 +188,30 @@ describe('AuthGuard - acceso a pantallas sin permiso', () => {
     });
   });
 
+  it('una herramienta global deja pasar al administrador de plataforma aunque no esté en el menú empresarial', (done) => {
+    ejecutar({
+      activeRolePurpose: () => 'PLATFORM_ADMIN',
+      hasRouteAccess: () => false,
+      hasAccess: () => false
+    }, {
+      data: { purposes: ['PLATFORM_ADMIN'], purposeOnly: true },
+      pathFromRoot: [{ routeConfig: { path: 'admin/solicitudes-cumplimiento' } }] as never
+    }).subscribe((resultado) => {
+      expect(resultado).toBeTrue();
+      done();
+    });
+  });
+
+  it('una herramienta global continúa bloqueando a cualquier otro propósito', (done) => {
+    ejecutar({ hasRouteAccess: () => true, hasAccess: () => true }, {
+      data: { purposes: ['PLATFORM_ADMIN'], purposeOnly: true },
+      pathFromRoot: [{ routeConfig: { path: 'admin/solicitudes-cumplimiento' } }] as never
+    }).subscribe((resultado) => {
+      expect(serializar(resultado)).toBe('/acceso-denegado');
+      done();
+    });
+  });
+
   it('con permiso deja pasar', (done) => {
     ejecutar({ hasRouteAccess: () => true, hasAccess: () => true },
       { data: {}, pathFromRoot: [{ routeConfig: { path: 'mascotas' } }] as never }).subscribe((resultado) => {
