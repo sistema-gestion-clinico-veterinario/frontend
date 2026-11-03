@@ -35,21 +35,6 @@
     [class.px-3]="!collapsed()" [class.px-0]="collapsed()"
     >
     <div class="space-y-1">
-      @if (esAdministradorPlataforma()) {
-        <a routerLink="/admin/solicitudes-cumplimiento" routerLinkActive="active-link" #complianceRla="routerLinkActive"
-          (click)="navigate.emit()" [class]="navItemClass(complianceRla.isActive)" class="block"
-          [title]="collapsed() ? 'Solicitudes de cumplimiento' : ''">
-          <div class="flex w-full items-center" [class.gap-2.5]="!collapsed()" [class.justify-center]="collapsed()">
-            <span class="flex h-5 w-5 shrink-0 items-center justify-center"><i class="pi pi-inbox text-[13px]"></i></span>
-            @if (!collapsed()) {
-              <span class="flex-1 truncate text-left text-[13px] font-medium">Solicitudes</span>
-              @if (solicitudesCumplimientoActivas() > 0) {
-                <span class="flex h-5 min-w-5 items-center justify-center rounded-full bg-amber-100 px-1.5 text-[10px] font-bold text-amber-700">{{ solicitudesCumplimientoActivas() > 99 ? '99+' : solicitudesCumplimientoActivas() }}</span>
-              }
-            }
-          </div>
-        </a>
-      }
       @if (sinOpciones() && !collapsed()) {
         <div class="mx-2 rounded-md border border-slate-200 px-3 py-3" role="status">
           <p class="text-[13px] font-semibold text-slate-700">Sin opciones disponibles</p>
@@ -111,6 +96,11 @@
                         <span class="flex-1 truncate text-left text-[13px] font-medium">
                           {{ vista.nombre }}
                         </span>
+                        @if (esVistaSolicitudesCumplimiento(vista) && solicitudesCumplimientoActivas() > 0) {
+                          <span class="flex h-5 min-w-5 items-center justify-center rounded-full bg-amber-100 px-1.5 text-[10px] font-bold text-amber-700">
+                            {{ solicitudesCumplimientoActivas() > 99 ? '99+' : solicitudesCumplimientoActivas() }}
+                          </span>
+                        }
                       }
                     </div>
                   </a>
@@ -139,6 +129,11 @@
                 <span class="flex-1 truncate text-left text-[13px] font-medium">
                   {{ structure.vistas[0].nombre }}
                 </span>
+                @if (esVistaSolicitudesCumplimiento(structure.vistas[0]) && solicitudesCumplimientoActivas() > 0) {
+                  <span class="flex h-5 min-w-5 items-center justify-center rounded-full bg-amber-100 px-1.5 text-[10px] font-bold text-amber-700">
+                    {{ solicitudesCumplimientoActivas() > 99 ? '99+' : solicitudesCumplimientoActivas() }}
+                  </span>
+                }
               }
             </div>
           </a>

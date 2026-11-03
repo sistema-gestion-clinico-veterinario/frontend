@@ -48,7 +48,10 @@ export class SidebarComponent implements OnInit {
   readonly guidedTour = inject(GuidedTourService);
   private iaHabilitada = signal(true);
   readonly solicitudesCumplimientoActivas = signal(0);
-  readonly esAdministradorPlataforma = computed(() => this.authStore.isSuperAdmin());
+
+  esVistaSolicitudesCumplimiento(vista: MenuItemDTO): boolean {
+    return vista.codigo === 'VISTA_SOLICITUDES_CUMPLIMIENTO';
+  }
 
   ngOnInit(): void {
     this.guidedTour.initialize();

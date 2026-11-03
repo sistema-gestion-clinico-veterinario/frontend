@@ -66,7 +66,7 @@ export const AUTHENTICATED_ROUTES: Routes = [
       },
       {
         path: 'admin/solicitudes-cumplimiento',
-        data: { purposes: ['PLATFORM_ADMIN'], purposeOnly: true },
+        data: { ventana: 'VISTA_SOLICITUDES_CUMPLIMIENTO', permiso: 'leer', purposes: ['PLATFORM_ADMIN'] },
         loadComponent: () => import('./pages/admin/compliance-requests/compliance-requests.component').then((m) => m.ComplianceRequestsComponent)
       },
       {

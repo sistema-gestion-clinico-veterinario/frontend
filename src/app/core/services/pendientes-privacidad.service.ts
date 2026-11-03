@@ -12,6 +12,7 @@ import { BackupMonitorService } from './backup-monitor.service';
 import { BackupExecution } from '../../models/backup/backup-execution.model';
 import { CompanyComplianceService } from './company-compliance.service';
 import { SolicitudCambioCumplimiento } from '../../models/privacy/company-compliance.model';
+import { NotificationReadService } from './notification-read.service';
 
 const CLAVE_DESCARTADOS = 'pendientes_privacidad_descartados';
 
@@ -20,6 +21,7 @@ export class PendientesPrivacidadService {
   private readonly privacidad = inject(PrivacidadService);
   private readonly respaldos = inject(BackupMonitorService);
   private readonly cumplimiento = inject(CompanyComplianceService);
+  private readonly notificationRead = inject(NotificationReadService);
   private readonly authStore = inject(AuthStore);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
@@ -29,10 +31,12 @@ export class PendientesPrivacidadService {
   private readonly solicitudesPlataforma = signal<readonly SolicitudCambioCumplimiento[]>([]);
   private readonly decisionesClinica = signal<readonly SolicitudCambioCumplimiento[]>([]);
   private readonly descartados = signal<readonly string[]>([]);
+  private readonly leidosPersistentes = signal<readonly string[]>([]);
   private readonly consultas = new Subject<void>();
   private readonly consultasRespaldos = new Subject<void>();
   private readonly consultasSolicitudes = new Subject<void>();
   private readonly consultasDecisiones = new Subject<void>();
+  private readonly consultasLeidas = new Subject<void>();
   private urlAnterior = '';
 
   readonly pendientes = computed<PendientePrivacidad[]>(() => {
@@ -42,7 +46,7 @@ export class PendientesPrivacidadService {
     if (this.authStore.isSuperAdmin()) {
       for (const ejecucion of this.ejecucionesRespaldos()) {
         const id: PendientePrivacidad['id'] = `respaldo-${ejecucion.id}`;
-        if (this.descartados().includes(id)) continue;
+        if (this.descartados().includes(id) || this.leidosPersistentes().includes(id)) continue;
         lista.push({
           id,
           titulo: ejecucion.status === 'PARTIAL' ? 'Respaldo parcial' : 'Respaldo fallido',
@@ -105,7 +109,7 @@ export class PendientesPrivacidadService {
 
     const decisionIa = estado?.finalidades.find(f => f.codigo === FINALIDAD_USO_IA)?.estado;
     if (this.authStore.activeRolePurpose() === 'CLIENT_PORTAL' && decisionIa === 'SIN_REGISTRO'
-        && !this.descartados().includes('ia')) {
+        && !this.descartados().includes('ia') && !this.leidosPersistentes().includes('ia')) {
       lista.push({
         id: 'ia',
         titulo: 'Uso de inteligencia artificial',
@@ -136,7 +140,7 @@ export class PendientesPrivacidadService {
     });
 
     this.consultasSolicitudes.pipe(
-      switchMap(() => this.cumplimiento.bandejaGlobal({ page: 0, size: 100 }).pipe(catchError(() => EMPTY))),
+      switchMap(() => this.cumplimiento.bandejaGlobal({ page: 0, size: 100 }, true).pipe(catchError(() => EMPTY))),
       takeUntilDestroyed(this.destroyRef)
     ).subscribe(({ data }) => this.solicitudesPlataforma.set(
       (data?.content ?? []).filter(s => s.estado === 'PENDIENTE' || s.estado === 'EN_REVISION')));
@@ -146,6 +150,11 @@ export class PendientesPrivacidadService {
       takeUntilDestroyed(this.destroyRef)
     ).subscribe(({ data }) => this.decisionesClinica.set(data ?? []));
 
+    this.consultasLeidas.pipe(
+      switchMap(() => this.notificationRead.listRead().pipe(catchError(() => EMPTY))),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(({ data }) => this.leidosPersistentes.set(data ?? []));
+
     effect((onCleanup) => {
       const clave = this.clave();
       const esAdministradorPlataforma = this.authStore.isSuperAdmin();
@@ -154,6 +163,7 @@ export class PendientesPrivacidadService {
         this.ejecucionesRespaldos.set([]);
         this.solicitudesPlataforma.set([]);
         this.decisionesClinica.set([]);
+        this.leidosPersistentes.set([]);
         this.descartados.set(this.leerDescartados(clave));
         this.refrescar();
       });
@@ -175,6 +185,7 @@ export class PendientesPrivacidadService {
   }
 
   refrescar(): void {
+    if (this.authStore.activeRoleId()) this.consultasLeidas.next();
     if (this.authStore.isSuperAdmin()) {
       this.estado.set(null);
       this.consultasRespaldos.next();
@@ -198,7 +209,8 @@ export class PendientesPrivacidadService {
     const componentes = [
       ['Base de datos', ejecucion.databaseStatus],
       ['Cierre de acceso temporal', ejecucion.restrictionsStatus],
-      ['Archivos clínicos', ejecucion.storageStatus]
+      ['Archivos clínicos', ejecucion.storageStatus],
+      ['Recuperación integral', ejecucion.recoveryStatus]
     ] as const;
     const fallidos = componentes.filter(([, estado]) => estado === 'FAILED').map(([nombre]) => nombre);
     const partes = [fecha];
@@ -218,8 +230,10 @@ export class PendientesPrivacidadService {
       }
       return;
     }
-    const lista = [...this.descartados(), id];
+    const lista = [...new Set([...this.descartados(), id])];
     this.descartados.set(lista);
+    this.leidosPersistentes.update(actual => [...new Set([...actual, id])]);
+    this.notificationRead.markRead(id).pipe(catchError(() => EMPTY)).subscribe();
     try {
       sessionStorage.setItem(`${CLAVE_DESCARTADOS}:${this.clave()}`, JSON.stringify(lista));
     } catch {}

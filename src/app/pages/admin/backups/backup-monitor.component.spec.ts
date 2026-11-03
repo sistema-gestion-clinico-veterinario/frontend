@@ -20,12 +20,16 @@ describe('BackupMonitorComponent', () => {
     databaseStatus: 'SUCCESS',
     restrictionsStatus: 'SUCCESS',
     storageStatus: 'SUCCESS',
+    recoveryStatus: 'SUCCESS',
     protectedSizeBytes: 1048576,
     protectedFileCount: 12,
     compressionAlgorithm: 'PostgreSQL custom nivel 9 y gzip',
     encryptionAlgorithm: 'OpenPGP',
     databaseRestoreVerified: true,
     databaseRestoreDurationSeconds: 42,
+    integralRecoveryVerified: true,
+    integralRecoveryDurationSeconds: 83,
+    integralRecoveryTestedAt: '2026-10-18T07:20:28Z',
     startedAt: '2026-10-18T07:17:00Z',
     finishedAt: '2026-10-18T07:20:28Z',
     commitSha: 'c423a72000000000000000000000000000000000',
@@ -48,6 +52,9 @@ describe('BackupMonitorComponent', () => {
     rtoTargetMinutes: 240,
     latestDatabaseRestoreDurationSeconds: 42,
     integralRecoveryTestAvailable: false,
+    latestIntegralRecoveryDurationSeconds: null,
+    integralRecoveryTestedAt: null,
+    rtoCompliant: null,
     ...parcial
   });
 
@@ -179,7 +186,7 @@ describe('BackupMonitorComponent', () => {
       await crear();
 
       expect(component.componentesDe(execution).map(c => c.nombre))
-        .toEqual(['Base de datos', 'Cierre de acceso temporal', 'Archivos clínicos']);
+        .toEqual(['Base de datos', 'Cierre de acceso temporal', 'Archivos clínicos', 'Recuperación integral']);
     });
 
     it('usa el paginador estándar de diez registros', async () => {

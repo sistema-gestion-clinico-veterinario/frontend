@@ -123,6 +123,7 @@
           <div><dt class="font-semibold text-slate-400">Archivos incluidos</dt><dd class="mt-1 text-slate-700">{{ execution.protectedFileCount || 'No aplica / sin medición' }}</dd></div>
           <div><dt class="font-semibold text-slate-400">Compresión</dt><dd class="mt-1 text-slate-700">{{ execution.compressionAlgorithm || 'Sin medición' }}</dd></div>
           <div><dt class="font-semibold text-slate-400">Cifrado</dt><dd class="mt-1 text-slate-700">{{ execution.encryptionAlgorithm || 'Sin medición' }}</dd></div>
+          <div><dt class="font-semibold text-slate-400">Recuperación integral</dt><dd class="mt-1 text-slate-700">{{ execution.integralRecoveryVerified ? elapsed(execution.integralRecoveryDurationSeconds) : componentLabel(execution.recoveryStatus) }}</dd></div>
           <div class="sm:col-span-2"><dt class="font-semibold text-slate-400">Punto de recuperación</dt><dd class="mt-1 break-all font-mono text-slate-700">{{ execution.recoveryPointId || 'Pendiente' }}</dd></div>
           <div class="sm:col-span-2"><dt class="font-semibold text-slate-400">Evidencia</dt><dd class="mt-1"><a [href]="execution.workflowUrl" target="_blank" rel="noopener noreferrer" class="font-semibold text-cyan-600 hover:underline">Abrir en GitHub <i class="pi pi-external-link ml-1 text-[10px]"></i></a></dd></div>
         </dl>
@@ -254,8 +255,20 @@
             <i class="pi pi-shield shrink-0 text-2xl text-blue-500"></i>
             <div>
               <p class="text-xs font-semibold text-slate-400">RTO integral</p>
-              <p class="font-extrabold text-slate-900">{{ summary()?.integralRecoveryTestAvailable ? 'Medido' : 'Pendiente de prueba' }}</p>
-              <p class="mt-1 text-xs text-slate-500">Objetivo: {{ summary()?.rtoTargetMinutes }} min. La verificación de BD tomó {{ elapsed(summary()?.latestDatabaseRestoreDurationSeconds) }}; aún falta probar archivos.</p>
+              <p class="font-extrabold"
+                [class.text-green-700]="summary()?.rtoCompliant === true"
+                [class.text-red-600]="summary()?.rtoCompliant === false"
+                [class.text-slate-900]="summary()?.rtoCompliant === null">
+                {{ summary()?.integralRecoveryTestAvailable ? elapsed(summary()?.latestIntegralRecoveryDurationSeconds) : 'Pendiente de prueba' }}
+              </p>
+              <p class="mt-1 text-xs text-slate-500">
+                Objetivo: {{ summary()?.rtoTargetMinutes }} min.
+                @if (summary()?.integralRecoveryTestedAt) {
+                  Última prueba aislada: {{ summary()?.integralRecoveryTestedAt | date:'dd/MM/yyyy, h:mm a':'-0500' }}.
+                } @else {
+                  Aún no se ha restaurado un punto completo desde el repositorio remoto.
+                }
+              </p>
             </div>
           </div>
         </div>
