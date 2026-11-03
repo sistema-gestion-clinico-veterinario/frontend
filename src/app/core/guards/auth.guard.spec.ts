@@ -188,13 +188,13 @@ describe('AuthGuard - acceso a pantallas sin permiso', () => {
     });
   });
 
-  it('una herramienta global deja pasar al administrador de plataforma aunque no esté en el menú empresarial', (done) => {
+  it('una herramienta global deja pasar al administrador de plataforma con vista y permiso', (done) => {
     ejecutar({
       activeRolePurpose: () => 'PLATFORM_ADMIN',
-      hasRouteAccess: () => false,
-      hasAccess: () => false
+      hasRouteAccess: () => true,
+      hasAccess: () => true
     }, {
-      data: { purposes: ['PLATFORM_ADMIN'], purposeOnly: true },
+      data: { purposes: ['PLATFORM_ADMIN'], ventana: 'VISTA_SOLICITUDES_CUMPLIMIENTO', permiso: 'leer' },
       pathFromRoot: [{ routeConfig: { path: 'admin/solicitudes-cumplimiento' } }] as never
     }).subscribe((resultado) => {
       expect(resultado).toBeTrue();
@@ -202,9 +202,23 @@ describe('AuthGuard - acceso a pantallas sin permiso', () => {
     });
   });
 
+  it('una herramienta global bloquea al administrador de plataforma sin la vista asignada', (done) => {
+    ejecutar({
+      activeRolePurpose: () => 'PLATFORM_ADMIN',
+      hasRouteAccess: () => false,
+      hasAccess: () => false
+    }, {
+      data: { purposes: ['PLATFORM_ADMIN'], ventana: 'VISTA_SOLICITUDES_CUMPLIMIENTO', permiso: 'leer' },
+      pathFromRoot: [{ routeConfig: { path: 'admin/solicitudes-cumplimiento' } }] as never
+    }).subscribe((resultado) => {
+      expect(serializar(resultado)).toBe('/acceso-denegado');
+      done();
+    });
+  });
+
   it('una herramienta global continúa bloqueando a cualquier otro propósito', (done) => {
     ejecutar({ hasRouteAccess: () => true, hasAccess: () => true }, {
-      data: { purposes: ['PLATFORM_ADMIN'], purposeOnly: true },
+      data: { purposes: ['PLATFORM_ADMIN'], ventana: 'VISTA_SOLICITUDES_CUMPLIMIENTO', permiso: 'leer' },
       pathFromRoot: [{ routeConfig: { path: 'admin/solicitudes-cumplimiento' } }] as never
     }).subscribe((resultado) => {
       expect(serializar(resultado)).toBe('/acceso-denegado');
