@@ -13,12 +13,16 @@ export interface BackupExecution {
   databaseStatus: BackupComponentStatus;
   restrictionsStatus: BackupComponentStatus;
   storageStatus: BackupComponentStatus;
+  recoveryStatus: BackupComponentStatus;
   protectedSizeBytes: number;
   protectedFileCount: number;
   compressionAlgorithm: string | null;
   encryptionAlgorithm: string | null;
   databaseRestoreVerified: boolean;
   databaseRestoreDurationSeconds: number | null;
+  integralRecoveryVerified: boolean;
+  integralRecoveryDurationSeconds: number | null;
+  integralRecoveryTestedAt: string | null;
   startedAt: string;
   finishedAt: string | null;
   commitSha: string | null;
@@ -43,4 +47,7 @@ export interface BackupSummary {
   rtoTargetMinutes: number;
   latestDatabaseRestoreDurationSeconds: number | null;
   integralRecoveryTestAvailable: boolean;
+  latestIntegralRecoveryDurationSeconds: number | null;
+  integralRecoveryTestedAt: string | null;
+  rtoCompliant: boolean | null;
 }

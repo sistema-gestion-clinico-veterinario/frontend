@@ -9,11 +9,13 @@ import { AuthStore } from '../../store/auth.store';
 import { BackupMonitorService } from './backup-monitor.service';
 import { BackupExecution } from '../../models/backup/backup-execution.model';
 import { CompanyComplianceService } from './company-compliance.service';
+import { NotificationReadService } from './notification-read.service';
 
 describe('PendientesPrivacidadService', () => {
   let privacidad: jasmine.SpyObj<PrivacidadService>;
   let respaldos: jasmine.SpyObj<BackupMonitorService>;
   let cumplimiento: jasmine.SpyObj<CompanyComplianceService>;
+  let lecturas: jasmine.SpyObj<NotificationReadService>;
   let eventos: Subject<unknown>;
   let companyId: ReturnType<typeof signal<number | null>>;
   let rolId: ReturnType<typeof signal<number | null>>;
@@ -33,8 +35,11 @@ describe('PendientesPrivacidadService', () => {
     id: 22, runId: 'run-22', runAttempt: 1, recoveryPointId: 'rp-22', retentionPolicy: 'p01',
     triggerType: 'SCHEDULED', status: 'FAILED', databaseStatus: 'SUCCESS', restrictionsStatus: 'SUCCESS',
     storageStatus: 'FAILED', protectedSizeBytes: 1024, protectedFileCount: 3,
+    recoveryStatus: 'SKIPPED',
     compressionAlgorithm: 'gzip', encryptionAlgorithm: 'OpenPGP', databaseRestoreVerified: true,
     databaseRestoreDurationSeconds: 12, startedAt: new Date().toISOString(),
+    integralRecoveryVerified: false, integralRecoveryDurationSeconds: null,
+    integralRecoveryTestedAt: null,
     finishedAt: new Date().toISOString(), commitSha: 'abc', workflowUrl: 'https://github.test/run/22',
     ...parcial
   });
@@ -66,6 +71,9 @@ describe('PendientesPrivacidadService', () => {
     }}));
     cumplimiento.notificacionesDeMiClinica.and.returnValue(of({ success: true, message: 'ok', data: [] }));
     cumplimiento.marcarDecisionVista.and.returnValue(of({ success: true, message: 'ok', data: undefined }));
+    lecturas = jasmine.createSpyObj<NotificationReadService>('NotificationReadService', ['listRead', 'markRead']);
+    lecturas.listRead.and.returnValue(of({ success: true, message: 'ok', data: [] }));
+    lecturas.markRead.and.returnValue(of({ success: true, message: 'ok', data: undefined }));
     eventos = new Subject();
     companyId = signal<number | null>(1);
     rolId = signal<number | null>(3);
@@ -77,6 +85,7 @@ describe('PendientesPrivacidadService', () => {
         { provide: PrivacidadService, useValue: privacidad },
         { provide: BackupMonitorService, useValue: respaldos },
         { provide: CompanyComplianceService, useValue: cumplimiento },
+        { provide: NotificationReadService, useValue: lecturas },
         { provide: Router, useValue: { events: eventos.asObservable() } },
         { provide: AuthStore, useValue: {
           companyId, activeRoleId: rolId, activeRolePurpose: proposito,
@@ -149,6 +158,7 @@ describe('PendientesPrivacidadService', () => {
         { provide: PrivacidadService, useValue: privacidad },
         { provide: BackupMonitorService, useValue: respaldos },
         { provide: CompanyComplianceService, useValue: cumplimiento },
+        { provide: NotificationReadService, useValue: lecturas },
         { provide: Router, useValue: { events: eventos.asObservable() } },
         { provide: AuthStore, useValue: { companyId, activeRoleId: rolId, activeRolePurpose: proposito, needsLegalAcceptance: terminos, legalAcceptanceOverdue: vencidos, isSuperAdmin: () => proposito() === 'PLATFORM_ADMIN' } },
       ] });
@@ -202,6 +212,19 @@ describe('PendientesPrivacidadService', () => {
 
     expect(servicio.pendientes()).toEqual([]);
     expect(sessionStorage.getItem('pendientes_privacidad_descartados:null:3')).toBe('["respaldo-20"]');
+    expect(lecturas.markRead).toHaveBeenCalledOnceWith('respaldo-20');
+  });
+
+  it('una alerta leída en otra sesión no vuelve a mostrarse', () => {
+    companyId.set(null);
+    proposito.set('PLATFORM_ADMIN');
+    respaldos.list.and.returnValue(paginaRespaldos([ejecucionRespaldo({ id: 20 })]));
+    lecturas.listRead.and.returnValue(of({ success: true, message: 'ok', data: ['respaldo-20'] }));
+
+    const servicio = crear();
+
+    expect(lecturas.listRead).toHaveBeenCalled();
+    expect(servicio.pendientes()).toEqual([]);
   });
 
   it('un rol de clínica nunca consulta el resumen operativo de respaldos', () => {

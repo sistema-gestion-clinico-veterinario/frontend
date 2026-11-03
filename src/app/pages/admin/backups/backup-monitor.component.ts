@@ -114,7 +114,8 @@ export class BackupMonitorComponent implements OnInit {
     return [
       { nombre: 'Base de datos', estado: execution.databaseStatus },
       { nombre: 'Cierre de acceso temporal', estado: execution.restrictionsStatus },
-      { nombre: 'Archivos clínicos', estado: execution.storageStatus }
+      { nombre: 'Archivos clínicos', estado: execution.storageStatus },
+      { nombre: 'Recuperación integral', estado: execution.recoveryStatus }
     ];
   }
 
@@ -156,7 +157,8 @@ export class BackupMonitorComponent implements OnInit {
     return ({
       'Base de datos': 'pi pi-database',
       'Cierre de acceso temporal': 'pi pi-lock',
-      'Archivos clínicos': 'pi pi-folder'
+      'Archivos clínicos': 'pi pi-folder',
+      'Recuperación integral': 'pi pi-verified'
     } as Record<string, string>)[name] ?? 'pi pi-check-circle';
   }
 
