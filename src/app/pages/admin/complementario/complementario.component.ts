@@ -30,6 +30,14 @@ import { HasPermissionDirective } from '../../../core/directives/has-permission.
 import { noLeadingTrailingSpaceValidator } from '../../../core/validators/no-leading-trailing-space.validator';
 import { lettersOnlyValidator } from '../../../core/validators/letters-only.validator';
 import { textContentValidator } from '../../../core/validators/text-content.validator';
+import { ClinicalTemplateService } from '../../../core/services/clinical-template.service';
+import {
+  ClinicalConcept,
+  ClinicalTemplateField,
+  ClinicalTemplateResponse,
+  ClinicalTemplateSummary,
+  ClinicalValueType
+} from '../../../models/clinical-template';
 
 
 @Component({
@@ -62,6 +70,7 @@ export class ComplementarioComponent implements OnInit {
   private readonly companyService = inject(CompanyService);
   private readonly servicioService = inject(ServicioService);
   private readonly controlPreventivoService = inject(ControlPreventivoService);
+  private readonly clinicalTemplateService = inject(ClinicalTemplateService);
   private readonly messageService = inject(MessageService);
   readonly authStore = inject(AuthStore);
   readonly loadingStore = inject(LoadingStore);
@@ -92,6 +101,32 @@ export class ComplementarioComponent implements OnInit {
     });
   }
   activeTab = signal<number>(0);
+  clinicalVersions = signal<ClinicalTemplateSummary[]>([]);
+  clinicalConcepts = signal<ClinicalConcept[]>([]);
+  clinicalDraft = signal<ClinicalTemplateResponse | null>(null);
+  clinicalLoading = signal(false);
+  showClinicalConceptModal = signal(false);
+  selectedConceptBySection: Record<number, number | null> = {};
+  readonly speciesOptions = ['PERRO', 'GATO', 'AVE', 'REPTIL', 'ROEDOR', 'EXOTICO', 'OTRO'];
+  readonly clinicalValueTypes: Array<{ value: ClinicalValueType; label: string }> = [
+    { value: 'TEXT_SHORT', label: 'Texto corto' },
+    { value: 'TEXT_LONG', label: 'Texto largo' },
+    { value: 'INTEGER', label: 'Número entero' },
+    { value: 'DECIMAL', label: 'Número decimal' },
+    { value: 'BOOLEAN', label: 'Sí / No' },
+    { value: 'DATE', label: 'Fecha' },
+    { value: 'SELECT_ONE', label: 'Lista de una opción' },
+    { value: 'SELECT_MULTIPLE', label: 'Lista de varias opciones' },
+    { value: 'SCALE', label: 'Escala numérica' }
+  ];
+  clinicalConceptForm = this.fb.group({
+    name: ['', [Validators.required, Validators.maxLength(160)]],
+    description: ['', Validators.maxLength(500)],
+    valueType: ['TEXT_SHORT' as ClinicalValueType, Validators.required],
+    unit: ['', Validators.maxLength(40)],
+    reportable: [true],
+    optionsText: ['']
+  });
   cargando = signal<boolean>(true);
   confirmDialog = signal<{
     title: string;
@@ -333,7 +368,215 @@ export class ComplementarioComponent implements OnInit {
     this.loadServicios();
     this.loadVacunas();
     this.loadDesparasitantes();
+    this.loadClinicalConfiguration();
     setTimeout(() => this.cargando.set(false), 500);
+  }
+
+  selectTab(index: number) {
+    this.activeTab.set(index);
+    if (index === 5 && this.clinicalVersions().length === 0) {
+      this.loadClinicalConfiguration();
+    }
+  }
+
+  loadClinicalConfiguration() {
+    if (!this.activeCompanyId) return;
+    this.clinicalTemplateService.list().subscribe({
+      next: response => {
+        this.clinicalVersions.set(response.data ?? []);
+        const draft = response.data?.find(version => version.status === 'DRAFT');
+        if (draft) this.loadClinicalDraft(draft.id);
+      },
+      error: () => this.clinicalVersions.set([])
+    });
+    this.clinicalTemplateService.concepts().subscribe({
+      next: response => this.clinicalConcepts.set(response.data ?? []),
+      error: () => this.clinicalConcepts.set([])
+    });
+  }
+
+  loadClinicalDraft(id: number) {
+    this.clinicalLoading.set(true);
+    this.clinicalTemplateService.get(id).subscribe({
+      next: response => {
+        this.clinicalDraft.set(this.cloneClinicalTemplate(response.data));
+        this.clinicalLoading.set(false);
+      },
+      error: () => {
+        this.clinicalLoading.set(false);
+        this.messageService.add({ severity: 'error', summary: 'Ficha clínica', detail: 'No se pudo cargar el borrador.' });
+      }
+    });
+  }
+
+  prepareClinicalDraft() {
+    this.clinicalLoading.set(true);
+    this.clinicalTemplateService.createDraft().subscribe({
+      next: response => {
+        this.clinicalDraft.set(this.cloneClinicalTemplate(response.data));
+        this.clinicalLoading.set(false);
+        this.loadClinicalConfiguration();
+      },
+      error: error => {
+        this.clinicalLoading.set(false);
+        this.messageService.add({ severity: 'error', summary: 'Ficha clínica', detail: error.error?.message || 'No se pudo preparar el borrador.' });
+      }
+    });
+  }
+
+  addClinicalSection() {
+    const draft = this.clinicalDraft();
+    if (!draft) return;
+    draft.sections.push({ id: -Date.now(), title: 'Nueva sección', order: draft.sections.length, fields: [] });
+    this.clinicalDraft.set(this.cloneClinicalTemplate(draft));
+  }
+
+  removeClinicalSection(sectionIndex: number) {
+    const draft = this.clinicalDraft();
+    if (!draft) return;
+    draft.sections.splice(sectionIndex, 1);
+    this.normalizeClinicalOrder(draft);
+  }
+
+  addClinicalField(sectionIndex: number) {
+    const draft = this.clinicalDraft();
+    const conceptId = this.selectedConceptBySection[sectionIndex];
+    const concept = this.clinicalConcepts().find(item => item.id === Number(conceptId));
+    const section = draft?.sections[sectionIndex];
+    if (!draft || !section || !concept) return;
+    if (section.fields.some(field => field.conceptId === concept.id)) {
+      this.messageService.add({ severity: 'warn', summary: 'Campo repetido', detail: 'Este campo ya está en la sección.' });
+      return;
+    }
+    section.fields.push({
+      id: -Date.now(), conceptId: concept.id, conceptCode: concept.code, label: concept.name,
+      helpText: concept.description, valueType: concept.valueType, unit: concept.unit,
+      required: false, visible: true, reportable: concept.reportable, order: section.fields.length,
+      species: [], validationConfig: concept.validationConfig ?? '{}', visibilityRules: '{}'
+    });
+    this.selectedConceptBySection[sectionIndex] = null;
+    this.clinicalDraft.set(this.cloneClinicalTemplate(draft));
+  }
+
+  removeClinicalField(sectionIndex: number, fieldIndex: number) {
+    const draft = this.clinicalDraft();
+    if (!draft) return;
+    draft.sections[sectionIndex]?.fields.splice(fieldIndex, 1);
+    this.normalizeClinicalOrder(draft);
+  }
+
+  moveClinicalField(sectionIndex: number, fieldIndex: number, direction: -1 | 1) {
+    const draft = this.clinicalDraft();
+    const fields = draft?.sections[sectionIndex]?.fields;
+    const target = fieldIndex + direction;
+    if (!draft || !fields || target < 0 || target >= fields.length) return;
+    [fields[fieldIndex], fields[target]] = [fields[target], fields[fieldIndex]];
+    this.normalizeClinicalOrder(draft);
+  }
+
+  saveClinicalDraft() {
+    const draft = this.clinicalDraft();
+    if (!draft) return;
+    if (!draft.name.trim() || draft.sections.some(section => !section.title.trim())) {
+      this.messageService.add({ severity: 'warn', summary: 'Datos incompletos', detail: 'La ficha y sus secciones deben tener nombre.' });
+      return;
+    }
+    this.clinicalLoading.set(true);
+    this.clinicalTemplateService.updateDraft(draft.id, {
+      name: draft.name.trim(),
+      sections: draft.sections.map((section, sectionIndex) => ({
+        title: section.title.trim(), order: sectionIndex,
+        fields: section.fields.map((field, fieldIndex) => ({
+          conceptId: field.conceptId, label: field.label.trim(), helpText: field.helpText?.trim(),
+          required: field.required, visible: field.visible, order: fieldIndex,
+          species: field.species ?? [], visibilityRules: field.visibilityRules ?? '{}'
+        }))
+      }))
+    }).subscribe({
+      next: response => {
+        this.clinicalDraft.set(this.cloneClinicalTemplate(response.data));
+        this.clinicalLoading.set(false);
+        this.messageService.add({ severity: 'success', summary: 'Borrador guardado', detail: 'Los cambios todavía no afectan las nuevas consultas.' });
+        this.loadClinicalConfiguration();
+      },
+      error: error => {
+        this.clinicalLoading.set(false);
+        this.messageService.add({ severity: 'error', summary: 'Ficha clínica', detail: error.error?.message || 'No se pudo guardar el borrador.' });
+      }
+    });
+  }
+
+  publishClinicalDraft() {
+    const draft = this.clinicalDraft();
+    if (!draft) return;
+    this.clinicalLoading.set(true);
+    this.clinicalTemplateService.publish(draft.id).subscribe({
+      next: response => {
+        this.clinicalDraft.set(null);
+        this.clinicalLoading.set(false);
+        this.messageService.add({ severity: 'success', summary: 'Ficha publicada', detail: `La versión ${response.data.version} se usará en las nuevas consultas.` });
+        this.loadClinicalConfiguration();
+      },
+      error: error => {
+        this.clinicalLoading.set(false);
+        this.messageService.add({ severity: 'error', summary: 'Ficha clínica', detail: error.error?.message || 'No se pudo publicar la ficha.' });
+      }
+    });
+  }
+
+  openClinicalConceptModal() {
+    this.clinicalConceptForm.reset({ name: '', description: '', valueType: 'TEXT_SHORT', unit: '', reportable: true, optionsText: '' });
+    this.showClinicalConceptModal.set(true);
+  }
+
+  saveClinicalConcept() {
+    if (this.clinicalConceptForm.invalid) {
+      this.clinicalConceptForm.markAllAsTouched();
+      return;
+    }
+    const value = this.clinicalConceptForm.getRawValue();
+    const options = (value.optionsText ?? '').split(',').map(option => option.trim()).filter(Boolean);
+    const needsOptions = value.valueType === 'SELECT_ONE' || value.valueType === 'SELECT_MULTIPLE';
+    if (needsOptions && options.length < 2) {
+      this.messageService.add({ severity: 'warn', summary: 'Opciones requeridas', detail: 'Agrega al menos dos opciones separadas por comas.' });
+      return;
+    }
+    this.clinicalTemplateService.createConcept({
+      name: value.name!, description: value.description || undefined, valueType: value.valueType!,
+      unit: value.unit || undefined, reportable: Boolean(value.reportable),
+      validationConfig: JSON.stringify(needsOptions ? { options } : {})
+    }).subscribe({
+      next: response => {
+        this.clinicalConcepts.update(items => [...items, response.data]);
+        this.showClinicalConceptModal.set(false);
+        this.messageService.add({ severity: 'success', summary: 'Campo creado', detail: 'Ya puedes agregarlo a una sección.' });
+      },
+      error: error => this.messageService.add({ severity: 'error', summary: 'Campo clínico', detail: error.error?.message || 'No se pudo crear el campo.' })
+    });
+  }
+
+  clinicalStatusLabel(status: ClinicalTemplateSummary['status']): string {
+    return status === 'PUBLISHED' ? 'Vigente' : status === 'DRAFT' ? 'Borrador' : 'Anterior';
+  }
+
+  isCoreClinicalField(field: ClinicalTemplateField): boolean {
+    try {
+      return Boolean(JSON.parse(field.validationConfig ?? '{}').coreField);
+    } catch {
+      return false;
+    }
+  }
+
+  private normalizeClinicalOrder(draft: ClinicalTemplateResponse) {
+    draft.sections.forEach((section, sectionIndex) => {
+      section.order = sectionIndex;
+      section.fields.forEach((field, fieldIndex) => field.order = fieldIndex);
+    });
+    this.clinicalDraft.set(this.cloneClinicalTemplate(draft));
+  }
+
+  private cloneClinicalTemplate(template: ClinicalTemplateResponse): ClinicalTemplateResponse {
+    return JSON.parse(JSON.stringify(template));
   }
 
   private resetPagination() {

@@ -12,6 +12,7 @@ import { SKIP_GLOBAL_LOADING } from '../interceptors/api.interceptor';
   providedIn: 'root'
 })
 export class CompanyService {
+  private static readonly MAX_PAGE_SIZE = 100;
   private readonly http = inject(HttpClient);
   private readonly apiUrl = `${environment.apiUrl}/admin/company`;
 
@@ -20,7 +21,14 @@ export class CompanyService {
   }
 
   listar(page: number = 0, size: number = 10) {
-    return this.http.get<ApiResponse<Page<CompanyListResponse>>>(`${this.apiUrl}/list?page=${page}&size=${size}`);
+    const safePage = Math.max(0, Math.trunc(Number.isFinite(page) ? page : 0));
+    const safeSize = Math.min(
+      CompanyService.MAX_PAGE_SIZE,
+      Math.max(1, Math.trunc(Number.isFinite(size) ? size : 10))
+    );
+    return this.http.get<ApiResponse<Page<CompanyListResponse>>>(`${this.apiUrl}/list`, {
+      params: { page: safePage, size: safeSize }
+    });
   }
 
   getById(id: number) {

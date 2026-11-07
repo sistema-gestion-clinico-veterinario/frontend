@@ -205,7 +205,7 @@
             <div class="p-5">
               <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-5">
                 <div class="flex flex-col gap-1">
-                  <label class="text-xs font-bold text-slate-600">Peso (kg) <span class="text-rose-500">*</span></label>
+                  <label class="text-xs font-bold text-slate-600">{{ clinicalLabel('vital.weight', 'Peso') }} (kg) <span class="text-rose-500">*</span></label>
                   <input type="number" min="0.01" max="120" inputmode="decimal" formControlName="pesoEnConsulta" step="0.01" placeholder="0.0"
                     (keydown)="blockInvalidNumberInput($event, true)" (paste)="blockInvalidNumberPaste($event, true)"
                     (input)="sanitizeNumberField('pesoEnConsulta', 3, 2)"
@@ -217,7 +217,7 @@
                     }
                   </div>
                   <div class="flex flex-col gap-1">
-                    <label class="text-xs font-bold text-slate-600">Temperatura (°C)</label>
+                    <label class="text-xs font-bold text-slate-600">{{ clinicalLabel('vital.temperature', 'Temperatura') }} (°C)</label>
                     <input type="number" min="0.1" max="45" inputmode="decimal" formControlName="temperatura" step="0.1" placeholder="0.0"
                       (keydown)="blockInvalidNumberInput($event, true)" (paste)="blockInvalidNumberPaste($event, true)"
                       (input)="sanitizeNumberField('temperatura', 2, 1)"
@@ -229,7 +229,7 @@
                       }
                     </div>
                     <div class="flex flex-col gap-1">
-                      <label class="text-xs font-bold text-slate-600">F. Cardíaca (lpm)</label>
+                      <label class="text-xs font-bold text-slate-600">{{ clinicalLabel('vital.heart_rate', 'F. Cardíaca') }} (lpm)</label>
                       <input type="number" min="1" max="300" inputmode="numeric" formControlName="frecuenciaCardiaca" placeholder="0"
                         (keydown)="blockInvalidNumberInput($event)" (paste)="blockInvalidNumberPaste($event)"
                         (input)="sanitizeNumberField('frecuenciaCardiaca', 3)"
@@ -241,7 +241,7 @@
                         }
                       </div>
                       <div class="flex flex-col gap-1">
-                        <label class="text-xs font-bold text-slate-600">F. Respiratoria (rpm)</label>
+                        <label class="text-xs font-bold text-slate-600">{{ clinicalLabel('vital.respiratory_rate', 'F. Respiratoria') }} (rpm)</label>
                         <input type="number" min="1" max="200" inputmode="numeric" formControlName="frecuenciaRespiratoria" placeholder="0"
                           (keydown)="blockInvalidNumberInput($event)" (paste)="blockInvalidNumberPaste($event)"
                           (input)="sanitizeNumberField('frecuenciaRespiratoria', 3)"
@@ -255,7 +255,7 @@
                       </div>
                       <div class="grid sm:grid-cols-2 gap-4 mb-5">
                         <div class="flex flex-col gap-1">
-                          <label class="text-xs font-bold text-slate-600">Mucosas</label>
+                          <label class="text-xs font-bold text-slate-600">{{ clinicalLabel('exam.mucosa', 'Mucosas') }}</label>
                           <input type="text" formControlName="mucosas" maxlength="80" placeholder="Ej: húmedas, rosadas..."
                             (keydown)="blockInvalidDescriptorTextInput($event)" (paste)="blockInvalidDescriptorTextPaste($event)" (input)="sanitizeDescriptorText('mucosas')"
                             class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
@@ -266,7 +266,7 @@
                             }
                           </div>
                           <div class="flex flex-col gap-1">
-                            <label class="text-xs font-bold text-slate-600">Turgencia de piel</label>
+                            <label class="text-xs font-bold text-slate-600">{{ clinicalLabel('exam.skin_turgor', 'Turgencia de piel') }}</label>
                             <input type="text" formControlName="turgenciaPiel" maxlength="80" placeholder="Ej: normal, disminuida..."
                               (keydown)="blockInvalidDescriptorTextInput($event)" (paste)="blockInvalidDescriptorTextPaste($event)" (input)="sanitizeDescriptorText('turgenciaPiel')"
                               class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
@@ -302,7 +302,10 @@
                       @if (tabActiva() === 'clinico') {
                         <div class="p-5 flex flex-col gap-4">
                           <div class="flex flex-col gap-1">
-                            <label class="text-xs font-bold text-slate-600">Anamnesis <span class="text-rose-500">*</span></label>
+                            <label class="text-xs font-bold text-slate-600">{{ clinicalLabel('consultation.anamnesis', 'Anamnesis') }} <span class="text-rose-500">*</span></label>
+                            @if (clinicalHelp('consultation.anamnesis')) {
+                              <p class="text-[11px] text-slate-400">{{ clinicalHelp('consultation.anamnesis') }}</p>
+                            }
                             <textarea formControlName="anamnesis" rows="4" maxlength="1000"
                               placeholder="Historia del problema actual, síntomas, evolución..."
                               (keydown)="blockInvalidClinicalTextInput($event)" (paste)="blockInvalidClinicalTextPaste($event)" (input)="sanitizeClinicalText('anamnesis')"
@@ -315,7 +318,7 @@
                             }
                           </div>
                           <div class="flex flex-col gap-1">
-                            <label class="text-xs font-bold text-slate-600">Examen físico</label>
+                            <label class="text-xs font-bold text-slate-600">{{ clinicalLabel('consultation.physical_exam', 'Examen físico') }}</label>
                             <textarea formControlName="examenFisico" rows="4" maxlength="1000" placeholder="Hallazgos del examen físico..."
                               (keydown)="blockInvalidClinicalTextInput($event)" (paste)="blockInvalidClinicalTextPaste($event)" (input)="sanitizeClinicalText('examenFisico')"
                               class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
@@ -327,7 +330,7 @@
                             }
                           </div>
                           <div class="flex flex-col gap-1">
-                            <label class="text-xs font-bold text-slate-600">Observaciones</label>
+                            <label class="text-xs font-bold text-slate-600">{{ clinicalLabel('consultation.observations', 'Observaciones') }}</label>
                             <textarea formControlName="observaciones" rows="3" maxlength="500" placeholder="Notas adicionales..."
                               (keydown)="blockInvalidClinicalTextInput($event)" (paste)="blockInvalidClinicalTextPaste($event)" (input)="sanitizeClinicalText('observaciones')"
                               class="w-full rounded-xl border px-3 py-2 text-sm text-slate-800 bg-white outline-none resize-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
@@ -338,6 +341,94 @@
                               class="text-xs text-rose-500">{{ controlError('observaciones') }}</span>
                             }
                           </div>
+                          @if (customClinicalSections().length > 0) {
+                            <div class="mt-2 border-t border-slate-200 pt-5" [formGroup]="customClinicalForm">
+                              <div class="mb-5 flex flex-wrap items-center justify-between gap-2">
+                                <div>
+                                  <h3 class="text-sm font-extrabold text-slate-800">Campos configurados por la clínica</h3>
+                                  <p class="mt-0.5 text-xs text-slate-400">
+                                    {{ clinicalTemplate()?.name }} · versión {{ clinicalTemplate()?.version }}
+                                  </p>
+                                </div>
+                              </div>
+                              @for (section of customClinicalSections(); track section.id) {
+                                <section class="mb-6 last:mb-0">
+                                  <h4 class="mb-3 text-xs font-extrabold uppercase tracking-wide text-slate-500">{{ section.title }}</h4>
+                                  <div class="grid gap-4 sm:grid-cols-2">
+                                    @for (field of section.fields; track field.id) {
+                                      <div class="flex flex-col gap-1" [class.sm:col-span-2]="field.valueType === 'TEXT_LONG' || field.valueType === 'DISPLAY'">
+                                        <label class="text-xs font-bold text-slate-600">
+                                          {{ field.label }}
+                                          @if (field.unit) { <span class="font-normal text-slate-400">({{ field.unit }})</span> }
+                                          @if (field.required) { <span class="text-rose-500">*</span> }
+                                        </label>
+                                        @if (field.helpText) {
+                                          <p class="text-[11px] leading-4 text-slate-400">{{ field.helpText }}</p>
+                                        }
+                                        @switch (field.valueType) {
+                                          @case ('TEXT_LONG') {
+                                            <textarea [formControlName]="customControlName(field)" rows="3"
+                                              class="w-full resize-y rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"></textarea>
+                                          }
+                                          @case ('INTEGER') {
+                                            <input type="number" step="1" [formControlName]="customControlName(field)"
+                                              class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20" />
+                                          }
+                                          @case ('DECIMAL') {
+                                            <input type="number" step="any" [formControlName]="customControlName(field)"
+                                              class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20" />
+                                          }
+                                          @case ('SCALE') {
+                                            <input type="number" step="1" [formControlName]="customControlName(field)"
+                                              class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20" />
+                                          }
+                                          @case ('DATE') {
+                                            <input type="date" [formControlName]="customControlName(field)"
+                                              class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20" />
+                                          }
+                                          @case ('BOOLEAN') {
+                                            <select [formControlName]="customControlName(field)"
+                                              class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
+                                              <option value="">Selecciona</option>
+                                              <option value="true">Sí</option>
+                                              <option value="false">No</option>
+                                            </select>
+                                          }
+                                          @case ('SELECT_ONE') {
+                                            <select [formControlName]="customControlName(field)"
+                                              class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
+                                              <option value="">Selecciona</option>
+                                              @for (option of customFieldOptions(field); track option) {
+                                                <option [value]="option">{{ option }}</option>
+                                              }
+                                            </select>
+                                          }
+                                          @case ('SELECT_MULTIPLE') {
+                                            <select multiple [formControlName]="customControlName(field)"
+                                              class="min-h-24 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
+                                              @for (option of customFieldOptions(field); track option) {
+                                                <option [value]="option">{{ option }}</option>
+                                              }
+                                            </select>
+                                          }
+                                          @case ('DISPLAY') {
+                                            <p class="rounded-lg border-l-2 border-blue-400 py-1 pl-3 text-xs leading-5 text-slate-500">{{ field.helpText || field.label }}</p>
+                                          }
+                                          @default {
+                                            <input type="text" [formControlName]="customControlName(field)"
+                                              class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20" />
+                                          }
+                                        }
+                                        @if (customClinicalForm.get(customControlName(field))?.invalid && customClinicalForm.get(customControlName(field))?.touched) {
+                                          <span class="text-xs text-rose-500">{{ customFieldError(field) }}</span>
+                                        }
+                                      </div>
+                                    }
+                                  </div>
+                                </section>
+                              }
+                            </div>
+                          }
                         </div>
                       }
                       @if (tabActiva() === 'antecedentes') {
