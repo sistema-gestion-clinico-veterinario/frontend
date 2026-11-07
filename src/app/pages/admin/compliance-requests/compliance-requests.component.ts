@@ -55,7 +55,7 @@ export class ComplianceRequestsComponent implements OnInit {
   ];
 
   ngOnInit(): void {
-    this.companiesService.listar(0, 1000).subscribe(r => this.empresas.set(
+    this.companiesService.listar(0, 100).subscribe(r => this.empresas.set(
       (r.data?.content ?? []).map(c => ({ id: c.id, name: c.name }))));
     this.actualizarContador();
     this.cargar();

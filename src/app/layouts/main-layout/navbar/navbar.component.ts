@@ -112,7 +112,7 @@ export class NavbarComponent implements OnInit {
   ngOnInit() {
     if (this.isSuperAdmin) {
       this.authStore.setLoadingEnterprise(true);
-      this.companyService.listar(0, 1000).subscribe({
+      this.companyService.listar(0, 100).subscribe({
         next: (res) => {
           const companies = res.data?.content ?? [];
           const list = companies

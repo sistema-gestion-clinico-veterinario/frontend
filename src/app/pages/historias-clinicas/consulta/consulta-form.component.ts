@@ -34,6 +34,8 @@ import { normalizeText } from '../../../core/utils/normalize-text.util';
 import { hasMeaningfulText } from '../../../core/utils/input-validation.util';
 import { ControlPreventivoService } from '../../../core/services/control-preventivo.service';
 import { AplicacionPreventivaResponse, ControlPreventivoResponse, TipoControlPreventivo, TipoVacunaResponse } from '../../../models/response/control-preventivo-response';
+import { ClinicalTemplateService } from '../../../core/services/clinical-template.service';
+import { ClinicalTemplateField, ClinicalTemplateResponse } from '../../../models/clinical-template';
 
 
 import { MotivoRecursoNoDisponible, RecursoNoDisponibleComponent, motivoDeError } from '../../../shared/components/recurso-no-disponible/recurso-no-disponible.component';
@@ -64,6 +66,7 @@ export class ConsultaFormComponent implements OnInit {
   private readonly router      = inject(Router);
   private readonly fb          = inject(FormBuilder);
   private readonly hcService   = inject(HistoriaClinicaService);
+  private readonly clinicalTemplateService = inject(ClinicalTemplateService);
   private readonly preventivoService = inject(ControlPreventivoService);
   private readonly msgService  = inject(MessageService);
   private readonly confirmSvc  = inject(ConfirmationService);
@@ -98,6 +101,14 @@ export class ConsultaFormComponent implements OnInit {
   readonly canDeleteArchivo = computed(() => this.canDelete() && this.canEditConsulta());
 
   consulta   = signal<ConsultaResponse | null>(null);
+  clinicalTemplate = signal<ClinicalTemplateResponse | null>(null);
+  customClinicalForm: FormGroup = this.fb.group({});
+  readonly customClinicalSections = computed(() => (this.clinicalTemplate()?.sections ?? [])
+    .map(section => ({
+      ...section,
+      fields: section.fields.filter(field => !this.coreFieldName(field))
+    }))
+    .filter(section => section.fields.length > 0));
   historia   = signal<any | null>(null); 
   tabActiva  = signal<'signos' | 'clinico' | 'diagnosticos' | 'tratamientos' | 'antecedentes' | 'historial' | 'recetas' | 'examenes'>('signos');
   isCerrada  = signal<boolean>(false);
@@ -445,6 +456,7 @@ export class ConsultaFormComponent implements OnInit {
     this.hcService.getConsulta(this.consultaId).subscribe({
       next: (res) => {
         this.consulta.set(res.data);
+        this.loadClinicalTemplate(res.data);
         this.isCerrada.set(res.data.estado === 'CERRADA');
         if (res.data.mascotaId) {
           this.loadHistoria(res.data.mascotaId);
@@ -844,8 +856,10 @@ version: res.data.version,
   private aplicarEstadoEdicionFormulario() {
     if (this.puedeEditarConsulta()) {
       this.form.enable({ emitEvent: false });
+      this.customClinicalForm.enable({ emitEvent: false });
     } else {
       this.form.disable({ emitEvent: false });
+      this.customClinicalForm.disable({ emitEvent: false });
     }
     this.form.get('motivoConsulta')?.disable({ emitEvent: false });
   }
@@ -1347,6 +1361,7 @@ version: res.data.version,
   private buildConsultaPayload(version: number | undefined): any {
     const payload = this.trimStringFields({ ...this.form.getRawValue(), version });
     delete payload.motivoConsulta;
+    payload.customAnswers = this.buildCustomAnswers();
     return payload;
   }
 
@@ -1366,8 +1381,9 @@ version: res.data.version,
 
   private cerrar() {
     if (!this.canEditConsulta() || this.closingConsulta()) return;
-    if (this.form.invalid) {
+    if (this.form.invalid || this.customClinicalForm.invalid) {
       this.form.markAllAsTouched();
+      this.customClinicalForm.markAllAsTouched();
       this.msgService.add({
         severity: 'warn',
         summary: 'Consulta incompleta',
@@ -1438,8 +1454,119 @@ version: res.data.version,
     this.consulta.set(data);
     this.isCerrada.set(data.estado === 'CERRADA');
     this.form.patchValue({ version: data.version }, { emitEvent: false });
+    this.patchCustomAnswers(data);
     this.form.markAsPristine();
     this.syncingForm = false;
+  }
+
+  clinicalLabel(conceptCode: string, fallback: string): string {
+    return this.clinicalTemplate()?.sections
+      .flatMap(section => section.fields)
+      .find(field => field.conceptCode === conceptCode)?.label ?? fallback;
+  }
+
+  clinicalHelp(conceptCode: string): string | undefined {
+    return this.clinicalTemplate()?.sections
+      .flatMap(section => section.fields)
+      .find(field => field.conceptCode === conceptCode)?.helpText;
+  }
+
+  customControlName(field: ClinicalTemplateField): string {
+    return `clinical_${field.id}`;
+  }
+
+  customFieldOptions(field: ClinicalTemplateField): string[] {
+    const config = this.fieldConfig(field);
+    return Array.isArray(config['options']) ? config['options'].map(String) : [];
+  }
+
+  customFieldError(field: ClinicalTemplateField): string {
+    const control = this.customClinicalForm.get(this.customControlName(field));
+    if (!control?.errors) return '';
+    if (control.errors['required']) return `${field.label} es obligatorio.`;
+    if (control.errors['min']) return `Valor mínimo: ${control.errors['min'].min}.`;
+    if (control.errors['max']) return `Valor máximo: ${control.errors['max'].max}.`;
+    if (control.errors['maxlength']) return `Máximo ${control.errors['maxlength'].requiredLength} caracteres.`;
+    return 'Revisa el valor ingresado.';
+  }
+
+  private loadClinicalTemplate(consulta: ConsultaResponse) {
+    const request = consulta.clinicalTemplateId
+      ? this.clinicalTemplateService.get(consulta.clinicalTemplateId)
+      : this.clinicalTemplateService.current(consulta.especie);
+    request.subscribe({
+      next: response => {
+        this.clinicalTemplate.set(response.data);
+        this.configureCustomClinicalForm(response.data, consulta);
+        this.aplicarEstadoEdicionFormulario();
+      },
+      error: () => {
+        this.clinicalTemplate.set(null);
+        this.msgService.add({
+          severity: 'warn',
+          summary: 'Ficha clínica',
+          detail: 'No se pudo cargar la configuración de la ficha. Los campos estándar siguen disponibles.'
+        });
+      }
+    });
+  }
+
+  private configureCustomClinicalForm(template: ClinicalTemplateResponse, consulta: ConsultaResponse) {
+    Object.keys(this.customClinicalForm.controls).forEach(name => this.customClinicalForm.removeControl(name));
+    for (const field of template.sections.flatMap(section => section.fields)) {
+      if (this.coreFieldName(field) || field.valueType === 'DISPLAY') continue;
+      const config = this.fieldConfig(field);
+      const validators = [];
+      if (field.required) validators.push(Validators.required);
+      if (typeof config['min'] === 'number') validators.push(Validators.min(config['min']));
+      if (typeof config['max'] === 'number') validators.push(Validators.max(config['max']));
+      if (typeof config['maxLength'] === 'number') validators.push(Validators.maxLength(config['maxLength']));
+      const saved = consulta.customAnswers?.find(answer => answer.fieldId === field.id)?.value;
+      let value: unknown = saved ?? '';
+      if (field.valueType === 'BOOLEAN') value = saved ?? '';
+      if (field.valueType === 'SELECT_MULTIPLE') {
+        try { value = saved ? JSON.parse(saved) : []; } catch { value = []; }
+      }
+      this.customClinicalForm.addControl(this.customControlName(field), this.fb.control(value, validators));
+    }
+  }
+
+  private patchCustomAnswers(consulta: ConsultaResponse) {
+    for (const field of this.clinicalTemplate()?.sections.flatMap(section => section.fields) ?? []) {
+      if (this.coreFieldName(field) || field.valueType === 'DISPLAY') continue;
+      const control = this.customClinicalForm.get(this.customControlName(field));
+      const saved = consulta.customAnswers?.find(answer => answer.fieldId === field.id)?.value;
+      if (!control || saved === undefined) continue;
+      let value: unknown = saved;
+      if (field.valueType === 'BOOLEAN') value = saved;
+      if (field.valueType === 'SELECT_MULTIPLE') {
+        try { value = JSON.parse(saved); } catch { value = []; }
+      }
+      control.setValue(value, { emitEvent: false });
+    }
+    this.customClinicalForm.markAsPristine();
+  }
+
+  private buildCustomAnswers() {
+    return (this.clinicalTemplate()?.sections.flatMap(section => section.fields) ?? [])
+      .filter(field => !this.coreFieldName(field) && field.valueType !== 'DISPLAY')
+      .map(field => {
+        const raw = this.customClinicalForm.get(this.customControlName(field))?.value;
+        const value = field.valueType === 'SELECT_MULTIPLE'
+          ? JSON.stringify(Array.isArray(raw) ? raw : [])
+          : raw === null || raw === undefined ? '' : String(raw);
+        return { fieldId: field.id, value };
+      });
+  }
+
+  private coreFieldName(field: ClinicalTemplateField): string | null {
+    const value = this.fieldConfig(field)['coreField'];
+    return typeof value === 'string' && value.length > 0 ? value : null;
+  }
+
+  private fieldConfig(field: ClinicalTemplateField): Record<string, any> {
+    if (!field.validationConfig) return {};
+    try { return JSON.parse(field.validationConfig); } catch { return {}; }
   }
 
   verConsulta(id: number) {

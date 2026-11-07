@@ -119,7 +119,7 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     if (this.isSuperAdmin()) {
-      this.companyService.listar(0, 1000).subscribe({
+      this.companyService.listar(0, 100).subscribe({
         next: (res) => {
           this.companies.set(res.data.content || []);
         }
