@@ -1,4 +1,5 @@
 import { PrescripcionResponse } from './prescripcion-response';
+import { ClinicalFieldAnswer } from '../clinical-template';
 
 export interface ConsultaResponse {
   id: number;
@@ -46,4 +47,7 @@ export interface ConsultaResponse {
   cerradoPor?: string;
   indicacionesReceta?: string;
   prescripciones?: PrescripcionResponse[];
+  clinicalTemplateId?: number;
+  clinicalTemplateVersion?: number;
+  customAnswers?: ClinicalFieldAnswer[];
 }

@@ -1,3 +1,5 @@
+import { ClinicalFieldAnswerRequest } from '../clinical-template';
+
 export interface ConsultaRequest {
   version: number;
   tipoConsulta?: string;
@@ -21,6 +23,7 @@ export interface ConsultaRequest {
   antecedentesFamiliares?: string;
   grupoSanguineo?: string;
   indicacionesReceta?: string;
+  customAnswers?: ClinicalFieldAnswerRequest[];
 }
 
 export interface CerrarConsultaRequest extends ConsultaRequest {}
