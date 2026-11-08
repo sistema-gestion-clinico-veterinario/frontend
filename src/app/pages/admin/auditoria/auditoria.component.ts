@@ -57,7 +57,7 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
 
   // Paginación actual
   currentPage = 0;
-  readonly pageSize = 10;
+  pageSize = 10;
 
   modulesList = [
     'Seguridad', 'Citas', 'Mascotas', 'Usuarios',
@@ -209,6 +209,13 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
     this.loadTimeout = setTimeout(() => {
       this.executeLoadLogs(page, false);
     }, 50);
+  }
+
+  onPageChange(event: { page?: number; rows?: number }) {
+    const nextSize = Number(event.rows) || 10;
+    const nextPage = nextSize === this.pageSize ? Number(event.page) || 0 : 0;
+    this.pageSize = nextSize;
+    this.loadLogs(nextPage);
   }
 
   private buildActiveFilters(): {

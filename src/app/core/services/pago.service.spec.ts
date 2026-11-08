@@ -24,13 +24,14 @@ describe('PagoService integration', () => {
     service.registrar({
       citaId: 15,
       metodoPago: 'YAPE',
-    }).subscribe((response) => {
+    }, 'pago-yape-15').subscribe((response) => {
       expect(response.success).toBeTrue();
       expect(response.data.estado).toBe('PAID');
     });
 
     const req = httpMock.expectOne(`${environment.apiUrl}/payments`);
     expect(req.request.method).toBe('POST');
+    expect(req.request.headers.get('Idempotency-Key')).toBe('pago-yape-15');
     expect(req.request.body).toEqual({
       citaId: 15,
       metodoPago: 'YAPE',

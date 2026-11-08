@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../../models/response/api-response';
 import { PagoRequest } from '../../models/request/pago-request';
@@ -14,8 +14,16 @@ export class PagoService {
   private readonly http = inject(HttpClient);
   private readonly url = `${environment.apiUrl}/payments`;
 
-  registrar(data: PagoRequest) {
-    return this.http.post<ApiResponse<PagoResponse>>(this.url, data);
+  registrar(data: PagoRequest, idempotencyKey: string) {
+    const headers = new HttpHeaders({ 'Idempotency-Key': idempotencyKey });
+    return this.http.post<ApiResponse<PagoResponse>>(this.url, data, { headers });
+  }
+
+  reportarComprobante(pagoId: number, generated: boolean, error?: string) {
+    return this.http.post<ApiResponse<PagoResponse>>(`${this.url}/${pagoId}/receipt-result`, {
+      generated,
+      error: error?.slice(0, 500)
+    });
   }
 
   obtenerPorCita(citaId: number) {

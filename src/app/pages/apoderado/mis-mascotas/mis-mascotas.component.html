@@ -256,9 +256,11 @@
           </span>
           <p-paginator
             [rows]="size()"
+            [rowsPerPageOptions]="[10, 20, 50, 100]"
             [totalRecords]="totalRecords()"
             (onPageChange)="cargarMascotas($event)"
-            [showCurrentPageReport]="false"
+            [showCurrentPageReport]="true"
+            currentPageReportTemplate="{first}–{last} de {totalRecords}"
             styleClass="!border-none !bg-transparent !py-3">
           </p-paginator>
         </div>

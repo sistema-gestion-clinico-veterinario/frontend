@@ -83,6 +83,7 @@ export class ClientComponent implements OnInit {
   showPasswordResetModal = signal(false);
   requestingPasswordReset = signal(false);
   clients = signal<ApoderadoListResponse[]>([]);
+  ownerPortalMode = signal<'SOLO_GESTION_INTERNA' | 'PORTAL_OPCIONAL' | 'PORTAL_POR_DEFECTO'>('PORTAL_POR_DEFECTO');
   cargando = signal<boolean>(true);
   displayModal = signal<boolean>(false);
   isEdit = signal<boolean>(false);
@@ -143,6 +144,26 @@ export class ClientComponent implements OnInit {
     }
   }
 
+  portalAccessLabel(client: ApoderadoListResponse): string {
+    switch (client.estadoAccesoPortal) {
+      case 'ACTIVO': return 'Portal activo';
+      case 'INVITACION_PENDIENTE': return 'Invitación pendiente';
+      case 'SUSPENDIDO': return 'Portal suspendido';
+      case 'REVOCADO': return 'Portal revocado';
+      default: return 'Sin portal';
+    }
+  }
+
+  portalAccessClass(client: ApoderadoListResponse): string {
+    switch (client.estadoAccesoPortal) {
+      case 'ACTIVO': return 'text-emerald-700';
+      case 'INVITACION_PENDIENTE': return 'text-amber-700';
+      case 'SUSPENDIDO': return 'text-orange-700';
+      case 'REVOCADO': return 'text-rose-600';
+      default: return 'text-slate-400';
+    }
+  }
+
   get activeCompanyId(): number | null {
     return this.authStore.selectedEnterprise()?.establishmentId ?? this.authStore.companyId();
   }
@@ -181,6 +202,8 @@ export class ClientComponent implements OnInit {
       client.userId ?? '',
       client.cuentaPendiente ?? false,
       client.puedeReenviarInvitacion ?? false,
+      client.estadoAccesoPortal ?? '',
+      this.ownerPortalMode(),
       client.tipoInactividad ?? ''
     ].join('|');
     const cached = this.clientActionItemsCache.get(client);
@@ -196,7 +219,10 @@ export class ClientComponent implements OnInit {
       });
     }
 
-    if (canManageCredentials && client.activo && client.userId && !client.cuentaPendiente) {
+    const accesoPortalActivo = client.estadoAccesoPortal === 'ACTIVO';
+    const accesoPortalHabilitado = accesoPortalActivo || client.estadoAccesoPortal === 'INVITACION_PENDIENTE';
+
+    if (canManageCredentials && client.activo && client.userId && accesoPortalActivo && !client.cuentaPendiente) {
       items.push({
         label: 'Restablecer contraseña',
         icon: 'pi pi-lock',
@@ -204,7 +230,7 @@ export class ClientComponent implements OnInit {
       });
     }
 
-    if (canManageCredentials && client.activo && client.userId) {
+    if (canManageCredentials && client.activo && client.userId && accesoPortalHabilitado) {
       items.push({
         label: client.cuentaPendiente ? 'Corregir correo' : 'Cambiar correo de acceso',
         icon: 'pi pi-at',
@@ -218,6 +244,22 @@ export class ClientComponent implements OnInit {
         icon: 'pi pi-send',
         command: () => this.reenviarInvitacion(client)
       });
+    }
+
+    if (canUpdateClients && client.activo) {
+      if (accesoPortalHabilitado) {
+        items.push({
+          label: 'Revocar acceso al portal',
+          icon: 'pi pi-ban',
+          command: () => this.confirmarRevocacionPortal(client)
+        });
+      } else if (this.ownerPortalMode() !== 'SOLO_GESTION_INTERNA') {
+        items.push({
+          label: 'Habilitar acceso al portal',
+          icon: 'pi pi-user-plus',
+          command: () => this.confirmarHabilitacionPortal(client)
+        });
+      }
     }
 
     if (canUpdateClients) {
@@ -306,6 +348,10 @@ export class ClientComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.companyService.getCompany().subscribe({
+      next: response => this.ownerPortalMode.set(
+        response.data.modoAccesoPropietario ?? 'PORTAL_POR_DEFECTO')
+    });
     this.complianceService.actualesDeMiClinica().subscribe({
       next: respuesta => {
         const controles = respuesta.data;
@@ -765,6 +811,44 @@ export class ClientComponent implements OnInit {
           })
         });
       }
+    );
+  }
+
+  confirmarHabilitacionPortal(client: ApoderadoListResponse) {
+    this.openConfirm(
+      'Habilitar acceso al portal',
+      `Se habilitará el acceso de ${client.nombre} ${client.apellido}. Si todavía no activó su cuenta y tiene una mascota vinculada, recibirá una invitación nueva.`,
+      () => this.apoderadoService.habilitarAccesoPortal(client.id).subscribe({
+        next: response => {
+          this.messageService.add({ severity: 'success', summary: 'Acceso habilitado', detail: response.message });
+          this.loadClients(this.currentPage);
+        },
+        error: err => this.messageService.add({
+          severity: 'error', summary: 'No se pudo habilitar',
+          detail: err.error?.message || 'Revisa la configuración del portal de la clínica.'
+        })
+      }),
+      false,
+      'Habilitar acceso'
+    );
+  }
+
+  confirmarRevocacionPortal(client: ApoderadoListResponse) {
+    this.openConfirm(
+      'Revocar acceso al portal',
+      `Se cerrarán las sesiones de ${client.nombre} ${client.apellido}. Sus datos, mascotas, citas, pagos e historial se conservarán.`,
+      reason => this.apoderadoService.revocarAccesoPortal(client.id, reason).subscribe({
+        next: response => {
+          this.messageService.add({ severity: 'success', summary: 'Acceso revocado', detail: response.message });
+          this.loadClients(this.currentPage);
+        },
+        error: err => this.messageService.add({
+          severity: 'error', summary: 'No se pudo revocar',
+          detail: err.error?.message || 'Intenta nuevamente.'
+        })
+      }),
+      true,
+      'Revocar acceso'
     );
   }
 

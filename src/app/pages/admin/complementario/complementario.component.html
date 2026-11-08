@@ -60,9 +60,9 @@
             </table>
           </div>
         </div>
-        <div class="lg:hidden space-y-3 p-4">
+        <div class="lg:hidden divide-y divide-slate-100">
           @for (i of [1,2,3]; track i) {
-            <div class="border border-slate-100 rounded-lg p-4">
+            <div class="px-4 py-4">
               <div class="flex items-start gap-3">
                 <p-skeleton size="2.5rem" borderRadius="0.5rem"></p-skeleton>
                 <div class="flex-1 space-y-2">
@@ -106,35 +106,42 @@
   }
 
   @if (!requiresCompanySelection) {
-    <div class="flex items-center gap-6 overflow-x-auto border-b border-slate-200 mb-6">
+    <div role="group" aria-label="Secciones de configuración complementaria"
+      class="mb-6 flex items-center gap-1 overflow-x-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm">
       <button (click)="activeTab.set(0)"
-        [class]="activeTab() === 0 ? 'text-blue-500 border-blue-500' : 'text-slate-400 border-transparent hover:text-slate-600'"
-        class="pb-4 px-1 text-sm font-bold border-b-2 outline-none shrink-0">
+        [attr.aria-pressed]="activeTab() === 0"
+        [class]="activeTab() === 0 ? 'bg-blue-500 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'"
+        class="shrink-0 rounded-lg px-3 py-2.5 text-xs font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400 sm:text-sm">
         Especialidades
       </button>
       <button (click)="activeTab.set(1)"
-        [class]="activeTab() === 1 ? 'text-blue-500 border-blue-500' : 'text-slate-400 border-transparent hover:text-slate-600'"
-        class="pb-4 px-1 text-sm font-bold border-b-2 outline-none shrink-0">
+        [attr.aria-pressed]="activeTab() === 1"
+        [class]="activeTab() === 1 ? 'bg-blue-500 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'"
+        class="shrink-0 rounded-lg px-3 py-2.5 text-xs font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400 sm:text-sm">
         Tipos de Empleado
       </button>
       <button (click)="activeTab.set(2)"
-        [class]="activeTab() === 2 ? 'text-blue-500 border-blue-500' : 'text-slate-400 border-transparent hover:text-slate-600'"
-        class="pb-4 px-1 text-sm font-bold border-b-2 outline-none shrink-0">
+        [attr.aria-pressed]="activeTab() === 2"
+        [class]="activeTab() === 2 ? 'bg-blue-500 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'"
+        class="shrink-0 rounded-lg px-3 py-2.5 text-xs font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400 sm:text-sm">
         Servicios
       </button>
       <button (click)="activeTab.set(3)"
-        [class]="activeTab() === 3 ? 'text-blue-500 border-blue-500' : 'text-slate-400 border-transparent hover:text-slate-600'"
-        class="pb-4 px-1 text-sm font-bold border-b-2 outline-none shrink-0">
+        [attr.aria-pressed]="activeTab() === 3"
+        [class]="activeTab() === 3 ? 'bg-blue-500 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'"
+        class="shrink-0 rounded-lg px-3 py-2.5 text-xs font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400 sm:text-sm">
         Vacunas
       </button>
       <button (click)="activeTab.set(4)"
-        [class]="activeTab() === 4 ? 'text-blue-500 border-blue-500' : 'text-slate-400 border-transparent hover:text-slate-600'"
-        class="pb-4 px-1 text-sm font-bold border-b-2 outline-none shrink-0">
+        [attr.aria-pressed]="activeTab() === 4"
+        [class]="activeTab() === 4 ? 'bg-blue-500 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'"
+        class="shrink-0 rounded-lg px-3 py-2.5 text-xs font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400 sm:text-sm">
         Desparasitantes
       </button>
       <button (click)="selectTab(5)"
-        [class]="activeTab() === 5 ? 'text-blue-500 border-blue-500' : 'text-slate-400 border-transparent hover:text-slate-600'"
-        class="pb-4 px-1 text-sm font-bold border-b-2 outline-none shrink-0">
+        [attr.aria-pressed]="activeTab() === 5"
+        [class]="activeTab() === 5 ? 'bg-blue-500 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'"
+        class="shrink-0 rounded-lg px-3 py-2.5 text-xs font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400 sm:text-sm">
         Ficha clínica
       </button>
     </div>
@@ -145,7 +152,7 @@
       <ng-container>
         <!-- Tab 0: Especialidades -->
         @if (activeTab() === 0) {
-          <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+          <div class="complementario-maintainer bg-white border border-slate-200 rounded-xl overflow-hidden">
             <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 px-4 sm:px-6 py-4 border-b border-slate-100">
               <div>
                 <h2 class="text-base font-bold text-slate-800">Especialidades</h2>
@@ -208,20 +215,17 @@
               </div>
             </div>
             @if (especialidades().length > 0) {
-              <div class="lg:hidden space-y-3 p-4">
+              <div class="complementario-mobile-list lg:hidden divide-y divide-slate-100">
                 @for (item of especialidades(); track item) {
-                  <div class="bg-white border border-slate-200 rounded-xl p-4">
+                  <div class="px-4 py-4">
                     <div class="flex items-center gap-3">
                       <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-500 font-bold text-sm flex-shrink-0">
                         {{ item.nombre.substring(0,2).toUpperCase() }}
                       </div>
                       <span class="text-sm font-bold text-slate-800 truncate">{{ item.nombre }}</span>
                     </div>
-                    <div class="grid grid-cols-1 gap-2 mt-3 text-xs">
-                      <div class="rounded-lg bg-slate-50 px-3 py-2">
-                        <span class="block text-[10px] font-bold text-slate-400 uppercase">Descripción</span>
-                        <span class="font-bold text-slate-700">{{ item.descripcion || '—' }}</span>
-                      </div>
+                    <div class="mt-2 text-xs text-slate-500">
+                      <span class="font-semibold text-slate-400">Descripción: </span>{{ item.descripcion || '—' }}
                     </div>
                     <div class="flex items-center justify-end gap-1 mt-3 pt-3 border-t border-slate-100">
                       <button *appHasPermission="'VISTA_COMPLEMENTARIO:modificar'" (click)="openEspModal(item)"
@@ -263,7 +267,7 @@
         }
         <!-- Tab 1: Tipos de Empleado -->
         @if (activeTab() === 1) {
-          <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+          <div class="complementario-maintainer bg-white border border-slate-200 rounded-xl overflow-hidden">
             <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 px-4 sm:px-6 py-4 border-b border-slate-100">
               <div>
                 <h2 class="text-base font-bold text-slate-800">Tipos de Empleado</h2>
@@ -344,9 +348,9 @@
               </div>
             </div>
             @if (tiposEmpleado().length > 0) {
-              <div class="lg:hidden space-y-3 p-4">
+              <div class="complementario-mobile-list lg:hidden divide-y divide-slate-100">
                 @for (item of tiposEmpleado(); track item) {
-                  <div class="bg-white border border-slate-200 rounded-xl p-4">
+                  <div class="px-4 py-4">
                     <div class="flex items-start justify-between gap-2">
                       <div class="flex items-center gap-3 min-w-0">
                         <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500 font-bold text-sm flex-shrink-0">
@@ -361,21 +365,23 @@
                         {{ item.estado ? 'Activo' : 'Inactivo' }}
                       </button>
                     </div>
-                    <div class="grid grid-cols-2 gap-2 mt-3 text-xs">
-                      <div class="rounded-lg bg-slate-50 px-3 py-2 col-span-2">
-                        <span class="block text-[10px] font-bold text-slate-400 uppercase">Descripción</span>
-                        <span class="font-bold text-slate-700">{{ item.descripcion || '—' }}</span>
+                    <div class="mt-3 space-y-2 text-xs">
+                      <div>
+                        <span class="font-semibold text-slate-400">Descripción: </span>
+                        <span class="font-medium text-slate-700">{{ item.descripcion || '—' }}</span>
                       </div>
-                      <div class="rounded-lg bg-slate-50 px-3 py-2">
-                        <span class="block text-[10px] font-bold text-slate-400 uppercase">Atención</span>
-                        <span [class]="item.ejerceComoVeterinario ? 'text-green-700' : 'text-slate-500'" class="font-bold">
+                      <div class="flex flex-wrap gap-x-5 gap-y-2">
+                        <span>
+                          <span class="font-semibold text-slate-400">Atención: </span>
+                          <span [class]="item.ejerceComoVeterinario ? 'text-green-700' : 'text-slate-500'" class="font-bold">
                           {{ item.ejerceComoVeterinario ? 'Veterinaria' : 'No clínica' }}
+                          </span>
                         </span>
-                      </div>
-                      <div class="rounded-lg bg-slate-50 px-3 py-2">
-                        <span class="block text-[10px] font-bold text-slate-400 uppercase">Especialidades</span>
-                        <span [class]="item.permiteEspecialidades ? 'text-green-700' : 'text-red-500'" class="font-bold">
+                        <span>
+                          <span class="font-semibold text-slate-400">Especialidades: </span>
+                          <span [class]="item.permiteEspecialidades ? 'text-green-700' : 'text-red-500'" class="font-bold">
                           {{ item.permiteEspecialidades ? 'Habilitado' : 'Desactivado' }}
+                          </span>
                         </span>
                       </div>
                     </div>
@@ -413,7 +419,7 @@
         }
         <!-- Tab 2: Servicios -->
         @if (activeTab() === 2) {
-          <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-none">
+          <div class="complementario-maintainer bg-white border border-slate-200 rounded-xl overflow-hidden shadow-none">
             <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 px-4 sm:px-6 py-4 border-b border-slate-100">
               <div>
                 <h2 class="text-base font-bold text-slate-800">Catálogo de Servicios</h2>
@@ -497,9 +503,9 @@
               </div>
             </div>
             @if (servicios().length > 0) {
-              <div class="lg:hidden space-y-3 p-4">
+              <div class="complementario-mobile-list lg:hidden divide-y divide-slate-100">
                 @for (item of servicios(); track item) {
-                  <div class="bg-white border border-slate-200 rounded-xl p-4" [class.opacity-50]="!item.activo">
+                  <div class="px-4 py-4" [class.opacity-50]="!item.activo">
                     <div class="flex items-start justify-between gap-2">
                       <div class="flex items-center gap-3 min-w-0">
                         <div class="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600 font-bold text-sm flex-shrink-0">
@@ -527,13 +533,13 @@
                         {{ item.disponible ? 'Activo' : 'Inactivo' }}
                       </button>
                     </div>
-                    <div class="grid grid-cols-2 gap-2 mt-3 text-xs">
-                      <div class="rounded-lg bg-slate-50 px-3 py-2 col-span-2">
-                        <span class="block text-[10px] font-bold text-slate-400 uppercase">Descripción</span>
-                        <span class="font-bold text-slate-700">{{ item.descripcion || '—' }}</span>
+                    <div class="mt-3 space-y-2 text-xs">
+                      <div>
+                        <span class="font-semibold text-slate-400">Descripción: </span>
+                        <span class="font-medium text-slate-700">{{ item.descripcion || '—' }}</span>
                       </div>
-                      <div class="rounded-lg bg-slate-50 px-3 py-2 col-span-2">
-                        <span class="block text-[10px] font-bold text-slate-400 uppercase">Precio</span>
+                      <div>
+                        <span class="font-semibold text-slate-400">Precio: </span>
                         <span class="font-bold text-slate-700">S/ {{ item.precio | number:'1.2-2' }}</span>
                       </div>
                     </div>
@@ -571,7 +577,7 @@
         }
         <!-- Tab 3: Vacunas -->
         @if (activeTab() === 3) {
-          <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-none">
+          <div class="complementario-maintainer bg-white border border-slate-200 rounded-xl overflow-hidden shadow-none">
             <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 px-4 sm:px-6 py-4 border-b border-slate-100">
               <div>
                 <h2 class="text-base font-bold text-slate-800">Catálogo de Vacunas</h2>
@@ -633,9 +639,9 @@
               </div>
             </div>
             @if (vacunas().length > 0) {
-              <div class="lg:hidden space-y-3 p-4">
+              <div class="complementario-mobile-list lg:hidden divide-y divide-slate-100">
                 @for (item of vacunas(); track item) {
-                  <div class="bg-white border border-slate-200 rounded-xl p-4" [class.opacity-50]="!item.activo">
+                  <div class="px-4 py-4" [class.opacity-50]="!item.activo">
                     <div class="flex items-start justify-between gap-2">
                       <div class="flex items-center gap-3 min-w-0">
                         <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-500 font-bold text-sm flex-shrink-0">{{ item.nombre?.substring(0,2) }}</div>
@@ -648,13 +654,13 @@
                         {{ item.activo ? 'Activo' : 'Inactivo' }}
                       </button>
                     </div>
-                    <div class="grid grid-cols-2 gap-2 mt-3 text-xs">
-                      <div class="rounded-lg bg-slate-50 px-3 py-2">
-                        <span class="block text-[10px] font-bold text-slate-400 uppercase">Especie</span>
+                    <div class="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-xs">
+                      <div>
+                        <span class="font-semibold text-slate-400">Especie: </span>
                         <span class="font-bold text-slate-700">{{ item.especie }}</span>
                       </div>
-                      <div class="rounded-lg bg-slate-50 px-3 py-2">
-                        <span class="block text-[10px] font-bold text-slate-400 uppercase">Precio</span>
+                      <div>
+                        <span class="font-semibold text-slate-400">Precio: </span>
                         <span class="font-bold text-slate-700">S/ {{ item.precio }}</span>
                       </div>
                     </div>
@@ -686,7 +692,7 @@
         }
         <!-- Tab 4: Desparasitantes -->
         @if (activeTab() === 4) {
-          <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-none">
+          <div class="complementario-maintainer bg-white border border-slate-200 rounded-xl overflow-hidden shadow-none">
             <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 px-4 sm:px-6 py-4 border-b border-slate-100">
               <div>
                 <h2 class="text-base font-bold text-slate-800">Catálogo de Desparasitantes</h2>
@@ -748,9 +754,9 @@
               </div>
             </div>
             @if (desparasitantes().length > 0) {
-              <div class="lg:hidden space-y-3 p-4">
+              <div class="complementario-mobile-list lg:hidden divide-y divide-slate-100">
                 @for (item of desparasitantes(); track item) {
-                  <div class="bg-white border border-slate-200 rounded-xl p-4" [class.opacity-50]="!item.activo">
+                  <div class="px-4 py-4" [class.opacity-50]="!item.activo">
                     <div class="flex items-start justify-between gap-2">
                       <div class="flex items-center gap-3 min-w-0">
                         <div class="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center text-purple-600 font-bold text-sm flex-shrink-0">{{ item.nombre?.substring(0,2) }}</div>
@@ -763,13 +769,13 @@
                         {{ item.activo ? 'Activo' : 'Inactivo' }}
                       </button>
                     </div>
-                    <div class="grid grid-cols-2 gap-2 mt-3 text-xs">
-                      <div class="rounded-lg bg-slate-50 px-3 py-2">
-                        <span class="block text-[10px] font-bold text-slate-400 uppercase">Especie</span>
+                    <div class="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-xs">
+                      <div>
+                        <span class="font-semibold text-slate-400">Especie: </span>
                         <span class="font-bold text-slate-700">{{ item.especie }}</span>
                       </div>
-                      <div class="rounded-lg bg-slate-50 px-3 py-2">
-                        <span class="block text-[10px] font-bold text-slate-400 uppercase">Precio</span>
+                      <div>
+                        <span class="font-semibold text-slate-400">Precio: </span>
                         <span class="font-bold text-slate-700">S/ {{ item.precio }}</span>
                       </div>
                     </div>
@@ -800,7 +806,48 @@
           </div>
         }
         @if (activeTab() === 5) {
-          <div class="space-y-5">
+          <div class="grid gap-4 lg:grid-cols-[280px_minmax(0,1fr)]">
+            <aside class="self-start overflow-hidden rounded-xl border border-slate-200 bg-white lg:sticky lg:top-4">
+              <header class="flex items-center justify-between border-b border-slate-100 px-4 py-4">
+                <div>
+                  <h2 class="text-sm font-bold text-slate-800">Fichas clínicas</h2>
+                  <p class="mt-0.5 text-xs text-slate-400">{{ clinicalCatalog().length }} configuradas</p>
+                </div>
+                <button type="button" (click)="openClinicalTemplateModal()" title="Crear ficha clínica"
+                  class="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-500 text-white hover:bg-blue-600">
+                  <i class="pi pi-plus text-xs"></i>
+                </button>
+              </header>
+              <div class="max-h-[65vh] overflow-y-auto py-2">
+                @for (item of clinicalCatalog(); track item.templateKey) {
+                  <button type="button" (click)="selectClinicalTemplate(item.templateKey)"
+                    class="flex w-full items-start gap-3 border-l-2 px-4 py-3 text-left transition"
+                    [ngClass]="selectedClinicalTemplateKey() === item.templateKey ? 'border-blue-500 bg-blue-50/70' : 'border-transparent hover:bg-slate-50'">
+                    <span class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
+                      [ngClass]="item.published ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'">
+                      <i class="pi pi-file-edit text-sm"></i>
+                    </span>
+                    <span class="min-w-0 flex-1">
+                      <strong class="block truncate text-sm text-slate-700">{{ item.representative.name }}</strong>
+                      <span class="mt-1 flex flex-wrap items-center gap-1.5 text-[10px] font-semibold">
+                        @if (item.published?.defaultTemplate) { <span class="text-blue-600">Predeterminada</span> }
+                        @if (item.draft) { <span class="text-amber-600">Cambios en edición</span> }
+                        @else if (item.published) { <span class="text-emerald-600">Activa</span> }
+                      </span>
+                    </span>
+                    <i class="pi pi-chevron-right mt-2 text-[10px] text-slate-300"></i>
+                  </button>
+                } @empty {
+                  <div class="px-4 py-8 text-center text-xs text-slate-400">Todavía no existen fichas clínicas.</div>
+                }
+              </div>
+              <div class="border-t border-slate-100 p-3">
+                <button type="button" (click)="openClinicalTemplateModal()"
+                  class="inline-flex h-9 w-full items-center justify-center gap-2 rounded-lg border border-blue-200 text-xs font-bold text-blue-600 hover:bg-blue-50">
+                  <i class="pi pi-plus text-xs"></i> Nueva ficha
+                </button>
+              </div>
+            </aside>
             <section class="overflow-hidden rounded-xl border border-slate-200 bg-white">
               <header class="flex flex-col gap-4 border-b border-slate-100 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
                 <div>
@@ -808,10 +855,22 @@
                   <p class="mt-0.5 text-sm text-slate-500">Los cambios publicados se aplican solo a las nuevas consultas. Las anteriores conservan su versión.</p>
                 </div>
                 <div class="flex flex-col gap-2 sm:flex-row">
+                  <button type="button" (click)="openClinicalPreview()" [disabled]="clinicalLoading()"
+                    class="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-4 text-sm font-bold text-blue-600 transition hover:border-blue-300 hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-50">
+                    <i class="pi pi-eye text-sm"></i> Vista previa
+                  </button>
                   <button type="button" (click)="openClinicalConceptModal()"
                     class="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-slate-200 px-4 text-sm font-bold text-slate-600 transition hover:border-blue-300 hover:text-blue-500">
                     <i class="pi pi-plus text-xs"></i> Nuevo campo
                   </button>
+                  @if (selectedClinicalPublished(); as published) {
+                    @if (!published.defaultTemplate) {
+                      <button type="button" (click)="makeClinicalTemplateDefault()"
+                        class="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-slate-200 px-4 text-sm font-bold text-slate-600 hover:bg-slate-50">
+                        <i class="pi pi-star text-xs"></i> Usar por defecto
+                      </button>
+                    }
+                  }
                   @if (!clinicalDraft()) {
                     <button type="button" (click)="prepareClinicalDraft()" [disabled]="clinicalLoading()"
                       class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-blue-500 px-5 text-sm font-bold text-white transition hover:bg-blue-600 disabled:opacity-50">
@@ -821,14 +880,28 @@
                 </div>
               </header>
 
-              <div class="overflow-x-auto border-b border-slate-100 px-4 py-3 sm:px-6">
-                <div class="flex min-w-max items-center gap-2">
-                  @for (version of clinicalVersions(); track version.id) {
+              <div class="border-b border-slate-100 px-4 py-3 sm:px-6">
+                <div class="mb-2 flex items-center justify-between">
+                  <p class="text-[11px] font-bold uppercase tracking-wide text-slate-400">Estado de la configuración</p>
+                  <p class="hidden text-xs text-slate-400 sm:block">Publicar no modifica las consultas anteriores.</p>
+                </div>
+                <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                  @for (version of selectedClinicalVersions(); track version.id) {
                     <button type="button" (click)="version.status === 'DRAFT' && loadClinicalDraft(version.id)"
-                      class="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-bold"
-                      [ngClass]="version.status === 'PUBLISHED' ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : version.status === 'DRAFT' ? 'cursor-pointer border-blue-200 bg-blue-50 text-blue-600' : 'border-slate-200 bg-white text-slate-400'">
-                      Versión {{ version.version }}
-                      <span class="font-medium">{{ clinicalStatusLabel(version.status) }}</span>
+                      class="flex min-w-0 items-center gap-3 rounded-lg px-3 py-2 text-left transition sm:min-w-56"
+                      [ngClass]="version.status === 'PUBLISHED' ? 'bg-emerald-50/70' : version.status === 'DRAFT' ? 'cursor-pointer bg-blue-50/80 hover:bg-blue-100/80' : 'bg-slate-50'">
+                      <span class="h-2.5 w-2.5 shrink-0 rounded-full"
+                        [ngClass]="version.status === 'PUBLISHED' ? 'bg-emerald-500' : version.status === 'DRAFT' ? 'bg-blue-500' : 'bg-slate-300'"></span>
+                      <span class="min-w-0 flex-1">
+                        <strong class="block truncate text-xs"
+                          [ngClass]="version.status === 'PUBLISHED' ? 'text-emerald-700' : version.status === 'DRAFT' ? 'text-blue-700' : 'text-slate-500'">
+                          {{ version.status === 'DRAFT' ? 'Borrador en edición' : version.status === 'PUBLISHED' ? 'Ficha vigente' : 'Publicación anterior' }}
+                        </strong>
+                        <span class="mt-0.5 block truncate text-[11px] font-medium text-slate-400">
+                          {{ version.status === 'DRAFT' ? 'Cambios todavía no publicados' : version.status === 'PUBLISHED' ? 'Se utiliza en las nuevas consultas' : 'Conservada para trazabilidad' }}
+                        </span>
+                      </span>
+                      @if (version.status === 'DRAFT') { <i class="pi pi-pencil text-xs text-blue-400"></i> }
                     </button>
                   } @empty {
                     <span class="text-sm text-slate-400">Todavía no hay versiones disponibles.</span>
@@ -837,86 +910,169 @@
               </div>
 
               @if (clinicalDraft(); as draft) {
-                <div class="px-4 py-5 sm:px-6">
-                  <div class="mb-6 max-w-2xl">
-                    <label class="mb-1.5 block text-xs font-bold text-slate-600">Nombre de la ficha</label>
-                    <input type="text" [(ngModel)]="draft.name" maxlength="160"
-                      class="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15" />
+                <div class="border-b border-slate-100 bg-slate-50/60 px-4 py-4 sm:px-6">
+                  <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                    <div class="grid w-full gap-4 lg:grid-cols-2">
+                      <div>
+                      <label class="mb-1.5 block text-xs font-bold text-slate-600">Nombre de la ficha</label>
+                      <input type="text" [(ngModel)]="draft.name" maxlength="160"
+                        class="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-700 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15" />
+                      </div>
+                      <div>
+                        <label class="mb-1.5 block text-xs font-bold text-slate-600">Descripción</label>
+                        <input type="text" [(ngModel)]="draft.description" maxlength="500" placeholder="Indica cuándo debe utilizarse"
+                          class="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-700 outline-none focus:border-blue-500" />
+                      </div>
+                      <div>
+                        <label class="mb-1.5 block text-xs font-bold text-slate-600">Especies</label>
+                        <p-multiSelect [(ngModel)]="draft.species" [options]="speciesSelectOptions" optionLabel="label" optionValue="value"
+                          [filter]="true" filterPlaceholder="Buscar especie" emptyFilterMessage="No se encontraron especies"
+                          [showToggleAll]="false" [showClear]="true" scrollHeight="200px"
+                          ariaLabel="Especies aplicables" ariaFilterLabel="Buscar especies"
+                          display="chip" [maxSelectedLabels]="2" selectedItemsLabel="{0} especies" placeholder="Todas las especies"
+                          appendTo="body" styleClass="w-full" panelStyleClass="clinical-species-panel">
+                          <p-header>
+                            <button type="button" class="clinical-select-all" [attr.aria-pressed]="areAllClinicalOptionsSelected(draft.species, speciesSelectOptions.map(option => option.value))"
+                              (click)="draft.species = toggleClinicalSelectAll(draft.species, speciesSelectOptions.map(option => option.value))">
+                              <span class="clinical-select-all-box"
+                                [class.clinical-select-all-box-checked]="areAllClinicalOptionsSelected(draft.species, speciesSelectOptions.map(option => option.value))">
+                                @if (areAllClinicalOptionsSelected(draft.species, speciesSelectOptions.map(option => option.value))) {
+                                  <i class="pi pi-check"></i>
+                                }
+                              </span>
+                              Seleccionar todo
+                            </button>
+                          </p-header>
+                        </p-multiSelect>
+                      </div>
+                      <div>
+                        <label class="mb-1.5 block text-xs font-bold text-slate-600">Servicios relacionados</label>
+                        <p-multiSelect [(ngModel)]="draft.serviceIds" [options]="clinicalServiceOptions()" optionLabel="nombre" optionValue="id"
+                          [filter]="true" filterPlaceholder="Buscar servicio" emptyFilterMessage="No se encontraron servicios"
+                          [showToggleAll]="false" [showClear]="true" scrollHeight="200px"
+                          ariaLabel="Servicios relacionados" ariaFilterLabel="Buscar servicios"
+                          display="chip" [maxSelectedLabels]="2" selectedItemsLabel="{0} servicios" placeholder="Cualquier servicio"
+                          appendTo="body" styleClass="w-full" panelStyleClass="clinical-species-panel">
+                          <p-header>
+                            <button type="button" class="clinical-select-all" [attr.aria-pressed]="areAllClinicalOptionsSelected(draft.serviceIds, clinicalServiceOptions().map(service => service.id))"
+                              (click)="draft.serviceIds = toggleClinicalSelectAll(draft.serviceIds, clinicalServiceOptions().map(service => service.id))">
+                              <span class="clinical-select-all-box"
+                                [class.clinical-select-all-box-checked]="areAllClinicalOptionsSelected(draft.serviceIds, clinicalServiceOptions().map(service => service.id))">
+                                @if (areAllClinicalOptionsSelected(draft.serviceIds, clinicalServiceOptions().map(service => service.id))) {
+                                  <i class="pi pi-check"></i>
+                                }
+                              </span>
+                              Seleccionar todo
+                            </button>
+                          </p-header>
+                        </p-multiSelect>
+                      </div>
+                    </div>
+                    <div class="flex items-center gap-1 text-xs font-bold text-slate-500">
+                      <button type="button" (click)="setAllClinicalSectionsExpanded(true)" class="rounded-lg px-3 py-2 hover:bg-white hover:text-blue-600">Expandir todo</button>
+                      <span class="text-slate-300">·</span>
+                      <button type="button" (click)="setAllClinicalSectionsExpanded(false)" class="rounded-lg px-3 py-2 hover:bg-white hover:text-blue-600">Contraer todo</button>
+                    </div>
                   </div>
+                </div>
 
+                <div class="px-4 py-2 sm:px-6">
                   @for (section of draft.sections; track section.id; let sectionIndex = $index) {
-                    <section class="border-t border-slate-200 py-5 first:border-t-0 first:pt-0">
-                      <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
-                        <div class="flex-1">
-                          <label class="mb-1 block text-[11px] font-bold uppercase tracking-wide text-slate-400">Sección</label>
-                          <input type="text" [(ngModel)]="section.title" maxlength="160"
-                            class="h-9 w-full max-w-xl rounded-lg border border-slate-300 px-3 text-sm font-bold text-slate-700 outline-none focus:border-blue-500" />
-                        </div>
+                    <section class="border-t border-slate-200 py-2 first:border-t-0">
+                      <header class="flex items-center gap-3 px-1 py-3">
+                        <button type="button" (click)="toggleClinicalSection(section.id)" class="flex min-w-0 flex-1 items-center gap-3 text-left">
+                          <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-500"><i class="pi pi-folder text-sm"></i></span>
+                          <span class="min-w-0 flex-1">
+                            <strong class="block truncate text-sm text-slate-800">{{ section.title || 'Sección sin nombre' }}</strong>
+                            <span class="mt-0.5 block text-xs font-medium text-slate-400">{{ section.fields.length }} {{ section.fields.length === 1 ? 'campo' : 'campos' }}</span>
+                          </span>
+                          <i class="pi text-xs text-slate-400" [ngClass]="isClinicalSectionExpanded(section.id) ? 'pi-chevron-up' : 'pi-chevron-down'"></i>
+                        </button>
                         <button type="button" (click)="removeClinicalSection(sectionIndex)" title="Quitar sección"
-                          class="mt-auto inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-500">
+                          class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-500">
                           <i class="pi pi-trash text-sm"></i>
                         </button>
-                      </div>
+                      </header>
 
-                      <div class="overflow-x-auto">
-                        <table class="w-full min-w-[760px] text-sm">
-                          <thead>
-                            <tr class="border-b border-slate-100 text-left text-[10px] font-bold uppercase tracking-wide text-slate-400">
-                              <th class="px-2 py-2">Campo y etiqueta visible</th>
-                              <th class="w-40 px-2 py-2">Especies</th>
-                              <th class="w-24 px-2 py-2 text-center">Obligatorio</th>
-                              <th class="w-24 px-2 py-2 text-center">Visible</th>
-                              <th class="w-32 px-2 py-2 text-right">Orden</th>
-                            </tr>
-                          </thead>
-                          <tbody>
+                      @if (isClinicalSectionExpanded(section.id)) {
+                        <div class="border-t border-slate-100 px-1 py-4">
+                          <label class="mb-1.5 block text-xs font-bold text-slate-600">Nombre de la sección</label>
+                          <input type="text" [(ngModel)]="section.title" maxlength="160"
+                            class="mb-4 h-10 w-full max-w-xl rounded-lg border border-slate-300 px-3 text-sm font-bold text-slate-700 outline-none focus:border-blue-500" />
+
+                          <div>
                             @for (field of section.fields; track field.id; let fieldIndex = $index) {
-                              <tr class="border-b border-slate-100 last:border-b-0">
-                                <td class="px-2 py-3">
+                              <div class="grid gap-3 border-b border-slate-100 px-1 py-3 last:border-b-0 lg:grid-cols-[minmax(250px,1fr)_240px_190px_auto] lg:items-center">
+                                <div class="min-w-0">
+                                  <label class="mb-1 block text-[10px] font-bold uppercase tracking-wide text-slate-400">Etiqueta visible</label>
                                   <input type="text" [(ngModel)]="field.label" maxlength="160"
                                     class="h-9 w-full rounded-lg border border-slate-200 px-3 text-sm font-semibold text-slate-700 outline-none focus:border-blue-500" />
-                                  <p class="mt-1 text-[10px] text-slate-400">{{ field.conceptCode }} · {{ field.valueType }}</p>
-                                </td>
-                                <td class="px-2 py-3">
-                                  <select multiple [(ngModel)]="field.species" title="Vacío significa todas las especies" [disabled]="isCoreClinicalField(field)"
-                                    class="h-16 w-full rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs text-slate-600 outline-none focus:border-blue-500">
-                                    @for (species of speciesOptions; track species) { <option [value]="species">{{ species }}</option> }
-                                  </select>
-                                </td>
-                                <td class="px-2 py-3 text-center"><input type="checkbox" [(ngModel)]="field.required" [disabled]="isCoreClinicalField(field)" class="h-4 w-4 accent-blue-500 disabled:opacity-40" /></td>
-                                <td class="px-2 py-3 text-center"><input type="checkbox" [(ngModel)]="field.visible" [disabled]="isCoreClinicalField(field)" class="h-4 w-4 accent-blue-500 disabled:opacity-40" /></td>
-                                <td class="px-2 py-3">
-                                  <div class="flex items-center justify-end gap-1">
-                                    <button type="button" (click)="moveClinicalField(sectionIndex, fieldIndex, -1)" [disabled]="fieldIndex === 0"
-                                      class="h-8 w-8 rounded-lg text-slate-400 hover:bg-slate-100 disabled:opacity-25"><i class="pi pi-arrow-up text-xs"></i></button>
-                                    <button type="button" (click)="moveClinicalField(sectionIndex, fieldIndex, 1)" [disabled]="fieldIndex === section.fields.length - 1"
-                                      class="h-8 w-8 rounded-lg text-slate-400 hover:bg-slate-100 disabled:opacity-25"><i class="pi pi-arrow-down text-xs"></i></button>
-                                    <button type="button" (click)="removeClinicalField(sectionIndex, fieldIndex)" [disabled]="isCoreClinicalField(field)"
-                                      [title]="isCoreClinicalField(field) ? 'Campo clínico base del sistema' : 'Quitar campo'"
-                                      class="h-8 w-8 rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-500 disabled:cursor-not-allowed disabled:opacity-25"><i class="pi pi-times text-xs"></i></button>
-                                  </div>
-                                </td>
-                              </tr>
-                            } @empty {
-                              <tr><td colspan="5" class="py-5 text-center text-xs text-slate-400">Esta sección todavía no tiene campos.</td></tr>
-                            }
-                          </tbody>
-                        </table>
-                      </div>
+                                  <p class="mt-1 truncate text-[10px] text-slate-400">{{ field.conceptCode }} · {{ field.valueType }}</p>
+                                </div>
 
-                      <div class="mt-4 flex flex-col gap-2 sm:flex-row">
-                        <select [(ngModel)]="selectedConceptBySection[sectionIndex]"
-                          class="h-10 flex-1 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-700 outline-none focus:border-blue-500">
-                          <option [ngValue]="null">Selecciona un campo para agregar</option>
-                          @for (concept of clinicalConcepts(); track concept.id) {
-                            <option [ngValue]="concept.id">{{ concept.name }} · {{ concept.valueType }}</option>
-                          }
-                        </select>
-                        <button type="button" (click)="addClinicalField(sectionIndex)" [disabled]="!selectedConceptBySection[sectionIndex]"
-                          class="h-10 rounded-lg border border-blue-200 px-4 text-sm font-bold text-blue-500 hover:bg-blue-50 disabled:opacity-40">
-                          Agregar campo
-                        </button>
-                      </div>
+                                <div>
+                                  <label class="mb-1 block text-[10px] font-bold uppercase tracking-wide text-slate-400">Aplica a</label>
+                                  <p-multiSelect [(ngModel)]="field.species" [options]="speciesSelectOptions" optionLabel="label" optionValue="value"
+                                    [disabled]="isCoreClinicalField(field)" [filter]="true" filterPlaceholder="Buscar especie"
+                                    emptyFilterMessage="No se encontraron especies" [showToggleAll]="false" [showClear]="true"
+                                    ariaLabel="Especies aplicables al campo" ariaFilterLabel="Buscar especies"
+                                    display="chip" [maxSelectedLabels]="2" selectedItemsLabel="{0} especies seleccionadas"
+                                    placeholder="Todas las especies" scrollHeight="180px" appendTo="body"
+                                    styleClass="w-full" panelStyleClass="clinical-species-panel">
+                                    <p-header>
+                                      <button type="button" class="clinical-select-all" [attr.aria-pressed]="areAllClinicalOptionsSelected(field.species, speciesSelectOptions.map(option => option.value))"
+                                        (click)="field.species = toggleClinicalSelectAll(field.species, speciesSelectOptions.map(option => option.value))">
+                                        <span class="clinical-select-all-box"
+                                          [class.clinical-select-all-box-checked]="areAllClinicalOptionsSelected(field.species, speciesSelectOptions.map(option => option.value))">
+                                          @if (areAllClinicalOptionsSelected(field.species, speciesSelectOptions.map(option => option.value))) {
+                                            <i class="pi pi-check"></i>
+                                          }
+                                        </span>
+                                        Seleccionar todo
+                                      </button>
+                                    </p-header>
+                                  </p-multiSelect>
+                                </div>
+
+                                <div class="flex items-center gap-4 lg:justify-center">
+                                  <label class="flex cursor-pointer items-center gap-2 text-xs font-semibold text-slate-600">
+                                    <input type="checkbox" [(ngModel)]="field.required" [disabled]="isCoreClinicalField(field)" class="h-4 w-4 accent-blue-500 disabled:opacity-40" /> Obligatorio
+                                  </label>
+                                  <label class="flex cursor-pointer items-center gap-2 text-xs font-semibold text-slate-600">
+                                    <input type="checkbox" [(ngModel)]="field.visible" [disabled]="isCoreClinicalField(field)" class="h-4 w-4 accent-blue-500 disabled:opacity-40" /> Visible
+                                  </label>
+                                </div>
+
+                                <div class="flex items-center justify-end gap-1 border-t border-slate-100 pt-2 lg:border-0 lg:pt-0">
+                                  <button type="button" (click)="moveClinicalField(sectionIndex, fieldIndex, -1)" [disabled]="fieldIndex === 0" title="Subir campo"
+                                    class="h-8 w-8 rounded-lg text-slate-400 hover:bg-slate-100 disabled:opacity-25"><i class="pi pi-arrow-up text-xs"></i></button>
+                                  <button type="button" (click)="moveClinicalField(sectionIndex, fieldIndex, 1)" [disabled]="fieldIndex === section.fields.length - 1" title="Bajar campo"
+                                    class="h-8 w-8 rounded-lg text-slate-400 hover:bg-slate-100 disabled:opacity-25"><i class="pi pi-arrow-down text-xs"></i></button>
+                                  <button type="button" (click)="removeClinicalField(sectionIndex, fieldIndex)" [disabled]="isCoreClinicalField(field)"
+                                    [title]="isCoreClinicalField(field) ? 'Campo clínico base del sistema' : 'Quitar campo'"
+                                    class="h-8 w-8 rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-500 disabled:cursor-not-allowed disabled:opacity-25"><i class="pi pi-trash text-xs"></i></button>
+                                </div>
+                              </div>
+                            } @empty {
+                              <div class="border-y border-dashed border-slate-200 px-4 py-6 text-center text-xs text-slate-400">Esta sección todavía no tiene campos.</div>
+                            }
+                          </div>
+
+                          <div class="mt-4 flex flex-col gap-2 border-t border-slate-100 pt-4 sm:flex-row">
+                            <select [(ngModel)]="selectedConceptBySection[sectionIndex]"
+                              class="h-10 flex-1 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-700 outline-none focus:border-blue-500">
+                              <option [ngValue]="null">Selecciona un campo para agregar</option>
+                              @for (concept of clinicalConcepts(); track concept.id) {
+                                <option [ngValue]="concept.id">{{ concept.name }} · {{ concept.valueType }}</option>
+                              }
+                            </select>
+                            <button type="button" (click)="addClinicalField(sectionIndex)" [disabled]="!selectedConceptBySection[sectionIndex]"
+                              class="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-blue-200 px-4 text-sm font-bold text-blue-600 hover:bg-blue-50 disabled:opacity-40">
+                              <i class="pi pi-plus text-xs"></i> Agregar campo
+                            </button>
+                          </div>
+                        </div>
+                      }
                     </section>
                   }
 
@@ -925,11 +1081,14 @@
                     <i class="pi pi-plus text-xs"></i> Agregar sección
                   </button>
                 </div>
-                <footer class="flex flex-col-reverse gap-2 border-t border-slate-200 px-4 py-4 sm:flex-row sm:justify-end sm:px-6">
+                <footer class="sticky bottom-0 z-20 flex flex-col-reverse gap-2 border-t border-slate-200 bg-white/95 px-4 py-4 backdrop-blur sm:flex-row sm:items-center sm:justify-between sm:px-6">
+                  <p class="text-xs text-slate-400"><i class="pi pi-info-circle mr-1"></i>Guarda el borrador antes de publicarlo.</p>
+                  <div class="flex flex-col-reverse gap-2 sm:flex-row">
                   <button type="button" (click)="saveClinicalDraft()" [disabled]="clinicalLoading()"
                     class="h-10 rounded-lg border border-slate-300 px-5 text-sm font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50">Guardar borrador</button>
                   <button type="button" (click)="publishClinicalDraft()" [disabled]="clinicalLoading()"
                     class="h-10 rounded-lg bg-blue-500 px-5 text-sm font-bold text-white hover:bg-blue-600 disabled:opacity-50">Publicar versión</button>
+                  </div>
                 </footer>
               } @else {
                 <div class="px-6 py-12 text-center">
@@ -947,6 +1106,210 @@
   </div>
   }
 </div>
+
+@if (showClinicalTemplateModal()) {
+  <div class="fixed inset-0 z-[225] flex items-end justify-center bg-slate-900/55 p-0 backdrop-blur-sm sm:items-center sm:p-4">
+    <div class="flex max-h-[95dvh] w-full max-w-xl flex-col overflow-hidden rounded-t-2xl bg-white shadow-2xl sm:rounded-2xl">
+      <header class="flex items-start justify-between gap-4 border-b border-slate-200 px-5 py-4 sm:px-6">
+        <div class="flex items-start gap-3">
+          <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-500"><i class="pi pi-file-plus"></i></span>
+          <div>
+            <h2 class="text-base font-bold text-slate-800">Nueva ficha clínica</h2>
+            <p class="mt-0.5 text-xs text-slate-500">Se copiarán los campos de la ficha seleccionada para que puedas adaptarlos.</p>
+          </div>
+        </div>
+        <button type="button" (click)="showClinicalTemplateModal.set(false)" aria-label="Cerrar"
+          class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100"><i class="pi pi-times"></i></button>
+      </header>
+      <form [formGroup]="clinicalTemplateForm" (ngSubmit)="saveClinicalTemplate()" class="flex min-h-0 flex-1 flex-col">
+        <div class="flex-1 space-y-4 overflow-y-auto px-5 py-5 sm:px-6">
+          <div>
+            <label class="mb-1.5 block text-xs font-bold text-slate-700">Nombre <span class="text-rose-500">*</span></label>
+            <input type="text" formControlName="name" maxlength="160" placeholder="Ej.: Consulta de emergencia"
+              class="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm outline-none focus:border-blue-500" />
+          </div>
+          <div>
+            <label class="mb-1.5 block text-xs font-bold text-slate-700">Cuándo se utiliza</label>
+            <textarea formControlName="description" rows="2" maxlength="500" placeholder="Describe brevemente el propósito de esta ficha"
+              class="w-full resize-none rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500"></textarea>
+          </div>
+          <div>
+            <label class="mb-1.5 block text-xs font-bold text-slate-700">Especies aplicables</label>
+            <p-multiSelect formControlName="species" [options]="speciesSelectOptions" optionLabel="label" optionValue="value"
+              [filter]="true" filterPlaceholder="Buscar especie" emptyFilterMessage="No se encontraron especies"
+              [showToggleAll]="false" [showClear]="true" display="chip" [maxSelectedLabels]="2" selectedItemsLabel="{0} especies"
+              ariaLabel="Especies aplicables" ariaFilterLabel="Buscar especies" placeholder="Todas las especies" scrollHeight="200px"
+              appendTo="body" styleClass="w-full" panelStyleClass="clinical-species-panel">
+              <p-header>
+                <button type="button" class="clinical-select-all"
+                  [attr.aria-pressed]="areAllClinicalOptionsSelected(clinicalTemplateForm.controls.species.value, speciesSelectOptions.map(option => option.value))"
+                  (click)="clinicalTemplateForm.controls.species.setValue(toggleClinicalSelectAll(clinicalTemplateForm.controls.species.value, speciesSelectOptions.map(option => option.value)))">
+                  <span class="clinical-select-all-box"
+                    [class.clinical-select-all-box-checked]="areAllClinicalOptionsSelected(clinicalTemplateForm.controls.species.value, speciesSelectOptions.map(option => option.value))">
+                    @if (areAllClinicalOptionsSelected(clinicalTemplateForm.controls.species.value, speciesSelectOptions.map(option => option.value))) {
+                      <i class="pi pi-check"></i>
+                    }
+                  </span>
+                  Seleccionar todo
+                </button>
+              </p-header>
+            </p-multiSelect>
+            <p class="mt-1 text-[11px] text-slate-400">Si no seleccionas ninguna, podrá utilizarse con cualquier especie.</p>
+          </div>
+          <div>
+            <label class="mb-1.5 block text-xs font-bold text-slate-700">Servicios que la utilizarán</label>
+            <p-multiSelect formControlName="serviceIds" [options]="clinicalServiceOptions()" optionLabel="nombre" optionValue="id"
+              [filter]="true" filterPlaceholder="Buscar servicio" emptyFilterMessage="No se encontraron servicios"
+              [showToggleAll]="false" [showClear]="true" display="chip" [maxSelectedLabels]="2" selectedItemsLabel="{0} servicios"
+              ariaLabel="Servicios que utilizarán la ficha" ariaFilterLabel="Buscar servicios"
+              placeholder="Cualquier servicio" scrollHeight="200px"
+              appendTo="body" styleClass="w-full" panelStyleClass="clinical-species-panel">
+              <p-header>
+                <button type="button" class="clinical-select-all"
+                  [attr.aria-pressed]="areAllClinicalOptionsSelected(clinicalTemplateForm.controls.serviceIds.value, clinicalServiceOptions().map(service => service.id))"
+                  (click)="clinicalTemplateForm.controls.serviceIds.setValue(toggleClinicalSelectAll(clinicalTemplateForm.controls.serviceIds.value, clinicalServiceOptions().map(service => service.id)))">
+                  <span class="clinical-select-all-box"
+                    [class.clinical-select-all-box-checked]="areAllClinicalOptionsSelected(clinicalTemplateForm.controls.serviceIds.value, clinicalServiceOptions().map(service => service.id))">
+                    @if (areAllClinicalOptionsSelected(clinicalTemplateForm.controls.serviceIds.value, clinicalServiceOptions().map(service => service.id))) {
+                      <i class="pi pi-check"></i>
+                    }
+                  </span>
+                  Seleccionar todo
+                </button>
+              </p-header>
+            </p-multiSelect>
+            <p class="mt-1 text-[11px] text-slate-400">La ficha se seleccionará automáticamente al iniciar una atención asociada.</p>
+          </div>
+        </div>
+        <footer class="flex flex-col-reverse gap-2 border-t border-slate-200 px-5 py-4 sm:flex-row sm:justify-end sm:px-6">
+          <button type="button" (click)="showClinicalTemplateModal.set(false)" class="h-10 rounded-lg px-5 text-sm font-bold text-slate-600 hover:bg-slate-100">Cancelar</button>
+          <button type="submit" [disabled]="clinicalLoading()" class="h-10 rounded-lg bg-blue-500 px-5 text-sm font-bold text-white hover:bg-blue-600 disabled:opacity-50">Crear ficha</button>
+        </footer>
+      </form>
+    </div>
+  </div>
+}
+
+@if (showClinicalPreview() && clinicalPreviewTemplate(); as preview) {
+  <div class="fixed inset-0 z-[220] flex items-end justify-center bg-slate-900/55 p-0 backdrop-blur-sm sm:items-center sm:p-4">
+    <div class="flex max-h-[96dvh] w-full max-w-4xl flex-col overflow-hidden rounded-t-2xl bg-white shadow-2xl sm:rounded-2xl">
+      <header class="flex items-start justify-between gap-4 border-b border-slate-200 px-5 py-4 sm:px-6">
+        <div class="flex min-w-0 items-start gap-3">
+          <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-500">
+            <i class="pi pi-eye"></i>
+          </span>
+          <div class="min-w-0">
+            <div class="flex flex-wrap items-center gap-2">
+              <h2 class="text-base font-bold text-slate-800">Vista previa de la ficha clínica</h2>
+              <span class="rounded-full px-2 py-1 text-[10px] font-bold"
+                [ngClass]="preview.status === 'DRAFT' ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'">
+                {{ preview.status === 'DRAFT' ? 'Borrador' : 'Vigente' }}
+              </span>
+            </div>
+            <p class="mt-0.5 truncate text-xs text-slate-500">{{ preview.name }} · {{ preview.status === 'DRAFT' ? 'Cambios en edición' : 'Configuración vigente' }}</p>
+          </div>
+        </div>
+        <button type="button" (click)="closeClinicalPreview()" aria-label="Cerrar vista previa"
+          class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700">
+          <i class="pi pi-times"></i>
+        </button>
+      </header>
+
+      <div class="border-b border-slate-100 px-5 py-3 sm:px-6">
+        <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p class="text-sm font-bold text-slate-700">Así se mostrará durante una atención</p>
+            <p class="text-xs text-slate-500">La vista previa no guarda ni publica cambios.</p>
+          </div>
+          <label class="flex items-center gap-2 text-xs font-bold text-slate-600">
+            Especie
+            <select [ngModel]="clinicalPreviewSpecies()" (ngModelChange)="clinicalPreviewSpecies.set($event)"
+              class="h-9 min-w-36 rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-700 outline-none focus:border-blue-500">
+              @for (species of speciesOptions; track species) { <option [value]="species">{{ species }}</option> }
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div class="min-h-0 flex-1 overflow-y-auto bg-slate-50/70 px-4 py-5 sm:px-6">
+        <div class="mx-auto max-w-3xl overflow-hidden rounded-xl border border-slate-200 bg-white">
+          @for (section of preview.sections; track section.id) {
+            <section class="border-b border-slate-200 px-4 py-5 last:border-b-0 sm:px-6">
+              <div class="mb-4 flex items-center gap-2">
+                <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-500"><i class="pi pi-file-edit text-sm"></i></span>
+                <h3 class="text-sm font-bold text-slate-800">{{ section.title }}</h3>
+              </div>
+              <div class="grid gap-4 sm:grid-cols-2">
+                @for (field of section.fields; track field.id) {
+                  @if (isClinicalFieldVisibleForPreview(field)) {
+                    <div [class.sm:col-span-2]="field.valueType === 'TEXT_LONG' || field.valueType === 'DISPLAY' || field.valueType === 'SELECT_MULTIPLE'">
+                      <label class="mb-1.5 block text-xs font-bold text-slate-700">
+                        {{ field.label }}
+                        @if (field.required) { <span class="text-rose-500">*</span> }
+                        @if (field.unit) { <span class="font-medium text-slate-400">({{ field.unit }})</span> }
+                      </label>
+
+                      @switch (field.valueType) {
+                        @case ('TEXT_LONG') {
+                          <textarea rows="3" disabled placeholder="Escribe la información clínica..." class="w-full resize-none rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-500"></textarea>
+                        }
+                        @case ('INTEGER') {
+                          <input type="number" step="1" disabled placeholder="0" class="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-500" />
+                        }
+                        @case ('DECIMAL') {
+                          <input type="number" step="0.01" disabled placeholder="0.00" class="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-500" />
+                        }
+                        @case ('BOOLEAN') {
+                          <div class="flex h-10 items-center gap-5 rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-500">
+                            <span><i class="pi pi-circle mr-1 text-[9px]"></i> Sí</span><span><i class="pi pi-circle mr-1 text-[9px]"></i> No</span>
+                          </div>
+                        }
+                        @case ('DATE') {
+                          <input type="date" disabled class="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-500" />
+                        }
+                        @case ('SELECT_ONE') {
+                          <select disabled class="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-500">
+                            <option>Selecciona una opción</option>
+                            @for (option of clinicalPreviewOptions(field); track option) { <option>{{ option }}</option> }
+                          </select>
+                        }
+                        @case ('SELECT_MULTIPLE') {
+                          <div class="flex min-h-10 flex-wrap items-center gap-x-5 gap-y-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-500">
+                            @for (option of clinicalPreviewOptions(field); track option) { <span><i class="pi pi-stop mr-1 text-[10px]"></i>{{ option }}</span> }
+                            @empty { <span>Opciones configurables</span> }
+                          </div>
+                        }
+                        @case ('SCALE') {
+                          <div class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+                            <input type="range" disabled [min]="clinicalPreviewScale(field).min" [max]="clinicalPreviewScale(field).max" class="w-full accent-blue-500" />
+                            <div class="flex justify-between text-[10px] text-slate-400"><span>{{ clinicalPreviewScale(field).min }}</span><span>{{ clinicalPreviewScale(field).max }}</span></div>
+                          </div>
+                        }
+                        @case ('DISPLAY') {
+                          <p class="rounded-lg border-l-2 border-blue-400 bg-blue-50/70 px-3 py-2 text-sm text-slate-600">{{ field.helpText || field.label }}</p>
+                        }
+                        @default {
+                          <input type="text" disabled placeholder="Escribe una respuesta..." class="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-500" />
+                        }
+                      }
+                      @if (field.helpText && field.valueType !== 'DISPLAY') { <p class="mt-1 text-[11px] leading-4 text-slate-400">{{ field.helpText }}</p> }
+                    </div>
+                  }
+                }
+              </div>
+            </section>
+          } @empty {
+            <div class="px-6 py-12 text-center text-sm text-slate-400">La ficha todavía no contiene secciones.</div>
+          }
+        </div>
+      </div>
+
+      <footer class="flex justify-end border-t border-slate-200 px-5 py-4 sm:px-6">
+        <button type="button" (click)="closeClinicalPreview()" class="h-10 rounded-lg bg-blue-500 px-5 text-sm font-bold text-white hover:bg-blue-600">Cerrar vista previa</button>
+      </footer>
+    </div>
+  </div>
+}
 
 @if (showClinicalConceptModal()) {
   <div class="fixed inset-0 z-[210] flex items-end justify-center bg-slate-900/50 p-0 backdrop-blur-sm sm:items-center sm:p-4">

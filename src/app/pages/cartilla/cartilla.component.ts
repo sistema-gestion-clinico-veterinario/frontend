@@ -74,7 +74,7 @@ export class CartillaComponent implements OnInit {
   paginaActual       = 0;
   totalPaginas       = 0;
   totalRegistros     = 0;
-  readonly tamanoPagina = 10;
+  tamanoPagina = 10;
 
   // Aplicación
   serviciosPreventivos = signal<ServicioResponse[]>([]);
@@ -282,7 +282,9 @@ export class CartillaComponent implements OnInit {
   }
 
   cambiarPagina(event: any) {
-    this.paginaActual = event.page;
+    const siguienteTamano = Number(event.rows) || 10;
+    this.paginaActual = siguienteTamano === this.tamanoPagina ? Number(event.page) || 0 : 0;
+    this.tamanoPagina = siguienteTamano;
     this.cargarMascotas(this.filtroEspecie || undefined);
   }
 

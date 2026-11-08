@@ -1,3 +1,158 @@
 :host {
   display: block;
 }
+
+@media (max-width: 1023px) {
+  // En móvil el encabezado queda libre y la lista es la única superficie.
+  // Así se evita la apariencia de una tarjeta contenida dentro de otra.
+  .complementario-maintainer {
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+  }
+
+  .complementario-maintainer > :first-child {
+    margin-bottom: 0.75rem;
+    padding: 0 0 0.25rem;
+    border-bottom: 0;
+  }
+
+  .complementario-mobile-list {
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.75rem;
+    background: #fff;
+  }
+}
+
+:host-context(.theme-dark) .complementario-mobile-list {
+  border-color: #334155;
+  background: #0f172a;
+}
+
+::ng-deep .clinical-species-panel {
+  background: white;
+  border: 1px solid rgb(226 232 240);
+  border-radius: 0.5rem;
+  box-shadow: none !important;
+}
+
+html:not(.theme-dark) ::ng-deep .clinical-species-panel .p-multiselect-option {
+  background-color: white !important;
+  color: rgb(51 65 85) !important;
+}
+
+html:not(.theme-dark) ::ng-deep .clinical-species-panel .p-multiselect-option:hover,
+html:not(.theme-dark) ::ng-deep .clinical-species-panel .p-multiselect-option.p-focus {
+  background-color: rgb(248 250 252) !important;
+  color: rgb(30 41 59) !important;
+}
+
+html:not(.theme-dark) ::ng-deep .clinical-species-panel .p-multiselect-option.p-multiselect-option-selected {
+  background-color: rgb(239 246 255) !important;
+  color: rgb(30 64 175) !important;
+}
+
+html:not(.theme-dark) ::ng-deep .clinical-species-panel .p-multiselect-option > span {
+  color: rgb(51 65 85) !important;
+}
+
+::ng-deep .clinical-species-panel .p-multiselect-option .p-checkbox-box {
+  border: 1px solid rgb(148 163 184) !important;
+  background-color: white !important;
+}
+
+::ng-deep .clinical-species-panel .p-multiselect-option .p-checkbox-checked .p-checkbox-box {
+  border-color: rgb(37 99 235) !important;
+  background-color: rgb(37 99 235) !important;
+}
+
+::ng-deep .clinical-species-panel .p-multiselect-header {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.25rem;
+  padding: 0.5rem;
+}
+
+::ng-deep .clinical-species-panel .clinical-select-all {
+  display: flex;
+  width: 100%;
+  min-height: 2rem;
+  align-items: center;
+  gap: 0.5rem;
+  border: 0;
+  border-radius: 0.375rem;
+  background: white;
+  padding: 0.375rem 0.5rem;
+  color: rgb(51 65 85);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+}
+
+::ng-deep .clinical-species-panel .clinical-select-all:hover {
+  background: rgb(248 250 252);
+}
+
+::ng-deep .clinical-species-panel .clinical-select-all-box {
+  display: inline-flex;
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 1rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgb(148 163 184);
+  border-radius: 0.25rem;
+  background: white;
+  color: white;
+  font-size: 0.65rem;
+}
+
+::ng-deep .clinical-species-panel .clinical-select-all-box-checked {
+  border-color: rgb(37 99 235);
+  background: rgb(37 99 235);
+}
+
+::ng-deep .clinical-species-panel .p-multiselect-header .p-iconfield {
+  position: relative;
+  display: flex;
+  width: 100%;
+}
+
+::ng-deep .clinical-species-panel .p-multiselect-filter {
+  display: block !important;
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 2rem;
+  border: 1px solid rgb(203 213 225) !important;
+  border-radius: 0.375rem;
+  background: white !important;
+  padding: 0.375rem 2rem 0.375rem 0.625rem;
+  color: rgb(51 65 85) !important;
+  font-size: 0.8125rem;
+}
+
+::ng-deep .clinical-species-panel .p-multiselect-filter::placeholder {
+  color: rgb(148 163 184);
+}
+
+::ng-deep .clinical-species-panel .p-multiselect-header .p-iconfield .p-inputicon {
+  position: absolute;
+  right: 0.625rem;
+  color: rgb(100 116 139);
+}
+
+::ng-deep .clinical-species-panel .p-multiselect-option {
+  min-height: 2rem;
+  padding: 0.375rem 0.625rem;
+  font-size: 0.8125rem;
+}
+
+::ng-deep .clinical-species-panel .p-multiselect-option .p-checkbox,
+::ng-deep .clinical-species-panel .p-multiselect-option .p-checkbox-box {
+  width: 1rem;
+  height: 1rem;
+}

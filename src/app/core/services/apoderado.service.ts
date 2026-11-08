@@ -58,6 +58,16 @@ export class ApoderadoService {
     return this.http.post<ApiResponse<void>>(`${this.apiUrl}/${id}/resend-invitation`, {});
   }
 
+  habilitarAccesoPortal(id: number) {
+    return this.http.post<ApiResponse<void>>(`${this.apiUrl}/${id}/portal-access`, {});
+  }
+
+  revocarAccesoPortal(id: number, reason?: string) {
+    return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}/portal-access`, {
+      body: { reason: reason?.trim() || null }
+    });
+  }
+
   requestPasswordReset(userId: number, email: string, companyId?: number | null) {
     return this.http.post<ApiResponse<void>>(`${environment.apiUrl}/admin/users/reset-password`, {
       userId,

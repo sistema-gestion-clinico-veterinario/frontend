@@ -1,1 +1,20 @@
 
+.owner-access-option {
+  display: grid;
+  grid-template-columns: 1.1rem 1fr;
+  align-items: start;
+  gap: .65rem;
+  padding: .75rem;
+  border: 1px solid #dbe4ee;
+  border-radius: .65rem;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color .15s ease, background-color .15s ease;
+
+  input { margin-top: .18rem; accent-color: #018b99; }
+  strong { display: block; color: #273449; font-size: .82rem; line-height: 1.25; }
+  small { display: block; margin-top: .2rem; color: #718096; font-size: .72rem; line-height: 1.35; }
+
+  &:hover { border-color: #7fcbd2; }
+  &--selected { border-color: #018b99; background: #f0fbfc; }
+}

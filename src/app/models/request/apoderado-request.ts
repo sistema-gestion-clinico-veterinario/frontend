@@ -15,4 +15,5 @@ export interface ApoderadoRequest {
   roleIds?: number[];
   avisoInformado?: boolean;
   consentimientoRecordatorios?: boolean | null;
+  habilitarAccesoPortal?: boolean;
 }
