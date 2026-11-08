@@ -102,12 +102,28 @@ export class ComplementarioComponent implements OnInit {
   }
   activeTab = signal<number>(0);
   clinicalVersions = signal<ClinicalTemplateSummary[]>([]);
+  selectedClinicalTemplateKey = signal<string | null>(null);
+  clinicalServiceOptions = signal<ServicioResponse[]>([]);
   clinicalConcepts = signal<ClinicalConcept[]>([]);
   clinicalDraft = signal<ClinicalTemplateResponse | null>(null);
   clinicalLoading = signal(false);
   showClinicalConceptModal = signal(false);
+  showClinicalTemplateModal = signal(false);
+  showClinicalPreview = signal(false);
+  clinicalPreviewTemplate = signal<ClinicalTemplateResponse | null>(null);
+  clinicalPreviewSpecies = signal('PERRO');
+  clinicalSectionExpanded: Record<number, boolean> = {};
   selectedConceptBySection: Record<number, number | null> = {};
   readonly speciesOptions = ['PERRO', 'GATO', 'AVE', 'REPTIL', 'ROEDOR', 'EXOTICO', 'OTRO'];
+  readonly speciesSelectOptions = [
+    { label: 'Perro', value: 'PERRO' },
+    { label: 'Gato', value: 'GATO' },
+    { label: 'Ave', value: 'AVE' },
+    { label: 'Reptil', value: 'REPTIL' },
+    { label: 'Roedor', value: 'ROEDOR' },
+    { label: 'Exótico', value: 'EXOTICO' },
+    { label: 'Otro', value: 'OTRO' }
+  ];
   readonly clinicalValueTypes: Array<{ value: ClinicalValueType; label: string }> = [
     { value: 'TEXT_SHORT', label: 'Texto corto' },
     { value: 'TEXT_LONG', label: 'Texto largo' },
@@ -119,6 +135,27 @@ export class ComplementarioComponent implements OnInit {
     { value: 'SELECT_MULTIPLE', label: 'Lista de varias opciones' },
     { value: 'SCALE', label: 'Escala numérica' }
   ];
+  readonly clinicalCatalog = computed(() => {
+    const byKey = new Map<string, ClinicalTemplateSummary[]>();
+    for (const version of this.clinicalVersions()) {
+      const versions = byKey.get(version.templateKey) ?? [];
+      versions.push(version);
+      byKey.set(version.templateKey, versions);
+    }
+    return Array.from(byKey.entries()).map(([templateKey, versions]) => {
+      const draft = versions.find(item => item.status === 'DRAFT');
+      const published = versions.find(item => item.status === 'PUBLISHED');
+      const representative = draft ?? published ?? versions[0];
+      return { templateKey, versions, draft, published, representative };
+    }).sort((a, b) => Number(Boolean(b.published?.defaultTemplate)) - Number(Boolean(a.published?.defaultTemplate))
+      || a.representative.name.localeCompare(b.representative.name));
+  });
+  clinicalTemplateForm = this.fb.group({
+    name: ['', [Validators.required, Validators.maxLength(160)]],
+    description: ['', Validators.maxLength(500)],
+    species: [[] as string[]],
+    serviceIds: [[] as number[]]
+  });
   clinicalConceptForm = this.fb.group({
     name: ['', [Validators.required, Validators.maxLength(160)]],
     description: ['', Validators.maxLength(500)],
@@ -384,8 +421,16 @@ export class ComplementarioComponent implements OnInit {
     this.clinicalTemplateService.list().subscribe({
       next: response => {
         this.clinicalVersions.set(response.data ?? []);
-        const draft = response.data?.find(version => version.status === 'DRAFT');
+        const versions = response.data ?? [];
+        let selectedKey = this.selectedClinicalTemplateKey();
+        if (!selectedKey || !versions.some(version => version.templateKey === selectedKey)) {
+          selectedKey = versions.find(version => version.status === 'PUBLISHED' && version.defaultTemplate)?.templateKey
+            ?? versions[0]?.templateKey ?? null;
+          this.selectedClinicalTemplateKey.set(selectedKey);
+        }
+        const draft = versions.find(version => version.templateKey === selectedKey && version.status === 'DRAFT');
         if (draft) this.loadClinicalDraft(draft.id);
+        else this.clinicalDraft.set(null);
       },
       error: () => this.clinicalVersions.set([])
     });
@@ -393,6 +438,34 @@ export class ComplementarioComponent implements OnInit {
       next: response => this.clinicalConcepts.set(response.data ?? []),
       error: () => this.clinicalConcepts.set([])
     });
+    this.servicioService.listarDisponibles(this.activeCompanyId ?? undefined).subscribe({
+      next: response => this.clinicalServiceOptions.set(response.data ?? []),
+      error: () => this.clinicalServiceOptions.set([])
+    });
+  }
+
+  selectClinicalTemplate(templateKey: string) {
+    this.selectedClinicalTemplateKey.set(templateKey);
+    const draft = this.clinicalVersions().find(item => item.templateKey === templateKey && item.status === 'DRAFT');
+    if (draft) this.loadClinicalDraft(draft.id);
+    else this.clinicalDraft.set(null);
+  }
+
+  selectedClinicalVersions(): ClinicalTemplateSummary[] {
+    return this.clinicalVersions().filter(version => version.templateKey === this.selectedClinicalTemplateKey());
+  }
+
+  selectedClinicalPublished(): ClinicalTemplateSummary | undefined {
+    return this.selectedClinicalVersions().find(version => version.status === 'PUBLISHED');
+  }
+
+  toggleClinicalSelectAll<T>(selected: T[] | null | undefined, options: readonly T[]): T[] {
+    const allSelected = options.length > 0 && options.every(option => selected?.includes(option));
+    return allSelected ? [] : [...options];
+  }
+
+  areAllClinicalOptionsSelected<T>(selected: T[] | null | undefined, options: readonly T[]): boolean {
+    return options.length > 0 && options.every(option => selected?.includes(option));
   }
 
   loadClinicalDraft(id: number) {
@@ -400,6 +473,7 @@ export class ComplementarioComponent implements OnInit {
     this.clinicalTemplateService.get(id).subscribe({
       next: response => {
         this.clinicalDraft.set(this.cloneClinicalTemplate(response.data));
+        this.initializeClinicalSections(response.data);
         this.clinicalLoading.set(false);
       },
       error: () => {
@@ -410,10 +484,13 @@ export class ComplementarioComponent implements OnInit {
   }
 
   prepareClinicalDraft() {
+    const published = this.selectedClinicalPublished();
+    if (!published) return;
     this.clinicalLoading.set(true);
-    this.clinicalTemplateService.createDraft().subscribe({
+    this.clinicalTemplateService.createDraftFrom(published.id).subscribe({
       next: response => {
         this.clinicalDraft.set(this.cloneClinicalTemplate(response.data));
+        this.initializeClinicalSections(response.data);
         this.clinicalLoading.set(false);
         this.loadClinicalConfiguration();
       },
@@ -424,11 +501,72 @@ export class ComplementarioComponent implements OnInit {
     });
   }
 
+  openClinicalTemplateModal() {
+    this.clinicalTemplateForm.reset({ name: '', description: '', species: [], serviceIds: [] });
+    this.showClinicalTemplateModal.set(true);
+  }
+
+  saveClinicalTemplate() {
+    if (this.clinicalTemplateForm.invalid) {
+      this.clinicalTemplateForm.markAllAsTouched();
+      return;
+    }
+    const value = this.clinicalTemplateForm.getRawValue();
+    this.clinicalLoading.set(true);
+    this.clinicalTemplateService.create({
+      name: value.name!.trim(),
+      description: value.description?.trim() || undefined,
+      species: value.species ?? [],
+      serviceIds: value.serviceIds ?? [],
+      copyFromTemplateId: this.selectedClinicalPublished()?.id
+    }).subscribe({
+      next: response => {
+        this.selectedClinicalTemplateKey.set(response.data.templateKey);
+        this.clinicalDraft.set(this.cloneClinicalTemplate(response.data));
+        this.initializeClinicalSections(response.data);
+        this.showClinicalTemplateModal.set(false);
+        this.clinicalLoading.set(false);
+        this.loadClinicalConfiguration();
+        this.messageService.add({ severity: 'success', summary: 'Ficha creada', detail: 'Puedes personalizarla antes de publicarla.' });
+      },
+      error: error => {
+        this.clinicalLoading.set(false);
+        this.messageService.add({ severity: 'error', summary: 'Ficha clínica', detail: error.error?.message || 'No se pudo crear la ficha.' });
+      }
+    });
+  }
+
+  makeClinicalTemplateDefault() {
+    const published = this.selectedClinicalPublished();
+    if (!published || published.defaultTemplate) return;
+    this.clinicalTemplateService.makeDefault(published.id).subscribe({
+      next: () => {
+        this.loadClinicalConfiguration();
+        this.messageService.add({ severity: 'success', summary: 'Ficha predeterminada', detail: 'Se usará cuando no exista una coincidencia específica.' });
+      },
+      error: error => this.messageService.add({ severity: 'error', summary: 'Ficha clínica', detail: error.error?.message || 'No se pudo actualizar.' })
+    });
+  }
+
   addClinicalSection() {
     const draft = this.clinicalDraft();
     if (!draft) return;
-    draft.sections.push({ id: -Date.now(), title: 'Nueva sección', order: draft.sections.length, fields: [] });
+    const sectionId = -Date.now();
+    draft.sections.push({ id: sectionId, title: 'Nueva sección', order: draft.sections.length, fields: [] });
+    this.clinicalSectionExpanded[sectionId] = true;
     this.clinicalDraft.set(this.cloneClinicalTemplate(draft));
+  }
+
+  toggleClinicalSection(sectionId: number) {
+    this.clinicalSectionExpanded[sectionId] = !this.isClinicalSectionExpanded(sectionId);
+  }
+
+  isClinicalSectionExpanded(sectionId: number): boolean {
+    return this.clinicalSectionExpanded[sectionId] !== false;
+  }
+
+  setAllClinicalSectionsExpanded(expanded: boolean) {
+    this.clinicalDraft()?.sections.forEach(section => this.clinicalSectionExpanded[section.id] = expanded);
   }
 
   removeClinicalSection(sectionIndex: number) {
@@ -484,6 +622,9 @@ export class ComplementarioComponent implements OnInit {
     this.clinicalLoading.set(true);
     this.clinicalTemplateService.updateDraft(draft.id, {
       name: draft.name.trim(),
+      description: draft.description?.trim(),
+      species: draft.species ?? [],
+      serviceIds: draft.serviceIds ?? [],
       sections: draft.sections.map((section, sectionIndex) => ({
         title: section.title.trim(), order: sectionIndex,
         fields: section.fields.map((field, fieldIndex) => ({
@@ -527,6 +668,70 @@ export class ComplementarioComponent implements OnInit {
   openClinicalConceptModal() {
     this.clinicalConceptForm.reset({ name: '', description: '', valueType: 'TEXT_SHORT', unit: '', reportable: true, optionsText: '' });
     this.showClinicalConceptModal.set(true);
+  }
+
+  openClinicalPreview() {
+    const draft = this.clinicalDraft();
+    if (draft) {
+      this.clinicalPreviewTemplate.set(this.cloneClinicalTemplate(draft));
+      this.showClinicalPreview.set(true);
+      return;
+    }
+
+    const published = this.selectedClinicalPublished();
+    if (!published) {
+      this.messageService.add({
+        severity: 'info',
+        summary: 'Vista previa no disponible',
+        detail: 'Primero configura una ficha clínica.'
+      });
+      return;
+    }
+
+    this.clinicalLoading.set(true);
+    this.clinicalTemplateService.get(published.id).subscribe({
+      next: response => {
+        this.clinicalPreviewTemplate.set(this.cloneClinicalTemplate(response.data));
+        this.showClinicalPreview.set(true);
+        this.clinicalLoading.set(false);
+      },
+      error: () => {
+        this.clinicalLoading.set(false);
+        this.messageService.add({ severity: 'error', summary: 'Vista previa', detail: 'No se pudo cargar la ficha vigente.' });
+      }
+    });
+  }
+
+  closeClinicalPreview() {
+    this.showClinicalPreview.set(false);
+    this.clinicalPreviewTemplate.set(null);
+  }
+
+  isClinicalFieldVisibleForPreview(field: ClinicalTemplateField): boolean {
+    if (!field.visible) return false;
+    const species = field.species ?? [];
+    return species.length === 0 || species.includes(this.clinicalPreviewSpecies());
+  }
+
+  clinicalPreviewOptions(field: ClinicalTemplateField): string[] {
+    try {
+      const config = JSON.parse(field.validationConfig ?? '{}');
+      return Array.isArray(config.options) ? config.options.map(String) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  clinicalPreviewScale(field: ClinicalTemplateField): { min: number; max: number } {
+    try {
+      const config = JSON.parse(field.validationConfig ?? '{}');
+      return {
+        min: Number.isFinite(Number(config.min)) ? Number(config.min) : 1,
+        max: Number.isFinite(Number(config.max)) ? Number(config.max) : 10
+      };
+    } catch {
+      return { min: 1, max: 10 };
+    }
   }
 
   saveClinicalConcept() {
@@ -573,6 +778,12 @@ export class ComplementarioComponent implements OnInit {
       section.fields.forEach((field, fieldIndex) => field.order = fieldIndex);
     });
     this.clinicalDraft.set(this.cloneClinicalTemplate(draft));
+  }
+
+  private initializeClinicalSections(template: ClinicalTemplateResponse) {
+    const next: Record<number, boolean> = {};
+    template.sections.forEach((section, index) => next[section.id] = index === 0);
+    this.clinicalSectionExpanded = next;
   }
 
   private cloneClinicalTemplate(template: ClinicalTemplateResponse): ClinicalTemplateResponse {
@@ -1157,4 +1368,3 @@ export class ComplementarioComponent implements OnInit {
   }
 
 }
-

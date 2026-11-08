@@ -282,14 +282,16 @@
         }
       </div>
   
-      @if (totalRecords() > pageSize()) {
-        <div class="flex justify-center pb-2">
+      @if (totalRecords() > 0) {
+        <div class="pb-2">
           <p-paginator
             [rows]="pageSize()"
+            [rowsPerPageOptions]="[10, 20, 50, 100]"
             [totalRecords]="totalRecords()"
             [first]="currentPage() * pageSize()"
             (onPageChange)="cargar($event)"
-            [showCurrentPageReport]="false"
+            [showCurrentPageReport]="true"
+            currentPageReportTemplate="{first}–{last} de {totalRecords}"
             styleClass="!border-none !bg-transparent !py-3">
           </p-paginator>
         </div>

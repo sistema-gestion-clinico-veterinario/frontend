@@ -225,9 +225,11 @@
           @if (totalRegistros > 0) {
             <p-paginator
               [rows]="tamanoPagina"
+              [rowsPerPageOptions]="[10, 20, 50, 100]"
               [totalRecords]="totalRegistros"
               [first]="paginaActual * tamanoPagina"
-              [showCurrentPageReport]="false"
+              [showCurrentPageReport]="true"
+              currentPageReportTemplate="{first}–{last} de {totalRecords}"
               (onPageChange)="cambiarPagina($event)"
               styleClass="!border-none !bg-transparent !py-3"
             ></p-paginator>

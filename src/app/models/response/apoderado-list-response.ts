@@ -12,5 +12,6 @@ export interface ApoderadoListResponse {
   activo: boolean;
   cuentaPendiente?: boolean;
   puedeReenviarInvitacion?: boolean;
+  estadoAccesoPortal?: 'SIN_ACCESO' | 'INVITACION_PENDIENTE' | 'ACTIVO' | 'SUSPENDIDO' | 'REVOCADO';
   tipoInactividad?: TipoInactividad | null;
 }

@@ -118,6 +118,7 @@ export class CitasComponent implements OnInit {
   yapeOtp           = signal<string>('');
   yapeEmail         = signal<string>('');
   pagoProcessing    = signal<boolean>(false);
+  private paymentIdempotencyKey: string | null = null;
 
   onYapePhoneChange(val: string) { this.yapePhone.set(val.replace(/\D/g, '').slice(0, 9)); }
   onYapeOtpChange(val: string)   { this.yapeOtp.set(val.replace(/\D/g, '').slice(0, 6)); }
@@ -128,6 +129,7 @@ export class CitasComponent implements OnInit {
   }
 
   openPagoModal(cita: any) {
+    this.paymentIdempotencyKey = null;
     this.citaPendientePago.set(cita);
     this.yapePhone.set('');
     this.yapeOtp.set('');
@@ -136,6 +138,7 @@ export class CitasComponent implements OnInit {
   }
 
   closePagoModal() {
+    this.paymentIdempotencyKey = null;
     this.displayPagoModal.set(false);
     this.citaPendientePago.set(null);
     this.yapePhone.set('');
@@ -165,13 +168,15 @@ export class CitasComponent implements OnInit {
     }
 
     this.pagoProcessing.set(true);
+    this.paymentIdempotencyKey ??= this.createPaymentIdempotencyKey(cita.id);
 
     this.pagoService.registrar({
       citaId: cita.id,
       metodoPago: 'YAPE'
-    }).subscribe({
+    }, this.paymentIdempotencyKey).subscribe({
       next: () => {
         this.pagoProcessing.set(false);
+        this.paymentIdempotencyKey = null;
         this.messageService.add({
           severity: 'success',
           summary: '¡Pago exitoso!',
@@ -189,6 +194,13 @@ export class CitasComponent implements OnInit {
         });
       }
     });
+  }
+
+  private createPaymentIdempotencyKey(citaId: number): string {
+    const randomPart = typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    return `payment:${citaId}:${randomPart}`;
   }
 
 

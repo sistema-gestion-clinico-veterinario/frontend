@@ -11,6 +11,10 @@ export interface PagoResponse {
   estado: string;
   mercadoPagoId?: string;
   mpStatus?: string;
+  businessTraceId?: string;
+  receiptStatus?: 'NOT_TRACKED' | 'PENDING' | 'GENERATED';
+  receiptAttempts?: number;
+  receiptError?: string;
 }
 
 export interface PagoListResponse {

@@ -14,6 +14,8 @@ import { textContentValidator } from '../../../core/validators/text-content.vali
 import { RazaRequest } from '../../../models/request/raza-request';
 import { AvisoPublico } from '../../../models/privacy/privacidad.model';
 import { AuthStore } from '../../../store/auth.store';
+import { CompanyService } from '../../../core/services/company.service';
+import { OwnerPortalMode } from '../../../models/request/company-dto';
 
 @Component({
   selector: 'app-client-onboarding',
@@ -27,6 +29,7 @@ export class ClientOnboardingComponent implements OnInit {
   private readonly apoderadoService = inject(ApoderadoService);
   private readonly privacidadService = inject(PrivacidadService);
   private readonly razaService = inject(RazaService);
+  private readonly companyService = inject(CompanyService);
   private readonly router = inject(Router);
   readonly authStore = inject(AuthStore);
 
@@ -43,6 +46,7 @@ export class ClientOnboardingComponent implements OnInit {
   readonly breedModalOpen = signal(false);
   readonly savingBreed = signal(false);
   readonly breedError = signal('');
+  readonly ownerPortalMode = signal<OwnerPortalMode>('PORTAL_POR_DEFECTO');
 
   private readonly pesoRangos: Record<string, { min: number; max: number }> = {
     PERRO: { min: 0.5, max: 120 },
@@ -62,12 +66,13 @@ export class ClientOnboardingComponent implements OnInit {
     numeroDocumento: ['', [Validators.required, this.documentValidator.bind(this)]],
     genero: ['MASCULINO', Validators.required],
     email: ['', [Validators.required, Validators.email, lowercaseEmailValidator(), Validators.maxLength(100)]],
-    username: ['', [Validators.required, Validators.maxLength(50), Validators.pattern(/^[a-zA-Z0-9._-]+$/), noLeadingTrailingSpaceValidator()]],
+    username: ['', [Validators.maxLength(50), Validators.pattern(/^[a-zA-Z0-9._-]+$/), noLeadingTrailingSpaceValidator()]],
     telefono: ['', [Validators.required, Validators.pattern(/^\d{9}$/)]],
     direccion: ['', [Validators.required, Validators.maxLength(200), Validators.pattern(/^[a-zA-Z0-9áéíóúÁÉÍÓÚüÜñÑ\s\.,#\-\/°:]+$/), noLeadingTrailingSpaceValidator(), textContentValidator()]],
     referencias: ['', [Validators.maxLength(500), noLeadingTrailingSpaceValidator(), textContentValidator()]],
     avisoInformado: [false, Validators.requiredTrue],
-    consentimientoRecordatorios: [null as boolean | null]
+    consentimientoRecordatorios: [null as boolean | null],
+    habilitarAccesoPortal: [true]
   });
 
   readonly petForm = this.fb.group({
@@ -87,6 +92,18 @@ export class ClientOnboardingComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    const companyId = this.activeCompanyId;
+    if (companyId) {
+      this.companyService.getById(companyId).subscribe({
+        next: ({ data }) => {
+          const mode = data.modoAccesoPropietario ?? 'PORTAL_POR_DEFECTO';
+          this.ownerPortalMode.set(mode);
+          this.clientForm.controls.habilitarAccesoPortal.setValue(mode === 'PORTAL_POR_DEFECTO');
+          this.syncUsernameValidation();
+        }
+      });
+    }
+    this.clientForm.controls.habilitarAccesoPortal.valueChanges.subscribe(() => this.syncUsernameValidation());
     this.privacidadService.avisoVigente('PROPIETARIOS_Y_AUTORIZADOS').subscribe({
       next: ({ data }) => this.aviso.set(data ?? null),
       error: () => this.aviso.set(null)
@@ -157,13 +174,14 @@ export class ClientOnboardingComponent implements OnInit {
       numeroDocumento: client.numeroDocumento!.trim().toUpperCase(),
       genero: client.genero!,
       email: client.email!.trim().toLowerCase(),
-      username: client.username!.trim().toLowerCase(),
+      username: this.portalEnabledForRegistration() ? client.username!.trim().toLowerCase() : undefined,
       telefono: client.telefono!.trim(),
       direccion: normalizeText(client.direccion),
       referencias: normalizeText(client.referencias) || undefined,
       companyId,
       avisoInformado: true,
-      consentimientoRecordatorios: client.consentimientoRecordatorios
+      consentimientoRecordatorios: client.consentimientoRecordatorios,
+      habilitarAccesoPortal: this.portalEnabledForRegistration()
     }, {
         nombreCompleto: normalizeText(value.nombreCompleto),
         especie: value.especie!,
@@ -183,6 +201,20 @@ export class ClientOnboardingComponent implements OnInit {
       },
       error: err => this.errorMessage.set(err?.error?.message ?? 'No se pudo registrar la mascota.')
     });
+  }
+
+  portalEnabledForRegistration(): boolean {
+    const mode = this.ownerPortalMode();
+    return mode === 'PORTAL_POR_DEFECTO'
+      || (mode === 'PORTAL_OPCIONAL' && this.clientForm.controls.habilitarAccesoPortal.value === true);
+  }
+
+  private syncUsernameValidation(): void {
+    const username = this.clientForm.controls.username;
+    const validators = [Validators.maxLength(50), Validators.pattern(/^[a-zA-Z0-9._-]+$/), noLeadingTrailingSpaceValidator()];
+    username.setValidators(this.portalEnabledForRegistration() ? [Validators.required, ...validators] : validators);
+    if (!this.portalEnabledForRegistration()) username.setValue('', { emitEvent: false });
+    username.updateValueAndValidity({ emitEvent: false });
   }
 
   goToClients(): void {

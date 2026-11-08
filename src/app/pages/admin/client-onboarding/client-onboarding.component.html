@@ -7,7 +7,7 @@
     <div>
       <p class="text-[11px] font-bold uppercase tracking-[.14em] text-[var(--brand-primary)]">Alta guiada</p>
       <h1 class="mt-0.5 text-xl font-extrabold tracking-tight text-slate-900 sm:text-2xl">Nuevo cliente y primera mascota</h1>
-      <p class="mt-1 max-w-2xl text-sm leading-5 text-slate-500">Registra al responsable y vincula su primera mascota antes de habilitar el portal.</p>
+      <p class="mt-1 max-w-2xl text-sm leading-5 text-slate-500">Registra al responsable y vincula su primera mascota en un solo proceso.</p>
     </div>
   </header>
 
@@ -15,7 +15,7 @@
     <aside class="hidden rounded-xl border border-slate-200 bg-white p-4 lg:sticky lg:top-5 lg:block" aria-label="Progreso del registro">
       <p class="mb-3 text-[11px] font-extrabold uppercase tracking-wide text-slate-400">Progreso del registro</p>
       <ol class="space-y-1">
-        @for (item of [{n: 1, label: 'Responsable', detail: 'Identidad y contacto'}, {n: 2, label: 'Primera mascota', detail: 'Datos de la mascota'}, {n: 3, label: 'Acceso', detail: 'Confirmación del alta'}]; track item.n) {
+        @for (item of [{n: 1, label: 'Responsable', detail: 'Identidad y contacto'}, {n: 2, label: 'Primera mascota', detail: 'Datos de la mascota'}, {n: 3, label: 'Finalización', detail: 'Confirmación del alta'}]; track item.n) {
           <li class="flex items-start gap-3 rounded-lg px-2 py-3" [class.bg-cyan-50]="step() === item.n" [attr.aria-current]="step() === item.n ? 'step' : null">
             <span class="grid size-7 shrink-0 place-items-center rounded-full text-xs font-extrabold"
               [ngClass]="step() > item.n ? 'bg-emerald-100 text-emerald-700' : step() === item.n ? 'bg-[var(--brand-primary)] text-white' : 'bg-slate-100 text-slate-400'">
@@ -27,12 +27,12 @@
       </ol>
       <div class="mt-4 border-t border-slate-100 pt-4">
         @if (step() === 1) {
-          <p class="text-xs leading-5 text-slate-500">La cuenta todavía no será creada y no se enviará ningún correo.</p>
+          <p class="text-xs leading-5 text-slate-500">Todavía no se guardará ningún dato ni se enviará ningún correo.</p>
         } @else if (step() === 2) {
           <p class="text-xs font-bold text-slate-700">{{ clientName() }}</p>
           <p class="mt-1 break-all text-xs leading-5 text-slate-500">{{ clientEmail() }}</p>
         } @else {
-          <p class="text-xs leading-5 text-emerald-700">El cliente, la mascota y el acceso quedaron vinculados.</p>
+          <p class="text-xs leading-5 text-emerald-700">El responsable y la mascota quedaron registrados correctamente.</p>
         }
       </div>
     </aside>
@@ -85,14 +85,24 @@
               <div class="border-t border-slate-100"></div>
 
               <fieldset>
-                <legend class="mb-4 text-xs font-extrabold uppercase tracking-wide text-slate-500">Contacto y acceso</legend>
+                <legend class="mb-4 text-xs font-extrabold uppercase tracking-wide text-slate-500">Contacto</legend>
                 <div class="grid gap-5 sm:grid-cols-2">
                   <label class="field"><span>Teléfono *</span><input formControlName="telefono" maxlength="9" inputmode="numeric" autocomplete="tel" /></label>
                   <label class="field"><span>Correo electrónico *</span><input formControlName="email" maxlength="100" type="email" autocomplete="email" placeholder="nombre@correo.com" /></label>
-                  <label class="field"><span>Usuario *</span><input formControlName="username" maxlength="50" autocomplete="off" placeholder="Ejemplo: juan.perez" /></label>
+                  @if (portalEnabledForRegistration()) {
+                    <label class="field"><span>Usuario *</span><input formControlName="username" maxlength="50" autocomplete="off" placeholder="Ejemplo: juan.perez" /></label>
+                  }
                   <label class="field sm:col-span-2"><span>Dirección *</span><input formControlName="direccion" maxlength="200" autocomplete="street-address" /></label>
                   <label class="field sm:col-span-2"><span>Referencias <em>opcional</em></span><textarea formControlName="referencias" maxlength="500" rows="2"></textarea></label>
                 </div>
+                @if (ownerPortalMode() === 'PORTAL_OPCIONAL') {
+                  <label class="mt-5 flex cursor-pointer items-start gap-3 border-t border-slate-100 pt-5 text-sm leading-5 text-slate-700">
+                    <input type="checkbox" formControlName="habilitarAccesoPortal" class="mt-0.5 size-4 shrink-0 accent-[var(--brand-primary)]" />
+                    <span><strong class="block text-slate-900">Habilitar acceso al portal</strong>La persona recibirá una invitación cuando se registre su primera mascota.</span>
+                  </label>
+                } @else if (ownerPortalMode() === 'SOLO_GESTION_INTERNA') {
+                  <p class="mt-5 border-t border-slate-100 pt-4 text-xs leading-5 text-slate-500">Esta clínica trabaja en modo interno. El propietario se registrará como contacto, sin cuenta ni acceso al portal.</p>
+                }
               </fieldset>
             </div>
           </section>
@@ -128,7 +138,11 @@
 
           <div class="flex flex-col gap-2 sm:items-end">
             <button type="submit" [disabled]="saving()" class="primary-button">@if (saving()) { <i class="pi pi-spin pi-spinner"></i> } @else { <i class="pi pi-arrow-right"></i> } Continuar a mascota</button>
-            <p class="text-xs text-slate-500">El acceso permanecerá pendiente hasta registrar la primera mascota.</p>
+            @if (portalEnabledForRegistration()) {
+              <p class="text-xs text-slate-500">La invitación se procesará al registrar la primera mascota.</p>
+            } @else {
+              <p class="text-xs text-slate-500">El registro será de uso interno para la clínica.</p>
+            }
           </div>
         </form>
       }

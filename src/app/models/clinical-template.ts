@@ -41,6 +41,12 @@ export interface ClinicalTemplateResponse {
   version: number;
   status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
   publishedAt?: string;
+  description?: string;
+  defaultTemplate: boolean;
+  active: boolean;
+  species: string[];
+  serviceIds: number[];
+  serviceNames: string[];
   sections: ClinicalTemplateSection[];
 }
 
@@ -63,6 +69,12 @@ export interface ClinicalTemplateSummary {
   version: number;
   status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
   publishedAt?: string;
+  description?: string;
+  defaultTemplate: boolean;
+  active: boolean;
+  species: string[];
+  serviceIds: number[];
+  serviceNames: string[];
 }
 
 export interface ClinicalConcept {
@@ -80,6 +92,9 @@ export interface ClinicalConcept {
 
 export interface ClinicalTemplateDraftRequest {
   name: string;
+  description?: string;
+  species: string[];
+  serviceIds: number[];
   sections: Array<{
     title: string;
     order: number;
@@ -94,6 +109,14 @@ export interface ClinicalTemplateDraftRequest {
       visibilityRules: string;
     }>;
   }>;
+}
+
+export interface ClinicalTemplateCreateRequest {
+  name: string;
+  description?: string;
+  species: string[];
+  serviceIds: number[];
+  copyFromTemplateId?: number;
 }
 
 export interface ClinicalConceptRequest {
