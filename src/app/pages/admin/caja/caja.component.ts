@@ -113,6 +113,7 @@ export class CajaComponent implements OnInit, OnDestroy {
   cuentaSeleccionada = signal<CuentaCitaResponse | null>(null);
   savingDetalle = signal(false);
   savingPago = signal(false);
+  private paymentIdempotencyKey: string | null = null;
   nuevoDetalle: DetalleCuentaRequest = {
     tipo: 'MEDICAMENTO', descripcion: '', cantidad: 1, precioUnitario: 0
   };
@@ -670,23 +671,33 @@ export class CajaComponent implements OnInit, OnDestroy {
     }
 
     this.savingPago.set(true);
+    this.paymentIdempotencyKey ??= this.createPaymentIdempotencyKey(cuenta.citaId);
     this.pagoService.registrar({
       citaId: cuenta.citaId,
       metodoPago: this.pagoForm.metodoPago,
       monto,
       ...(this.pagoForm.metodoPago === 'EFECTIVO' ? { montoRecibido: Number(this.pagoForm.montoRecibido) } : {})
-    }).subscribe({
+    }, this.paymentIdempotencyKey).subscribe({
       next: r => {
         this.savingPago.set(false);
+        this.paymentIdempotencyKey = null;
         if (r.data) {
+          const pagoId = r.data.id;
           void this.obtenerEncabezadoEmpresaPdf()
             .then(({ empresa, logoDataUrl }) => this.notaVentaPdf.mostrar(cuenta, r.data!, empresa, logoDataUrl))
-            .then(preview => this.abrirNotaVenta(preview))
-            .catch(() => this.messageService.add({
-              severity: 'warn',
-              summary: 'Pago registrado',
-              detail: 'El pago se guardó, pero no se pudo generar la nota de venta.'
-            }));
+            .then(preview => {
+              this.abrirNotaVenta(preview);
+              this.pagoService.reportarComprobante(pagoId, true).subscribe();
+            })
+            .catch((error: unknown) => {
+              const detail = error instanceof Error ? error.message : 'No se pudo generar la nota de venta';
+              this.pagoService.reportarComprobante(pagoId, false, detail).subscribe();
+              this.messageService.add({
+                severity: 'warn',
+                summary: 'Pago registrado',
+                detail: 'El pago se guardó y el comprobante quedó pendiente para volver a generarlo.'
+              });
+            });
         }
         this.messageService.add({
           severity: 'success', summary: 'Pago registrado',
@@ -708,6 +719,13 @@ export class CajaComponent implements OnInit, OnDestroy {
         this.messageService.add({ severity: 'error', summary: 'No se registró el pago', detail: err?.error?.message ?? 'Intenta nuevamente.' });
       }
     });
+  }
+
+  private createPaymentIdempotencyKey(citaId: number): string {
+    const randomPart = typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    return `payment:${citaId}:${randomPart}`;
   }
 
   tipoDetalleLabel(tipo: TipoDetalleCuenta): string {

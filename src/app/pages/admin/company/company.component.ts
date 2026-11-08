@@ -109,6 +109,7 @@ export class CompanyComponent implements OnInit {
       Validators.pattern(/^[a-z0-9]+(-[a-z0-9]+)*$/)
     ]],
     colorPrimario: [SOFTVET_BRAND_COLOR, [Validators.pattern(/^#[0-9a-fA-F]{6}$/)]],
+    modoAccesoPropietario: ['PORTAL_POR_DEFECTO', Validators.required],
     operatingHours: this.fb.array([])
   });
 
@@ -118,6 +119,7 @@ export class CompanyComponent implements OnInit {
   private slugTouchedManually = false;
 
   originalSlug: string | null = null;
+  originalOwnerPortalMode: CompanyDTO['modoAccesoPropietario'] = undefined;
 
   private slugify(value: string): string {
     return value
@@ -294,10 +296,14 @@ export class CompanyComponent implements OnInit {
 
   openNew() {
     this.companyForm.get('slug')?.enable({ emitEvent: false });
-    this.companyForm.reset({ colorPrimario: SOFTVET_BRAND_COLOR });
+    this.companyForm.reset({
+      colorPrimario: SOFTVET_BRAND_COLOR,
+      modoAccesoPropietario: 'PORTAL_POR_DEFECTO'
+    });
     this.initOperatingHours();
     this.slugTouchedManually = false;
     this.originalSlug = null;
+    this.originalOwnerPortalMode = undefined;
     this.isEdit = false;
     this.displayModal = true;
   }
@@ -310,9 +316,11 @@ export class CompanyComponent implements OnInit {
       next: (res) => {
         const data = res.data;
         this.originalSlug = data.slug || null;
+        this.originalOwnerPortalMode = data.modoAccesoPropietario ?? 'PORTAL_POR_DEFECTO';
         this.companyForm.patchValue({
           ...data,
           colorPrimario: data.colorPrimario || SOFTVET_BRAND_COLOR,
+          modoAccesoPropietario: data.modoAccesoPropietario || 'PORTAL_POR_DEFECTO',
           hasWebsite: !!data.website
         });
         this.aplicarPermisoDelSlug();
@@ -357,9 +365,20 @@ export class CompanyComponent implements OnInit {
     // La subida del logo (si aplica) se hace recien al confirmar, no antes -
     // el dialogo de confirmacion debe aparecer de inmediato al enviar el
     // formulario, sin un preloader intermedio.
+    const desactivaPortal = this.isEdit
+      && this.originalOwnerPortalMode !== 'SOLO_GESTION_INTERNA'
+      && formValue.modoAccesoPropietario === 'SOLO_GESTION_INTERNA';
+    const reactivaDisponibilidad = this.isEdit
+      && this.originalOwnerPortalMode === 'SOLO_GESTION_INTERNA'
+      && formValue.modoAccesoPropietario !== 'SOLO_GESTION_INTERNA';
+    const portalMessage = desactivaPortal
+      ? ' Se cerrarán las sesiones de todos los propietarios y se cancelarán sus accesos pendientes. Sus datos e historiales no se eliminarán.'
+      : reactivaDisponibilidad
+        ? ' El portal volverá a estar disponible, pero ningún propietario será reactivado automáticamente; deberás habilitarlos individualmente.'
+        : '';
     this.confirmDialog.set({
       title: this.isEdit ? '¿Actualizar empresa?' : '¿Registrar empresa?',
-      message: `Se ${this.isEdit ? 'actualizarán los datos de' : 'registrará una nueva'} la empresa "${normalizeText(formValue.name)}". ¿Deseas continuar?`,
+      message: `Se ${this.isEdit ? 'actualizarán los datos de' : 'registrará una nueva'} la empresa "${normalizeText(formValue.name)}".${portalMessage} ¿Deseas continuar?`,
       onConfirm: () => this.confirmSaveCompany(formValue)
     });
   }

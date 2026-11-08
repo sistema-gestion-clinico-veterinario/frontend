@@ -197,6 +197,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
   private loadTimeout: any = null;
   private lastLazyEvent: any = { first: 0, rows: 10 };
   agendaFirst = 0;
+  agendaPageSize = 10;
   private suppressSseToast = false;
   totalRecords     = signal<number>(0);
   agendaCounters   = signal<AgendaCounters>({
@@ -211,6 +212,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
   citaDetalle        = signal<CitaResponse | null>(null);
   displayCajaModal   = signal<boolean>(false);
   citaParaPago       = signal<CitaResponse | null>(null);
+  private paymentIdempotencyKey: string | null = null;
   metodoPago         = signal<MetodoPago>('EFECTIVO');
   montoRecibido      = signal<number | null>(null);
   readonly billetesEfectivo = [10, 20, 50, 100, 200];
@@ -1932,6 +1934,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
   }
 
   onAgendaPageChange(event: any) {
+    this.agendaPageSize = Number(event.rows) || 10;
     this.loadCitas(event);
   }
 
@@ -2209,6 +2212,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
   }
 
   abrirCaja(cita: CitaResponse) {
+    this.paymentIdempotencyKey = null;
     this.displayDetalleCita.set(false);
     this.citaParaPago.set(cita);
     this.metodoPago.set('EFECTIVO');
@@ -2258,8 +2262,10 @@ export class AgendaComponent implements OnInit, OnDestroy {
       ...(this.metodoPago() === 'EFECTIVO' ? { montoRecibido: this.montoRecibido() ?? 0 } : {})
     };
 
-    this.pagoService.registrar(request).subscribe({
+    this.paymentIdempotencyKey ??= this.createPaymentIdempotencyKey(cita.id);
+    this.pagoService.registrar(request, this.paymentIdempotencyKey).subscribe({
       next: () => {
+        this.paymentIdempotencyKey = null;
         this.messageService.add({ severity: 'success', summary: 'Pago registrado', detail: `Pago con ${this.metodoPago() === 'EFECTIVO' ? 'efectivo' : 'Yape'} registrado correctamente` });
         this.displayCajaModal.set(false);
         this.loadCitas();
@@ -2268,6 +2274,13 @@ export class AgendaComponent implements OnInit, OnDestroy {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo registrar el pago' });
       }
     });
+  }
+
+  private createPaymentIdempotencyKey(citaId: number): string {
+    const randomPart = typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    return `payment:${citaId}:${randomPart}`;
   }
 
   get horarioDelDiaSeleccionado(): HorarioEmpleadoResponse | null {

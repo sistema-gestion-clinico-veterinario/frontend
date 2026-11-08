@@ -505,11 +505,13 @@
               @if (totalRecords() > 0) {
                 <div class="bg-white border border-slate-200 border-t-0 rounded-b-xl">
                   <p-paginator
-                    [rows]="10"
+                    [rows]="agendaPageSize"
+                    [rowsPerPageOptions]="[10, 20, 50, 100]"
                     [first]="agendaFirst"
                     [totalRecords]="totalRecords()"
                     (onPageChange)="onAgendaPageChange($event)"
-                    [showCurrentPageReport]="false"
+                    [showCurrentPageReport]="true"
+                    currentPageReportTemplate="{first}–{last} de {totalRecords}"
                     styleClass="!border-none !bg-transparent !py-2"
                   ></p-paginator>
                 </div>

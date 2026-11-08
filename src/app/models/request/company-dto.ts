@@ -12,11 +12,14 @@ export interface CompanyDTO {
   operatingHours?: CompanyOperatingHourDTO[];
   slug?: string;
   colorPrimario?: string;
+  modoAccesoPropietario?: OwnerPortalMode;
   createdAt?: string;
   updatedAt?: string;
   createdBy?: string;
   updatedBy?: string;
 }
+
+export type OwnerPortalMode = 'SOLO_GESTION_INTERNA' | 'PORTAL_OPCIONAL' | 'PORTAL_POR_DEFECTO';
 
 export interface CompanyOperatingHourDTO {
   diaSemana: string;

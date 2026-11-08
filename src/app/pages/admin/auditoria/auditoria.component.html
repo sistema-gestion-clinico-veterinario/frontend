@@ -230,10 +230,12 @@
       </p>
       <p-paginator
         [rows]="pageSize"
+        [rowsPerPageOptions]="[10, 20, 50, 100]"
         [totalRecords]="totalRecords()"
         [first]="currentPage * pageSize"
-        (onPageChange)="loadLogs($event.page)"
-        [showCurrentPageReport]="false"
+        (onPageChange)="onPageChange($event)"
+        [showCurrentPageReport]="true"
+        currentPageReportTemplate="{first}–{last} de {totalRecords}"
         styleClass="!border-none !bg-transparent !py-3">
       </p-paginator>
     </div>

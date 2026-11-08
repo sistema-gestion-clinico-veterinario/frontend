@@ -5,6 +5,7 @@ import { ApiResponse } from '../../models/response/api-response';
 import {
   ClinicalConcept,
   ClinicalConceptRequest,
+  ClinicalTemplateCreateRequest,
   ClinicalTemplateDraftRequest,
   ClinicalTemplateResponse,
   ClinicalTemplateSummary
@@ -19,8 +20,10 @@ export class ClinicalTemplateService {
     return this.http.get<ApiResponse<ClinicalTemplateResponse>>(`${this.url}/${id}`);
   }
 
-  current(species?: string) {
-    const params = species ? new HttpParams().set('species', species) : undefined;
+  current(species?: string, serviceId?: number) {
+    let params = new HttpParams();
+    if (species) params = params.set('species', species);
+    if (serviceId) params = params.set('serviceId', serviceId);
     return this.http.get<ApiResponse<ClinicalTemplateResponse>>(`${this.url}/current`, { params });
   }
 
@@ -38,6 +41,18 @@ export class ClinicalTemplateService {
 
   createDraft() {
     return this.http.post<ApiResponse<ClinicalTemplateResponse>>(`${this.url}/drafts`, {});
+  }
+
+  create(request: ClinicalTemplateCreateRequest) {
+    return this.http.post<ApiResponse<ClinicalTemplateResponse>>(this.url, request);
+  }
+
+  createDraftFrom(id: number) {
+    return this.http.post<ApiResponse<ClinicalTemplateResponse>>(`${this.url}/${id}/drafts`, {});
+  }
+
+  makeDefault(id: number) {
+    return this.http.post<ApiResponse<ClinicalTemplateResponse>>(`${this.url}/${id}/default`, {});
   }
 
   updateDraft(id: number, request: ClinicalTemplateDraftRequest) {
