@@ -354,4 +354,18 @@ describe('ClientComponent', () => {
       expect(decidir).not.toHaveBeenCalled();
     });
   });
+  describe('detalle del cliente', () => {
+    it('pide solo las mascotas de ese cliente, en una página dentro del límite del servidor', () => {
+      const mascotas = [{ id: 1, nombreCompleto: 'Luna', apoderadoId: 7 }, { id: 2, nombreCompleto: 'Rocky', apoderadoId: 7 }];
+      spyOn((component as any).apoderadoService, 'getById').and.returnValue(of({ data: { id: 7 } }));
+      const listar = spyOn((component as any).mascotaService, 'listar').and.returnValue(of({ data: { content: mascotas } }));
+      spyOn((component as any).privacidadService, 'estadoDelCliente').and.returnValue(of({ data: {} }));
+
+      component.viewClientDetail({ id: 7 } as any);
+
+      expect(listar.calls.mostRecent().args.slice(1)).toEqual([undefined, undefined, 0, 100, undefined, false, 7]);
+      expect(component.clientPets().map(p => p.id)).toEqual([1, 2]);
+      expect(component.displayDetailModal()).toBeTrue();
+    });
+  });
 });

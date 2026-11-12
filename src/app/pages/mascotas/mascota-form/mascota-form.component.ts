@@ -26,6 +26,7 @@ import { PrivacidadService } from '../../../core/services/privacidad.service';
 import { AvisoPublico } from '../../../models/privacy/privacidad.model';
 import { HistoriaClinicaService } from '../../../core/services/historia-clinica.service';
 import { Subscription, catchError, debounceTime, distinctUntilChanged, of, switchMap } from 'rxjs';
+import { TAMANO_MAXIMO_PAGINA } from '../../../core/constants/paginacion.constants';
 
 interface ApoderadoOption {
   label: string;
@@ -950,7 +951,7 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
       this.apoderados.set([]);
       return;
     }
-    this.apoderadoService.listar(companyId, undefined, undefined, 0, 200).subscribe({
+    this.apoderadoService.listar(companyId, undefined, undefined, 0, TAMANO_MAXIMO_PAGINA).subscribe({
       next: (res) => {
         this.apoderados.set(
           res.data.content.map(c => ({

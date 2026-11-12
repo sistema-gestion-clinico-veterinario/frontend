@@ -23,13 +23,15 @@ export class MascotaService {
     page:       number  = 0,
     size:       number  = 12,
     activo?:    boolean,
-    skipLoading: boolean = false
+    skipLoading: boolean = false,
+    apoderadoId?: number
   ) {
     let query = `?page=${page}&size=${size}`;
     if (companyId !== undefined && companyId !== null) query += `&companyId=${companyId}`;
     if (nombre)  query += `&nombre=${encodeURIComponent(nombre)}`;
     if (especie) query += `&especie=${especie}`;
     if (activo  !== undefined && activo !== null) query += `&activo=${activo}`;
+    if (apoderadoId !== undefined && apoderadoId !== null) query += `&apoderadoId=${apoderadoId}`;
 
     const context = skipLoading ? new HttpContext().set(SKIP_GLOBAL_LOADING, true) : undefined;
     return this.http.get<ApiResponse<Page<MascotaResponse>>>(`${this.apiUrl}${query}`, { context });
