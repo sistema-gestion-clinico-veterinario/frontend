@@ -40,6 +40,7 @@ import { MarcaProductoService } from '../../core/services/marca-producto.service
 import { ProductoResponse } from '../../models/response/producto-response';
 import { CategoriaProductoResponse } from '../../models/response/categoria-producto-response';
 import { MarcaProductoResponse } from '../../models/response/marca-producto-response';
+import { TAMANO_MAXIMO_PAGINA } from '../../core/constants/paginacion.constants';
 
 @Component({
   selector: 'app-reportes',
@@ -150,7 +151,7 @@ export default class ReportesComponent {
       .pipe(
         switchMap(([companyId, tipo]) =>
           tipo === 'CLINICA'
-            ? this.empleadoService.listar(companyId, undefined, 0, 200).pipe(
+            ? this.empleadoService.listar(companyId, undefined, 0, TAMANO_MAXIMO_PAGINA).pipe(
             catchError(() => EMPTY)
           )
             : EMPTY

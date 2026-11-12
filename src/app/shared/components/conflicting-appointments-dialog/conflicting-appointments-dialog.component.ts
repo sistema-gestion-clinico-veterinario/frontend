@@ -14,6 +14,7 @@ import { ApoderadoService } from '../../../core/services/apoderado.service';
 import { CitaResponse } from '../../../models/response/cita-response';
 import { EmpleadoListResponse } from '../../../models/response/empleado-list-response';
 import { describeManualNotice } from '../../utils/person-status';
+import { TAMANO_MAXIMO_PAGINA } from '../../../core/constants/paginacion.constants';
 
 
 @Component({
@@ -65,7 +66,7 @@ export class ConflictingAppointmentsDialogComponent implements OnChanges {
   }
 
   private cargarEmpleadosActivos(): void {
-    this.empleadoService.listar(undefined, undefined, 0, 200).subscribe({
+    this.empleadoService.listar(undefined, undefined, 0, TAMANO_MAXIMO_PAGINA).subscribe({
       next: res => this.empleadosActivos.set((res.data?.content ?? []).filter(e => e.activo && e.id !== this.entityId))
     });
   }

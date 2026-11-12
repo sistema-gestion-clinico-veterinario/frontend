@@ -24,7 +24,6 @@ import { PagoService } from '../../../core/services/pago.service';
 import { ServicioResponse } from '../../../models/response/servicio-response';
 import { MetodoPago, PagoRequest } from '../../../models/request/pago-request';
 import { CitaResponse } from '../../../models/response/cita-response';
-import { MascotaResponse } from '../../../models/response/mascota-response';
 import { HorarioEmpleadoResponse } from '../../../models/response/horario-empleado-response';
 import { CitaRequest } from '../../../models/request/cita-request';
 import { EstadoCita } from '../../../core/enums/estado-cita.enum';
@@ -59,6 +58,7 @@ import { CitaDetailPanelComponent } from './cita-detail-panel/cita-detail-panel.
 import { PaymentDialogComponent } from './payment-dialog/payment-dialog.component';
 import { AppointmentFormPanelComponent } from './appointment-form-panel/appointment-form-panel.component';
 import type { AppointmentFormContext } from './appointment-form-panel/appointment-form-context';
+import { TAMANO_MAXIMO_PAGINA } from '../../../core/constants/paginacion.constants';
 export type Vista = 'lista' | 'dia' | 'semana' | 'mes';
 export type PeriodoAgenda = '' | 'hoy' | '7dias' | '30dias' | 'personalizado';
 
@@ -231,7 +231,6 @@ export class AgendaComponent implements OnInit, OnDestroy {
   
   veterinarios     = signal<{ label: string; value: number }[]>([]);
   clientes         = signal<{ label: string; value: number }[]>([]);
-  allMascotas      = signal<MascotaResponse[]>([]);
   filteredMascotas = signal<{ label: string; value: number }[]>([]);
   empresas         = signal<{ label: string; value: number }[]>([]);
   horariosVeterinario = signal<HorarioEmpleadoResponse[]>([]);
@@ -737,13 +736,10 @@ export class AgendaComponent implements OnInit, OnDestroy {
     this.formPeopleLoading = true;
     const companyId = this.activeCompanyId ?? undefined;
     forkJoin({
-      clientes: this.apoderadoService.listar(companyId, undefined, undefined, 0, 100).pipe(
-        catchError(() => of(null))
-      ),
-      mascotas: this.mascotaService.listar(companyId, undefined, undefined, 0, 500).pipe(
+      clientes: this.apoderadoService.listar(companyId, undefined, undefined, 0, TAMANO_MAXIMO_PAGINA).pipe(
         catchError(() => of(null))
       )
-    }).subscribe(({ clientes, mascotas }) => {
+    }).subscribe(({ clientes }) => {
       if (clientes) {
         this.clientes.set(
           clientes.data.content
@@ -752,27 +748,27 @@ export class AgendaComponent implements OnInit, OnDestroy {
         );
       }
 
-      if (mascotas) {
-        this.allMascotas.set(mascotas.data.content);
-        const clienteId = this.selectedClienteId();
-        if (clienteId) {
-          this.filteredMascotas.set(
-            mascotas.data.content
-              .filter(m => m.apoderadoId === clienteId && m.activo)
-              .map(m => ({ label: m.nombreCompleto, value: m.id }))
-          );
-        }
-      }
-
       this.formPeopleLoading = false;
-      this.formPeopleLoaded = !!clientes && !!mascotas;
+      this.formPeopleLoaded = !!clientes;
       if (!this.formPeopleLoaded) {
         this.messageService.add({
           severity: 'warn',
           summary: 'Datos incompletos',
-          detail: 'No se pudieron cargar todos los dueños y mascotas. Vuelve a abrir el formulario para reintentar.'
+          detail: 'No se pudieron cargar los dueños. Vuelve a abrir el formulario para reintentar.'
         });
       }
+    });
+  }
+
+  private cargarMascotasDelCliente(clienteId: number, soloActivas: boolean): void {
+    this.mascotaService.listar(
+      this.activeCompanyId ?? undefined, undefined, undefined, 0, TAMANO_MAXIMO_PAGINA,
+      soloActivas ? true : undefined, false, clienteId
+    ).subscribe({
+      next: res => this.filteredMascotas.set(
+        res.data.content.map(m => ({ label: m.nombreCompleto, value: m.id }))
+      ),
+      error: () => this.filteredMascotas.set([])
     });
   }
 
@@ -807,11 +803,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
     this.nmRazaId.set(null);
     this.nmSexo.set('MACHO');
     this.nmFechaNac.set('');
-    this.filteredMascotas.set(
-      this.allMascotas()
-        .filter(m => m.apoderadoId === cliente.value && m.activo)
-        .map(m => ({ label: m.nombreCompleto, value: m.id }))
-    );
+    this.cargarMascotasDelCliente(cliente.value, true);
     this.citaForm.get('mascotaId')?.setValue(null);
     this.selectedMascotaLabel.set('Seleccionar mascota...');
   }
@@ -1058,11 +1050,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
     this.originalCitaEdit.set(cita);
     this.selectedClienteLabel.set(cita.apoderadoNombre);
     this.selectedMascotaLabel.set(cita.mascotaNombre);
-    this.filteredMascotas.set(
-      this.allMascotas()
-        .filter(m => m.apoderadoId === cita.apoderadoId)
-        .map(m => ({ label: m.nombreCompleto, value: m.id }))
-    );
+    this.cargarMascotasDelCliente(cita.apoderadoId, false);
     this.availableSlots.set([]);
     this.selectedServicioId.set(cita.servicioId ?? null);
     this.filterEmpleadosByServicio(cita.servicioId ?? null);
@@ -1263,7 +1251,6 @@ export class AgendaComponent implements OnInit, OnDestroy {
     }).subscribe({
       next: (res) => {
         const mascota = res.data;
-        this.allMascotas.update(list => [mascota, ...list]);
         const item = { label: mascota.nombreCompleto, value: mascota.id };
         this.filteredMascotas.update(list => [item, ...list]);
         this.selectMascota(item);

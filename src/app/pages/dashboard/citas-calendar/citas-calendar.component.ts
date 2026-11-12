@@ -8,6 +8,8 @@ import interactionPlugin from '@fullcalendar/interaction';
 import { Router } from '@angular/router';
 import { CitaService } from '../../../core/services/cita.service';
 import { CitaResponse } from '../../../models/response/cita-response';
+import { TAMANO_MAXIMO_PAGINA } from '../../../core/constants/paginacion.constants';
+import { leerTodasLasPaginas } from '../../../core/utils/leer-todas-las-paginas';
 
 
 const ACCENT: Record<string, string> = {
@@ -123,12 +125,12 @@ export class DashboardCitasCalendarComponent {
     const companyId = this.companyId();
     if (companyId == null) return;
     this.cargando.set(true);
-    this.citaService
-      .listar(companyId, undefined, undefined, undefined, 0, 500, this.toDateInput(desde), this.toDateInput(hasta))
+    leerTodasLasPaginas(pagina => this.citaService.listar(
+        companyId, undefined, undefined, undefined, pagina, TAMANO_MAXIMO_PAGINA,
+        this.toDateInput(desde), this.toDateInput(hasta)))
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: response => {
-          const citas = response.data.content ?? [];
+        next: citas => {
           this.indexarPorFecha(citas);
           this.calendarOptions = { ...this.calendarOptions, events: this.toEvents(citas) };
           this.cargando.set(false);
