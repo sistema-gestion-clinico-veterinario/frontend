@@ -11,7 +11,8 @@ import { SessionService } from '../../../core/services/session.service';
 import { CompanyComplianceService } from '../../../core/services/company-compliance.service';
 import { GuidedTourService } from '../../../core/services/guided-tour.service';
 import { SkeletonModule } from 'primeng/skeleton';
-import { EMPTY, catchError, switchMap, timer } from 'rxjs';
+import { EMPTY, catchError, switchMap } from 'rxjs';
+import { sondeoVisible } from '../../../core/utils/sondeo-visible';
 import {
   SOFTVET_LOGO_URL,
   SOFTVET_SIDEBAR_NAME,
@@ -56,7 +57,7 @@ export class SidebarComponent implements OnInit {
   ngOnInit(): void {
     this.guidedTour.initialize();
     if (this.authStore.isSuperAdmin()) {
-      timer(0, 5 * 60 * 1000).pipe(
+      sondeoVisible(5 * 60 * 1000, { inmediato: true }).pipe(
         switchMap(() => this.complianceService.contarSolicitudesActivas().pipe(catchError(() => EMPTY))),
         takeUntilDestroyed(this.destroyRef)
       ).subscribe(respuesta => this.solicitudesCumplimientoActivas.set(respuesta.data ?? 0));

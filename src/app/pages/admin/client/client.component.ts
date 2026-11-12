@@ -37,6 +37,7 @@ import { CompanyComplianceService } from '../../../core/services/company-complia
 import { FINALIDAD_RECORDATORIOS as RECORDATORIOS, FINALIDAD_USO_IA as USO_IA } from '../../../core/constants/privacidad.constants';
 import { AvisoPublico, ConsentimientoEstado } from '../../../models/privacy/privacidad.model';
 import { Router } from '@angular/router';
+import { TAMANO_MAXIMO_PAGINA } from '../../../core/constants/paginacion.constants';
 
 @Component({
   selector: 'app-client',
@@ -524,12 +525,12 @@ export class ClientComponent implements OnInit {
     this.loadingStore.show();
     forkJoin({
       detail: this.apoderadoService.getById(client.id),
-      pets: this.mascotaService.listar(companyId ?? undefined, undefined, undefined, 0, 500, undefined),
+      pets: this.mascotaService.listar(companyId ?? undefined, undefined, undefined, 0, TAMANO_MAXIMO_PAGINA, undefined, false, client.id),
       privacidad: this.privacidadService.estadoDelCliente(client.id)
     }).subscribe({
       next: (res) => {
         const allPets = res.pets.data?.content ?? [];
-        this.clientPets.set(allPets.filter(p => p.apoderadoId === client.id));
+        this.clientPets.set(allPets);
         this.selectedClientDetail.set(res.detail.data);
         this.selectedClientId.set(client.id);
         this.estadoPrivacidadCliente.set(res.privacidad.data);

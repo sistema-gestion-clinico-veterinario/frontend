@@ -1,0 +1,1 @@
+export const TAMANO_MAXIMO_PAGINA = 100;

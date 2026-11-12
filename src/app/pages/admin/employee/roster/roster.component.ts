@@ -17,6 +17,7 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { ScheduleFormComponent } from './components/schedule-form/schedule-form.component';
+import { TAMANO_MAXIMO_PAGINA } from '../../../../core/constants/paginacion.constants';
 
 @Component({
   selector: 'app-roster',
@@ -298,7 +299,7 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
   }
 
   loadEmployeeList(companyId: number) {
-    this.empleadoService.listar(companyId, undefined, 0, 1000).subscribe({
+    this.empleadoService.listar(companyId, undefined, 0, TAMANO_MAXIMO_PAGINA).subscribe({
       next: (res) => {
         const list = res.data.content.map(e => ({
           label: `${e.nombre} ${e.apellido}`,

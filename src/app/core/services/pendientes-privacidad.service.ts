@@ -13,6 +13,7 @@ import { BackupExecution } from '../../models/backup/backup-execution.model';
 import { CompanyComplianceService } from './company-compliance.service';
 import { SolicitudCambioCumplimiento } from '../../models/privacy/company-compliance.model';
 import { NotificationReadService } from './notification-read.service';
+import { sondeoVisible } from '../utils/sondeo-visible';
 
 const CLAVE_DESCARTADOS = 'pendientes_privacidad_descartados';
 
@@ -168,8 +169,8 @@ export class PendientesPrivacidadService {
         this.refrescar();
       });
       if (esAdministradorPlataforma) {
-        const intervalo = window.setInterval(() => this.refrescar(), 5 * 60 * 1000);
-        onCleanup(() => window.clearInterval(intervalo));
+        const sondeo = sondeoVisible(5 * 60 * 1000).subscribe(() => this.refrescar());
+        onCleanup(() => sondeo.unsubscribe());
       }
     });
 

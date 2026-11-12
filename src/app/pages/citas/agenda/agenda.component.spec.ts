@@ -5,7 +5,7 @@ import { MessageService, ConfirmationService } from 'primeng/api';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormControl, FormGroup } from '@angular/forms';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { ApoderadoService } from '../../../core/services/apoderado.service';
 import { MascotaService } from '../../../core/services/mascota.service';
 import { EmpleadoService } from '../../../core/services/empleado.service';
@@ -103,7 +103,7 @@ describe('AgendaComponent', () => {
   });
 
   describe('carga eficiente de catálogos', () => {
-    it('carga dueños y mascotas al abrir el formulario y reutiliza el resultado', () => {
+    it('carga los dueños al abrir el formulario, reutiliza el resultado y no carga las mascotas de toda la clínica', () => {
       const apoderados = TestBed.inject(ApoderadoService);
       const mascotas = TestBed.inject(MascotaService);
       const listarApoderados = spyOn(apoderados, 'listar').and.returnValue(
@@ -117,7 +117,41 @@ describe('AgendaComponent', () => {
       component.openNew();
 
       expect(listarApoderados).toHaveBeenCalledTimes(1);
-      expect(listarMascotas).toHaveBeenCalledTimes(1);
+      expect(listarMascotas).not.toHaveBeenCalled();
+    });
+
+    it('al elegir un cliente pide solo sus mascotas activas, con una página dentro del límite del servidor', () => {
+      const mascotas = TestBed.inject(MascotaService);
+      const listarMascotas = spyOn(mascotas, 'listar').and.returnValue(
+        of({ data: { content: [{ id: 5, nombreCompleto: 'Luna' }] } } as any)
+      );
+
+      component.onClienteChange({ label: 'Ana Torres', value: 9 });
+
+      expect(listarMascotas.calls.mostRecent().args.slice(1)).toEqual([undefined, undefined, 0, 100, true, false, 9]);
+      expect(component.filteredMascotas()).toEqual([{ label: 'Luna', value: 5 }]);
+    });
+
+    it('al editar una cita pide todas las mascotas del cliente, también las inactivas', () => {
+      const mascotas = TestBed.inject(MascotaService);
+      const listarMascotas = spyOn(mascotas, 'listar').and.returnValue(
+        of({ data: { content: [{ id: 6, nombreCompleto: 'Rocky' }] } } as any)
+      );
+
+      component['cargarMascotasDelCliente'](9, false);
+
+      expect(listarMascotas.calls.mostRecent().args.slice(1)).toEqual([undefined, undefined, 0, 100, undefined, false, 9]);
+      expect(component.filteredMascotas()).toEqual([{ label: 'Rocky', value: 6 }]);
+    });
+
+    it('si falla la carga de mascotas deja la lista vacía', () => {
+      const mascotas = TestBed.inject(MascotaService);
+      spyOn(mascotas, 'listar').and.returnValue(throwError(() => new Error('fallo')));
+      component.filteredMascotas.set([{ label: 'Vieja', value: 1 }]);
+
+      component['cargarMascotasDelCliente'](9, true);
+
+      expect(component.filteredMascotas()).toEqual([]);
     });
 
     it('obtiene empleados una sola vez y expone como veterinarios solo los habilitados', () => {
