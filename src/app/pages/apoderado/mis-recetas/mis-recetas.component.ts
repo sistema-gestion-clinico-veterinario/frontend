@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
@@ -41,7 +41,7 @@ export class MisRecetasComponent implements OnInit {
     });
   }
 
-  recetasFiltradas(): PrescripcionResponse[] {
+  readonly recetasFiltradas = computed<PrescripcionResponse[]>(() => {
     const query = this.searchQuery().trim().toLowerCase();
     if (!query) return this.recetas();
 
@@ -56,7 +56,7 @@ export class MisRecetasComponent implements OnInit {
         .filter(Boolean)
         .some((value) => value!.toLowerCase().includes(query))
     );
-  }
+  });
 
   verDetalle(receta: PrescripcionResponse) {
     this.selectedReceta.set(receta);

@@ -2,6 +2,8 @@ import { CommonModule } from '@angular/common';
 import { Component, HostListener, inject, signal } from '@angular/core';
 import { AccessibilityService } from '../../../core/services/accessibility.service';
 
+const PUNTOS_POR_NIVEL = new Map<number, number[]>();
+
 @Component({
   selector: 'app-accessibility-widget',
   standalone: true,
@@ -39,7 +41,12 @@ export class AccessibilityWidgetComponent {
   }
 
   dotsArray(count: number): number[] {
-    return Array.from({ length: count });
+    let puntos = PUNTOS_POR_NIVEL.get(count);
+    if (!puntos) {
+      puntos = Array.from({ length: count }, (_, i) => i);
+      PUNTOS_POR_NIVEL.set(count, puntos);
+    }
+    return puntos;
   }
 
   // Cada card llama solo al método que le compete — sin efectos cruzados entre ajustes.

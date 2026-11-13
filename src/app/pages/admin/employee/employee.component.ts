@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject, signal, HostListener, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, computed, inject, signal, HostListener, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators, AbstractControl } from '@angular/forms';
@@ -145,11 +145,16 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     }
   }
 
-  public getFilteredOptions(list: any[]): any[] {
-    if (!this.searchFilter()) return list;
-    const filter = this.searchFilter().toLowerCase();
-    return list.filter(item => item.label.toLowerCase().includes(filter));
+  private filtrarOpciones<T extends { label: string }>(lista: T[]): T[] {
+    const texto = this.searchFilter();
+    if (!texto) return lista;
+    const filtro = texto.toLowerCase();
+    return lista.filter(item => item.label.toLowerCase().includes(filtro));
   }
+
+  readonly rolesFiltrados = computed(() => this.filtrarOpciones(this.roles()));
+  readonly tiposEmpleadoFiltrados = computed(() => this.filtrarOpciones(this.tiposEmpleadoList()));
+  readonly especialidadesFiltradas = computed(() => this.filtrarOpciones(this.especialidadesList()));
 
   public toggleSelection(controlName: string, value: any) {
     if (controlName === 'roleIds' && !this.canManageRoleAssignments()) return;

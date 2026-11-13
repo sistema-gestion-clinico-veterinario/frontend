@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { memoPorObjeto } from '../../../core/utils/memo-por-objeto';
 import {
   ReactiveFormsModule,
   FormsModule,
@@ -451,13 +452,13 @@ export class ComplementarioComponent implements OnInit {
     else this.clinicalDraft.set(null);
   }
 
-  selectedClinicalVersions(): ClinicalTemplateSummary[] {
-    return this.clinicalVersions().filter(version => version.templateKey === this.selectedClinicalTemplateKey());
-  }
+  readonly selectedClinicalVersions = computed(() =>
+    this.clinicalVersions().filter(version => version.templateKey === this.selectedClinicalTemplateKey())
+  );
 
-  selectedClinicalPublished(): ClinicalTemplateSummary | undefined {
-    return this.selectedClinicalVersions().find(version => version.status === 'PUBLISHED');
-  }
+  readonly selectedClinicalPublished = computed(() =>
+    this.selectedClinicalVersions().find(version => version.status === 'PUBLISHED')
+  );
 
   toggleClinicalSelectAll<T>(selected: T[] | null | undefined, options: readonly T[]): T[] {
     const allSelected = options.length > 0 && options.every(option => selected?.includes(option));
@@ -713,25 +714,34 @@ export class ComplementarioComponent implements OnInit {
     return species.length === 0 || species.includes(this.clinicalPreviewSpecies());
   }
 
-  clinicalPreviewOptions(field: ClinicalTemplateField): string[] {
+  private readonly configDelCampo = memoPorObjeto((field: ClinicalTemplateField): Record<string, any> => {
     try {
       const config = JSON.parse(field.validationConfig ?? '{}');
-      return Array.isArray(config.options) ? config.options.map(String) : [];
+      return config !== null && typeof config === 'object' ? config : {};
     } catch {
-      return [];
+      return {};
     }
+  }, field => field.validationConfig);
+
+  private readonly opcionesDelCampo = memoPorObjeto((field: ClinicalTemplateField): string[] => {
+    const config = this.configDelCampo(field);
+    return Array.isArray(config['options']) ? config['options'].map(String) : [];
+  }, field => field.validationConfig);
+
+  private readonly escalaDelCampo = memoPorObjeto((field: ClinicalTemplateField): { min: number; max: number } => {
+    const config = this.configDelCampo(field);
+    return {
+      min: Number.isFinite(Number(config['min'])) ? Number(config['min']) : 1,
+      max: Number.isFinite(Number(config['max'])) ? Number(config['max']) : 10
+    };
+  }, field => field.validationConfig);
+
+  clinicalPreviewOptions(field: ClinicalTemplateField): string[] {
+    return this.opcionesDelCampo(field);
   }
 
   clinicalPreviewScale(field: ClinicalTemplateField): { min: number; max: number } {
-    try {
-      const config = JSON.parse(field.validationConfig ?? '{}');
-      return {
-        min: Number.isFinite(Number(config.min)) ? Number(config.min) : 1,
-        max: Number.isFinite(Number(config.max)) ? Number(config.max) : 10
-      };
-    } catch {
-      return { min: 1, max: 10 };
-    }
+    return this.escalaDelCampo(field);
   }
 
   saveClinicalConcept() {
@@ -765,11 +775,7 @@ export class ComplementarioComponent implements OnInit {
   }
 
   isCoreClinicalField(field: ClinicalTemplateField): boolean {
-    try {
-      return Boolean(JSON.parse(field.validationConfig ?? '{}').coreField);
-    } catch {
-      return false;
-    }
+    return Boolean(this.configDelCampo(field)['coreField']);
   }
 
   private normalizeClinicalOrder(draft: ClinicalTemplateResponse) {

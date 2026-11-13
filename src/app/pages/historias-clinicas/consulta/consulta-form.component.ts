@@ -39,7 +39,8 @@ import { ClinicalTemplateField, ClinicalTemplateResponse } from '../../../models
 
 
 import { MotivoRecursoNoDisponible, RecursoNoDisponibleComponent, motivoDeError } from '../../../shared/components/recurso-no-disponible/recurso-no-disponible.component';
-
+
+import { memoPorObjeto } from '../../../core/utils/memo-por-objeto';
 @Component({
   selector: 'app-consulta-form',
   standalone: true,
@@ -1475,9 +1476,13 @@ version: res.data.version,
     return `clinical_${field.id}`;
   }
 
-  customFieldOptions(field: ClinicalTemplateField): string[] {
+  private readonly opcionesDelCampo = memoPorObjeto((field: ClinicalTemplateField): string[] => {
     const config = this.fieldConfig(field);
     return Array.isArray(config['options']) ? config['options'].map(String) : [];
+  }, field => field.validationConfig);
+
+  customFieldOptions(field: ClinicalTemplateField): string[] {
+    return this.opcionesDelCampo(field);
   }
 
   customFieldError(field: ClinicalTemplateField): string {
@@ -1564,10 +1569,10 @@ version: res.data.version,
     return typeof value === 'string' && value.length > 0 ? value : null;
   }
 
-  private fieldConfig(field: ClinicalTemplateField): Record<string, any> {
+  private readonly fieldConfig = memoPorObjeto((field: ClinicalTemplateField): Record<string, any> => {
     if (!field.validationConfig) return {};
     try { return JSON.parse(field.validationConfig); } catch { return {}; }
-  }
+  }, field => field.validationConfig);
 
   verConsulta(id: number) {
     const item = this.historia()?.consultas.find((c: any) => c.id === id);

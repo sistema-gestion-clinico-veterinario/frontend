@@ -29,7 +29,7 @@
       <span class="a11y-sublabel">{{ subtitle }}</span>
     }
     <span class="a11y-progress">
-      @for (seg of dotsArray(maxLevel); track seg; let i = $index) {
+      @for (seg of dotsArray(maxLevel); track $index; let i = $index) {
         <span class="a11y-progress-seg"
         [class.filled]="i < level"></span>
       }

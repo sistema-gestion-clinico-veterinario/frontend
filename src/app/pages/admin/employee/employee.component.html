@@ -506,7 +506,7 @@
                       </div>
                     </div>
                     <div class="max-h-48 overflow-y-auto p-1">
-                      @for (r of getFilteredOptions(roles()); track r) {
+                      @for (r of rolesFiltrados(); track r) {
                         <label
                           class="flex items-center gap-3 px-3 py-2 hover:bg-blue-50 rounded cursor-pointer transition-colors group">
                           <input type="checkbox" [checked]="isSelected('roleIds', r.value)" (change)="toggleSelection('roleIds', r.value)"
@@ -515,7 +515,7 @@
                           <span class="text-xs text-slate-600 group-hover:text-slate-900 font-medium">{{ r.label }}</span>
                         </label>
                       }
-                      @if (!getFilteredOptions(roles()).length) {
+                      @if (!rolesFiltrados().length) {
                         <p class="text-[10px] text-slate-400 italic text-center py-4">Sin resultados</p>
                       }
                     </div>
@@ -551,7 +551,7 @@
                       </div>
                     </div>
                     <div class="max-h-48 overflow-y-auto p-1">
-                      @for (te of getFilteredOptions(tiposEmpleadoList()); track te) {
+                      @for (te of tiposEmpleadoFiltrados(); track te) {
                         <label
                           class="flex items-center gap-3 px-3 py-2 hover:bg-blue-50 rounded cursor-pointer transition-colors group">
                           <input type="checkbox" [checked]="isSelected('tiposEmpleado', te.value)" (change)="toggleSelection('tiposEmpleado', te.value)"
@@ -559,7 +559,7 @@
                           <span class="text-xs text-slate-600 group-hover:text-slate-900 font-medium">{{ te.label }}</span>
                         </label>
                       }
-                      @if (!getFilteredOptions(tiposEmpleadoList()).length) {
+                      @if (!tiposEmpleadoFiltrados().length) {
                         <p class="text-[10px] text-slate-400 italic text-center py-4">Sin resultados</p>
                       }
                     </div>
@@ -711,7 +711,7 @@
                         }
                       </div>
                       <div class="max-h-56 overflow-y-auto overscroll-contain p-1">
-                        @for (esp of getFilteredOptions(especialidadesList()); track esp) {
+                        @for (esp of especialidadesFiltradas(); track esp) {
                           <label
                             [class.bg-blue-50]="isSelected('especialidades', esp.value)"
                             class="flex items-start gap-3 px-3 py-2.5 hover:bg-blue-50 rounded cursor-pointer transition-colors group">
@@ -720,7 +720,7 @@
                             <span class="text-xs leading-5 text-slate-600 group-hover:text-slate-900 font-medium">{{ esp.label }}</span>
                           </label>
                         }
-                        @if (!getFilteredOptions(especialidadesList()).length) {
+                        @if (!especialidadesFiltradas().length) {
                           <p class="text-[10px] text-slate-400 italic text-center py-4">Sin resultados</p>
                         }
                       </div>

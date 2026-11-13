@@ -19,6 +19,8 @@ import { SessionService } from '../../../core/services/session.service';
 
 type Section = 'empresa' | 'sistema';
 
+const SIN_VENTANAS: RolVentanaPermiso[] = [];
+
 @Component({
   selector: 'app-roles',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -153,12 +155,21 @@ export class RolesComponent implements OnInit {
     return role?.purpose === 'PLATFORM_ADMIN';
   }
 
-  rootVentanas(): RolVentanaPermiso[] {
-    return this.ventanaPermisos().filter(v => v.parentId === null);
-  }
+  readonly rootVentanas = computed(() => this.ventanaPermisos().filter(v => v.parentId === null));
+
+  private readonly hijosPorPadre = computed(() => {
+    const hijos = new Map<string, RolVentanaPermiso[]>();
+    for (const v of this.ventanaPermisos()) {
+      if (v.parentCodigo == null) continue;
+      const lista = hijos.get(v.parentCodigo);
+      if (lista) lista.push(v);
+      else hijos.set(v.parentCodigo, [v]);
+    }
+    return hijos;
+  });
 
   childrenOf(parentCodigo: string): RolVentanaPermiso[] {
-    return this.ventanaPermisos().filter(v => v.parentCodigo === parentCodigo);
+    return this.hijosPorPadre().get(parentCodigo) ?? SIN_VENTANAS;
   }
 
   togglePermiso(v: RolVentanaPermiso, campo: 'leer' | 'escribir' | 'modificar' | 'eliminar') {
