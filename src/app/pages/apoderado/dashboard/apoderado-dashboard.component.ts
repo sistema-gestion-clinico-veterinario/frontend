@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal, computed } from '@angular/core';
 
 import { RouterModule } from '@angular/router';
 import { ToastModule } from 'primeng/toast';
@@ -12,6 +12,7 @@ import { CompanyComplianceService } from '../../../core/services/company-complia
 
 @Component({
   selector: 'app-apoderado-dashboard',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [RouterModule, ToastModule],
   providers: [MessageService],

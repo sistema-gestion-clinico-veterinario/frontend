@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { HasPermissionDirective } from '../../../../core/directives/has-permission.directive';
 import { CitaResponse } from '../../../../models/response/cita-response';
 
 
 @Component({
   selector: 'app-cita-detail-panel',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [CommonModule, HasPermissionDirective],
   templateUrl: './cita-detail-panel.component.html'

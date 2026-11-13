@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, OnDestroy, inject, signal, computed, DestroyRef } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, OnDestroy, inject, signal, computed, DestroyRef } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -23,6 +23,7 @@ import { DashboardCitasCalendarComponent } from './citas-calendar/citas-calendar
 
 @Component({
   selector: 'app-dashboard',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [CommonModule, SkeletonModule, FormsModule, RouterModule, DashboardCitasCalendarComponent],
   templateUrl: './dashboard.component.html',

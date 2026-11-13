@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, output, signal, computed, HostListener, effect } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, output, signal, computed, HostListener, effect } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
@@ -17,6 +17,7 @@ import { PendientePrivacidad } from '../../../models/ui/pendiente-privacidad.mod
 
 @Component({
   selector: 'app-navbar',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [CommonModule, FormsModule, RouterModule, ToastModule],
   providers: [MessageService],

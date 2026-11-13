@@ -1,4 +1,4 @@
-import { Component, computed, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 
 export type MotivoRecursoNoDisponible = 'NO_ENCONTRADO' | 'SIN_PERMISO' | 'FALLO';
 
@@ -10,6 +10,7 @@ export function motivoDeError(error: { status?: number } | null | undefined): Mo
 
 @Component({
   selector: 'app-recurso-no-disponible',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   templateUrl: './recurso-no-disponible.component.html'
 })

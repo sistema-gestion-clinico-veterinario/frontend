@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { PrivacidadService } from '../../../core/services/privacidad.service';
 import { CentroLegalPublico, DocumentoCentroLegal } from '../../../models/privacy/privacidad.model';
@@ -8,6 +8,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-aviso-publico',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [DatePipe],
   templateUrl: './aviso-publico.component.html'

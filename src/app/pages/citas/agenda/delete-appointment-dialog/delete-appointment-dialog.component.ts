@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { CitaResponse } from '../../../../models/response/cita-response';
 
 @Component({
   selector: 'app-delete-appointment-dialog',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [CommonModule],
   templateUrl: './delete-appointment-dialog.component.html'

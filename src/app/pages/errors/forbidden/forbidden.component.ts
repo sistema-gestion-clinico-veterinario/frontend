@@ -1,11 +1,12 @@
 import { Location } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { resolveInitialRoute } from '../../../core/routing/initial-route';
 import { AuthStore } from '../../../store/auth.store';
 
 @Component({
   selector: 'app-forbidden',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   templateUrl: './forbidden.component.html'
 })

@@ -1,4 +1,4 @@
-import { Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 
 export interface BloqueDocumento {
   tipo: 'texto' | 'lista';
@@ -59,6 +59,7 @@ let siguienteId = 0;
 
 @Component({
   selector: 'app-documento-legal',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   templateUrl: './documento-legal.component.html'
 })

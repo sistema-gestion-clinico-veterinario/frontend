@@ -1,10 +1,11 @@
-import { Component, inject, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { PendientesPrivacidadService } from '../../../../core/services/pendientes-privacidad.service';
 import { PendientePrivacidad } from '../../../../models/ui/pendiente-privacidad.model';
 
 @Component({
   selector: 'app-pendientes-privacidad-card',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [RouterLink],
   templateUrl: './pendientes-privacidad-card.component.html'

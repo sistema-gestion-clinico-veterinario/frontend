@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
@@ -19,6 +19,7 @@ import { TAMANO_MAXIMO_PAGINA } from '../../../core/constants/paginacion.constan
 
 @Component({
   selector: 'app-conflicting-appointments-dialog',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [CommonModule, FormsModule, DialogModule, ButtonModule, SelectModule, Textarea, ToastModule],
   providers: [MessageService],

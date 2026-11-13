@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { PrivacidadService } from '../../../core/services/privacidad.service';
@@ -11,6 +11,7 @@ import { DocumentoLegalComponent } from '../../../shared/components/documento-le
 
 @Component({
   selector: 'app-aviso-clinica',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [DatePipe, DocumentoLegalComponent],
   templateUrl: './aviso-clinica.component.html'

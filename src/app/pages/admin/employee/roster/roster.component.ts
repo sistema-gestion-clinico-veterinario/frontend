@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, ViewChild, ElementRef, AfterViewChecked, OnDestroy, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal, ViewChild, ElementRef, AfterViewChecked, OnDestroy, computed } from '@angular/core';
 import type ExcelJS from 'exceljs';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -21,6 +21,7 @@ import { TAMANO_MAXIMO_PAGINA } from '../../../../core/constants/paginacion.cons
 
 @Component({
   selector: 'app-roster',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [CommonModule, RouterModule, SelectModule, ButtonModule, ToastModule, ConfirmDialogModule, FormsModule, ScheduleFormComponent],
   providers: [MessageService, ConfirmationService],

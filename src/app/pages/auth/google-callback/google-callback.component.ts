@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SOFTVET_LOGO_URL } from '../../../core/constants/branding.constants';
 import { AuthService, GOOGLE_PENDING_SLUG_KEY } from '../../../core/services/auth.service';
@@ -8,6 +8,7 @@ import { resolveInitialRoute, resolveDashboardRoute } from '../../../core/routin
 
 @Component({
   selector: 'app-google-callback',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [],
   templateUrl: './google-callback.component.html'

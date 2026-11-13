@@ -1,5 +1,5 @@
 
-import { Component, ElementRef, OnInit, inject, signal, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, OnInit, inject, signal, computed } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
@@ -18,6 +18,7 @@ const INFORMATIVOS: ReadonlyArray<LegalDocumentDTO['tipo']> = ['POLITICA_PRIVACI
 
 @Component({
   selector: 'app-legal-accept',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [FormsModule],
   templateUrl: './legal-accept.component.html',

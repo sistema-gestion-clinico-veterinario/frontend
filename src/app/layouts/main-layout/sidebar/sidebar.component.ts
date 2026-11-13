@@ -1,5 +1,5 @@
 
-import { Component, DestroyRef, HostListener, OnInit, inject, input, computed, signal, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, HostListener, OnInit, inject, input, computed, signal, output } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthStore } from '../../../store/auth.store';
@@ -29,6 +29,7 @@ interface MenuSection extends MenuStructureDTO {
 
 @Component({
   selector: 'app-sidebar',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [RouterLink, RouterLinkActive, SkeletonModule],
   templateUrl: './sidebar.component.html'
