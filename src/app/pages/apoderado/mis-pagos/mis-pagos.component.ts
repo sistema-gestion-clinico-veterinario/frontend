@@ -60,11 +60,11 @@ export class MisPagosComponent implements OnInit {
     });
   }
 
-  get pagosFiltrados(): PagoPortalResponse[] {
+  readonly pagosFiltrados = computed<PagoPortalResponse[]>(() => {
     const estado = this.filtroEstado();
     if (!estado) return this.pagos();
     return this.pagos().filter(p => p.estadoPago === estado);
-  }
+  });
 
   verDetalle(pago: PagoPortalResponse) {
     this.selectedPago.set(pago);

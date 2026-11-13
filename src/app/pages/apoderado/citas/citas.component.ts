@@ -669,19 +669,17 @@ export class CitasComponent implements OnInit {
     return this.vets().find(v => Number(v.value) === id)?.label ?? 'Profesional seleccionado';
   }
 
-  get horariosActivos(): any[] {
-    return this.horariosVeterinario().filter(h => h.activo !== false);
-  }
+  readonly horariosActivos = computed<any[]>(() =>
+    this.horariosVeterinario().filter(h => h.activo !== false)
+  );
 
-  get horariosResumen(): HorarioResumen[] {
-    return this.buildHorarioResumen(this.horariosActivos);
-  }
+  readonly horariosResumen = computed<HorarioResumen[]>(() => this.buildHorarioResumen(this.horariosActivos()));
 
-  get horariosPorDia(): { diaSemana: string; franjas: { label: string; turno: 'manana' | 'tarde' }[] }[] {
+  readonly horariosPorDia = computed<{ diaSemana: string; franjas: { label: string; turno: 'manana' | 'tarde' }[] }[]>(() => {
     const order = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO', 'DOMINGO'];
     const franjasPorDia = new Map<string, Map<string, 'manana' | 'tarde'>>();
 
-    for (const horario of this.horariosResumen) {
+    for (const horario of this.horariosResumen()) {
       const franjas = franjasPorDia.get(horario.diaSemana) ?? new Map<string, 'manana' | 'tarde'>();
       const label = `${horario.horaInicio}–${horario.horaFin}`;
       franjas.set(label, horario.horaInicio < '12:00' ? 'manana' : 'tarde');
@@ -696,15 +694,11 @@ export class CitasComponent implements OnInit {
           .sort(([a], [b]) => a.localeCompare(b))
           .map(([label, turno]) => ({ label, turno }))
       }));
-  }
+  });
 
-  get slotsManana(): string[] {
-    return this.availableSlots().filter(slot => slot < '12:00');
-  }
+  readonly slotsManana = computed<string[]>(() => this.availableSlots().filter(slot => slot < '12:00'));
 
-  get slotsTarde(): string[] {
-    return this.availableSlots().filter(slot => slot >= '12:00');
-  }
+  readonly slotsTarde = computed<string[]>(() => this.availableSlots().filter(slot => slot >= '12:00'));
 
   formatDiaSemana(dia: string): string {
     const labels: Record<string, string> = {

@@ -161,7 +161,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
   readonly empresaSinHorario = computed(() => {
     const vetId = this.citaForm?.get('veterinarioId')?.value;
     if (!vetId) return false;
-    return this.horariosActivos.length === 0;
+    return this.horariosActivos().length === 0;
   });
 
   readonly totalCita = computed(() => {
@@ -2284,13 +2284,11 @@ export class AgendaComponent implements OnInit, OnDestroy {
     return `Fuera del horario del médico. Disponible: ${h.horaInicio} – ${h.horaFin}`;
   }
 
-  get horariosActivos(): HorarioEmpleadoResponse[] {
-    return this.horariosVeterinario().filter(h => h.activo !== false);
-  }
+  readonly horariosActivos = computed<HorarioEmpleadoResponse[]>(() =>
+    this.horariosVeterinario().filter(h => h.activo !== false)
+  );
 
-  get horariosResumen(): HorarioResumen[] {
-    return this.buildHorarioResumen(this.horariosActivos);
-  }
+  readonly horariosResumen = computed<HorarioResumen[]>(() => this.buildHorarioResumen(this.horariosActivos()));
 
   formatDiaSemana(dia: string): string {
     const labels: Record<string, string> = {

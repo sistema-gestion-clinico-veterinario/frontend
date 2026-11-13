@@ -106,12 +106,12 @@
                         class="w-full pl-9 pr-3 border rounded-lg text-sm focus:ring-2 outline-none h-10 transition-all" />
                         @if (razaDropdownOpen()) {
                           <div class="absolute left-0 right-0 top-full z-50 bg-white border border-t-0 border-slate-300 rounded-b-lg max-h-40 overflow-y-auto">
-                            @for (r of razasFiltradas; track r) {
+                            @for (r of razasFiltradas(); track r) {
                               <button type="button" (click)="selectRaza(r.value)"
                                 class="w-full text-left px-3 py-2 text-sm hover:bg-blue-50 transition-colors"
                               [class.font-bold]="mascotaForm.get('razaId')?.value === r.value">{{ r.label }}</button>
                             }
-                            @if (razasFiltradas.length === 0) {
+                            @if (razasFiltradas().length === 0) {
                               <div class="px-3 py-2 text-xs text-slate-400 text-center">
                                 <span>No se encontraron. </span>
                                 <button type="button" (click)="openRazaModal()" class="text-sm text-blue-500 font-bold hover:underline">+ Crear</button>

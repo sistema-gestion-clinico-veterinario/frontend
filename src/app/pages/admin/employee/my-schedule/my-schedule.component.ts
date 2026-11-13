@@ -6,7 +6,8 @@ import { ProfileService } from '../../../../core/services/profile.service';
 import { HorarioEmpleadoResponse } from '../../../../models/response/horario-empleado-response';
 import { ApiResponse } from '../../../../models/response/api-response';
 import { ProfileResponse } from '../../../../models/response/profile-response';
-
+
+import { memoPorObjeto } from '../../../../core/utils/memo-por-objeto';
 @Component({
   selector: 'app-my-schedule',
   standalone: true,
@@ -163,8 +164,7 @@ export class MyScheduleComponent implements OnInit {
     return this.calculateTotalHours(this.horarios);
   }
 
-  get printableWeeks() {
-    const allShifts = this.horarios;
+  private readonly semanasParaImprimir = memoPorObjeto((allShifts: HorarioEmpleadoResponse[]) => {
     const datedShifts = allShifts.filter((s: any) => s.fecha);
     const baseShifts = allShifts.filter((s: any) => !s.fecha);
 
@@ -239,6 +239,10 @@ export class MyScheduleComponent implements OnInit {
     });
 
     return list;
+  });
+
+  get printableWeeks() {
+    return this.semanasParaImprimir(this.horarios);
   }
 
   get currentDateFormatted() {

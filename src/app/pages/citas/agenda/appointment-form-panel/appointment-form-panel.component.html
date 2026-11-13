@@ -408,9 +408,9 @@
                                               <i class="pi pi-clock text-blue-500 text-sm"></i>
                                             </div>
                                             <p class="text-[9px] font-semibold text-slate-400 mb-2">Guia de dias y rangos para elegir fecha.</p>
-                                            @if (context().horariosResumen.length > 0) {
+                                            @if (context().horariosResumen().length > 0) {
                                               <div class="space-y-2 max-h-[150px] overflow-y-auto pr-1">
-                                                @for (horario of context().horariosResumen; track horario) {
+                                                @for (horario of context().horariosResumen(); track horario.diaSemana + horario.horaInicio + horario.horaFin) {
                                                   <div
                                                     class="rounded-lg bg-white border border-slate-100 px-2.5 py-2">
                                                     <div class="flex items-center justify-between gap-2">

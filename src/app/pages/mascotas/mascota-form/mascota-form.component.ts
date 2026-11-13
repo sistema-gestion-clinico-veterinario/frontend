@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormControl, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -579,10 +579,10 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
     pesoCtrl?.updateValueAndValidity({ emitEvent: false });
   }
 
-  get razasFiltradas() {
+  readonly razasFiltradas = computed(() => {
     const filtro = this.razaFilterText().toLowerCase();
     return this.razas().filter(r => r.label.toLowerCase().includes(filtro));
-  }
+  });
 
   get selectedRazaLabel(): string {
     const id = this.mascotaForm.get('razaId')?.value;
