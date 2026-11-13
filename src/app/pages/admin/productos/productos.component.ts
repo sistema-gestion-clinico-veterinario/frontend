@@ -1,4 +1,4 @@
-import { Component, HostListener, OnInit, inject, signal, effect } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostListener, OnInit, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -21,6 +21,7 @@ import { HasPermissionDirective } from '../../../core/directives/has-permission.
 
 @Component({
   selector: 'app-productos',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [CommonModule, FormsModule, PaginatorModule, SkeletonModule, ToastModule, TooltipModule, HasPermissionDirective],
   providers: [MessageService],
@@ -72,7 +73,7 @@ export class ProductosComponent implements OnInit {
   productos         = signal<ProductoResponse[]>([]);
   productosTotal    = signal(0);
   productosPage     = signal(0);
-  pageSize = 10;
+  pageSize = signal(10);
   readonly pageSizeOptions = [10, 20, 50, 100];
 
   categorias        = signal<CategoriaProductoResponse[]>([]);
@@ -125,7 +126,7 @@ export class ProductosComponent implements OnInit {
     if (!this.activeCompanyId) return;
     const cid = this.activeCompanyId ?? undefined;
     const activo = this.estadoFiltro() === 'TODOS' ? undefined : this.estadoFiltro() === 'ACTIVO';
-    this.productoService.listar(cid, page, this.pageSize, this.searchQuery() || undefined, this.categoriaFiltro() ?? undefined, activo).subscribe({
+    this.productoService.listar(cid, page, this.pageSize(), this.searchQuery() || undefined, this.categoriaFiltro() ?? undefined, activo).subscribe({
       next: (res) => {
         this.productos.set(res.data.content || []);
         this.productosTotal.set(this.pageTotal(res.data));
@@ -141,8 +142,8 @@ export class ProductosComponent implements OnInit {
 
   onPageChange(event: any) {
     const nextSize = Number(event.rows) || 10;
-    const nextPage = nextSize === this.pageSize ? Number(event.page) || 0 : 0;
-    this.pageSize = nextSize;
+    const nextPage = nextSize === this.pageSize() ? Number(event.page) || 0 : 0;
+    this.pageSize.set(nextSize);
     this.loadProductos(nextPage);
   }
 

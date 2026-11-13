@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed, effect } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { memoPorObjeto } from '../../../core/utils/memo-por-objeto';
 import {
@@ -43,6 +43,7 @@ import {
 
 @Component({
   selector: 'app-complementario',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
     CommonModule,
@@ -319,7 +320,7 @@ export class ComplementarioComponent implements OnInit {
   servicios           = signal<ServicioResponse[]>([]);
   serviciosTotal      = signal(0);
   serviciosPage       = signal(0);
-  pageSize            = 10;
+  pageSize            = signal(10);
   readonly pageSizeOptions = [10, 20, 50, 100];
   showServicioModal   = signal(false);
   editingServicio     = signal<ServicioResponse | null>(null);
@@ -826,7 +827,7 @@ export class ComplementarioComponent implements OnInit {
   loadEspecialidades(page = this.especialidadesPage()) {
     if (!this.activeCompanyId) return;
     const cid = this.activeCompanyId ?? undefined;
-    this.especialidadService.listar(cid, page, this.pageSize).subscribe({
+    this.especialidadService.listar(cid, page, this.pageSize()).subscribe({
       next: (res) => {
         this.especialidades.set(res.data.content ?? res.data);
         this.especialidadesTotal.set(this.pageTotal(res.data));
@@ -897,7 +898,7 @@ export class ComplementarioComponent implements OnInit {
   loadTiposEmpleado(page = this.tiposEmpleadoPage()) {
     if (!this.activeCompanyId) return;
     const cid = this.activeCompanyId ?? undefined;
-    this.tipoEmpleadoService.listar(cid, page, this.pageSize).subscribe({
+    this.tipoEmpleadoService.listar(cid, page, this.pageSize()).subscribe({
       next: (res) => {
         this.tiposEmpleado.set(res.data.content ?? res.data);
         this.tiposEmpleadoTotal.set(this.pageTotal(res.data));
@@ -992,7 +993,7 @@ export class ComplementarioComponent implements OnInit {
   loadServicios(page = this.serviciosPage()) {
     if (!this.activeCompanyId) return;
     const cid = this.activeCompanyId ?? undefined;
-    this.servicioService.listar(cid, page, this.pageSize).subscribe({
+    this.servicioService.listar(cid, page, this.pageSize()).subscribe({
       next: (res) => {
         // Filter out soft-deleted services so they do not show up in the active list
         const activeList = (res.data.content || []).filter((s: ServicioResponse) => s.activo);
@@ -1078,36 +1079,36 @@ export class ComplementarioComponent implements OnInit {
 
   onEspecialidadesPageChange(event: any) {
     const nextSize = Number(event.rows) || 10;
-    const nextPage = nextSize === this.pageSize ? Number(event.page) || 0 : 0;
-    this.pageSize = nextSize;
+    const nextPage = nextSize === this.pageSize() ? Number(event.page) || 0 : 0;
+    this.pageSize.set(nextSize);
     this.loadEspecialidades(nextPage);
   }
 
   onTiposEmpleadoPageChange(event: any) {
     const nextSize = Number(event.rows) || 10;
-    const nextPage = nextSize === this.pageSize ? Number(event.page) || 0 : 0;
-    this.pageSize = nextSize;
+    const nextPage = nextSize === this.pageSize() ? Number(event.page) || 0 : 0;
+    this.pageSize.set(nextSize);
     this.loadTiposEmpleado(nextPage);
   }
 
   onServiciosPageChange(event: any) {
     const nextSize = Number(event.rows) || 10;
-    const nextPage = nextSize === this.pageSize ? Number(event.page) || 0 : 0;
-    this.pageSize = nextSize;
+    const nextPage = nextSize === this.pageSize() ? Number(event.page) || 0 : 0;
+    this.pageSize.set(nextSize);
     this.loadServicios(nextPage);
   }
 
   onVacunasPageChange(event: any) {
     const nextSize = Number(event.rows) || 10;
-    const nextPage = nextSize === this.pageSize ? Number(event.page) || 0 : 0;
-    this.pageSize = nextSize;
+    const nextPage = nextSize === this.pageSize() ? Number(event.page) || 0 : 0;
+    this.pageSize.set(nextSize);
     this.loadVacunas(nextPage);
   }
 
   onDesparasitantesPageChange(event: any) {
     const nextSize = Number(event.rows) || 10;
-    const nextPage = nextSize === this.pageSize ? Number(event.page) || 0 : 0;
-    this.pageSize = nextSize;
+    const nextPage = nextSize === this.pageSize() ? Number(event.page) || 0 : 0;
+    this.pageSize.set(nextSize);
     this.loadDesparasitantes(nextPage);
   }
 
@@ -1206,7 +1207,7 @@ export class ComplementarioComponent implements OnInit {
   loadVacunas(page = this.vacunasPage()) {
     if (!this.activeCompanyId) return;
     this.loadingStore.show();
-    this.controlPreventivoService.listarTiposVacunaPorCompany(page, this.pageSize).subscribe({
+    this.controlPreventivoService.listarTiposVacunaPorCompany(page, this.pageSize()).subscribe({
       next: (res) => {
         this.vacunas.set(res.data?.content ?? []);
         this.vacunasTotal.set(res.data?.page?.totalElements ?? res.data?.totalElements ?? 0);
@@ -1220,7 +1221,7 @@ export class ComplementarioComponent implements OnInit {
   loadDesparasitantes(page = this.desparasitantesPage()) {
     if (!this.activeCompanyId) return;
     this.loadingStore.show();
-    this.controlPreventivoService.listarTiposDesparasitantePorCompany(page, this.pageSize).subscribe({
+    this.controlPreventivoService.listarTiposDesparasitantePorCompany(page, this.pageSize()).subscribe({
       next: (res) => {
         this.desparasitantes.set(res.data?.content ?? []);
         this.desparasitantesTotal.set(res.data?.page?.totalElements ?? res.data?.totalElements ?? 0);

@@ -151,10 +151,10 @@
           @if (categoriasTotal() > 0) {
             <div class="border-t border-slate-100 px-4">
               <p-paginator
-                [rows]="pageSize"
+                [rows]="pageSize()"
                 [rowsPerPageOptions]="pageSizeOptions"
                 [totalRecords]="categoriasTotal()"
-                [first]="categoriasPage() * pageSize"
+                [first]="categoriasPage() * pageSize()"
                 [showCurrentPageReport]="true"
                 currentPageReportTemplate="{first}–{last} de {totalRecords}"
                 (onPageChange)="onCategoriasPageChange($event)"
@@ -226,10 +226,10 @@
           @if (unidadesTotal() > 0) {
             <div class="border-t border-slate-100 px-4">
               <p-paginator
-                [rows]="pageSize"
+                [rows]="pageSize()"
                 [rowsPerPageOptions]="pageSizeOptions"
                 [totalRecords]="unidadesTotal()"
-                [first]="unidadesPage() * pageSize"
+                [first]="unidadesPage() * pageSize()"
                 [showCurrentPageReport]="true"
                 currentPageReportTemplate="{first}–{last} de {totalRecords}"
                 (onPageChange)="onUnidadesPageChange($event)"
@@ -289,7 +289,7 @@
             </table>
           </div>
           @if (marcasTotal() > 0) {
-            <div class="border-t border-slate-100 px-4"><p-paginator [rows]="pageSize" [rowsPerPageOptions]="pageSizeOptions" [totalRecords]="marcasTotal()" [first]="marcasPage() * pageSize" [showCurrentPageReport]="true" currentPageReportTemplate="{first}–{last} de {totalRecords}" (onPageChange)="onMarcasPageChange($event)" styleClass="!border-none !bg-transparent !py-3"></p-paginator></div>
+            <div class="border-t border-slate-100 px-4"><p-paginator [rows]="pageSize()" [rowsPerPageOptions]="pageSizeOptions" [totalRecords]="marcasTotal()" [first]="marcasPage() * pageSize()" [showCurrentPageReport]="true" currentPageReportTemplate="{first}–{last} de {totalRecords}" (onPageChange)="onMarcasPageChange($event)" styleClass="!border-none !bg-transparent !py-3"></p-paginator></div>
           }
         </div>
       }

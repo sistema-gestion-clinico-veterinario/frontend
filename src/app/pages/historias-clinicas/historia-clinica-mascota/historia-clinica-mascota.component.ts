@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject, signal, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, OnDestroy, inject, signal, computed } from '@angular/core';
 import { firstValueFrom, forkJoin } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -35,6 +35,7 @@ import { MotivoRecursoNoDisponible, RecursoNoDisponibleComponent, motivoDeError 
 
 @Component({
   selector: 'app-historia-clinica-mascota',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [CommonModule, FormsModule, ToastModule, ArchivoModalsComponent, DiagnosticoIaComponent, RecursoNoDisponibleComponent],
   providers: [MessageService],

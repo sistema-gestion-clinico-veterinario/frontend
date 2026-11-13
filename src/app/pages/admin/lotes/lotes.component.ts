@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, effect } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -17,6 +17,7 @@ import { HasPermissionDirective } from '../../../core/directives/has-permission.
 
 @Component({
   selector: 'app-lotes',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [CommonModule, FormsModule, ReactiveFormsModule, PaginatorModule, SkeletonModule, ToastModule, HasPermissionDirective],
   providers: [MessageService],
@@ -65,7 +66,7 @@ export class LotesComponent implements OnInit {
   lotes           = signal<LoteResponse[]>([]);
   lotesTotal      = signal(0);
   lotesPage       = signal(0);
-  pageSize = 10;
+  pageSize = signal(10);
   readonly pageSizeOptions = [10, 20, 50, 100];
 
   productos       = signal<ProductoResponse[]>([]);
@@ -103,7 +104,7 @@ export class LotesComponent implements OnInit {
 
   loadLotes(page = this.lotesPage()) {
     if (!this.activeCompanyId) return;
-    this.loteService.listar(this.activeCompanyId ?? undefined, this.searchQuery() || undefined, page, this.pageSize).subscribe({
+    this.loteService.listar(this.activeCompanyId ?? undefined, this.searchQuery() || undefined, page, this.pageSize()).subscribe({
       next: (res) => {
         this.lotes.set(res.data.content || []);
         this.lotesTotal.set(this.pageTotal(res.data));
@@ -132,8 +133,8 @@ export class LotesComponent implements OnInit {
 
   onPageChange(event: any) {
     const nextSize = Number(event.rows) || 10;
-    const nextPage = nextSize === this.pageSize ? Number(event.page) || 0 : 0;
-    this.pageSize = nextSize;
+    const nextPage = nextSize === this.pageSize() ? Number(event.page) || 0 : 0;
+    this.pageSize.set(nextSize);
     this.loadLotes(nextPage);
   }
 

@@ -39,12 +39,26 @@ import { SidebarComponent } from '../layouts/main-layout/sidebar/sidebar.compone
 import { SolicitudesCancelacionComponent } from '../pages/admin/privacidad/solicitudes/solicitudes-cancelacion.component';
 import { SugerenciasControlComponent } from '../pages/citas/agenda/sugerencias-control/sugerencias-control.component';
 import { VentanasComponent } from '../pages/admin/ventanas/ventanas.component';
+import { CategoriasProductoComponent } from '../pages/admin/categorias-producto/categorias-producto.component';
+import { ClientComponent } from '../pages/admin/client/client.component';
+import { ComplementarioComponent } from '../pages/admin/complementario/complementario.component';
+import { EmployeeComponent } from '../pages/admin/employee/employee.component';
+import { HistoriaClinicaMascotaComponent } from '../pages/historias-clinicas/historia-clinica-mascota/historia-clinica-mascota.component';
+import { LotesComponent } from '../pages/admin/lotes/lotes.component';
+import { ProductosComponent } from '../pages/admin/productos/productos.component';
 import { AppComponent } from '../app.component';
 import { MainLayoutComponent } from '../layouts/main-layout/main-layout.component';
 
 type ComponenteConDefinicion = { ɵcmp: { onPush: boolean } };
 
 const CONVERTIDOS: Record<string, unknown> = {
+  CategoriasProductoComponent,
+  ClientComponent,
+  ComplementarioComponent,
+  EmployeeComponent,
+  HistoriaClinicaMascotaComponent,
+  LotesComponent,
+  ProductosComponent,
   AgendaFullCalendarComponent,
   ApoderadoDashboardComponent,
   ApoderadoPortalComponent,
