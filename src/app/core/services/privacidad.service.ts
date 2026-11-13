@@ -1,7 +1,9 @@
 import { HttpClient, HttpContext } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { AuthStore } from '../../store/auth.store';
+import { TimedRequestCache } from '../utils/timed-request-cache';
 import { ApiResponse } from '../../models/response/api-response';
 import {
   AvisoPublico,
@@ -18,6 +20,8 @@ import { SKIP_GLOBAL_LOADING } from '../interceptors/http-context.tokens';
 export class PrivacidadService {
   private readonly http = inject(HttpClient);
   private readonly base = environment.apiUrl;
+  private readonly authStore = inject(AuthStore);
+  private readonly cacheDeMiEstado = new TimedRequestCache(15 * 1000);
 
   avisoPublico(slug: string, audiencia: AudienciaAvisoPrivacidad = 'PROPIETARIOS_Y_AUTORIZADOS'): Observable<ApiResponse<AvisoPublico>> {
     return this.http.get<ApiResponse<AvisoPublico>>(
@@ -63,23 +67,31 @@ export class PrivacidadService {
   publicar(campos: CamposAvisoPrivacidad, confirmoRevisionLegal: boolean,
            audiencia: AudienciaAvisoPrivacidad = 'PROPIETARIOS_Y_AUTORIZADOS'): Observable<ApiResponse<AvisoVersion>> {
     return this.http.post<ApiResponse<AvisoVersion>>(
-      `${this.base}/admin/privacidad/aviso`, { audiencia, campos, confirmoRevisionLegal });
-  }
-
-  miEstado(): Observable<ApiResponse<ConsentimientoEstado>> {
-    return this.http.get<ApiResponse<ConsentimientoEstado>>(
-      `${this.base}/privacidad/mi-estado`,
-      { context: new HttpContext().set(SKIP_GLOBAL_LOADING, true) }
+      `${this.base}/admin/privacidad/aviso`, { audiencia, campos, confirmoRevisionLegal }).pipe(
+      tap(() => this.cacheDeMiEstado.clear())
     );
   }
 
+  miEstado(): Observable<ApiResponse<ConsentimientoEstado>> {
+    const clinica = this.authStore.companyId() ?? this.authStore.selectedEnterprise()?.establishmentId ?? null;
+    const clave = [clinica, this.authStore.activeRoleId(), this.authStore.nombreCompleto()].join('|');
+    return this.cacheDeMiEstado.get(clave, () => this.http.get<ApiResponse<ConsentimientoEstado>>(
+      `${this.base}/privacidad/mi-estado`,
+      { context: new HttpContext().set(SKIP_GLOBAL_LOADING, true) }
+    ));
+  }
+
   leiElAviso(): Observable<ApiResponse<ConsentimientoEstado>> {
-    return this.http.post<ApiResponse<ConsentimientoEstado>>(`${this.base}/privacidad/enterado`, {});
+    return this.http.post<ApiResponse<ConsentimientoEstado>>(`${this.base}/privacidad/enterado`, {}).pipe(
+      tap(() => this.cacheDeMiEstado.clear())
+    );
   }
 
   decidir(finalidad: string, otorgar: boolean, motivo?: string): Observable<ApiResponse<ConsentimientoEstado>> {
     return this.http.put<ApiResponse<ConsentimientoEstado>>(
-      `${this.base}/privacidad/finalidades/${finalidad}`, { otorgar, motivo: motivo ?? null });
+      `${this.base}/privacidad/finalidades/${finalidad}`, { otorgar, motivo: motivo ?? null }).pipe(
+      tap(() => this.cacheDeMiEstado.clear())
+    );
   }
 
   estadoDelCliente(apoderadoId: number): Observable<ApiResponse<ConsentimientoEstado>> {
