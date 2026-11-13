@@ -28,6 +28,7 @@ export class MainLayoutComponent {
 
   sidebarCollapsed = signal(false);
   mobileSidebarOpen = signal(false);
+  mobileSidebarMontado = signal(false);
 
   private readonly passwordModalDismissed = signal(sessionStorage.getItem(PASSWORD_MODAL_DISMISSED_KEY) === '1');
   readonly showPasswordModal = computed(() =>
@@ -58,6 +59,7 @@ export class MainLayoutComponent {
 
   toggleSidebar() {
     if (window.innerWidth < 1024) {
+      this.mobileSidebarMontado.set(true);
       this.mobileSidebarOpen.update(v => !v);
       return;
     }
