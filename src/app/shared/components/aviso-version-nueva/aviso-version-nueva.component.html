@@ -1,0 +1,6 @@
+@if (version.disponible()) {
+  <div role="alert" class="fixed inset-x-0 top-0 z-[10000] flex flex-wrap items-center justify-center gap-3 bg-blue-700 px-4 py-3 text-sm font-semibold text-white">
+    <span>Hay una versión nueva de SoftVet. Recarga la página para seguir trabajando.</span>
+    <button type="button" class="rounded-md bg-white px-3 py-1 text-sm font-bold text-blue-700 hover:bg-blue-50" (click)="version.recargar()">Recargar</button>
+  </div>
+}
