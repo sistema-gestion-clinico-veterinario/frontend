@@ -1,18 +1,15 @@
 import { AgendaFullCalendarComponent } from '../pages/citas/agenda/agenda-full-calendar/agenda-full-calendar.component';
 import { ApoderadoDashboardComponent } from '../pages/apoderado/dashboard/apoderado-dashboard.component';
-import { ApoderadoPortalComponent } from '../pages/apoderado-portal/apoderado-portal.component';
 import { ArchivoModalsComponent } from '../pages/historias-clinicas/form-hc/archivo-modals/archivo-modals.component';
 import { AvisoClinicaComponent } from '../pages/legal/aviso-clinica/aviso-clinica.component';
 import { AvisoPublicoComponent } from '../pages/legal/aviso-publico/aviso-publico.component';
 import { CancelarDatosCardComponent } from '../pages/profile/cancelar-datos/cancelar-datos-card.component';
-import { ChangePasswordModalComponent } from '../shared/components/admin/change-password-modal/change-password-modal.component';
 import { CitaDetailPanelComponent } from '../pages/citas/agenda/cita-detail-panel/cita-detail-panel.component';
 import { CloseAccountCardComponent } from '../pages/profile/close-account/close-account-card.component';
 import { CodigoVerificacionComponent } from '../shared/components/codigo-verificacion/codigo-verificacion.component';
 import { ConfirmEmailChangeComponent } from '../pages/auth/confirm-email-change/confirm-email-change.component';
 import { ConflictingAppointmentsDialogComponent } from '../shared/components/conflicting-appointments-dialog/conflicting-appointments-dialog.component';
 import { DashboardComponent } from '../pages/dashboard/dashboard.component';
-import { DeleteAppointmentDialogComponent } from '../pages/citas/agenda/delete-appointment-dialog/delete-appointment-dialog.component';
 import { DetalleMascotaComponent } from '../pages/mascotas/detalle-mascota/detalle-mascota.component';
 import { DiagnosticoIaComponent } from '../pages/historias-clinicas/historia-clinica-mascota/diagnostico-ia/diagnostico-ia.component';
 import { DocumentoLegalComponent } from '../shared/components/documento-legal/documento-legal.component';
@@ -29,7 +26,6 @@ import { MisRecetasComponent } from '../pages/apoderado/mis-recetas/mis-recetas.
 import { NavbarComponent } from '../layouts/main-layout/navbar/navbar.component';
 import { NotFoundComponent } from '../pages/errors/not-found/not-found.component';
 import { PaymentDialogComponent } from '../pages/citas/agenda/payment-dialog/payment-dialog.component';
-import { PendientesPrivacidadCardComponent } from '../layouts/main-layout/sidebar/pendientes-privacidad-card/pendientes-privacidad-card.component';
 import { ProcessLoadingPanelComponent } from '../shared/components/process-loading-panel/process-loading-panel.component';
 import { RecursoNoDisponibleComponent } from '../shared/components/recurso-no-disponible/recurso-no-disponible.component';
 import { RevisionAccesosComponent } from '../pages/admin/revision-accesos/revision-accesos.component';
@@ -61,19 +57,16 @@ const CONVERTIDOS: Record<string, unknown> = {
   ProductosComponent,
   AgendaFullCalendarComponent,
   ApoderadoDashboardComponent,
-  ApoderadoPortalComponent,
   ArchivoModalsComponent,
   AvisoClinicaComponent,
   AvisoPublicoComponent,
   CancelarDatosCardComponent,
-  ChangePasswordModalComponent,
   CitaDetailPanelComponent,
   CloseAccountCardComponent,
   CodigoVerificacionComponent,
   ConfirmEmailChangeComponent,
   ConflictingAppointmentsDialogComponent,
   DashboardComponent,
-  DeleteAppointmentDialogComponent,
   DetalleMascotaComponent,
   DiagnosticoIaComponent,
   DocumentoLegalComponent,
@@ -90,7 +83,6 @@ const CONVERTIDOS: Record<string, unknown> = {
   NavbarComponent,
   NotFoundComponent,
   PaymentDialogComponent,
-  PendientesPrivacidadCardComponent,
   ProcessLoadingPanelComponent,
   RecursoNoDisponibleComponent,
   RevisionAccesosComponent,

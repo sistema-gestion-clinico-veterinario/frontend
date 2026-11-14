@@ -151,10 +151,6 @@ export class RolesComponent implements OnInit {
     });
   }
 
-  isSuperAdminRole(role: Role | null): boolean {
-    return role?.purpose === 'PLATFORM_ADMIN';
-  }
-
   readonly rootVentanas = computed(() => this.ventanaPermisos().filter(v => v.parentId === null));
 
   private readonly hijosPorPadre = computed(() => {
@@ -321,11 +317,6 @@ export class RolesComponent implements OnInit {
     this.editingDescValue.set(role.descripcion ?? '');
     this.editingScopeValue.set(role.scope);
     this.isEditingName.set(true);
-  }
-
-  cancelEditName() {
-    this.isEditingName.set(false);
-    this.editingNameValue.set('');
   }
 
   save() {

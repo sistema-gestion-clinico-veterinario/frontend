@@ -26,7 +26,6 @@ import { PrivacidadService } from '../../../core/services/privacidad.service';
 import { AvisoPublico } from '../../../models/privacy/privacidad.model';
 import { HistoriaClinicaService } from '../../../core/services/historia-clinica.service';
 import { Subscription, catchError, debounceTime, distinctUntilChanged, of, switchMap } from 'rxjs';
-import { TAMANO_MAXIMO_PAGINA } from '../../../core/constants/paginacion.constants';
 
 interface ApoderadoOption {
   label: string;
@@ -151,11 +150,6 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
     { label: 'DNI',              value: 'DNI' },
     { label: 'Carnet Extranjería', value: 'CARNET_EXTRANJERIA' },
     { label: 'Pasaporte',        value: 'PASAPORTE' },
-  ];
-
-  readonly generoOpciones = [
-    { label: 'Masculino', value: 'MASCULINO' },
-    { label: 'Femenino',  value: 'FEMENINO' },
   ];
 
   mascotaForm: FormGroup = this.fb.group({
@@ -448,15 +442,6 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
     queueMicrotask(() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
   }
 
-  enfocarResponsable(): void {
-    this.seccionFormulario.set('propietario');
-    queueMicrotask(() => {
-      const input = document.getElementById('responsable-search') as HTMLInputElement | null;
-      input?.focus();
-      input?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    });
-  }
-
   abrirSeccionClinica(seccion: 'historial' | 'documentos'): void {
     const uuid = this.mascotaUuid();
     const mascotaId = this.editingId();
@@ -583,13 +568,6 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
     const filtro = this.razaFilterText().toLowerCase();
     return this.razas().filter(r => r.label.toLowerCase().includes(filtro));
   });
-
-  get selectedRazaLabel(): string {
-    const id = this.mascotaForm.get('razaId')?.value;
-    if (!id) return '';
-    const found = this.razas().find(r => r.value === id);
-    return found ? found.label : '';
-  }
 
   onRazaInputBlur() {
     setTimeout(() => this.razaDropdownOpen.set(false), 250);
@@ -941,24 +919,6 @@ export class MascotaFormComponent implements OnInit, OnDestroy {
       error: (err) => {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo crear el cliente.' });
         this.savingCliente.set(false);
-      }
-    });
-  }
-
-  loadApoderados() {
-    const companyId = this.activeCompanyId;
-    if (!companyId) {
-      this.apoderados.set([]);
-      return;
-    }
-    this.apoderadoService.listar(companyId, undefined, undefined, 0, TAMANO_MAXIMO_PAGINA).subscribe({
-      next: (res) => {
-        this.apoderados.set(
-          res.data.content.map(c => ({
-            label: `${c.nombre} ${c.apellido}`,
-            value: c.id
-          }))
-        );
       }
     });
   }

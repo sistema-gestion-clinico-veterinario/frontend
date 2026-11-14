@@ -136,20 +136,13 @@ export class CajaComponent implements OnInit, OnDestroy {
   productoUsoExcepcional = signal<ProductoResponse | null>(null);
   justificacionUsoExcepcional = '';
 
-  mostrarVentaRapida = signal(false);
   guardandoVentaRapida = signal(false);
   carritoVentaRapida = signal<{ producto: ProductoResponse; cantidad: number }[]>([]);
-  productoVentaRapidaId: number | null = null;
-  cantidadVentaRapida = 1;
   clienteQuery = '';
   clientesEncontrados = signal<ApoderadoListResponse[]>([]);
   buscandoClientes = signal(false);
   clienteSeleccionado: ApoderadoListResponse | null = null;
   clienteNombreLibre = '';
-  pagoVentaRapida: { metodoPago: MetodoPago; montoRecibido: number | null } = {
-    metodoPago: 'EFECTIVO', montoRecibido: null
-  };
-
   totalVentaRapida = computed(() =>
     this.carritoVentaRapida().reduce((sum, linea) => sum + linea.producto.precio * linea.cantidad, 0));
   carritoRequiereReceta = computed(() =>
@@ -385,47 +378,6 @@ export class CajaComponent implements OnInit, OnDestroy {
       return;
     }
     this.cobrarVentaRapida();
-  }
-
-  seleccionarProducto(productoId: number | null) {
-    const producto = this.productos().find(p => p.id === productoId);
-    if (!producto) return;
-    this.nuevoDetalle.descripcion = producto.nombre;
-    this.nuevoDetalle.precioUnitario = producto.precio;
-    this.nuevoDetalle.tipo = producto.categoriaNombre?.toUpperCase().includes('MEDICAMENTO') ? 'MEDICAMENTO' : 'INSUMO';
-    this.nuevoDetalle.productoId = producto.id;
-  }
-
-  abrirVentaRapida() {
-    this.carritoVentaRapida.set([]);
-    this.productoVentaRapidaId = null;
-    this.cantidadVentaRapida = 1;
-    this.clienteQuery = '';
-    this.clientesEncontrados.set([]);
-    this.clienteSeleccionado = null;
-    this.clienteNombreLibre = '';
-    this.pagoVentaRapida = { metodoPago: 'EFECTIVO', montoRecibido: null };
-    this.mostrarVentaRapida.set(true);
-  }
-
-  cerrarVentaRapida() {
-    this.mostrarVentaRapida.set(false);
-  }
-
-  agregarAlCarritoVentaRapida() {
-    const producto = this.productos().find(p => p.id === this.productoVentaRapidaId);
-    if (!producto || this.cantidadVentaRapida < 1) return;
-
-    const carrito = [...this.carritoVentaRapida()];
-    const existente = carrito.find(l => l.producto.id === producto.id);
-    if (existente) {
-      existente.cantidad += this.cantidadVentaRapida;
-    } else {
-      carrito.push({ producto, cantidad: this.cantidadVentaRapida });
-    }
-    this.carritoVentaRapida.set(carrito);
-    this.productoVentaRapidaId = null;
-    this.cantidadVentaRapida = 1;
   }
 
   quitarDelCarritoVentaRapida(index: number) {

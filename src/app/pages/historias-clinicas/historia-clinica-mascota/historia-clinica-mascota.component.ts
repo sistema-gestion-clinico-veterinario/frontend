@@ -219,11 +219,6 @@ export class HistoriaClinicaMascotaComponent implements OnInit, OnDestroy {
     return { primerDia, dias };
   });
 
-  mesNombre(mes: number): string {
-    return ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-            'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'][mes];
-  }
-
   calendarioMesAnterior() {
     const m = this.calendarioMes();
     if (m === 0) { this.calendarioMes.set(11); this.calendarioAnio.update(a => a - 1); }

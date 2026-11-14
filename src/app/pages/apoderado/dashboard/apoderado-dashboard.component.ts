@@ -44,11 +44,6 @@ export class ApoderadoDashboardComponent implements OnInit {
   canViewMiHistorial  = computed(() => this.authStore.hasAccess('VISTA_MI_HISTORIAL', 'leer'));
   consentimientoVetDisponible = signal(false);
 
-  totalPagos      = computed(() => this.pagos().length);
-  pagosPagados    = computed(() => this.pagos().filter(p => p.estado === 'PAID' || p.estado === 'COMPLETADO').length);
-  pagosPendientes = computed(() => this.pagos().filter(p => p.estado === 'PENDING' || p.estado === 'PENDING_TRANSFER').length);
-  totalMonto      = computed(() => this.pagos().reduce((sum, p) => sum + (p.monto ?? 0), 0));
-
   totalMascotas   = computed(() => this.mascotas().length);
   mascotasActivas = computed(() => this.mascotas().filter(m => m.activo !== false).length);
 

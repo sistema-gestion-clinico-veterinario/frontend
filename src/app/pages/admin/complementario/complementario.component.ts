@@ -256,29 +256,6 @@ export class ComplementarioComponent implements OnInit {
     );
   }
 
-  confirmarCambiarEstadoTipo(item: any) {
-    const nuevoEstado = !item.estado;
-    this.openConfirm(
-      nuevoEstado ? 'Activar tipo de empleado' : 'Desactivar tipo de empleado',
-      'El tipo de empleado "' + item.nombre + '" quedara ' + (nuevoEstado ? 'activo' : 'inactivo') + '.',
-      'cambiar-estado-tipo',
-      item,
-      'warning',
-      nuevoEstado ? 'Activar' : 'Desactivar'
-    );
-  }
-
-  confirmarEliminarTipoEmpleado(item: any) {
-    this.openConfirm(
-      'Eliminar tipo de empleado',
-      'Se eliminara el tipo de empleado "' + item.nombre + '". Esta accion no se puede deshacer.',
-      'eliminar-tipo-empleado',
-      item,
-      'danger',
-      'Eliminar'
-    );
-  }
-
   confirmarGuardarServicio() {
     if (this.servicioForm.invalid) { this.servicioForm.markAllAsTouched(); return; }
     const nombre = this.servicioForm.get('nombre')?.value?.trim();
@@ -769,10 +746,6 @@ export class ComplementarioComponent implements OnInit {
       },
       error: error => this.messageService.add({ severity: 'error', summary: 'Campo clínico', detail: error.error?.message || 'No se pudo crear el campo.' })
     });
-  }
-
-  clinicalStatusLabel(status: ClinicalTemplateSummary['status']): string {
-    return status === 'PUBLISHED' ? 'Vigente' : status === 'DRAFT' ? 'Borrador' : 'Anterior';
   }
 
   isCoreClinicalField(field: ClinicalTemplateField): boolean {
@@ -1350,28 +1323,6 @@ export class ComplementarioComponent implements OnInit {
         this.loadingStore.hide();
       }
     });
-  }
-
-  confirmarEliminarVacuna(item: any) {
-    this.openConfirm(
-      'Eliminar vacuna',
-      '¿Está seguro de eliminar la vacuna «' + item.nombre + '»? Esta acción no se puede deshacer.',
-      'eliminar-vacuna',
-      item,
-      'danger',
-      'Eliminar'
-    );
-  }
-
-  confirmarEliminarDesparasitante(item: any) {
-    this.openConfirm(
-      'Eliminar desparasitante',
-      '¿Está seguro de eliminar el desparasitante «' + item.nombre + '»? Esta acción no se puede deshacer.',
-      'eliminar-desparasitante',
-      item,
-      'danger',
-      'Eliminar'
-    );
   }
 
 }

@@ -139,10 +139,6 @@ expandedGroups = signal<Set<string>>(new Set());
   activeVistas = computed(() => this.vistas().filter(v => v.activo).length);
   inactiveVistas = computed(() => this.vistas().filter(v => !v.activo).length);
   groupsCount = computed(() => this.displayGroups().filter(g => g.key !== STANDALONE_KEY).length);
-  standaloneCount = computed(() => this.displayGroups().find(g => g.key === STANDALONE_KEY)?.items.length ?? 0);
-
-  openGroup = signal<string | null>(null);
-
  toggleGroup(groupKey: string) {
   this.expandedGroups.update(groups => {
     const newGroups = new Set(groups);

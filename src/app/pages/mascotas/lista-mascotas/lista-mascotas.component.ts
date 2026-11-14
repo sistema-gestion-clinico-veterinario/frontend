@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject, signal, computed } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -20,6 +21,9 @@ import { LoadingStore } from '../../../store/loading.store';
 import { AuthStore } from '../../../store/auth.store';
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 import { InputFilterDirective } from '../../../core/directives/input-filter.directive';
+import { leerPaginas } from '../../../core/utils/leer-todas-las-paginas';
+
+const TAMANO_PAGINA_EXPORTACION = 100;
 
 @Component({
   selector: 'app-lista-mascotas',
@@ -47,6 +51,8 @@ export class ListaMascotasComponent implements OnInit {
   readonly mediaService     = inject(MediaService);
   private readonly companyService   = inject(CompanyService);
   private readonly messageService   = inject(MessageService);
+  private readonly destroyRef       = inject(DestroyRef);
+  readonly exportando               = signal(false);
   private readonly hcService        = inject(HistoriaClinicaService);
   private readonly router           = inject(Router);
   private readonly route            = inject(ActivatedRoute);
@@ -223,10 +229,6 @@ export class ListaMascotasComponent implements OnInit {
     this.loadMascotas(page);
   }
 
-  onSearch(event: KeyboardEvent) {
-    if (event.key === 'Enter') this.onFilterChange();
-  }
-
   private normalizeAndValidateFilters(): boolean {
     const nombre = this.normalizeNameFilter(this.searchNombre);
     this.searchNombre = nombre;
@@ -260,31 +262,31 @@ export class ListaMascotasComponent implements OnInit {
   }
 
   async descargarMascotas() {
+    if (this.exportando()) return;
+    this.exportando.set(true);
     try {
       const nombre = this.normalizeNameFilter(this.searchNombre) || undefined;
-      const mascotas: MascotaResponse[] = [];
-      const pageSize = 10;
-      let page = 0;
-      let totalPages = 1;
-
-      while (page < totalPages) {
-        const res = await firstValueFrom(this.mascotaService.listar(
+      const lectura = await firstValueFrom(
+        leerPaginas<MascotaResponse>(pagina => this.mascotaService.listar(
           this.activeCompanyId ?? undefined,
           nombre,
           this.filterEspecie || undefined,
-          page,
-          pageSize,
+          pagina,
+          TAMANO_PAGINA_EXPORTACION,
           this.filterActivo ?? undefined,
           true
-        ));
-        const data = res.data;
-        mascotas.push(...(data.content ?? []));
-        totalPages = data.page?.totalPages ?? data.totalPages ?? Math.ceil(
-          (data.page?.totalElements ?? data.totalElements ?? mascotas.length) / pageSize
-        );
-        page += 1;
+        )).pipe(takeUntilDestroyed(this.destroyRef)),
+        { defaultValue: null }
+      );
+      if (!lectura) return;
 
-        if (!data.content?.length) break;
+      const mascotas = lectura.elementos;
+      if (lectura.truncado) {
+        this.messageService.add({
+          severity: 'info',
+          summary: 'Descarga parcial',
+          detail: `Se descargaron las primeras ${mascotas.length.toLocaleString('es-PE')} mascotas. Filtra por especie o estado para descargar el resto.`
+        });
       }
 
       if (!mascotas.length) {
@@ -326,6 +328,8 @@ export class ListaMascotasComponent implements OnInit {
       URL.revokeObjectURL(link.href);
     } catch {
       this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron descargar las mascotas' });
+    } finally {
+      this.exportando.set(false);
     }
   }
 

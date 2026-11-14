@@ -23,18 +23,6 @@ export class PrivacidadService {
   private readonly authStore = inject(AuthStore);
   private readonly cacheDeMiEstado = new TimedRequestCache(15 * 1000);
 
-  avisoPublico(slug: string, audiencia: AudienciaAvisoPrivacidad = 'PROPIETARIOS_Y_AUTORIZADOS'): Observable<ApiResponse<AvisoPublico>> {
-    return this.http.get<ApiResponse<AvisoPublico>>(
-      `${this.base}/public/privacidad/${encodeURIComponent(slug)}`, { params: { audiencia } });
-  }
-
-  avisoPublicoVersion(slug: string, version: number,
-                      audiencia: AudienciaAvisoPrivacidad): Observable<ApiResponse<AvisoPublico>> {
-    return this.http.get<ApiResponse<AvisoPublico>>(
-      `${this.base}/public/privacidad/${encodeURIComponent(slug)}/version/${version}`,
-      { params: { audiencia } });
-  }
-
   centroLegalPublico(slug: string, audiencia: AudienciaAvisoPrivacidad,
                      version?: number): Observable<ApiResponse<CentroLegalPublico>> {
     const params: Record<string, string | number> = { audiencia };

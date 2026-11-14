@@ -266,10 +266,6 @@ export class NavbarComponent implements OnInit {
     this.router.navigate(['/password-change']);
   }
 
-  goToLegalAcceptance() {
-    this.router.navigate(['/legal/accept']);
-  }
-
   logout() {
     // El SlugUrlSerializer conoce el slug actual y lo antepone solo en la
     // barra de direcciones - al cerrar sesion se vuelve a la pantalla de

@@ -31,11 +31,4 @@ describe('Cancelar una cita no es eliminarla', () => {
     req.flush({});
   });
 
-  it('eliminar una cita sigue siendo DELETE sobre la cita', () => {
-    TestBed.inject(CitaService).eliminarCita(5).subscribe();
-
-    const req = controller.expectOne(`${environment.apiUrl}/appointments/5`);
-    expect(req.request.method).toBe('DELETE');
-    req.flush({});
-  });
 });

@@ -3,13 +3,7 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { PaginatorModule } from 'primeng/paginator';
 import { SkeletonModule } from 'primeng/skeleton';
 import { BackupMonitorService } from '../../../core/services/backup-monitor.service';
-import {
-  BackupComponentStatus,
-  BackupExecution,
-  BackupHealth,
-  BackupRunStatus,
-  BackupSummary
-} from '../../../models/backup/backup-execution.model';
+import { BackupComponentStatus, BackupExecution, BackupRunStatus, BackupSummary } from '../../../models/backup/backup-execution.model';
 
 interface PasoDeConfiguracion {
   titulo: string;
@@ -135,24 +129,6 @@ export class BackupMonitorComponent implements OnInit {
     return 'bg-blue-500';
   }
 
-  healthLabel(health: BackupHealth): string {
-    return ({
-      SIN_DATOS: 'Sin información todavía',
-      AL_DIA: 'Respaldos al día',
-      ATENCION: 'Requiere atención',
-      CRITICO: 'Situación crítica'
-    })[health];
-  }
-
-  healthClass(health: BackupHealth): string {
-    return ({
-      SIN_DATOS: 'bg-slate-100 text-slate-600',
-      AL_DIA: 'bg-green-50 text-green-700',
-      ATENCION: 'bg-slate-100 text-slate-700',
-      CRITICO: 'bg-red-50 text-red-600'
-    })[health];
-  }
-
   componentIcon(name: string): string {
     return ({
       'Base de datos': 'pi pi-database',
@@ -160,32 +136,6 @@ export class BackupMonitorComponent implements OnInit {
       'Archivos clínicos': 'pi pi-folder',
       'Recuperación integral': 'pi pi-verified'
     } as Record<string, string>)[name] ?? 'pi pi-check-circle';
-  }
-
-  healthIcon(health: BackupHealth): string {
-    return ({
-      SIN_DATOS: 'pi pi-info-circle',
-      AL_DIA: 'pi pi-check-circle',
-      ATENCION: 'pi pi-exclamation-circle',
-      CRITICO: 'pi pi-times-circle'
-    })[health];
-  }
-
-  healthMessage(summary: BackupSummary): string {
-    switch (summary.health) {
-      case 'AL_DIA':
-        return `El último respaldo correcto fue ${this.ago(summary.lastSuccessAt)}.`;
-      case 'ATENCION':
-        return summary.lastSuccessAt
-          ? `Hace más de ${summary.maxHoursWithoutSuccess} horas o con un fallo reciente. Último respaldo correcto: ${this.ago(summary.lastSuccessAt)}.`
-          : 'La última ejecución no terminó bien.';
-      case 'CRITICO':
-        return summary.lastSuccessAt
-          ? `No hay un respaldo correcto desde ${this.ago(summary.lastSuccessAt)}. Revisa la última ejecución en GitHub.`
-          : 'Ninguna de las ejecuciones reportadas terminó correctamente.';
-      default:
-        return 'Cuando el workflow reporte su primera ejecución aparecerá aquí el estado de los respaldos.';
-    }
   }
 
   ago(value: string | null, now: number = Date.now()): string {

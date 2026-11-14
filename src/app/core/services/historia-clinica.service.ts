@@ -1,9 +1,9 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpContext } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { HistoriaClinicaDetalle } from '../../models/response/historia-clinica-response';
 import { ConsultaResponse } from '../../models/response/consulta-response';
-import { ConsultaRequest, CerrarConsultaRequest } from '../../models/request/consulta-request';
+import { CerrarConsultaRequest } from '../../models/request/consulta-request';
 import { PrescripcionRequest } from '../../models/request/prescripcion-request';
 import { PrescripcionResponse } from '../../models/response/prescripcion-response';
 import { DiagnosticoRequest, EstadoDiagnostico } from '../../models/request/diagnostico-request';
@@ -15,7 +15,6 @@ import { ArchivoClinicoResponse } from '../../models/response/archivo-clinico-re
 import { Page } from '../../models/response/page';
 import { ApiResponse } from '../../models/response/api-response';
 import { Observable, from, switchMap } from 'rxjs';
-import { SKIP_GLOBAL_LOADING } from '../interceptors/api.interceptor';
 
 @Injectable({
   providedIn: 'root'
@@ -62,13 +61,6 @@ export class HistoriaClinicaService {
 
   getConsulta(consultaId: number) {
     return this.http.get<ApiResponse<ConsultaResponse>>(`${this.citasUrl}/${consultaId}`);
-  }
-
-  updateConsulta(consultaId: number, request: ConsultaRequest, silent = false) {
-    const options = silent
-      ? { context: new HttpContext().set(SKIP_GLOBAL_LOADING, true) }
-      : {};
-    return this.http.put<ApiResponse<ConsultaResponse>>(`${this.citasUrl}/${consultaId}`, request, options);
   }
 
   cerrarConsulta(consultaId: number, request: CerrarConsultaRequest) {

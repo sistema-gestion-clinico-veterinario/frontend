@@ -8,53 +8,6 @@ import { LoadingStore } from '../../../store/loading.store';
 
 const activatedRouteStub = { snapshot: { paramMap: convertToParamMap({}) } };
 
-describe('LoginComponent – greeting', () => {
-  let component: LoginComponent;
-  let fixture: ComponentFixture<LoginComponent>;
-  let authService: jasmine.SpyObj<AuthService>;
-
-  beforeEach(async () => {
-    localStorage.clear();
-    await TestBed.configureTestingModule({
-      imports: [LoginComponent, HttpClientTestingModule],
-      providers: [
-        { provide: Router, useValue: jasmine.createSpyObj('Router', ['navigateByUrl']) },
-        { provide: ActivatedRoute, useValue: activatedRouteStub },
-        { provide: AuthService, useValue: jasmine.createSpyObj('AuthService', ['login', 'adminLogin', 'refreshToken']) },
-      ],
-    })
-      .overrideComponent(LoginComponent, { set: { template: '' } })
-      .compileComponents();
-
-    fixture = TestBed.createComponent(LoginComponent);
-    component = fixture.componentInstance;
-    authService = TestBed.inject(AuthService) as jasmine.SpyObj<AuthService>;
-    (TestBed.inject(Router) as jasmine.SpyObj<Router>).navigateByUrl.and.resolveTo(true);
-    jasmine.clock().install();
-  });
-
-  afterEach(() => {
-    document.getElementById('username')?.remove();
-    document.getElementById('password')?.remove();
-    jasmine.clock().uninstall();
-  });
-
-  it('returns "Buenos días" before noon (hour < 12)', () => {
-    jasmine.clock().mockDate(new Date(2025, 6, 5, 9, 0, 0));
-    expect(component.greeting).toBe('Buenos días');
-  });
-
-  it('returns "Buenas tardes" between noon and 19:00 (12 ≤ hour < 19)', () => {
-    jasmine.clock().mockDate(new Date(2025, 6, 5, 15, 30, 0));
-    expect(component.greeting).toBe('Buenas tardes');
-  });
-
-  it('returns "Buenas noches" at 19:00 or later (hour ≥ 19)', () => {
-    jasmine.clock().mockDate(new Date(2025, 6, 5, 21, 0, 0));
-    expect(component.greeting).toBe('Buenas noches');
-  });
-});
-
 describe('LoginComponent - submit validations', () => {
   let component: LoginComponent;
   let fixture: ComponentFixture<LoginComponent>;

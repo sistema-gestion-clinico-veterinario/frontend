@@ -509,20 +509,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
     return Array.from(new Set(turnos));
   });
 
-  get matrizHorario(): { horaSlot: string; dias: (HorarioResumen | null)[] }[] {
-    const slotMap = new Map<string, Map<string, HorarioResumen>>();
-    for (const h of this.horariosResumen()) {
-      const slot = `${h.horaInicio} – ${h.horaFin}`;
-      if (!slotMap.has(slot)) slotMap.set(slot, new Map());
-      slotMap.get(slot)!.set(h.diaSemana, h);
-    }
-    const slots = Array.from(slotMap.keys()).sort();
-    return slots.map(slot => ({
-      horaSlot: slot,
-      dias: DIAS_SEMANA_ORDEN.map(dia => slotMap.get(slot)!.get(dia) ?? null)
-    }));
-  }
-
   readonly gridHorario = computed<{ hora: string; dias: boolean[] }[]>(() => {
     const bloquesPorDia = new Map<string, { inicio: number; fin: number }[]>();
     for (const h of this.horariosResumen()) {
@@ -553,10 +539,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
     return filas;
   });
 
-  get diasCortos(): string[] {
-    return ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
-  }
-
   fechaInicioSemana(): string {
     const hoy = new Date();
     const dia = hoy.getDay();
@@ -579,16 +561,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
     const hoy = new Date().getDay();
     const map = [1, 2, 3, 4, 5, 6, 0];
     return map[colIndex] === hoy;
-  }
-
-  fechaDelDia(colIndex: number): number {
-    const map = [1, 2, 3, 4, 5, 6, 0];
-    const targetDay = map[colIndex];
-    const hoy = new Date();
-    const diff = targetDay - hoy.getDay();
-    const fecha = new Date(hoy);
-    fecha.setDate(hoy.getDate() + diff);
-    return fecha.getDate();
   }
 
   formatDiaSemana(dia: string): string {

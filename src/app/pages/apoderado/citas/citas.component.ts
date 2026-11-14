@@ -280,11 +280,6 @@ export class CitasComponent implements OnInit {
     this.loadCitas();
   }
 
-  filterCitasByPet(petId: number | null) {
-    this.selectedPetFilter.set(petId);
-    this.loadCitas();
-  }
-
   onPetFilterChange(event: any) {
     this.loadCitas();
   }
