@@ -39,7 +39,8 @@ import { ClinicalTemplateField, ClinicalTemplateResponse } from '../../../models
 
 
 import { MotivoRecursoNoDisponible, RecursoNoDisponibleComponent, motivoDeError } from '../../../shared/components/recurso-no-disponible/recurso-no-disponible.component';
-
+
+import { memoPorObjeto } from '../../../core/utils/memo-por-objeto';
 @Component({
   selector: 'app-consulta-form',
   standalone: true,
@@ -125,42 +126,15 @@ export class ConsultaFormComponent implements OnInit {
   mostrarCreacionVacuna = signal(false);
   accionPreventiva = signal<'APLICACION' | 'PROGRAMACION' | null>(null);
   tipoPreventivoActivo = signal<TipoControlPreventivo>('VACUNACION');
-  editarProximaVacuna = signal(false);
-  editarProximaDesparasitacion = signal(false);
   controlReprogramandoId = signal<number | null>(null);
   fechaReprogramacion = signal('');
   paginaControles = signal(0);
   paginaAplicaciones = signal(0);
-  readonly elementosPreventivosPorPagina = 4;
-
   readonly controlesAbiertos = computed(() => this.controlesPreventivos()
     .filter(c => !['APLICADO', 'CANCELADO'].includes(c.estado))
     .sort((a, b) => a.fechaRecomendada.localeCompare(b.fechaRecomendada)));
-  readonly totalPaginasControles = computed(() =>
-    Math.ceil(this.controlesAbiertos().length / this.elementosPreventivosPorPagina));
-  readonly controlesAbiertosPaginados = computed(() => {
-    const inicio = this.paginaControles() * this.elementosPreventivosPorPagina;
-    return this.controlesAbiertos().slice(inicio, inicio + this.elementosPreventivosPorPagina);
-  });
-  readonly aplicacionesOrdenadas = computed(() => [...this.aplicacionesPreventivas()]
-    .sort((a, b) => b.fechaAplicacion.localeCompare(a.fechaAplicacion)));
-  readonly totalPaginasAplicaciones = computed(() =>
-    Math.ceil(this.aplicacionesOrdenadas().length / this.elementosPreventivosPorPagina));
-  readonly aplicacionesPaginadas = computed(() => {
-    const inicio = this.paginaAplicaciones() * this.elementosPreventivosPorPagina;
-    return this.aplicacionesOrdenadas().slice(inicio, inicio + this.elementosPreventivosPorPagina);
-  });
   readonly controlesVacunacionAbiertos = computed(() => this.controlesAbiertos().filter(c => c.tipo === 'VACUNACION'));
   readonly controlesDesparasitacionAbiertos = computed(() => this.controlesAbiertos().filter(c => c.tipo === 'DESPARASITACION'));
-  readonly tieneVacunacionRegistrada = computed(() => this.controlesPreventivos().some(c => c.tipo === 'VACUNACION')
-    || this.aplicacionesPreventivas().some(a => a.tipo === 'VACUNACION'));
-  readonly tieneDesparasitacionRegistrada = computed(() => this.controlesPreventivos().some(c => c.tipo === 'DESPARASITACION')
-    || this.aplicacionesPreventivas().some(a => a.tipo === 'DESPARASITACION'));
-  readonly vacunacionAlDiaCalculada = computed(() => this.tieneVacunacionRegistrada() && !this.controlesAbiertos().some(c =>
-    c.tipo === 'VACUNACION' && ['PENDIENTE', 'ATRASADO'].includes(c.estado)));
-  readonly desparasitacionAlDiaCalculada = computed(() => this.tieneDesparasitacionRegistrada() && !this.controlesAbiertos().some(c =>
-    c.tipo === 'DESPARASITACION' && ['PENDIENTE', 'ATRASADO'].includes(c.estado)));
-
   archivos           = signal<ArchivoClinicoResponse[]>([]);
   archivoSubiendo    = signal<boolean>(false);
   archivoPendiente   = signal<File | null>(null);
@@ -281,13 +255,6 @@ export class ConsultaFormComponent implements OnInit {
     fechaAplicacion: [this.fechaHoy(), Validators.required],
     periodicidadMeses: [3, [Validators.required, Validators.min(1), Validators.max(120)]],
     fechaProximaAplicacion: [''],
-  });
-
-  pendienteForm = this.fb.group({
-    tipo: ['VACUNACION' as TipoControlPreventivo, Validators.required],
-    tipoVacunaId: [null as number | null],
-    nombreControl: [''],
-    fechaRecomendada: [this.fechaHoy(), Validators.required],
   });
 
   ngOnInit() {
@@ -564,39 +531,6 @@ this.paginaControles.set(0);
     });
   }
 
-  seleccionarTipoVacuna(value: string) {
-    const id = Number(value);
-    const tipo = this.tiposVacuna().find(v => v.id === id);
-    const controles = this.controlesVacunacionAbiertos()
-      .filter(c => c.tipoVacunaId === id)
-      .sort((a, b) => a.fechaRecomendada.localeCompare(b.fechaRecomendada));
-    this.vacunacionForm.patchValue({
-      tipoVacunaId: id,
-      periodicidadMeses: tipo?.periodicidadMesesSugerida ?? 12,
-      controlPreventivoId: controles[0]?.id ?? null,
-      fechaProximaDosis: ''
-    });
-    this.editarProximaVacuna.set(false);
-  }
-
-  cambiarPaginaControles(direccion: -1 | 1) {
-    const ultimaPagina = Math.max(0, this.totalPaginasControles() - 1);
-    this.paginaControles.update(actual => Math.min(ultimaPagina, Math.max(0, actual + direccion)));
-    this.controlReprogramandoId.set(null);
-  }
-
-  cambiarPaginaAplicaciones(direccion: -1 | 1) {
-    const ultimaPagina = Math.max(0, this.totalPaginasAplicaciones() - 1);
-    this.paginaAplicaciones.update(actual => Math.min(ultimaPagina, Math.max(0, actual + direccion)));
-  }
-
-  controlesCoincidentesVacuna() {
-    const id = this.vacunacionForm.value.tipoVacunaId;
-    return this.controlesVacunacionAbiertos()
-      .filter(c => c.tipoVacunaId === id)
-      .sort((a, b) => a.fechaRecomendada.localeCompare(b.fechaRecomendada));
-  }
-
   seleccionarControlVacunacion(value: string) {
     const id = Number(value);
     const control = this.controlesVacunacionAbiertos().find(c => c.id === id);
@@ -659,30 +593,6 @@ this.paginaControles.set(0);
     });
   }
 
-  programarPendiente() {
-    const mascotaId = this.consulta()?.mascotaId;
-    if (!mascotaId || this.pendienteForm.invalid) return;
-    const value = this.pendienteForm.getRawValue();
-    if (value.tipo === 'VACUNACION' && !value.tipoVacunaId) {
-      this.msgService.add({ severity: 'warn', summary: 'Vacuna requerida', detail: 'Seleccione la vacuna pendiente' });
-      return;
-    }
-    if (value.tipo === 'DESPARASITACION' && !value.nombreControl?.trim()) {
-      this.msgService.add({ severity: 'warn', summary: 'Producto requerido', detail: 'Indique el control de desparasitación' });
-      return;
-    }
-    this.guardandoPreventivo.set(true);
-    this.preventivoService.programar(mascotaId, {
-      tipo: value.tipo!,
-      tipoVacunaId: value.tipo === 'VACUNACION' ? value.tipoVacunaId! : undefined,
-      nombreControl: value.tipo === 'DESPARASITACION' ? value.nombreControl!.trim() : undefined,
-      fechaRecomendada: value.fechaRecomendada!,
-    }).pipe(finalize(() => this.guardandoPreventivo.set(false))).subscribe({
-      next: () => this.preventivoGuardado('Control pendiente programado'),
-      error: err => this.msgService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo programar el control' })
-    });
-  }
-
   claseEstadoPreventivo(estado: string) {
     if (estado === 'ATRASADO') return 'bg-rose-50 text-rose-700';
     if (estado === 'PENDIENTE' || estado === 'PROXIMO') return 'bg-amber-50 text-amber-700';
@@ -731,56 +641,6 @@ this.paginaControles.set(0);
       },
       error: err => this.msgService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo reprogramar el control' })
     });
-  }
-
-  confirmarCancelarControl(control: ControlPreventivoResponse) {
-    this.confirmSvc.confirm({
-      header: 'Cancelar control',
-      message: `¿Desea cancelar el control "${control.nombreControl}"?`,
-      icon: 'pi pi-exclamation-triangle',
-      acceptLabel: 'Cancelar control',
-      rejectLabel: 'Volver',
-      acceptButtonStyleClass: 'p-button-danger',
-      accept: () => {
-        this.guardandoPreventivo.set(true);
-        this.preventivoService.cancelar(control.id).pipe(
-          finalize(() => this.guardandoPreventivo.set(false))
-        ).subscribe({
-          next: () => this.preventivoGuardado('Control cancelado'),
-          error: err => this.msgService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo cancelar el control' })
-        });
-      }
-    });
-  }
-
-  proximaVacunaSugerida() {
-    const value = this.vacunacionForm.getRawValue();
-    return value.fechaAplicacion && value.periodicidadMeses
-      ? this.sumarMeses(value.fechaAplicacion, Number(value.periodicidadMeses)) : '';
-  }
-
-  proximaDesparasitacionSugerida() {
-    const value = this.desparasitacionForm.getRawValue();
-    return value.fechaAplicacion && value.periodicidadMeses
-      ? this.sumarMeses(value.fechaAplicacion, Number(value.periodicidadMeses)) : '';
-  }
-
-  alternarEdicionProximaVacuna() {
-    if (this.editarProximaVacuna()) {
-      this.vacunacionForm.patchValue({ fechaProximaDosis: '' });
-    }
-    this.editarProximaVacuna.update(valor => !valor);
-  }
-
-  alternarEdicionProximaDesparasitacion() {
-    if (this.editarProximaDesparasitacion()) {
-      this.desparasitacionForm.patchValue({ fechaProximaAplicacion: '' });
-    }
-    this.editarProximaDesparasitacion.update(valor => !valor);
-  }
-
-  fechaHoyPublica() {
-    return this.fechaHoy();
   }
 
   private sumarMeses(fecha: string, meses: number): string {
@@ -1168,14 +1028,6 @@ version: res.data.version,
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   }
 
-  iconoTipo(tipo: string): string {
-    const map: Record<string, string> = {
-      LABORATORIO: 'pi-microchip', RADIOGRAFIA: 'pi-eye', ECOGRAFIA: 'pi-wave-pulse',
-      IMAGEN: 'pi-image', OTRO: 'pi-file', PDF: 'pi-file-pdf'
-    };
-    return map[tipo] ?? 'pi-file';
-  }
-
   abrirNuevaReceta() {
     if (!this.canCreateReceta()) return;
     this.recetaEditando.set(null);
@@ -1475,9 +1327,13 @@ version: res.data.version,
     return `clinical_${field.id}`;
   }
 
-  customFieldOptions(field: ClinicalTemplateField): string[] {
+  private readonly opcionesDelCampo = memoPorObjeto((field: ClinicalTemplateField): string[] => {
     const config = this.fieldConfig(field);
     return Array.isArray(config['options']) ? config['options'].map(String) : [];
+  }, field => field.validationConfig);
+
+  customFieldOptions(field: ClinicalTemplateField): string[] {
+    return this.opcionesDelCampo(field);
   }
 
   customFieldError(field: ClinicalTemplateField): string {
@@ -1564,10 +1420,10 @@ version: res.data.version,
     return typeof value === 'string' && value.length > 0 ? value : null;
   }
 
-  private fieldConfig(field: ClinicalTemplateField): Record<string, any> {
+  private readonly fieldConfig = memoPorObjeto((field: ClinicalTemplateField): Record<string, any> => {
     if (!field.validationConfig) return {};
     try { return JSON.parse(field.validationConfig); } catch { return {}; }
-  }
+  }, field => field.validationConfig);
 
   verConsulta(id: number) {
     const item = this.historia()?.consultas.find((c: any) => c.id === id);

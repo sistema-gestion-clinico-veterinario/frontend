@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ApoderadoService } from '../../../../core/services/apoderado.service';
 import { CancelacionDatosService } from '../../../../core/services/cancelacion-datos.service';
@@ -15,6 +15,7 @@ type Dialogo =
 
 @Component({
   selector: 'app-solicitudes-cancelacion',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [CommonModule, RouterLink],
   templateUrl: './solicitudes-cancelacion.component.html'

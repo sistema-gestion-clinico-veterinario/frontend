@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MetodoPago } from '../../../../models/request/pago-request';
 import { CitaResponse } from '../../../../models/response/cita-response';
 
 @Component({
   selector: 'app-payment-dialog',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './payment-dialog.component.html'

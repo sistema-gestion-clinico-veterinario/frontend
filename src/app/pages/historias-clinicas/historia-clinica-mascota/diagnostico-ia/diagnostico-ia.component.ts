@@ -1,4 +1,4 @@
-import { Component, Input, inject, signal, OnChanges, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, inject, signal, OnChanges, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subscription, firstValueFrom } from 'rxjs';
 import { DiagnosticoIaService } from '../../../../core/services/diagnostico-ia.service';
@@ -16,6 +16,7 @@ import { formatearFechaClinica } from '../../../../shared/utils/fecha-clinica.ut
 
 @Component({
   selector: 'app-diagnostico-ia',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [CommonModule, MarkdownPipe],
   templateUrl: './diagnostico-ia.component.html',

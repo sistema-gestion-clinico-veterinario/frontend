@@ -1,6 +1,9 @@
 import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
+import { tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { AuthStore } from '../../store/auth.store';
+import { TimedRequestCache } from '../utils/timed-request-cache';
 import { ApiResponse } from '../../models/response/api-response';
 import { ConfiguracionCumplimiento, ControlCumplimiento, DetalleCumplimientoClinica, EstadoCumplimientoClinica, EstadoSolicitudCambioCumplimiento, ModoGestionCumplimiento, SolicitudCambioCumplimiento } from '../../models/privacy/company-compliance.model';
 import { Page } from '../../models/response/page';
@@ -9,24 +12,36 @@ import { SKIP_GLOBAL_LOADING } from '../interceptors/http-context.tokens';
 @Injectable({ providedIn: 'root' })
 export class CompanyComplianceService {
   private readonly http = inject(HttpClient);
+  private readonly authStore = inject(AuthStore);
+  private readonly cacheDeMiClinica = new TimedRequestCache(60 * 1000);
   actuales(companyId: number) { return this.http.get<ApiResponse<ConfiguracionCumplimiento[]>>(`${environment.apiUrl}/platform/companies/${companyId}/compliance`); }
   historial(companyId: number) { return this.http.get<ApiResponse<ConfiguracionCumplimiento[]>>(`${environment.apiUrl}/platform/companies/${companyId}/compliance/history`); }
-  actualesDeMiClinica() { return this.http.get<ApiResponse<EstadoCumplimientoClinica[]>>(`${environment.apiUrl}/me/compliance`); }
+  actualesDeMiClinica() {
+    const clinica = this.authStore.companyId() ?? this.authStore.selectedEnterprise()?.establishmentId ?? null;
+    return this.cacheDeMiClinica.get(`${clinica}:${this.authStore.activeRoleId()}`, () =>
+      this.http.get<ApiResponse<EstadoCumplimientoClinica[]>>(`${environment.apiUrl}/me/compliance`));
+  }
   detalleDeMiClinica() { return this.http.get<ApiResponse<DetalleCumplimientoClinica[]>>(`${environment.apiUrl}/me/compliance/details`); }
   configurar(companyId: number, control: ControlCumplimiento, body: { habilitado: boolean; modo: ModoGestionCumplimiento; bloqueante: boolean; justificacion: string; referenciaContractual: string | null; confirmoRevisionLegal: boolean; vigenteDesde: string | null }) {
-    return this.http.post<ApiResponse<ConfiguracionCumplimiento>>(`${environment.apiUrl}/platform/companies/${companyId}/compliance/${control}`, body);
+    return this.http.post<ApiResponse<ConfiguracionCumplimiento>>(`${environment.apiUrl}/platform/companies/${companyId}/compliance/${control}`, body).pipe(
+      tap(() => this.cacheDeMiClinica.clear())
+    );
   }
   solicitudesDeMiClinica() {
     return this.http.get<ApiResponse<SolicitudCambioCumplimiento[]>>(`${environment.apiUrl}/me/compliance/requests`);
   }
   solicitarCambio(body: { control: ControlCumplimiento; habilitado: boolean; modo: ModoGestionCumplimiento; bloqueante: boolean; motivo: string; evidenciaReferencia: string | null; vigenteDesde: string | null }) {
-    return this.http.post<ApiResponse<SolicitudCambioCumplimiento>>(`${environment.apiUrl}/me/compliance/requests`, body);
+    return this.http.post<ApiResponse<SolicitudCambioCumplimiento>>(`${environment.apiUrl}/me/compliance/requests`, body).pipe(
+      tap(() => this.cacheDeMiClinica.clear())
+    );
   }
   solicitudesPendientes(companyId: number) {
     return this.http.get<ApiResponse<SolicitudCambioCumplimiento[]>>(`${environment.apiUrl}/platform/companies/${companyId}/compliance/requests`);
   }
   resolverSolicitud(id: number, body: { aprobar: boolean; comentario: string; confirmoRevisionLegal: boolean }) {
-    return this.http.put<ApiResponse<SolicitudCambioCumplimiento>>(`${environment.apiUrl}/platform/compliance/requests/${id}`, body);
+    return this.http.put<ApiResponse<SolicitudCambioCumplimiento>>(`${environment.apiUrl}/platform/compliance/requests/${id}`, body).pipe(
+      tap(() => this.cacheDeMiClinica.clear())
+    );
   }
   iniciarRevision(id: number) {
     return this.http.put<ApiResponse<SolicitudCambioCumplimiento>>(`${environment.apiUrl}/platform/compliance/requests/${id}/review`, {});

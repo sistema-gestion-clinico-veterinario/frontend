@@ -1,4 +1,4 @@
-import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Subject, catchError, debounceTime, distinctUntilChanged, of, switchMap } from 'rxjs';
 import { MascotaService } from '../../core/services/mascota.service';
@@ -15,6 +15,7 @@ import { CompanyComplianceService } from '../../core/services/company-compliance
 
 @Component({
   selector: 'app-laboratorio',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [CommonModule, FormsModule, ToastModule],
   providers: [MessageService],

@@ -401,7 +401,6 @@ describe('CartillaComponent - reglas de uso', () => {
 
       expect(c.controlesOrdenados().map(x => x.id)).toEqual([1, 2]);
       expect(c.controlesAtrasados()).toBe(1);
-      expect(c.controlesProgramados()).toBe(1);
       expect(c.proximaAplicacion()).toBe('2026-01-10');
     });
 

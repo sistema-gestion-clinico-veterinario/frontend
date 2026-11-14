@@ -64,6 +64,15 @@
           "value": "public, max-age=31536000, immutable"
         }
       ]
+    },
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400"
+        }
+      ]
     }
   ],
   "rewrites": [
@@ -72,7 +81,7 @@
       "destination": "https://backend-cwx3.onrender.com/api/v1/:path*"
     },
     {
-      "source": "/:path*",
+      "source": "/((?!.*\\.).*)",
       "destination": "/index.html"
     }
   ]

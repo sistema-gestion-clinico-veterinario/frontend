@@ -1,6 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, HostListener, inject, signal } from '@angular/core';
+import { Component, DestroyRef, HostListener, NgZone, computed, effect, inject, signal } from '@angular/core';
 import { AccessibilityService } from '../../../core/services/accessibility.service';
+
+const PUNTOS_POR_NIVEL = new Map<number, number[]>();
 
 @Component({
   selector: 'app-accessibility-widget',
@@ -15,6 +17,31 @@ export class AccessibilityWidgetComponent {
   readonly guideY = signal(0);
   readonly maskY = signal(0);
 
+  private readonly zone = inject(NgZone);
+  private readonly guiaActiva = computed(() => this.a11y.settings().readingGuide);
+  private readonly mascaraActiva = computed(() => this.a11y.settings().readingMask);
+  private dejarDeSeguirRaton: (() => void) | null = null;
+
+  constructor() {
+    effect(() => {
+      const guia = this.guiaActiva();
+      const mascara = this.mascaraActiva();
+      this.dejarDeSeguirRaton?.();
+      this.dejarDeSeguirRaton = null;
+      if (!guia && !mascara) return;
+
+      this.zone.runOutsideAngular(() => {
+        const alMover = (event: MouseEvent) => {
+          if (guia) this.guideY.set(event.clientY);
+          if (mascara) this.maskY.set(event.clientY);
+        };
+        document.addEventListener('mousemove', alMover, { passive: true });
+        this.dejarDeSeguirRaton = () => document.removeEventListener('mousemove', alMover);
+      });
+    });
+    inject(DestroyRef).onDestroy(() => this.dejarDeSeguirRaton?.());
+  }
+
   togglePanel(): void {
     this.panelOpen.update(open => !open);
   }
@@ -23,23 +50,18 @@ export class AccessibilityWidgetComponent {
     this.panelOpen.set(false);
   }
 
-  @HostListener('document:mousemove', ['$event'])
-  onMouseMove(event: MouseEvent): void {
-    if (this.a11y.settings().readingGuide) {
-      this.guideY.set(event.clientY);
-    }
-    if (this.a11y.settings().readingMask) {
-      this.maskY.set(event.clientY);
-    }
-  }
-
   @HostListener('document:keydown.escape')
   onEscape(): void {
     this.closePanel();
   }
 
   dotsArray(count: number): number[] {
-    return Array.from({ length: count });
+    let puntos = PUNTOS_POR_NIVEL.get(count);
+    if (!puntos) {
+      puntos = Array.from({ length: count }, (_, i) => i);
+      PUNTOS_POR_NIVEL.set(count, puntos);
+    }
+    return puntos;
   }
 
   // Cada card llama solo al método que le compete — sin efectos cruzados entre ajustes.

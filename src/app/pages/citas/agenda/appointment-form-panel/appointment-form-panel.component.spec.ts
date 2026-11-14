@@ -24,7 +24,7 @@ describe('AppointmentFormPanelComponent', () => {
       }),
       today: new Date(2026, 9, 12),
       loadingStore: { isLoading: () => false },
-      horariosResumen: [],
+      horariosResumen: () => [],
       selectedClienteLabel: signal('Seleccionar dueño...'),
       selectedMascotaLabel: signal('Seleccionar mascota...')
     } as Record<string, any>, {

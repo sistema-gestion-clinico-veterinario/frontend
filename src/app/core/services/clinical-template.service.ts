@@ -39,10 +39,6 @@ export class ClinicalTemplateService {
     return this.http.post<ApiResponse<ClinicalConcept>>(`${this.url}/concepts`, request);
   }
 
-  createDraft() {
-    return this.http.post<ApiResponse<ClinicalTemplateResponse>>(`${this.url}/drafts`, {});
-  }
-
   create(request: ClinicalTemplateCreateRequest) {
     return this.http.post<ApiResponse<ClinicalTemplateResponse>>(this.url, request);
   }

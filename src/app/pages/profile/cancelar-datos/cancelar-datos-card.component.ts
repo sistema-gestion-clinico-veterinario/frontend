@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, Injector, OnInit, afterNextRender, computed, inject, signal, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, Injector, OnInit, afterNextRender, computed, inject, signal, viewChild } from '@angular/core';
 import { CancelacionDatosService } from '../../../core/services/cancelacion-datos.service';
 import { CancelacionDatosElegibilidad } from '../../../models/privacy/cancelacion-datos.model';
 import { CodigoVerificacionComponent } from '../../../shared/components/codigo-verificacion/codigo-verificacion.component';
@@ -9,6 +9,7 @@ const ESPERA_REENVIO_SEGUNDOS = 60;
 
 @Component({
   selector: 'app-cancelar-datos-card',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [CommonModule, CodigoVerificacionComponent],
   templateUrl: './cancelar-datos-card.component.html'

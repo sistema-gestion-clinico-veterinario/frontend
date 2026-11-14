@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal, computed } from '@angular/core';
 
 import { Router, RouterModule } from '@angular/router';
 import { AuthStore } from '../../../store/auth.store';
@@ -13,6 +13,7 @@ import { DashboardCitasCalendarComponent } from '../../dashboard/citas-calendar/
 
 @Component({
   selector: 'app-employee-dashboard',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [RouterModule, ToastModule, DashboardCitasCalendarComponent],
   providers: [MessageService],

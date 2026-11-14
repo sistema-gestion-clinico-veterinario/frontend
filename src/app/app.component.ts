@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { ProcessLoadingPanelComponent } from './shared/components/process-loading-panel/process-loading-panel.component';
 import { AccessibilityWidgetComponent } from './shared/components/accessibility-widget/accessibility-widget.component';
+import { AvisoVersionNuevaComponent } from './shared/components/aviso-version-nueva/aviso-version-nueva.component';
 import { AuthStore } from './store/auth.store';
 import { effect } from '@angular/core';
 import { Title } from '@angular/platform-browser';
@@ -14,7 +15,7 @@ import { ThemeService } from './core/services/theme.service';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, ProcessLoadingPanelComponent, AccessibilityWidgetComponent],
+  imports: [RouterOutlet, ProcessLoadingPanelComponent, AccessibilityWidgetComponent, AvisoVersionNuevaComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })

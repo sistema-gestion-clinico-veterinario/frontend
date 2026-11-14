@@ -149,10 +149,6 @@ export class RouteMapperService {
     return this.routeMap[codigo] || null;
   }
 
-  getRouteOrDefault(codigo: string, defaultRoute: string = '/'): string {
-    return this.routeMap[codigo] || defaultRoute;
-  }
-
   getIcon(codigo: string): string {
     return this.iconMap[codigo] || 'pi pi-circle';
   }

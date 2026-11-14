@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject, signal, HostListener, ViewChild, ElementRef } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, OnDestroy, computed, inject, signal, HostListener, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators, AbstractControl } from '@angular/forms';
@@ -36,6 +36,7 @@ import { Role } from '../../../models/response/permission';
 
 @Component({
   selector: 'app-employee',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
     CommonModule,
@@ -96,8 +97,8 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   totalRecords = signal<number>(0);
   employeeSearch = signal<string>('');
   appliedEmployeeSearch = signal<string>('');
-  currentPage = 0;
-  pageSize = 10;
+  currentPage = signal(0);
+  pageSize = signal(10);
   readonly pageSizeOptions = [10, 20, 50, 100];
   openDropdown = signal<string | null>(null);
   searchFilter = signal<string>('');
@@ -145,11 +146,16 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     }
   }
 
-  public getFilteredOptions(list: any[]): any[] {
-    if (!this.searchFilter()) return list;
-    const filter = this.searchFilter().toLowerCase();
-    return list.filter(item => item.label.toLowerCase().includes(filter));
+  private filtrarOpciones<T extends { label: string }>(lista: T[]): T[] {
+    const texto = this.searchFilter();
+    if (!texto) return lista;
+    const filtro = texto.toLowerCase();
+    return lista.filter(item => item.label.toLowerCase().includes(filtro));
   }
+
+  readonly rolesFiltrados = computed(() => this.filtrarOpciones(this.roles()));
+  readonly tiposEmpleadoFiltrados = computed(() => this.filtrarOpciones(this.tiposEmpleadoList()));
+  readonly especialidadesFiltradas = computed(() => this.filtrarOpciones(this.especialidadesList()));
 
   public toggleSelection(controlName: string, value: any) {
     if (controlName === 'roleIds' && !this.canManageRoleAssignments()) return;
@@ -342,9 +348,9 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     const companyId = this.activeCompanyId ?? undefined;
     const isFirstLoad = this.employees().length === 0;
     if (isFirstLoad) this.cargando.set(true);
-    this.currentPage = page;
+    this.currentPage.set(page);
 
-    this.empleadoService.listar(companyId, this.appliedEmployeeSearch() || undefined, page, this.pageSize).subscribe({
+    this.empleadoService.listar(companyId, this.appliedEmployeeSearch() || undefined, page, this.pageSize()).subscribe({
       next: (res) => {
         this.employees.set(res.data.content);
         this.totalRecords.set(res.data?.page?.totalElements ?? res.data?.totalElements ?? 0);
@@ -375,8 +381,8 @@ export class EmployeeComponent implements OnInit, OnDestroy {
 
   onEmployeePageChange(event: any): void {
     const nextSize = Number(event.rows) || 10;
-    const nextPage = nextSize === this.pageSize ? Number(event.page) || 0 : 0;
-    this.pageSize = nextSize;
+    const nextPage = nextSize === this.pageSize() ? Number(event.page) || 0 : 0;
+    this.pageSize.set(nextSize);
     this.goToEmployeePage(nextPage);
   }
 

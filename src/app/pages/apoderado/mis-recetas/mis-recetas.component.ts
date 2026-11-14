@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
@@ -8,6 +8,7 @@ import { PrescripcionResponse } from '../../../models/response/prescripcion-resp
 
 @Component({
   selector: 'app-mis-recetas',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [CommonModule, FormsModule, ToastModule],
   providers: [MessageService],
@@ -40,7 +41,7 @@ export class MisRecetasComponent implements OnInit {
     });
   }
 
-  recetasFiltradas(): PrescripcionResponse[] {
+  readonly recetasFiltradas = computed<PrescripcionResponse[]>(() => {
     const query = this.searchQuery().trim().toLowerCase();
     if (!query) return this.recetas();
 
@@ -55,7 +56,7 @@ export class MisRecetasComponent implements OnInit {
         .filter(Boolean)
         .some((value) => value!.toLowerCase().includes(query))
     );
-  }
+  });
 
   verDetalle(receta: PrescripcionResponse) {
     this.selectedReceta.set(receta);

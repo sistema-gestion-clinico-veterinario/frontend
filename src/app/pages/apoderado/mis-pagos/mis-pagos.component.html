@@ -79,10 +79,10 @@
       }
 
       <!-- TABLA -->
-      @if (!isLoading() && pagosFiltrados.length > 0) {
+      @if (!isLoading() && pagosFiltrados().length > 0) {
         <div
           class="bg-white rounded-xl border border-slate-200/70 overflow-hidden">
-          <p-table [value]="pagosFiltrados" [rowHover]="true" responsiveLayout="stack" breakpoint="960px" styleClass="p-datatable-borderless">
+          <p-table [value]="pagosFiltrados()" [rowHover]="true" responsiveLayout="stack" breakpoint="960px" styleClass="p-datatable-borderless">
             <ng-template pTemplate="header">
               <tr class="border-b border-slate-100">
                 <th class="text-left px-4 py-2.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Mascota / Servicio</th>
@@ -161,7 +161,7 @@
           </p-table>
         </div>
       }
-      @if (!isLoading() && pagosFiltrados.length > 0) {
+      @if (!isLoading() && pagosFiltrados().length > 0) {
         <p-paginator
           [first]="page() * size()"
           [rows]="size()"
@@ -175,7 +175,7 @@
       }
 
       <!-- EMPTY STATE -->
-      @if (!isLoading() && pagosFiltrados.length === 0) {
+      @if (!isLoading() && pagosFiltrados().length === 0) {
         <div
           class="bg-white rounded-xl border border-slate-200/70 py-16 text-center">
           <div class="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">

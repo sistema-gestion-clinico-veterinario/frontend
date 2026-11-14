@@ -1,5 +1,6 @@
-import { Component, OnInit, inject, signal, computed, effect } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { memoPorObjeto } from '../../../core/utils/memo-por-objeto';
 import {
   ReactiveFormsModule,
   FormsModule,
@@ -42,6 +43,7 @@ import {
 
 @Component({
   selector: 'app-complementario',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
     CommonModule,
@@ -254,29 +256,6 @@ export class ComplementarioComponent implements OnInit {
     );
   }
 
-  confirmarCambiarEstadoTipo(item: any) {
-    const nuevoEstado = !item.estado;
-    this.openConfirm(
-      nuevoEstado ? 'Activar tipo de empleado' : 'Desactivar tipo de empleado',
-      'El tipo de empleado "' + item.nombre + '" quedara ' + (nuevoEstado ? 'activo' : 'inactivo') + '.',
-      'cambiar-estado-tipo',
-      item,
-      'warning',
-      nuevoEstado ? 'Activar' : 'Desactivar'
-    );
-  }
-
-  confirmarEliminarTipoEmpleado(item: any) {
-    this.openConfirm(
-      'Eliminar tipo de empleado',
-      'Se eliminara el tipo de empleado "' + item.nombre + '". Esta accion no se puede deshacer.',
-      'eliminar-tipo-empleado',
-      item,
-      'danger',
-      'Eliminar'
-    );
-  }
-
   confirmarGuardarServicio() {
     if (this.servicioForm.invalid) { this.servicioForm.markAllAsTouched(); return; }
     const nombre = this.servicioForm.get('nombre')?.value?.trim();
@@ -318,7 +297,7 @@ export class ComplementarioComponent implements OnInit {
   servicios           = signal<ServicioResponse[]>([]);
   serviciosTotal      = signal(0);
   serviciosPage       = signal(0);
-  pageSize            = 10;
+  pageSize            = signal(10);
   readonly pageSizeOptions = [10, 20, 50, 100];
   showServicioModal   = signal(false);
   editingServicio     = signal<ServicioResponse | null>(null);
@@ -451,13 +430,13 @@ export class ComplementarioComponent implements OnInit {
     else this.clinicalDraft.set(null);
   }
 
-  selectedClinicalVersions(): ClinicalTemplateSummary[] {
-    return this.clinicalVersions().filter(version => version.templateKey === this.selectedClinicalTemplateKey());
-  }
+  readonly selectedClinicalVersions = computed(() =>
+    this.clinicalVersions().filter(version => version.templateKey === this.selectedClinicalTemplateKey())
+  );
 
-  selectedClinicalPublished(): ClinicalTemplateSummary | undefined {
-    return this.selectedClinicalVersions().find(version => version.status === 'PUBLISHED');
-  }
+  readonly selectedClinicalPublished = computed(() =>
+    this.selectedClinicalVersions().find(version => version.status === 'PUBLISHED')
+  );
 
   toggleClinicalSelectAll<T>(selected: T[] | null | undefined, options: readonly T[]): T[] {
     const allSelected = options.length > 0 && options.every(option => selected?.includes(option));
@@ -713,25 +692,34 @@ export class ComplementarioComponent implements OnInit {
     return species.length === 0 || species.includes(this.clinicalPreviewSpecies());
   }
 
-  clinicalPreviewOptions(field: ClinicalTemplateField): string[] {
+  private readonly configDelCampo = memoPorObjeto((field: ClinicalTemplateField): Record<string, any> => {
     try {
       const config = JSON.parse(field.validationConfig ?? '{}');
-      return Array.isArray(config.options) ? config.options.map(String) : [];
+      return config !== null && typeof config === 'object' ? config : {};
     } catch {
-      return [];
+      return {};
     }
+  }, field => field.validationConfig);
+
+  private readonly opcionesDelCampo = memoPorObjeto((field: ClinicalTemplateField): string[] => {
+    const config = this.configDelCampo(field);
+    return Array.isArray(config['options']) ? config['options'].map(String) : [];
+  }, field => field.validationConfig);
+
+  private readonly escalaDelCampo = memoPorObjeto((field: ClinicalTemplateField): { min: number; max: number } => {
+    const config = this.configDelCampo(field);
+    return {
+      min: Number.isFinite(Number(config['min'])) ? Number(config['min']) : 1,
+      max: Number.isFinite(Number(config['max'])) ? Number(config['max']) : 10
+    };
+  }, field => field.validationConfig);
+
+  clinicalPreviewOptions(field: ClinicalTemplateField): string[] {
+    return this.opcionesDelCampo(field);
   }
 
   clinicalPreviewScale(field: ClinicalTemplateField): { min: number; max: number } {
-    try {
-      const config = JSON.parse(field.validationConfig ?? '{}');
-      return {
-        min: Number.isFinite(Number(config.min)) ? Number(config.min) : 1,
-        max: Number.isFinite(Number(config.max)) ? Number(config.max) : 10
-      };
-    } catch {
-      return { min: 1, max: 10 };
-    }
+    return this.escalaDelCampo(field);
   }
 
   saveClinicalConcept() {
@@ -760,16 +748,8 @@ export class ComplementarioComponent implements OnInit {
     });
   }
 
-  clinicalStatusLabel(status: ClinicalTemplateSummary['status']): string {
-    return status === 'PUBLISHED' ? 'Vigente' : status === 'DRAFT' ? 'Borrador' : 'Anterior';
-  }
-
   isCoreClinicalField(field: ClinicalTemplateField): boolean {
-    try {
-      return Boolean(JSON.parse(field.validationConfig ?? '{}').coreField);
-    } catch {
-      return false;
-    }
+    return Boolean(this.configDelCampo(field)['coreField']);
   }
 
   private normalizeClinicalOrder(draft: ClinicalTemplateResponse) {
@@ -820,7 +800,7 @@ export class ComplementarioComponent implements OnInit {
   loadEspecialidades(page = this.especialidadesPage()) {
     if (!this.activeCompanyId) return;
     const cid = this.activeCompanyId ?? undefined;
-    this.especialidadService.listar(cid, page, this.pageSize).subscribe({
+    this.especialidadService.listar(cid, page, this.pageSize()).subscribe({
       next: (res) => {
         this.especialidades.set(res.data.content ?? res.data);
         this.especialidadesTotal.set(this.pageTotal(res.data));
@@ -891,7 +871,7 @@ export class ComplementarioComponent implements OnInit {
   loadTiposEmpleado(page = this.tiposEmpleadoPage()) {
     if (!this.activeCompanyId) return;
     const cid = this.activeCompanyId ?? undefined;
-    this.tipoEmpleadoService.listar(cid, page, this.pageSize).subscribe({
+    this.tipoEmpleadoService.listar(cid, page, this.pageSize()).subscribe({
       next: (res) => {
         this.tiposEmpleado.set(res.data.content ?? res.data);
         this.tiposEmpleadoTotal.set(this.pageTotal(res.data));
@@ -986,7 +966,7 @@ export class ComplementarioComponent implements OnInit {
   loadServicios(page = this.serviciosPage()) {
     if (!this.activeCompanyId) return;
     const cid = this.activeCompanyId ?? undefined;
-    this.servicioService.listar(cid, page, this.pageSize).subscribe({
+    this.servicioService.listar(cid, page, this.pageSize()).subscribe({
       next: (res) => {
         // Filter out soft-deleted services so they do not show up in the active list
         const activeList = (res.data.content || []).filter((s: ServicioResponse) => s.activo);
@@ -1072,36 +1052,36 @@ export class ComplementarioComponent implements OnInit {
 
   onEspecialidadesPageChange(event: any) {
     const nextSize = Number(event.rows) || 10;
-    const nextPage = nextSize === this.pageSize ? Number(event.page) || 0 : 0;
-    this.pageSize = nextSize;
+    const nextPage = nextSize === this.pageSize() ? Number(event.page) || 0 : 0;
+    this.pageSize.set(nextSize);
     this.loadEspecialidades(nextPage);
   }
 
   onTiposEmpleadoPageChange(event: any) {
     const nextSize = Number(event.rows) || 10;
-    const nextPage = nextSize === this.pageSize ? Number(event.page) || 0 : 0;
-    this.pageSize = nextSize;
+    const nextPage = nextSize === this.pageSize() ? Number(event.page) || 0 : 0;
+    this.pageSize.set(nextSize);
     this.loadTiposEmpleado(nextPage);
   }
 
   onServiciosPageChange(event: any) {
     const nextSize = Number(event.rows) || 10;
-    const nextPage = nextSize === this.pageSize ? Number(event.page) || 0 : 0;
-    this.pageSize = nextSize;
+    const nextPage = nextSize === this.pageSize() ? Number(event.page) || 0 : 0;
+    this.pageSize.set(nextSize);
     this.loadServicios(nextPage);
   }
 
   onVacunasPageChange(event: any) {
     const nextSize = Number(event.rows) || 10;
-    const nextPage = nextSize === this.pageSize ? Number(event.page) || 0 : 0;
-    this.pageSize = nextSize;
+    const nextPage = nextSize === this.pageSize() ? Number(event.page) || 0 : 0;
+    this.pageSize.set(nextSize);
     this.loadVacunas(nextPage);
   }
 
   onDesparasitantesPageChange(event: any) {
     const nextSize = Number(event.rows) || 10;
-    const nextPage = nextSize === this.pageSize ? Number(event.page) || 0 : 0;
-    this.pageSize = nextSize;
+    const nextPage = nextSize === this.pageSize() ? Number(event.page) || 0 : 0;
+    this.pageSize.set(nextSize);
     this.loadDesparasitantes(nextPage);
   }
 
@@ -1200,7 +1180,7 @@ export class ComplementarioComponent implements OnInit {
   loadVacunas(page = this.vacunasPage()) {
     if (!this.activeCompanyId) return;
     this.loadingStore.show();
-    this.controlPreventivoService.listarTiposVacunaPorCompany(page, this.pageSize).subscribe({
+    this.controlPreventivoService.listarTiposVacunaPorCompany(page, this.pageSize()).subscribe({
       next: (res) => {
         this.vacunas.set(res.data?.content ?? []);
         this.vacunasTotal.set(res.data?.page?.totalElements ?? res.data?.totalElements ?? 0);
@@ -1214,7 +1194,7 @@ export class ComplementarioComponent implements OnInit {
   loadDesparasitantes(page = this.desparasitantesPage()) {
     if (!this.activeCompanyId) return;
     this.loadingStore.show();
-    this.controlPreventivoService.listarTiposDesparasitantePorCompany(page, this.pageSize).subscribe({
+    this.controlPreventivoService.listarTiposDesparasitantePorCompany(page, this.pageSize()).subscribe({
       next: (res) => {
         this.desparasitantes.set(res.data?.content ?? []);
         this.desparasitantesTotal.set(res.data?.page?.totalElements ?? res.data?.totalElements ?? 0);
@@ -1343,28 +1323,6 @@ export class ComplementarioComponent implements OnInit {
         this.loadingStore.hide();
       }
     });
-  }
-
-  confirmarEliminarVacuna(item: any) {
-    this.openConfirm(
-      'Eliminar vacuna',
-      '¿Está seguro de eliminar la vacuna «' + item.nombre + '»? Esta acción no se puede deshacer.',
-      'eliminar-vacuna',
-      item,
-      'danger',
-      'Eliminar'
-    );
-  }
-
-  confirmarEliminarDesparasitante(item: any) {
-    this.openConfirm(
-      'Eliminar desparasitante',
-      '¿Está seguro de eliminar el desparasitante «' + item.nombre + '»? Esta acción no se puede deshacer.',
-      'eliminar-desparasitante',
-      item,
-      'danger',
-      'Eliminar'
-    );
   }
 
 }

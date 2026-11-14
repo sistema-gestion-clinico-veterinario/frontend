@@ -1,4 +1,4 @@
-import { Component, ViewChild, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewChild, computed, input } from '@angular/core';
 import { FullCalendarComponent, FullCalendarModule } from '@fullcalendar/angular';
 import { CalendarOptions, EventInput } from '@fullcalendar/core';
 import dayGridPlugin from '@fullcalendar/daygrid';
@@ -7,6 +7,7 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 
 @Component({
   selector: 'app-agenda-full-calendar',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [FullCalendarModule],
   template: '<full-calendar #calendar [options]="resolvedOptions()" />'

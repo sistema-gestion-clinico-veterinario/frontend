@@ -453,9 +453,9 @@
                       </div>
                       <i class="pi pi-clock text-blue-500"></i>
                     </div>
-                    @if (horariosPorDia.length > 0) {
+                    @if (horariosPorDia().length > 0) {
                       <div class="flex flex-col divide-y divide-slate-100 max-h-44 overflow-y-auto bg-white rounded-lg border border-slate-100">
-                        @for (dia of horariosPorDia; track dia) {
+                        @for (dia of horariosPorDia(); track dia.diaSemana) {
                           <div class="flex items-center justify-between gap-3 px-3 py-2">
                             <span class="text-[11px] font-bold text-slate-700 shrink-0">{{ formatDiaSemana(dia.diaSemana) }}</span>
                             <div class="flex flex-wrap justify-end gap-1">
@@ -485,13 +485,13 @@
                     </label>
                     @if (availableSlots().length > 0) {
                       <div class="flex flex-col gap-3">
-                        @if (slotsManana.length > 0) {
+                        @if (slotsManana().length > 0) {
                           <div>
                             <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 flex items-center gap-1">
                               <i class="pi pi-sun text-[10px]"></i> Mañana
                             </p>
                             <div class="grid grid-cols-5 gap-1.5">
-                              @for (slot of slotsManana; track slot) {
+                              @for (slot of slotsManana(); track slot) {
                                 <button type="button" (click)="selectTimeSlot(slot)"
                                   [class]="citaForm.get('horaCita')?.value === slot ? 'bg-blue-500 text-white border-blue-500' : 'bg-white hover:bg-slate-50 text-slate-600 border-slate-200 hover:border-slate-300'"
                                   class="py-1.5 border rounded-lg text-xs font-semibold transition-all active:scale-95 cursor-pointer">
@@ -501,13 +501,13 @@
                             </div>
                           </div>
                         }
-                        @if (slotsTarde.length > 0) {
+                        @if (slotsTarde().length > 0) {
                           <div>
                             <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 flex items-center gap-1">
                               <i class="pi pi-moon text-[10px]"></i> Tarde
                             </p>
                             <div class="grid grid-cols-5 gap-1.5">
-                              @for (slot of slotsTarde; track slot) {
+                              @for (slot of slotsTarde(); track slot) {
                                 <button type="button" (click)="selectTimeSlot(slot)"
                                   [class]="citaForm.get('horaCita')?.value === slot ? 'bg-blue-500 text-white border-blue-500' : 'bg-white hover:bg-slate-50 text-slate-600 border-slate-200 hover:border-slate-300'"
                                   class="py-1.5 border rounded-lg text-xs font-semibold transition-all active:scale-95 cursor-pointer">

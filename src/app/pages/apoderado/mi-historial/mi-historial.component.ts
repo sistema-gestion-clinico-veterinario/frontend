@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { ToastModule } from 'primeng/toast';
@@ -13,6 +13,7 @@ import { HistoriaClinicaDetalle } from '../../../models/response/historia-clinic
 
 @Component({
   selector: 'app-mi-historial',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [CommonModule, ToastModule],
   providers: [MessageService],

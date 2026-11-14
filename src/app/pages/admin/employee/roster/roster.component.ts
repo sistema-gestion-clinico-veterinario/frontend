@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, ViewChild, ElementRef, AfterViewChecked, OnDestroy, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal, ViewChild, ElementRef, AfterViewChecked, OnDestroy, computed } from '@angular/core';
 import type ExcelJS from 'exceljs';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -21,6 +21,7 @@ import { TAMANO_MAXIMO_PAGINA } from '../../../../core/constants/paginacion.cons
 
 @Component({
   selector: 'app-roster',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [CommonModule, RouterModule, SelectModule, ButtonModule, ToastModule, ConfirmDialogModule, FormsModule, ScheduleFormComponent],
   providers: [MessageService, ConfirmationService],
@@ -491,12 +492,6 @@ export class RosterComponent implements OnInit, AfterViewChecked, OnDestroy {
     const horas = Math.floor(totalMin / 60);
     const mins  = totalMin % 60;
     return horas > 0 ? `${horas}h ${mins > 0 ? mins + 'min' : ''}`.trim() : `${mins}min`;
-  }
-
-  formatShiftDate(fecha: string): string {
-    if (!fecha) return '–';
-    const d = new Date(fecha + 'T00:00:00');
-    return d.toLocaleDateString('es-PE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   }
 
   editShift(shift: any) {

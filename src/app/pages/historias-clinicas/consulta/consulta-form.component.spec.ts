@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testin
 import { ConsultaFormComponent } from './consulta-form.component';
 import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { MessageService, ConfirmationService } from 'primeng/api';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { AuthStore } from '../../../store/auth.store';
 import { of, throwError } from 'rxjs';
 import { MenuItemDTO } from '../../../models/response/auth-login-response.model';
@@ -83,8 +83,7 @@ describe('ConsultaFormComponent – permission computed signals', () => {
   });
 
   it('does not persist the consultation when a clinical field changes', fakeAsync(() => {
-    const service = TestBed.inject(HistoriaClinicaService);
-    const updateSpy = spyOn(service, 'updateConsulta');
+    const http = TestBed.inject(HttpTestingController);
     store.setAuth({ ...baseAuth, roles: ['ROLE_EMPLEADO'], menu: [makeHistoriasItem()] });
 
     component.ngOnInit();
@@ -96,7 +95,7 @@ describe('ConsultaFormComponent – permission computed signals', () => {
     });
     tick(1500);
 
-    expect(updateSpy).not.toHaveBeenCalled();
+    http.expectNone(req => req.method === 'PUT' && req.url.includes('/consultations/'));
   }));
 
   it('si la consulta no se puede abrir, indica el motivo en lugar de dejar la pantalla vacía', () => {

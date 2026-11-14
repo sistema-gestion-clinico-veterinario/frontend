@@ -89,11 +89,6 @@ export class EmpleadoService {
     return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${empleadoId}/schedule-bulk${params}`);
   }
 
-  getSchedulesReport(companyId?: number): Observable<ApiResponse<any[]>> {
-    const params = companyId ? `?companyId=${companyId}` : '';
-    return this.http.get<ApiResponse<any[]>>(`${this.apiUrl}/schedules-report${params}`);
-  }
-
   requestPasswordReset(userId: number | null, email?: string, companyId?: number | null): Observable<ApiResponse<void>> {
     const url = `${environment.apiUrl}/admin/users/reset-password`;
     return this.http.post<ApiResponse<void>>(url, { userId, email, companyId: companyId ?? null });

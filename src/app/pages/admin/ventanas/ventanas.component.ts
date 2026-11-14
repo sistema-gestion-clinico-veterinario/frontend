@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastModule } from 'primeng/toast';
@@ -21,6 +21,7 @@ interface DisplayGroup {
 
 @Component({
   selector: 'app-ventanas',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [CommonModule, FormsModule, ToastModule, CdkDrag, CdkDropList, CdkDropListGroup, CdkDragHandle],
   providers: [MessageService],
@@ -138,10 +139,6 @@ expandedGroups = signal<Set<string>>(new Set());
   activeVistas = computed(() => this.vistas().filter(v => v.activo).length);
   inactiveVistas = computed(() => this.vistas().filter(v => !v.activo).length);
   groupsCount = computed(() => this.displayGroups().filter(g => g.key !== STANDALONE_KEY).length);
-  standaloneCount = computed(() => this.displayGroups().find(g => g.key === STANDALONE_KEY)?.items.length ?? 0);
-
-  openGroup = signal<string | null>(null);
-
  toggleGroup(groupKey: string) {
   this.expandedGroups.update(groups => {
     const newGroups = new Set(groups);

@@ -1,7 +1,8 @@
-import { Component, ElementRef, computed, input, model, output, viewChildren } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, computed, input, model, output, viewChildren } from '@angular/core';
 
 @Component({
   selector: 'app-codigo-verificacion',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   template: `
     <span class="sr-only" [id]="etiquetaId">Código de {{ longitud() }} dígitos</span>

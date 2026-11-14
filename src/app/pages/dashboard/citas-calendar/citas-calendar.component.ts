@@ -108,11 +108,6 @@ export class DashboardCitasCalendarComponent {
     }
   }
 
-  cerrarPopover(): void {
-    this.cancelarCierre();
-    this.popover.set(null);
-  }
-
   irAAgenda(): void {
     this.router.navigate(['/citas/agenda']);
   }

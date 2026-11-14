@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnInit, Output, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, OnInit, Output, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HistoriaClinicaService } from '../../../../core/services/historia-clinica.service';
 import { SugerenciaControlResponse } from '../../../../models/response/sugerencia-control-response';
@@ -6,6 +6,7 @@ import { SugerenciaControlResponse } from '../../../../models/response/sugerenci
 
 @Component({
   selector: 'app-sugerencias-control',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [CommonModule],
   templateUrl: './sugerencias-control.component.html'

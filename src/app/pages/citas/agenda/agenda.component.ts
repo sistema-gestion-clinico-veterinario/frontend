@@ -158,12 +158,6 @@ export class AgendaComponent implements OnInit, OnDestroy {
       && this.selectedServiceAllowsEmergency()
   );
 
-  readonly empresaSinHorario = computed(() => {
-    const vetId = this.citaForm?.get('veterinarioId')?.value;
-    if (!vetId) return false;
-    return this.horariosActivos.length === 0;
-  });
-
   readonly totalCita = computed(() => {
     const cita = this.citaParaPago();
     if (!cita?.servicioId) return 0;
@@ -190,8 +184,6 @@ export class AgendaComponent implements OnInit, OnDestroy {
     return recibido > 0;
   });
 
-  readonly pagoInsuficienteParaAtencion = computed(() => false);
-
   citas            = signal<CitaResponse[]>([]);
   cargando         = signal<boolean>(true);
   private loadTimeout: any = null;
@@ -207,7 +199,6 @@ export class AgendaComponent implements OnInit, OnDestroy {
     canceladas: 0
   });
   displayModal     = signal<boolean>(false);
-  displayCancelModal = signal<boolean>(false);
   displayDetalleCita = signal<boolean>(false);
   citaDetalle        = signal<CitaResponse | null>(null);
   displayCajaModal   = signal<boolean>(false);
@@ -222,9 +213,6 @@ export class AgendaComponent implements OnInit, OnDestroy {
 
   onYapePhoneChange(val: string) { this.yapePhone.set(val.replace(/\D/g, '').slice(0, 9)); }
   onYapeOtpChange(val: string)   { this.yapeOtp.set(val.replace(/\D/g, '').slice(0, 6)); }
-  cancelMotivo     = signal<string>('');
-  cancelMotivoAttempted = signal<boolean>(false);
-  selectedCita     = signal<CitaResponse | null>(null);
   isReprogramando  = signal<boolean>(false);
   originalCitaEdit = signal<CitaResponse | null>(null);
   isEditing = computed(() => !!this.citaForm?.get('id')?.value && !this.isReprogramando());
@@ -432,8 +420,6 @@ export class AgendaComponent implements OnInit, OnDestroy {
     eventAllow: (dropInfo) => !this.isPastDateTime(dropInfo.start),
     eventDrop: (info) => this.onCalendarEventDrop(info)
   };
-
-  readonly HORAS_DIA = Array.from({ length: 15 }, (_, i) => i + 7);
 
   getVeterinarioLabel(): string {
     const id = this.citaForm.get('veterinarioId')?.value;
@@ -2194,10 +2180,6 @@ export class AgendaComponent implements OnInit, OnDestroy {
     return date.getTime() < Date.now() - 60_000;
   }
 
-  canCobrar(cita: CitaResponse): boolean {
-    return false;
-  }
-
   abrirCaja(cita: CitaResponse) {
     this.paymentIdempotencyKey = null;
     this.displayDetalleCita.set(false);
@@ -2270,27 +2252,11 @@ export class AgendaComponent implements OnInit, OnDestroy {
     return `payment:${citaId}:${randomPart}`;
   }
 
-  get horarioDelDiaSeleccionado(): HorarioEmpleadoResponse | null {
-    const v = this.citaForm.get('fechaHoraInicio')?.value;
-    if (!v) return null;
-    const fecha = typeof v === 'string' ? new Date(v) : v as Date;
-    const dias = ['DOMINGO', 'LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO'];
-    return this.horariosVeterinario().find(h => h.diaSemana === dias[fecha.getDay()]) ?? null;
-  }
+  readonly horariosActivos = computed<HorarioEmpleadoResponse[]>(() =>
+    this.horariosVeterinario().filter(h => h.activo !== false)
+  );
 
-  get mensajeHorario(): string {
-    const h = this.horarioDelDiaSeleccionado;
-    if (!h) return 'El médico no atiende ese día de la semana.';
-    return `Fuera del horario del médico. Disponible: ${h.horaInicio} – ${h.horaFin}`;
-  }
-
-  get horariosActivos(): HorarioEmpleadoResponse[] {
-    return this.horariosVeterinario().filter(h => h.activo !== false);
-  }
-
-  get horariosResumen(): HorarioResumen[] {
-    return this.buildHorarioResumen(this.horariosActivos);
-  }
+  readonly horariosResumen = computed<HorarioResumen[]>(() => this.buildHorarioResumen(this.horariosActivos()));
 
   formatDiaSemana(dia: string): string {
     const labels: Record<string, string> = {
@@ -2370,9 +2336,6 @@ export class AgendaComponent implements OnInit, OnDestroy {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   }
   getCitasDia(d: Date): CitaResponse[] { return this.citasPorDia()[this.toDateStr(d)] ?? []; }
-  getCitasHora(d: Date, h: number): CitaResponse[] {
-    return this.getCitasDia(d).filter(c => new Date(c.fechaHoraInicio).getHours() === h);
-  }
   esHoy(d: Date): boolean { return this.toDateStr(d) === this.toDateStr(new Date()); }
   esMesActual(d: Date): boolean {
     const b = this.fechaBase();

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TableModule } from 'primeng/table';
@@ -10,6 +10,7 @@ import { PagoPortalResponse } from '../../../models/response/pago-portal-respons
 
 @Component({
   selector: 'app-mis-pagos',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [CommonModule, FormsModule, TableModule, PaginatorModule, ToastModule],
   providers: [MessageService],
@@ -59,11 +60,11 @@ export class MisPagosComponent implements OnInit {
     });
   }
 
-  get pagosFiltrados(): PagoPortalResponse[] {
+  readonly pagosFiltrados = computed<PagoPortalResponse[]>(() => {
     const estado = this.filtroEstado();
     if (!estado) return this.pagos();
     return this.pagos().filter(p => p.estadoPago === estado);
-  }
+  });
 
   verDetalle(pago: PagoPortalResponse) {
     this.selectedPago.set(pago);

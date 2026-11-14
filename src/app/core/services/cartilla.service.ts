@@ -5,15 +5,7 @@ import { ApiResponse } from '../../models/response/api-response';
 import { Page } from '../../models/response/page';
 import { MascotaCartillaResponse } from '../../models/response/mascota-cartilla-response';
 import { SKIP_GLOBAL_LOADING } from '../interceptors/api.interceptor';
-import {
-  CartillaAplicacionRequest,
-  CartillaAplicacionResponse,
-  AplicacionPreventiva,
-  TipoVacuna,
-  TipoDesparasitante,
-  CartillaDetalle
-} from '../../models/cartilla.model';
-import { RecordatorioWhatsAppResponse } from '../../models/response/recordatorio-whatsapp-response';
+import { CartillaAplicacionRequest, CartillaAplicacionResponse, AplicacionPreventiva, TipoVacuna, CartillaDetalle } from '../../models/cartilla.model';
 
 @Injectable({ providedIn: 'root' })
 export class CartillaService {
@@ -45,14 +37,6 @@ export class CartillaService {
     return this.http.get<ApiResponse<Page<MascotaCartillaResponse>>>(`${this.url}/pets${query}`, { context });
   }
 
-  editarVacunacion(id: number, request: any) {
-    return this.http.put<ApiResponse<CartillaAplicacionResponse>>(`${this.url}/vaccinations/${id}`, request);
-  }
-
-  editarDesparasitacion(id: number, request: any) {
-    return this.http.put<ApiResponse<CartillaAplicacionResponse>>(`${this.url}/dewormings/${id}`, request);
-  }
-
   cambiarEstadoVacunacion(id: number, activo: boolean) {
     return this.http.patch<ApiResponse<void>>(`${this.url}/vaccinations/${id}/status?activo=${activo}`, {});
   }
@@ -65,11 +49,4 @@ export class CartillaService {
     return this.http.get<ApiResponse<TipoVacuna[]>>(`${this.preventivosUrl}/pets/${petId}/vaccine-types`);
   }
 
-  listarTiposDesparasitante(petId: number) {
-    return this.http.get<ApiResponse<TipoDesparasitante[]>>(`${this.preventivosUrl}/pets/${petId}/deworming-products`);
-  }
-
-  listarRecordatoriosPreventivosWhatsApp() {
-    return this.http.get<ApiResponse<RecordatorioWhatsAppResponse[]>>(`${this.url}/preventive-reminders/whatsapp`);
-  }
 }

@@ -252,10 +252,10 @@
             @if (especialidadesTotal() > 0) {
               <div class="border-t border-slate-100 px-4">
                 <p-paginator
-                  [rows]="pageSize"
+                  [rows]="pageSize()"
                   [rowsPerPageOptions]="pageSizeOptions"
                   [totalRecords]="especialidadesTotal()"
-                  [first]="especialidadesPage() * pageSize"
+                  [first]="especialidadesPage() * pageSize()"
                   [showCurrentPageReport]="true"
                   currentPageReportTemplate="{first}–{last} de {totalRecords}"
                   (onPageChange)="onEspecialidadesPageChange($event)"
@@ -404,10 +404,10 @@
             @if (tiposEmpleadoTotal() > 0) {
               <div class="border-t border-slate-100 px-4">
                 <p-paginator
-                  [rows]="pageSize"
+                  [rows]="pageSize()"
                   [rowsPerPageOptions]="pageSizeOptions"
                   [totalRecords]="tiposEmpleadoTotal()"
-                  [first]="tiposEmpleadoPage() * pageSize"
+                  [first]="tiposEmpleadoPage() * pageSize()"
                   [showCurrentPageReport]="true"
                   currentPageReportTemplate="{first}–{last} de {totalRecords}"
                   (onPageChange)="onTiposEmpleadoPageChange($event)"
@@ -562,10 +562,10 @@
             @if (serviciosTotal() > 0) {
               <div class="border-t border-slate-100 px-4">
                 <p-paginator
-                  [rows]="pageSize"
+                  [rows]="pageSize()"
                   [rowsPerPageOptions]="pageSizeOptions"
                   [totalRecords]="serviciosTotal()"
-                  [first]="serviciosPage() * pageSize"
+                  [first]="serviciosPage() * pageSize()"
                   [showCurrentPageReport]="true"
                   currentPageReportTemplate="{first}–{last} de {totalRecords}"
                   (onPageChange)="onServiciosPageChange($event)"
@@ -682,7 +682,7 @@
             }
             @if (vacunasTotal() > 0) {
               <p-paginator
-                [rows]="pageSize" [rowsPerPageOptions]="pageSizeOptions" [totalRecords]="vacunasTotal()" [first]="vacunasPage() * pageSize"
+                [rows]="pageSize()" [rowsPerPageOptions]="pageSizeOptions" [totalRecords]="vacunasTotal()" [first]="vacunasPage() * pageSize()"
                 (onPageChange)="onVacunasPageChange($event)"
                 [showCurrentPageReport]="true" currentPageReportTemplate="{first}–{last} de {totalRecords}"
                 styleClass="!border-none !bg-transparent !py-3"
@@ -797,7 +797,7 @@
             }
             @if (desparasitantesTotal() > 0) {
               <p-paginator
-                [rows]="pageSize" [rowsPerPageOptions]="pageSizeOptions" [totalRecords]="desparasitantesTotal()" [first]="desparasitantesPage() * pageSize"
+                [rows]="pageSize()" [rowsPerPageOptions]="pageSizeOptions" [totalRecords]="desparasitantesTotal()" [first]="desparasitantesPage() * pageSize()"
                 (onPageChange)="onDesparasitantesPageChange($event)"
                 [showCurrentPageReport]="true" currentPageReportTemplate="{first}–{last} de {totalRecords}"
                 styleClass="!border-none !bg-transparent !py-3"

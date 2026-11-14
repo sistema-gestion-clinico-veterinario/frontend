@@ -6,7 +6,6 @@ import { CitaResponse } from '../../models/response/cita-response';
 import { Page } from '../../models/response/page';
 import { ApiResponse } from '../../models/response/api-response';
 import { EstadoCita } from '../enums/estado-cita.enum';
-import { RecordatorioWhatsAppResponse } from '../../models/response/recordatorio-whatsapp-response';
 import { AgendaCounters } from '../../models/response/agenda-counters-response';
 
 @Injectable({
@@ -72,10 +71,6 @@ export class CitaService {
     return this.http.patch<ApiResponse<CitaResponse>>(`${this.apiUrl}/${id}/cancel?motivo=${encodeURIComponent(motivo)}`, {});
   }
 
-  eliminarCita(id: number) {
-    return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`);
-  }
-
   reprogramar(id: number, data: CitaReprogramacionRequest) {
     return this.http.patch<ApiResponse<CitaResponse>>(`${this.apiUrl}/${id}/reschedule`, data);
   }
@@ -103,7 +98,4 @@ export class CitaService {
     return this.http.get<ApiResponse<CitaResponse[]>>(`${this.apiUrl}/mascota/${mascotaId}/servicios`);
   }
 
-  listarRecordatoriosWhatsApp() {
-    return this.http.get<ApiResponse<RecordatorioWhatsAppResponse[]>>(`${this.apiUrl}/reminders/whatsapp`);
-  }
 }

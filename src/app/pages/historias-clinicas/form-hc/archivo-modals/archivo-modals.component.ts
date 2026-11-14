@@ -1,10 +1,11 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, Output, EventEmitter } from '@angular/core';
 
 import { SafeResourceUrl } from '@angular/platform-browser';
 import { ArchivoClinicoResponse } from '../../../../models/response/archivo-clinico-response';
 
 @Component({
   selector: 'app-archivo-modals',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [],
   templateUrl: './archivo-modals.component.html',

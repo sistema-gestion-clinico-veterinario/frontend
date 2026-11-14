@@ -1,5 +1,5 @@
 import { AdminEmailChangeModalComponent } from '../../../shared/components/admin/admin-email-change-modal/admin-email-change-modal.component';
-import { Component, OnInit, DestroyRef, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Subject, debounceTime, finalize, forkJoin } from 'rxjs';
 import { CommonModule } from '@angular/common';
@@ -41,6 +41,7 @@ import { TAMANO_MAXIMO_PAGINA } from '../../../core/constants/paginacion.constan
 
 @Component({
   selector: 'app-client',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
     CommonModule,
@@ -107,8 +108,8 @@ export class ClientComponent implements OnInit {
 
   searchNombre = signal('');
   searchDocumento = signal('');
-  currentPage = 0;
-  pageSize = 10;
+  currentPage = signal(0);
+  pageSize = signal(10);
   readonly pageSizeOptions = [10, 20, 50, 100];
   private readonly searchTrigger = new Subject<void>();
   private hasSearched = false;
@@ -415,12 +416,12 @@ export class ClientComponent implements OnInit {
     const companyId = this.activeCompanyId;
     const isFirstLoad = this.clients().length === 0;
     if (isFirstLoad) this.cargando.set(true);
-    this.currentPage = page;
+    this.currentPage.set(page);
 
     const nombre = this.normalizeNameFilter(this.searchNombre()) || undefined;
     const numeroDocumento = this.searchDocumento().trim().toUpperCase() || undefined;
 
-    this.apoderadoService.listar(companyId ?? undefined, nombre, numeroDocumento, page, this.pageSize).pipe(
+    this.apoderadoService.listar(companyId ?? undefined, nombre, numeroDocumento, page, this.pageSize()).pipe(
       finalize(() => this.cargando.set(false))
     ).subscribe({
       next: (res) => {
@@ -435,8 +436,8 @@ export class ClientComponent implements OnInit {
 
   onClientPageChange(event: any): void {
     const nextSize = Number(event.rows) || 10;
-    const nextPage = nextSize === this.pageSize ? Number(event.page) || 0 : 0;
-    this.pageSize = nextSize;
+    const nextPage = nextSize === this.pageSize() ? Number(event.page) || 0 : 0;
+    this.pageSize.set(nextSize);
     this.loadClients(nextPage);
   }
 
@@ -822,7 +823,7 @@ export class ClientComponent implements OnInit {
       () => this.apoderadoService.habilitarAccesoPortal(client.id).subscribe({
         next: response => {
           this.messageService.add({ severity: 'success', summary: 'Acceso habilitado', detail: response.message });
-          this.loadClients(this.currentPage);
+          this.loadClients(this.currentPage());
         },
         error: err => this.messageService.add({
           severity: 'error', summary: 'No se pudo habilitar',
@@ -841,7 +842,7 @@ export class ClientComponent implements OnInit {
       reason => this.apoderadoService.revocarAccesoPortal(client.id, reason).subscribe({
         next: response => {
           this.messageService.add({ severity: 'success', summary: 'Acceso revocado', detail: response.message });
-          this.loadClients(this.currentPage);
+          this.loadClients(this.currentPage());
         },
         error: err => this.messageService.add({
           severity: 'error', summary: 'No se pudo revocar',

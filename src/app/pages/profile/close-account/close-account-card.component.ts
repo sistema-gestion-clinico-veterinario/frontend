@@ -1,4 +1,4 @@
-import { Component, ElementRef, Injector, OnDestroy, OnInit, afterNextRender, computed, inject, signal, viewChildren } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, Injector, OnDestroy, OnInit, afterNextRender, computed, inject, signal, viewChildren } from '@angular/core';
 import { AuthService } from '../../../core/services/auth.service';
 import { AccountClosureEligibility } from '../../../models/response/account-closure-eligibility-response';
 import { SessionService } from '../../../core/services/session.service';
@@ -9,6 +9,7 @@ const ESPERA_REENVIO_SEGUNDOS = 60;
 
 @Component({
   selector: 'app-close-account-card',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   templateUrl: './close-account-card.component.html'
 })

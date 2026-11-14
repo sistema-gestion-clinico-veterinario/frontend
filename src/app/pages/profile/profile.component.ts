@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject, signal, computed, ViewChild, ElementRef } from '@angular/core';
+import { Component, HostListener, OnInit, OnDestroy, inject, signal, computed, ViewChild, ElementRef } from '@angular/core';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -444,13 +444,21 @@ export class ProfileComponent implements OnInit, OnDestroy {
     });
   }
 
-  get horariosResumen(): HorarioResumen[] {
-    const horarios = this.profile()?.horarios?.filter(h => h.activo !== false) ?? [];
-    return this.buildHorarioResumen(horarios).filter(h => this.estaVigente(h));
+  private readonly diaActual = signal(this.claveDeHoy());
+
+  @HostListener('document:visibilitychange')
+  actualizarDiaActual(): void {
+    this.diaActual.set(this.claveDeHoy());
   }
 
-  get semanaCompleta(): HorarioDiaGrupo[] {
-    const resumen = this.horariosResumen;
+  readonly horariosResumen = computed<HorarioResumen[]>(() => {
+    this.diaActual();
+    const horarios = this.profile()?.horarios?.filter(h => h.activo !== false) ?? [];
+    return this.buildHorarioResumen(horarios).filter(h => this.estaVigente(h));
+  });
+
+  readonly semanaCompleta = computed<HorarioDiaGrupo[]>(() => {
+    const resumen = this.horariosResumen();
     const groups = new Map<string, HorarioDiaGrupo>();
 
     for (const h of resumen) {
@@ -468,15 +476,17 @@ export class ProfileComponent implements OnInit, OnDestroy {
     return DIAS_SEMANA_ORDEN.map(dia =>
       groups.get(dia) ?? { diaSemana: dia, label: this.formatDiaSemana(dia), bloques: [] }
     );
-  }
+  });
 
-  get diaDeHoy(): HorarioDiaGrupo {
+  readonly diaDeHoy = computed<HorarioDiaGrupo>(() => {
+    this.diaActual();
     const nombres = ['DOMINGO', 'LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO'];
     const dia = nombres[new Date().getDay()];
-    return this.semanaCompleta.find(d => d.diaSemana === dia) ?? { diaSemana: dia, label: this.formatDiaSemana(dia), bloques: [] };
-  }
+    return this.semanaCompleta().find(d => d.diaSemana === dia) ?? { diaSemana: dia, label: this.formatDiaSemana(dia), bloques: [] };
+  });
 
-  get turnosHoy(): string[] {
+  readonly turnosHoy = computed<string[]>(() => {
+    this.diaActual();
     const ahora = new Date();
     const fechaHoy = `${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2, '0')}-${String(ahora.getDate()).padStart(2, '0')}`;
     const dias = ['DOMINGO', 'LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO'];
@@ -497,25 +507,11 @@ export class ProfileComponent implements OnInit, OnDestroy {
       .filter((turno): turno is string => turno.length > 0);
 
     return Array.from(new Set(turnos));
-  }
+  });
 
-  get matrizHorario(): { horaSlot: string; dias: (HorarioResumen | null)[] }[] {
-    const slotMap = new Map<string, Map<string, HorarioResumen>>();
-    for (const h of this.horariosResumen) {
-      const slot = `${h.horaInicio} – ${h.horaFin}`;
-      if (!slotMap.has(slot)) slotMap.set(slot, new Map());
-      slotMap.get(slot)!.set(h.diaSemana, h);
-    }
-    const slots = Array.from(slotMap.keys()).sort();
-    return slots.map(slot => ({
-      horaSlot: slot,
-      dias: DIAS_SEMANA_ORDEN.map(dia => slotMap.get(slot)!.get(dia) ?? null)
-    }));
-  }
-
-  get gridHorario(): { hora: string; dias: boolean[] }[] {
+  readonly gridHorario = computed<{ hora: string; dias: boolean[] }[]>(() => {
     const bloquesPorDia = new Map<string, { inicio: number; fin: number }[]>();
-    for (const h of this.horariosResumen) {
+    for (const h of this.horariosResumen()) {
       if (!bloquesPorDia.has(h.diaSemana)) bloquesPorDia.set(h.diaSemana, []);
       bloquesPorDia.get(h.diaSemana)!.push({
         inicio: parseInt(h.horaInicio.split(':')[0], 10),
@@ -541,11 +537,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
       filas.push({ hora: `${horaInicio} – ${horaFin}`, dias });
     }
     return filas;
-  }
-
-  get diasCortos(): string[] {
-    return ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
-  }
+  });
 
   fechaInicioSemana(): string {
     const hoy = new Date();
@@ -569,16 +561,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
     const hoy = new Date().getDay();
     const map = [1, 2, 3, 4, 5, 6, 0];
     return map[colIndex] === hoy;
-  }
-
-  fechaDelDia(colIndex: number): number {
-    const map = [1, 2, 3, 4, 5, 6, 0];
-    const targetDay = map[colIndex];
-    const hoy = new Date();
-    const diff = targetDay - hoy.getDay();
-    const fecha = new Date(hoy);
-    fecha.setDate(hoy.getDate() + diff);
-    return fecha.getDate();
   }
 
   formatDiaSemana(dia: string): string {
@@ -637,6 +619,11 @@ export class ProfileComponent implements OnInit, OnDestroy {
           totalFechas: fechas.length
         };
       });
+  }
+
+  private claveDeHoy(): string {
+    const ahora = new Date();
+    return `${ahora.getFullYear()}-${ahora.getMonth() + 1}-${ahora.getDate()}`;
   }
 
   private formatHora(hora: string): string {

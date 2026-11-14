@@ -1,4 +1,4 @@
-import { Component, DestroyRef, OnInit, inject, signal, effect } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -33,6 +33,7 @@ interface ConfirmContext<T> {
 
 @Component({
   selector: 'app-categorias-producto',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, PaginatorModule, SkeletonModule, ToastModule, HasPermissionDirective],
   providers: [MessageService],
@@ -131,7 +132,7 @@ export class CategoriasProductoComponent implements OnInit {
     descripcion: ['', [Validators.maxLength(300)]]
   });
 
-  pageSize = 10;
+  pageSize = signal(10);
   readonly pageSizeOptions = [10, 20, 50, 100];
 
   confirmDialog = signal<ConfirmContext<CategoriaProductoResponse | UnidadMedidaResponse | MarcaProductoResponse> | null>(null);
@@ -151,7 +152,7 @@ export class CategoriasProductoComponent implements OnInit {
   loadCategorias(page = this.categoriasPage()) {
     if (!this.activeCompanyId) return;
     const cid = this.activeCompanyId ?? undefined;
-    this.categoriaProductoService.listar(cid, page, this.pageSize, this.searchQuery(), this.activeFilter()).subscribe({
+    this.categoriaProductoService.listar(cid, page, this.pageSize(), this.searchQuery(), this.activeFilter()).subscribe({
       next: (res) => {
         this.categorias.set(res.data.content || []);
         this.categoriasTotal.set(this.pageTotal(res.data));
@@ -167,8 +168,8 @@ export class CategoriasProductoComponent implements OnInit {
 
   onCategoriasPageChange(event: any) {
     const nextSize = Number(event.rows) || 10;
-    const nextPage = nextSize === this.pageSize ? Number(event.page) || 0 : 0;
-    this.pageSize = nextSize;
+    const nextPage = nextSize === this.pageSize() ? Number(event.page) || 0 : 0;
+    this.pageSize.set(nextSize);
     this.loadCategorias(nextPage);
   }
 
@@ -239,7 +240,7 @@ export class CategoriasProductoComponent implements OnInit {
   loadUnidades(page = this.unidadesPage()) {
     if (!this.activeCompanyId) return;
     const cid = this.activeCompanyId ?? undefined;
-    this.unidadMedidaService.listar(cid, page, this.pageSize, this.searchQuery(), this.activeFilter()).subscribe({
+    this.unidadMedidaService.listar(cid, page, this.pageSize(), this.searchQuery(), this.activeFilter()).subscribe({
       next: (res) => {
         this.unidades.set(res.data.content || []);
         this.unidadesTotal.set(this.pageTotal(res.data));
@@ -255,8 +256,8 @@ export class CategoriasProductoComponent implements OnInit {
 
   onUnidadesPageChange(event: any) {
     const nextSize = Number(event.rows) || 10;
-    const nextPage = nextSize === this.pageSize ? Number(event.page) || 0 : 0;
-    this.pageSize = nextSize;
+    const nextPage = nextSize === this.pageSize() ? Number(event.page) || 0 : 0;
+    this.pageSize.set(nextSize);
     this.loadUnidades(nextPage);
   }
 
@@ -298,7 +299,7 @@ export class CategoriasProductoComponent implements OnInit {
   loadMarcas(page = this.marcasPage()) {
     if (!this.activeCompanyId) return;
     const cid = this.activeCompanyId ?? undefined;
-    this.marcaProductoService.listar(cid, page, this.pageSize, this.searchQuery(), this.activeFilter()).subscribe({
+    this.marcaProductoService.listar(cid, page, this.pageSize(), this.searchQuery(), this.activeFilter()).subscribe({
       next: (res) => {
         this.marcas.set(res.data.content || []);
         this.marcasTotal.set(this.pageTotal(res.data));
@@ -314,8 +315,8 @@ export class CategoriasProductoComponent implements OnInit {
 
   onMarcasPageChange(event: any) {
     const nextSize = Number(event.rows) || 10;
-    const nextPage = nextSize === this.pageSize ? Number(event.page) || 0 : 0;
-    this.pageSize = nextSize;
+    const nextPage = nextSize === this.pageSize() ? Number(event.page) || 0 : 0;
+    this.pageSize.set(nextSize);
     this.loadMarcas(nextPage);
   }
 

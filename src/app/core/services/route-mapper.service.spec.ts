@@ -18,7 +18,4 @@ describe('RouteMapperService', () => {
     expect(service.getRoute('VISTA_INEXISTENTE')).toBeNull();
   });
 
-  it('returns the provided default route when code is unknown', () => {
-    expect(service.getRouteOrDefault('VISTA_INEXISTENTE', '/dashboard')).toBe('/dashboard');
-  });
 });

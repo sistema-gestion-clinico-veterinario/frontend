@@ -66,8 +66,6 @@ export class CartillaComponent implements OnInit {
   mascotaModel: MascotaResponse | null = null;
   buscando           = signal(false);
   showDropdown       = signal(false);
-  dropdownAbierto    = false;
-
   // Listado de mascotas con vacunación
   mascotasLista      = signal<MascotaCartillaResponse[]>([]);
   filtroEspecie      = '';
@@ -103,13 +101,6 @@ export class CartillaComponent implements OnInit {
     { label: 'Meses', value: 'MESES' }
   ];
   readonly fechaHoyLima = this.fechaLocalLima();
-
-  readonly precioSeleccionado = computed(() => {
-    if (this.modo() === 'VACUNACION') {
-      return this.tiposVacuna().find((v) => v.id === this.tipoVacunaId)?.precio ?? null;
-    }
-    return this.tiposDesparasitante().find((d) => d.id === this.tipoDesparasitanteId)?.precio ?? null;
-  });
 
   readonly sinCatalogo = computed(() => {
     if (this.cargandoCtrl() || !this.mascotaSel()) return false;
@@ -148,12 +139,6 @@ export class CartillaComponent implements OnInit {
   matriz    = signal<AplicacionPreventiva[]>([]);
   guardando = signal(false);
 
-  readonly tipoConfig = computed(() =>
-    this.modo() === 'VACUNACION'
-      ? { titulo: 'Cartilla de Vacunación', check: 'vacuna' }
-      : { titulo: 'Cartilla de Desparasitación', check: 'desparasitación' }
-  );
-
   readonly controlesOrdenados = computed(() =>
     this.controles()
       .filter((c) => c.tipo === this.modo() && c.estado !== 'APLICADO')
@@ -164,10 +149,6 @@ export class CartillaComponent implements OnInit {
     this.controlesOrdenados().filter(c => c.estado === 'ATRASADO').length
   );
 
-  readonly controlesProgramados = computed(() =>
-    this.controlesOrdenados().filter(c => c.estado !== 'ATRASADO').length
-  );
-
   readonly serviciosModo = computed(() => this.serviciosPreventivos().filter((s) =>
     s.tipoControlPreventivo === this.modo()
   ));
@@ -176,9 +157,6 @@ export class CartillaComponent implements OnInit {
   readonly desparasitacionesMatriz = computed(() => this.matriz().filter((a) => a.tipo === 'DESPARASITACION'));
   readonly aplicacionesModo = computed(() => this.modo() === 'VACUNACION'
     ? this.vacunasMatriz() : this.desparasitacionesMatriz());
-
-  readonly totalVacunas = computed(() => this.vacunasMatriz().length);
-  readonly totalDesparasitaciones = computed(() => this.desparasitacionesMatriz().length);
 
   readonly proximaAplicacion = computed(() => {
     const pendientes = this.controles()
@@ -345,19 +323,6 @@ export class CartillaComponent implements OnInit {
     this.cargarDatosMascota(value.id);
   }
 
-  buscarMascotaDesdeBarra() {
-    const primera = this.mascotaSugerencias()[0];
-    if (primera) {
-      this.onAutocompleteSelect(primera);
-      return;
-    }
-    this.msgService.add({
-      severity: 'info',
-      summary: 'Selecciona un paciente',
-      detail: 'Escribe el nombre y selecciona una mascota de los resultados.'
-    });
-  }
-
   seleccionarMascota(m: MascotaCartillaResponse) {
     this.searchQuery = m.nombreCompleto;
     this.mascotaService.obtenerPorId(m.id).subscribe({
@@ -422,35 +387,6 @@ export class CartillaComponent implements OnInit {
       error: () => {
         this.cargandoCtrl.set(false);
         this.msgService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cargar la cartilla' });
-      },
-      complete: () => this.cargandoCtrl.set(false)
-    });
-  }
-
-  private cargarTiposVacuna(petId: number) {
-    this.preventivoService.listarTiposVacuna(petId).subscribe({
-      next: (res) => this.tiposVacuna.set(res.data ?? []),
-      error: () => this.msgService.add({ severity: 'warn', summary: 'Aviso', detail: 'No se pudieron cargar los tipos de vacuna' })
-    });
-  }
-
-  private cargarTiposDesparasitante(petId: number) {
-    this.cartillaService.listarTiposDesparasitante(petId).subscribe({
-      next: (res) => this.tiposDesparasitante.set(res.data ?? []),
-      error: () => this.msgService.add({ severity: 'warn', summary: 'Aviso', detail: 'No se pudieron cargar los desparasitantes' })
-    });
-  }
-
-  private cargarControles(petId: number) {
-    this.cargandoCtrl.set(true);
-    this.preventivoService.listarControles(petId).subscribe({
-      next: (res) => {
-        this.controles.set(res.data ?? []);
-        this.controlReprogramandoId.set(null);
-      },
-      error: () => {
-        this.cargandoCtrl.set(false);
-        this.msgService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar los controles preventivos' });
       },
       complete: () => this.cargandoCtrl.set(false)
     });
@@ -688,14 +624,6 @@ export class CartillaComponent implements OnInit {
     return etiquetas[estado] ?? estado;
   }
 
-  severidadEstadoPreventivo(estado: string) {
-    if (estado === 'ATRASADO') return 'danger';
-    if (estado === 'PENDIENTE' || estado === 'PROXIMO') return 'warn';
-    if (estado === 'SUSPENDIDO_POR_CITA') return 'info';
-    if (estado === 'CANCELADO') return 'contrast';
-    return 'success';
-  }
-
   tipoLabel(tipo: string) {
     return tipo === 'VACUNACION' ? 'Vacunación' : 'Desparasitación';
   }
@@ -737,11 +665,6 @@ export class CartillaComponent implements OnInit {
     this.limpiarAplicacion();
   }
 
-  confirmarFechaProgramacion(fecha: Date | null) {
-    this.progFechaCalendario = fecha;
-    this.progFecha = this.aFechaIso(fecha);
-  }
-
   onprogFechaChange(event: Event) {
     const value = (event.target as HTMLInputElement).value;
     this.progFecha = value;
@@ -752,29 +675,15 @@ export class CartillaComponent implements OnInit {
     this.fechaReprogramacion.set(value);
   }
 
-  confirmarFechaReprogramacion(fecha: Date | null) {
-    this.fechaReprogramacionCalendario = fecha;
-    this.fechaReprogramacion.set(this.aFechaIso(fecha));
-  }
-
   cerrarReprogramacion() {
     this.controlReprogramando.set(null);
     this.controlReprogramandoId.set(null);
-  }
-
-  etiquetaMascota(m: MascotaResponse) {
-    return `${m.nombreCompleto} · ${m.especie}${m.razaNombre ? ' · ' + m.razaNombre : ''} · ${m.apoderadoNombreCompleto}`;
   }
 
   desdeFechaIso(fecha: string): Date | null {
     if (!fecha) return null;
     const [year, month, day] = fecha.split('-').map(Number);
     return year && month && day ? new Date(year, month - 1, day) : null;
-  }
-
-  private aFechaIso(fecha: Date | null): string {
-    if (!fecha) return '';
-    return `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}-${String(fecha.getDate()).padStart(2, '0')}`;
   }
 
   private fechaLocalLima(): string {

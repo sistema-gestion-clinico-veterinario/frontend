@@ -6,7 +6,6 @@ import { Rgb } from '../../types/rgb.type';
 @Injectable({ providedIn: 'root' })
 export class BrandThemeService {
   private readonly document = inject(DOCUMENT);
-  private currentColor = SOFTVET_BRAND_COLOR;
 
   applyCompanyColor(configuredColor: string | null | undefined): void {
     const primary = this.normalizeHex(configuredColor) ?? SOFTVET_BRAND_COLOR;
@@ -36,12 +35,7 @@ export class BrandThemeService {
     root.style.setProperty('--brand-soft-strong', this.rgbCss(palette[100]));
     root.style.setProperty('--brand-border', this.rgbCss(palette[200]));
 
-    this.currentColor = primary;
     this.updateThemeColor(primary);
-  }
-
-  primaryColor(): string {
-    return this.currentColor;
   }
 
   private normalizeHex(value: string | null | undefined): string | null {

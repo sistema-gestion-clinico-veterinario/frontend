@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal, computed } from '@angular/core';
 
 import { RouterModule } from '@angular/router';
 import { ToastModule } from 'primeng/toast';
@@ -12,6 +12,7 @@ import { CompanyComplianceService } from '../../../core/services/company-complia
 
 @Component({
   selector: 'app-apoderado-dashboard',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [RouterModule, ToastModule],
   providers: [MessageService],
@@ -42,11 +43,6 @@ export class ApoderadoDashboardComponent implements OnInit {
   canViewMisMascotas  = computed(() => this.authStore.hasAccess('VISTA_MIS_MASCOTAS', 'leer'));
   canViewMiHistorial  = computed(() => this.authStore.hasAccess('VISTA_MI_HISTORIAL', 'leer'));
   consentimientoVetDisponible = signal(false);
-
-  totalPagos      = computed(() => this.pagos().length);
-  pagosPagados    = computed(() => this.pagos().filter(p => p.estado === 'PAID' || p.estado === 'COMPLETADO').length);
-  pagosPendientes = computed(() => this.pagos().filter(p => p.estado === 'PENDING' || p.estado === 'PENDING_TRANSFER').length);
-  totalMonto      = computed(() => this.pagos().reduce((sum, p) => sum + (p.monto ?? 0), 0));
 
   totalMascotas   = computed(() => this.mascotas().length);
   mascotasActivas = computed(() => this.mascotas().filter(m => m.activo !== false).length);

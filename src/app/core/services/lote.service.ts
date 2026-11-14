@@ -25,10 +25,6 @@ export class LoteService {
     return this.http.get<ApiResponse<Page<LoteResponse>>>(`${this.url}/producto/${productoId}?page=${page}&size=${size}`);
   }
 
-  listarActivosPorProducto(productoId: number) {
-    return this.http.get<ApiResponse<LoteResponse[]>>(`${this.url}/producto/${productoId}/activos`);
-  }
-
   crear(request: LoteRequest) {
     return this.http.post<ApiResponse<LoteResponse>>(this.url, request);
   }
