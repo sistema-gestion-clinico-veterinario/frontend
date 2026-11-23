@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { HttpClient, HttpErrorResponse, provideHttpClient, withInterceptors } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { Router, provideRouter } from '@angular/router';
-import { of, throwError } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 import { apiInterceptor } from './api.interceptor';
 import { AuthStore } from '../../store/auth.store';
 import { AuthService } from '../services/auth.service';
@@ -18,7 +18,8 @@ describe('apiInterceptor - clínica de la sesión', () => {
 
   beforeEach(() => {
     localStorage.clear();
-    authService = jasmine.createSpyObj<AuthService>('AuthService', ['refreshToken']);
+    authService = jasmine.createSpyObj<AuthService>('AuthService', ['refreshToken', 'logout']);
+    authService.logout.and.returnValue(of({ success: true, message: 'ok', data: null } as any));
     TestBed.configureTestingModule({
       providers: [
         provideRouter([]),
@@ -175,5 +176,57 @@ describe('apiInterceptor - clínica de la sesión', () => {
     controller.expectOne(`${environment.apiUrl}/mascotas`).flush({}, { status: 401, statusText: 'Unauthorized' });
 
     expect(router.navigate).toHaveBeenCalledWith(['/login']);
+  });
+
+  it('si la renovación falla porque el servidor no responde (503), no cierra la sesión y avisa del error', () => {
+    spyOn(authStore, 'logout').and.callThrough();
+    authService.refreshToken.and.returnValue(throwError(() => new HttpErrorResponse({ status: 503, error: { success: false } })));
+    let fallo: any;
+    http.get(`${environment.apiUrl}/mascotas`).subscribe({ error: (e) => fallo = e });
+
+    controller.expectOne(`${environment.apiUrl}/mascotas`).flush({}, { status: 401, statusText: 'Unauthorized' });
+
+    expect(fallo.status).toBe(503);
+    expect(authStore.logout).not.toHaveBeenCalled();
+    expect(router.navigate).not.toHaveBeenCalled();
+    expect(authService.logout).not.toHaveBeenCalled();
+  });
+
+  it('si la renovación falla por un error de red o demasiadas solicitudes, tampoco cierra la sesión', () => {
+    spyOn(authStore, 'logout').and.callThrough();
+    for (const status of [0, 429, 500]) {
+      authService.refreshToken.and.returnValue(throwError(() => new HttpErrorResponse({ status })));
+      http.get(`${environment.apiUrl}/mascotas`).subscribe({ error: () => undefined });
+
+      controller.expectOne(`${environment.apiUrl}/mascotas`).flush({}, { status: 401, statusText: 'Unauthorized' });
+    }
+
+    expect(authStore.logout).not.toHaveBeenCalled();
+    expect(router.navigate).not.toHaveBeenCalled();
+  });
+
+  it('cuando la renovación es rechazada de verdad, cierra también la sesión en el servidor', () => {
+    authService.refreshToken.and.returnValue(throwError(() => new HttpErrorResponse({ status: 401, error: { success: false } })));
+    http.get(`${environment.apiUrl}/mascotas`).subscribe({ error: () => undefined });
+
+    controller.expectOne(`${environment.apiUrl}/mascotas`).flush({}, { status: 401, statusText: 'Unauthorized' });
+
+    expect(authService.logout).toHaveBeenCalledTimes(1);
+    expect(router.navigate).toHaveBeenCalledWith(['/login']);
+  });
+
+  it('las llamadas que esperaban la renovación reciben el error y no quedan colgadas', () => {
+    const renovacion = new Subject<any>();
+    authService.refreshToken.and.returnValue(renovacion);
+    const errores: any[] = [];
+    http.get(`${environment.apiUrl}/mascotas`).subscribe({ error: (e) => errores.push(e) });
+    http.get(`${environment.apiUrl}/citas`).subscribe({ error: (e) => errores.push(e) });
+
+    controller.expectOne(`${environment.apiUrl}/mascotas`).flush({}, { status: 401, statusText: 'Unauthorized' });
+    controller.expectOne(`${environment.apiUrl}/citas`).flush({}, { status: 401, statusText: 'Unauthorized' });
+    renovacion.error(new HttpErrorResponse({ status: 503 }));
+
+    expect(errores.length).toBe(2);
+    expect(errores.every(e => e.status === 503)).toBeTrue();
   });
 });

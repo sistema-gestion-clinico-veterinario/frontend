@@ -1,7 +1,7 @@
 import { HttpErrorResponse, HttpEvent, HttpHandlerFn, HttpRequest, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { BehaviorSubject, catchError, filter, finalize, Observable, switchMap, take, throwError, timeout } from 'rxjs';
+import { BehaviorSubject, catchError, EMPTY, filter, finalize, Observable, switchMap, take, throwError, timeout, TimeoutError } from 'rxjs';
 import { AuthStore } from '../../store/auth.store';
 import { LoadingStore } from '../../store/loading.store';
 import { AuthService } from '../services/auth.service';
@@ -115,6 +115,12 @@ const endForOtherCompanySession = (authStore: any, router: Router): void => {
   router.navigateByUrl('/login?authNotice=sesion_actualizada', { replaceUrl: true });
 };
 
+// Un servidor que no responde (5xx, sin red, tiempo agotado, demasiadas solicitudes) no dice que la sesión sea
+// inválida: no se cierra la sesión local, solo se informa del error.
+const esFalloTransitorio = (error: unknown): boolean =>
+  error instanceof TimeoutError
+  || (error instanceof HttpErrorResponse && (error.status === 0 || error.status === 429 || error.status >= 500));
+
 const handle401Error = (req: HttpRequest<any>, next: HttpHandlerFn, authStore: any, authService: AuthService, router: Router): Observable<HttpEvent<any>> => {
   if (!isRefreshing) {
     isRefreshing = true;
@@ -162,8 +168,12 @@ const handle401Error = (req: HttpRequest<any>, next: HttpHandlerFn, authStore: a
       }),
       catchError((err) => {
         isRefreshing = false;
-        refreshTokenSubject.next(false);
+        refreshTokenSubject.error(err);
         refreshTokenSubject = new BehaviorSubject<boolean>(false);
+        if (esFalloTransitorio(err)) {
+          return throwError(() => err);
+        }
+        authService.logout().pipe(timeout(5000), catchError(() => EMPTY)).subscribe();
         // El SlugUrlSerializer conoce el slug actual y lo antepone solo en
         // la barra de direcciones.
         authStore.logout();
