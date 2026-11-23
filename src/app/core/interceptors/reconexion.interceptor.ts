@@ -1,27 +1,14 @@
-import { HttpErrorResponse, HttpEvent, HttpHandlerFn, HttpInterceptorFn, HttpRequest, HttpResponse } from '@angular/common/http';
+import { HttpEvent, HttpHandlerFn, HttpInterceptorFn, HttpRequest, HttpResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { catchError, finalize, Observable, retry, tap, throwError, timer, TimeoutError } from 'rxjs';
+import { catchError, finalize, Observable, retry, tap, throwError, timer } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { esperaDeReintento, MAXIMO_DE_REINTENTOS, servidorNoDisponible } from '../http/fallo-transitorio';
 import { ConnectionStatusService } from '../services/connection-status.service';
 import { SKIP_GLOBAL_LOADING } from './http-context.tokens';
 
-export const ESPERAS_DE_REINTENTO_MS = [3000, 6000, 12000];
-export const ESPERA_MAXIMA_MS = 20000;
-export const MAXIMO_DE_REINTENTOS = 12;
-const RETRY_AFTER_MAXIMO_MS = 30000;
+export { ESPERA_MAXIMA_MS, ESPERAS_DE_REINTENTO_MS, MAXIMO_DE_REINTENTOS } from '../http/fallo-transitorio';
+
 const RUTAS_DE_AUTENTICACION = ['/auth/', '/public/'];
-
-const servidorNoDisponible = (error: unknown): boolean =>
-  error instanceof TimeoutError
-  || (error instanceof HttpErrorResponse && [0, 502, 503, 504].includes(error.status));
-
-const espera = (error: unknown, intento: number): number => {
-  const retryAfter = error instanceof HttpErrorResponse ? Number(error.headers?.get('Retry-After')) : NaN;
-  if (Number.isFinite(retryAfter) && retryAfter > 0) {
-    return Math.min(retryAfter * 1000, RETRY_AFTER_MAXIMO_MS);
-  }
-  return ESPERAS_DE_REINTENTO_MS[intento - 1] ?? ESPERA_MAXIMA_MS;
-};
 
 export const reconexionInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, next: HttpHandlerFn): Observable<HttpEvent<unknown>> => {
   const estado = inject(ConnectionStatusService);
@@ -54,7 +41,7 @@ export const reconexionInterceptor: HttpInterceptorFn = (req: HttpRequest<unknow
           esperando = true;
           estado.reintentoIniciado();
         }
-        return timer(espera(error, intento));
+        return timer(esperaDeReintento(error, intento));
       }
     }),
     tap((evento) => {

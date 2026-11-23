@@ -75,6 +75,7 @@ describe('reconexionInterceptor', () => {
 
     tick(ESPERAS_DE_REINTENTO_MS[0]);
     controller.expectOne(url).flush({});
+    expect(estado.estado()).toBe('restablecida');
     tick(3000);
   }));
 

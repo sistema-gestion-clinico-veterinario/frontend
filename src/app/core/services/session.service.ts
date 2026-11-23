@@ -1,11 +1,14 @@
 import { Injectable, OnDestroy, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable, catchError, finalize, map, of, retry, shareReplay, tap, timeout } from 'rxjs';
+import { Observable, catchError, finalize, map, of, retry, shareReplay, tap, throwError, timeout, timer } from 'rxjs';
 import { AuthLoginData } from '../../models/response/auth-login-response.model';
 import { resolveInitialRoute } from '../routing/initial-route';
+import { esperaDeReintento, MAXIMO_DE_REINTENTOS, servidorNoDisponible } from '../http/fallo-transitorio';
 import { AuthStore } from '../../store/auth.store';
+import { LoadingStore } from '../../store/loading.store';
 import { AuthService } from './auth.service';
 import { CompanySlugContext } from './company-slug-context.service';
+import { ConnectionStatusService } from './connection-status.service';
 import { NavigationService } from './navigation.service';
 
 @Injectable({ providedIn: 'root' })
@@ -15,7 +18,10 @@ export class SessionService implements OnDestroy {
   private readonly navigationService = inject(NavigationService);
   private readonly slugContext = inject(CompanySlugContext);
   private readonly router = inject(Router);
+  private readonly conexion = inject(ConnectionStatusService);
+  private readonly loadingStore = inject(LoadingStore);
   private initializationInFlight$: Observable<boolean> | null = null;
+  private restauracionAbandonadaPorServidor = false;
 
   private readonly authChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('softvet-auth') : null;
   private closingSession = false;
@@ -111,11 +117,28 @@ export class SessionService implements OnDestroy {
       }
       return of(true);
     }
-    if (status === 'anonymous') return of(false);
+    if (status === 'anonymous' || this.restauracionAbandonadaPorServidor) return of(false);
     if (this.initializationInFlight$) return this.initializationInFlight$;
 
     this.authStore.beginSessionInitialization();
+    let reintentando = false;
+    let recuperada = false;
     this.initializationInFlight$ = this.authService.refreshToken().pipe(
+      retry({
+        count: MAXIMO_DE_REINTENTOS,
+        delay: (error, intento) => {
+          if (!servidorNoDisponible(error)) {
+            return throwError(() => error);
+          }
+          if (!reintentando) {
+            reintentando = true;
+            this.conexion.reintentoIniciado();
+            this.loadingStore.show();
+          }
+          return timer(esperaDeReintento(error, intento));
+        }
+      }),
+      tap(() => { recuperada = reintentando; }),
       map(({ data }) => {
         if (expectedSlug && (data.companySlug ?? null) !== expectedSlug) {
           this.authStore.logout();
@@ -129,11 +152,21 @@ export class SessionService implements OnDestroy {
         this.establish(data, true);
         return true;
       }),
-      catchError(() => {
+      catchError((error) => {
+        if (servidorNoDisponible(error)) {
+          this.restauracionAbandonadaPorServidor = true;
+          return of(false);
+        }
         this.authStore.logout();
         return of(false);
       }),
-      finalize(() => { this.initializationInFlight$ = null; }),
+      finalize(() => {
+        if (reintentando) {
+          this.conexion.reintentoTerminado(recuperada);
+          this.loadingStore.hide();
+        }
+        this.initializationInFlight$ = null;
+      }),
       shareReplay({ bufferSize: 1, refCount: false })
     );
 
@@ -141,6 +174,7 @@ export class SessionService implements OnDestroy {
   }
 
   establish(data: AuthLoginData, preserveEnterprise = false): void {
+    this.restauracionAbandonadaPorServidor = false;
     const isPlatformAdmin = data.activeRolePurpose === 'PLATFORM_ADMIN';
 
     this.slugContext.setSlug(data.companySlug ?? null);
