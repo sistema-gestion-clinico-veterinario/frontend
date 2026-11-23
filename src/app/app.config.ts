@@ -3,6 +3,7 @@ import { provideRouter, withInMemoryScrolling, UrlSerializer } from '@angular/ro
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { routes } from './app.routes';
 import { apiInterceptor } from './core/interceptors/api.interceptor';
+import { reconexionInterceptor } from './core/interceptors/reconexion.interceptor';
 import { SlugUrlSerializer } from './core/routing/slug-url-serializer';
 
 export const appConfig: ApplicationConfig = {
@@ -13,6 +14,6 @@ export const appConfig: ApplicationConfig = {
       anchorScrolling: 'enabled'
     })),
     { provide: UrlSerializer, useClass: SlugUrlSerializer },
-    provideHttpClient(withInterceptors([apiInterceptor]))
+    provideHttpClient(withInterceptors([reconexionInterceptor, apiInterceptor]))
   ]
 };

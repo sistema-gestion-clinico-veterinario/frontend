@@ -1,0 +1,10 @@
+@if (conexion.mensaje(); as mensaje) {
+  <div
+    role="status"
+    aria-live="polite"
+    class="fixed inset-x-0 top-0 z-[10000] px-4 py-2 text-center text-sm font-semibold text-white"
+    [class.bg-slate-800]="conexion.estado() !== 'restablecida'"
+    [class.bg-teal-700]="conexion.estado() === 'restablecida'">
+    {{ mensaje }}
+  </div>
+}
